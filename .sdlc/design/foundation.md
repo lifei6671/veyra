@@ -1,6 +1,6 @@
 # 技术基线
 
-状态：候选（DCR-001 多版本目录与 Windows ACL feature 修订，等待独立复审后重新冻结）
+状态：候选（DCR-001 构建期资产交付与 Git ignore 修订，等待独立复审后重新冻结）
 
 ## 范围与追踪
 
@@ -27,10 +27,11 @@ StateStore、Compiler 和 sidecar 边界，不反向扩大 V0.1 Scope。
   SQLx、SQLite 或其他配置数据库依赖。未来的历史遥测数据库不属于 V0.1。
 - 运行内核：`CoreVersionCatalog` 以固定 URL、archive/executable SHA-256、资源名和兼容 profile 管理
   可选 sing-box 内核，拒绝任意版本、路径、URL、hash 或二进制。当前唯一 `Supported` 且进入 TASK-006
-  实施/E2E 的 Windows amd64 条目为 `1.14.0`：archive
+  实施/E2E 的 Windows amd64 条目为 `1.14.0`：构建期从固定 URL 获取 archive
   `sing-box-1.14.0-windows-amd64.zip`，SHA-256
   `3ffb56267da14e287be48bd10cf7e6505260125bad940b75101fbb4d5d58e5d6`。1.12/1.13 是后续必须逐项
-  验证后才能登记的兼容线，不能由 1.14.0 的结果推断支持。Windows arm64 不在当前 TASK-006 范围。
+  验证后才能登记的兼容线，不能由 1.14.0 的结果推断支持。Git 不跟踪 core 二进制；构建期验证后将资源
+  打入安装包，运行期不下载。Windows arm64 不在当前 TASK-006 范围。
 - 参考边界：UI 依赖组合与 clash-verge-rev 的 Tauri/React 桌面形态保持同类；Rust 边界参考
   satelite-proxy 的 Tauri sidecar 形态，但不复制其完整依赖树或功能集。首个脚手架 Task 固化具体
   package 版本、包管理器与 Tauri capability，且不得擅自加入数据库依赖。Capability 基线为默认拒绝：

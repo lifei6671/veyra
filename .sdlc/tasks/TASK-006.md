@@ -3,7 +3,7 @@ id: TASK-006
 milestone_ref: M5
 dependencies: [TASK-005]
 risk: HIGH
-status: READY
+status: BLOCKED
 design_refs:
   - .sdlc/design/foundation.md
   - .sdlc/design/DCR-001-sing-box-1.14.0.md
@@ -13,6 +13,7 @@ approval_refs:
   - USER:lifei 2026-09-03 getrandom 0.4.3 per-instance API secret generation
   - USER:lifei 2026-09-03 Windows ACL feature expansion and selectable core-version direction
   - USER:lifei 2026-09-03 DCR-001 multi-version and ACL Human Technical Design Gate
+  - USER:lifei 2026-09-03 build-stage sidecar asset delivery and Git ignore
 ---
 
 # TASK-006：真实 sidecar 观测与最终端到端验证
@@ -44,9 +45,9 @@ Tray 隐藏/恢复的联合路径；不得以 Mock 或纯单元测试替代。
 
 ### allow（全部待下方契约获得确认后）
 
-- `src-tauri/binaries/`、`src-tauri/tauri.conf.json`、构建资源配置：只加入已确认版本、平台、文件名和
-  SHA-256 的 sing-box 资产；构建时验证 archive 与 extracted executable 身份，不接受用户路径或替代
-  binary。
+- `src-tauri/tauri.conf.json`、构建资源配置与受控获取脚本：只按版本目录的已确认 URL、平台、文件名和
+  SHA-256 下载 sing-box 资产；构建时验证 archive 与 extracted executable 身份并写入 bundle resource，
+  不接受用户路径或替代 binary。`src-tauri/binaries/` 仅为 Git 忽略的本机/CI 缓存。
 - `src-tauri/Cargo.toml`、`src-tauri/Cargo.lock`：仅加入已确认的 Rust HTTP client 及其精确 feature，及
   `sha2 = "=0.10.9"` 的离线 asset-integrity 实现、`getrandom = "=0.4.3"` 的每实例 secret 熵源；不引入
   通用 Shell、文件、进程或前端网络能力。可扩展现有 `windows = "=0.61.3"` 的
@@ -115,9 +116,10 @@ ACL、Mock/真实 sidecar 事务、失败回滚与受管 child 清理。
 
 ## 实施前提
 
-DCR-001 的 1.14.0、sha2、getrandom、多版本目录与 ACL feature 修订均已通过独立复审及 Human Technical
-Design Gate。TASK-006 可在已确认 Scope 内恢复实施；仍必须以固定 asset/hash、后端专属 loopback、私有
-secret、配置默认拒绝及无控制台约束为边界。1.12/1.13 不属于本 Task 的可执行资源或可选 UI。
+DCR-001 的 1.14.0、sha2、getrandom、多版本目录与 ACL feature 修订均已通过先前 Gate。构建期资产交付
+与 Git ignore 是新的候选修订，TASK-006 因此 BLOCKED，待独立审查和新的 Human Technical Design Gate 后
+才可恢复实现；仍必须以固定 asset/hash、后端专属 loopback、私有 secret、配置默认拒绝及无控制台约束为
+边界。1.12/1.13 不属于本 Task 的可执行资源或可选 UI。
 
 ## Task 独立验收
 

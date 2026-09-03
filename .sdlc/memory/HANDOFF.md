@@ -94,6 +94,12 @@ User approved that Human Technical Design Gate. DCR-001 is ACCEPTED and Foundati
 READY/EXECUTING: implement the 1.14.0 resource/ACL/sidecar/API path only. 1.12/1.13 remain future
 compatibility lines and must not be exposed as selectable before their own assets and real evidence.
 
+User corrected core asset delivery: `src-tauri/binaries/` must not be Git-tracked. DCR-001 is now a
+CANDIDATE amendment: fixed assets are fetched, SHA-256/version/member verified and bundled only during
+the controlled build; application runtime remains offline and cannot download a core. The Git-tracked
+archive, executable and DLL are being removed from the index while local caches remain. TASK-006 is
+BLOCKED in PLANNING pending an independent design review and new Human Technical Design Gate.
+
 ## Completed
 
 - Completed the ingest Readiness Pass for `docs/veyra.md`.
