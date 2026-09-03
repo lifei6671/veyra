@@ -3,7 +3,7 @@
 Project: PROJECT-001
 Phase: EXECUTING
 Mode: ingest
-Task: TASK-003
+Task: TASK-006
 Requirement Source: `docs/veyra.md`
 Requirement Identity: `sha256:13a1769134ecaa9a1361ff9571513ee2b2a662a7771a056ac974e5bd078349ae`
 
@@ -13,9 +13,86 @@ The accepted plan uses a versioned JSON `AppState` and `StateStore` for configur
 Windows is the V0.1 desktop target. macOS platform realization is V0.2, based on DMG
 direct distribution, a normal Tauri desktop app, and a sing-box sidecar; System Proxy
 and explicit privilege remain Adapter concerns, while NetworkExtension is a future ADR
-route. The Foundation is frozen after a current independent PASS review and explicit
-Human approval. TASK-001 and TASK-002 are DONE. TASK-003 is READY to implement typed pools,
-routes, runtime intent and deterministic semantic compilation.
+route. TASK-001 through TASK-005 are DONE. TASK-006 is the current BLOCKED Task for real
+sidecar/Clash API observability and final E2E; Mock evidence remains non-substitutive.
+
+The first frozen TASK-005 candidate was independently reviewed as REWORK. `FINDING-TASK-005-001`
+is a P1: the Mock Port Delta is not bridged to the fixed Tauri event, and hidden-window rendering
+has no visibility gate. Await explicit user authorization before remediation; the candidate must
+be re-verified and independently re-reviewed after any repair.
+
+User authorized that remediation and Windows GUI-only startup. The new frozen candidate is
+`sha256:03cf332021191ee1d93f45d974ca3f17cb6834df241268c2c94878a7957fde09`:
+the controlled bridge drops hidden-window Deltas without backlog, restore emits the current safe
+Snapshot, and Debug/Release PE headers both report GUI subsystem `2`. It awaits independent
+incremental review. Actual Windows UI Automation remains `UNABLE_TO_VERIFY`; real sidecar/Clash
+API/System Proxy evidence remains `NOT_RUN`.
+
+The independent incremental re-review passed with no P0-P3 findings and marked
+`FINDING-TASK-005-001` fixed. User accepted TASK-005, which is now DONE at
+`sha256:03cf332021191ee1d93f45d974ca3f17cb6834df241268c2c94878a7957fde09`.
+Windows UI Automation remains `UNABLE_TO_VERIFY`; real sidecar/Clash API final E2E remains a
+separately authorized `NOT_RUN` requirement. The project is now planning M5's next Task and must
+not start a real sidecar, access a Clash API, or change System Proxy during planning.
+
+User approved DCR-001 to move the managed runtime baseline to official Windows amd64 sing-box
+`1.14.0`, archive SHA-256 `3ffb56267da14e287be48bd10cf7e6505260125bad940b75101fbb4d5d58e5d6`,
+fixed backend-only `127.0.0.1:9090` Clash API, per-instance secret, direct `reqwest 0.12.28`
+with `json`/`rustls-tls`, and a no-SystemProxy/TUN real E2E. The asset has not been downloaded.
+DCR-001 reopens the Technical Design Gate against Foundation identity
+`sha256:577e12b7abb56d195f55be7818290d0528ef03bbb9838854c5fe047503b326f0`; an independent review
+recorded `EVIDENCE-DESIGN-009` as the candidate PASS and `EVIDENCE-DESIGN-010` as the final frozen
+identity PASS, both with no P0-P3. User approved the Human Technical Design Gate; TASK-006 is now
+READY/EXECUTING within the approved asset, direct HTTP and loopback API boundary. System Proxy, TUN,
+UAC, WFP, Service and arbitrary UI/network capability remain out of scope.
+
+User then approved `sha2 = "=0.10.9"` with default features disabled, solely to calculate archive and
+executable SHA-256 locally. This amends the frozen Foundation dependency contract, so the Technical
+Design Gate is reopened at identity `sha256:f0adffcc957c90fb99c9b873348c39b3d3cbe9020c36047781d524729e6da71a`.
+TASK-006 is BLOCKED until its independent review and a new Human Gate approval complete; no Cargo
+manifest/lockfile change has been made for this amendment.
+
+The independent merged review recorded `EVIDENCE-DESIGN-011` as PASS with no P0-P3 for the sha2
+amendment. The only remaining blocker is the new Human Technical Design Gate approval. A prior
+approved identity probe ran `sing-box version`; no sidecar service has started and no Clash API has
+been accessed. Further implementation verification remains prohibited until that approval is recorded.
+
+User approved the sha2 amendment's Human Technical Design Gate and final identity review recorded
+`EVIDENCE-DESIGN-012` as PASS with no P0-P3. TASK-006 is READY/EXECUTING within the approved
+asset, direct HTTP, offline hash and loopback API boundaries. No sidecar service or Clash API call
+has yet occurred; System Proxy, TUN, UAC, WFP, Service and arbitrary UI/network capability remain
+out of scope.
+
+User approved `getrandom = "=0.4.3"` exclusively for a per-instance 32-byte API-secret entropy
+source. It reopens the Technical Design Gate at Foundation identity
+`sha256:b0cb498f3b01db90aa471ee89ff16e7f9e03dd404b661bbc458e3113039c9682`; the independent review
+recorded `EVIDENCE-DESIGN-013` as PASS with no P0-P3. TASK-006 remains BLOCKED only pending the new
+Human Technical Design Gate; `getrandom` has not been added to Cargo.
+
+The Human Gate was then approved. `reqwest 0.12.28`, `sha2 0.10.9` and `getrandom 0.4.3` are now
+direct dependencies and `cargo check --manifest-path src-tauri/Cargo.toml` passed. TASK-006 is
+READY/EXECUTING; implementation must next add fixed-resource integrity validation and the no-console
+managed child path without reusing the System Proxy supervisor entry point.
+
+User then clarified the product direction: users must ultimately select among verified sing-box 1.12,
+1.13 and 1.14 cores, while current implementation and the first real E2E continue on 1.14.0. DCR-001
+is now a CANDIDATE amendment defining a closed `CoreVersionCatalog`: no arbitrary version, URL, path,
+hash or binary is accepted; 1.14.0 is its sole current Supported entry, and 1.12/1.13 require separate
+asset, profile, `check`, API and Windows E2E evidence before they can be selectable. The user also
+confirmed expanding the existing `windows 0.61.3` binding with ACL-only features. This invalidates the
+prior Technical Design Gate; TASK-006 is BLOCKED in PLANNING until independent DCR review and a new
+Human Technical Design Gate. Do not implement the ACL feature, package/start the sidecar, or access the
+Clash API before that gate.
+
+Independent incremental review `EVIDENCE-DESIGN-014` passed at Foundation identity
+`sha256:101fe9258cc97c73b46c4d5f30ceadcf8ef13eca5d0480b2154486dc15dc3054`, with no P0-P3 findings.
+The next and only blocker is the Human Technical Design Gate for DCR-001's closed multi-version catalog
+and ACL-only feature expansion.
+
+User approved that Human Technical Design Gate. DCR-001 is ACCEPTED and Foundation identity
+`sha256:101fe9258cc97c73b46c4d5f30ceadcf8ef13eca5d0480b2154486dc15dc3054` is frozen. TASK-006 is
+READY/EXECUTING: implement the 1.14.0 resource/ACL/sidecar/API path only. 1.12/1.13 remain future
+compatibility lines and must not be exposed as selectable before their own assets and real evidence.
 
 ## Completed
 
@@ -75,18 +152,41 @@ routes, runtime intent and deterministic semantic compilation.
 - User accepted TASK-002. Its delivery evidence is recorded under `.sdlc/evidence/TASK-002/`; M2 is DONE.
 - Materialized TASK-003 and completed its readiness check for typed pools, routes, runtime intent,
   deterministic semantic compilation, and V1-to-V2 state evolution.
+- Implemented TASK-003's typed pools, routes, runtime intent, deterministic semantic compiler,
+  and V1-to-V2 state evolution. Rust (40 tests), frontend verification, and scope checks passed;
+  the independent delivery review passed after the user-authorized Reality repair.
+- User accepted TASK-003. Its delivery evidence is recorded under `.sdlc/evidence/TASK-003/`;
+  M3 is DONE.
+- Materialized TASK-004 for the managed sidecar transaction, Windows System Proxy three-state
+  adapter, and Off/SystemProxy compensation. It intentionally excludes TUN, UAC, UI IPC, actual
+  sidecar execution, and real proxy writes from implementation verification.
+- User approved Tokio, thiserror, tracing, and the Windows WinInet binding for TASK-004. The
+  sidecar partition implemented its closed candidate/active/previous transaction and passed seven
+  focused tests. The concrete WinINet adapter is paused pending the additional GlobalFree feature.
+- TASK-004's first candidate had a P1 in uncertain WinINet enable compensation. The
+  user-authorized repair added `SafelyUnapplied` versus `StateUncertain` enable outcomes: only
+  the former permits sidecar stop. Concrete Adapter/Supervisor tests cover readback, notification
+  rollback, and stable-record failures; 69 Rust tests and independent re-review PASS. User
+  accepted TASK-004; M4 is DONE. TUN remains explicitly excluded pending a separate ADR and Task.
+  TASK-005 is materialized with Mock-only observability (A) selected but BLOCKED before
+  implementation: it requires user confirmation of fixed new IPC/Capability permissions and
+  Tray enablement. Real sidecar/Clash API observation remains a later independent delivery and
+  required final E2E path.
 
 ## Remaining
 
-- Implement TASK-003 within its approved scope.
+- Implement TASK-005's Mock-only observability, fixed IPC and Tray lifecycle. Do not enter any
+  real sidecar/WinINet operation without separate authorization.
 
 ## Blocker
 
-None recorded.
+No current blocker. Mock-only observability (A) is the active scope; real sidecar/Clash API
+observation remains a later independent delivery and E2E requirement.
 
 ## Next
 
-Run implementation for `.sdlc/tasks/TASK-003.md`.
+After the user selects the approved fixed IPC/Tray contract and observation source, return to
+EXECUTING, run Task Readiness Check, and only then route implementation.
 
 ## Provenance
 
@@ -103,6 +203,10 @@ Run implementation for `.sdlc/tasks/TASK-003.md`.
 - `.sdlc/evidence/TASK-001/code-delivery-review.yaml`
 - `.sdlc/evidence/TASK-002/implementation.yaml`
 - `.sdlc/evidence/TASK-002/code-delivery-review.yaml`
+- `.sdlc/evidence/TASK-003/implementation.yaml`
+- `.sdlc/evidence/TASK-003/code-delivery-review.yaml`
+- `.sdlc/tasks/TASK-004.md`
+- `.sdlc/tasks/TASK-005.md`
 - `.sdlc/design/foundation.md`
 - `.sdlc/evidence/foundation/technical-design-review.yaml`
 - `docs/veyra.md`

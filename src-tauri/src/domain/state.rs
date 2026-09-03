@@ -62,7 +62,7 @@ impl AppState {
 
         let subscriptions = unique_ids(self.subscriptions.iter().map(|value| &value.id))?;
         let providers = unique_ids(self.providers.iter().map(|value| &value.id))?;
-        let nodes = unique_ids(self.nodes.iter().map(|value| &value.id))?;
+        unique_ids(self.nodes.iter().map(|value| &value.id))?;
         let pools = unique_ids(self.pools.iter().map(|value| &value.id))?;
         unique_ids(self.routes.iter().map(|value| &value.id))?;
 
@@ -88,25 +88,23 @@ impl AppState {
                 if !providers.contains(&source.provider_id) {
                     return Err(StateValidationError::MissingProvider);
                 }
-                source.filter.validate(&nodes)?;
+                source.filter.validate(&source.provider_id, &self.nodes)?;
             }
             if let SelectionPolicy::Manual {
                 selected_node_id: Some(node_id),
             } = &pool.selection
+                && !self.resolve_pool_members(pool).contains(node_id)
             {
-                if !self.resolve_pool_members(pool).contains(node_id) {
-                    return Err(StateValidationError::InvalidSelection);
-                }
+                return Err(StateValidationError::InvalidSelection);
             }
             if let SelectionPolicy::UrlTest {
                 probe_url,
                 interval_secs,
                 ..
             } = &pool.selection
+                && (probe_url.trim().is_empty() || *interval_secs == 0)
             {
-                if probe_url.trim().is_empty() || *interval_secs == 0 {
-                    return Err(StateValidationError::InvalidSelection);
-                }
+                return Err(StateValidationError::InvalidSelection);
             }
         }
 
@@ -114,10 +112,10 @@ impl AppState {
             if !route.matcher.is_valid() {
                 return Err(StateValidationError::InvalidRoute);
             }
-            if let RouteTarget::Pool(pool_id) = &route.target {
-                if !pools.contains(pool_id) {
-                    return Err(StateValidationError::MissingPool);
-                }
+            if let RouteTarget::Pool(pool_id) = &route.target
+                && !pools.contains(pool_id)
+            {
+                return Err(StateValidationError::MissingPool);
             }
         }
 
@@ -181,6 +179,15 @@ impl RuntimeIntent {
             .filter(|route| route.enabled)
             .cloned()
             .collect::<Vec<_>>();
+        let active_pool_ids = pools.iter().map(|pool| &pool.id).collect::<HashSet<_>>();
+        if routes.iter().any(|route| {
+            matches!(
+                &route.target,
+                RouteTarget::Pool(pool_id) if !active_pool_ids.contains(pool_id)
+            )
+        }) {
+            return Err(StateValidationError::InactivePoolTarget);
+        }
         routes.sort_by_key(|route| (route.priority, route.id.clone()));
         Ok(Self {
             nodes,
@@ -303,12 +310,21 @@ pub struct NodeFilter {
 }
 
 impl NodeFilter {
-    fn validate(&self, nodes: &HashSet<&NodeId>) -> Result<(), StateValidationError> {
+    fn validate(
+        &self,
+        provider_id: &ProviderId,
+        nodes: &[ProxyNode],
+    ) -> Result<(), StateValidationError> {
         if self
             .include_node_ids
             .iter()
             .chain(self.exclude_node_ids.iter())
-            .any(|id| !nodes.contains(id))
+            .any(|id| {
+                nodes
+                    .iter()
+                    .find(|node| node.id == *id)
+                    .is_none_or(|node| node.provider_id != *provider_id)
+            })
             || self
                 .include_node_ids
                 .iter()
@@ -417,6 +433,7 @@ pub enum StateValidationError {
     InvalidSelection,
     InvalidRoute,
     EmptyPoolMembership,
+    InactivePoolTarget,
     UnsupportedSchemaVersion,
 }
 
@@ -433,6 +450,7 @@ impl fmt::Display for StateValidationError {
             Self::InvalidSelection => "pool contains an invalid selection policy",
             Self::InvalidRoute => "route contains an invalid matcher",
             Self::EmptyPoolMembership => "enabled pool resolves to no nodes",
+            Self::InactivePoolTarget => "enabled route references an inactive pool",
             Self::UnsupportedSchemaVersion => "state schema version is unsupported",
         };
         formatter.write_str(message)
@@ -621,6 +639,115 @@ mod tests {
         assert_eq!(
             state.resolve_pool_members(&state.pools[0]),
             vec![NodeId(id("node-a"))]
+        );
+    }
+
+    #[test]
+    fn resolves_a_filtered_pool_across_multiple_providers_by_stable_node_id() {
+        let mut state = valid_state();
+        state.subscriptions.push(Subscription {
+            id: SubscriptionId(id("subscription-b")),
+            name: id("B"),
+        });
+        state.providers.push(Provider {
+            id: ProviderId(id("provider-b")),
+            subscription_id: SubscriptionId(id("subscription-b")),
+            name: id("B default"),
+        });
+        state.nodes.push(ProxyNode {
+            id: NodeId(id("node-b")),
+            provider_id: ProviderId(id("provider-b")),
+            name: id("B Japan"),
+            ..state.nodes[0].clone()
+        });
+        state.pools.push(NodePool {
+            id: PoolId(id("pool-multi")),
+            name: id("Multi provider"),
+            kind: PoolKind::Custom,
+            sources: vec![
+                PoolSource {
+                    provider_id: ProviderId(id("provider-b")),
+                    filter: NodeFilter {
+                        regions: vec![id("japan")],
+                        ..NodeFilter::default()
+                    },
+                },
+                PoolSource {
+                    provider_id: ProviderId(id("provider-a")),
+                    filter: NodeFilter {
+                        include_node_ids: vec![NodeId(id("node-a"))],
+                        ..NodeFilter::default()
+                    },
+                },
+            ],
+            selection: SelectionPolicy::UrlTest {
+                probe_url: id("https://example.invalid/probe"),
+                interval_secs: 60,
+                tolerance_ms: 50,
+            },
+            enabled: true,
+        });
+
+        assert_eq!(state.validate(), Ok(()));
+        assert_eq!(
+            state.resolve_pool_members(&state.pools[0]),
+            vec![NodeId(id("node-a")), NodeId(id("node-b"))]
+        );
+    }
+
+    #[test]
+    fn rejects_a_pool_filter_that_selects_another_providers_node() {
+        let mut state = valid_state();
+        state.subscriptions.push(Subscription {
+            id: SubscriptionId(id("subscription-b")),
+            name: id("B"),
+        });
+        state.providers.push(Provider {
+            id: ProviderId(id("provider-b")),
+            subscription_id: SubscriptionId(id("subscription-b")),
+            name: id("B default"),
+        });
+        state.nodes.push(ProxyNode {
+            id: NodeId(id("node-b")),
+            provider_id: ProviderId(id("provider-b")),
+            ..state.nodes[0].clone()
+        });
+        let mut filter = NodeFilter::default();
+        filter.include_node_ids.push(NodeId(id("node-b")));
+        state.pools.push(NodePool {
+            sources: vec![PoolSource {
+                provider_id: ProviderId(id("provider-a")),
+                filter,
+            }],
+            ..pool(SelectionPolicy::Manual {
+                selected_node_id: None,
+            })
+        });
+
+        assert_eq!(state.validate(), Err(StateValidationError::InvalidFilter));
+    }
+
+    #[test]
+    fn rejects_an_enabled_route_to_an_inactive_pool() {
+        let mut state = valid_state();
+        state.pools.push(NodePool {
+            enabled: false,
+            ..pool(SelectionPolicy::Manual {
+                selected_node_id: None,
+            })
+        });
+        state.routes.push(RoutePolicy {
+            id: RoutePolicyId(id("route-a")),
+            name: id("Inactive target"),
+            enabled: true,
+            priority: 0,
+            matcher: TrafficMatcher::Domain(vec![id("example.com")]),
+            target: RouteTarget::Pool(PoolId(id("pool-a"))),
+        });
+
+        assert_eq!(
+            RuntimeIntent::from_state(&state),
+            Err(StateValidationError::InactivePoolTarget)
         );
     }
 

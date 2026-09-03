@@ -301,3 +301,208 @@ records:
       remaining_risks:
         - SystemConfiguration write bridging, network-service enumeration/change strategy, short-lived elevation target, and IPC require a macOS scoped Task/ADR before implementation.
         - Signing, notarization, release rollback, and real macOS Runner evidence are not run by this design review.
+  - id: EVIDENCE-DESIGN-009
+    type: technical_design_review
+    target: .sdlc/design/foundation.md
+    target_identity: sha256:577e12b7abb56d195f55be7818290d0528ef03bbb9838854c5fe047503b326f0
+    produced_by_phase: PLANNING
+    command_or_method: >-
+      Independent child-agent re-review of the DCR-001 sing-box 1.14.0 runtime
+      boundary, updated Foundation, TASK-006 contract, State Gate and Cargo manifest.
+    result: PASS
+    timestamp: 2026-09-03T17:55:05+08:00
+    summary: >-
+      PASS. The approved DCR, Foundation and TASK-006 consistently pin the Windows
+      amd64 1.14.0 asset, preserve backend-only loopback access and deny newly
+      introduced services or privileged capabilities. No P0/P1/P2/P3 findings remain.
+    observer: CHILD_AGENT:/root/dcr001_design_reviewer
+    review:
+      review_mode: CHILD_AGENT
+      review_result: PASS
+      coverage:
+        strategy: focused_dcr_foundation_task_rereview
+        inputs:
+          - .sdlc/design/DCR-001-sing-box-1.14.0.md
+          - .sdlc/design/foundation.md
+          - .sdlc/tasks/TASK-006.md
+          - .sdlc/state.yaml
+          - src-tauri/Cargo.toml
+        verified:
+          - Foundation identity matches the reopened Technical Design Gate.
+          - DCR-001 approval and Gate re-open sequence preserve TASK-005 delivery evidence.
+          - The 1.14.0 Windows amd64 asset, SHA-256, loopback endpoint, direct reqwest features and secret boundary agree across artifacts.
+          - Configuration default-deny rules reject new API, Dashboard, remote-control and privileged runtime services.
+          - TASK-006 requires no-console and real sidecar/API/Tray E2E without System Proxy, TUN, UAC, WFP or Service changes.
+      findings: []
+      remaining_risks:
+        - The official asset, SHA-256, configuration compatibility, ACL, cleanup, actual listener set and no-console behavior remain NOT_RUN until TASK-006 implementation.
+        - Real Windows UI Automation, child endpoint evidence and Tray E2E must run after implementation; missing child-owned endpoint evidence is UNAVAILABLE, not PASS.
+  - id: EVIDENCE-DESIGN-010
+    type: technical_design_review
+    target: .sdlc/design/foundation.md
+    target_identity: sha256:ea1c32efc2442d9e1a1a3cfdf99e614709c3545e95cb96c13a8ab9733a264806
+    produced_by_phase: PLANNING
+    command_or_method: >-
+      Independent child-agent final identity review of the frozen Foundation,
+      DCR-001, TASK-006 and Technical Design Gate state.
+    result: PASS
+    timestamp: 2026-09-03T18:01:50+08:00
+    summary: >-
+      PASS. The frozen 1.14.0 Foundation identity matches the pending Gate, DCR-001
+      and Human approval. No 1.14.0 design semantics changed after the approved review;
+      no P0/P1/P2/P3 findings remain.
+    observer: CHILD_AGENT:/root/dcr001_design_reviewer
+    review:
+      review_mode: CHILD_AGENT
+      review_result: PASS
+      coverage:
+        strategy: focused_frozen_identity_check
+        inputs:
+          - .sdlc/design/foundation.md
+          - .sdlc/design/DCR-001-sing-box-1.14.0.md
+          - .sdlc/tasks/TASK-006.md
+          - .sdlc/state.yaml
+        verified:
+          - Frozen Foundation SHA-256 matches the Technical Design Gate target identity.
+          - DCR-001 and USER:lifei Human Gate approval are recorded before implementation.
+          - TASK-006 remains blocked pending the current review and has no unreviewed runtime scope change.
+      findings: []
+      remaining_risks:
+        - Asset download and integrity, private ACL, configuration assertions, child endpoint, no-console behavior and Windows E2E remain NOT_RUN until implementation.
+  - id: EVIDENCE-DESIGN-011
+    type: technical_design_review
+    target: .sdlc/design/foundation.md
+    target_identity: sha256:f0adffcc957c90fb99c9b873348c39b3d3cbe9020c36047781d524729e6da71a
+    produced_by_phase: PLANNING
+    command_or_method: >-
+      Independent child-agent merged review of the approved sha2 0.10.9 amendment,
+      DCR-001, Foundation, TASK-006 and reopened Technical Design Gate.
+    result: PASS
+    timestamp: 2026-09-03T18:19:32+08:00
+    summary: >-
+      PASS. sha2 is exact-version, default-feature-disabled and limited to offline
+      archive/executable SHA-256. Existing loopback, secret, deny-by-default and
+      no-console boundaries remain unchanged; no P0/P1/P2/P3 findings remain.
+    observer: CHILD_AGENT:/root/dcr001_design_reviewer
+    review:
+      review_mode: CHILD_AGENT
+      review_result: PASS
+      coverage:
+        strategy: focused_dependency_amendment_merged_review
+        inputs:
+          - .sdlc/design/foundation.md
+          - .sdlc/design/DCR-001-sing-box-1.14.0.md
+          - .sdlc/tasks/TASK-006.md
+          - .sdlc/state.yaml
+          - src-tauri/Cargo.toml
+        verified:
+          - Foundation identity matches the reopened Gate.
+          - sha2 has no network, Shell, frontend or system capability use.
+          - reqwest remains restricted to the fixed backend loopback client.
+          - TASK-006 remains blocked until the amended Gate has Human approval.
+      findings: []
+      remaining_risks:
+        - sha2 implementation and actual asset verification remain NOT_RUN.
+        - Sidecar execution, ACL, listener evidence, no-console behavior and Windows E2E remain NOT_RUN.
+  - id: EVIDENCE-DESIGN-012
+    type: technical_design_review
+    target: .sdlc/design/foundation.md
+    target_identity: sha256:d84d998a2e17eb3396edee839fc279647c638120f85c1a7ab0a2afc7009bacaa
+    produced_by_phase: PLANNING
+    command_or_method: >-
+      Independent child-agent final identity review after the approved sha2 0.10.9
+      amendment entered its frozen-candidate design state.
+    result: PASS
+    timestamp: 2026-09-03T18:22:24+08:00
+    summary: >-
+      PASS. The frozen-candidate Foundation identity, DCR-001, blocked TASK-006 and
+      Human Gate approval are coherent. sha2 remains offline-only with no default
+      features; no P0/P1/P2/P3 findings remain.
+    observer: CHILD_AGENT:/root/dcr001_design_reviewer
+    review:
+      review_mode: CHILD_AGENT
+      review_result: PASS
+      coverage:
+        strategy: focused_frozen_candidate_identity_check
+        inputs:
+          - .sdlc/design/foundation.md
+          - .sdlc/design/DCR-001-sing-box-1.14.0.md
+          - .sdlc/tasks/TASK-006.md
+          - .sdlc/state.yaml
+        verified:
+          - Foundation identity matches the pending Gate and Human approval.
+          - sha2 stays default-feature-disabled and limited to local integrity verification.
+          - Existing 1.14.0 API, ACL, default-deny and no-console boundaries are unchanged.
+      findings: []
+      remaining_risks:
+        - Actual hash verification, sidecar execution, ACL, listener evidence, no-console behavior and Windows E2E remain NOT_RUN.
+  - id: EVIDENCE-DESIGN-013
+    type: technical_design_review
+    target: .sdlc/design/foundation.md
+    target_identity: sha256:b0cb498f3b01db90aa471ee89ff16e7f9e03dd404b661bbc458e3113039c9682
+    produced_by_phase: PLANNING
+    command_or_method: >-
+      Independent child-agent review of the approved getrandom 0.4.3 per-instance
+      secret-entropy amendment, DCR-001, Foundation, TASK-006 and Gate state.
+    result: PASS
+    timestamp: 2026-09-03T18:28:01+08:00
+    summary: >-
+      PASS. getrandom is exact-version and constrained to Windows system entropy for
+      one 32-byte secret per managed instance. No network, Shell, UI or system setting
+      capability expands; no P0/P1/P2/P3 findings remain.
+    observer: CHILD_AGENT:/root/dcr001_design_reviewer
+    review:
+      review_mode: CHILD_AGENT
+      review_result: PASS
+      coverage:
+        strategy: focused_secret_entropy_amendment_review
+        inputs:
+          - .sdlc/design/foundation.md
+          - .sdlc/design/DCR-001-sing-box-1.14.0.md
+          - .sdlc/tasks/TASK-006.md
+          - .sdlc/state.yaml
+          - src-tauri/Cargo.toml
+        verified:
+          - Foundation identity matches the reopened Technical Design Gate.
+          - getrandom is limited to one 32-byte per-instance secret from Windows system entropy.
+          - Existing sha2, reqwest, loopback, ACL, default-deny and no-console boundaries are unchanged.
+          - TASK-006 remains blocked until Human Gate approval.
+      findings: []
+      remaining_risks:
+        - getrandom implementation, secret lifecycle, asset integrity, ACL, configuration assertions, child endpoint and Windows E2E remain NOT_RUN.
+  - id: EVIDENCE-DESIGN-014
+    type: technical_design_review
+    target: .sdlc/design/foundation.md
+    target_identity: sha256:101fe9258cc97c73b46c4d5f30ceadcf8ef13eca5d0480b2154486dc15dc3054
+    produced_by_phase: PLANNING
+    command_or_method: >-
+      Independent incremental review of DCR-001's closed multi-version catalog and
+      Windows ACL feature amendment after remediation of candidate-state wording.
+    result: PASS
+    timestamp: 2026-09-03T19:15:00+08:00
+    summary: >-
+      PASS. The catalog permits no arbitrary version, URL, path, hash or binary; 1.14.0
+      remains the sole TASK-006 implementation/E2E entry, while 1.12/1.13 require later
+      asset and compatibility evidence. The existing windows 0.61.3 feature expansion is
+      constrained to current-user private runtime ACL handling. No P0-P3 findings remain.
+    observer: CHILD_AGENT:/root/dcr001_design_reviewer
+    review:
+      review_mode: CHILD_AGENT_INCREMENTAL
+      review_result: PASS
+      coverage:
+        strategy: focused_dcr_multiversion_acl_rereview
+        inputs:
+          - .sdlc/design/DCR-001-sing-box-1.14.0.md
+          - .sdlc/design/foundation.md
+          - .sdlc/tasks/TASK-006.md
+          - .sdlc/state.yaml
+          - src-tauri/Cargo.toml
+      verified:
+        - Prior stale Gate wording in TASK-006 is corrected.
+        - Foundation candidate state identifies the multi-version and ACL amendment.
+        - 1.12 and 1.13 are not represented as currently selectable or compatible.
+        - Loopback-only, no-console, no-SystemProxy/TUN/UAC/WFP/Service and default-deny boundaries persist.
+      findings: []
+      remaining_risks:
+        - 1.12/1.13 assets, compatibility profiles and real validation are future work.
+        - ACL implementation, real sidecar, child endpoint, no-console and Windows E2E remain NOT_RUN.

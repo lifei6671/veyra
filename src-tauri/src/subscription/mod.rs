@@ -3,5 +3,5 @@
 mod normalize;
 mod parser;
 
-pub use normalize::{normalize_nodes, NormalizationError, ProxyNodeDraft};
-pub use parser::{parse_subscription, ParseError, ParseResult, SkippedNode, SubscriptionFormat};
+pub use normalize::{NormalizationError, ProxyNodeDraft, normalize_nodes};
+pub use parser::{ParseError, ParseResult, SkippedNode, SubscriptionFormat, parse_subscription};

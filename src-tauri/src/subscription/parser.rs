@@ -61,10 +61,10 @@ fn parse_with_depth(body: &str, base64_depth: usize) -> Result<ParseResult, Pars
     if body.starts_with('{') {
         return parse_json(body);
     }
-    if looks_like_yaml(body) {
-        if let Ok(result) = parse_clash_yaml(body) {
-            return Ok(result);
-        }
+    if looks_like_yaml(body)
+        && let Ok(result) = parse_clash_yaml(body)
+    {
+        return Ok(result);
     }
     if let Some(result) = parse_uri_list(body) {
         return Ok(result);
@@ -182,15 +182,33 @@ fn parse_uri(uri: &str) -> Result<ProxyNodeDraft, SkippedNode> {
         percent_decode(fragment)
     };
     let credentials = parse_uri_credentials(protocol, credentials, &query)?;
-    let tls = query
-        .get("security")
-        .filter(|value| value.as_str() == "tls" || value.as_str() == "reality")
-        .map(|_| TlsOptions {
+    let tls = match query.get("security").map(String::as_str) {
+        Some("tls") => Some(TlsOptions {
             server_name: query.get("sni").cloned(),
             allow_insecure: query.get("allowInsecure").is_some_and(|value| value == "1"),
-            reality_public_key: query.get("pbk").cloned(),
-            reality_short_id: query.get("sid").cloned(),
-        });
+            reality_public_key: None,
+            reality_short_id: None,
+        }),
+        Some("reality") => Some(TlsOptions {
+            server_name: query.get("sni").cloned(),
+            allow_insecure: query.get("allowInsecure").is_some_and(|value| value == "1"),
+            reality_public_key: Some(
+                query
+                    .get("pbk")
+                    .filter(|value| !value.trim().is_empty())
+                    .cloned()
+                    .ok_or(SkippedNode::InvalidNode)?,
+            ),
+            reality_short_id: Some(
+                query
+                    .get("sid")
+                    .filter(|value| !value.trim().is_empty())
+                    .cloned()
+                    .ok_or(SkippedNode::InvalidNode)?,
+            ),
+        }),
+        _ => None,
+    };
     let transport = match query.get("type").map(String::as_str) {
         Some("ws") => Some(Transport::Websocket {
             path: query.get("path").cloned().unwrap_or_else(|| "/".to_owned()),
@@ -300,14 +318,14 @@ fn percent_decode(value: &str) -> String {
     let bytes = value.as_bytes();
     let mut index = 0;
     while index < bytes.len() {
-        if bytes[index] == b'%' && index + 2 < bytes.len() {
-            if let Ok(hex) = std::str::from_utf8(&bytes[index + 1..index + 3]) {
-                if let Ok(byte) = u8::from_str_radix(hex, 16) {
-                    decoded.push(char::from(byte));
-                    index += 3;
-                    continue;
-                }
-            }
+        if bytes[index] == b'%'
+            && index + 2 < bytes.len()
+            && let Ok(hex) = std::str::from_utf8(&bytes[index + 1..index + 3])
+            && let Ok(byte) = u8::from_str_radix(hex, 16)
+        {
+            decoded.push(char::from(byte));
+            index += 3;
+            continue;
         }
         decoded.push(char::from(bytes[index]));
         index += 1;
@@ -677,6 +695,21 @@ mod tests {
         assert_eq!(
             result.skipped,
             vec![SkippedNode::InvalidNode, SkippedNode::UnsupportedProtocol]
+        );
+    }
+
+    #[test]
+    fn rejects_uri_nodes_with_incomplete_reality_fields() {
+        let result = parse_subscription(
+            "vless://fixture-uuid@example.invalid:443?security=reality&sid=fixture-short-id\n\
+             vless://fixture-uuid@example.invalid:443?security=reality&pbk=",
+        )
+        .expect("uri list is recognized");
+
+        assert!(result.nodes.is_empty());
+        assert_eq!(
+            result.skipped,
+            vec![SkippedNode::InvalidNode, SkippedNode::InvalidNode]
         );
     }
 

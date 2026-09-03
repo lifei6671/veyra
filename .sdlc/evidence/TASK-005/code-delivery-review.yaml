@@ -1,0 +1,117 @@
+records:
+  - id: EVIDENCE-TASK-005-REVIEW-001
+    type: code_delivery_review
+    target: TASK-005
+    target_identity: sha256:b59e6f6ae1c5ab095c91b6a7cb3d642c8ab4ed5a17ce0f9859b2bf2ef6264461
+    baseline: a51d84b
+    produced_by_phase: REVIEW
+    command_or_method: >-
+      Independent child-agent full-scope review of the frozen TASK-005 Mock-only observation,
+      fixed IPC/capability, tray lifecycle, and frontend candidate.
+    result: REWORK
+    timestamp: 2026-09-03T17:12:00+08:00
+    summary: >-
+      The independent review found one P1. RuntimeObservationPort writes its Delta only to private
+      subscription slots, but the application never consumes and forwards them through the fixed
+      Tauri event. The current event fires only during show/restore. Because hiding preserves the
+      React Root and listener, a future event bridge would also render while hidden without explicit
+      window-visibility gating. The candidate does not yet meet consumable Delta or hidden-window
+      high-frequency rendering acceptance.
+    observer: CHILD_AGENT:/root/task005_delivery_reviewer
+    review:
+      review_mode: CHILD_AGENT
+      review_result: REWORK
+      coverage:
+        strategy: FULL_SCOPE
+        status: INCOMPLETE
+        applicable_lanes:
+          - correctness
+          - security
+          - contract-data
+          - concurrency-performance
+          - verification
+          - context-docs
+        lanes:
+          correctness: { result: REWORK, freshness: FRESH }
+          security: { result: PASS, freshness: FRESH }
+          contract-data: { result: REWORK, freshness: FRESH }
+          concurrency-performance: { result: REWORK, freshness: FRESH }
+          verification: { result: REWORK, freshness: FRESH }
+          context-docs: { result: PASS, freshness: FRESH }
+        partitions:
+          - id: task005_full_scope
+            result: REWORK
+            freshness: FRESH
+        integration_result: REWORK
+        freshness: FRESH
+      findings:
+        - id: FINDING-TASK-005-001
+          fingerprint: TASK-005:observation-delta-window-visibility-lifecycle
+          severity: P1
+          status: UNFIXED
+          locations:
+            - src-tauri/src/application/observability.rs:247
+            - src-tauri/src/commands.rs:117
+            - src-tauri/src/lib.rs:25
+            - src/App.tsx:42
+          summary: >-
+            The Port never bridges Delta to the fixed Tauri event, and the hidden main window has no
+            event/render visibility gate. This violates consumable Delta and hidden-window rendering
+            acceptance.
+    remaining_risks:
+      - Windows UI Automation close-hide and tray-show evidence is UNABLE_TO_VERIFY on this host.
+      - Real sidecar, fixed loopback Clash API, real Windows System Proxy, CI, commit, and push are NOT_RUN.
+  - id: EVIDENCE-TASK-005-REVIEW-002
+    type: code_delivery_review
+    target: TASK-005
+    target_identity: sha256:03cf332021191ee1d93f45d974ca3f17cb6834df241268c2c94878a7957fde09
+    baseline: a51d84b
+    produced_by_phase: REVIEW
+    command_or_method: >-
+      Independent child-agent incremental re-review of FINDING-TASK-005-001 and the Windows
+      GUI-only executable startup remediation.
+    result: PASS
+    timestamp: 2026-09-03T17:22:00+08:00
+    summary: >-
+      The re-review found no P0-P3 findings. The Port releases its state lock before delivering
+      a Delta to the single controlled sink; the Tauri bridge emits only the fixed safe DTO while
+      the main window is visible. A successful hide gates future Deltas without backlog, and
+      restore marks the window visible before emitting only the current Snapshot. The crate-level
+      Windows GUI subsystem applies to both Debug and Release without dependencies or new IPC.
+    observer: CHILD_AGENT:/root/task005_delivery_reviewer
+    review:
+      review_mode: CHILD_AGENT
+      review_result: PASS
+      coverage:
+        strategy: FULL_SCOPE
+        status: COMPLETE
+        applicable_lanes:
+          - correctness
+          - security
+          - contract-data
+          - concurrency-performance
+          - verification
+          - context-docs
+        lanes:
+          correctness: { result: PASS, freshness: FRESH }
+          security: { result: PASS, freshness: FRESH }
+          contract-data: { result: PASS, freshness: FRESH }
+          concurrency-performance: { result: PASS, freshness: FRESH }
+          verification: { result: PASS, freshness: FRESH }
+          context-docs: { result: PASS, freshness: FRESH }
+        partitions:
+          - id: task005_delta_bridge_and_gui_startup
+            result: PASS
+            freshness: FRESH
+        integration_result: PASS
+        freshness: FRESH
+      findings: []
+      previous_findings:
+        - id: FINDING-TASK-005-001
+          status: FIXED
+          resolution: >-
+            A single controlled bridge emits the fixed safe Delta only while visible; hidden updates
+            are dropped without backlog and restore sends the current Snapshot.
+    remaining_risks:
+      - Windows UI Automation close-hide and tray-show evidence is UNABLE_TO_VERIFY on this host.
+      - Real sidecar, fixed loopback Clash API, real Windows System Proxy, CI, commit, and push are NOT_RUN.
