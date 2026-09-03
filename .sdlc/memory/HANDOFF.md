@@ -1,9 +1,9 @@
 # Project Handoff
 
 Project: PROJECT-001
-Phase: PLAN
+Phase: EXECUTING
 Mode: ingest
-Task: none
+Task: TASK-002
 Requirement Source: `docs/veyra.md`
 Requirement Identity: `sha256:13a1769134ecaa9a1361ff9571513ee2b2a662a7771a056ac974e5bd078349ae`
 
@@ -14,7 +14,8 @@ Windows is the V0.1 desktop target. macOS platform realization is V0.2, based on
 direct distribution, a normal Tauri desktop app, and a sing-box sidecar; System Proxy
 and explicit privilege remain Adapter concerns, while NetworkExtension is a future ADR
 route. The Foundation is frozen after a current independent PASS review and explicit
-Human approval. The project has no current Task.
+Human approval. TASK-001 is DONE. TASK-002 is READY to implement the versioned state store and
+subscription normalization boundaries.
 
 ## Completed
 
@@ -55,12 +56,25 @@ Human approval. The project has no current Task.
 - User approved the reviewed Foundation. The Technical Design Gate is `PASSED`, and
   `.sdlc/design/foundation.md` is frozen at
   `sha256:2da0f1f334126d978659a0389e7a4838732cfb810667001985f81381aaa9fd0f`.
-- Created no Task, implementation, dependency manifest, lockfile, test, QA or Release
-  artifact.
+- Created the rolling plan with TASK-001 current and TASK-002 through TASK-005 as
+  lightweight future stubs. TASK-001 passed its contract/readiness check and is READY.
+- Implemented TASK-001: a pinned pnpm/Tauri/React/Rust scaffold, one fixed typed
+  bootstrap command, command-only main-window capability, Windows icon, and front-end IPC
+  wrapper test.
+- Recorded implementation verification and an independent delivery review. The first review
+  found a P2 rendered-IPC smoke gap; the follow-up Windows UI Automation read `Veyra · ready`
+  from the running WebView, and the incremental re-review passed with no remaining findings.
+- No subscription, state persistence, database, sidecar, System Proxy, TUN, UAC, native
+  Windows adapter, signing, updater, release, or macOS implementation was created.
+- User accepted TASK-001. Its delivery gate records `approved_by: USER:lifei` and the task is
+  now `DONE`.
+- User approved `serde_yaml_ng 0.10.0` for TASK-002's Clash YAML `proxies` extraction only.
+- Materialized TASK-002 with explicit state, migration, recovery and subscription-parser
+acceptance, verification and scope boundaries.
 
 ## Remaining
 
-- Create a rolling task plan and its first current Task within the frozen Foundation.
+- Implement TASK-002 within its approved scope.
 
 ## Blocker
 
@@ -68,7 +82,7 @@ None recorded.
 
 ## Next
 
-Run `task-breakdown` for the rolling plan.
+Run implementation for `.sdlc/tasks/TASK-002.md`.
 
 ## Provenance
 
@@ -79,6 +93,9 @@ Run `task-breakdown` for the rolling plan.
 
 - `.sdlc/state.yaml`
 - `.sdlc/tasks.yaml`
+- `.sdlc/tasks/TASK-001.md`
+- `.sdlc/evidence/TASK-001/implementation.yaml`
+- `.sdlc/evidence/TASK-001/code-delivery-review.yaml`
 - `.sdlc/design/foundation.md`
 - `.sdlc/evidence/foundation/technical-design-review.yaml`
 - `docs/veyra.md`

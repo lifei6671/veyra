@@ -1,3 +1,47 @@
 version: 3
-milestones: []
-window: []
+milestones:
+  - id: M1
+    title: 桌面工程基线
+    objective: 建立 Windows V0.1 的可验证 Tauri/React/Rust 工程基线与默认拒绝能力。
+    status: DONE
+  - id: M2
+    title: 状态与订阅
+    objective: 交付版本化 AppState、JSON 状态存储及订阅归一化。
+    status: PLANNED
+  - id: M3
+    title: 出口组与分流
+    objective: 交付节点池、出口选择、路由领域模型和语义编译。
+    status: PLANNED
+  - id: M4
+    title: 运行时与 Windows 平台
+    objective: 交付受管 sidecar 运行时、System Proxy 与按 ADR 解锁的 TUN 路线。
+    status: PLANNED
+  - id: M5
+    title: 可观测性与桌面完善
+    objective: 交付连接、流量、日志、托盘恢复与 Windows V0.1 验收闭环。
+    status: PLANNED
+
+window:
+  - id: TASK-002
+    task_ref: .sdlc/tasks/TASK-002.md
+  - id: TASK-003
+    milestone_ref: M3
+    objective: 实现 NodePool、RoutePolicy、RuntimeIntent 与受管配置语义编译。
+    dependencies: [TASK-002]
+    risk: HIGH
+    acceptance_summary: >-
+      出口组可组合并支持手动/自动选择；普通路由只指向 Pool、Direct 或 Block，生成配置可检查。
+  - id: TASK-004
+    milestone_ref: M4
+    objective: 实现受管 sing-box sidecar、Build/Apply 回滚与 Windows System Proxy 恢复。
+    dependencies: [TASK-003]
+    risk: HIGH
+    acceptance_summary: >-
+      sidecar 可验证启动、停止和回滚；System Proxy 快照、回读、条件恢复与用户改写冲突可观察。
+  - id: TASK-005
+    milestone_ref: M5
+    objective: 实现连接/流量/日志观测、托盘恢复与 Windows V0.1 集成验收。
+    dependencies: [TASK-004]
+    risk: MEDIUM
+    acceptance_summary: >-
+      UI 可显示脱敏运行观测并从托盘恢复；Windows V0.1 关键状态切换和恢复路径具备独立验收证据。

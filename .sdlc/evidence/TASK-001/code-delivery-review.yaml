@@ -1,0 +1,66 @@
+records:
+  - id: EVIDENCE-TASK-001-REVIEW-001
+    type: code_delivery_review
+    target: TASK-001
+    target_identity: sha256:c0f2c49916a3c012bb547ff6642b3e6fce696da7364fee843520fcbf06cc9489
+    produced_by_phase: PLAN
+    command_or_method: Independent child-agent full-scope Code Delivery Review.
+    result: PASS
+    timestamp: 2026-09-03T11:56:00+08:00
+    summary: >-
+      PASS_WITH_CONDITIONS. The review found no P0/P1, but required a real rendered IPC smoke;
+      process-liveness and isolated unit tests alone could not prove the WebView received ready.
+    observer: CHILD_AGENT:/root/task001_delivery_reviewer
+    review:
+      review_mode: CHILD_AGENT
+      review_result: PASS_WITH_CONDITIONS
+      findings:
+        - finding_id: FINDING-001
+          fingerprint: TASK-001:desktop-ipc-smoke:rendered-bootstrap-status
+          priority: P2
+          status: REMEDIATED
+          remediation: >-
+            The current candidate adds rendered status signaling and records a Windows UI Automation
+            smoke that reads Veyra · ready from the running WebView.
+      remaining_risks:
+        - The review target is stale after the P2 remediation and cannot support the current Delivery Gate.
+  - id: EVIDENCE-TASK-001-REVIEW-002
+    type: code_delivery_review
+    target: TASK-001
+    target_identity: sha256:0386315c3178de935104bce66465620def35088bbb6f3b293ccf9dece2f036c9
+    produced_by_phase: REVIEW
+    command_or_method: Independent child-agent incremental Code Delivery Re-review.
+    result: PASS
+    timestamp: 2026-09-03T12:01:08+08:00
+    summary: >-
+      PASS. Windows UI Automation read Veyra · ready from the running WebView, closing
+      FINDING-001. Coverage and carried-forward full-scope findings are fresh; no P0/P1/P2/P3
+      findings remain.
+    observer: CHILD_AGENT:/root/task001_delivery_reviewer
+    review:
+      review_mode: CHILD_AGENT
+      review_result: PASS
+      coverage:
+        strategy: INCREMENTAL_REVIEW
+        status: COMPLETE
+        applicable_lanes:
+          - correctness
+          - security
+          - verification
+        lanes:
+          correctness: { result: PASS, freshness: FRESH }
+          security: { result: PASS, freshness: FRESH }
+          verification: { result: PASS, freshness: FRESH }
+        partitions:
+          - name: frontend_bootstrap_status_presentation
+            result: PASS
+            freshness: FRESH
+        integration_result: PASS
+        freshness: FRESH
+      resolved_findings:
+        - finding_id: FINDING-001
+          fingerprint: TASK-001:desktop-ipc-smoke:rendered-bootstrap-status
+          status: FIXED
+      findings: []
+      remaining_risks:
+        - Windows UI Automation smoke is local Windows evidence, not release, signing, or other-platform evidence.
