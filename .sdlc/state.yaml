@@ -1,0 +1,77 @@
+schema_version: 2
+workflow_version: "0.2"
+mode: ingest
+
+project:
+  id: PROJECT-001
+  profile: critical
+  engineering_context: greenfield
+
+source:
+  requirement: docs/veyra.md
+  identity: sha256:13a1769134ecaa9a1361ff9571513ee2b2a662a7771a056ac974e5bd078349ae
+
+anchor:
+  goal: >-
+    构建基于 sing-box 的跨平台桌面网络分流客户端，以稳定且独立的领域模型提供订阅、出口组、
+    分流、代理模式与运行状态管理。
+  must_have:
+    - Tauri 2、React、Rust 与独立 sing-box sidecar 的桌面应用架构。
+    - 订阅归一化为独立 ProxyNode 领域模型，并保留订阅、Provider、节点与运行时的边界。
+    - 多订阅、隐式与自定义出口组、手动选择和 URLTest，以及网站、服务、应用和高级规则分流。
+    - Off、SystemProxy、TUN 三种互斥捕获模式，以及 DNS、连接、流量、日志和托盘恢复能力。
+    - 受限的原生 sing-box Profile 高级模式；托管模式的生成配置仅可预览和复制。
+    - Windows 为 V0.1 桌面目标；macOS 平台实现进入 V0.2；Linux 作为 Beta。
+  non_goals:
+    - 完整兼容或迁移 Clash 配置、脚本、proxy-groups、rule-providers 与 DNS 配置。
+    - Xray、Mihomo 或多内核支持。
+    - 动态大流量识别、单连接中途迁移、复杂 QoS、MITM、内容解析、移动端、云同步与账号系统。
+  constraints:
+    - V0.1 仅以 sing-box sidecar 作为运行内核，不将其静态链接为 Rust library。
+    - UI 使用订阅、节点、出口组、分流等产品术语，不直接暴露 sing-box 配置模型。
+    - 核心领域模型与 sing-box 专属实现隔离；订阅先归一化，再由语义编译器生成配置。
+    - V0.1 配置以版本化 JSON AppState 保存，具备迁移、整体校验、原子写入、备份与恢复；跨平台权限行为由 Platform Layer 隔离，Tauri 仅承接通用桌面能力。
+    - Windows System Proxy、权限与恢复记录由 Platform Adapter 管理；sing-box 独占 Wintun、路由、DNS 与进程分流数据面。
+    - macOS V0.2 采用 DMG 直发、普通 Tauri 桌面程序和 sing-box sidecar；System Proxy 与显式特权运行归 macOS Adapter，NetworkExtension/App Store 路线须作为后续 ADR 评审。
+  critical_invariants:
+    - UI 不直接写入 sing-box JSON；托管配置不能被原地编辑。
+    - Domain 不以 serde_json::Value 或 sing-box outbound tag 作为主要配置模型。
+    - 节点和出口组使用稳定身份，不使用显示名称；普通分流目标只能引用 Pool、Direct 或 Block。
+    - 新订阅解析或配置检查失败时必须保留旧节点和当前运行配置。
+    - 配置 Build 与 Apply 分离；启动失败优先回滚上一份配置。
+    - Clash API 默认仅绑定 loopback，日志不得泄露订阅凭证、密码、UUID、私钥或 API secret。
+    - 只能清理由本应用拥有的 sing-box 进程，窗口恢复不得重新初始化应用。
+    - V0.1 不引入 Windows Service、WFP 或全系统 TCP/UDP PID 扫描；用户手动改写的系统代理不得被无条件覆盖。
+  acceptance_refs:
+    - docs/veyra.md sections 2.5-2.6（整体状态图与配置/运行态边界）
+    - docs/veyra.md 状态持久化、迁移、备份与恢复章节
+    - docs/veyra.md sections 89-90（CaptureMode 互斥与切换）
+    - docs/veyra.md sections 115.1-115.3（Windows System Proxy、权限与 V0.1 排除项）
+    - docs/veyra.md sections 116.1-116.3（macOS V0.2 System Proxy、权限与排除项）
+    - docs/veyra.md V0.2 macOS 平台实现章节
+    - docs/veyra.md 测试策略与实施阶段章节
+
+assumptions: []
+
+phase: PLAN
+
+focus:
+  task: null
+
+gates:
+  technical_design:
+    status: PASSED
+    target_identity: sha256:2da0f1f334126d978659a0389e7a4838732cfb810667001985f81381aaa9fd0f
+    evidence:
+      - .sdlc/evidence/foundation/technical-design-review.yaml#EVIDENCE-DESIGN-008
+    reviewed_by: CHILD_AGENT:/root/foundation_reviewer_macos_v02
+    approved_by: USER:lifei
+    evaluated_at: 2026-09-03T11:32:42+08:00
+
+blocked: null
+
+next:
+  skill: task-breakdown
+  target: rolling-plan
+  reason: >-
+    当前 Foundation 已由独立评审与人工批准支持并已冻结；下一步是创建滚动任务计划与首个当前 Task。

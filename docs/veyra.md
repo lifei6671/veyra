@@ -1,5 +1,14 @@
 # 跨平台 sing-box 桌面客户端技术设计方案 V0.1
 
+## 修订记录
+
+- 2026-09-03：明确 Windows 边界：Tauri 负责通用桌面能力；Platform Adapter 负责 System Proxy、
+  显式 UAC 与运行态恢复；sing-box 独占 TUN/路由/DNS/进程分流数据面。补充 PAC/WPAD 代理恢复、
+  CaptureMode 切换补偿及 Windows V0.1 排除项。
+- 2026-09-03：将 macOS 平台实现调整至 V0.2。V0.2 以 DMG 直发、普通 Tauri 应用和 sing-box
+  sidecar 为基线；SystemConfiguration 代理适配与显式特权运行进入 macOS Adapter，
+  NetworkExtension/App Store 路线保留为后续架构升级。
+
 ## 1. 文档目标
 
 本文定义一个基于 Tauri 2 + React + Rust + sing-box 的跨平台桌面网络代理客户端技术方案。
@@ -26,7 +35,7 @@
 * 实时上下行流量
 * 运行日志
 * 原生 sing-box 配置高级模式
-* Windows / macOS / Linux 跨平台运行
+* Windows V0.1 / macOS V0.2 / Linux Beta 跨平台运行
 * 快速托盘恢复
 * 内核配置校验与回滚
 * 后续增加其他网络内核的架构空间
@@ -478,10 +487,34 @@ Tauri 2
 * Auto Start
 * Updater
 * IPC
-* File System
 * Native Dialog
 * OS Integration
-* Privilege Management
+
+Tauri 负责通用桌面能力：
+
+```text
+Window
+Tray
+Notification
+Single Instance
+Auto Start
+Deep Link
+Updater
+IPC
+```
+
+以下不是 Tauri 的直接职责：
+
+```text
+System Proxy
+Privilege Management
+UAC
+TUN Permission
+Windows Service
+```
+
+它们必须通过 Platform Adapter 处理。前端默认不直接获得文件、Shell、进程、任意 HTTP 或 sidecar 权限；
+具体 capability 必须在对应 Task 中按调用方和用例单独批准。
 
 ---
 
@@ -554,6 +587,15 @@ Traffic Monitoring
 Connection Monitoring
 Updater
 ```
+
+其中：
+
+```text
+System Proxy / Privilege / Platform Integration
+```
+
+都是 Platform Adapter 的封闭能力。Rust Application 只表达“读取、启用、禁用、恢复系统代理”以及
+“请求切换 CaptureMode”等语义，不能向 UI 暴露注册表路径、Win32 参数或任意提升命令。
 
 ---
 
@@ -637,6 +679,21 @@ sing-box binary
                      │
                   sing-box
 ```
+
+通用桌面能力与 OS 能力的边界：
+
+```text
+Application
+  ├── Tauri Desktop APIs
+  │     Window / Tray / Notification / Single Instance / Auto Start / Deep Link
+  └── PlatformAdapter
+        └── WindowsAdapter
+              SystemProxy / Privilege / RuntimeRecovery
+
+Application -> SingBoxCompiler -> sing-box -> Wintun / Route / DNS / Process Routing
+```
+
+Tauri 不直接负责权限管理；Windows Adapter 不直接实现 TUN 数据面。
 
 ---
 
@@ -2603,6 +2660,13 @@ Clash API Ready
 Mixed Port Ready
 ```
 
+System Proxy：
+
+```text
++
+Managed Proxy State 已回读验证
+```
+
 TUN：
 
 ```text
@@ -2810,6 +2874,10 @@ enum CaptureMode {
 
 互斥。
 
+CaptureMode 必须由单一 Runtime Supervisor 串行切换。任一时刻最多一个已验证的捕获模式；
+新模式只有在 Platform 操作与 sidecar Ready 都成功后才成为当前状态。切换中可短暂无捕获，
+但不允许 System Proxy 与 TUN 同时生效。
+
 ---
 
 # 90. 为什么互斥
@@ -2824,6 +2892,34 @@ TUN = On
 用户不知道实际行为。
 
 高级用户如果将来需要特殊组合，再单独设计。
+
+切换规则：
+
+```text
+Off -> SystemProxy
+  sidecar Ready
+  -> apply managed proxy
+  -> readback verify
+
+Off -> TUN
+  explicit UAC
+  -> elevated sing-box Ready
+  -> TUN Interface / Route Ready
+
+SystemProxy -> TUN
+  restore and verify original proxy
+  -> stop old sidecar
+  -> explicit UAC
+  -> TUN Ready
+
+TUN -> SystemProxy
+  prepare normal sidecar
+  -> stop and verify TUN release
+  -> apply and verify managed proxy
+```
+
+UAC 拒绝、TUN Ready 超时、sidecar 启动失败或停止失败时，不得把未验证候选状态写成恢复事实；
+必须按可证明的前一稳定状态补偿，无法安全补偿时收敛到 Off 并向用户显示错误。
 
 ---
 
@@ -3373,30 +3469,151 @@ platform/
 
 # 115. Windows
 
-关注：
+Windows 平台层的职责：
 
 ```text
-WinINET Proxy
-Wintun
-UAC
+System Proxy
+Privilege / UAC
+Runtime Recovery
 Process Identity
-Auto Start
-Privilege Helper
 ```
+
+Tauri 继续负责：
+
+```text
+Window
+Tray
+Auto Start
+Single Instance
+Notification
+Deep Link
+```
+
+## 115.1 System Proxy
+
+Windows V0.1 只管理当前用户的默认 WinINet 连接，不改写未纳入快照的命名连接。
+
+必须区分：
+
+```text
+ProxySnapshot
+ManagedProxyState
+ObservedProxyState
+```
+
+`ProxySnapshot` 保存变更前完整的每连接 flags、ProxyServer、Bypass、PAC URL 与自动发现值。
+`ManagedProxyState` 是 V0.1 唯一支持的托管状态：显式 loopback proxy 加必需 bypass，并关闭
+PAC/WPAD 的自动 URL 与自动检测 flags。`ObservedProxyState` 是写后、恢复前和退出前的实际回读结果。
+
+变更顺序：
+
+```text
+capture snapshot
+  ↓
+write transitioning recovery record
+  ↓
+apply managed state
+  ↓
+InternetSetOption settings changed / refresh
+  ↓
+readback compare
+  ↓
+mark stable
+```
+
+关闭或恢复时，只有 Observed 状态仍与 Managed 状态语义相等，才写回 Snapshot。
+用户运行期间手动改写代理时，必须保留用户状态并报告冲突，不允许无条件覆盖。
+
+## 115.2 Privilege 与 TUN
+
+桌面 UI 始终以普通用户权限运行。仅当用户显式开启 TUN 时，Windows Adapter 才可使用
+`ShellExecuteEx` 的 `runas` 启动固定、随包且已校验的提升目标。UI 不得提供任意可执行文件、
+路径或参数。
+
+提升目标只执行受限的 sing-box/TUN 启动或停止语义。认证 IPC、签名与提升 Helper 的细节必须在
+TUN 专项 ADR 中冻结并获得人工确认；V0.1 不以管理员身份常驻整个 UI。
+
+## 115.3 不进入 V0.1
+
+```text
+Windows Service / SCM
+WFP
+直接创建 Wintun
+手工 Route / DNS 接管
+GetExtendedTcpTable / GetExtendedUdpTable 全系统 PID 扫描
+```
+
+Wintun、路由、DNS 与进程分流由 sing-box sidecar 独占。连接页面优先使用 Clash API 提供的
+`process` / `process_path` 等数据；缺失时显示未知，不以系统扫描补齐。
 
 ---
 
 # 116. macOS
 
-关注：
+macOS 平台实现进入 V0.2。V0.2 的分发与运行基线为：
 
 ```text
-System Proxy
-utun
-Launch at Login
-Privilege Helper
-Network Permission
+DMG Direct Distribution
+Tauri 普通桌面程序
+sing-box sidecar
 ```
+
+Tauri 负责：
+
+```text
+Window
+Tray / Menu
+Notification
+Single Instance
+Auto Start
+Deep Link
+Updater
+Dialog
+Dock / 窗口隐藏与恢复
+```
+
+因此 V0.2 不创建 `platform/macos/window.rs` 或 `platform/macos/tray.rs`。只有基础 Tray 不足以实现
+高定制富文本 Menu Bar 时，才在后续单独评估 AppKit/`objc2`。
+
+## 116.1 macOS System Proxy
+
+`platform/macos/system_proxy.rs` 使用 SystemConfiguration 管理网络服务级的代理状态，并通过
+`SCDynamicStore` 读取有效代理。快照必须按 Network Service 保存：
+
+```text
+HTTP / HTTPS / SOCKS Proxy
+PAC
+Auto Proxy Discovery
+Exceptions / Bypass
+```
+
+macOS 同样使用 `ProxySnapshot`、`ManagedProxyState`、`ObservedProxyState` 三态模型：托管状态只启用
+Veyra 需要的 loopback proxy，并明确禁用会与其竞争的 PAC/自动发现；退出或恢复时只有 Observed 与
+Managed 语义相等才写回 Snapshot。用户手动改写或网络服务切换时保留用户状态并报告冲突。
+
+## 116.2 权限与 TUN
+
+V0.2 UI 保持普通用户权限。进入 TUN 只由用户显式动作触发；macOS Adapter 只能启动固定、随包且已
+校验的提升目标，不能接受任意路径、命令或参数。sing-box 仍独占 utun、route、DNS 与进程分流数据面；
+macOS Adapter 不直接创建 utun、不直接改 route/DNS。
+
+长期特权 Helper、`SMAppService`、LaunchDaemon 与认证 XPC 属于后续按需升级；其签名、Helper bundle、
+客户端身份校验、安装/替换和恢复必须先在专项 ADR 中冻结并经人工确认。
+
+## 116.3 不进入 V0.2
+
+```text
+NetworkExtension / NEPacketTunnelProvider
+Mac App Store / App Sandbox 路线
+原生 VPN 生命周期
+长期特权 Helper Daemon
+自定义富文本 Menu Bar
+Keychain Secret Store
+直接 DNS / Route / utun / 进程分流实现
+```
+
+NetworkExtension 不是另一种 TUN API，而是从特权 sidecar 转向 Apple 托管 Extension 的 macOS Runtime
+架构升级；若未来目标转为 Mac App Store 或无 root TUN，必须先创建 ADR 并重新评审。
 
 ---
 
@@ -4078,6 +4295,18 @@ System Proxy
 Basic Tray
 ```
 
+System Proxy 验收：
+
+```text
+capture
+-> enable
+-> InternetSetOption notify
+-> readback verify
+-> disable / restore
+```
+
+必须覆盖 PAC/WPAD 已启用、写入中途失败、应用退出恢复与用户手动改写冲突。
+
 验收：
 
 ```text
@@ -4192,12 +4421,25 @@ IPv6
 LAN Bypass
 ```
 
+Windows 验收还包括：
+
+```text
+explicit UAC
+TUN Interface Ready
+Route Ready
+UAC rejected
+TUN Ready timeout
+sidecar start/stop failure compensation
+no simultaneous System Proxy and TUN capture
+```
+
 重点测试：
 
 ```text
 Windows
-macOS
 ```
+
+macOS TUN、System Proxy 多网络服务恢复与签名/公证进入 V0.2 验收。
 
 ---
 
@@ -4299,8 +4541,6 @@ Tray
 AutoStart
 
 Windows
-
-macOS
 ```
 
 Linux：
@@ -4337,6 +4577,31 @@ Cloud Sync
 Account System
 
 Mobile
+```
+
+---
+
+## V0.2：macOS 平台实现
+
+V0.2 交付 DMG 直发的 macOS 版本，复用 React、Tauri、Application、Domain、StateStore、
+SingBoxCompiler 与 sing-box sidecar。新增范围仅为：
+
+```text
+macOS System Proxy（Network Service 快照 / 回读 / 条件恢复）
+普通用户 UI + 显式 TUN 提权
+macOS TUN / DNS / Route Ready 与恢复验证
+DMG、签名、公证与发布回滚计划
+```
+
+V0.2 验收至少覆盖：
+
+```text
+Wi-Fi / Ethernet 等网络服务切换
+PAC / Bypass / Auto Discovery 恢复
+用户手动改写代理冲突
+UAC/Authorization 取消与 TUN 启动失败补偿
+无同时 System Proxy 与 TUN 捕获
+签名与 Notarization 的发布证据
 ```
 
 ---

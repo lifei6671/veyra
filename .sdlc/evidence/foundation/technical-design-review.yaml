@@ -1,0 +1,303 @@
+records:
+  - id: EVIDENCE-DESIGN-001
+    type: technical_design_review
+    target: .sdlc/design/foundation.md
+    target_identity: sha256:5eeffa15f2d4ceeb67f3efdf948a21f14af7274bbb958bb6c28e7814336043c7
+    produced_by_phase: ANCHORED
+    command_or_method: >-
+      Independent child-agent review against docs/veyra.md and the user-provided
+      Clash Verge Rev Cargo.toml/package.json and Satelite Proxy Cargo.toml snapshots.
+    result: PASS
+    timestamp: 2026-09-03T10:08:22+08:00
+    summary: >-
+      PASS_WITH_CONDITIONS. No P0/P1 findings. The foundation is directionally
+      consistent with the references without copying their mature-project complexity.
+    observer: CHILD_AGENT:/root/foundation_reviewer
+    review:
+      review_mode: CHILD_AGENT
+      review_result: PASS_WITH_CONDITIONS
+      coverage:
+        strategy: focused_foundation_comparison
+        paths:
+          - docs/veyra.md
+          - .sdlc/state.yaml
+          - .sdlc/design/foundation.md
+          - clash-verge-rev/dev/src-tauri/Cargo.toml
+          - clash-verge-rev/dev/package.json
+          - satelite-proxy/main/src-tauri/Cargo.toml
+        responsibilities:
+          - UI and desktop stack
+          - Rust async and serialization runtime
+          - sidecar and local API boundary
+          - persistence and security boundary
+      findings:
+        - id: FINDING-DESIGN-001
+          priority: P2
+          status: OPEN
+          title: Freeze UI state, routing, package-manager, and Tauri capability choices in the first scaffold Task.
+          disposition_recommendation: ADVISORY
+          summary: >-
+            Deferring Zustand, TanStack Query, React Router, Radix/shadcn, and Tauri
+            plugins is consistent with avoiding premature abstraction. The first
+            scaffold Task must record the actual selections and verification so UI
+            capabilities remain compatible with the closed backend IPC boundary.
+      remaining_risks:
+        - The remote reference manifests are point-in-time snapshots and may change.
+        - Real Tauri capabilities, sidecar packaging, and platform permissions remain
+          unverified until their scoped implementation and platform Tasks.
+  - id: EVIDENCE-DESIGN-002
+    type: technical_design_review
+    target: .sdlc/design/foundation.md
+    target_identity: sha256:e94ef91b6612e17dcbdb556f96ce45de23c7f993c99db7ccdc1012a5089b4846
+    produced_by_phase: ANCHORED
+    command_or_method: >-
+      Independent child-agent review against the accepted docs/veyra.md baseline and
+      the user-provided Clash Verge Rev and Satelite Proxy manifest snapshots.
+    result: FAIL
+    timestamp: 2026-09-03T10:42:19+08:00
+    summary: >-
+      REWORK. Two P1 requirement conflicts: generated configuration preview/copy
+      semantics and private state-file permissions. Two P2 gaps concern deterministic
+      migration recovery and deny-by-default Tauri capabilities.
+    observer: CHILD_AGENT:/root/foundation_reviewer_v2
+    review:
+      review_mode: CHILD_AGENT
+      review_result: REWORK
+      coverage:
+        strategy: focused_foundation_reconciliation
+        paths:
+          - docs/veyra.md
+          - .sdlc/state.yaml
+          - .sdlc/design/foundation.md
+          - clash-verge-rev/dev/src-tauri/Cargo.toml
+          - clash-verge-rev/dev/package.json
+          - satelite-proxy/main/src-tauri/Cargo.toml
+      findings:
+        - id: FINDING-DESIGN-002
+          priority: P1
+          status: REMEDIATION_REQUIRED
+          title: Define usable generated-config copy semantics without leaking secrets.
+        - id: FINDING-DESIGN-003
+          priority: P1
+          status: REMEDIATION_REQUIRED
+          title: Define private data-directory permissions for state and related files.
+        - id: FINDING-DESIGN-004
+          priority: P2
+          status: REMEDIATION_REQUIRED
+          title: Define deterministic migration and failure-recovery order.
+        - id: FINDING-DESIGN-005
+          priority: P2
+          status: REMEDIATION_REQUIRED
+          title: Freeze deny-by-default Tauri capability baseline.
+      remaining_risks:
+        - Reference manifests are point-in-time snapshots and may change.
+        - Sidecar binaries, platform permissions, fixtures, and CI are not yet present.
+  - id: EVIDENCE-DESIGN-003
+    type: technical_design_review
+    target: .sdlc/design/foundation.md
+    target_identity: sha256:eb5a87eb4024cbead4034e88615c39a32af9bb2eaedc8750224bc1ce7ff4f756
+    produced_by_phase: ANCHORED
+    command_or_method: >-
+      Independent child-agent re-review of the remediation against the accepted
+      docs/veyra.md baseline and the user-provided reference manifest snapshots.
+    result: PASS
+    timestamp: 2026-09-03T10:45:36+08:00
+    summary: >-
+      PASS. The candidate resolves the generated-config, private-file permission,
+      migration-recovery, and deny-by-default capability findings. No P0/P1/P2/P3
+      findings remain; Human Gate is requestable.
+    observer: CHILD_AGENT:/root/foundation_reviewer_v3
+    review:
+      review_mode: CHILD_AGENT
+      review_result: PASS
+      coverage:
+        strategy: focused_foundation_reconciliation
+        inputs:
+          - docs/veyra.md
+          - .sdlc/state.yaml
+          - .sdlc/design/foundation.md
+          - .sdlc/evidence/foundation/technical-design-review.yaml
+          - clash-verge-rev/dev/src-tauri/Cargo.toml
+          - clash-verge-rev/dev/package.json
+          - satelite-proxy/main/src-tauri/Cargo.toml
+      verified_remediations:
+        - FINDING-DESIGN-002: explicit usable generated-config view/copy and secret containment.
+        - FINDING-DESIGN-003: private data-directory permissions for state-related files.
+        - FINDING-DESIGN-004: deterministic migration, backup, validation, and recovery order.
+        - FINDING-DESIGN-005: deny-by-default Tauri capability baseline.
+      findings: []
+      remaining_risks:
+        - Tauri capability files, sidecar packaging, Windows ACL, platform permissions, and fixtures remain unimplemented.
+        - Reference manifests are point-in-time snapshots; initial scaffolding must lock actual versions and package manager.
+        - TUN Helper, signing, updater, and release require future Scoped ADRs and Human approval.
+  - id: EVIDENCE-DESIGN-004
+    type: technical_design_review
+    target: .sdlc/design/foundation.md
+    target_identity: sha256:b0c7bfd5af68f5d951ebcfe7a23ff43d0aed341c3449065fa1d658f846c39918
+    produced_by_phase: ANCHORED
+    command_or_method: >-
+      Independent child-agent review of the Windows Platform Adapter addition against
+      docs/veyra.md, the user-provided Windows API boundary advice, and Microsoft Learn.
+    result: FAIL
+    timestamp: 2026-09-03T11:02:22+08:00
+    summary: >-
+      REWORK. Two P1 gaps: unambiguous PAC/WPAD managed proxy state, and transactional
+      Off/SystemProxy/TUN transitions with failure compensation.
+    observer: CHILD_AGENT:/root/foundation_reviewer_windows
+    review:
+      review_mode: CHILD_AGENT
+      review_result: REWORK
+      coverage:
+        strategy: focused_windows_platform_adapter
+        paths:
+          - docs/veyra.md
+          - .sdlc/state.yaml
+          - .sdlc/design/foundation.md
+          - user-pasted Windows API boundary guidance
+          - Microsoft Learn WinINet, ShellExecuteEx, IP Helper, and WFP references
+      findings:
+        - id: FINDING-WIN-001
+          priority: P1
+          status: REMEDIATION_REQUIRED
+          title: Define snapshot, managed, and observed System Proxy state including PAC/WPAD.
+        - id: FINDING-WIN-002
+          priority: P1
+          status: REMEDIATION_REQUIRED
+          title: Define serialized CaptureMode transition and compensation rules.
+      remaining_risks:
+        - Elevated TUN runner and authenticated IPC require a future Scoped ADR.
+        - Native Windows implementation, sidecar, fixtures, and real Windows Runner evidence are absent.
+  - id: EVIDENCE-DESIGN-005
+    type: technical_design_review
+    target: .sdlc/design/foundation.md
+    target_identity: sha256:a619805ae8793db54d161e71fd34b716178be0d5e355711f2186c19e9e43f078
+    produced_by_phase: ANCHORED
+    command_or_method: >-
+      Independent child-agent re-review of the Windows Platform Adapter remediation
+      against docs/veyra.md, the user-provided Windows API boundary guidance, and
+      Microsoft Learn references.
+    result: PASS
+    timestamp: 2026-09-03T11:05:58+08:00
+    summary: >-
+      PASS. PAC/WPAD proxy-state semantics and serialized CaptureMode transition/
+      compensation rules are complete. No P0/P1/P2/P3 findings remain; Human Gate is requestable.
+    observer: CHILD_AGENT:/root/foundation_reviewer_windows_v2
+    review:
+      review_mode: CHILD_AGENT
+      review_result: PASS
+      coverage:
+        strategy: focused_windows_platform_adapter_rereview
+        inputs:
+          - docs/veyra.md
+          - .sdlc/state.yaml
+          - .sdlc/design/foundation.md
+          - .sdlc/evidence/foundation/technical-design-review.yaml#EVIDENCE-DESIGN-004
+          - user-pasted Windows API boundary guidance
+          - Microsoft Learn WinINet, ShellExecuteEx, IP Helper, and WFP references
+      verified:
+        - ProxySnapshot, ManagedProxyState, and ObservedProxyState cover PAC/WPAD and conditional restore.
+        - Off/SystemProxy/TUN transitions are serialized, compensated, and only become stable after verification.
+        - Tauri, Platform Adapter, and sing-box ownership boundaries remain separated.
+        - Windows Service, WFP, direct Wintun, manual route/DNS, and full-system PID scanning remain outside V0.1.
+      findings: []
+      remaining_risks:
+        - Real Windows API binding details and PAC/WPAD behavior require a future Windows Runner.
+        - TUN authenticated IPC, signing, and real-environment validation require a Scoped ADR and Human approval.
+        - No capabilities, native dependencies, sidecar, fixtures, or CI exist yet.
+  - id: EVIDENCE-DESIGN-006
+    type: technical_design_review
+    target: .sdlc/design/foundation.md
+    target_identity: sha256:a619805ae8793db54d161e71fd34b716178be0d5e355711f2186c19e9e43f078
+    produced_by_phase: ANCHORED
+    command_or_method: >-
+      Independent child-agent review of the Foundation against the revised
+      docs/veyra.md requirement source.
+    result: FAIL
+    timestamp: 2026-09-03T11:11:45+08:00
+    summary: >-
+      REWORK. One P2 mismatch: the Foundation layout assigned Auto Start to Platform,
+      while the revised requirement assigns it to Tauri desktop capabilities.
+    observer: CHILD_AGENT:/root/foundation_reviewer_source_sync
+    review:
+      review_mode: CHILD_AGENT
+      review_result: REWORK
+      coverage:
+        strategy: source_to_foundation_sync
+        paths:
+          - docs/veyra.md
+          - .sdlc/state.yaml
+          - .sdlc/design/foundation.md
+      findings:
+        - id: FINDING-DESIGN-006
+          priority: P2
+          status: REMEDIATION_REQUIRED
+          title: Keep Auto Start in Tauri desktop capability ownership.
+      remaining_risks:
+        - Windows native dependencies, TUN authenticated IPC, and real Windows validation remain future scoped work.
+  - id: EVIDENCE-DESIGN-007
+    type: technical_design_review
+    target: .sdlc/design/foundation.md
+    target_identity: sha256:0e03bfcf5cf87f56a5c12ccd05c3fd9ef2627c32ed3c05bd73637b8c89ed6307
+    produced_by_phase: ANCHORED
+    command_or_method: >-
+      Independent child-agent re-review of the Foundation against the revised
+      docs/veyra.md requirement source.
+    result: PASS
+    timestamp: 2026-09-03T11:13:38+08:00
+    summary: >-
+      PASS. Auto Start ownership now matches Tauri desktop capability ownership;
+      no P0/P1/P2/P3 source-to-foundation findings remain. Human Gate is requestable.
+    observer: CHILD_AGENT:/root/foundation_reviewer_source_sync_v2
+    review:
+      review_mode: CHILD_AGENT
+      review_result: PASS
+      coverage:
+        strategy: source_to_foundation_sync_rereview
+        inputs:
+          - docs/veyra.md
+          - .sdlc/state.yaml
+          - .sdlc/design/foundation.md
+          - .sdlc/evidence/foundation/technical-design-review.yaml#EVIDENCE-DESIGN-006
+      verified:
+        - Auto Start belongs to Tauri desktop capability ownership.
+        - Platform Adapter owns System Proxy, Privilege/UAC, and Runtime Recovery.
+        - CaptureMode, PAC/WPAD restoration, sing-box data-plane ownership, and V0.1 exclusions match the source.
+      findings: []
+      remaining_risks:
+        - Windows native dependencies, capabilities, and real Windows Runner validation remain future scoped work.
+        - TUN Helper, authenticated IPC, signing, and release controls require future ADRs and Human approval.
+  - id: EVIDENCE-DESIGN-008
+    type: technical_design_review
+    target: .sdlc/design/foundation.md
+    target_identity: sha256:2da0f1f334126d978659a0389e7a4838732cfb810667001985f81381aaa9fd0f
+    produced_by_phase: ANCHORED
+    command_or_method: >-
+      Independent child-agent review of the macOS V0.2 source/Foundation reconciliation
+      against docs/veyra.md and the user-provided macOS platform boundary guidance.
+    result: PASS
+    timestamp: 2026-09-03T11:30:25+08:00
+    summary: >-
+      PASS. Windows remains V0.1; macOS is a V0.2 DMG-direct, normal-Tauri, sing-box-
+      sidecar route. No P0/P1/P2/P3 findings remain; the Human Gate is requestable.
+    observer: CHILD_AGENT:/root/foundation_reviewer_macos_v02
+    review:
+      review_mode: CHILD_AGENT
+      review_result: PASS
+      coverage:
+        strategy: focused_macos_v02_source_foundation_sync
+        inputs:
+          - docs/veyra.md
+          - .sdlc/state.yaml
+          - .sdlc/design/foundation.md
+          - user-pasted macOS platform boundary guidance
+        verified:
+          - Windows is V0.1 and macOS platform realization, acceptance, and release path are V0.2 only.
+          - macOS V0.2 uses DMG direct distribution, ordinary Tauri desktop capabilities, and a sing-box sidecar.
+          - macOS Adapter owns Network Service System Proxy, explicit privilege, and recovery; sidecar owns utun, route, DNS, and process-routing data plane.
+          - System Proxy preserves HTTP/HTTPS/SOCKS, PAC, Auto Discovery, and Exceptions through Snapshot/Managed/Observed conditional restore.
+          - Long-lived Helper, SMAppService/XPC, Keychain, NetworkExtension, and rich native menu remain outside V0.2.
+          - Native dependencies, Xcode Target, Entitlement, signing, and notarization still require separate approval.
+      findings: []
+      remaining_risks:
+        - SystemConfiguration write bridging, network-service enumeration/change strategy, short-lived elevation target, and IPC require a macOS scoped Task/ADR before implementation.
+        - Signing, notarization, release rollback, and real macOS Runner evidence are not run by this design review.
