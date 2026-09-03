@@ -1,0 +1,36 @@
+schema_version: 2
+workflow_version: "0.2"
+mode: author
+
+project:
+  id: PROJECT-001
+  profile: standard
+  engineering_context: null
+
+source:
+  requirement: null
+  identity: null
+
+anchor:
+  goal: null
+  must_have: []
+  non_goals: []
+  constraints: []
+  critical_invariants: []
+  acceptance_refs: []
+
+assumptions: []
+
+phase: PROJECT_INIT
+
+focus:
+  task: null
+
+gates: {}
+
+blocked: null
+
+next:
+  skill: requirement-review
+  target: requirement-baseline
+  reason: Author the canonical requirement source and establish the intent anchor.

@@ -1,0 +1,7 @@
+interface:
+  display_name: "Technical Design"
+  short_description: "把已批准需求或评审退回项转成可评审、可冻结的模块化技术设计"
+  default_prompt: "使用 $technical-design 为当前已批准需求创建或修订可追踪的技术设计和 ADR 决策。"
+
+policy:
+  allow_implicit_invocation: true

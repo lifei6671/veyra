@@ -1,0 +1,7 @@
+interface:
+  display_name: "SDLC Orchestrator"
+  short_description: "用状态、Gate、证据和最小上下文治理完整软件交付流程"
+  default_prompt: "使用 $sdlc-orchestrator 为当前软件项目建立或恢复可审计、可持续的研发交付流程。"
+
+policy:
+  allow_implicit_invocation: true

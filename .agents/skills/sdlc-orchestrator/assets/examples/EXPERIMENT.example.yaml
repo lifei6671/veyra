@@ -1,0 +1,30 @@
+id: EXP-001
+story: null
+hypothesis: Replace with a falsifiable hypothesis.
+control:
+  name: control
+  allocation: 50
+treatment:
+  name: treatment
+  allocation: 50
+assignment:
+  key: stable-subject-id
+exposure:
+  event: treatment-exposed
+metrics:
+  primary: []
+  secondary: []
+  guardrail: []
+success_criteria: []
+failure_criteria: []
+kill_switch:
+  required: true
+  method: null
+  owner: null
+fallback: null
+data_collection:
+  owner: null
+status: DRAFT
+result: null
+result_evidence: []
+result_action: null

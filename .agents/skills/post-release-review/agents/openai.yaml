@@ -1,0 +1,7 @@
+interface:
+  display_name: "Post Release Review"
+  short_description: "基于技术、业务和实验数据评估发布结果并给出后续决策"
+  default_prompt: "使用 $post-release-review 评估当前发布身份和观察窗口的技术、业务与实验结果。"
+
+policy:
+  allow_implicit_invocation: true
