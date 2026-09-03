@@ -1,0 +1,53 @@
+records:
+  - id: EVIDENCE-TASK-001-001
+    type: implementation_verification
+    target: TASK-001
+    target_identity: sha256:0386315c3178de935104bce66465620def35088bbb6f3b293ccf9dece2f036c9
+    produced_by_phase: PLAN
+    command_or_method: >-
+      pnpm install; pnpm lint; pnpm test; pnpm build; cargo fmt --manifest-path
+      src-tauri/Cargo.toml -- --check; cargo test --manifest-path src-tauri/Cargo.toml;
+      cargo clippy --manifest-path src-tauri/Cargo.toml -- -D warnings; pnpm tauri build --debug.
+    result: PASS
+    timestamp: 2026-09-03T11:52:00+08:00
+    summary: >-
+      pnpm generated the lockfile and installed the declared dependencies. TypeScript lint,
+      one frontend IPC-wrapper test, frontend production build, Rust format check, one Rust
+      bootstrap-command test, Clippy, and the Windows debug Tauri build all passed after the
+      rendered-status smoke remediation.
+    observer: AGENT:/root
+  - id: EVIDENCE-TASK-001-002
+    type: desktop_smoke
+    target: TASK-001
+    target_identity: sha256:0386315c3178de935104bce66465620def35088bbb6f3b293ccf9dece2f036c9
+    produced_by_phase: PLAN
+    command_or_method: >-
+      Started the debug build at src-tauri/target/debug/veyra.exe hidden, used Windows UI
+      Automation to read the WebView accessible name, then stopped that exact test process.
+    result: PASS
+    timestamp: 2026-09-03T11:52:00+08:00
+    summary: >-
+      The desktop process remained alive for the bounded smoke window. Windows UI Automation read
+      Veyra · ready from the WebView, proving the rendered frontend received the fixed command
+      result; the exact test process was then stopped cleanly.
+    observer: AGENT:/root
+  - id: EVIDENCE-TASK-001-003
+    type: scope_boundary_check
+    target: TASK-001
+    target_identity: sha256:0386315c3178de935104bce66465620def35088bbb6f3b293ccf9dece2f036c9
+    produced_by_phase: PLAN
+    command_or_method: >-
+      Parsed package.json, Cargo.toml, and src-tauri/capabilities/default.json; inspected the
+      generated Tauri ACL manifest for the command permission.
+    result: PASS
+    timestamp: 2026-09-03T11:52:00+08:00
+    summary: >-
+      Direct dependencies are pinned to the approved scaffold set. The main window receives only
+      allow-bootstrap-status; no file, Shell, process, HTTP, sidecar, database, or native Windows
+      adapter capability is configured.
+    observer: AGENT:/root
+    exclusions:
+      - >-
+        src-tauri/icons/android/, src-tauri/icons/ios/, generated PNGs, icon.icns, and Windows
+        tile PNGs were produced by the Tauri icon command but are not part of TASK-001 delivery;
+        only src-tauri/icons/icon.ico and src-tauri/icons/veyra.svg are in the candidate target.
