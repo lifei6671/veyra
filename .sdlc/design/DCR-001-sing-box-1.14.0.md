@@ -1,6 +1,6 @@
 ---
 id: DCR-001
-status: ACCEPTED
+status: CANDIDATE
 change_source: USER:lifei 2026-09-03
 approval_ref: USER:lifei 2026-09-03 DCR-001 exact 1.14.0 runtime contract
 amendment_ref: USER:lifei 2026-09-03 sha2 0.10.9 offline asset-integrity verification
@@ -8,6 +8,7 @@ secret_rng_amendment_ref: USER:lifei 2026-09-03 getrandom 0.4.3 per-instance API
 multi_version_amendment_ref: USER:lifei 2026-09-03 selectable 1.12/1.13/1.14 core family
 acl_feature_amendment_ref: USER:lifei 2026-09-03 Windows ACL implementation feature expansion
 multi_version_gate_approval_ref: USER:lifei 2026-09-03 Human Technical Design Gate approved
+build_asset_delivery_amendment_ref: USER:lifei 2026-09-03 build-stage sidecar asset delivery, Git ignore
 affected_design:
   - .sdlc/design/foundation.md
 affected_task:
@@ -30,7 +31,8 @@ affected_task:
 - archive size：`32,809,391` bytes
 - target architecture：Windows amd64；Windows arm64 不进入 TASK-006。
 
-该文件已下载、解压并完成 archive/executable SHA-256 readback；尚未作为应用资源打包或启动服务。
+该文件可作为本机构建缓存下载、解压并完成 archive/executable SHA-256 readback；不得作为 Git 跟踪内容。
+发布构建必须从固定官方 URL 获取、验证后才将资源写入安装包，应用运行期不得下载或更新 sidecar。
 
 ## 决定
 
@@ -67,11 +69,23 @@ affected_task:
 - 共用的 typed `RuntimeIntent` 保持 sing-box 无关；每个兼容 profile 在编译后执行严格 allowlist。若某字段
   在目标版本不支持，编译失败并保持当前已验证实例，而不是静默删改或回退到其它内核。
 
+## 构建期资产交付契约
+
+- Git 只跟踪版本目录的 URL、精确版本、archive/executable SHA-256、资源名和获取脚本；`src-tauri/binaries/`
+  是本机/CI 构建缓存，必须被 Git 忽略。
+- 构建阶段仅允许按当前 `Supported` 目录项下载官方 archive，先验证 archive SHA-256、成员名、executable
+  SHA-256 和 `sing-box version`，再将 executable、必要 DLL 与许可证放入 Tauri bundle resource。任一验证
+  失败必须使打包失败，且不得产出安装包。
+- CI 或本机构建环境的网络访问只发生在上述受控获取步骤；最终安装包离线携带已验证资源，应用运行期不访问
+  下载源。后续 1.12/1.13 仍需各自的固定元数据与验证才能进入该步骤。
+
 ## 备选方案与决定
 
 1. 运行时接受任意内核、路径或 URL：拒绝，无法证明来源、hash、配置兼容性或 child 归属。
 2. 将 1.12/1.13 现在标记为支持：拒绝，尚无对应资产和真实兼容证据。
 3. 以受控版本目录演进，当前只执行 1.14.0：采用；保留产品演进空间而不稀释当前安全和验证边界。
+4. 将受验证内核二进制提交 Git：拒绝，放大仓库与克隆成本，也不符合受控构建资源交付模型。
+5. 构建期下载、验证并打包，运行期离线使用：采用。
 
 ## 保持不变的实施契约
 

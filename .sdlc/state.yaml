@@ -53,20 +53,19 @@ anchor:
 
 assumptions: []
 
-phase: EXECUTING
+phase: PLANNING
 
 focus:
   task: TASK-006
 
 gates:
   technical_design:
-    status: PASSED
-    target_identity: sha256:101fe9258cc97c73b46c4d5f30ceadcf8ef13eca5d0480b2154486dc15dc3054
-    evidence:
-      - .sdlc/evidence/foundation/technical-design-review.yaml#EVIDENCE-DESIGN-014
-    reviewed_by: CHILD_AGENT:/root/dcr001_design_reviewer
-    approved_by: USER:lifei
-    evaluated_at: 2026-09-03T19:15:00+08:00
+    status: PENDING
+    target_identity: sha256:dc140dfaa7ba956e29f0891f56a384b0ae70e8e6559fc44aa4326dcaeca1e4ad
+    evidence: []
+    reviewed_by: null
+    approved_by: null
+    evaluated_at: null
   delivery:
     status: PASSED
     target_identity: sha256:03cf332021191ee1d93f45d974ca3f17cb6834df241268c2c94878a7957fde09
@@ -78,11 +77,17 @@ gates:
     approved_by: USER:lifei
     evaluated_at: 2026-09-03T17:25:00+08:00
 
-blocked: null
+blocked:
+  kind: DESIGN_CHANGE
+  origin_phase: EXECUTING
+  reason: >-
+    USER:lifei requires fixed sing-box assets to be downloaded, verified and bundled during
+    the build, rather than tracked in Git. DCR-001 requires independent review and a new
+    Human Technical Design Gate before implementation resumes.
 
 next:
-  skill: implementation
+  skill: technical-design-review
   target: TASK-006
   reason: >-
-    DCR-001's closed multi-version catalog and ACL feature expansion passed independent review and
-    the Human Technical Design Gate. Resume TASK-006 implementation on the 1.14.0 baseline only.
+    DCR-001 changes core asset delivery from Git-tracked binaries to build-stage verified resources;
+    independently review the candidate and obtain a new Human Technical Design Gate.
