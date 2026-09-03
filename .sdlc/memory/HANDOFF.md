@@ -3,7 +3,7 @@
 Project: PROJECT-001
 Phase: EXECUTING
 Mode: ingest
-Task: TASK-002
+Task: TASK-003
 Requirement Source: `docs/veyra.md`
 Requirement Identity: `sha256:13a1769134ecaa9a1361ff9571513ee2b2a662a7771a056ac974e5bd078349ae`
 
@@ -14,8 +14,8 @@ Windows is the V0.1 desktop target. macOS platform realization is V0.2, based on
 direct distribution, a normal Tauri desktop app, and a sing-box sidecar; System Proxy
 and explicit privilege remain Adapter concerns, while NetworkExtension is a future ADR
 route. The Foundation is frozen after a current independent PASS review and explicit
-Human approval. TASK-001 is DONE. TASK-002 is READY to implement the versioned state store and
-subscription normalization boundaries.
+Human approval. TASK-001 and TASK-002 are DONE. TASK-003 is READY to implement typed pools,
+routes, runtime intent and deterministic semantic compilation.
 
 ## Completed
 
@@ -69,12 +69,16 @@ subscription normalization boundaries.
 - User accepted TASK-001. Its delivery gate records `approved_by: USER:lifei` and the task is
   now `DONE`.
 - User approved `serde_yaml_ng 0.10.0` for TASK-002's Clash YAML `proxies` extraction only.
-- Materialized TASK-002 with explicit state, migration, recovery and subscription-parser
-acceptance, verification and scope boundaries.
+- Implemented TASK-002's typed `AppState`, JSON state store, V0 migration, atomic backup/recovery,
+  subscription parser/normalizer and fixtures. Rust, frontend and scope checks passed; independent
+  review was remediated and re-reviewed without blocker/major findings.
+- User accepted TASK-002. Its delivery evidence is recorded under `.sdlc/evidence/TASK-002/`; M2 is DONE.
+- Materialized TASK-003 and completed its readiness check for typed pools, routes, runtime intent,
+  deterministic semantic compilation, and V1-to-V2 state evolution.
 
 ## Remaining
 
-- Implement TASK-002 within its approved scope.
+- Implement TASK-003 within its approved scope.
 
 ## Blocker
 
@@ -82,7 +86,7 @@ None recorded.
 
 ## Next
 
-Run implementation for `.sdlc/tasks/TASK-002.md`.
+Run implementation for `.sdlc/tasks/TASK-003.md`.
 
 ## Provenance
 
@@ -94,8 +98,11 @@ Run implementation for `.sdlc/tasks/TASK-002.md`.
 - `.sdlc/state.yaml`
 - `.sdlc/tasks.yaml`
 - `.sdlc/tasks/TASK-001.md`
+- `.sdlc/tasks/TASK-002.md`
 - `.sdlc/evidence/TASK-001/implementation.yaml`
 - `.sdlc/evidence/TASK-001/code-delivery-review.yaml`
+- `.sdlc/evidence/TASK-002/implementation.yaml`
+- `.sdlc/evidence/TASK-002/code-delivery-review.yaml`
 - `.sdlc/design/foundation.md`
 - `.sdlc/evidence/foundation/technical-design-review.yaml`
 - `docs/veyra.md`

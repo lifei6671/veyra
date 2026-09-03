@@ -1,0 +1,2 @@
+vless://33333333-3333-3333-3333-333333333333@uri.example.invalid:443?security=tls&type=ws&path=%2Fws#URI%20VLESS
+trojan://fixture-password@trojan.example.invalid:443?security=tls#URI%20Trojan

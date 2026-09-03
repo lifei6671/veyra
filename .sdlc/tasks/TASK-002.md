@@ -3,7 +3,7 @@ id: TASK-002
 milestone_ref: M2
 dependencies: [TASK-001]
 risk: HIGH
-status: READY
+status: DONE
 design_refs:
   - .sdlc/design/foundation.md
 approval_refs:
@@ -53,8 +53,9 @@ approval_refs:
 
 **验证：** Rust 单元测试覆盖有效多订阅状态、重复 ID、缺失 Subscription 与缺失 Provider。
 
-**implementation_status：** NOT_STARTED
-**acceptance_status：** NOT_RUN
+**implementation_status：** IMPLEMENTED
+**acceptance_status：** PASSED
+**evidence_refs：** `.sdlc/evidence/TASK-002/implementation.yaml#EVIDENCE-TASK-002-001`
 
 ### SF-002：JSON 状态、迁移与恢复
 
@@ -67,8 +68,9 @@ approval_refs:
 **验证：** Rust fixture 测试覆盖 save/load、原子替换、迁移幂等、升级前备份、损坏恢复、无有效备份和
 引用校验失败。
 
-**implementation_status：** NOT_STARTED
-**acceptance_status：** NOT_RUN
+**implementation_status：** IMPLEMENTED
+**acceptance_status：** PASSED
+**evidence_refs：** `.sdlc/evidence/TASK-002/implementation.yaml#EVIDENCE-TASK-002-001`
 
 ### SF-003：订阅解析与归一化
 
@@ -80,8 +82,9 @@ approval_refs:
 
 **验证：** Rust fixture 测试覆盖 JSON、YAML、URI、Base64、无效输入和多订阅归属。
 
-**implementation_status：** NOT_STARTED
-**acceptance_status：** NOT_RUN
+**implementation_status：** IMPLEMENTED
+**acceptance_status：** PASSED
+**evidence_refs：** `.sdlc/evidence/TASK-002/implementation.yaml#EVIDENCE-TASK-002-001`
 
 ## Task 独立验收
 
@@ -96,4 +99,6 @@ approval_refs:
 2. `pnpm lint`、`pnpm test`、`pnpm build`；
 3. 检查 Cargo 依赖、Tauri capability 与 delivery diff 均在本 Task Scope 内。
 
-**acceptance_status：** NOT_RUN
+**acceptance_status：** PASSED
+**evidence_refs：** `.sdlc/evidence/TASK-002/implementation.yaml#EVIDENCE-TASK-002-001`、
+`.sdlc/evidence/TASK-002/code-delivery-review.yaml#EVIDENCE-TASK-002-REVIEW-001`
