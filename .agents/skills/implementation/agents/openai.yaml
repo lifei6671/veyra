@@ -1,0 +1,7 @@
+interface:
+  display_name: "Implementation"
+  short_description: "在 Task Scope 内实施、修复、纯验证或运行 RD Show Case"
+  default_prompt: "使用 $implementation 按当前路由模式在已批准 Task Scope 内推进并记录 Evidence。"
+
+policy:
+  allow_implicit_invocation: true

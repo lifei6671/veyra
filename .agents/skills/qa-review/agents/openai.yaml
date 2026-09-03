@@ -1,0 +1,7 @@
+interface:
+  display_name: "QA Review"
+  short_description: "以互斥模式设计、独立审查 QA Case 或执行验收与回归验证"
+  default_prompt: "使用 $qa-review 选择 case-design、case-review 或 verification 模式处理当前验收目标。"
+
+policy:
+  allow_implicit_invocation: true

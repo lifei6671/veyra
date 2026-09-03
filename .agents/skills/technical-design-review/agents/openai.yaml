@@ -1,0 +1,7 @@
+interface:
+  display_name: "Technical Design Review"
+  short_description: "独立审查技术设计与关键决策的完整性、可执行性和风险覆盖"
+  default_prompt: "使用 $technical-design-review 对当前设计冻结候选执行只读审查并输出分级问题。"
+
+policy:
+  allow_implicit_invocation: true

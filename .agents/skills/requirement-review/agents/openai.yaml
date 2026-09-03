@@ -1,0 +1,7 @@
+interface:
+  display_name: "Requirement Review"
+  short_description: "以互斥 Producer/Reviewer 模式整理需求或独立审查冻结需求目标"
+  default_prompt: "使用 $requirement-review 选择 refinement 或 formal-review 模式处理当前需求。"
+
+policy:
+  allow_implicit_invocation: true

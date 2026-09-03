@@ -1,0 +1,7 @@
+interface:
+  display_name: "Release Review"
+  short_description: "独立审查发布准备、灰度、迁移、回滚和监控证据完整性"
+  default_prompt: "使用 $release-review 对当前发布目标执行只读 Readiness 审查并列出阻塞项。"
+
+policy:
+  allow_implicit_invocation: true

@@ -1,0 +1,7 @@
+interface:
+  display_name: "Task Breakdown"
+  short_description: "把冻结设计拆成有边界、有依赖、可独立验收的交付任务"
+  default_prompt: "使用 $task-breakdown 从 Anchor、Requirement 和适用设计滚动拆解当前及后续 Task。"
+
+policy:
+  allow_implicit_invocation: true

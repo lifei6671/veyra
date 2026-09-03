@@ -1,0 +1,65 @@
+{
+  "version": 1,
+  "skills": {
+    "code-delivery-review": {
+      "source": "lifei6671/agent-sdlc-workflow-skills",
+      "sourceType": "github",
+      "skillPath": "skills/code-delivery-review/SKILL.md",
+      "computedHash": "bbf8907c822c7f7d23a66271242c7ec51b0650cf1881290ad5781db0b10b5f34"
+    },
+    "implementation": {
+      "source": "lifei6671/agent-sdlc-workflow-skills",
+      "sourceType": "github",
+      "skillPath": "skills/implementation/SKILL.md",
+      "computedHash": "434509542b29a734060a8f1d59c41078862753e8898ffe86ff2e18f02792d4f5"
+    },
+    "post-release-review": {
+      "source": "lifei6671/agent-sdlc-workflow-skills",
+      "sourceType": "github",
+      "skillPath": "skills/post-release-review/SKILL.md",
+      "computedHash": "571dd15ec99b1cf58fbad82ae2a72a218122e5359ec126ecb7a9f86fdb61f3a9"
+    },
+    "qa-review": {
+      "source": "lifei6671/agent-sdlc-workflow-skills",
+      "sourceType": "github",
+      "skillPath": "skills/qa-review/SKILL.md",
+      "computedHash": "932fbc3cd6def0702b19e71b1e92483e1967dde875832876a572b9871db34354"
+    },
+    "release-review": {
+      "source": "lifei6671/agent-sdlc-workflow-skills",
+      "sourceType": "github",
+      "skillPath": "skills/release-review/SKILL.md",
+      "computedHash": "94bfeec45176e4bf065c6de91aedf0bf235f97d7d7dfae0ac951f29561a37e62"
+    },
+    "requirement-review": {
+      "source": "lifei6671/agent-sdlc-workflow-skills",
+      "sourceType": "github",
+      "skillPath": "skills/requirement-review/SKILL.md",
+      "computedHash": "02c9c2bb6c4d83cdbbcb9984fa68964f1c65776f9eec945c832ce23b8c460e4e"
+    },
+    "sdlc-orchestrator": {
+      "source": "lifei6671/agent-sdlc-workflow-skills",
+      "sourceType": "github",
+      "skillPath": "skills/sdlc-orchestrator/SKILL.md",
+      "computedHash": "b894c97cff66b06802a3b523fcf68131b54331c1a26e960ae2df9b8b545e9cc8"
+    },
+    "task-breakdown": {
+      "source": "lifei6671/agent-sdlc-workflow-skills",
+      "sourceType": "github",
+      "skillPath": "skills/task-breakdown/SKILL.md",
+      "computedHash": "2f3717a6da48de16fd70210ceed6b4450a7151c128f66932095d5839d562d638"
+    },
+    "technical-design": {
+      "source": "lifei6671/agent-sdlc-workflow-skills",
+      "sourceType": "github",
+      "skillPath": "skills/technical-design/SKILL.md",
+      "computedHash": "d81df69e3e96ddb8eaa932b99c37b41bfa71026364db1255d5c9ab470b0f04bb"
+    },
+    "technical-design-review": {
+      "source": "lifei6671/agent-sdlc-workflow-skills",
+      "sourceType": "github",
+      "skillPath": "skills/technical-design-review/SKILL.md",
+      "computedHash": "02336a8113421bc48ec349e4a12ad00653d5015e7416108e4b1fbf06cb228c54"
+    }
+  }
+}
