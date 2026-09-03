@@ -2,52 +2,78 @@
 
 ## 1. 文档目标
 
-本文定义一个基于 Tauri 2 + React + Rust + sing-box 的跨平台桌面代理客户端技术方案。
+本文定义一个基于 Tauri 2 + React + Rust + sing-box 的跨平台桌面网络代理客户端技术方案。
 
-项目核心目标不是简单实现“一个 sing-box GUI”，而是构建一套具有独立领域模型的桌面网络客户端，使以下能力在产品层保持简单、稳定：
+项目目标不是简单实现一个 sing-box GUI，而是建立一套独立于具体代理内核配置格式的应用领域模型，在产品层提供简单、稳定、可扩展的网络管理能力。
 
-- 多订阅管理
-- 多机场节点隔离
-- 自定义出口组
-- 跨机场节点组合
-- 按网站、服务、应用进行分流
-- TUN 与系统代理
-- 节点测速与自动选择
-- 实时连接、流量、日志监控
-- 原生 sing-box 配置高级模式
-- Windows / macOS / Linux 跨平台运行
-- 快速托盘恢复
-- 后续具备增加其他网络内核的架构空间
+核心能力包括：
 
-产品交互层参考 Clash Verge Rev 的简洁信息架构。
+* 多订阅管理
+* 多节点来源隔离
+* 节点标准化
+* 自定义出口组
+* 跨订阅节点组合
+* 手动节点选择
+* 自动节点选择
+* 按网站和服务分流
+* 按应用程序分流
+* 自定义规则分流
+* TUN 模式
+* 系统代理模式
+* DNS 管理
+* Rule Set 管理
+* 实时连接查看
+* 实时上下行流量
+* 运行日志
+* 原生 sing-box 配置高级模式
+* Windows / macOS / Linux 跨平台运行
+* 快速托盘恢复
+* 内核配置校验与回滚
+* 后续增加其他网络内核的架构空间
 
-订阅解析、标准节点模型、配置编译思路参考 Satelite Proxy 的设计方向。
+产品交互层参考 Clash Verge Rev 的信息架构与桌面交互经验。
 
-sing-box 运行时、跨平台生命周期等实现参考成熟 sing-box 桌面客户端的工程经验。
+订阅标准化、统一节点模型、配置编译方式参考 Satelite Proxy 的架构思想。
 
-项目不以任何现有项目作为运行时依赖，其核心 Domain、Application 和 sing-box Compiler 独立实现。
+底层运行能力由 sing-box 提供。
 
+本项目拥有自己的：
+
+```text
+Subscription Model
+ProxyNode Model
+Provider Model
+NodePool Model
+RoutePolicy Model
+RuntimeIntent
+SingBox Compiler
+```
+
+避免应用层与 sing-box JSON 直接耦合。
 
 ---
 
 # 2. 核心设计原则
 
-## 2.1 UI 不暴露 sing-box 配置模型
+## 2.1 用户不需要理解 sing-box
 
 用户不应该为了使用客户端而理解：
 
-- inbound
-- outbound
-- selector
-- urltest
-- detour
-- rule_set
-- route action
-- clash_api
+```text
+inbound
+outbound
+selector
+urltest
+detour
+route action
+rule_set
+clash_api
+endpoint
+```
 
-这些属于基础设施实现。
+这些属于基础设施层。
 
-用户层只暴露：
+用户层只使用：
 
 ```text
 订阅
@@ -59,9 +85,7 @@ sing-box 运行时、跨平台生命周期等实现参考成熟 sing-box 桌面�
 设置
 ```
 
-例如：
-
-用户看到：
+例如用户看到：
 
 ```text
 高速下载
@@ -69,142 +93,204 @@ B机场 + C机场
 自动选择
 ```
 
-内部实际可能生成：
+实际运行配置可能是：
 
 ```text
 urltest outbound
-    ↓
-B-HK
-B-JP
-C-HK
-C-SG
+   ├── B-HK
+   ├── B-JP
+   ├── C-HK
+   └── C-SG
 ```
 
-Domain 与 UI 术语允许不同。
-
+UI Model 与 Runtime Model 不要求使用相同术语。
 
 ---
 
-## 2.2 Subscription 与 Runtime 解耦
+## 2.2 Subscription 与 Runtime 完全解耦
 
-订阅不是运行时配置。
+订阅不是运行配置。
 
-正确关系：
+正确流程：
 
 ```text
 Subscription
      ↓
-Parser
+Subscription Parser
      ↓
-ProxyNode
+Normalized ProxyNode
      ↓
 Domain
      ↓
-Config Compiler
+RuntimeIntent
      ↓
-sing-box Config
+SingBoxCompiler
+     ↓
+config.json
 ```
 
-禁止采用：
+禁止：
 
 ```text
 Clash YAML
      ↓
-字符串/字段替换
+字段替换
      ↓
 sing-box JSON
 ```
 
-所有订阅格式先转换成统一领域模型。
-
+任何外部订阅都必须先进入统一领域模型。
 
 ---
 
-## 2.3 配置转换是语义转换，而非字段转换
+## 2.3 配置转换必须是语义转换
 
 例如：
 
-```text
-Clash proxy-group
-```
-
-并不意味着必须转换成某一个固定 sing-box 字段。
-
-客户端首先理解用户意图：
+用户配置：
 
 ```text
-手动选节点
+出口组：
+手动选择节点
 ```
 
-然后 Compiler 决定：
+Compiler：
 
 ```text
 selector
 ```
 
-用户意图：
+用户配置：
 
 ```text
+出口组：
 自动选择最快节点
 ```
 
-Compiler 决定：
+Compiler：
 
 ```text
 urltest
 ```
 
-未来如果增加 Xray：
+未来增加其他 Backend 时：
 
 ```text
-自动选择最快节点
-    ↓
-Xray balancer + observatory
+自动选择节点
+       ↓
+Domain Intent
+       ↓
+Xray Backend
+       ↓
+balancer + observatory
 ```
 
-Domain 不发生变化。
-
+应用业务语义不随内核变化。
 
 ---
 
-## 2.4 第一版单内核，领域模型不绑定内核
+## 2.4 V0.1 只支持 sing-box
 
-V0.1 仅支持：
+V0.1 只实现：
 
 ```text
 sing-box
 ```
 
-不增加：
+不提前引入：
 
 ```text
 CoreKind
-Xray
-Mihomo
-Multi Core
+XrayBackend
+MihomoBackend
+MultiCore
 ```
 
-避免过早抽象。
+避免过度抽象。
 
-但以下 Domain 类型不得使用 sing-box 专属结构：
+但是以下模型必须保持中性：
 
 ```text
-ProxyNode
 Subscription
 Provider
+ProxyNode
 NodePool
 RoutePolicy
 DnsPolicy
+RuntimeIntent
 ```
 
-sing-box 专用类型只能存在：
+sing-box 专属结构只能存在：
 
 ```text
-infra/singbox/
+infrastructure/singbox/
 ```
 
-目录下。
+---
 
+## 2.5 配置是一个整体状态图
+
+本项目的配置数据本质不是数据库业务数据，而是一份：
+
+> 可以整体加载、整体验证、整体编译的应用配置状态。
+
+因此 V0.1 采用：
+
+```text
+Versioned JSON State Store
+```
+
+而不是 SQLite。
+
+应用启动：
+
+```text
+state.json
+   ↓
+Deserialize
+   ↓
+Migration
+   ↓
+Reference Validation
+   ↓
+Domain State
+```
+
+运行期间以内存 Domain State 为主要 Source of Truth。
+
+---
+
+## 2.6 配置态与运行态严格分离
+
+配置态：
+
+```text
+订阅
+Provider
+节点
+出口组
+规则
+DNS
+TUN
+设置
+```
+
+需要持久化。
+
+运行态：
+
+```text
+当前连接
+实时速度
+进程状态
+当前 CPU
+当前内存
+临时连接数据
+```
+
+默认只存在内存中。
+
+禁止为了显示监控数据频繁写入 `state.json`。
 
 ---
 
@@ -212,106 +298,194 @@ infra/singbox/
 
 产品定位：
 
-> 一个面向普通用户和高级用户的跨平台 sing-box 桌面网络客户端，提供订阅管理、出口组、应用分流、网站分流、TUN、系统代理与网络状态监控能力。
+> 一个基于 sing-box 的现代跨平台网络分流与多出口桌面客户端。
 
-主要使用场景：
+主要面向两类用户。
 
-### 场景 A：普通用户
+## 3.1 普通用户
+
+典型流程：
 
 ```text
 添加订阅
-    ↓
+   ↓
+自动得到出口组
+   ↓
 选择节点
-    ↓
-开启系统代理/TUN
+   ↓
+开启系统代理或 TUN
 ```
 
-### 场景 B：多机场用户
+普通用户无需接触 sing-box 配置格式。
+
+---
+
+## 3.2 高级用户
+
+支持：
 
 ```text
-机场 A
-普通网页
-
-机场 B
-下载/流媒体
-
-机场 C
-上传/云盘
-```
-
-### 场景 C：高级用户
-
-```text
-自定义出口组
-应用分流
+多个订阅
+多个出口组
+跨订阅节点组合
 网站分流
+服务分流
+应用分流
 Rule Set
-DNS
-完整 sing-box JSON
+自定义 DNS
+自定义本地入口
+Native sing-box Profile
 ```
 
 ---
 
-# 4. 非目标
+# 4. 典型场景
+
+## 4.1 多机场
+
+例如：
+
+```text
+A机场：
+稳定、便宜
+
+B机场：
+下载速度快
+
+C机场：
+上传速度快
+```
+
+配置：
+
+```text
+普通网页
+→ A机场
+
+YouTube / 视频
+→ B机场
+
+qBittorrent / aria2
+→ B机场
+
+rclone / WinSCP
+→ C机场
+
+默认
+→ A机场
+```
+
+---
+
+## 4.2 跨机场组合
+
+例如：
+
+```text
+高速下载
+```
+
+包含：
+
+```text
+B机场
+├── 香港
+├── 日本
+└── 新加坡
+
+C机场
+├── 香港
+└── 日本
+```
+
+然后由 URLTest 自动选择。
+
+---
+
+## 4.3 应用分流
+
+例如：
+
+```text
+Chrome
+→ A机场
+
+qBittorrent
+→ 高速下载
+
+rclone
+→ 大文件上传
+
+Steam
+→ DIRECT
+```
+
+---
+
+# 5. 非目标
 
 V0.1 不追求：
 
-- 完整兼容 Clash YAML 所有字段
-- 完整转换 Clash `proxy-groups`
-- 完整转换 Clash `rule-providers`
-- 完整继承 Clash DNS 配置
-- Clash Script
-- Mihomo Script
-- JS Profile Transform
-- Xray/mihomo 多内核
-- 自动识别“大文件下载后动态换机场”
-- 单连接中途迁移出口
-- 复杂流量 QoS
-- MITM
-- 内容层协议解析
-- 提供代理服务器或公共节点
+* 完整兼容 Clash 配置
+* 完整继承 Clash Proxy Group
+* 完整转换 Clash Rule Provider
+* 完整继承 Clash DNS
+* Clash Script
+* Mihomo Script
+* JavaScript Profile Transform
+* Xray
+* Mihomo
+* Multi-Core
+* QoS
+* MITM
+* 自动内容识别
+* 单连接出口动态迁移
+* 流量已经开始后更换出口
+* 云端账号体系
+* 移动端
+* 内置公共代理节点
+* 代理服务运营
 
-尤其需要明确：
-
-> 流量出口通常在连接建立阶段确定。
-
-因此：
+特别说明：
 
 ```text
-连接已经上传 1GB
-    ↓
-检测到是大文件
-    ↓
-切换到 C机场
+连接建立
+   ↓
+路由决策
+   ↓
+选择出口
+   ↓
+建立代理连接
 ```
 
-不属于设计目标。
+连接建立后通常不能无感切换到另一条代理链路。
 
 ---
 
-# 5. 技术栈
+# 6. 技术栈
 
-## 5.1 Desktop
+## 6.1 Desktop
 
 ```text
 Tauri 2
 ```
 
-负责：
+职责：
 
-- Desktop Window
-- System Tray
-- Native Menu
-- Auto Start
-- IPC
-- Updater
-- OS integration
-- filesystem
-- privileges
+* Desktop Window
+* System Tray
+* Native Menu
+* Auto Start
+* Updater
+* IPC
+* File System
+* Native Dialog
+* OS Integration
+* Privilege Management
 
 ---
 
-## 5.2 Frontend
+# 7. Frontend
 
 建议：
 
@@ -321,135 +495,152 @@ TypeScript
 Vite
 ```
 
-状态层建议：
-
-```text
-Zustand
-```
-
-服务端状态/异步缓存：
-
-```text
-TanStack Query
-```
-
-路由：
+推荐：
 
 ```text
 React Router
+Zustand
+TanStack Query
 ```
 
-UI 可以采用：
+UI 基础组件：
 
 ```text
-Radix UI / shadcn/ui
+Radix UI
+或
+shadcn/ui
 ```
 
-但视觉体系自行设计。
+设计风格保持独立。
+
+不直接复制其他客户端：
+
+```text
+Logo
+品牌
+视觉资产
+像素级布局
+文案
+```
 
 ---
 
-## 5.3 Backend
+# 8. Backend
 
 ```text
 Rust
 Tokio
 Serde
+serde_json
 reqwest
 ```
 
-职责：
+主要职责：
 
 ```text
-Domain
+Domain State
 Subscription Parser
-Storage
-sing-box Config Compiler
-Runtime
-Process Management
+State Persistence
+Schema Migration
+Configuration Validation
+SingBox Compiler
+SingBox Runtime
+Process Manager
+Clash API Client
 System Proxy
-TUN privilege
-Traffic monitor
-Connection monitor
+TUN
+Platform Integration
+Traffic Monitoring
+Connection Monitoring
 Updater
 ```
 
 ---
 
-## 5.4 Core
+# 9. Core
 
 ```text
 sing-box
 ```
 
-以独立 sidecar 二进制方式运行。
+第一阶段采用：
 
-V0.1 不考虑将 sing-box 静态链接成 Rust library。
+```text
+Sidecar Binary
+```
 
+即：
+
+```text
+Desktop App
+    ↓
+Process Manager
+    ↓
+sing-box binary
+```
+
+暂不直接嵌入 sing-box Go library。
 
 ---
 
-# 6. 总体架构
+# 10. 总体架构
 
 ```text
-┌────────────────────────────────────────────┐
-│                    UI                      │
-│                                            │
-│ Overview                                   │
-│ Proxies                                    │
-│ Subscriptions                              │
-│ Routing                                    │
-│ Connections                                │
-│ Logs                                       │
-│ Settings                                   │
-└─────────────────────┬──────────────────────┘
-                      │
-                   Tauri IPC
-                      │
-┌─────────────────────▼──────────────────────┐
-│             Application Layer              │
-│                                            │
-│ SubscriptionService                        │
-│ ProxyService                               │
-│ PoolService                                │
-│ RoutingService                             │
-│ RuntimeService                             │
-│ SettingsService                            │
-└─────────────────────┬──────────────────────┘
-                      │
-┌─────────────────────▼──────────────────────┐
-│                  Domain                    │
-│                                            │
-│ Subscription                               │
-│ Provider                                   │
-│ ProxyNode                                  │
-│ NodePool                                   │
-│ RoutePolicy                                │
-│ DnsPolicy                                  │
-│ RuntimeIntent                              │
-└─────────────────────┬──────────────────────┘
-                      │
-┌─────────────────────▼──────────────────────┐
-│              Infrastructure                │
-│                                            │
-│ subscription parser                        │
-│ sing-box compiler                          │
-│ sing-box runtime                           │
-│ clash api client                           │
-│ storage                                    │
-│ platform adapter                           │
-└─────────────────────┬──────────────────────┘
-                      │
-                   sing-box
-                      │
-        ┌─────────────┼─────────────┐
-        │             │             │
-      TUN         System Proxy    Mixed
+┌───────────────────────────────────────┐
+│                 UI                    │
+│                                       │
+│ Overview                              │
+│ Proxies                               │
+│ Subscriptions                         │
+│ Routing                               │
+│ Connections                           │
+│ Logs                                  │
+│ Settings                              │
+└────────────────────┬──────────────────┘
+                     │
+                  Tauri IPC
+                     │
+┌────────────────────▼──────────────────┐
+│           Application Layer           │
+│                                       │
+│ SubscriptionService                   │
+│ ProxyService                          │
+│ PoolService                           │
+│ RoutingService                        │
+│ RuntimeService                        │
+│ SettingsService                       │
+└────────────────────┬──────────────────┘
+                     │
+┌────────────────────▼──────────────────┐
+│               Domain                  │
+│                                       │
+│ AppState                              │
+│ Subscription                          │
+│ Provider                              │
+│ ProxyNode                             │
+│ NodePool                              │
+│ RoutePolicy                           │
+│ DnsPolicy                             │
+│ RuntimeIntent                         │
+└────────────────────┬──────────────────┘
+                     │
+┌────────────────────▼──────────────────┐
+│           Infrastructure              │
+│                                       │
+│ StateStore                            │
+│ Subscription Parser                   │
+│ SingBox Compiler                      │
+│ SingBox Runtime                       │
+│ Clash API                             │
+│ Platform Adapter                      │
+└────────────────────┬──────────────────┘
+                     │
+                  sing-box
 ```
 
 ---
 
-# 7. 推荐目录结构
+# 11. 推荐工程目录
 
 ```text
 src-tauri/src/
@@ -458,18 +649,26 @@ application/
     subscription_service.rs
     proxy_service.rs
     pool_service.rs
-    route_service.rs
+    routing_service.rs
     runtime_service.rs
     settings_service.rs
 
 domain/
+    state.rs
     subscription.rs
     provider.rs
     node.rs
     pool.rs
-    route.rs
+    routing.rs
     dns.rs
     runtime.rs
+
+storage/
+    mod.rs
+    store.rs
+    snapshot.rs
+    migration.rs
+    validation.rs
 
 subscription/
     mod.rs
@@ -483,26 +682,23 @@ singbox/
     compiler/
         mod.rs
         outbound.rs
+        pool.rs
         inbound.rs
-        selector.rs
-        route.rs
+        routing.rs
         dns.rs
         ruleset.rs
+
     api/
         client.rs
-        proxy.rs
-        traffic.rs
+        proxies.rs
         connection.rs
+        traffic.rs
+
     runtime/
         process.rs
         config.rs
         health.rs
-        log.rs
-
-storage/
-    mod.rs
-    repository.rs
-    migration.rs
+        logs.rs
 
 platform/
     mod.rs
@@ -513,12 +709,13 @@ platform/
 commands/
     subscription.rs
     proxy.rs
-    route.rs
+    pool.rs
+    routing.rs
     runtime.rs
     settings.rs
 ```
 
-前端：
+Frontend：
 
 ```text
 src/
@@ -534,29 +731,68 @@ pages/
 
 features/
     subscription/
+    provider/
     node/
     pool/
     routing/
     runtime/
 
+components/
 stores/
 services/
-components/
+hooks/
 ```
 
 ---
 
-# 8. 核心领域模型
+# 12. AppState
 
-## 8.1 Subscription
+整个用户配置由一个顶层 Aggregate 管理。
 
-表示：
+```rust
+struct AppState {
+    schema_version: u32,
 
-> 节点来自哪里。
+    subscriptions: Vec<Subscription>,
+
+    providers: Vec<Provider>,
+
+    nodes: Vec<ProxyNode>,
+
+    pools: Vec<NodePool>,
+
+    routes: Vec<RoutePolicy>,
+
+    rule_sets: Vec<RuleSet>,
+
+    local_inbounds: Vec<LocalInbound>,
+
+    dns: DnsPolicy,
+
+    settings: AppSettings,
+}
+```
+
+所有配置编辑操作首先修改：
+
+```text
+AppState
+```
+
+然后整体校验和持久化。
+
+---
+
+# 13. Subscription
+
+Subscription 表示：
+
+> 节点数据从哪里获得。
 
 ```rust
 struct Subscription {
     id: SubscriptionId,
+
     name: String,
 
     source: SubscriptionSource,
@@ -564,16 +800,20 @@ struct Subscription {
     enabled: bool,
 
     auto_update: bool,
+
     update_interval: Duration,
 
     last_update_at: Option<DateTime>,
+
     last_error: Option<String>,
 
     traffic: Option<SubscriptionTraffic>,
 }
 ```
 
-Source：
+---
+
+# 14. SubscriptionSource
 
 ```rust
 enum SubscriptionSource {
@@ -601,21 +841,11 @@ enum SubscriptionSource {
 
 ---
 
-# 9. Provider
+# 15. Provider
 
 Provider 表示：
 
-> 用户认知中的一个机场/节点来源。
-
-正常情况下：
-
-```text
-1 Subscription
-    ↓
-1 Provider
-```
-
-但 Domain 不强制 1:1。
+> 用户认知中的节点来源，例如一个机场。
 
 ```rust
 struct Provider {
@@ -629,7 +859,19 @@ struct Provider {
 }
 ```
 
-UI 一般不暴露 Provider 术语。
+大多数情况下：
+
+```text
+1 Subscription
+    ↓
+1 Provider
+```
+
+但 Domain 不强制 1:1。
+
+---
+
+# 16. 用户层不暴露 Provider
 
 用户看到：
 
@@ -645,11 +887,13 @@ Provider A
 Implicit Pool A
 ```
 
+Provider 是内部领域概念。
+
 ---
 
-# 10. ProxyNode
+# 17. ProxyNode
 
-所有订阅最终转换成：
+所有订阅解析最终产生：
 
 ```rust
 struct ProxyNode {
@@ -662,9 +906,11 @@ struct ProxyNode {
     protocol: Protocol,
 
     server: String,
+
     port: u16,
 
     tls: Option<TlsConfig>,
+
     transport: Option<Transport>,
 
     config: ProtocolConfig,
@@ -675,21 +921,30 @@ struct ProxyNode {
 
 ---
 
-## 10.1 Protocol
+# 18. Protocol
 
-V0.1：
+V0.1 优先支持：
 
 ```rust
 enum Protocol {
     Shadowsocks,
+
     VMess,
+
     VLess,
+
     Trojan,
+
     Hysteria2,
+
     TUIC,
+
     Socks5,
+
     Http,
+
     WireGuard,
+
     AnyTLS,
 }
 ```
@@ -707,13 +962,14 @@ Snell
 
 ---
 
-## 10.2 TLS
+# 19. TLS
 
 ```rust
 struct TlsConfig {
     enabled: bool,
 
     server_name: Option<String>,
+
     insecure: bool,
 
     alpn: Vec<String>,
@@ -726,7 +982,7 @@ struct TlsConfig {
 
 ---
 
-## 10.3 Transport
+# 20. Transport
 
 ```rust
 enum Transport {
@@ -750,54 +1006,55 @@ enum Transport {
 
 ---
 
-# 11. Node Identity
+# 21. Node Identity
 
-节点不能使用：
-
-```text
-name
-```
-
-作为唯一标识。
-
-机场常出现：
+禁止使用：
 
 ```text
+Node Name
+```
+
+作为唯一 ID。
+
+例如：
+
+```text
 香港01
 香港01
 香港01
 ```
 
-甚至 server/port 相同但密码不同。
+非常常见。
 
 建议：
 
 ```text
 NodeId =
-hash(
+stable_hash(
     provider_id
     protocol
     server
     port
-    credentials identity
+    credential_identity
 )
 ```
 
-显示名称与节点身份分离。
+显示名和 identity 分离。
 
 ---
 
-# 12. 订阅解析系统
+# 22. Subscription Parser
 
 统一入口：
 
 ```rust
 fn parse_subscription(
-    input: &str,
-) -> Result<ParseResult>
+    source: &SubscriptionSource,
+    body: &str,
+) -> Result<ParseResult>;
 ```
 
-ParseResult：
+结果：
 
 ```rust
 struct ParseResult {
@@ -806,35 +1063,41 @@ struct ParseResult {
     nodes: Vec<ProxyNodeDraft>,
 
     skipped: Vec<SkippedNode>,
+
+    metadata: SubscriptionMetadata,
 }
 ```
 
 ---
 
-# 13. 格式检测顺序
+# 23. 格式识别
 
-推荐：
+建议顺序：
 
 ```text
 JSON
  │
- ├─ sing-box JSON
- └─ Clash JSON
+ ├── sing-box
+ └── Clash JSON
 
 YAML
  │
- └─ Clash YAML
+ └── Clash YAML
 
 URI List
 
 Base64
  │
- └─ decode
-      ↓
-    recursive detect
+ └── Decode
+       ↓
+     Recursive Detect
 ```
 
-支持：
+---
+
+# 24. URI 支持
+
+第一阶段：
 
 ```text
 ss://
@@ -852,39 +1115,50 @@ anytls://
 
 ---
 
-# 14. Clash Subscription 处理原则
+# 25. Clash Subscription 原则
 
-V0.1：
-
-只提取：
+Clash 配置：
 
 ```yaml
 proxies:
-```
-
-不承诺继承：
-
-```yaml
 proxy-groups:
 rules:
 rule-providers:
 dns:
 tun:
-hosts:
-script:
 ```
 
-因此：
+V0.1 只承诺解析：
+
+```yaml
+proxies:
+```
+
+也就是：
 
 ```text
 Clash Subscription
        ↓
-Proxy Node Parser
+Node Extraction
        ↓
 ProxyNode
 ```
 
-客户端自己的：
+不会承诺完整继承：
+
+```text
+Proxy Groups
+Rules
+DNS
+TUN
+Script
+```
+
+---
+
+# 26. 为什么只提取节点
+
+因为客户端自己的：
 
 ```text
 出口组
@@ -893,82 +1167,81 @@ DNS
 TUN
 ```
 
-由 Domain 控制。
+由独立 Domain 控制。
+
+否则很容易出现：
+
+```text
+Clash Domain
+     +
+SingBox Domain
+     +
+App Domain
+```
+
+三套模型互相污染。
 
 ---
 
-# 15. Native sing-box Profile
+# 27. Native sing-box Profile
 
-必须提供高级模式。
+高级用户允许直接运行完整 sing-box 配置。
 
-类型：
-
-```text
-Native sing-box Profile
-```
-
-用户提供完整：
+例如：
 
 ```json
 {
+  "log": {},
+  "dns": {},
   "inbounds": [],
   "outbounds": [],
   "route": {}
 }
 ```
 
-客户端：
+执行：
 
 ```text
-validate
-   ↓
-write
-   ↓
+Native Config
+    ↓
+sing-box check
+    ↓
 sing-box run
 ```
 
-不经过：
-
-```text
-ProxyNode
-NodePool
-RoutePolicy
-```
+不进入 Managed Domain。
 
 ---
 
-## 15.1 Native Mode 限制
+# 28. Native Mode 限制
 
-Native Profile 启用时：
-
-客户端只提供：
+Native Mode 下客户端提供：
 
 ```text
-启动/停止
+启动
+停止
 日志
-Traffic
-Connections
+连接
+流量
 Clash API
-TUN 状态
 ```
 
-不能保证提供：
+不保证提供：
 
 ```text
 出口组编辑
 分流编辑
-节点池编辑
+节点编辑
+DNS 编辑
 ```
 
-因为配置已经由用户完全控制。
+因为这些配置已经由用户自己控制。
 
 ---
 
-# 16. 出口组 NodePool
+# 29. NodePool
 
-这是本项目最核心的产品能力之一。
-
-用户层叫：
+用户层：
 
 > 出口组
 
@@ -992,45 +1265,40 @@ struct NodePool {
 
 ---
 
-# 17. Pool 类型
+# 30. PoolKind
 
 ```rust
 enum PoolKind {
     ImplicitProvider,
+
     Custom,
 }
 ```
 
-### ImplicitProvider
-
-订阅自动生成。
-
-例如：
+ImplicitProvider：
 
 ```text
-Subscription A
+Subscription
     ↓
-Provider A
+Provider
     ↓
-Pool A
+自动出口组
 ```
 
-用户不需要手动创建。
+Custom：
 
-### Custom
-
-用户主动创建：
+用户创建：
 
 ```text
 高速下载
-大文件上传
+上传专线
 AI服务
 低延迟
 ```
 
 ---
 
-# 18. PoolSource
+# 31. PoolSource
 
 ```rust
 struct PoolSource {
@@ -1040,25 +1308,19 @@ struct PoolSource {
 }
 ```
 
-不能简单定义：
-
-```rust
-providers: Vec<ProviderId>
-```
-
-否则无法表达：
+这样可以表达：
 
 ```text
 B机场：
-只用 香港 + 日本
+香港、日本
 
 C机场：
-只用 美国
+美国
 ```
 
 ---
 
-# 19. NodeFilter
+# 32. NodeFilter
 
 ```rust
 struct NodeFilter {
@@ -1067,16 +1329,18 @@ struct NodeFilter {
     protocols: Vec<Protocol>,
 
     include_keywords: Vec<String>,
+
     exclude_keywords: Vec<String>,
 
     include_node_ids: Vec<NodeId>,
+
     exclude_node_ids: Vec<NodeId>,
 }
 ```
 
 ---
 
-# 20. SelectionPolicy
+# 33. SelectionPolicy
 
 ```rust
 enum SelectionPolicy {
@@ -1086,65 +1350,55 @@ enum SelectionPolicy {
 
     UrlTest {
         probe_url: String,
+
         interval: Duration,
+
         tolerance_ms: u32,
     },
 }
 ```
 
-对应：
+Compiler：
 
 ```text
 Manual
-   ↓
-sing-box selector
+  ↓
+selector
 
 UrlTest
-   ↓
-sing-box urltest
+  ↓
+urltest
 ```
 
 ---
 
-# 21. 自动 Provider Pool
+# 34. 自动出口组
 
-用户添加：
+新增订阅：
 
 ```text
 A机场
 ```
 
-后台自动生成：
+自动产生：
 
 ```text
-pool/provider-a
+A机场
+订阅 · 28节点
+自动选择
 ```
 
-节点：
+内部：
 
 ```text
-A-HK
-A-JP
-A-US
-```
-
-编译：
-
-```json
-{
-  "type": "urltest",
-  "tag": "pool-provider-a",
-  "outbounds": [
-    "node-a-hk",
-    "node-a-jp",
-    "node-a-us"
-  ]
-}
+Provider A
+    ↓
+Implicit Pool A
 ```
 
 ---
 
-# 22. 组合出口组
+# 35. 组合出口组
 
 例如：
 
@@ -1156,13 +1410,16 @@ A-US
 
 ```text
 B机场
-香港、日本、新加坡
+├── 香港
+├── 日本
+└── 新加坡
 
 C机场
-香港、日本
+├── 香港
+└── 日本
 ```
 
-得到：
+最终：
 
 ```text
 B-HK
@@ -1172,23 +1429,33 @@ C-HK
 C-JP
 ```
 
-编译：
-
-```json
-{
-  "type": "urltest",
-  "tag": "pool-download",
-  "outbounds": [...]
-}
-```
-
 ---
 
-# 23. Pool Tag
+# 36. Pool Tag
 
-不能使用名称直接作为 sing-box tag。
+禁止使用：
 
-建议：
+```text
+出口组名称
+```
+
+作为运行时 ID。
+
+例如：
+
+```text
+高速下载
+```
+
+重命名为：
+
+```text
+下载专线
+```
+
+不能导致规则失效。
+
+因此内部：
 
 ```text
 pool-<stable-id>
@@ -1200,27 +1467,11 @@ pool-<stable-id>
 pool-b3d2910f
 ```
 
-UI name：
-
-```text
-高速下载
-```
-
-这样重命名：
-
-```text
-高速下载
-    ↓
-下载专线
-```
-
-不会导致 route 关系失效。
-
 ---
 
-# 24. RoutePolicy
+# 37. RoutePolicy
 
-用户层叫：
+用户层：
 
 > 分流
 
@@ -1244,7 +1495,7 @@ struct RoutePolicy {
 
 ---
 
-# 25. TrafficMatcher
+# 38. TrafficMatcher
 
 ```rust
 enum TrafficMatcher {
@@ -1284,7 +1535,7 @@ enum TrafficMatcher {
 
 ---
 
-# 26. RouteTarget
+# 39. RouteTarget
 
 ```rust
 enum RouteTarget {
@@ -1296,60 +1547,52 @@ enum RouteTarget {
 }
 ```
 
-V0.1 不允许：
+V0.1 不支持普通规则直接引用：
 
 ```rust
 Node(NodeId)
 ```
 
-作为普通分流规则目标。
-
-原因：
-
-节点可能在订阅刷新后消失。
-
-Pool 是稳定抽象。
+避免节点更新导致规则失效。
 
 ---
 
-# 27. 分流优先级
+# 40. 路由优先级
 
-推荐固定分类优先级：
+推荐应用层固定大类：
 
 ```text
-显式域名
-    ↓
+Explicit Domain
+       ↓
 Service / RuleSet
-    ↓
+       ↓
 Application
-    ↓
+       ↓
 IP / Network
-    ↓
+       ↓
 Default
 ```
 
-用户可以在同类别中排序。
-
-避免普通用户需要理解所有 sing-box rule precedence。
+同类型内部允许用户排序。
 
 ---
 
-# 28. 应用分流
+# 41. 应用分流
 
-例：
+例如：
 
 ```text
 Chrome
-    → A机场
+→ A机场
 
 qBittorrent
-    → 高速下载
+→ 高速下载
 
 rclone
-    → 大文件上传
+→ 上传专线
 ```
 
-编译：
+Compiler：
 
 ```json
 {
@@ -1363,9 +1606,9 @@ rclone
 
 ---
 
-# 29. 网站服务分流
+# 42. 网站与服务分流
 
-客户端可以预置逻辑服务：
+客户端可以提供：
 
 ```text
 YouTube
@@ -1373,37 +1616,38 @@ Netflix
 Google
 GitHub
 OpenAI
+Google Drive
 OneDrive
 Dropbox
-Google Drive
 ```
 
-服务不是硬编码域名数组。
+服务定义不建议写成 UI 硬编码域名。
 
-Domain：
+应使用：
 
-```rust
-struct ServiceRule {
-    id: ServiceId,
-
-    name: String,
-
-    rule_sets: Vec<RuleSetId>,
-}
+```text
+Service
+    ↓
+RuleSet
 ```
-
-底层使用 Rule Set。
 
 ---
 
-# 30. 专用入口分流
+# 43. LocalInbound
 
-支持额外本地入口：
+为高级用户支持确定性出口。
+
+例如：
 
 ```text
-127.0.0.1:2080 → 默认出口
-127.0.0.1:2081 → 下载池
-127.0.0.1:2082 → 上传池
+127.0.0.1:2080
+→ A机场
+
+127.0.0.1:2081
+→ 高速下载
+
+127.0.0.1:2082
+→ 上传专线
 ```
 
 Domain：
@@ -1422,33 +1666,23 @@ struct LocalInbound {
 }
 ```
 
-sing-box：
-
-```text
-inbound tag
-    ↓
-route rule
-    ↓
-pool
-```
-
-这是处理复杂场景的确定性方案。
-
 ---
 
-# 31. 临时出口
+# 44. 临时出口
 
-产品支持：
+托盘可以提供：
 
 ```text
 临时出口
+
+A机场
+B机场
+C机场
 ```
 
-例如：
+持续时间：
 
 ```text
-C机场
-
 15分钟
 30分钟
 1小时
@@ -1467,7 +1701,9 @@ struct TemporaryRouteOverride {
 }
 ```
 
-Scope：
+---
+
+# 45. TemporaryScope
 
 ```rust
 enum TemporaryScope {
@@ -1479,17 +1715,19 @@ enum TemporaryScope {
 
 只影响：
 
-> 新建立连接。
+```text
+新连接
+```
 
-已有连接不迁移。
+已有连接继续使用原出口。
 
 ---
 
-# 32. RuntimeIntent
+# 46. RuntimeIntent
 
-Application 不直接构造 sing-box JSON。
+应用层不直接构造 sing-box JSON。
 
-先生成：
+统一产生：
 
 ```rust
 struct RuntimeIntent {
@@ -1498,6 +1736,8 @@ struct RuntimeIntent {
     pools: Vec<NodePool>,
 
     routes: Vec<RoutePolicy>,
+
+    rule_sets: Vec<RuleSet>,
 
     dns: DnsPolicy,
 
@@ -1511,19 +1751,9 @@ struct RuntimeIntent {
 }
 ```
 
-Compiler：
-
-```text
-RuntimeIntent
-      ↓
-SingBoxCompiler
-      ↓
-GeneratedConfig
-```
-
 ---
 
-# 33. SingBoxCompiler
+# 47. SingBoxCompiler
 
 接口：
 
@@ -1544,52 +1774,52 @@ struct SingBoxCompiler;
 
 ---
 
-# 34. Compiler Pipeline
-
-推荐：
+# 48. Compiler Pipeline
 
 ```text
-validate domain
+Validate Domain
       ↓
-normalize nodes
+Resolve Pool Membership
       ↓
-generate node tags
+Normalize Nodes
       ↓
-compile node outbounds
+Generate Stable Tags
       ↓
-compile pools
+Compile Node Outbounds
       ↓
-compile direct/block
+Compile Pool Outbounds
       ↓
-compile inbounds
+Compile Direct / Block
       ↓
-compile route rules
+Compile Inbounds
       ↓
-compile rule sets
+Compile Rules
       ↓
-compile DNS
+Compile Rule Sets
       ↓
-compile clash_api
+Compile DNS
       ↓
-serialize JSON
+Compile Clash API
+      ↓
+Serialize JSON
       ↓
 sing-box check
 ```
 
 ---
 
-# 35. Outbound Tag
+# 49. Runtime Tag
 
 节点：
 
 ```text
-node-<id>
+node-<stable-id>
 ```
 
-Pool：
+出口组：
 
 ```text
-pool-<id>
+pool-<stable-id>
 ```
 
 系统：
@@ -1597,68 +1827,740 @@ pool-<id>
 ```text
 direct
 block
-dns
 ```
 
-禁止使用：
-
-```text
-节点名称
-机场名称
-```
-
-作为配置 identity。
+名称只负责显示。
 
 ---
 
-# 36. Runtime API
+# 50. State Persistence
 
-启用：
+V0.1 使用：
+
+```text
+Versioned JSON State Store
+```
+
+主文件：
+
+```text
+state.json
+```
+
+---
+
+# 51. state.json
+
+示例：
 
 ```json
 {
-  "experimental": {
-    "clash_api": {
-      "external_controller": "127.0.0.1:9090"
-    }
+  "schema_version": 1,
+
+  "subscriptions": [],
+
+  "providers": [],
+
+  "nodes": [],
+
+  "pools": [],
+
+  "route_policies": [],
+
+  "rule_sets": [],
+
+  "local_inbounds": [],
+
+  "dns": {},
+
+  "settings": {}
+}
+```
+
+---
+
+# 52. 为什么不使用 SQLite
+
+核心配置的数据规模通常较小。
+
+例如：
+
+```text
+5 个订阅
+500 个节点
+10 个出口组
+30 条分流策略
+```
+
+甚至：
+
+```text
+5000 nodes
+```
+
+对内存模型仍然非常轻。
+
+应用运行时本来也需要：
+
+```text
+完整 Nodes
+完整 Pools
+完整 Routes
+完整 DNS
+```
+
+才能生成 sing-box Config。
+
+因此 SQL Query、Join、Index 并不是核心需求。
+
+---
+
+# 53. StateStore
+
+定义：
+
+```rust
+trait StateStore {
+    fn load(&self) -> Result<AppState>;
+
+    fn save(&self, state: &AppState) -> Result<()>;
+}
+```
+
+实现：
+
+```rust
+struct JsonStateStore;
+```
+
+Application 不依赖具体文件格式。
+
+未来更换实现不会影响 Domain。
+
+---
+
+# 54. State Load Pipeline
+
+启动：
+
+```text
+Read state.json
+       ↓
+Parse JSON
+       ↓
+Read schema_version
+       ↓
+Run Migrations
+       ↓
+Deserialize Current State
+       ↓
+Validate References
+       ↓
+Build AppState
+       ↓
+Application Ready
+```
+
+---
+
+# 55. Schema Version
+
+必须有：
+
+```json
+{
+  "schema_version": 1
+}
+```
+
+禁止直接对旧 JSON 使用最新 struct 强行反序列化。
+
+---
+
+# 56. Migration
+
+推荐：
+
+```text
+State V1
+   ↓
+migrate_v1_to_v2
+   ↓
+State V2
+   ↓
+migrate_v2_to_v3
+   ↓
+State V3
+```
+
+Migration 必须：
+
+```text
+Deterministic
+Idempotent where possible
+Tested
+```
+
+---
+
+# 57. Storage Version Model
+
+推荐保存层和 Domain 层分离。
+
+例如：
+
+```rust
+StoredStateV1
+StoredStateV2
+StoredStateV3
+```
+
+然后：
+
+```text
+StoredState
+    ↓
+Migration
+    ↓
+CurrentStoredState
+    ↓
+Domain AppState
+```
+
+避免 Domain struct 背负大量历史兼容字段。
+
+---
+
+# 58. Reference Validation
+
+加载 State 后检查：
+
+```text
+Provider
+→ Subscription exists
+
+Node
+→ Provider exists
+
+PoolSource
+→ Provider exists
+
+RoutePolicy
+→ Pool exists
+
+LocalInbound
+→ Pool exists
+```
+
+发现引用损坏：
+
+默认：
+
+```text
+拒绝覆盖原文件
++
+尝试恢复 Backup
+```
+
+---
+
+# 59. State Transaction
+
+配置更新采用：
+
+```text
+Clone State
+    ↓
+Apply Mutation
+    ↓
+Validate
+    ↓
+Save Snapshot
+    ↓
+Swap In-Memory State
+```
+
+即：
+
+> Persist Success 之后，新的配置才正式成为 Current State。
+
+避免：
+
+```text
+内存修改成功
+磁盘写入失败
+```
+
+产生两份 Source of Truth。
+
+---
+
+# 60. Atomic Write
+
+禁止直接：
+
+```text
+truncate state.json
+    ↓
+write
+```
+
+推荐：
+
+```text
+serialize
+   ↓
+write state.tmp
+   ↓
+flush
+   ↓
+fsync
+   ↓
+rename current → backup
+   ↓
+atomic rename tmp → state.json
+```
+
+---
+
+# 61. Backup
+
+至少保留：
+
+```text
+state.json
+
+state.backup.json
+```
+
+版本迁移前可以额外保留：
+
+```text
+state.pre-v2.backup.json
+```
+
+数量应有限制。
+
+---
+
+# 62. Corruption Recovery
+
+如果：
+
+```text
+state.json
+```
+
+JSON 损坏：
+
+```text
+读取失败
+   ↓
+读取 backup
+   ↓
+校验
+   ↓
+恢复
+```
+
+损坏文件可以保存：
+
+```text
+state.corrupt.<timestamp>.json
+```
+
+用于诊断。
+
+---
+
+# 63. 保存时机
+
+只在配置变化时持久化。
+
+例如：
+
+```text
+添加订阅
+删除订阅
+更新订阅
+修改出口组
+修改分流
+修改 DNS
+修改设置
+修改本地入口
+```
+
+---
+
+# 64. 不写入 State 的数据
+
+以下默认不进入 `state.json`：
+
+```text
+实时连接
+当前速度
+当前 CPU
+当前内存
+当前连接总数
+临时日志
+实时 Traffic
+```
+
+---
+
+# 65. Node Runtime State
+
+例如：
+
+```text
+延迟
+最近测速时间
+连续失败次数
+```
+
+第一阶段优先：
+
+```text
+Memory Only
+```
+
+如果需要跨重启保存，可以增加：
+
+```text
+runtime-cache.json
+```
+
+但不属于核心配置。
+
+---
+
+# 66. Runtime Cache
+
+示例：
+
+```json
+{
+  "node-xxxx": {
+    "latency_ms": 43,
+    "tested_at": 1788420100
   }
 }
 ```
 
-应用通过 Clash API 获取：
+写入方式：
 
 ```text
-proxies
-connections
-traffic
-selector state
+Batch
++
+Debounce
 ```
 
-sing-box 当前支持 Clash API，因此可以承担大量运行时 UI 状态交互。 
+禁止每次测速立即同步写磁盘。
 
 ---
 
-# 37. Runtime 设计
+# 67. Future Telemetry Storage
+
+未来如果实现：
+
+```text
+30天流量统计
+连接历史
+节点延迟历史
+节点可靠性分析
+每日使用量
+```
+
+可以单独引入：
+
+```text
+telemetry.db
+```
+
+使用 SQLite。
+
+结构：
+
+```text
+Configuration
+     ↓
+state.json
+
+
+Runtime History
+     ↓
+telemetry.db
+```
+
+两者职责分离。
+
+---
+
+# 68. 文件目录
+
+推荐：
+
+```text
+data/
+
+├── state.json
+├── state.backup.json
+│
+├── native-profiles/
+│
+├── generated/
+│   ├── active.json
+│   └── previous.json
+│
+├── cache/
+│   └── runtime-cache.json
+│
+├── rulesets/
+│
+└── logs/
+```
+
+---
+
+# 69. Subscription Update
+
+```text
+Fetch Subscription
+       ↓
+Detect Format
+       ↓
+Parse
+       ↓
+Normalize
+       ↓
+Validate Nodes
+       ↓
+Create Candidate Node Set
+       ↓
+Create Candidate AppState
+       ↓
+Validate References
+       ↓
+Persist
+       ↓
+Rebuild RuntimeIntent
+```
+
+---
+
+# 70. 订阅更新失败
+
+如果：
+
+```text
+HTTP Error
+Parse Error
+Invalid Nodes
+```
+
+则：
+
+```text
+旧节点继续保留
+```
+
+禁止：
+
+```text
+刷新失败
+   ↓
+清空原订阅
+```
+
+---
+
+# 71. Subscription HTTP
+
+记录：
+
+```text
+ETag
+Last-Modified
+subscription-userinfo
+Content-Disposition
+```
+
+支持：
+
+```text
+304 Not Modified
+```
+
+---
+
+# 72. SubscriptionTraffic
 
 ```rust
-struct Runtime {
-    process: SingBoxProcess,
+struct SubscriptionTraffic {
+    upload: Option<u64>,
 
-    config: Option<RuntimeConfig>,
+    download: Option<u64>,
 
-    api: ClashApiClient,
+    total: Option<u64>,
 
-    status: RuntimeStatus,
-
-    connection_cache: ConnectionCache,
-
-    traffic_cache: TrafficCache,
+    expire_at: Option<DateTime>,
 }
 ```
 
+UI：
+
+```text
+A机场
+
+剩余 218 GB
+2026-12-31 到期
+```
+
 ---
 
-# 38. Runtime 状态机
+# 73. Pool Refresh
+
+订阅更新后：
+
+```text
+Node Set Changed
+      ↓
+Re-evaluate NodePool Filters
+      ↓
+New Pool Membership
+      ↓
+Rebuild RuntimeIntent
+      ↓
+Compile
+```
+
+Pool 保存的是：
+
+```text
+Selection Intent
+```
+
+而不是物化后的节点列表。
+
+---
+
+# 74. Pool Membership
+
+例如：
+
+```text
+高速下载
+
+Provider B
+Filter: 香港,日本
+
+Provider C
+Filter: 香港
+```
+
+每次 RuntimeIntent 构建时重新计算。
+
+因此订阅增加新：
+
+```text
+B-日本03
+```
+
+会自动进入该 Pool。
+
+---
+
+# 75. Config Validation
+
+任何 Managed Config 应：
+
+```text
+Generate Candidate Config
+       ↓
+Write temporary file
+       ↓
+sing-box check
+       ↓
+Success
+```
+
+才能 Apply。
+
+---
+
+# 76. Config Build / Apply 分离
+
+```text
+Build
+ │
+ ├── Domain Validation
+ ├── Compile
+ ├── Serialize
+ └── sing-box check
+
+
+Apply
+ │
+ ├── Prepare
+ ├── Replace Active Config
+ ├── Restart
+ └── Health Check
+```
+
+---
+
+# 77. Runtime Config Files
+
+```text
+generated/
+
+active.json
+previous.json
+candidate.json
+```
+
+candidate：
+
+```text
+只用于 check
+```
+
+成功后：
+
+```text
+active → previous
+candidate → active
+```
+
+---
+
+# 78. Rollback
+
+如果新配置：
+
+```text
+check success
+```
+
+但启动后：
+
+```text
+sing-box crash
+```
+
+应：
+
+```text
+停止新实例
+   ↓
+恢复 previous.json
+   ↓
+启动旧配置
+```
+
+---
+
+# 79. Runtime State Machine
 
 ```text
 Stopped
@@ -1676,946 +2578,41 @@ Stopped
 
 ```text
 Starting → Error
-
 Running → Error
 ```
 
-禁止只靠：
-
-```text
-Child::spawn()
-```
-
-成功判断启动完成。
-
-Ready 条件至少包括：
-
-```text
-进程存活
-+
-Clash API ready
-+
-mixed port ready
-```
-
-TUN 可增加：
-
-```text
-TUN adapter ready
-```
-
 ---
 
-# 39. Config Validation
+# 80. Ready 条件
 
-任何 Generated Config 启动前：
-
-```text
-写临时文件
-    ↓
-sing-box check -c
-    ↓
-success
-    ↓
-atomic replace
-    ↓
-restart
-```
-
-失败：
+不能简单以：
 
 ```text
-保留当前运行配置
+spawn success
 ```
 
-不能：
-
-```text
-生成失败
-    ↓
-把旧内核停掉
-    ↓
-用户断网
-```
-
----
-
-# 40. 配置事务
-
-核心规则：
-
-> Build 与 Apply 分离。
-
-```text
-Build
- │
- ├ validate
- ├ compile
- ├ check
- └ prepare
-
-Apply
- │
- ├ stop old
- ├ atomic config replace
- ├ start new
- └ health check
-```
-
-如果启动失败：
-
-优先支持：
-
-```text
-rollback previous config
-```
-
----
-
-# 41. 节点切换
-
-Manual Pool：
-
-```text
-selector
-```
-
-节点切换通过 Clash API：
-
-```text
-PUT selector
-```
-
-不需要重启 sing-box。
-
-Auto Pool：
-
-```text
-urltest
-```
-
-由内核选择。
-
----
-
-# 42. Pool 更新
-
-如果订阅刷新导致：
-
-```text
-Node A 删除
-Node B 新增
-```
-
-Pool membership 发生变化。
-
-处理流程：
-
-```text
-subscription refresh
-      ↓
-node store update
-      ↓
-rebuild RuntimeIntent
-      ↓
-compile config
-      ↓
-check
-      ↓
-restart
-```
-
-V0.1 不追求：
-
-```text
-动态增删 outbound 无重启
-```
-
-节点切换才走热更新。
-
----
-
-# 43. Subscription 更新
-
-流程：
-
-```text
-fetch
- ↓
-parse
- ↓
-normalize
- ↓
-validate
- ↓
-build new node set
- ↓
-transaction update storage
- ↓
-recompute pools
- ↓
-recompile config
-```
-
-如果新订阅解析失败：
-
-```text
-保留旧节点
-```
-
-不能直接清空。
-
----
-
-# 44. Subscription HTTP
-
-客户端请求订阅时记录：
-
-```text
-ETag
-Last-Modified
-subscription-userinfo
-Content-Disposition
-```
-
-支持：
-
-```text
-304 Not Modified
-```
-
-避免无意义重解析。
-
----
-
-# 45. Subscription Traffic
-
-Domain：
-
-```rust
-struct SubscriptionTraffic {
-    upload: Option<u64>,
-    download: Option<u64>,
-    total: Option<u64>,
-
-    expire_at: Option<DateTime>,
-}
-```
-
-UI：
-
-```text
-A机场
-
-剩余 218GB
-12月31日到期
-```
-
----
-
-# 46. Storage
-
-V0.1 推荐：
-
-```text
-SQLite
-```
-
-而不是 JSON 文件堆。
-
-原因：
-
-数据已经具有明显关系：
-
-```text
-Subscription
-Provider
-Node
-Pool
-PoolSource
-RoutePolicy
-Settings
-```
-
-需要：
-
-```text
-transaction
-migration
-query
-foreign key
-```
-
----
-
-# 47. 数据表建议
-
-```text
-subscriptions
-providers
-nodes
-
-node_pools
-pool_sources
-
-route_policies
-
-rule_sets
-
-local_inbounds
-
-settings
-
-runtime_snapshots
-```
-
----
-
-# 48. nodes
-
-节点表不保存 latency 作为核心配置字段。
-
-建议：
-
-```text
-nodes
-node_runtime_stats
-```
-
-分离：
-
-```text
-identity/config
-```
-
-和：
-
-```text
-latency/history
-```
-
----
-
-# 49. UI 信息架构
-
-左侧：
-
-```text
-概览
-
-代理
-订阅
-分流
-
-连接
-日志
-
-设置
-```
-
-这是 V0.1 默认结构。
-
-避免：
-
-```text
-Inbound
-Outbound
-Rule Set
-DNS Server
-Provider
-```
-
-成为一级导航。
-
----
-
-# 50. 代理页面
-
-默认：
-
-```text
-代理
-
-[出口组] [全部节点]
-```
-
-出口组：
-
-```text
-A机场
-订阅 · 28节点
-当前 香港03 · 48ms
-
-B机场
-订阅 · 16节点
-当前 新加坡02 · 61ms
-
-自定义
-
-高速下载
-B机场 + C机场 · 21节点
-当前 B机场 / 日本01 · 39ms
-```
-
----
-
-# 51. 创建出口组
-
-Wizard：
-
-```text
-名称
- ↓
-来源
- ↓
-筛选
- ↓
-选择策略
- ↓
-预览
-```
-
-来源：
-
-```text
-B机场
-C机场
-```
-
-筛选：
-
-```text
-全部
-
-地区
-
-协议
-
-关键词
-
-指定节点
-```
-
-策略：
-
-```text
-自动最快
-手动选择
-```
-
----
-
-# 52. 出口组详情
-
-```text
-高速下载
-
-B机场 + C机场
-21 个节点
-
-选择方式：自动
-
-当前：
-B机场 / 日本01
-39ms
-
-
-B机场
-
-香港01   43ms
-日本01   39ms
-
-
-C机场
-
-香港01   52ms
-美国01   128ms
-```
-
-必须显示 Provider 来源。
-
----
-
-# 53. 分流页面
-
-```text
-默认出口
-
-A机场
-```
-
-应用：
-
-```text
-qBittorrent
-→ 高速下载
-
-rclone
-→ 大文件上传
-```
-
-服务：
-
-```text
-YouTube
-→ 高速下载
-
-Google Drive
-→ 大文件上传
-```
-
-高级：
-
-```text
-域名
-CIDR
-端口
-Inbound
-Rule Set
-```
-
----
-
-# 54. Connections
-
-字段：
-
-```text
-Host
-Destination
-Protocol
-Process
-Rule
-Pool
-Node
-Upload
-Download
-Duration
-```
-
-例如：
-
-```text
-youtube.com
-
-高速下载
-→ B机场 / 日本01
-```
-
-不要只显示：
-
-```text
-node-b3858a
-```
-
-Runtime tag 必须反向映射 Domain。
-
----
-
-# 55. Connection Cache
-
-不要让前端每 500ms 获取全部 connections。
-
-推荐：
-
-Backend：
-
-```text
-poll core
- ↓
-connection cache
- ↓
-diff
-```
-
-Frontend：
-
-```text
-revision based delta
-```
+判定 Running。
 
 至少：
 
 ```text
-added
-updated
-removed
-```
-
-避免 TUN 模式几千连接时频繁发送完整 JSON。
-
----
-
-# 56. Traffic
-
-Backend 维护：
-
-```text
-upload_total
-download_total
-upload_speed
-download_speed
-```
-
-前端只消费 snapshot。
-
-不要让每一个 UI 组件自己轮询 Clash API。
-
----
-
-# 57. Tray 性能设计
-
-这是明确的非功能需求。
-
-目标：
-
-> 从托盘恢复主窗口时，无明显重新初始化卡顿。
-
-原则：
-
-```text
-Hide != Destroy
-```
-
-默认：
-
-```text
-关闭窗口
-    ↓
-hide
-```
-
-而不是：
-
-```text
-destroy webview
-```
-
----
-
-# 58. UI 状态保活
-
-隐藏窗口以后：
-
-保留：
-
-```text
-React Root
-Router
-Store
-Navigation State
-```
-
-但停止：
-
-```text
-高频动画
-不可见图表更新
-DOM-heavy connection render
-```
-
-Backend Runtime 始终运行。
-
----
-
-# 59. 恢复窗口
-
-托盘：
-
-```text
-show()
-focus()
-```
-
-不能在恢复路径执行：
-
-```text
-读取全部订阅
-刷新订阅
-扫描节点
-重新解析规则
-重建 config
-重新启动 WebSocket
-查询全部 connections
-```
-
-恢复只能：
-
-```text
-显示现有 View
+Process Alive
 +
-读取已有 snapshot
+Clash API Ready
++
+Mixed Port Ready
+```
+
+TUN：
+
+```text
++
+TUN Interface Ready
 ```
 
 ---
 
-# 60. 性能指标
-
-建议直接作为验收条件：
-
-### Window Restore
-
-目标：
-
-```text
-P95 < 150ms
-```
-
-从用户点击托盘到窗口可交互。
-
-### Navigation
-
-普通页面：
-
-```text
-P95 < 100ms
-```
-
-### Proxy Node List
-
-1000 nodes：
-
-```text
-无明显卡顿
-```
-
-必须虚拟列表。
-
-### Connections
-
-5000 live connections：
-
-UI 不允许冻结。
-
----
-
-# 61. 后台刷新策略
-
-窗口隐藏：
-
-降低：
-
-```text
-UI render frequency
-```
-
-但 Backend 可以持续：
-
-```text
-Traffic
-Connections
-Health
-```
-
-根据资源压力调整：
-
-```text
-Visible:
-connections 500ms
-
-Hidden:
-connections 2s
-```
-
-具体值配置化。
-
----
-
-# 62. TUN
-
-支持：
-
-```text
-Off
-System Proxy
-TUN
-```
-
-用户心智：
-
-```text
-代理模式
-```
-
-而不是同时暴露：
-
-```text
-system proxy toggle
-tun toggle
-```
-
-避免出现两者同时开启且用户不知道谁生效。
-
----
-
-# 63. CaptureMode
-
-```rust
-enum CaptureMode {
-    Off,
-    SystemProxy,
-    Tun,
-}
-```
-
-状态必须互斥。
-
----
-
-# 64. DNS
-
-V0.1 UI 尽量简单：
-
-```text
-DNS
-
-默认
-自动
-
-高级
-国内 DNS
-代理 DNS
-Fake IP
-IPv6
-```
-
-Domain：
-
-```rust
-struct DnsPolicy {
-    local_servers: Vec<DnsServer>,
-    remote_servers: Vec<DnsServer>,
-
-    fake_ip: bool,
-
-    ipv6: bool,
-}
-```
-
-不要保存 sing-box raw JSON。
-
----
-
-# 65. Rule Set
-
-Domain：
-
-```rust
-struct RuleSet {
-    id: RuleSetId,
-
-    name: String,
-
-    source: RuleSetSource,
-
-    enabled: bool,
-}
-```
-
-支持：
-
-```text
-Local
-Remote
-Builtin
-```
-
-Remote：
-
-```rust
-url
-update_interval
-last_update
-```
-
-sing-box 原生支持 remote rule-set 与更新间隔。 
-
----
-
-# 66. Platform Layer
-
-必须隔离：
-
-```text
-Windows
-macOS
-Linux
-```
-
-以下实现不能散落在 Application：
-
-```text
-system proxy
-autostart
-privilege
-process detection
-tun permission
-path
-service
-```
-
----
-
-# 67. Windows
-
-主要考虑：
-
-```text
-WinINET/System Proxy
-UAC
-Wintun
-process ownership
-startup
-service/helper
-```
-
-TUN 启动可能需要权限提升。
-
----
-
-# 68. macOS
-
-主要考虑：
-
-```text
-Network permissions
-root/helper
-setuid/helper strategy
-system proxy
-launch at login
-utun
-```
-
-权限处理必须做到：
-
-```text
-用户明确触发
-```
-
-不要后台偷偷要求 root。
-
----
-
-# 69. Linux
-
-考虑：
-
-```text
-CAP_NET_ADMIN
-system proxy desktop environment
-systemd user
-TUN
-```
-
-第一阶段优先：
-
-```text
-GNOME/KDE
-```
-
----
-
-# 70. Process Manager
+# 81. Process Manager
 
 ```rust
 struct SingBoxProcess {
@@ -2639,91 +2636,833 @@ stop
 restart
 kill
 poll
-validate
+check
 ```
 
 ---
 
-# 71. Graceful Stop
+# 82. Graceful Stop
 
-停止：
+Unix：
 
 ```text
 SIGTERM
- ↓
-等待
- ↓
-timeout
- ↓
-kill
+   ↓
+Wait
+   ↓
+Timeout
+   ↓
+SIGKILL
 ```
 
-Windows 使用对应 process terminate。
-
-避免 orphan process。
+Windows 使用平台对应的结束机制。
 
 ---
 
-# 72. Crash Recovery
+# 83. Orphan Recovery
 
-App 启动：
+App 启动时：
 
 ```text
-检查旧 PID
- ↓
-确认是否属于本 App 启动的 sing-box
- ↓
+读取自己的 runtime metadata
+       ↓
+验证旧 PID
+       ↓
+确认进程 identity
+       ↓
 必要时清理
 ```
 
-不能简单：
+禁止：
 
 ```text
 kill all sing-box
 ```
 
-因为用户可能自己运行其他 sing-box 实例。
-
 ---
 
-# 73. Port Ownership
+# 84. Runtime Metadata
+
+可以使用一个轻量：
+
+```text
+runtime.json
+```
 
 记录：
 
-```text
-mixed port
-clash api port
-extra inbound ports
+```json
+{
+  "pid": 12345,
+  "started_at": "...",
+  "binary_path": "...",
+  "config_path": "..."
+}
 ```
 
-Restart 前等待释放。
+只用于进程恢复。
+
+不属于 AppState。
+
+---
+
+# 85. Clash API
+
+默认启用：
+
+```text
+127.0.0.1
+```
+
+客户端通过 Clash API 获取：
+
+```text
+proxy groups
+selector state
+connections
+traffic
+```
+
+---
+
+# 86. Clash API Security
+
+默认：
+
+```text
+127.0.0.1
+```
+
+不监听：
+
+```text
+0.0.0.0
+```
+
+Secret：
+
+```text
+自动随机生成
+```
+
+用户无需默认感知。
+
+---
+
+# 87. Node Switch
+
+Manual Pool：
+
+```text
+selector
+```
+
+节点切换：
+
+```text
+Clash API
+```
+
+无需重启 sing-box。
+
+---
+
+# 88. UrlTest Pool
+
+自动模式：
+
+```text
+urltest
+```
+
+内核自动选节点。
+
+应用负责：
+
+```text
+展示当前选中节点
+展示延迟
+```
+
+---
+
+# 89. CaptureMode
+
+用户只看到：
+
+```text
+关闭
+系统代理
+TUN
+```
+
+Domain：
+
+```rust
+enum CaptureMode {
+    Off,
+
+    SystemProxy,
+
+    Tun,
+}
+```
+
+互斥。
+
+---
+
+# 90. 为什么互斥
 
 避免：
 
 ```text
-address already in use
+System Proxy = On
+TUN = On
+```
+
+用户不知道实际行为。
+
+高级用户如果将来需要特殊组合，再单独设计。
+
+---
+
+# 91. DNS
+
+UI：
+
+```text
+DNS
+
+自动
+
+高级：
+本地 DNS
+代理 DNS
+Fake IP
+IPv6
+```
+
+Domain：
+
+```rust
+struct DnsPolicy {
+    local_servers: Vec<DnsServer>,
+
+    remote_servers: Vec<DnsServer>,
+
+    fake_ip: bool,
+
+    ipv6: bool,
+}
 ```
 
 ---
 
-# 74. Error Model
+# 92. DNS Domain Model
+
+禁止：
+
+```rust
+raw_singbox_json: Value
+```
+
+作为 Managed DNS 主模型。
+
+sing-box JSON 由 Compiler 产生。
+
+---
+
+# 93. RuleSet
+
+```rust
+struct RuleSet {
+    id: RuleSetId,
+
+    name: String,
+
+    source: RuleSetSource,
+
+    enabled: bool,
+}
+```
+
+Source：
+
+```text
+Builtin
+Local
+Remote
+```
+
+---
+
+# 94. Remote RuleSet
+
+```rust
+struct RemoteRuleSet {
+    url: String,
+
+    update_interval: Duration,
+
+    last_update_at: Option<DateTime>,
+}
+```
+
+文件缓存存：
+
+```text
+rulesets/
+```
+
+State 只保存元数据。
+
+---
+
+# 95. Connections
+
+Connections 页面建议字段：
+
+```text
+Host
+Destination
+Protocol
+Process
+Rule
+出口组
+节点
+Upload
+Download
+Duration
+```
+
+例如：
+
+```text
+youtube.com
+
+高速下载
+→ B机场 / 日本01
+```
+
+---
+
+# 96. Runtime Domain Mapping
+
+sing-box 返回：
+
+```text
+pool-b3d291
+node-fa2291
+```
+
+UI 不展示这些 tag。
+
+需要：
+
+```text
+Runtime Tag
+    ↓
+Domain ID Mapping
+    ↓
+Display Name
+```
+
+---
+
+# 97. Connection Cache
+
+避免：
+
+```text
+Frontend
+每 500ms
+GET 全量 Connections
+```
+
+Backend 维护：
+
+```text
+ConnectionCache
+```
+
+然后：
+
+```text
+added
+updated
+removed
+```
+
+增量发送给 UI。
+
+---
+
+# 98. Connection Revision
+
+可以：
+
+```rust
+struct ConnectionDelta {
+    revision: u64,
+
+    added: Vec<Connection>,
+
+    updated: Vec<Connection>,
+
+    removed: Vec<ConnectionId>,
+}
+```
+
+---
+
+# 99. Traffic
+
+Backend 持有：
+
+```text
+upload_speed
+download_speed
+upload_total
+download_total
+```
+
+Frontend 消费 Snapshot/Event。
+
+不直接管理内核轮询。
+
+---
+
+# 100. Tray 性能目标
+
+明确非功能要求：
+
+> 从托盘恢复窗口时无明显卡顿。
+
+默认：
+
+```text
+Close Window
+    ↓
+Hide
+```
+
+而不是：
+
+```text
+Destroy WebView
+```
+
+---
+
+# 101. UI Lifecycle
+
+隐藏后保留：
+
+```text
+React Root
+Router
+Store
+Navigation State
+```
+
+暂停：
+
+```text
+High Frequency Animation
+Heavy Chart Rendering
+Large Connection DOM Updates
+```
+
+---
+
+# 102. Tray Restore
+
+恢复：
+
+```text
+show
+focus
+```
+
+禁止恢复时：
+
+```text
+重新读 state.json
+重新解析订阅
+重新扫描所有节点
+重新启动 sing-box
+重新初始化 Router
+重新创建整个 React Root
+```
+
+---
+
+# 103. Backend Always Alive
+
+窗口隐藏时：
+
+```text
+Rust Backend
++
+sing-box
+```
+
+继续运行。
+
+UI 只是停止不必要刷新。
+
+---
+
+# 104. Visible / Hidden Sampling
+
+建议：
+
+```text
+Visible:
+
+Connections
+500ms ~ 1s
+
+Traffic
+500ms
+
+
+Hidden:
+
+Connections
+2s ~ 5s
+
+Traffic
+2s
+```
+
+具体可配置。
+
+---
+
+# 105. UI 性能指标
+
+建议：
+
+### Tray Restore
+
+```text
+P95 < 150ms
+```
+
+### 普通导航切换
+
+```text
+P95 < 100ms
+```
+
+### Node List
+
+```text
+1000 nodes
+流畅滚动
+```
+
+### Connections
+
+```text
+5000 live connections
+UI 不冻结
+```
+
+---
+
+# 106. Virtual List
+
+以下页面必须考虑虚拟列表：
+
+```text
+Proxy Nodes
+Connections
+Logs
+```
+
+不允许一次性渲染数千 DOM Row。
+
+---
+
+# 107. UI 信息架构
+
+一级导航：
+
+```text
+概览
+
+代理
+订阅
+分流
+
+连接
+日志
+
+设置
+```
+
+避免：
+
+```text
+Inbound
+Outbound
+RuleSet
+Provider
+DNS Server
+```
+
+成为一级入口。
+
+---
+
+# 108. 代理页面
+
+```text
+代理
+
+[出口组] [全部节点]
+```
+
+默认显示：
+
+```text
+A机场
+订阅 · 28节点
+当前 香港03 · 48ms
+
+B机场
+订阅 · 16节点
+当前 新加坡02 · 63ms
+
+自定义
+
+高速下载
+B机场 + C机场 · 21节点
+当前 B机场 / 日本01 · 39ms
+```
+
+---
+
+# 109. 新建出口组
+
+Wizard：
+
+```text
+名称
+ ↓
+节点来源
+ ↓
+节点筛选
+ ↓
+节点选择策略
+ ↓
+预览
+```
+
+---
+
+# 110. 节点来源
+
+例如：
+
+```text
+☐ A机场
+☑ B机场
+☑ C机场
+```
+
+每个来源可以单独编辑：
+
+```text
+地区
+协议
+关键词
+指定节点
+```
+
+---
+
+# 111. 出口组详情
+
+```text
+高速下载
+
+B机场 + C机场
+
+21 个节点
+
+选择方式
+自动选择
+
+当前
+B机场 / 日本01
+39ms
+```
+
+节点必须标识来源：
+
+```text
+B机场 · 香港01
+C机场 · 香港01
+```
+
+---
+
+# 112. 分流页面
+
+```text
+默认出口
+
+A机场
+```
+
+应用：
+
+```text
+qBittorrent
+→ 高速下载
+
+rclone
+→ 上传专线
+```
+
+服务：
+
+```text
+YouTube
+→ 高速下载
+
+Google Drive
+→ 上传专线
+```
+
+---
+
+# 113. 高级规则
+
+折叠展示：
+
+```text
+域名
+Domain Suffix
+CIDR
+端口
+Inbound
+Rule Set
+```
+
+普通用户无需接触。
+
+---
+
+# 114. Platform Layer
+
+平台相关逻辑必须隔离。
+
+```text
+platform/
+├── windows
+├── macos
+└── linux
+```
+
+---
+
+# 115. Windows
+
+关注：
+
+```text
+WinINET Proxy
+Wintun
+UAC
+Process Identity
+Auto Start
+Privilege Helper
+```
+
+---
+
+# 116. macOS
+
+关注：
+
+```text
+System Proxy
+utun
+Launch at Login
+Privilege Helper
+Network Permission
+```
+
+---
+
+# 117. Linux
+
+关注：
+
+```text
+CAP_NET_ADMIN
+TUN
+GNOME Proxy
+KDE Proxy
+systemd user
+```
+
+Linux 第一版可以标记 Beta。
+
+---
+
+# 118. 权限原则
+
+任何：
+
+```text
+Admin
+Root
+UAC
+```
+
+都必须由用户明确动作触发。
+
+不允许应用后台静默获取高权限。
+
+---
+
+# 119. Error Model
 
 统一：
 
 ```rust
 enum AppError {
     Subscription,
+
     Parse,
+
+    State,
+
+    Migration,
+
     Config,
+
     Core,
+
     Network,
+
     Platform,
-    Storage,
+
     Permission,
 }
 ```
 
-错误必须包含：
+---
+
+# 120. Error Payload
+
+至少包括：
 
 ```text
 code
@@ -2737,37 +3476,35 @@ recoverable
 ```text
 CONFIG_NODE_UNSUPPORTED
 
-节点“香港01”的协议参数无法转换为当前 sing-box 配置。
+节点“香港01”的当前协议参数无法转换。
 
-technical:
-VLESS Reality + xxx unsupported
+technical_detail:
+unsupported Reality transport combination
 ```
 
 ---
 
-# 75. 日志
+# 121. 日志分类
 
 分：
 
 ```text
 App Log
-
 Core Log
 ```
 
-不要混。
-
-App：
+App Log：
 
 ```text
 subscription
-config
+storage
+migration
+compiler
 runtime
 platform
-storage
 ```
 
-Core：
+Core Log：
 
 ```text
 sing-box stdout/stderr
@@ -2775,183 +3512,208 @@ sing-box stdout/stderr
 
 ---
 
-# 76. 日志敏感信息
+# 122. Sensitive Data
 
-必须脱敏：
+日志禁止记录完整：
 
 ```text
-subscription URL token
-password
-uuid
-private key
-api secret
+Subscription Token
+Password
+UUID
+Private Key
+Reality Key
+API Secret
 ```
-
-默认日志不能完整打印 ProxyNode。
 
 ---
 
-# 77. 配置预览
+# 123. State Sensitive Data
 
-高级设置提供：
+`state.json` 可能包含敏感信息。
+
+需要：
 
 ```text
-查看生成配置
+文件权限最小化
 ```
 
-但只读。
+但 V0.1 不强制全数据库加密。
 
-允许：
+---
+
+# 124. Secret Storage
+
+未来可以将特别敏感字段转移到：
 
 ```text
-复制
+Windows Credential Manager
+
+macOS Keychain
+
+Linux Secret Service
 ```
 
-不允许直接编辑 Managed Profile 的 Generated Config。
-
-否则：
+State 中只保存：
 
 ```text
-Domain
+secret_ref
+```
+
+---
+
+# 125. SQLite 不代表安全
+
+明确：
+
+```text
+SQLite plaintext
 ```
 
 和：
 
 ```text
-Runtime config
+JSON plaintext
 ```
 
-会出现双写。
+在 credential 保护方面没有本质区别。
 
-需要修改 raw JSON 的用户使用：
+安全问题应该通过：
+
+```text
+OS Credential Store
+```
+
+解决。
+
+---
+
+# 126. Generated Config Preview
+
+高级用户允许：
+
+```text
+查看生成配置
+复制
+```
+
+不允许：
+
+```text
+直接编辑 Managed Generated Config
+```
+
+否则产生：
+
+```text
+Domain State
+        ↕
+Generated JSON
+```
+
+双 Source of Truth。
+
+---
+
+# 127. Native Profile 负责 Raw JSON
+
+需要完全控制 sing-box 的用户使用：
 
 ```text
 Native Profile
 ```
 
----
-
-# 78. Security
-
-Clash API 默认：
-
-```text
-127.0.0.1
-```
-
-禁止默认：
-
-```text
-0.0.0.0
-```
-
-Secret：
-
-可以默认生成随机值。
-
-UI 无需默认展示。
+而不是修改 Generated Config。
 
 ---
 
-# 79. Subscription URL
-
-Subscription URL 经常包含 credential。
-
-Storage：
-
-可明文保存于本地 DB，但：
+# 128. App Update 与 Core Update 分离
 
 ```text
-UI 列表脱敏
-日志脱敏
-Crash Report 脱敏
+App Version
 ```
 
-后续可以考虑 OS keychain。
+与：
+
+```text
+sing-box Version
+```
+
+独立。
+
+用户可以分别升级。
 
 ---
 
-# 80. Updater
-
-App 与 Core 分离更新。
-
-```text
-App Update
-Core Update
-```
-
-Core 版本必须可：
-
-```text
-升级
-回退
-```
-
-不能把：
-
-```text
-最新 sing-box
-```
-
-和 App 强绑定。
-
----
-
-# 81. Core Compatibility
+# 129. Core Version
 
 需要：
 
 ```rust
 struct CoreCompatibility {
     min_version: Version,
+
     max_tested_version: Option<Version>,
 }
 ```
 
-如果用户自行安装超出测试范围版本：
+---
 
-UI：
+# 130. Core Rollback
+
+至少保留：
 
 ```text
-该版本尚未经过完整兼容性测试
+current core
+previous core
 ```
+
+升级失败可以回退。
 
 ---
 
-# 82. 配置版本兼容
+# 131. SingBox Dialect
 
-sing-box 配置持续变化。
+sing-box 配置语义会演化。
 
-因此 Compiler 必须：
+Compiler 应考虑：
 
 ```text
-根据 CoreVersion
+CoreVersion
 ```
 
-生成配置。
-
-例如：
+未来：
 
 ```rust
 trait SingBoxDialect {
     fn compile_dns(...);
+
     fn compile_tun(...);
+
+    fn compile_route(...);
 }
 ```
 
-V0.1 可以先实现：
+---
+
+# 132. V0.1 Dialect
+
+第一版只需要：
 
 ```text
-CurrentDialect
+CurrentSupportedDialect
 ```
 
-但必须预留版本层。
+但禁止在整个代码库散落：
+
+```rust
+if version >= ...
+```
+
+应该集中在 Compiler 层。
 
 ---
 
-# 83. Application API
-
-Frontend 不应该直接调用几十个底层命令。
+# 133. Frontend API
 
 建议：
 
@@ -2959,6 +3721,7 @@ Frontend 不应该直接调用几十个底层命令。
 subscription.list
 subscription.add
 subscription.update
+subscription.delete
 subscription.refresh
 
 pool.list
@@ -2967,16 +3730,15 @@ pool.update
 pool.delete
 
 routing.list
-routing.save
+routing.update
+
+proxy.select
 
 runtime.start
 runtime.stop
 runtime.status
 
-proxy.select_node
-
 connection.snapshot
-connection.subscribe
 
 settings.get
 settings.update
@@ -2984,39 +3746,24 @@ settings.update
 
 ---
 
-# 84. Frontend Store
+# 134. Backend 是业务 Source of Truth
 
-不应该缓存整个 Backend Domain。
-
-建议只存：
-
-```text
-UI state
-```
-
-例如：
+Frontend Store 主要保存：
 
 ```text
 selected page
 filter
 sort
 drawer
-modal
+dialog
+layout
 ```
 
-业务真实状态：
-
-```text
-Backend
-```
-
-通过 Query/Snapshot 获取。
-
-避免 Rust 和 React 同时成为 source of truth。
+不承担持久化 Domain State。
 
 ---
 
-# 85. Events
+# 135. Backend Event
 
 Backend → Frontend：
 
@@ -3025,46 +3772,103 @@ runtime-status
 traffic-update
 connection-delta
 subscription-updated
+state-updated
 core-log
 core-error
 ```
 
-不能把所有数据都通过 polling。
+---
+
+# 136. State Revision
+
+建议 AppState 维护内存 Revision：
+
+```text
+revision: u64
+```
+
+每次成功配置更新：
+
+```text
+revision += 1
+```
+
+Frontend 可以：
+
+```text
+发现 revision 变化
+   ↓
+重新 Query 必要数据
+```
 
 ---
 
-# 86. Testing Strategy
-
-分四层。
-
-### Domain Test
+# 137. Domain Test
 
 不启动 sing-box。
 
 测试：
 
 ```text
+Node Identity
+Provider Relationship
 NodeFilter
-Pool membership
-Route priority
-identity
+Pool Membership
+Route Priority
+Reference Validation
 ```
 
 ---
 
-# 87. Parser Test
+# 138. Storage Test
 
-建立 fixtures：
+必须覆盖：
 
 ```text
-fixtures/
+load state
+save state
+atomic replace
+backup
+corrupt recovery
+migration
+unsupported schema
+```
+
+---
+
+# 139. Migration Test
+
+每个版本准备 Fixture：
+
+```text
+fixtures/state/v1.json
+fixtures/state/v2.json
+```
+
+测试：
+
+```text
+v1
+ ↓
+latest
+```
+
+结果符合预期。
+
+---
+
+# 140. Parser Test
+
+```text
+fixtures/subscriptions/
 
 clash/
 singbox/
 uri/
+base64/
 ```
 
-每种协议至少：
+每种协议覆盖：
 
 ```text
 basic
@@ -3073,12 +3877,12 @@ reality
 ws
 grpc
 invalid
-edge case
+edge
 ```
 
 ---
 
-# 88. Compiler Test
+# 141. Compiler Test
 
 输入：
 
@@ -3089,64 +3893,45 @@ RuntimeIntent
 输出：
 
 ```text
-JSON
+JSON Snapshot
 ```
 
-进行：
-
-```text
-snapshot test
-```
-
-同时必须调用：
+然后运行：
 
 ```text
 sing-box check
 ```
 
-做真实语法验证。
-
 ---
 
-# 89. Integration Test
-
-测试链路：
+# 142. Integration Test
 
 ```text
 Subscription
- ↓
+    ↓
 Parser
- ↓
+    ↓
 Domain
- ↓
+    ↓
+Pool
+    ↓
+Route
+    ↓
+RuntimeIntent
+    ↓
 Compiler
- ↓
+    ↓
 sing-box check
-```
-
-覆盖：
-
-```text
-A机场
-B机场
-自定义 Pool
-RoutePolicy
-TUN
-DNS
 ```
 
 ---
 
-# 90. Runtime Test
+# 143. Runtime Test
 
-启动真实 sing-box：
+真实启动：
 
 ```text
-mixed inbound
- ↓
-HTTP request
- ↓
-mock/local upstream
+sing-box
 ```
 
 验证：
@@ -3155,7 +3940,7 @@ mock/local upstream
 start
 ready
 traffic
-connection
+connections
 selector
 restart
 stop
@@ -3163,36 +3948,36 @@ stop
 
 ---
 
-# 91. Multi-Provider Test
-
-这是核心验收。
+# 144. Multi-Provider Test
 
 Fixture：
 
 ```text
 Provider A
-Node A1
-Node A2
+├── A1
+└── A2
 
 Provider B
-Node B1
+└── B1
 
 Provider C
-Node C1
+└── C1
 ```
 
 Pool：
 
 ```text
 Default = A
+
 Download = B + C
+
 Upload = C
 ```
 
-规则：
+Route：
 
 ```text
-example-video.test
+video.example
 → Download
 
 rclone
@@ -3202,84 +3987,118 @@ default
 → Default
 ```
 
-验证 Compiler 的 routing 与 selector/urltest 关系。
-
 ---
 
-# 92. UI E2E
+# 145. UI E2E
 
-至少覆盖：
+覆盖：
 
 ```text
 导入订阅
-新建出口组
+刷新订阅
+创建出口组
 设置默认出口
-新增应用分流
+新增应用规则
 启动代理
-切换节点
-从托盘隐藏
-从托盘恢复
+节点切换
+开启 TUN
+托盘隐藏
+托盘恢复
+退出程序
 ```
 
 ---
 
-# 93. Performance Test
+# 146. Performance Test
 
-必须成为自动/半自动测试项：
+测试规模：
 
 ```text
 100 subscriptions
 
 5000 nodes
 
-5000 connections
-
 100 pools
 
 500 route policies
+
+5000 connections
 ```
 
-目标：
+验证：
 
-UI 不阻塞。
+```text
+UI 不阻塞
+Compiler 时间可接受
+State 保存可接受
+```
 
 ---
 
-# 94. Phase 1：最小可运行
+# 147. State Size
 
-目标：
+即使：
 
 ```text
-sing-box 启停
+5000 nodes
 ```
+
+state.json 通常仍然属于：
+
+```text
+MB 级
+```
+
+整体加载完全可接受。
+
+未来只有在出现明显：
+
+```text
+几十万记录
+大量历史数据
+复杂查询
+```
+
+时才考虑数据库。
+
+---
+
+# 148. Phase 1：Desktop Runtime
 
 实现：
 
 ```text
-Tauri shell
-Rust runtime
-Core Manager
-config validate
-mixed inbound
-system proxy
-basic tray
+Tauri Shell
+React Shell
+Rust Runtime
+SingBox Process Manager
+Config Validation
+Mixed Inbound
+System Proxy
+Basic Tray
 ```
 
 验收：
 
 ```text
-可以启动 sing-box
-可以停止
-不会留下 orphan
+Core 可以可靠启动
+Core 可以可靠停止
+无 orphan
 ```
 
 ---
 
-# 95. Phase 2：Subscription + Node
+# 149. Phase 2：State + Subscription
 
 实现：
 
 ```text
+AppState
+JsonStateStore
+Atomic Save
+Backup
+Migration
+
 Clash YAML
 sing-box JSON
 URI
@@ -3288,48 +4107,47 @@ Base64
 Subscription
 Provider
 ProxyNode
-SQLite
 ```
 
 验收：
 
 ```text
-3 个机场同时导入
+3 个订阅同时存在
 节点归属正确
-订阅刷新不破坏旧数据
+App 重启后恢复
+损坏 State 可恢复
 ```
 
 ---
 
-# 96. Phase 3：出口组
+# 150. Phase 3：出口组
 
 实现：
 
 ```text
-Implicit Provider Pool
+Implicit Pool
+
 Custom Pool
+
 Manual
+
 UrlTest
-```
 
-UI：
-
-```text
-代理
-出口组
-全部节点
+NodeFilter
 ```
 
 验收：
 
 ```text
-可以建立 B+C 组合池
-可以按地区筛节点
+可以组合 B+C
+可以按地区过滤
+可以自动选择
+可以手动选择
 ```
 
 ---
 
-# 97. Phase 4：Routing
+# 151. Phase 4：Routing
 
 实现：
 
@@ -3348,37 +4166,42 @@ Inbound
 
 ```text
 普通网页 → A
-下载 → B
+
+视频 → B
+
 上传工具 → C
 ```
 
 ---
 
-# 98. Phase 5：TUN + DNS
+# 152. Phase 5：TUN + DNS
 
 实现：
 
 ```text
 CaptureMode
+
 TUN
+
 DNS
+
 Fake IP
-LAN bypass
+
 IPv6
+
+LAN Bypass
 ```
 
-重点进行：
+重点测试：
 
 ```text
 Windows
 macOS
 ```
 
-稳定性测试。
-
 ---
 
-# 99. Phase 6：Observability
+# 153. Phase 6：Observability
 
 实现：
 
@@ -3386,37 +4209,39 @@ macOS
 Traffic
 Connections
 Logs
-Process
-Rule
-Pool
-Node
+Pool Mapping
+Node Mapping
+Rule Mapping
+Process Mapping
 ```
-
-Connection UI 完成 Domain 映射。
 
 ---
 
-# 100. Phase 7：Desktop Polish
+# 154. Phase 7：Desktop Polish
 
 实现：
 
 ```text
 Tray
-Autostart
-Updater
-Window lifecycle
-Fast restore
-Crash recovery
-Core rollback
-```
 
-完成性能指标。
+Fast Restore
+
+Auto Start
+
+Updater
+
+Core Update
+
+Rollback
+
+Crash Recovery
+
+Window Lifecycle
+```
 
 ---
 
-# 101. V0.1 功能范围
-
-必须：
+# 155. V0.1 必须实现
 
 ```text
 Tauri 2
@@ -3425,8 +4250,18 @@ Rust
 
 sing-box sidecar
 
+Versioned JSON State Store
+
+Atomic State Persistence
+
+State Backup / Recovery
+
+State Migration
+
 Clash YAML subscription
-sing-box JSON node import
+
+sing-box node import
+
 URI import
 
 Multiple subscriptions
@@ -3434,79 +4269,109 @@ Multiple subscriptions
 Provider
 
 Implicit Pool
+
 Custom Pool
 
 Manual selector
+
 URLTest
 
-Application routing
-Domain routing
-RuleSet routing
+Application Routing
+
+Domain Routing
+
+RuleSet Routing
 
 System Proxy
+
 TUN
 
 DNS
 
 Traffic
+
 Connections
+
 Logs
 
 Tray
-Autostart
+
+AutoStart
 
 Windows
+
 macOS
 ```
 
-Linux 可以作为 Beta。
+Linux：
+
+```text
+Beta
+```
 
 ---
 
-# 102. V0.1 不做
+# 156. V0.1 不实现
 
 ```text
+SQLite Configuration Store
+
 Xray
+
 Mihomo
 
 Multi Core
 
+Full Clash Config Conversion
+
 Script
 
-完整 Clash config migration
+Automatic Traffic Classification
 
-复杂 chain proxy
+Dynamic Connection Migration
 
-自动大流量识别
+Traffic History Database
 
-流量动态迁移
+Cloud Sync
 
-手机端
+Account System
 
-云同步
-
-账号系统
+Mobile
 ```
 
 ---
 
-# 103. 架构红线
+# 157. 架构红线
 
-以下实现禁止进入主干。
+以下实现不得进入主干。
 
-### 禁止 1
+## 红线 1
 
 ```text
-UI → sing-box JSON
+UI
+ ↓
+直接修改 sing-box JSON
 ```
 
 ---
 
-### 禁止 2
+## 红线 2
 
-Domain struct 出现：
+Subscription Parser：
 
 ```text
+Clash
+ ↓
+直接生成 SingBoxOutbound
+```
+
+---
+
+## 红线 3
+
+Domain 使用：
+
+```rust
 serde_json::Value
 ```
 
@@ -3514,55 +4379,55 @@ serde_json::Value
 
 ---
 
-### 禁止 3
+## 红线 4
 
-Clash Parser 直接生成 sing-box Outbound。
-
----
-
-### 禁止 4
-
-RoutePolicy 直接保存：
+Route 保存：
 
 ```text
 outbound_tag
 ```
 
----
+而不是：
 
-### 禁止 5
-
-Pool 使用节点名称作为 identity。
-
----
-
-### 禁止 6
-
-Managed Profile 允许直接编辑 Generated JSON。
+```text
+PoolId
+```
 
 ---
 
-### 禁止 7
+## 红线 5
 
-Window Restore 时重新初始化整个应用。
-
----
-
-### 禁止 8
-
-订阅刷新失败时清空旧节点。
+Pool 使用节点名称作为 Identity。
 
 ---
 
-### 禁止 9
+## 红线 6
 
-Config Check 失败后覆盖运行配置。
+Managed Config 允许用户直接编辑 Generated JSON。
 
 ---
 
-### 禁止 10
+## 红线 7
 
-App 退出时：
+Window Restore 重新加载整个 State。
+
+---
+
+## 红线 8
+
+Subscription Refresh Failure 清空旧节点。
+
+---
+
+## 红线 9
+
+Config Check Failure 覆盖 Active Config。
+
+---
+
+## 红线 10
+
+App Exit：
 
 ```text
 kill all sing-box
@@ -3570,88 +4435,196 @@ kill all sing-box
 
 ---
 
-# 104. 最终核心数据流
+## 红线 11
+
+Runtime Connections 写入：
 
 ```text
-                    Subscription A
-                          │
-                    Subscription B
-                          │
-                    Subscription C
-                          │
-                          ▼
-                 Subscription Parser
-                          │
-                          ▼
-                     ProxyNode
-                          │
-              ┌───────────┼───────────┐
-              │           │           │
-              ▼           ▼           ▼
-         Provider A  Provider B  Provider C
-              │           │           │
-              ▼           ▼           ▼
-          Pool A       Pool B       Pool C
-                           \         /
-                            \       /
-                             ▼     ▼
-                         Download Pool
-                              │
-                              │
-                         RoutePolicy
-                              │
-        ┌─────────────────────┼──────────────────┐
-        │                     │                  │
-     Browser              Download            Upload
-        │                     │                  │
-        ▼                     ▼                  ▼
-     Pool A              Download Pool          Pool C
-        │                     │                  │
-        └─────────────────────┼──────────────────┘
-                              │
-                              ▼
-                       RuntimeIntent
-                              │
-                              ▼
-                      SingBoxCompiler
-                              │
-                              ▼
-                         config.json
-                              │
-                              ▼
-                           sing-box
+state.json
 ```
 
 ---
 
-# 105. 项目的核心资产
+## 红线 12
 
-这个项目真正需要建立的长期资产不是 UI，也不是 sing-box 启动逻辑，而是以下四层：
+多个业务模块分别写：
+
+```text
+state.json
+```
+
+所有持久化必须通过统一：
+
+```text
+StateStore
+```
+
+---
+
+# 158. 最终配置数据流
+
+```text
+                   state.json
+                       │
+                       ▼
+                    AppState
+                       │
+        ┌──────────────┼──────────────┐
+        │              │              │
+Subscription A   Subscription B   Subscription C
+        │              │              │
+        ▼              ▼              ▼
+   Provider A      Provider B      Provider C
+        │              │              │
+        ▼              ▼              ▼
+      Nodes           Nodes          Nodes
+        │              │              │
+        └───────┬──────┴──────┬───────┘
+                │             │
+                ▼             ▼
+           Provider Pools   Custom Pools
+                │             │
+                └──────┬──────┘
+                       ▼
+                  RoutePolicy
+                       │
+                       ▼
+                  RuntimeIntent
+                       │
+                       ▼
+                SingBoxCompiler
+                       │
+                       ▼
+                  active.json
+                       │
+                       ▼
+                    sing-box
+```
+
+---
+
+# 159. 状态职责边界
+
+```text
+state.json
+```
+
+负责：
+
+```text
+用户配置
+长期配置
+领域关系
+```
+
+---
+
+```text
+runtime-cache.json
+```
+
+可选负责：
+
+```text
+最近延迟
+非关键缓存
+```
+
+---
+
+```text
+runtime.json
+```
+
+负责：
+
+```text
+进程恢复信息
+```
+
+---
+
+```text
+generated/active.json
+```
+
+负责：
+
+```text
+运行配置
+```
+
+---
+
+```text
+telemetry.db
+```
+
+未来负责：
+
+```text
+长期历史统计
+```
+
+---
+
+# 160. 核心长期资产
+
+项目长期最重要的不是 UI。
+
+也不是：
+
+```text
+sing-box process manager
+```
+
+而是：
 
 ```text
 1. Subscription Normalization
 
-2. Network Domain Model
+2. Stable ProxyNode Domain
 
-3. NodePool / RoutePolicy
+3. Provider / NodePool Model
 
-4. SingBox Semantic Compiler
+4. RoutePolicy Model
+
+5. RuntimeIntent
+
+6. Semantic Config Compiler
+
+7. Versioned Application State
 ```
 
-只要这四层稳定：
+---
 
-UI 可以迭代。
+# 161. 为什么这些才是核心
+
+只要：
+
+```text
+Subscription
+Provider
+ProxyNode
+Pool
+Route
+RuntimeIntent
+```
+
+保持稳定：
+
+UI 可以重写。
 
 sing-box 可以升级。
 
-未来可以支持：
+未来也可以出现：
 
 ```text
-XrayBackend
-MihomoBackend
+XrayCompiler
+MihomoCompiler
 ```
 
-而不影响用户的：
+而用户的：
 
 ```text
 订阅
@@ -3659,44 +4632,88 @@ MihomoBackend
 分流
 ```
 
-配置。
+无需推翻。
 
 ---
 
-# 106. 最终架构判断
+# 162. 最终架构定义
 
-项目不应定位为：
+项目不定义为：
 
 ```text
-Clash Verge + sing-box
+Clash Verge with sing-box
 ```
 
-更准确的定位应该是：
+也不定义为：
 
-> 一个拥有独立网络领域模型、以 sing-box 为第一运行后端、采用简洁桌面交互设计的跨平台代理客户端。
+```text
+sing-box Config Editor
+```
 
-Clash Verge 提供的是产品交互参考。
+而定义为：
 
-Satelite Proxy 提供的是订阅归一化和配置编译架构参考。
+> 一个拥有独立网络领域模型、以 sing-box 为第一运行后端、面向多订阅、多出口和策略分流场景的现代跨平台网络客户端。
 
-sing-box 提供实际网络运行能力。
+产品层：
 
-真正属于本项目自己的核心，是：
+```text
+订阅
+ ↓
+出口组
+ ↓
+分流
+```
+
+领域层：
 
 ```text
 Subscription
-    ↓
+ ↓
 Provider
-    ↓
+ ↓
+ProxyNode
+ ↓
 NodePool
-    ↓
+ ↓
 RoutePolicy
-    ↓
+ ↓
 RuntimeIntent
-    ↓
-Compiler
 ```
 
-这一条链。
+基础设施层：
 
-如果未来要形成长期可维护的独立开源项目，应优先保证这条链的模型稳定性，而不是优先追求兼容所有现有代理客户端配置格式。
+```text
+Subscription Parser
+
+StateStore
+
+SingBoxCompiler
+
+SingBoxRuntime
+
+PlatformAdapter
+```
+
+最终运行：
+
+```text
+AppState
+   ↓
+RuntimeIntent
+   ↓
+SingBoxCompiler
+   ↓
+active.json
+   ↓
+sing-box
+```
+
+这是 V0.1 的核心架构基线。
+
+后续开发中，所有新功能应优先判断：
+
+> 它属于用户配置、领域模型、运行意图、编译器，还是 Runtime？
+
+避免直接在 UI 或 sing-box JSON 上堆叠特殊逻辑。
+
+只要这条边界保持稳定，项目就可以在功能持续增长的情况下仍然保持较低的架构复杂度。
