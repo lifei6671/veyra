@@ -1,0 +1,87 @@
+records:
+  - id: EVIDENCE-TASK-004-001
+    type: implementation_verification
+    target: TASK-004
+    target_identity: sha256:52cb1277de5cba728f55a9c539f291afd58381093a7f26795337da4ea0851c1c
+    baseline: a51d84b
+    produced_by_phase: EXECUTING
+    command_or_method: >-
+      cargo fmt --manifest-path src-tauri/Cargo.toml -- --check; cargo clippy --manifest-path
+      src-tauri/Cargo.toml -- -D warnings; cargo test --manifest-path src-tauri/Cargo.toml;
+      pnpm lint; pnpm test; pnpm build; git diff --check.
+    exit_code: 0
+    result: PASS
+    timestamp: 2026-09-03T16:10:00+08:00
+    summary: >-
+      Rust formatting and Clippy with warnings denied passed. The Rust suite passed 65 tests,
+      including managed sidecar transaction, System Proxy PAC/WPAD conditional-restore, and
+      serial Runtime Supervisor compensation coverage. TypeScript lint, one frontend test,
+      production frontend build, and delivery-diff whitespace validation passed. The MSVC linker
+      emitted only its import-library creation message.
+    scope_note: >-
+      The reviewed overlay is relative to a51d84b, which already contains TASK-003 work. This
+      record covers only the frozen TASK-004 inventory: approved manifest/lockfile dependencies,
+      Application Runtime Supervisor, managed sidecar runtime, and Windows System Proxy adapter.
+      It does not reassign prior working-tree provenance.
+    observer: AGENT:/root
+    not_run:
+      - Real WinINet system-proxy writes
+      - Real sing-box check or sidecar execution
+      - CI
+      - Commit
+      - Push
+  - id: EVIDENCE-TASK-004-003
+    type: implementation_reverification
+    target: TASK-004
+    target_identity: sha256:24e69e68e43fb5cc083d6a774d41f840ee024f85f043b89182639bb9fe33100d
+    baseline: a51d84b
+    produced_by_phase: REMEDIATION
+    command_or_method: >-
+      cargo fmt --manifest-path src-tauri/Cargo.toml -- --check; cargo clippy --manifest-path
+      src-tauri/Cargo.toml -- -D warnings; cargo test --manifest-path src-tauri/Cargo.toml;
+      pnpm lint; pnpm test; pnpm build; git diff --check.
+    exit_code: 0
+    result: PASS
+    timestamp: 2026-09-03T16:40:00+08:00
+    summary: >-
+      User-authorized WinINet notification remediation added INTERNET_OPTION_PROXY_SETTINGS_CHANGED
+      after SETTINGS_CHANGED and REFRESH. The full Rust suite passed 70 tests, including the new
+      third-notification failure regression; Clippy with warnings denied, frontend lint/test/build,
+      and whitespace validation passed.
+    remediation_of:
+      - USER:lifei 2026-09-03 reported missing INTERNET_OPTION_PROXY_SETTINGS_CHANGED
+    observer: AGENT:/root
+    not_run:
+      - Real WinINet system-proxy writes
+      - Real sing-box check or sidecar execution
+      - CI
+      - Commit
+      - Push
+  - id: EVIDENCE-TASK-004-002
+    type: implementation_reverification
+    target: TASK-004
+    target_identity: sha256:3e42825e3beda1a242092057f8c0f37dec9d193a4dca1ecaee2af88b6ada9d9d
+    baseline: a51d84b
+    produced_by_phase: EXECUTING
+    command_or_method: >-
+      cargo fmt --manifest-path src-tauri/Cargo.toml -- --check; cargo clippy --manifest-path
+      src-tauri/Cargo.toml -- -D warnings; cargo test --manifest-path src-tauri/Cargo.toml;
+      pnpm lint; pnpm test; pnpm build; git diff --check.
+    exit_code: 0
+    result: PASS
+    timestamp: 2026-09-03T16:25:00+08:00
+    summary: >-
+      The P1 compensation repair passed full local verification: 69 Rust tests, including
+      concrete WindowsSystemProxy plus RuntimeSupervisor cases for enable readback failure,
+      notification rollback uncertainty, and stable recovery-record save failure. All uncertain
+      paths preserve the Ready sidecar and enter RecoveryRequired; only a proven unapplied state
+      permits stopping it. Frontend lint/test/build and whitespace validation also passed.
+    remediation_of:
+      - EVIDENCE-TASK-004-REVIEW-001/FINDING-TASK-004-001
+    observer: AGENT:/root
+    not_run:
+      - Real WinINet system-proxy writes
+      - Real sing-box check or sidecar execution
+      - CI
+      - Commit
+      - Push

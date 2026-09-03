@@ -19,30 +19,54 @@ milestones:
   - id: M3
     title: 出口组与分流
     objective: 交付节点池、出口选择、路由领域模型和语义编译。
-    status: PLANNED
+    status: DONE
+    completed:
+      - id: TASK-003
+        result: Typed node pools, routes, runtime intent, and deterministic semantic compilation delivered.
+        target_identity: sha256:38a9415169b9650bcc1bad1d43b7292013463566ddee5ed7a6ac2344ee818894
+        decision_refs: []
+        evidence_refs:
+          - .sdlc/evidence/TASK-003/implementation.yaml#EVIDENCE-TASK-003-001
+          - .sdlc/evidence/TASK-003/code-delivery-review.yaml#EVIDENCE-TASK-003-REVIEW-001
   - id: M4
     title: 运行时与 Windows 平台
     objective: 交付受管 sidecar 运行时、System Proxy 与按 ADR 解锁的 TUN 路线。
-    status: PLANNED
+    status: DONE
+    completed:
+      - id: TASK-004
+        result: >-
+          Managed sidecar transaction, Windows System Proxy conditional recovery, and Off/SystemProxy
+          compensation delivered with Mock evidence; TUN remains explicitly excluded pending a
+          separate ADR and Task.
+        target_identity: sha256:24e69e68e43fb5cc083d6a774d41f840ee024f85f043b89182639bb9fe33100d
+        decision_refs: []
+        evidence_refs:
+          - .sdlc/evidence/TASK-004/implementation.yaml#EVIDENCE-TASK-004-001
+          - .sdlc/evidence/TASK-004/implementation.yaml#EVIDENCE-TASK-004-002
+          - .sdlc/evidence/TASK-004/implementation.yaml#EVIDENCE-TASK-004-003
+          - .sdlc/evidence/TASK-004/code-delivery-review.yaml#EVIDENCE-TASK-004-REVIEW-001
+          - .sdlc/evidence/TASK-004/code-delivery-review.yaml#EVIDENCE-TASK-004-REVIEW-002
+          - .sdlc/evidence/TASK-004/code-delivery-review.yaml#EVIDENCE-TASK-004-REVIEW-003
   - id: M5
     title: 可观测性与桌面完善
     objective: 交付连接、流量、日志、托盘恢复与 Windows V0.1 验收闭环。
-    status: PLANNED
+    status: IN_PROGRESS
+    completed:
+      - id: TASK-005
+        result: >-
+          Mock-only in-memory observation, fixed IPC/capability, controlled hidden-window Delta
+          gating, tray restore, and Windows GUI-only executable startup delivered. Real runtime
+          observation and final E2E remain separately authorized work.
+        target_identity: sha256:03cf332021191ee1d93f45d974ca3f17cb6834df241268c2c94878a7957fde09
+        decision_refs:
+          - USER:lifei 2026-09-03 TASK-005 Mock-only observability scope (A)
+          - USER:lifei 2026-09-03 TASK-005 fixed main-window IPC/Capability and official Tauri Tray API
+          - USER:lifei 2026-09-03 TASK-005 remediation and Windows GUI-only startup (no console window)
+        evidence_refs:
+          - .sdlc/evidence/TASK-005/implementation.yaml#EVIDENCE-TASK-005-001
+          - .sdlc/evidence/TASK-005/implementation.yaml#EVIDENCE-TASK-005-002
+          - .sdlc/evidence/TASK-005/code-delivery-review.yaml#EVIDENCE-TASK-005-REVIEW-002
 
 window:
-  - id: TASK-003
-    task_ref: .sdlc/tasks/TASK-003.md
-  - id: TASK-004
-    milestone_ref: M4
-    objective: 实现受管 sing-box sidecar、Build/Apply 回滚与 Windows System Proxy 恢复。
-    dependencies: [TASK-003]
-    risk: HIGH
-    acceptance_summary: >-
-      sidecar 可验证启动、停止和回滚；System Proxy 快照、回读、条件恢复与用户改写冲突可观察。
-  - id: TASK-005
-    milestone_ref: M5
-    objective: 实现连接/流量/日志观测、托盘恢复与 Windows V0.1 集成验收。
-    dependencies: [TASK-004]
-    risk: MEDIUM
-    acceptance_summary: >-
-      UI 可显示脱敏运行观测并从托盘恢复；Windows V0.1 关键状态切换和恢复路径具备独立验收证据。
+  - id: TASK-006
+    task_ref: .sdlc/tasks/TASK-006.md

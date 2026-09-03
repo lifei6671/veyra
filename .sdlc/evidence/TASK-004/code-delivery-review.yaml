@@ -1,0 +1,152 @@
+records:
+  - id: EVIDENCE-TASK-004-REVIEW-001
+    type: code_delivery_review
+    target: TASK-004
+    target_identity: sha256:52cb1277de5cba728f55a9c539f291afd58381093a7f26795337da4ea0851c1c
+    baseline: a51d84b
+    produced_by_phase: REVIEW
+    command_or_method: >-
+      Independent child-agent full-scope review of the frozen TASK-004 candidate.
+    result: REWORK
+    timestamp: 2026-09-03T16:17:00+08:00
+    summary: >-
+      The independent review found one P1. If WinINet writes/notifications succeed but enable
+      readback or stable-record persistence then fails, the private transitioning record retains
+      an uncertain managed proxy state; the Runtime Supervisor nevertheless stops the Ready
+      sidecar and reports Off. This can leave Windows pointing at a closed loopback port. The
+      candidate cannot enter Human acceptance until this compensation boundary is repaired,
+      integration-covered, re-verified, and independently re-reviewed.
+    observer: CHILD_AGENT:/root/task004_delivery_reviewer
+    review:
+      review_mode: CHILD_AGENT
+      review_result: REWORK
+      coverage:
+        strategy: PARTITIONED_PLUS_INTEGRATION
+        status: COMPLETE
+        applicable_lanes:
+          - correctness
+          - security
+          - contract-data
+          - concurrency-performance
+          - verification
+          - context-docs
+          - release
+        lanes:
+          correctness: { result: REWORK, freshness: FRESH }
+          security: { result: PASS, freshness: FRESH }
+          contract-data: { result: REWORK, freshness: FRESH }
+          concurrency-performance: { result: PASS, freshness: FRESH }
+          verification: { result: REWORK, freshness: FRESH }
+          context-docs: { result: PASS, freshness: FRESH }
+          release: { result: REWORK, freshness: FRESH }
+        integration_result: REWORK
+        freshness: FRESH
+      findings:
+        - id: FINDING-TASK-004-001
+          severity: P1
+          status: UNFIXED
+          locations:
+            - src-tauri/src/platform/windows/system_proxy.rs:429-444
+            - src-tauri/src/application/runtime.rs:144-153
+          summary: >-
+            Uncertain proxy enable state can be followed by sidecar stop and an incorrect Off
+            report, leaving Windows pointed to an unavailable loopback endpoint.
+      remaining_risks:
+        - Real WinINet system-proxy writes and real sing-box execution are NOT_RUN.
+        - CI, Human acceptance, commit, and push are NOT_RUN.
+  - id: EVIDENCE-TASK-004-REVIEW-003
+    type: code_delivery_review
+    target: TASK-004
+    target_identity: sha256:24e69e68e43fb5cc083d6a774d41f840ee024f85f043b89182639bb9fe33100d
+    baseline: a51d84b
+    produced_by_phase: REVIEW
+    command_or_method: >-
+      Independent child-agent incremental review of the WinINet proxy-settings notification repair
+      and the affected Runtime SystemProxyPort test implementation.
+    result: PASS
+    timestamp: 2026-09-03T16:43:00+08:00
+    summary: >-
+      The review found no P0-P3 findings. The fixed write path sends SETTINGS_CHANGED, REFRESH,
+      then PROXY_SETTINGS_CHANGED; the latter's failure enters the existing conservative uncertain
+      state and conditional-compensation path. All SystemProxyPort implementations and Mock
+      coverage are synchronized. No public IPC, dependency, or real system-proxy operation changed.
+    observer: CHILD_AGENT:/root/task004_proxy_reviewer
+    review:
+      review_mode: CHILD_AGENT
+      review_result: PASS
+      coverage:
+        strategy: INCREMENTAL_REREVIEW_WITH_AFFECTED_INTEGRATION
+        status: COMPLETE
+        applicable_lanes:
+          - correctness
+          - concurrency-performance
+          - verification
+          - release
+        lanes:
+          correctness: { result: PASS, freshness: FRESH }
+          concurrency-performance: { result: PASS, freshness: FRESH }
+          verification: { result: PASS, freshness: FRESH }
+          release: { result: PASS, freshness: FRESH }
+        partitions:
+          - paths:
+              - src-tauri/src/platform/windows/system_proxy.rs
+              - src-tauri/src/application/runtime.rs
+            result: PASS
+            freshness: FRESH
+        integration_result: PASS
+        freshness: FRESH
+      findings: []
+      remaining_risks:
+        - Real WinINet system-proxy writes and real sing-box execution are NOT_RUN.
+        - CI, Human acceptance, commit, and push are NOT_RUN.
+  - id: EVIDENCE-TASK-004-REVIEW-002
+    type: code_delivery_review
+    target: TASK-004
+    target_identity: sha256:3e42825e3beda1a242092057f8c0f37dec9d193a4dca1ecaee2af88b6ada9d9d
+    baseline: a51d84b
+    produced_by_phase: REVIEW
+    command_or_method: >-
+      Independent incremental re-review of the user-authorized P1 compensation repair and its
+      affected integration paths.
+    result: PASS
+    timestamp: 2026-09-03T16:27:00+08:00
+    summary: >-
+      The re-review verified that SystemProxyEnableError distinguishes a proven unapplied state
+      from an uncertain proxy state. RuntimeSupervisor stops the sidecar only for the former;
+      readback, notification rollback, and stable-record persistence uncertainty preserve the
+      Ready child and enter RecoveryRequired. No P0-P3 findings remain.
+    observer: CHILD_AGENT:/root/task004_delivery_reviewer
+    review:
+      review_mode: CHILD_AGENT
+      review_result: PASS
+      coverage:
+        strategy: INCREMENTAL_REREVIEW_WITH_AFFECTED_INTEGRATION
+        status: COMPLETE
+        applicable_lanes:
+          - correctness
+          - security
+          - contract-data
+          - concurrency-performance
+          - verification
+          - context-docs
+          - release
+        lanes:
+          correctness: { result: PASS, freshness: FRESH }
+          security: { result: PASS, freshness: FRESH }
+          contract-data: { result: PASS, freshness: FRESH }
+          concurrency-performance: { result: PASS, freshness: FRESH }
+          verification: { result: PASS, freshness: FRESH }
+          context-docs: { result: PASS, freshness: FRESH }
+          release: { result: PASS, freshness: FRESH }
+        integration_result: PASS
+        freshness: FRESH
+      findings: []
+      previous_findings:
+        - id: FINDING-TASK-004-001
+          status: FIXED
+          resolution: >-
+            Concrete Adapter/Supervisor coverage proves uncertain enable paths preserve the
+            sidecar and enter RecoveryRequired.
+      remaining_risks:
+        - Real WinINet system-proxy writes and real sing-box execution are NOT_RUN.
+        - CI, Human acceptance, commit, and push are NOT_RUN.

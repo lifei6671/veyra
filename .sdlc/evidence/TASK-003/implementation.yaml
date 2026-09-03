@@ -1,0 +1,26 @@
+records:
+  - id: EVIDENCE-TASK-003-001
+    type: implementation_verification
+    target: TASK-003
+    target_identity: sha256:38a9415169b9650bcc1bad1d43b7292013463566ddee5ed7a6ac2344ee818894
+    baseline: a51d84b
+    produced_by_phase: EXECUTING
+    command_or_method: >-
+      cargo fmt --manifest-path src-tauri/Cargo.toml -- --check; cargo clippy --manifest-path
+      src-tauri/Cargo.toml -- -D warnings; cargo test --manifest-path src-tauri/Cargo.toml;
+      pnpm lint; pnpm test; pnpm build; git diff --check.
+    exit_code: 0
+    result: PASS
+    timestamp: 2026-09-03T15:27:22+08:00
+    summary: >-
+      Rust formatting and Clippy with warnings denied passed. The Rust suite passed 40 tests,
+      including Reality URI rejection for missing or blank public key/short ID and compiler
+      rejection for persisted half-filled or blank Reality values. TypeScript lint, one frontend
+      test, production frontend build, and delivery-diff whitespace validation passed. The MSVC
+      linker emitted only its import-library creation message.
+    scope_note: >-
+      The reviewed overlay is relative to a51d84b, which already contains part of the TASK-003
+      allow-listed implementation. Review coverage included the complete frozen working-tree
+      delivery set and its interaction with that baseline; this record does not reassign baseline
+      provenance.
+    observer: AGENT:/root

@@ -4,8 +4,8 @@ use std::path::PathBuf;
 use serde::{Deserialize, Serialize};
 
 use crate::domain::{
-    AppState, NodePool, Provider, ProxyNode, RoutePolicy, StateValidationError, Subscription,
-    CURRENT_SCHEMA_VERSION,
+    AppState, CURRENT_SCHEMA_VERSION, NodePool, Provider, ProxyNode, RoutePolicy,
+    StateValidationError, Subscription,
 };
 
 use super::migration::migrate_to_current;
@@ -195,7 +195,9 @@ mod tests {
 
     use super::*;
     use crate::domain::{
-        NodeCredentials, NodeId, ProviderId, ProxyProtocol, SubscriptionId, Transport,
+        NodeCredentials, NodeFilter, NodeId, NodePool, PoolId, PoolKind, PoolSource, ProviderId,
+        ProxyProtocol, RoutePolicy, RoutePolicyId, RouteTarget, SelectionPolicy, SubscriptionId,
+        TrafficMatcher, Transport,
     };
     use crate::storage::snapshot::{backup_path, corrupt_copy_path, pre_migration_backup_path};
 
@@ -242,6 +244,32 @@ mod tests {
         }
     }
 
+    fn valid_state_with_pool_and_route() -> AppState {
+        let mut state = valid_state();
+        state.pools.push(NodePool {
+            id: PoolId("pool".to_owned()),
+            name: "Default".to_owned(),
+            kind: PoolKind::ImplicitProvider,
+            sources: vec![PoolSource {
+                provider_id: ProviderId("provider".to_owned()),
+                filter: NodeFilter::default(),
+            }],
+            selection: SelectionPolicy::Manual {
+                selected_node_id: Some(NodeId("node".to_owned())),
+            },
+            enabled: true,
+        });
+        state.routes.push(RoutePolicy {
+            id: RoutePolicyId("route".to_owned()),
+            name: "Example".to_owned(),
+            enabled: true,
+            priority: 0,
+            matcher: TrafficMatcher::DomainSuffix(vec!["example.com".to_owned()]),
+            target: RouteTarget::Pool(PoolId("pool".to_owned())),
+        });
+        state
+    }
+
     fn remove_test_files(store: &JsonStateStore) {
         let directory = store.state_file().parent().expect("parent directory");
         if directory.exists() {
@@ -256,6 +284,16 @@ mod tests {
         store.save(&state).expect("save state");
 
         assert_eq!(store.load().expect("load state"), state);
+        remove_test_files(&store);
+    }
+
+    #[test]
+    fn round_trips_v2_state_with_pool_and_route() {
+        let store = unique_test_store();
+        let state = valid_state_with_pool_and_route();
+        store.save(&state).expect("save v2 state");
+
+        assert_eq!(store.load().expect("load v2 state"), state);
         remove_test_files(&store);
     }
 
@@ -279,22 +317,63 @@ mod tests {
     fn migrates_v1_once_and_keeps_the_pre_migration_snapshot() {
         let store = unique_test_store();
         let state = valid_state();
-        let mut document = serde_json::to_value(StoredStateV2::from(&state)).expect("serialize v1");
-        document["schema_version"] = serde_json::json!(1);
-        document
-            .as_object_mut()
-            .expect("state object")
-            .remove("pools");
-        document
-            .as_object_mut()
-            .expect("state object")
-            .remove("routes");
-        let bytes = serde_json::to_vec(&document).expect("encode v1");
-        atomic_replace(store.state_file(), &bytes).expect("write v1 fixture");
+        atomic_replace(
+            store.state_file(),
+            include_bytes!("../../tests/fixtures/state/v1-valid.json"),
+        )
+        .expect("write v1 fixture");
 
         assert_eq!(store.load().expect("migrate v1"), state);
         assert!(pre_migration_backup_path(store.state_file()).exists());
+        let migrated_bytes = fs::read(store.state_file()).expect("read migrated state");
         assert_eq!(store.load().expect("reload v1"), state);
+        assert_eq!(
+            fs::read(store.state_file()).expect("read reloaded state"),
+            migrated_bytes
+        );
+        remove_test_files(&store);
+    }
+
+    #[test]
+    fn rejects_an_invalid_v1_migration_candidate_without_writing_it() {
+        let store = unique_test_store();
+        let state = valid_state();
+        store.save(&state).expect("save current state");
+        let before = fs::read(store.state_file()).expect("read current state");
+
+        assert!(matches!(
+            store.decode(include_bytes!(
+                "../../tests/fixtures/state/v1-invalid-reference.json"
+            )),
+            Err(StateStoreError::InvalidState(
+                StateValidationError::MissingProvider
+            ))
+        ));
+        assert_eq!(
+            fs::read(store.state_file()).expect("read current state"),
+            before
+        );
+        remove_test_files(&store);
+    }
+
+    #[test]
+    fn rejects_an_unapproved_v0_schema_without_writing_it() {
+        let store = unique_test_store();
+        let state = valid_state();
+        store.save(&state).expect("save current state");
+        let before = fs::read(store.state_file()).expect("read current state");
+        let mut candidate = serde_json::to_value(StoredStateV2::from(&state))
+            .expect("serialize unsupported candidate");
+        candidate["schema_version"] = serde_json::json!(0);
+
+        assert_eq!(
+            store.decode(&serde_json::to_vec(&candidate).expect("encode candidate")),
+            Err(StateStoreError::UnsupportedSchemaVersion)
+        );
+        assert_eq!(
+            fs::read(store.state_file()).expect("read current state"),
+            before
+        );
         remove_test_files(&store);
     }
 
@@ -310,9 +389,11 @@ mod tests {
 
         assert_eq!(store.load().expect("recover backup"), state);
         assert!(corrupt_copy_path(store.state_file()).exists());
-        assert!(fs::read_to_string(store.state_file())
-            .expect("read restored state")
-            .contains("Test node"));
+        assert!(
+            fs::read_to_string(store.state_file())
+                .expect("read restored state")
+                .contains("Test node")
+        );
         remove_test_files(&store);
     }
 

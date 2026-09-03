@@ -1,0 +1,71 @@
+records:
+  - id: EVIDENCE-TASK-005-001
+    type: implementation_verification
+    target: TASK-005
+    target_identity: sha256:b59e6f6ae1c5ab095c91b6a7cb3d642c8ab4ed5a17ce0f9859b2bf2ef6264461
+    baseline: a51d84b
+    produced_by_phase: EXECUTING
+    command_or_method: >-
+      cargo fmt --manifest-path src-tauri/Cargo.toml -- --check; cargo clippy --manifest-path
+      src-tauri/Cargo.toml -- -D warnings; cargo test --manifest-path src-tauri/Cargo.toml;
+      pnpm lint; pnpm test; pnpm build; generated Tauri command-permission readback; git diff --check.
+    exit_code: 0
+    result: PASS
+    timestamp: 2026-09-03T17:08:27+08:00
+    summary: >-
+      The Mock-only in-memory observation Port, fixed Snapshot/restore IPC, generated least-privilege
+      command permissions, and official Tauri tray lifecycle compile and pass local verification. Rust
+      formatting and warnings-denied Clippy passed; the Rust suite passed 78 tests. TypeScript lint,
+      two frontend test files with four tests, production build, and whitespace validation passed.
+      The snapshot response maps only fixed safe fields and the regression test proves fixture secret
+      and loopback detail do not serialize.
+    scope_note: >-
+      The frozen TASK-005 inventory includes only its approved observation, IPC, capability, tray,
+      generated-command-permission, and frontend files. Cargo.toml has a mixed historical overlay:
+      TASK-005 changes only the existing Tauri dependency's tray-icon feature; its prior Task-004
+      dependency hunks remain outside this delivery's provenance. Cargo.lock was already modified
+      before this Task and did not change while this feature was enabled.
+    observer: AGENT:/root
+    not_run:
+      - Real packaged sidecar execution
+      - Real loopback Clash API observation
+      - Real Windows System Proxy operation
+      - Windows UI Automation close-hide and tray-show evidence (native application target unavailable to the automation host)
+      - CI
+      - Commit
+      - Push
+  - id: EVIDENCE-TASK-005-002
+    type: implementation_reverification
+    target: TASK-005
+    target_identity: sha256:03cf332021191ee1d93f45d974ca3f17cb6834df241268c2c94878a7957fde09
+    baseline: a51d84b
+    produced_by_phase: REMEDIATION
+    command_or_method: >-
+      cargo fmt --manifest-path src-tauri/Cargo.toml -- --check; cargo clippy --manifest-path
+      src-tauri/Cargo.toml -- -D warnings; cargo test --manifest-path src-tauri/Cargo.toml;
+      cargo build --manifest-path src-tauri/Cargo.toml; cargo build --manifest-path
+      src-tauri/Cargo.toml --release; PE Optional Header Subsystem readback for Debug and Release;
+      pnpm lint; pnpm test; pnpm build; git diff --check.
+    exit_code: 0
+    result: PASS
+    timestamp: 2026-09-03T17:20:09+08:00
+    summary: >-
+      User-authorized remediation installs the single controlled Delta bridge and suppresses bridge
+      emission while the main window is hidden; restore still emits only the current safe Snapshot.
+      New Rust tests prove Delta bridge delivery, hidden-update dropping without backlog, and visible
+      resumption. The full Rust suite passed 81 tests, warnings-denied Clippy passed, and frontend
+      lint, tests, production build, and whitespace validation passed. The Windows Debug and Release
+      executable PE Optional Header Subsystem fields both read as 2 (GUI), proving neither binary is
+      a console-subsystem executable.
+    remediation_of:
+      - EVIDENCE-TASK-005-REVIEW-001/FINDING-TASK-005-001
+      - USER:lifei 2026-09-03 Windows GUI-only startup with no console window
+    observer: AGENT:/root
+    not_run:
+      - Real packaged sidecar execution
+      - Real loopback Clash API observation
+      - Real Windows System Proxy operation
+      - Windows UI Automation close-hide and tray-show evidence (native application target unavailable to the automation host)
+      - CI
+      - Commit
+      - Push

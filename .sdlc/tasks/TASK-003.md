@@ -3,11 +3,12 @@ id: TASK-003
 milestone_ref: M3
 dependencies: [TASK-002]
 risk: HIGH
-status: READY
+status: DONE
 design_refs:
   - .sdlc/design/foundation.md
 approval_refs:
   - .sdlc/state.yaml#gates.technical_design
+  - USER:lifei 2026-09-03 TASK-003 delivery acceptance
 ---
 
 # TASK-003：出口组、分流与语义配置编译
@@ -51,8 +52,9 @@ sidecar、不变更系统代理，也不接受前端传入任意配置片段。
 **验证：** Rust 单元测试覆盖有效多 Provider Pool、筛选成员、悬空 Provider/Pool、重复 ID、无效
 Manual/URLTest 与 `Direct`/`Block` 目标。
 
-**implementation_status：** NOT_STARTED
-**acceptance_status：** PENDING
+**implementation_status：** IMPLEMENTED
+**acceptance_status：** PASSED
+**evidence_refs：** `.sdlc/evidence/TASK-003/implementation.yaml#EVIDENCE-TASK-003-001`
 
 ### SF-002：RuntimeIntent 与确定性语义编译
 
@@ -65,8 +67,9 @@ urltest；路由只能引用 pool tag、direct 或 block，且错误不包含节
 **验证：** Rust fixture/单元测试覆盖确定性、tag 稳定性、Manual、URLTest、Direct、Block、空成员与
 非法引用拒绝；不运行 sing-box。
 
-**implementation_status：** NOT_STARTED
-**acceptance_status：** PENDING
+**implementation_status：** IMPLEMENTED
+**acceptance_status：** PASSED
+**evidence_refs：** `.sdlc/evidence/TASK-003/implementation.yaml#EVIDENCE-TASK-003-001`
 
 ### SF-003：状态 schema 演进
 
@@ -78,8 +81,9 @@ urltest；路由只能引用 pool tag、direct 或 block，且错误不包含节
 **验证：** Rust fixture 测试覆盖 V1→V2、迁移幂等、带 Pool/Route 的 V2 往返，以及无效迁移候选的
 拒绝行为。
 
-**implementation_status：** NOT_STARTED
-**acceptance_status：** PENDING
+**implementation_status：** IMPLEMENTED
+**acceptance_status：** PASSED
+**evidence_refs：** `.sdlc/evidence/TASK-003/implementation.yaml#EVIDENCE-TASK-003-001`
 
 ## Task 独立验收
 
@@ -94,4 +98,6 @@ urltest；路由只能引用 pool tag、direct 或 block，且错误不包含节
 2. `pnpm lint`、`pnpm test`、`pnpm build`；
 3. 检查 delivery diff、Cargo 依赖、Tauri capability 与运行进程均在本 Task Scope 内。
 
-**acceptance_status：** PENDING
+**acceptance_status：** PASSED
+**evidence_refs：** `.sdlc/evidence/TASK-003/implementation.yaml#EVIDENCE-TASK-003-001`、
+`.sdlc/evidence/TASK-003/code-delivery-review.yaml#EVIDENCE-TASK-003-REVIEW-001`

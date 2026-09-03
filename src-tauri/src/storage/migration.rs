@@ -1,4 +1,4 @@
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 
 use super::StateStoreError;
 use crate::domain::CURRENT_SCHEMA_VERSION;
@@ -15,10 +15,6 @@ pub(crate) fn migrate_to_current(mut document: Value) -> Result<(Value, bool), S
             .as_object_mut()
             .ok_or(StateStoreError::InvalidStoredState)?;
         match version {
-            0 => {
-                object.insert("schema_version".to_owned(), json!(1));
-                version = 1;
-            }
             1 => {
                 object.insert("schema_version".to_owned(), json!(CURRENT_SCHEMA_VERSION));
                 object.insert("pools".to_owned(), json!([]));

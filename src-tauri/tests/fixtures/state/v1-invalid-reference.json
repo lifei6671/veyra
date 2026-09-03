@@ -1,0 +1,26 @@
+{
+  "schema_version": 1,
+  "subscriptions": [
+    { "id": "subscription", "name": "Test" }
+  ],
+  "providers": [
+    {
+      "id": "provider",
+      "subscription_id": "subscription",
+      "name": "Default"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "node",
+      "provider_id": "missing-provider",
+      "name": "Test node",
+      "protocol": "shadowsocks",
+      "server": "example.invalid",
+      "port": 443,
+      "credentials": { "kind": "none" },
+      "transport": null,
+      "tls": null
+    }
+  ]
+}
