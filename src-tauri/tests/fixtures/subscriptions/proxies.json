@@ -1,0 +1,19 @@
+{
+  "proxies": [
+    {
+      "name": "JSON Trojan",
+      "type": "trojan",
+      "server": "json.example.invalid",
+      "port": 443,
+      "password": "fixture-secret",
+      "tls": true,
+      "sni": "json.example.invalid"
+    },
+    {
+      "name": "Ignored",
+      "type": "wireguard",
+      "server": "ignored.example.invalid",
+      "port": 443
+    }
+  ]
+}

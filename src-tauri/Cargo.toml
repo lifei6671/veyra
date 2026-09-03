@@ -3,8 +3,11 @@ name = "veyra"
 version = "0.1.0"
 description = "Veyra desktop client"
 authors = ["Veyra Contributors"]
-edition = "2021"
-rust-version = "1.77.2"
+license = "GPL-3"
+repository = "https://github.com/lifei6671/veyra.git"
+default-run = "veyra"
+edition = "2024"
+rust-version = "1.98"
 
 [lib]
 name = "veyra_lib"

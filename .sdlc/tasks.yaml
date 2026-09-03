@@ -7,7 +7,15 @@ milestones:
   - id: M2
     title: 状态与订阅
     objective: 交付版本化 AppState、JSON 状态存储及订阅归一化。
-    status: PLANNED
+    status: DONE
+    completed:
+      - id: TASK-002
+        result: Versioned state persistence and subscription normalization delivered.
+        target_identity: sha256:da2756abf6935efc9e3dffb6e9060e9004f675e4647c9e2119b9d201e02183a8
+        decision_refs: []
+        evidence_refs:
+          - .sdlc/evidence/TASK-002/implementation.yaml#EVIDENCE-TASK-002-001
+          - .sdlc/evidence/TASK-002/code-delivery-review.yaml#EVIDENCE-TASK-002-REVIEW-001
   - id: M3
     title: 出口组与分流
     objective: 交付节点池、出口选择、路由领域模型和语义编译。
@@ -22,15 +30,8 @@ milestones:
     status: PLANNED
 
 window:
-  - id: TASK-002
-    task_ref: .sdlc/tasks/TASK-002.md
   - id: TASK-003
-    milestone_ref: M3
-    objective: 实现 NodePool、RoutePolicy、RuntimeIntent 与受管配置语义编译。
-    dependencies: [TASK-002]
-    risk: HIGH
-    acceptance_summary: >-
-      出口组可组合并支持手动/自动选择；普通路由只指向 Pool、Direct 或 Block，生成配置可检查。
+    task_ref: .sdlc/tasks/TASK-003.md
   - id: TASK-004
     milestone_ref: M4
     objective: 实现受管 sing-box sidecar、Build/Apply 回滚与 Windows System Proxy 恢复。

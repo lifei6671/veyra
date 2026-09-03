@@ -1,0 +1,20 @@
+records:
+  - id: EVIDENCE-TASK-002-001
+    type: implementation_verification
+    target: TASK-002
+    target_identity: sha256:da2756abf6935efc9e3dffb6e9060e9004f675e4647c9e2119b9d201e02183a8
+    produced_by_phase: EXECUTING
+    command_or_method: >-
+      cargo fmt --manifest-path src-tauri/Cargo.toml -- --check; cargo test --manifest-path
+      src-tauri/Cargo.toml; cargo clippy --manifest-path src-tauri/Cargo.toml -- -D warnings;
+      pnpm lint; pnpm test; pnpm build; git diff --check.
+    exit_code: 0
+    result: PASS
+    timestamp: 2026-09-03T14:20:36+08:00
+    summary: >-
+      Rust formatting, 23 Rust tests, Clippy with warnings denied, TypeScript lint, one frontend
+      test, production frontend build, and delivery diff whitespace validation passed. The Rust
+      suite covers typed identity/reference validation, whole-state persistence, V0 migration,
+      backup/recovery, unsupported schema, JSON/Clash YAML/URI/Base64 parsing, and multi-provider
+      node ownership.
+    observer: AGENT:/root

@@ -1,0 +1,19 @@
+{
+  "outbounds": [
+    {
+      "tag": "Sing-box VLESS",
+      "type": "vless",
+      "server": "singbox.example.invalid",
+      "server_port": 443,
+      "uuid": "44444444-4444-4444-4444-444444444444",
+      "tls": {
+        "enabled": true,
+        "server_name": "edge.example.invalid"
+      }
+    },
+    {
+      "tag": "Direct is not an imported node",
+      "type": "direct"
+    }
+  ]
+}
