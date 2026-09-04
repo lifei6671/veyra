@@ -1,0 +1,164 @@
+version: 1
+records:
+  - id: EVIDENCE-TASK-008-DNS-REVIEW-001
+    type: technical_design_review
+    target: TASK-008 ObservationOnly DNS candidate
+    target_identity: sha256:1135b15d073685f12398c4f084e379be3b731cc271ca2832b3d4f48b62c0f404
+    produced_by_phase: PLAN
+    result: FAIL
+    command_or_method: Independent read-only technical-design-review of the frozen DNS candidate.
+    observer: CHILD_AGENT:/root/task008_design_reviewer
+    summary: >-
+      The proposal preserves remote destination resolution for native URLTest members, while the
+      approved proposal had promised system resolution for all probe hostnames. Owner decision is
+      required to revise that behavior; default_domain_resolver cannot prove local probe resolution.
+    review:
+      review_mode: CHILD_AGENT
+      reviewed_target_identity: sha256:1135b15d073685f12398c4f084e379be3b731cc271ca2832b3d4f48b62c0f404
+      review_result: REWORK
+      coverage:
+        strategy: FOCUSED_DNS_CONTRACT
+        complete: true
+        freshness: FRESH
+        partitions:
+          typed_input_and_default_target: PASS
+          scope_and_unchanged_boundaries: PASS
+          dns_authorization_traceability: FAIL
+          verification_plan: FAIL
+        integration_result: REWORK
+      findings:
+        - id: TASK-008-DNS-DESIGN-001
+          severity: P1
+          status: UNRESOLVED
+          location: .sdlc/design/task008-observation-dns.md:26
+          fingerprint: task008-observation-dns:urltest-destination-resolution-authority
+          detail: >-
+            The approved readiness proposal explicitly covered node and probe hostnames. The DNS
+            candidate cannot claim that preserving remote probe resolution is already authorized.
+          requested_change: >-
+            Specify a supported local probe-resolution path or seek an explicit Owner decision
+            about preserving native protocol-dependent destination resolution. Distinguish syntax
+            check from actual DNS behavior verification.
+      remaining_risks:
+        - No real DNS or proxy traffic was executed.
+        - Fixed-core checks are separate feasibility evidence, not this design review.
+    follow_up_candidate: .sdlc/design/DCR-003-fixed-core-configuration.md
+    routing:
+      configuration: .codex/agents/sdlc-reviewer.toml
+      requested_model: gpt-5.6-sol
+      requested_reasoning: high
+      actual_model_and_reasoning: UNAVAILABLE
+      comparative_usage: UNAVAILABLE
+  - id: EVIDENCE-TASK-008-DCR003-REVIEW-001
+    type: technical_design_review
+    target: DCR-003 fixed-core representation and DNS candidate
+    target_identity: sha256:402371b7257bfeb70b8451946980f468ab8b269df44095baf945e68f3783b593
+    produced_by_phase: PLAN
+    result: FAIL
+    command_or_method: Independent source-grounded review of the proposed endpoint and DNS contracts.
+    observer: CHILD_AGENT:/root/task008_design_reviewer
+    summary: >-
+      Endpoint fields, TCP/UDP/DNS ingress controls and the explicit DNS behavior change were
+      adequate, but the proposal omitted virtual-address ICMP Echo replies that bypass Router.
+    review:
+      review_mode: CHILD_AGENT
+      reviewed_target_identity: sha256:402371b7257bfeb70b8451946980f468ab8b269df44095baf945e68f3783b593
+      review_result: REWORK
+      coverage:
+        strategy: FOCUSED_WIREGUARD_AND_DNS
+        complete: true
+        freshness: FRESH
+        partitions:
+          endpoint_representation_and_field_allowlist: PASS
+          tcp_udp_dns_ingress_controls: PASS
+          dns_change_disclosure: PASS
+          authorization_separation: PASS
+          residual_behavior_disclosure: FAIL
+          verification_scope_and_limits: PASS
+        integration_result: REWORK
+      findings:
+        - id: DCR-003-WG-ICMP-001
+          severity: P2
+          status: UNRESOLVED
+          location: .sdlc/design/DCR-003-fixed-core-configuration.md:62
+          fingerprint: DCR-003:wireguard-local-prefix-icmp-disclosure
+          detail: >-
+            Endpoint.JudgeFlow accepts local virtual prefixes directly. The fixed userspace
+            ICMPForwarder can produce Echo Reply without traversing the route reject rule.
+          requested_change: >-
+            Limit the ingress rejection claim to TCP/UDP/DNS and routed forwarding; disclose
+            virtual-address ICMP replies for Owner approval and add the exact TASK-009 checks.
+      remaining_risks:
+        - No real network or isolation evidence was produced.
+        - Original DNS authorization finding still requires the explicit DCR-003 Owner decision.
+  - id: EVIDENCE-TASK-008-DCR003-REVIEW-002
+    type: technical_design_review
+    target: DCR-003 fixed-core representation and DNS remediated candidate
+    target_identity: sha256:3040951342ef465fb177b3abb1a7537d73c55bc87e88e1a7b3ba93677033b26d
+    produced_by_phase: PLAN
+    result: PASS
+    timestamp: 2026-09-04T11:14:56+08:00
+    command_or_method: >-
+      Independent incremental review of DCR-003-WG-ICMP-001 and document integration/freshness,
+      retaining the earlier reviewed endpoint field, ingress-control and DNS-change partitions.
+    observer: CHILD_AGENT:/root/task008_design_reviewer
+    summary: >-
+      The exact candidate passes design review. The rejection scope and userspace virtual-address
+      ICMP behavior are disclosed, and native URLTest destination DNS is explicitly proposed as a
+      new Owner decision. Human approval is still pending; this does not authorize implementation.
+    review:
+      review_mode: CHILD_AGENT
+      reviewed_target_identity: sha256:3040951342ef465fb177b3abb1a7537d73c55bc87e88e1a7b3ba93677033b26d
+      review_result: PASS
+      coverage:
+        strategy: INCREMENTAL_PLUS_INTEGRATION
+        complete: true
+        freshness: FRESH
+        partitions:
+          endpoint_representation_and_field_allowlist: PASS
+          tcp_udp_dns_ingress_controls: PASS
+          residual_icmp_disclosure: PASS
+          dns_change_disclosure: PASS
+          authorization_and_verification_boundaries: PASS
+        integration_result: PASS
+        validation:
+          frozen_identity_and_document_readback: PASS
+          incremental_semantic_review: PASS
+          independently_executed_fixed_core_check: NOT_RUN
+          real_network_and_isolation: NOT_RUN
+      findings: []
+      resolved_findings:
+        - id: DCR-003-WG-ICMP-001
+          resolution: FIXED
+          evidence: .sdlc/design/DCR-003-fixed-core-configuration.md:62
+      remaining_risks:
+        - DCR-003 Human approval is pending.
+        - TASK-008-DNS-DESIGN-001 remains unresolved until the explicit Owner DNS decision.
+        - Real WireGuard ingress isolation and DNS behavior remain TASK-009 verification.
+        - Final compiler-generated and secret-bound byte checks remain TASK-008 implementation work.
+    routing:
+      configuration: .codex/agents/sdlc-reviewer.toml
+      requested_model: gpt-5.6-sol
+      requested_reasoning: high
+      actual_model_and_reasoning: UNAVAILABLE
+      comparative_usage: UNAVAILABLE
+      remediation_rounds: 1
+  - id: EVIDENCE-TASK-008-DCR003-APPROVAL-001
+    type: human_technical_design_gate
+    target: DCR-003 fixed-core representation and DNS reviewed candidate
+    target_identity: sha256:3040951342ef465fb177b3abb1a7537d73c55bc87e88e1a7b3ba93677033b26d
+    produced_by_phase: PLAN
+    result: PASS
+    timestamp: 2026-09-04T11:16:43+08:00
+    observer: USER:lifei
+    approval_text: 批准
+    summary: >-
+      USER explicitly approved the immediately preceding, independently reviewed DCR-003 proposal.
+      This adopts the controlled userspace WireGuard endpoint, ingress restrictions and disclosed
+      virtual-address ICMP behavior, plus native protocol-dependent URLTest destination resolution.
+      The reviewed proposal is retained byte-for-byte; this record and state.yaml establish acceptance.
+      Original TASK-008-DNS-DESIGN-001 is resolved by this explicit Owner behavior decision.
+    resolved_findings:
+      - id: TASK-008-DNS-DESIGN-001
+        resolution: OWNER_APPROVED_BEHAVIOR_CHANGE
+        evidence_ref: .sdlc/evidence/TASK-008/technical-design-review.yaml#EVIDENCE-TASK-008-DCR003-APPROVAL-001

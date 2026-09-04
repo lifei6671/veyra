@@ -1,0 +1,123 @@
+version: 1
+records:
+  - id: EVIDENCE-TASK-008-READINESS-001
+    type: task_readiness_reconciliation
+    target: TASK-008 pre-implementation contract
+    target_identity: sha256:5df406dc3d4ad8c6f401a75306ba69c40a00d6cc5f8946fb9289c85109f61366
+    identity_method: SHA-256 of TASK-008.md before the READY-to-BLOCKED lifecycle correction.
+    produced_by_phase: EXECUTING
+    result: FAIL
+    timestamp: 2026-09-04T11:02:45+08:00
+    command_or_method: >-
+      Live requirement identity check, Task/Design/Scope reconciliation, CodeGraph source inspection,
+      and independent read-only implementation-readiness analysis by task008_contract_check.
+    observer: AGENT:/root
+    summary: >-
+      The current Scope cannot satisfy the frozen Domain-owned DNS input requirement.
+      ObservationOnly DNS semantics must be specified before implementation. The runtime compiler
+      test fixture also requires an explicit test-only Scope extension.
+    inputs:
+      head: 9f6cb9fd0484d4be89d37a498658052d6d8a03b9
+      requirement: sha256:19f78ed97c953ce056790a2b3b6023995d6a0f4fd2ddf8c232b02ad415d860fa
+      domain_state: sha256:595a98ff6f8df336a95239b0b5041969638ecfb354a40f06b594cf1813c43866
+      compiler: sha256:71fe3ab8a731043adece4c1aec82b8cdcf6297240173b4918176dfa2f42f556f
+      sidecar_runtime: sha256:cac7d7da67d2fc72f9a5aaea394225b3bbdbd564f5b0fb7f342e458000e0f28c
+    findings:
+      - id: TASK-008-READINESS-DNS
+        status: UNRESOLVED
+        references:
+          - .sdlc/design/DCR-002-full-sing-box-subscription-and-compiler.md:87
+          - .sdlc/tasks/TASK-008.md:43
+          - docs/veyra.md:3005
+          - src-tauri/src/domain/state.rs:37
+        detail: >-
+          DCR-002 requires DNS output to originate from Domain DnsPolicy, but no such code type
+          exists and TASK-008 denies Domain changes. The requirement gives a DNS model shape,
+          without resolving the ObservationOnly automatic/empty policy or node/probe resolution.
+      - id: TASK-008-READINESS-FIXTURE
+        status: UNRESOLVED
+        references:
+          - src-tauri/src/singbox/runtime.rs:392
+          - .sdlc/tasks/TASK-008.md:39
+        detail: >-
+          Existing runtime tests expect the old one-argument compiler to accept a no-pool fixture.
+          The tightened contract rejects that fixture; its test-only adaptation is outside scope.allow.
+    resolved_observations:
+      - >-
+        RuntimeIntent omits AppState.default_target. An application-owned internal compilation input
+        can preserve the exact persisted target within the existing allowed application files;
+        this does not itself require Domain or Storage expansion.
+    proposed_change:
+      approval_status: PENDING
+      scope_additions:
+        - >-
+          src-tauri/src/domain/state.rs and mod.rs: only a non-persistent, closed typed DNS
+          compilation input and its focused tests; no AppState schema or storage changes.
+        - >-
+          src-tauri/src/singbox/runtime.rs: only compiler fixture adaptation; no production
+          lifecycle, check/prepare/run/ready/stop/rollback transaction changes.
+      dns_semantics_for_owner_decision: >-
+        ObservationOnly uses the operating system resolver for node hostnames and URLTest probe
+        hostnames, without FakeIP or an additional proxy DNS server. The application constructs
+        this explicit typed policy; the compiler must not infer it from an empty JSON object.
+      default_target: >-
+        Carry the persisted AppState.default_target through the existing application boundary;
+        reject Unconfigured, Direct, Block, absent or disabled Pool for ObservationOnly.
+      next_after_approval: >-
+        Specify and independently review the affected DNS compilation contract, amend only the
+        approved Task scope through task-breakdown, rerun Readiness, then implement TASK-008.
+      verification: >-
+        Assert node and probe resolver references, exact default Pool identity, rejected empty or
+        invalid inputs, and unchanged lifecycle event assertions; run declared Rust checks and
+        the fixed-core final-byte checks after implementation.
+      impact: >-
+        TASK-008 planning/readiness and subsequent TASK-008 verification are affected.
+        No accepted Requirement or frozen Design has been changed, so existing design approval
+        and TASK-007 acceptance remain recorded. TASK-009 and TASK-010 cannot start.
+    verification:
+      implementation: NOT_RUN
+      rust_tests: NOT_RUN
+      fixed_core_check: NOT_RUN
+      reason: Implementation prerequisites are not met; no business implementation was changed.
+    delegation:
+      agent: CHILD_AGENT:/root/task008_contract_check
+      role: sdlc_expert
+      configuration: .codex/agents/sdlc-expert.toml
+      purpose: Independent assessment of the Domain Scope and DNS contract gap.
+      requested_model: gpt-5.6-sol
+      requested_reasoning: high
+      actual_model_and_reasoning: UNAVAILABLE
+      usage_and_comparative_savings: UNAVAILABLE
+      retries: 0
+      outcome: BLOCKED
+  - id: EVIDENCE-TASK-008-AUTHORIZATION-001
+    type: human_scope_and_dns_authorization
+    target: TASK-008 bounded Domain DNS and runtime test-fixture amendment
+    target_identity: sha256:5df406dc3d4ad8c6f401a75306ba69c40a00d6cc5f8946fb9289c85109f61366
+    produced_by_phase: EXECUTING
+    result: PASS
+    timestamp: 2026-09-04T11:03:39+08:00
+    observer: USER:lifei
+    approval_text: 批准
+    proposal_ref: .sdlc/evidence/TASK-008/readiness.yaml#EVIDENCE-TASK-008-READINESS-001
+    summary: >-
+      USER approved the immediately preceding proposal: non-persistent typed Domain DNS input,
+      related compiler test-fixture adaptation, system DNS without FakeIP or extra proxy DNS,
+      and exact persisted default-target propagation. This does not approve Task acceptance,
+      schema/storage changes, child lifecycle, commit or push.
+  - id: EVIDENCE-TASK-008-READINESS-002
+    type: task_readiness_check
+    target: TASK-008 approved and amended contract before IN_PROGRESS transition
+    target_identity: sha256:c13ba8367367d0a21b0beaa60a86300bd74cb965014c8234a17e3aa2e509e4f0
+    produced_by_phase: EXECUTING
+    timestamp: 2026-09-04T11:19:41+08:00
+    observer: AGENT:/root
+    result: PASS
+    summary: >-
+      Requirement and accepted DCR-003 were reconciled. TASK-007 is DONE; the current Task has
+      explicit approved Scope, all three subfeature acceptance/verification sections and Task-level
+      integration criteria. Domain is limited to non-persistent DNS, runtime.rs to test fixtures.
+      All material decisions are authorized and no remaining implementation prerequisite is unresolved.
+    source_identity: sha256:ffc2c6b1b7a018a11d8b0fdb7cbbf5430aaf6f842563f4cb2e6ba1582c25ac88
+    design_approval_ref: .sdlc/evidence/TASK-008/technical-design-review.yaml#EVIDENCE-TASK-008-DCR003-APPROVAL-001
+    baseline_ref: .sdlc/evidence/TASK-008/baseline.yaml

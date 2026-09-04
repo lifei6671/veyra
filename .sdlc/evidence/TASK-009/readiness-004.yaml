@@ -1,0 +1,16 @@
+{
+  "id": "EVIDENCE-TASK-009-READINESS-004",
+  "target": "TASK-009 CHANGE-003 traffic correction",
+  "result": "PASS",
+  "timestamp": "2026-09-04T13:42:56.4654893+08:00",
+  "task_identity": "sha256:1af9984b0c786c9593c2d72db91a095d6d4639d96a4da17c2af31c12693734be",
+  "requirement_identity": "sha256:42a61775ac324847e5a978c4af70d805d8c671150c2791315b579bd30ccd9481",
+  "approved_design_identity": "sha256:338e0a7f9bb8a4c6ca0722d2fe51eab253c0e1758124907cf759b9459e9714ba",
+  "checks": [
+    "Previous checkpoint003 matched all 26 hashes before this turn",
+    "User confirmed implementation of independently reviewed DCR-005",
+    "Scope synchronized without dependency or public protocol change",
+    "Existing baseline plus extension retained; TASK-008 accepted, TASK-009 only current task"
+  ],
+  "boundary": "Metered positive flow topology must be assessed before execution; no new inlet/profile or WG/DNS topology authorized."
+}

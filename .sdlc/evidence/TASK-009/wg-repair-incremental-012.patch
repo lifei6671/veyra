@@ -1,0 +1,276 @@
+diff --git a/src-tauri/target/task009-wg-repair-baseline/src-tauri/src/platform/windows/managed_sidecar_port.rs b/src-tauri/src/platform/windows/managed_sidecar_port.rs
+index f097f87..35cb262 100644
+--- a/src-tauri/target/task009-wg-repair-baseline/src-tauri/src/platform/windows/managed_sidecar_port.rs
++++ b/src-tauri/src/platform/windows/managed_sidecar_port.rs
+@@ -566,6 +566,7 @@ mod tests {
+             threads: Vec<JoinHandle<()>>,
+             pipe_failed: Arc<AtomicBool>,
+             stderr_bytes: Arc<AtomicUsize>,
++            stdin_closed: Arc<AtomicBool>,
+             started: Instant,
+             run_id: String,
+         }
+@@ -658,8 +659,11 @@ mod tests {
+                         }
+                     }
+                 });
++                let stdin_closed = Arc::new(AtomicBool::new(false));
++                let writer_closed = Arc::clone(&stdin_closed);
+                 let writer_thread = thread::spawn(move || {
+-                    let hard_deadline = started + Duration::from_secs(55);
++                    // 父计时早于 Go 启动；不能在父侧第55秒先于 peer 硬限关闭 stdin。
++                    let hard_deadline = started + Duration::from_secs(59);
+                     let mut total = 0usize;
+                     while let Some(remaining) = hard_deadline.checked_duration_since(Instant::now())
+                     {
+@@ -682,6 +686,8 @@ mod tests {
+                             break;
+                         }
+                     }
++                    drop(stdin);
++                    writer_closed.store(true, Ordering::SeqCst);
+                 });
+                 Self {
+                     child,
+@@ -690,6 +696,7 @@ mod tests {
+                     threads: vec![stdout_thread, stderr_thread, writer_thread],
+                     pipe_failed,
+                     stderr_bytes,
++                    stdin_closed,
+                     started,
+                     run_id,
+                 }
+@@ -745,19 +752,80 @@ mod tests {
+                 }
+             }
+ 
+-            // 不把 kill 当正常清理；所有调用者必须先确认 DUT/pending 已停止。
++            // 未确认 DUT/pending 停止时保留 peer 至自身硬限；强制清理仅用于已确认分支。
+             fn finish(&mut self, dut_stopped: bool) -> Result<(), &'static str> {
++                if !dut_stopped {
++                    let deadline = self.started + Duration::from_secs(59);
++                    let mut exit = None;
++                    let mut invalid = false;
++                    while Instant::now() < deadline {
++                        // 继续排空固定失败摘要，既不发送 shutdown，也不关闭 stdin 或 kill。
++                        match self.output.recv_timeout(Duration::from_millis(10)) {
++                            Ok(PipeEvent::Line(bytes)) => {
++                                match serde_json::from_slice::<Frame>(&bytes) {
++                                    Ok(frame @ Frame::Failed { .. })
++                                        if frame.belongs_to(&self.run_id) => {}
++                                    _ => invalid = true,
++                                }
++                            }
++                            Ok(PipeEvent::Eof) | Err(mpsc::RecvTimeoutError::Timeout) => {}
++                            Err(mpsc::RecvTimeoutError::Disconnected) => {
++                                thread::sleep(Duration::from_millis(10));
++                            }
++                        }
++                        match self.child.try_wait() {
++                            Ok(Some(status)) => {
++                                exit = Some(status);
++                                break;
++                            }
++                            Ok(None) => {}
++                            Err(_) => invalid = true,
++                        }
++                    }
++                    let Some(exit) = exit else {
++                        // 保留句柄和输入端；截止未确认退出只能失败，不能假称已清理。
++                        return Err("DUT stop unconfirmed; peer hard exit unavailable");
++                    };
++                    let elapsed = self.started.elapsed();
++                    self.input.take(); // 仅在已观察到 peer 自行退出之后结束写侧。
++                    while self.threads.iter().any(|thread| !thread.is_finished())
++                        && Instant::now() < deadline
++                    {
++                        thread::sleep(Duration::from_millis(10));
++                    }
++                    if self.threads.iter().any(|thread| !thread.is_finished()) {
++                        return Err("DUT stop unconfirmed; peer pipe join deadline");
++                    }
++                    for thread in self.threads.drain(..) {
++                        if thread.join().is_err() {
++                            invalid = true;
++                        }
++                    }
++                    eprintln!(
++                        "task009 peer_hold elapsed_ms={} exit_code={:?} dut_stop_confirmed=false",
++                        elapsed.as_millis(),
++                        exit.code()
++                    );
++                    if invalid
++                        || self.pipe_failed.load(Ordering::SeqCst)
++                        || exit.success()
++                        || elapsed < Duration::from_secs(55)
++                    {
++                        return Err("DUT stop unconfirmed; peer ended unexpectedly");
++                    }
++                    // peer 按硬限退出不代表 DUT 停止或整条清理链成功。
++                    return Err("DUT stop unconfirmed; peer hard exit observed");
++                }
+                 let deadline = (self.started + Duration::from_secs(59))
+                     .min(Instant::now() + Duration::from_secs(5));
+-                let mut normal = dut_stopped
+-                    && self
+-                        .send(
+-                            serde_json::json!({
+-                                "v":1,"op":"shutdown","run_id":self.run_id,"dut_stopped":true
+-                            }),
+-                            deadline,
+-                        )
+-                        .is_ok();
++                let mut normal = self
++                    .send(
++                        serde_json::json!({
++                            "v":1,"op":"shutdown","run_id":self.run_id,"dut_stopped":true
++                        }),
++                        deadline,
++                    )
++                    .is_ok();
+                 let mut stopped = false;
+                 let mut eof = false;
+                 let mut exit = None;
+@@ -1014,6 +1082,142 @@ mod tests {
+             ));
+         }
+ 
++        #[test]
++        fn real_peer_preserves_binding_until_hard_exit_when_dut_stop_is_unconfirmed() {
++            use std::net::UdpSocket;
++
++            let _lock = FIXED_CLASH_API_TEST_LOCK.lock().expect("fixed API lock");
++            let helper_path =
++                PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("target/task009-wg-peer.exe");
++            assert!(
++                helper_path.is_file(),
++                "build the approved fixed WG test peer before this test"
++            );
++            let helper_hash = format!(
++                "{:x}",
++                Sha256::digest(fs::read(&helper_path).expect("fixed helper bytes"))
++            );
++            let mut run_bytes = [0; 16];
++            let mut token_bytes = [0; 16];
++            let mut dut_private = [0; 32];
++            let mut peer_private = [0; 32];
++            getrandom::fill(&mut run_bytes).expect("run entropy");
++            getrandom::fill(&mut token_bytes).expect("token entropy");
++            getrandom::fill(&mut dut_private).expect("DUT key entropy");
++            getrandom::fill(&mut peer_private).expect("peer key entropy");
++            for key in [&mut dut_private, &mut peer_private] {
++                key[0] &= 248;
++                key[31] &= 127;
++                key[31] |= 64;
++            }
++            let hex = |bytes: &[u8]| {
++                bytes
++                    .iter()
++                    .map(|byte| format!("{byte:02x}"))
++                    .collect::<String>()
++            };
++            let run_id = hex(&run_bytes);
++            let mut peer = Peer::spawn(&helper_path, run_id.clone());
++            let peer_pid = peer.child.id();
++            let initialized = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
++                peer.send(serde_json::json!({"v":1,"op":"init","run_id":run_id,
++                    "dut_private_key":dut_private,"peer_private_key":peer_private,"token":hex(&token_bytes)}),
++                    peer.started + Duration::from_secs(10)).expect("private init write");
++                let Frame::Ready {
++                    udp_port, selftest, ..
++                } = peer
++                    .frame(peer.started + Duration::from_secs(10))
++                    .expect("real peer Ready")
++                else {
++                    panic!("expected initialized peer")
++                };
++                assert!(selftest.tcp && selftest.udp && selftest.icmp);
++                assert!(udp_port != 0 && udp_port != 9090);
++                udp_port
++            }));
++            dut_private.fill(0);
++            peer_private.fill(0);
++            token_bytes.fill(0);
++            let udp_port = match initialized {
++                Ok(port) => port,
++                Err(panic) => {
++                    // 此测试未创建 DUT；初始化失败可按“DUT从未启动”正常终止自己的 helper。
++                    let cleanup = peer.finish(true);
++                    eprintln!(
++                        "task009 hold_fixture initialization_failed=true helper_cleanup_ok={}",
++                        cleanup.is_ok()
++                    );
++                    std::panic::resume_unwind(panic);
++                }
++            };
++            let started = peer.started;
++            let hold_started = Instant::now();
++            let stdin_closed = Arc::clone(&peer.stdin_closed);
++            // 只模拟停止确认缺失，实际运行完整 helper 及其原始55秒硬限，不启动 DUT。
++            let worker = thread::spawn(move || {
++                let result = peer.finish(false);
++                (peer, result)
++            });
++            let assertions = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
++                for check_at in [
++                    hold_started + Duration::from_secs(3),
++                    started + Duration::from_secs(53),
++                ] {
++                    thread::sleep(check_at.saturating_duration_since(Instant::now()));
++                    assert!(
++                        !worker.is_finished(),
++                        "unconfirmed branch must still hold the real peer"
++                    );
++                    assert!(
++                        !stdin_closed.load(Ordering::SeqCst),
++                        "stdin remains open before the peer hard limit"
++                    );
++                    match UdpSocket::bind(("127.0.0.1", udp_port)) {
++                        Err(error) => assert_eq!(error.kind(), std::io::ErrorKind::AddrInUse),
++                        Ok(_) => panic!("peer UDP binding was released before its hard limit"),
++                    }
++                    println!(
++                        "task009 peer_hold peer_pid={peer_pid} elapsed_ms={} udp_binding_retained=true stdin_open=true simulated_dut_stop_failure=true",
++                        started.elapsed().as_millis()
++                    );
++                }
++            }));
++            // 早期断言失败也等待同一真实硬限；测试不通过 kill 缩短被验证的生命周期。
++            let deadline = started + Duration::from_secs(59);
++            while !worker.is_finished() && Instant::now() < deadline {
++                thread::sleep(Duration::from_millis(10));
++            }
++            assert!(
++                worker.is_finished(),
++                "unconfirmed peer finish remains bounded by the parent deadline"
++            );
++            let (mut peer, result) = worker.join().expect("bounded hold worker");
++            assert_eq!(result, Err("DUT stop unconfirmed; peer hard exit observed"));
++            assert!(started.elapsed() >= Duration::from_secs(55));
++            let exit = peer
++                .child
++                .try_wait()
++                .expect("peer hard exit status")
++                .expect("peer exited");
++            assert_eq!(exit.code(), Some(1), "hard exit remains a failure");
++            assert!(peer.input.is_none() && peer.threads.is_empty());
++            assert!(stdin_closed.load(Ordering::SeqCst));
++            let reclaimed = UdpSocket::bind(("127.0.0.1", udp_port))
++                .expect("owned peer UDP port released after hard exit");
++            assert_eq!(
++                reclaimed.local_addr().expect("reclaimed address").port(),
++                udp_port
++            );
++            drop(reclaimed);
++            println!(
++                "task009 peer_hold helper_sha256={helper_hash} elapsed_ms={} hard_exit_code=1 udp_binding_released=true cleanup_result=FAIL simulated_dut_stop_failure=true",
++                started.elapsed().as_millis()
++            );
++            if let Err(panic) = assertions {
++                std::panic::resume_unwind(panic);
++            }
++        }
++
+         #[test]
+         fn real_wireguard_peer_delivers_tcp_response_and_virtual_icmp() {
+             let _lock = FIXED_CLASH_API_TEST_LOCK.lock().expect("fixed API lock");

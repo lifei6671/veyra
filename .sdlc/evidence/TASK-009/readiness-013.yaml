@@ -1,0 +1,24 @@
+{
+  "id": "EVIDENCE-TASK-009-READINESS-013",
+  "target": "TASK009 CHANGE008 UDP response subset",
+  "timestamp": "2026-09-04T16:49:37.4980053+08:00",
+  "result": "PASS",
+  "authorization": ".sdlc/evidence/TASK-009/change-control.yaml#EVIDENCE-TASK-009-CHANGE-008",
+  "design_identity": "sha256:36a910c90c247e1b46958ed7890dceabc7d769aee1ca1f18b062154de8ea9c79",
+  "task_identity": "sha256:263f8ba5a2cda562f48be9d888bfaceddc085f7f4874d99c62a679614f840192",
+  "requirement_identity": "sha256:4a2cd1e2b9698087bcbc4ac892d7b052a5e2c06554e372479fe31c81cbea9d45",
+  "baseline": ".sdlc/evidence/TASK-009/wg-udp-baseline-013.yaml",
+  "design_review": ".sdlc/evidence/TASK-009/wg-udp-design-review-001.yaml",
+  "checks": [
+    "Task008 accepted; only Task009 current and IN_PROGRESS",
+    "Requirement and approved design unchanged; all47 checkpoint012 sources verified before scoped Task update",
+    "User explicitly authorizes reviewed UDP inlet/protocol; Task scope synchronized",
+    "Existing Go dependencies reused without manifest/lock changes",
+    "Root owns compiler; Rust worker owns Port tests; Go worker owns peer; real-core runs root serial"
+  ],
+  "not_run": [
+    "UDP implementation",
+    "new binary and runtime verification",
+    "full reject and DNS"
+  ]
+}

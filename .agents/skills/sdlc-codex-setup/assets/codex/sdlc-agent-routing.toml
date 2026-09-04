@@ -1,0 +1,10 @@
+# 此文件由 SDLC Orchestrator 读取，不是 Codex 原生 config.toml。
+version = 1
+enabled = true
+max_parallel = 2
+
+[roles]
+routine = "sdlc_routine"
+implementer = "sdlc_implementer"
+expert = "sdlc_expert"
+reviewer = "sdlc_reviewer"

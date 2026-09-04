@@ -1,0 +1,55 @@
+version: 1
+records:
+  - id: EVIDENCE-TASK-007-001
+    type: implementation_verification
+    target: TASK-007
+    target_identity: sha256:c83dd3e2df82c45ab6cb9d7c46c1e16ef266093e3db8abc2cf73686b4ea1442c
+    identity_method: >-
+      SHA-256 of the complete TASK-007 delivery-owned inventory, including the V3 domain,
+      migration/store, subscription, Provider-replacement, compiler-boundary and test changes.
+    produced_by_phase: EXECUTING
+    command_or_method: >-
+      cargo test --manifest-path src-tauri/Cargo.toml --lib; cargo fmt --check --manifest-path
+      src-tauri/Cargo.toml; cargo clippy --manifest-path src-tauri/Cargo.toml --lib -- -D warnings;
+      git diff --check.
+    exit_code: 0
+    result: PASS
+    timestamp: 2026-09-04T10:41:58+08:00
+    summary: >-
+      The complete Rust library suite passed 129 tests. Scoped formatting and warnings-denied
+      library Clippy passed. The delivery implements typed V3 state and fail-closed migration,
+      strict four-entry subscription normalization for 15 non-Tor protocols, and serialized
+      Provider replacement that persists before publishing in-memory state.
+    verification:
+      - command: cargo test --manifest-path src-tauri/Cargo.toml --lib
+        result: PASS
+        detail: 129 passed, 0 failed
+      - command: cargo fmt --check --manifest-path src-tauri/Cargo.toml
+        result: PASS
+      - command: cargo clippy --manifest-path src-tauri/Cargo.toml --lib -- -D warnings
+        result: PASS
+      - command: git diff --check
+        result: PASS
+        detail: Exit code 0; CRLF conversion warnings only for the pre-existing dirty worktree.
+    scope_note: >-
+      The delivery-owned inventory excludes pre-existing TASK-006/runtime/GUI worktree changes.
+      TASK-007 does not generate a complete runnable sing-box configuration; that is TASK-008.
+    observer: IMPLEMENTATION:/root
+    not_run:
+      - CI
+      - Commit
+      - Push
+  - id: EVIDENCE-TASK-007-002
+    type: supplementary_static_check
+    target: TASK-007 workspace all-target Clippy probe
+    target_identity: sha256:c83dd3e2df82c45ab6cb9d7c46c1e16ef266093e3db8abc2cf73686b4ea1442c
+    produced_by_phase: EXECUTING
+    command_or_method: cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets -- -D warnings
+    exit_code: 101
+    result: FAIL
+    timestamp: 2026-09-04T10:41:58+08:00
+    summary: >-
+      The workspace-wide probe fails on pre-existing, out-of-scope lint findings:
+      items_after_test_module in src/singbox/mod.rs and result_large_err in
+      src/singbox/clash_api.rs. This does not replace the scoped TASK-007 verification result.
+    observer: IMPLEMENTATION:/root

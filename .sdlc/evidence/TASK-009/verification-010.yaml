@@ -1,0 +1,214 @@
+{
+  "limitations": [
+    "Counters measure client stream operation attempts including handshake and disabled Logs empty responses, not server-side live WebSocket counts.",
+    "Actual old read finishes before Stop and replacement. This verifies serial exclusion; it does not inject an old asynchronous response after replacement.",
+    "Production Logs is disabled; enabled-Logs WebSocket concurrency stress is not claimed.",
+    "Only cfg(test) code changed in two files. Full Rust suite/frontend/native WebView or Tray E2E/CI/commit/push NOT_RUN."
+  ],
+  "result": "PASS",
+  "target_identity": "sha256:ce5ac15928e55ffed92739e1873baf9f84bf6919a2fc0679d39efcc01243bfc2",
+  "observed": [
+    {
+      "result": "PASS",
+      "finished": "2026-09-04T15:38:53.029427+08:00",
+      "exit_code": 0,
+      "timeout": false,
+      "started": "2026-09-04T15:38:31.8759533+08:00",
+      "outer_timeout_seconds": 60,
+      "command": "test --manifest-path src-tauri/Cargo.toml --lib real_worker_finishes_pending_stream_before_stop_and_new_instance_sampling -- --nocapture --test-threads=1",
+      "id": "inflight-targeted-010"
+    },
+    {
+      "result": "PASS",
+      "finished": "2026-09-04T15:40:11.2295631+08:00",
+      "exit_code": 0,
+      "timeout": false,
+      "started": "2026-09-04T15:39:12.1825622+08:00",
+      "outer_timeout_seconds": 120,
+      "command": "test --manifest-path src-tauri/Cargo.toml --lib application::managed_observation_runtime::tests:: -- --nocapture --test-threads=1",
+      "id": "inflight-controller-010"
+    },
+    {
+      "result": "PASS",
+      "finished": "2026-09-04T15:42:19.3802273+08:00",
+      "exit_code": 0,
+      "timeout": false,
+      "started": "2026-09-04T15:42:14.0419433+08:00",
+      "outer_timeout_seconds": 60,
+      "command": "test --manifest-path src-tauri/Cargo.toml --lib singbox::clash_api:: -- --nocapture --test-threads=1",
+      "id": "inflight-clash-010"
+    },
+    {
+      "result": "PASS",
+      "finished": "2026-09-04T15:42:32.9659645+08:00",
+      "exit_code": 0,
+      "timeout": false,
+      "started": "2026-09-04T15:42:31.2472761+08:00",
+      "outer_timeout_seconds": 60,
+      "command": "clippy --manifest-path src-tauri/Cargo.toml --lib -- -D warnings",
+      "id": "inflight-clippy-010"
+    },
+    {
+      "result": "PASS",
+      "finished": "2026-09-04T15:42:42.4079133+08:00",
+      "exit_code": 0,
+      "timeout": false,
+      "started": "2026-09-04T15:42:42.0057595+08:00",
+      "outer_timeout_seconds": 60,
+      "command": "fmt --manifest-path src-tauri/Cargo.toml -- --check",
+      "id": "inflight-fmt-010"
+    },
+    {
+      "result": "PASS",
+      "finished": "2026-09-04T15:43:22.6423329+08:00",
+      "exit_code": 0,
+      "timeout": false,
+      "started": "2026-09-04T15:43:22.5396767+08:00",
+      "outer_timeout_seconds": 60,
+      "command": "git diff --check",
+      "id": "inflight-diff-check-010"
+    }
+  ],
+  "not_run": [
+    "Full Rust suite",
+    "Frontend rerun (unchanged)",
+    "Native WebView/Tray E2E",
+    "CI",
+    "commit",
+    "push"
+  ],
+  "test_count_note": "11 controller +13 Clash API tests; standalone targeted case overlaps and is not counted twice",
+  "timestamp": "2026-09-04T15:43:22.7147195+08:00",
+  "assertions": [
+    "Actual fixed-core Traffic socket future returns Poll::Pending before Stop is queued; the test observer briefly gates that poll boundary, not a synthetic response or publication tail.",
+    "Stop stays queued and duplicate control reports Busy. Old stream operations finish, sample is published, then Stopped is confirmed. No operation, Delta or revision change during the following1.2seconds.",
+    "Same worker starts a new core with distinct private configuration hash and secret; Ready clears history and first new sample has one history point. Both core private directories are removed after confirmed Stop.",
+    "Traffic/Logs client-operation maximum=1 each, final active=0 each, started=finished=2 each across two instances; probe cancellation emits Finished and installation does not leak.",
+    "Selected host interface/address/route/DNS/proxy configuration hashes unchanged."
+  ],
+  "remaining_gaps": [
+    "Full controlled WG/DNS matrix remains incomplete. wg-network-proposal.md is PROPOSED and not authorized or executed.",
+    "Whole Task009 independent coverage and human acceptance remain incomplete."
+  ],
+  "target": "TASK-009 real worker pending-stream Stop and new-instance sampling",
+  "artifacts": [
+    {
+      "sha256": "46ccb644af781010047db97bc013ce3df2a4e6d6b9330ab17a66a9af5688e0f0",
+      "path": "src-tauri/target/task009-remediation/inflight-clash-010.result.json"
+    },
+    {
+      "sha256": "eac739ee8b98fe46e722a6fbca3d6251ac16ccecce18b35dd4428917b6bd0200",
+      "path": "src-tauri/target/task009-remediation/inflight-clash-010.stderr.txt"
+    },
+    {
+      "sha256": "ecd05049045a008697e125eef01985a506253da58cc09027b47f640f471815e2",
+      "path": "src-tauri/target/task009-remediation/inflight-clash-010.stdout.txt"
+    },
+    {
+      "sha256": "e14fbfa11479d160db8b5265fa23ef2874620e524df8bc2035ca1a8d43c7c0d7",
+      "path": "src-tauri/target/task009-remediation/inflight-clippy-010.result.json"
+    },
+    {
+      "sha256": "85ff77fe2ac50d064f20ceefdee5287dbad022de0864d768c7f318fb6a16ea31",
+      "path": "src-tauri/target/task009-remediation/inflight-clippy-010.stderr.txt"
+    },
+    {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "path": "src-tauri/target/task009-remediation/inflight-clippy-010.stdout.txt"
+    },
+    {
+      "sha256": "4193d0cafcbfd8cb3ae75261516314294ae19cb01b295cdf0a908f46ea71ed69",
+      "path": "src-tauri/target/task009-remediation/inflight-controller-010.result.json"
+    },
+    {
+      "sha256": "86ee6298d8d3d8d30615ee781ea9f0fe110cec044c3fa20122a7cd52c4e2c750",
+      "path": "src-tauri/target/task009-remediation/inflight-controller-010.stderr.txt"
+    },
+    {
+      "sha256": "e5722afefb7513bb36a6df620dd8993254b1a36fe658bad695d559dc8620d28e",
+      "path": "src-tauri/target/task009-remediation/inflight-controller-010.stdout.txt"
+    },
+    {
+      "sha256": "15d69ff10c9b51d95be0cc1004e6afd7dcf40c7cd3b0a1c790d9bdf181a214b1",
+      "path": "src-tauri/target/task009-remediation/inflight-diff-check-010.result.json"
+    },
+    {
+      "sha256": "3a7cd7af5760a3c0fabb0e1129d8f705775170484db8d94b75f7f59fd9df9d5b",
+      "path": "src-tauri/target/task009-remediation/inflight-diff-check-010.txt"
+    },
+    {
+      "sha256": "9a1cab6fc21b4a37abb5b1b9b2707c17d9aa490dcd7842d0d44607926d87ca72",
+      "path": "src-tauri/target/task009-remediation/inflight-fmt-010.result.json"
+    },
+    {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "path": "src-tauri/target/task009-remediation/inflight-fmt-010.stderr.txt"
+    },
+    {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "path": "src-tauri/target/task009-remediation/inflight-fmt-010.stdout.txt"
+    },
+    {
+      "sha256": "3cf9a9c5f40be72eb3b55e3eb2b5dcba1bfba8669dfccdca7c4a7d6125ba66a6",
+      "path": "src-tauri/target/task009-remediation/inflight-host-after-010.json"
+    },
+    {
+      "sha256": "d1266f4ae24ea465e18fd1d4f0eec3e2d64ae24f504f88fe69e32f19279b1c5a",
+      "path": "src-tauri/target/task009-remediation/inflight-host-before-010.json"
+    },
+    {
+      "sha256": "6e4f14c01175986b95a39b8ce0cf3392bb6273ec6b50fbe97dbf0802c0b8eab1",
+      "path": "src-tauri/target/task009-remediation/inflight-host-compare-010.json"
+    },
+    {
+      "sha256": "82299ac0c2695c546bd03777ed681a0efd701b8e8f6d6a600bab127648b13f07",
+      "path": "src-tauri/target/task009-remediation/inflight-targeted-010.result.json"
+    },
+    {
+      "sha256": "857f4b91fdc414d5c2658c9c884e6a675a135a10e87ad9c799d40015b4725374",
+      "path": "src-tauri/target/task009-remediation/inflight-targeted-010.stderr.txt"
+    },
+    {
+      "sha256": "413a927c8d53d6384d890cd3419f76b5965aaaec97627a60d47368aaeef42b26",
+      "path": "src-tauri/target/task009-remediation/inflight-targeted-010.stdout.txt"
+    }
+  ],
+  "version": 1,
+  "host_before_after": {
+    "timestamp": "2026-09-04T15:43:22.6750837+08:00",
+    "result": "PASS",
+    "checks": [
+      {
+        "field": "interfaces",
+        "after_hash": "c3f7f290de2a45015f971f458bfd5e0afec7864f1a2737da26a1e71df99b4633",
+        "before_hash": "c3f7f290de2a45015f971f458bfd5e0afec7864f1a2737da26a1e71df99b4633",
+        "unchanged": true
+      },
+      {
+        "field": "addresses",
+        "after_hash": "2bd4a3cb1928063095a5f99c448963c1d823c8e95546e00817adae58e2ae265d",
+        "before_hash": "2bd4a3cb1928063095a5f99c448963c1d823c8e95546e00817adae58e2ae265d",
+        "unchanged": true
+      },
+      {
+        "field": "routes",
+        "after_hash": "1d20414d0a413b8844c8ee2930c02b9bb91eb42586e5b27d827ef05f82ac14ac",
+        "before_hash": "1d20414d0a413b8844c8ee2930c02b9bb91eb42586e5b27d827ef05f82ac14ac",
+        "unchanged": true
+      },
+      {
+        "field": "dns",
+        "after_hash": "9fc6a6105e79db3c310c6cbdf29355130e1c099e3497f81622c8a0aa23c54dc6",
+        "before_hash": "9fc6a6105e79db3c310c6cbdf29355130e1c099e3497f81622c8a0aa23c54dc6",
+        "unchanged": true
+      },
+      {
+        "field": "proxy",
+        "after_hash": "fe8d3a14a211ba55e32fce49ac32b12622c0a46a256df836d6678673a8717e79",
+        "before_hash": "fe8d3a14a211ba55e32fce49ac32b12622c0a46a256df836d6678673a8717e79",
+        "unchanged": true
+      }
+    ]
+  },
+  "unique_tests": 24
+}

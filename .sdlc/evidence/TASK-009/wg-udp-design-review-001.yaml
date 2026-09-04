@@ -1,0 +1,113 @@
+{
+  "skill_result": {
+    "skill": "technical-design-review",
+    "target": "DCR-010 — test-only WireGuard UDP response inlet",
+    "outcome": "PASS",
+    "next_action_hint": "候选可提交用户批准新增测试入口及私有协议扩展；批准前不得按CHANGE007执行。批准后仍需实现、绑定目标验证及独立交付审阅。",
+    "review_mode": "CHILD_AGENT",
+    "reviewed_target_identity": "sha256:36a910c90c247e1b46958ed7890dceabc7d769aee1ca1f18b062154de8ea9c79",
+    "review_result": "PASS",
+    "coverage": {
+      "scope": "仅DCR010候选、与DCR008/009及checkpoint012的交互；未扩展至DNS提案、完整WG拒绝拓扑或产品入口。",
+      "independence": "task009_design_reviewer未参与该候选编写；只读设计、相关源码及已有证据，仅新增本记录。未实现、运行网络/核心/构建、修改Task/state或委派。",
+      "freshness": {
+        "result": "FRESH",
+        "candidate_sha256": "36a910c90c247e1b46958ed7890dceabc7d769aee1ca1f18b062154de8ea9c79",
+        "requirement_sha256": "4a2cd1e2b9698087bcbc4ac892d7b052a5e2c06554e372479fe31c81cbea9d45",
+        "dcr008_sha256": "689ee9ff2cebfd499e27646c7ea7863b1898e2b5afe739482cee6a57ad06d41f",
+        "dcr009_sha256": "b193f16e6262f8695780af2f18cebc4a4f91dbbbe999f4b91f716059edbb9470",
+        "checkpoint012_identity": "sha256:1827c6b72fe6466836eb4e6d4fd32e006a36e581d07c8731ed6757c59b17fc59",
+        "checkpoint012_source_entries": 47,
+        "source_hash_mismatches": 0
+      },
+      "checks": [
+        {
+          "concern": "需求与授权",
+          "result": "PASS",
+          "locations": [
+            ".sdlc/tasks/TASK-009.md:203",
+            ".sdlc/design/DCR-010-test-wg-udp.md:10"
+          ],
+          "basis": "追踪SF003合法UDP应答验收，保留完整拒绝/DNS/GUI等义务；明确新增业务UDP入口不在CHANGE007既有授权内，当前PROPOSED不构成实现/运行批准。"
+        },
+        {
+          "concern": "封闭编译与原契约隔离",
+          "result": "PASS",
+          "locations": [
+            ".sdlc/design/DCR-010-test-wg-udp.md:31",
+            "src-tauri/src/singbox/compiler.rs:111",
+            "src-tauri/src/singbox/compiler.rs:1122"
+          ],
+          "basis": "仅cfg(test)方法及固定UDP元组，唯一WG endpoint和Manual Pool、无其它主动节点/用户路由；最终读回再次校验完整拓扑并保留置顶reject。原TCP元组全部限制及非test空入口保持，不能凭合法构造绕过final validate。"
+        },
+        {
+          "concern": "真实UDP应答证据",
+          "result": "PASS",
+          "locations": [
+            ".sdlc/design/DCR-010-test-wg-udp.md:52",
+            ".sdlc/design/DCR-010-test-wg-udp.md:69",
+            ".sdlc/design/DCR-010-test-wg-udp.md:79"
+          ],
+          "basis": "三个20字节token/序号载荷，同一connected UDP客户端逐个精确接收；与peer服务及解密/加密边界三个请求/应答同时满足。校验地址/端口/长度/校验和，非法或额外数据失败；明确提交和客户端交付的区别及观察并发时点。"
+        },
+        {
+          "concern": "可实施性与依赖",
+          "result": "PASS",
+          "basis": "已有强类型Plan/finalize/final-readback允许在私有测试模型增加独立封闭分支；固定direct inbound的UDP override、RoutePacketConnectionEx及NAT回写路径支持该拓扑。现有Go内存UDP自测/用户态WG提供必要基础，不新增依赖或产品接口。源码依据仅说明可实施，不是固定EXE运行证明。"
+        },
+        {
+          "concern": "期限/归属/清理",
+          "result": "PASS",
+          "locations": [
+            ".sdlc/design/DCR-010-test-wg-udp.md:44",
+            ".sdlc/design/DCR-010-test-wg-udp.md:84",
+            "src-tauri/src/platform/windows/managed_sidecar_port.rs:755"
+          ],
+          "basis": "peer持续持有loopback协议端口，入口预留仅启动前释放；PID枚举区分业务入口与唯一WG协议组。继承绝对期限、失败Hold及checkpoint012 finish(false)，先关客户端、确认DUT停止再关peer，不将强杀/硬退出当清理成功。"
+        },
+        {
+          "concern": "风险/复杂度比例",
+          "result": "PASS",
+          "basis": "本机进程可访问短时入口及端口争用是具体残余路径；固定无副作用内存目标、随机token、严格元组、短期限和归属已限制任意代理与误判。无额外防火墙/认证层/后台重试；新增测试元组、封闭场景及观察器是验证DUT UDP所需最小实现，替代方案与工程范围已披露。"
+        },
+        {
+          "concern": "验证计划",
+          "result": "PASS",
+          "locations": [
+            ".sdlc/design/DCR-010-test-wg-udp.md:99"
+          ],
+          "basis": "覆盖合法/篡改配置、原TCP限制回归、跨场景消息、错误/截短/缺边界报文、Hold截止及真实固定DUT应答/所有权/清理；要求Go/Rust目标和binary身份绑定，缺失不得记PASS。"
+        }
+      ]
+    },
+    "remaining_risks": [
+      "新增UDP业务入口及私有测试协议仍待用户明确批准；本设计PASS不延伸CHANGE007授权。",
+      "本候选尚无实现或真实WG UDP运行证据，状态NOT_RUN；必须验证实际固定EXE、端口归属、客户端精确应答和清理。",
+      "loopback端口争用、本机其它进程干扰及UDP丢包仍可能导致测试失败；不自动重试。",
+      "父异常或OS拒绝停止DUT时的55秒helper硬上限残余风险沿用DCR009/checkpoint012。",
+      "测试配置不代表ObservationOnly产品开放UDP入口；完整Task验收仍INCOMPLETE。"
+    ]
+  },
+  "issues": [],
+  "authorization": {
+    "new_boundary_approval": "PENDING",
+    "change007_sufficient": false,
+    "allowed_now": "design review only",
+    "task_or_gate_transition": "NONE"
+  },
+  "evidence": [
+    {
+      "path": ".sdlc/evidence/TASK-009/code-review-checkpoint-012.yaml",
+      "sha256": "d3c6446a0b1c1c4684eae27c082ed40aa032f2f34048517eb47b2791dd58420b"
+    },
+    {
+      "path": "src-tauri/src/singbox/compiler.rs",
+      "method": "CodeGraph focused compile_loopback_metering/TestMeteringInbound/validate_test_metering source"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/SagerNet/sing-box/v1.14.0/protocol/direct/inbound.go",
+      "reviewed": "NewPacketConnectionEx uses fixed override then RoutePacketConnectionEx; directPacketWriter writes to original source. Fixed primary source supports feasibility only."
+    }
+  ],
+  "summary": "No actionable design findings. Design PASS; new user approval and runtime evidence remain pending."
+}

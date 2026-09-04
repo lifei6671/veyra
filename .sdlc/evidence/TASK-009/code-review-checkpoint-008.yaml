@@ -1,0 +1,180 @@
+{
+  "skill_result": {
+    "skill": "code-delivery-review",
+    "target": "TASK-009 checkpoint008 / CHANGE-006 test-only loopback metering",
+    "outcome": "FAIL",
+    "next_action_hint": "在既有DCR-008范围内修复回显listener生命周期及全局截止传播；重跑受影响有界验证并冻结新目标后增量复审。完整Task缺口另行保留。",
+    "review_mode": "CHILD_AGENT",
+    "reviewed_target_identity": "sha256:d85943538edb81eab0ae70023d27a811c1388bb99bd2838894c6e4819ca7f9d9",
+    "review_result": "REWORK",
+    "local_repair_review_result": "REWORK",
+    "coverage": {
+      "strategy": "PARTITIONED_PLUS_INTEGRATION",
+      "status": "INCOMPLETE",
+      "freshness": "FRESH",
+      "independence": "task009_design_reviewer未参与目标实现或测试生产；只读冻结增量、必要上下文及原始证据，仅写此审阅记录。未运行测试/核心、改源/设计/Task/state/verification或委派。",
+      "prior_review": ".sdlc/evidence/TASK-009/code-review-checkpoint-007.yaml",
+      "source_freshness": {
+        "result": "FRESH",
+        "manifest_entries": 33,
+        "source_hash_mismatches": 0,
+        "baseline_snapshots": 32,
+        "baseline_hash_mismatches": 0,
+        "baseline_previous_checkpoint_mismatches": 0,
+        "verification_artifacts": 24,
+        "artifact_hash_mismatches": 0,
+        "method": "按manifest实际数组顺序重算HEAD/path/hash；当前源和metering-baseline-008逐项核对，前字节均匹配checkpoint007。变化为批准的Task/DCR权威及三个Rust源码测试构建适配；未变分区承接007覆盖。"
+      },
+      "applicable_lanes": [
+        "correctness",
+        "security",
+        "contract-data",
+        "concurrency-performance",
+        "verification",
+        "release"
+      ],
+      "lanes": {
+        "correctness": {
+          "result": "REWORK",
+          "freshness": "FRESH"
+        },
+        "security": {
+          "result": "REWORK",
+          "freshness": "FRESH"
+        },
+        "contract-data": {
+          "result": "PASS",
+          "freshness": "FRESH"
+        },
+        "concurrency-performance": {
+          "result": "REWORK",
+          "freshness": "FRESH"
+        },
+        "verification": {
+          "result": "REWORK",
+          "validation": "BLOCKED",
+          "freshness": "FRESH"
+        },
+        "release": {
+          "result": "REWORK",
+          "validation": "NOT_APPLICABLE",
+          "freshness": "FRESH"
+        }
+      },
+      "partitions": [
+        {
+          "id": "test-compiler-whitelist",
+          "locations": [
+            "src-tauri/src/singbox/compiler.rs:108",
+            "src-tauri/src/singbox/compiler.rs:955",
+            "src-tauri/src/singbox/compiler.rs:1121"
+          ],
+          "applicable_lanes": [
+            "correctness",
+            "security",
+            "contract-data",
+            "verification"
+          ],
+          "result": "PASS",
+          "reviewed": "cfg(test)内部typed入口复用普通compile和最终序列化读回；唯一direct/TCP/127.0.0.1/非零不同且非9090端口，第一条精确/32 Direct路由，无endpoint/URLTest/非loopback节点，Manual明确选择。非test保留空入站类型/校验；4项新增测试覆盖字段逃逸、重复/额外入站、路由和主动网络约束。"
+        },
+        {
+          "id": "real-metering-fixture-and-cleanup",
+          "locations": [
+            "src-tauri/src/platform/windows/managed_sidecar_port.rs:441",
+            "src-tauri/src/platform/windows/managed_sidecar_port.rs:503",
+            "src-tauri/src/platform/windows/managed_sidecar_port.rs:532",
+            "src-tauri/src/singbox/managed_sidecar.rs:170"
+          ],
+          "applicable_lanes": [
+            "correctness",
+            "security",
+            "concurrency-performance",
+            "verification"
+          ],
+          "result": "REWORK",
+          "reviewed": "PID getter仅cfg(test)；实际child listener集合、配置hash、已知回显、双向正速率、静默精确累计、新identity/secret及内存历史有具体断言。失败经catch_unwind协调线程/owner并限路径删除；但listener提前释放及未传播全局deadline形成下列缺陷。"
+        }
+      ],
+      "integration_result": {
+        "local_result": "REWORK",
+        "whole_task_result": "REWORK",
+        "reviewed": "成功路径真实计量证据有效且独立读回；它未覆盖本次识别的资源存活和极限期限场景。生命周期通知由测试直接调用owner，不是controller或WebView联测。"
+      }
+    },
+    "remaining_risks": [
+      "真实worker网络in-flight Stop、跨实例晚到发布和完整streams并发证据仍不齐。",
+      "本次Direct TCP正流量不能证明WG/UDP/ICMP/DNS完整拓扑；完整Task及Human接受仍未完成。",
+      "当前未跑184项全库、Native WebView/Tray E2E或CI；未变UI仅沿用原身份覆盖。"
+    ]
+  },
+  "evidence": {
+    "verification_ref": ".sdlc/evidence/TASK-009/verification-008.yaml",
+    "verification_sha256": "4541a0bc0d6338f7b3a6bcd4815e94d5c0e531ef5a27eb9e52e7e80fab562806",
+    "raw_directory": "src-tauri/target/task009-remediation/",
+    "observed": "独立读metering-real-008c stdout/result：26.80秒PASS，每向1310720字节、4次传输样本正速率、2次静默精确稳定累计和新实例零值。compiler模块24测试PASS；library Clippy/fmt/diff结果退出0。两个失败迭代保留，不计PASS。",
+    "host_readback": "已读只读快照脚本及before/after JSON，interfaces/addresses/routes/dns/proxy五组所选配置hash逐项相等；不是全系统行为审计。",
+    "design_ref": ".sdlc/design/DCR-008-test-loopback-metering.md"
+  },
+  "issues": [
+    {
+      "finding_id": "TASK009-CR-003",
+      "fingerprint": "windows/managed_sidecar_port.rs:metering-echo-listener:released-before-owned-core-stop",
+      "status": "NEW",
+      "severity": "P1",
+      "target_identity": "sha256:d85943538edb81eab0ae70023d27a811c1388bb99bd2838894c6e4819ca7f9d9",
+      "location": {
+        "path": "src-tauri/src/platform/windows/managed_sidecar_port.rs",
+        "line": 790,
+        "related_lines": [
+          676,
+          820,
+          835
+        ]
+      },
+      "title": "回显目标端口在受管入口仍开放时失去测试所有权",
+      "trigger": "唯一echo_listener移动到echo线程；80个块完成后线程结束，789-792 join完成时监听句柄已释放。第一核心直到820才Stop，随后834-836还以同一override_port启动第二核心。",
+      "impact": "端口释放后可被其它本机进程绑定，仍活跃的固定direct入口因而可转发到非本测试回显服务，违反已批准的固定自有目标边界；child listener枚举只证明入口归属，不能证明目标端口仍属测试。",
+      "evidence": "echo线程独占listener，join后没有保留/重新绑定目标的代码；第二实例重用相同Plan。",
+      "minimal_fix": "主测试保留回显监听句柄直到所有自有core确认Stop，服务线程只使用try_clone且仍仅accept一次；失败清理也先停core再释放保留句柄。定向验证目标port在两实例存活期间均不能被重新绑定。"
+    },
+    {
+      "finding_id": "TASK009-CR-004",
+      "fingerprint": "windows/managed_sidecar_port.rs:metering-block-io:ignores-global-deadline",
+      "status": "NEW",
+      "severity": "P2",
+      "target_identity": "sha256:d85943538edb81eab0ae70023d27a811c1388bb99bd2838894c6e4819ca7f9d9",
+      "location": {
+        "path": "src-tauri/src/platform/windows/managed_sidecar_port.rs",
+        "line": 513,
+        "related_lines": [
+          718,
+          725,
+          739,
+          741,
+          745,
+          747,
+          751
+        ]
+      },
+      "title": "每块独立2秒期限可越过30秒服务总截止",
+      "trigger": "echo/client仅在块开始检查全局deadline；metering_block_io重新设置now+2s，后续读和写各自重新获得期限。若在接近30秒时开始一个块，服务还能额外持续约4秒；client连接在其全局时钟创建前。",
+      "impact": "慢速或受干扰的本机连接可使测试服务超出DCR-008的30秒硬上限；60秒外层超时不能替代服务自身截止。",
+      "evidence": "helper不接收全局deadline，read/write和client sleep均未以剩余全局时间裁剪。",
+      "minimal_fix": "将绝对全局deadline传给块I/O，每次操作使用min(global_deadline, now+2s)；client连接和发送节奏纳入同一截止。补纯期限计算或短截止用例，证明临近/已过全局截止不会获得新的完整2秒。"
+    }
+  ],
+  "covered_previous_findings": [
+    {
+      "finding_id": "TASK009-CR-001",
+      "status": "FIXED",
+      "basis": "既有生产修复未变，沿用007覆盖。"
+    },
+    {
+      "finding_id": "TASK009-CR-002",
+      "status": "FIXED",
+      "basis": "既有Logs生产修复未变，沿用007覆盖。"
+    }
+  ],
+  "conclusion": "新增1项P1、1项P2，局部及完整Task均REWORK；已运行成功的计量用例仍保留为其精确目标的功能证据，不等于安全/期限边界通过。"
+}

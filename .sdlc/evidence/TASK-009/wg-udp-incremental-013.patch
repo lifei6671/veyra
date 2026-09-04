@@ -1,0 +1,1965 @@
+diff --git "a/E:\\wx_lifeilin\\github.com\\lifei6671\\veyra\\src-tauri\\target\\task009-udp-baseline-013\\.sdlc\\tasks\\TASK-009.md" b/.sdlc/tasks/TASK-009.md
+index 724994a..d8a018d 100644
+--- "a/E:\\wx_lifeilin\\github.com\\lifei6671\\veyra\\src-tauri\\target\\task009-udp-baseline-013\\.sdlc\\tasks\\TASK-009.md"
++++ b/.sdlc/tasks/TASK-009.md
+@@ -5,6 +5,7 @@ dependencies: [TASK-008]
+ risk: HIGH
+ status: IN_PROGRESS
+ design_refs:
++  - .sdlc/design/DCR-010-test-wg-udp.md
+   - .sdlc/design/foundation.md
+   - .sdlc/design/DCR-001-sing-box-1.14.0.md
+   - .sdlc/design/DCR-002-full-sing-box-subscription-and-compiler.md
+@@ -17,6 +18,7 @@ design_refs:
+   - .sdlc/design/DCR-008-test-loopback-metering.md
+   - .sdlc/design/DCR-009-controlled-wg-peer.md
+ approval_refs:
++  - .sdlc/evidence/TASK-009/change-control.yaml#EVIDENCE-TASK-009-CHANGE-008
+   - .sdlc/evidence/TASK-009/change-control.yaml#EVIDENCE-TASK-009-CHANGE-007
+   - .sdlc/evidence/TASK-009/change-control.yaml#EVIDENCE-TASK-009-CHANGE-006
+   - .sdlc/evidence/TASK-009/change-control.yaml#EVIDENCE-TASK-009-CHANGE-005
+@@ -55,6 +57,10 @@ TASK-010；Tor 仍等待独立资源 Gate，当前不得下载、启动或声称
+ 
+ ### allow
+ 
++- CHANGE-008/DCR-010：compiler.rs 的 cfg(test) 固定 WG UDP 编译元组与校验/内测，Windows Port
++  wg_peer_test 内的真实 UDP 客户端、协议与资源核验，以及 scripts/task009-wg-peer 既有模块的
++  init_udp/udp 私有协议、内存 UDP 回显/观察器、测试和 README。仅入口127.0.0.1:动态端口，
++  固定目标198.18.0.2:18081，保留原 TCP 测试限制、产品空入口和所有权/截止；不改依赖或锁。
+ - CHANGE-007/DCR-009：`scripts/task009-wg-peer/` 独立 Go 测试端、固定两个直接依赖及工具生成的
+   传递依赖清单；既有 Windows Port 内测和必要 cfg(test) 归属读取。只验证真实 WG 握手、TCP
+   出站应答、虚拟地址 ICMP 和资源清理；正常 ObservationOnly 编译器、产品依赖和打包不变。
+@@ -200,6 +206,11 @@ Snapshot/Delta使用DCR-006既有单调时间与安全速率字段，DCR-007严
+ 
+ ### SF-003：WireGuard 与 DNS/URLTest 的受控网络边界
+ 
++**CHANGE-008 UDP 子集：** 用户已批准 DCR-010 sha256:36a910c90c247e1b46958ed7890dceabc7d769aee1ca1f18b062154de8ea9c79。
++仅测试固定 loopback UDP 入口，经唯一 Manual Pool/WG 至内存目标，客户端实际收到三个精确应答，
++结合 peer 加解密边界计数、最终配置/进程/socket 身份及先 DUT 后 peer 的清理证明 UDP 出站应答。
++沿用 CHANGE-007 资源和 checkpoint012 Hold 修正；不扩展 DNS、完整拒绝或产品入口，不删减下列验收。
++
+ **CHANGE-007 首批范围：** 按 DCR-009 实现独立 loopback peer、正常 ObservationOnly 的 TCP
+ 应答和认证 peer 虚拟地址 ICMP Echo 子集；单用例 60 秒、工作窗口 30 秒、每次 I/O 至多 2 秒。
+ 运行前后只读比较宿主配置，记录实际 DUT/peer UDP 所有权，先确认 DUT 停止再释放 peer。
+diff --git "a/E:\\wx_lifeilin\\github.com\\lifei6671\\veyra\\src-tauri\\target\\task009-udp-baseline-013\\src-tauri\\src\\platform\\windows\\managed_sidecar_port.rs" b/src-tauri/src/platform/windows/managed_sidecar_port.rs
+index 35cb262..ab71f0d 100644
+--- "a/E:\\wx_lifeilin\\github.com\\lifei6671\\veyra\\src-tauri\\target\\task009-udp-baseline-013\\src-tauri\\src\\platform\\windows\\managed_sidecar_port.rs"
++++ b/src-tauri/src/platform/windows/managed_sidecar_port.rs
+@@ -502,6 +502,19 @@ mod tests {
+                 payloads_valid: bool,
+                 addresses_valid: bool,
+             },
++            #[serde(rename = "udp")]
++            Udp {
++                v: u8,
++                run_id: String,
++                received: u64,
++                replied: u64,
++                sequences: [u32; 3],
++                rx_udp_packets: u64,
++                tx_udp_packets: u64,
++                payloads_valid: bool,
++                addresses_valid: bool,
++                authenticated: bool,
++            },
+             #[serde(rename = "failed")]
+             Failed {
+                 v: u8,
+@@ -546,6 +559,7 @@ mod tests {
+                     Self::Ready { v, run_id, .. }
+                     | Self::Tcp { v, run_id, .. }
+                     | Self::Icmp { v, run_id, .. }
++                    | Self::Udp { v, run_id, .. }
+                     | Self::Failed { v, run_id, .. }
+                     | Self::Stopped { v, run_id, .. } => (v, run_id),
+                 };
+@@ -553,6 +567,44 @@ mod tests {
+             }
+         }
+ 
++        #[derive(Clone, Copy, Debug, Eq, PartialEq)]
++        enum PeerStage {
++            InitTcp,
++            InitUdp,
++            ReadyTcp,
++            ReadyUdp,
++            Tcp,
++            ProbeIcmp,
++            Icmp,
++            Udp,
++            Complete,
++        }
++
++        impl PeerStage {
++            fn after_command(self, op: &str) -> Result<Self, &'static str> {
++                match (self, op) {
++                    (Self::InitTcp, "init") => Ok(Self::ReadyTcp),
++                    (Self::InitUdp, "init_udp") => Ok(Self::ReadyUdp),
++                    (Self::ProbeIcmp, "probe_icmp") => Ok(Self::Icmp),
++                    (_, "shutdown") => Ok(self), // 清理也允许取消尚未完成的场景。
++                    _ => Err("peer command scenario/order"),
++                }
++            }
++
++            fn after_frame(self, frame: &Frame) -> Result<Self, &'static str> {
++                match (self, frame) {
++                    (Self::ReadyTcp, Frame::Ready { .. }) => Ok(Self::Tcp),
++                    (Self::ReadyUdp, Frame::Ready { .. }) => Ok(Self::Udp),
++                    (Self::Tcp, Frame::Tcp { .. }) => Ok(Self::ProbeIcmp),
++                    (Self::Icmp, Frame::Icmp { .. }) | (Self::Udp, Frame::Udp { .. }) => {
++                        Ok(Self::Complete)
++                    }
++                    (_, Frame::Failed { .. }) => Err("peer reported fixed failure"),
++                    _ => Err("peer event scenario/order"),
++                }
++            }
++        }
++
+         enum PipeEvent {
+             Line(Vec<u8>),
+             Eof,
+@@ -569,10 +621,11 @@ mod tests {
+             stdin_closed: Arc<AtomicBool>,
+             started: Instant,
+             run_id: String,
++            stage: PeerStage,
+         }
+ 
+         impl Peer {
+-            fn spawn(path: &Path, run_id: String) -> Self {
++            fn spawn(path: &Path, run_id: String, stage: PeerStage) -> Self {
+                 let started = Instant::now();
+                 let mut child = Command::new(path)
+                     .creation_flags(0x0800_0000)
+@@ -699,14 +752,18 @@ mod tests {
+                     stdin_closed,
+                     started,
+                     run_id,
++                    stage,
+                 }
+             }
+ 
+             fn send(
+-                &self,
++                &mut self,
+                 value: serde_json::Value,
+                 deadline: Instant,
+             ) -> Result<(), &'static str> {
++                let stage = self
++                    .stage
++                    .after_command(value["op"].as_str().ok_or("peer command missing")?)?;
+                 let mut bytes = serde_json::to_vec(&value).map_err(|_| "peer input encoding")?;
+                 bytes.push(b'\n');
+                 let (ack, received) = mpsc::sync_channel(1);
+@@ -717,7 +774,9 @@ mod tests {
+                     .map_err(|_| "peer input queue")?;
+                 received
+                     .recv_timeout(remaining(deadline, Duration::from_secs(2))?)
+-                    .map_err(|_| "peer input deadline")?
++                    .map_err(|_| "peer input deadline")??;
++                self.stage = stage;
++                Ok(())
+             }
+ 
+             fn frame(&mut self, deadline: Instant) -> Result<Frame, &'static str> {
+@@ -743,6 +802,7 @@ mod tests {
+                             if !frame.belongs_to(&self.run_id) {
+                                 return Err("peer frame identity");
+                             }
++                            self.stage = self.stage.after_frame(&frame)?;
+                             return Ok(frame);
+                         }
+                         Ok(PipeEvent::Eof) => return Err("peer output ended"),
+@@ -1045,6 +1105,85 @@ mod tests {
+             );
+         }
+ 
++        fn verify_udp_sockets(
++            peer: &SocketInventory,
++            dut: &SocketInventory,
++            peer_port: u16,
++            inlet: u16,
++        ) {
++            let business = format!("[127.0.0.1]:{inlet}");
++            assert_eq!(
++                dut.udp
++                    .iter()
++                    .filter(|endpoint| **endpoint == business)
++                    .count(),
++                1,
++                "exactly one owned loopback UDP business inlet"
++            );
++            let protocol = SocketInventory {
++                tcp: dut.tcp.clone(),
++                udp: dut
++                    .udp
++                    .iter()
++                    .filter(|endpoint| **endpoint != business)
++                    .cloned()
++                    .collect(),
++            };
++            // 只减去精确入口；任何额外端点仍须通过原 WG 单端口组规则。
++            verify_sockets(peer, &protocol, peer_port);
++        }
++
++        #[test]
++        fn wg_udp_frames_reject_cross_scenario_events_and_incomplete_evidence() {
++            let udp_value = serde_json::json!({"v":1,"event":"udp","run_id":"fixture",
++                "received":3,"replied":3,"sequences":[1,2,3],"rx_udp_packets":3,"tx_udp_packets":3,
++                "payloads_valid":true,"addresses_valid":true,"authenticated":true});
++            let udp: Frame = serde_json::from_value(udp_value.clone()).expect("UDP frame");
++            let tcp: Frame =
++                serde_json::from_value(serde_json::json!({"v":1,"event":"tcp","run_id":"fixture",
++                "requests":1,"response_status":204,"rx_tcp_packets":4,"tx_tcp_packets":4,
++                "authenticated":true,"response_acked":true}))
++                .expect("TCP frame");
++            let icmp: Frame = serde_json::from_value(serde_json::json!({"v":1,"event":"icmp","run_id":"fixture",
++                "sent":3,"received":3,"id":9,"sequences":[1,2,3],"payloads_valid":true,"addresses_valid":true})).expect("ICMP frame");
++            assert!(PeerStage::Tcp.after_frame(&udp).is_err());
++            assert!(PeerStage::Icmp.after_frame(&udp).is_err());
++            assert!(PeerStage::Udp.after_frame(&tcp).is_err());
++            assert!(PeerStage::Udp.after_frame(&icmp).is_err());
++            assert_eq!(PeerStage::Udp.after_frame(&udp), Ok(PeerStage::Complete));
++            assert!(PeerStage::Complete.after_frame(&udp).is_err());
++            assert!(PeerStage::ReadyUdp.after_frame(&udp).is_err());
++            assert!(PeerStage::InitTcp.after_command("init_udp").is_err());
++            assert!(PeerStage::InitUdp.after_command("init").is_err());
++            let initialized = PeerStage::InitUdp
++                .after_command("init_udp")
++                .expect("UDP init");
++            assert!(initialized.after_command("init_udp").is_err());
++            assert!(PeerStage::Udp.after_command("probe_icmp").is_err());
++            assert!(PeerStage::Udp.after_command("arbitrary").is_err());
++            for field in [
++                "authenticated",
++                "tx_udp_packets",
++                "addresses_valid",
++                "sequences",
++            ] {
++                let mut missing = udp_value.clone();
++                missing.as_object_mut().unwrap().remove(field);
++                assert!(serde_json::from_value::<Frame>(missing).is_err());
++            }
++            for (field, value) in [
++                ("extra", serde_json::json!(1)),
++                ("received", serde_json::json!(-1)),
++                ("tx_udp_packets", serde_json::json!(3.5)),
++                ("authenticated", serde_json::json!("true")),
++                ("sequences", serde_json::json!([1, 2, 3, 4])),
++            ] {
++                let mut invalid = udp_value.clone();
++                invalid[field] = value;
++                assert!(serde_json::from_value::<Frame>(invalid).is_err());
++            }
++        }
++
+         #[test]
+         fn wg_peer_frames_reject_unknown_fields_versions_and_noncanonical_keys() {
+             let stopped =
+@@ -1117,7 +1256,7 @@ mod tests {
+                     .collect::<String>()
+             };
+             let run_id = hex(&run_bytes);
+-            let mut peer = Peer::spawn(&helper_path, run_id.clone());
++            let mut peer = Peer::spawn(&helper_path, run_id.clone(), PeerStage::InitTcp);
+             let peer_pid = peer.child.id();
+             let initialized = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+                 peer.send(serde_json::json!({"v":1,"op":"init","run_id":run_id,
+@@ -1218,6 +1357,314 @@ mod tests {
+             }
+         }
+ 
++        #[test]
++        fn real_wireguard_udp_returns_three_exact_client_datagrams() {
++            use std::{net::UdpSocket, num::NonZeroU16};
++
++            let _lock = FIXED_CLASH_API_TEST_LOCK.lock().expect("fixed API lock");
++            let target = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("target");
++            let helper_path = target.join("task009-wg-peer.exe");
++            assert!(
++                helper_path.is_file(),
++                "build the approved fixed WG test peer before this test"
++            );
++            let helper_hash = format!(
++                "{:x}",
++                Sha256::digest(fs::read(&helper_path).expect("fixed helper bytes"))
++            );
++            let name = format!(
++                "task009-wg-udp-{}-{}",
++                std::process::id(),
++                std::time::SystemTime::now()
++                    .duration_since(std::time::UNIX_EPOCH)
++                    .expect("clock")
++                    .as_nanos()
++            );
++            let root = target.join(&name);
++            let resources = root.join("resources");
++            let bundled = resources.join(RESOURCE_DIRECTORY);
++            fs::create_dir_all(&bundled).expect("owned UDP test resources");
++            let cache = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
++                .join("binaries/sing-box-1.14.0-windows-amd64");
++            for file in EXPECTED_RESOURCE_FILES {
++                fs::hard_link(cache.join(file), bundled.join(file))
++                    .expect("fixed resource hardlink");
++            }
++            let data = std::env::temp_dir().join(&name);
++            fs::create_dir(&data).expect("owned UDP test app data");
++            let port = WindowsManagedSidecarPort::new(resources, data.clone())
++                .expect("fixed assets and ACL");
++            let mut runtime = SidecarRuntime::new_observation_only(port);
++            let mut run_bytes = [0; 16];
++            let mut token_bytes = [0; 16];
++            let mut dut_private = [0; 32];
++            let mut peer_private = [0; 32];
++            getrandom::fill(&mut run_bytes).expect("run entropy");
++            getrandom::fill(&mut token_bytes).expect("token entropy");
++            getrandom::fill(&mut dut_private).expect("DUT key entropy");
++            getrandom::fill(&mut peer_private).expect("peer key entropy");
++            for key in [&mut dut_private, &mut peer_private] {
++                key[0] &= 248;
++                key[31] &= 127;
++                key[31] |= 64;
++            }
++            let hex = |bytes: &[u8]| {
++                bytes
++                    .iter()
++                    .map(|byte| format!("{byte:02x}"))
++                    .collect::<String>()
++            };
++            let run_id = hex(&run_bytes);
++            let mut peer = Peer::spawn(&helper_path, run_id.clone(), PeerStage::InitUdp);
++            let peer_pid = peer.child.id();
++            let mut dut_pid = None;
++            let mut client = None;
++            let assertions = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
++                peer.send(serde_json::json!({"v":1,"op":"init_udp","run_id":run_id,
++                    "dut_private_key":dut_private,"peer_private_key":peer_private,"token":hex(&token_bytes)}),
++                    peer.started + Duration::from_secs(10)).expect("private UDP init write");
++                let Frame::Ready {
++                    udp_port,
++                    peer_public_key,
++                    dut_public_key,
++                    selftest,
++                    ..
++                } = peer
++                    .frame(peer.started + Duration::from_secs(10))
++                    .expect("UDP peer Ready/selftest")
++                else {
++                    panic!("expected UDP peer Ready")
++                };
++                let work_deadline = (peer.started + Duration::from_secs(45))
++                    .min(Instant::now() + Duration::from_secs(30));
++                assert!(udp_port != 0 && udp_port != 9090);
++                assert!(selftest.tcp && selftest.udp && selftest.icmp);
++                assert!(valid_public_key(&peer_public_key) && valid_public_key(&dut_public_key));
++                assert!(peer_public_key != dut_public_key);
++                let peer_before = owned_sockets(peer_pid, &root, work_deadline);
++                assert!(peer_before.tcp.is_empty());
++                assert_eq!(peer_before.udp, vec![format!("[127.0.0.1]:{udp_port}")]);
++                let reserved = UdpSocket::bind(("127.0.0.1", 0)).expect("reserve owned UDP inlet");
++                let inlet = reserved.local_addr().expect("reserved inlet address");
++                assert!(inlet.port() != 9090 && inlet.port() != udp_port);
++                let parsed = parse_subscription(&serde_json::json!({"outbounds":[{
++                    "type":"wireguard","tag":"controlled-wg-udp","server":"127.0.0.1","server_port":udp_port,
++                    "private_key":key_base64(&dut_private),"peer_public_key":peer_public_key,
++                    "local_address":["198.18.0.1/32"],"mtu":1280
++                }]}).to_string()).expect("ordinary WG parser");
++                assert!(parsed.skipped.is_empty());
++                assert_eq!(parsed.nodes.len(), 1);
++                let mut state = AppState::empty();
++                state.subscriptions.push(Subscription {
++                    id: SubscriptionId("wg-udp-test".into()),
++                    name: "wg-udp-test".into(),
++                });
++                state.providers.push(Provider {
++                    id: ProviderId("wg-udp-test".into()),
++                    subscription_id: SubscriptionId("wg-udp-test".into()),
++                    name: "wg-udp-test".into(),
++                });
++                state.nodes = normalize_nodes(ProviderId("wg-udp-test".into()), parsed.nodes)
++                    .expect("ordinary WG normalization");
++                state.pools.push(NodePool {
++                    id: PoolId("wg-udp-test".into()),
++                    name: "wg-udp-test".into(),
++                    kind: PoolKind::Custom,
++                    sources: vec![PoolSource {
++                        provider_id: ProviderId("wg-udp-test".into()),
++                        filter: NodeFilter::default(),
++                    }],
++                    selection: SelectionPolicy::Manual {
++                        selected_node_id: Some(state.nodes[0].id.clone()),
++                    },
++                    enabled: true,
++                });
++                state.default_target = RouteTarget::Pool(PoolId("wg-udp-test".into()));
++                assert!(state.routes.is_empty());
++                let intent = RuntimeIntent::from_state(&state).expect("whole UDP state validation");
++                let config = SingBoxCompiler
++                    .compile_wireguard_udp(
++                        &intent,
++                        &state.default_target,
++                        DnsPolicy::System,
++                        NonZeroU16::new(inlet.port()).expect("nonzero inlet"),
++                    )
++                    .expect("typed fixed WG UDP plan")
++                    .finalize(
++                        &crate::singbox::managed_sidecar::generate_api_secret()
++                            .expect("API entropy"),
++                    )
++                    .expect("final UDP configuration");
++                let config_hash = format!("{:x}", Sha256::digest(config.as_bytes()));
++                let document: serde_json::Value =
++                    serde_json::from_slice(config.as_bytes()).expect("final UDP readback");
++                assert_eq!(
++                    document["inbounds"],
++                    serde_json::json!([{
++                        "type":"direct","tag":"test-wg-udp","listen":"127.0.0.1","listen_port":inlet.port(),
++                        "network":"udp","override_address":"198.18.0.2","override_port":18081
++                    }])
++                );
++                assert_eq!(document["route"]["rules"][0]["action"], "reject");
++                assert_eq!(document["dns"]["rules"][0]["action"], "reject");
++                assert!(
++                    work_deadline.saturating_duration_since(Instant::now())
++                        >= Duration::from_secs(13),
++                    "reserve check and Ready deadlines before final cleanup"
++                );
++                // 只在已生成固定配置、即将交给 DUT 时释放预留；端口争用不重试。
++                drop(reserved);
++                runtime
++                    .start_or_replace(config)
++                    .expect("fixed UDP check/run/Ready");
++                let (identity, pid) = runtime
++                    .with_active_port(|port, child| {
++                        let running = port
++                            .running
++                            .get(&child.identity())
++                            .expect("owned WG UDP child");
++                        assert_eq!(
++                            format!(
++                                "{:x}",
++                                Sha256::digest(
++                                    fs::read(running.runtime.config_path())
++                                        .expect("private UDP readback")
++                                )
++                            ),
++                            config_hash
++                        );
++                        Ok((child.identity(), running.child.test_process_id()))
++                    })
++                    .expect("active UDP owner")
++                    .expect("active UDP child");
++                dut_pid = Some(pid);
++                assert!(peer.child.try_wait().expect("peer remains owned").is_none());
++                let dut_before = owned_sockets(pid, &root, work_deadline);
++                let peer_ready = owned_sockets(peer_pid, &root, work_deadline);
++                verify_udp_sockets(&peer_ready, &dut_before, udp_port, inlet.port());
++                client =
++                    Some(UdpSocket::bind(("127.0.0.1", 0)).expect("one owned loopback UDP client"));
++                let socket = client.as_ref().expect("owned client");
++                socket.connect(inlet).expect("connect to fixed test inlet");
++                let client_address = socket.local_addr().expect("client identity");
++                for sequence in 1u32..=3 {
++                    let mut request = [0; 20];
++                    request[..16].copy_from_slice(&token_bytes);
++                    request[16..].copy_from_slice(&sequence.to_be_bytes());
++                    socket
++                        .set_write_timeout(Some(
++                            remaining(work_deadline, Duration::from_secs(2))
++                                .expect("UDP send deadline"),
++                        ))
++                        .expect("UDP write timeout");
++                    assert_eq!(
++                        socket.send(&request).expect("one UDP request, no retry"),
++                        20
++                    );
++                    socket
++                        .set_read_timeout(Some(
++                            remaining(work_deadline, Duration::from_secs(2))
++                                .expect("UDP receive deadline"),
++                        ))
++                        .expect("UDP read timeout");
++                    let mut response = [0; 21];
++                    let received = socket
++                        .recv(&mut response)
++                        .expect("UDP reply from same connected inlet");
++                    assert_eq!(received, 20, "one complete 20-byte response");
++                    assert!(
++                        response[..20] == request,
++                        "exact token and sequence without exposing payload"
++                    );
++                    assert_eq!(
++                        socket.local_addr().expect("same client identity"),
++                        client_address
++                    );
++                    request.fill(0);
++                    response.fill(0);
++                }
++                let Frame::Udp {
++                    received: 3,
++                    replied: 3,
++                    sequences: [1, 2, 3],
++                    rx_udp_packets: 3,
++                    tx_udp_packets: 3,
++                    payloads_valid: true,
++                    addresses_valid: true,
++                    authenticated: true,
++                    ..
++                } = peer
++                    .frame(work_deadline)
++                    .expect("authenticated UDP boundary summary")
++                else {
++                    panic!("expected exact three-packet UDP boundary evidence")
++                };
++                let dut_after = owned_sockets(pid, &root, work_deadline);
++                let peer_after = owned_sockets(peer_pid, &root, work_deadline);
++                verify_udp_sockets(&peer_after, &dut_after, udp_port, inlet.port());
++                assert_eq!(
++                    dut_before.udp.iter().collect::<BTreeSet<_>>(),
++                    dut_after.udp.iter().collect::<BTreeSet<_>>(),
++                    "no extra UDP listener or WG protocol port after traffic"
++                );
++                assert!(
++                    peer.child
++                        .try_wait()
++                        .expect("peer alive before DUT Stop")
++                        .is_none()
++                );
++                println!(
++                    "task009 wg_udp helper_sha256={helper_hash} config_sha256={config_hash} identity={identity} dut_pid={pid} peer_pid={peer_pid} client_received=3 request_bytes=60 response_bytes=60 rx_udp_packets=3 tx_udp_packets=3 authenticated=true dut_sockets={dut_after:?} peer_sockets={peer_after:?}"
++                );
++            }));
++            // 包括 panic：先关闭本机客户端，再停止 DUT，最后交由既有 peer 清理契约。
++            client.take();
++            let dut_stopped = runtime.stop().is_ok();
++            let peer_cleanup = peer.finish(dut_stopped);
++            dut_private.fill(0);
++            peer_private.fill(0);
++            token_bytes.fill(0);
++            assert!(
++                dut_stopped,
++                "DUT cleanup failed; retain private resources and fixture"
++            );
++            peer_cleanup.expect("UDP peer stopped/exit/pipes all confirmed");
++            let cleanup_deadline = peer.started + Duration::from_secs(59);
++            let peer_after = owned_sockets(peer_pid, &root, cleanup_deadline);
++            assert!(peer_after.tcp.is_empty() && peer_after.udp.is_empty());
++            if let Some(pid) = dut_pid {
++                let dut_after = owned_sockets(pid, &root, cleanup_deadline);
++                assert!(dut_after.tcp.is_empty() && dut_after.udp.is_empty());
++            }
++            let port = runtime.into_port();
++            assert!(port.running.is_empty() && !port.has_pending_cleanup());
++            assert_eq!(
++                fs::read_dir(data.join(RUNTIME_DIRECTORY))
++                    .expect("private UDP runtime root")
++                    .count(),
++                0
++            );
++            println!(
++                "task009 wg_udp cleanup=client_then_dut_then_peer confirmed=true stderr_bytes={}",
++                peer.stderr_bytes.load(Ordering::SeqCst)
++            );
++            if let Err(panic) = assertions {
++                std::panic::resume_unwind(panic);
++            }
++            for (owned_path, parent) in [(data, std::env::temp_dir()), (root, target)] {
++                let resolved = owned_path
++                    .canonicalize()
++                    .expect("resolved owned UDP fixture");
++                let parent = parent.canonicalize().expect("resolved parent");
++                assert_eq!(resolved.parent(), Some(parent.as_path()));
++                assert_eq!(
++                    resolved.file_name().expect("owned UDP name"),
++                    std::ffi::OsStr::new(&name)
++                );
++                fs::remove_dir_all(resolved).expect("remove only successful owned UDP fixture");
++            }
++        }
++
+         #[test]
+         fn real_wireguard_peer_delivers_tcp_response_and_virtual_icmp() {
+             let _lock = FIXED_CLASH_API_TEST_LOCK.lock().expect("fixed API lock");
+@@ -1275,7 +1722,7 @@ mod tests {
+             };
+             let run_id = hex(&run_bytes);
+             let token = hex(&token_bytes);
+-            let mut peer = Peer::spawn(&helper_path, run_id.clone());
++            let mut peer = Peer::spawn(&helper_path, run_id.clone(), PeerStage::InitTcp);
+             let peer_pid = peer.child.id();
+             let work_deadline = peer.started + Duration::from_secs(45);
+             let mut dut_pid = None;
+diff --git "a/E:\\wx_lifeilin\\github.com\\lifei6671\\veyra\\src-tauri\\target\\task009-udp-baseline-013\\src-tauri\\src\\singbox\\compiler.rs" b/src-tauri/src/singbox/compiler.rs
+index cce7eb6..c71189e 100644
+--- "a/E:\\wx_lifeilin\\github.com\\lifei6671\\veyra\\src-tauri\\target\\task009-udp-baseline-013\\src-tauri\\src\\singbox\\compiler.rs"
++++ b/src-tauri/src/singbox/compiler.rs
+@@ -107,6 +107,32 @@ pub struct SingBoxCompiler;
+ 
+ #[cfg(test)]
+ impl SingBoxCompiler {
++    /// 仅测试固定 WG UDP 应答路径，不接受可变目的地址或产品运行 Profile。
++    pub(crate) fn compile_wireguard_udp(
++        &self,
++        intent: &RuntimeIntent,
++        default_target: &RouteTarget,
++        dns: DnsPolicy,
++        listen_port: NonZeroU16,
++    ) -> Result<SingBoxPlan, CompileError> {
++        if !intent.routes.is_empty() {
++            return Err(CompileError::InvalidFinalConfiguration);
++        }
++        let mut plan =
++            self.compile(intent, default_target, dns, RuntimeProfile::ObservationOnly)?;
++        plan.document.inbounds.push(TestInbound {
++            kind: "direct".to_owned(),
++            tag: "test-wg-udp".to_owned(),
++            listen: "127.0.0.1".to_owned(),
++            listen_port,
++            network: "udp".to_owned(),
++            override_address: "198.18.0.2".to_owned(),
++            override_port: NonZeroU16::new(18081).expect("fixed nonzero UDP port"),
++        });
++        plan.document.validate(false)?;
++        Ok(plan)
++    }
++
+     /// 仅测试构建可创建的本机计量入口，仍由同一 Plan 完成实例绑定与最终字节校验。
+     pub(crate) fn compile_loopback_metering(
+         &self,
+@@ -118,7 +144,7 @@ impl SingBoxCompiler {
+     ) -> Result<SingBoxPlan, CompileError> {
+         let mut plan =
+             self.compile(intent, default_target, dns, RuntimeProfile::ObservationOnly)?;
+-        plan.document.inbounds.push(TestMeteringInbound {
++        plan.document.inbounds.push(TestInbound {
+             kind: "direct".to_owned(),
+             tag: "test-metering".to_owned(),
+             listen: "127.0.0.1".to_owned(),
+@@ -257,7 +283,7 @@ struct Document {
+     #[cfg(not(test))]
+     inbounds: Vec<()>,
+     #[cfg(test)]
+-    inbounds: Vec<TestMeteringInbound>,
++    inbounds: Vec<TestInbound>,
+     outbounds: Vec<CoreOutbound>,
+     #[serde(default, skip_serializing_if = "Vec::is_empty")]
+     endpoints: Vec<WireGuardEndpoint>,
+@@ -268,7 +294,7 @@ struct Document {
+ #[cfg(test)]
+ #[derive(Clone, Serialize, Deserialize)]
+ #[serde(deny_unknown_fields)]
+-struct TestMeteringInbound {
++struct TestInbound {
+     #[serde(rename = "type")]
+     kind: String,
+     tag: String,
+@@ -960,7 +986,7 @@ impl Document {
+             return Err(rejected);
+         }
+         #[cfg(test)]
+-        self.validate_test_metering()?;
++        self.validate_test_inbounds()?;
+         if !self.log.disabled
+             || self.experimental.clash_api.external_controller != API_ADDRESS
+             || (bound && !valid_secret(&self.experimental.clash_api.secret))
+@@ -1119,7 +1145,7 @@ impl Document {
+     }
+ 
+     #[cfg(test)]
+-    fn validate_test_metering(&self) -> Result<(), CompileError> {
++    fn validate_test_inbounds(&self) -> Result<(), CompileError> {
+         if self.inbounds.is_empty() {
+             return Ok(());
+         }
+@@ -1127,6 +1153,45 @@ impl Document {
+         let [inbound] = self.inbounds.as_slice() else {
+             return Err(rejected);
+         };
++        if inbound.tag == "test-wg-udp" {
++            let [endpoint] = self.endpoints.as_slice() else {
++                return Err(rejected);
++            };
++            let [peer] = endpoint.peers.as_slice() else {
++                return Err(rejected);
++            };
++            if inbound.kind != "direct"
++                || inbound.listen != "127.0.0.1"
++                || inbound.network != "udp"
++                || inbound.override_address != "198.18.0.2"
++                || inbound.override_port.get() != 18081
++                || inbound.listen_port.get() == 9090
++                || inbound.listen_port.get() == peer.port
++                || endpoint.address.as_slice() != ["198.18.0.1/32"]
++                || endpoint.mtu != Some(1280)
++                || peer.address != "127.0.0.1"
++                || peer.port == 9090
++                || peer.pre_shared_key.is_some()
++                || peer.reserved.is_some()
++                || self.outbounds.len() != 3
++                || self.route.rules.len() != 1
++                || self.dns.rules.len() != 1
++            {
++                return Err(rejected);
++            }
++            // 通用 validate 继续核对唯一 Direct/Block、WG 密钥和两条置顶 reject。
++            for outbound in &self.outbounds {
++                match outbound {
++                    CoreOutbound::Direct(_) | CoreOutbound::Block(_) => {}
++                    CoreOutbound::Selector(pool)
++                        if pool.tag == self.route.final_outbound
++                            && pool.outbounds.as_slice() == [endpoint.tag.as_str()]
++                            && pool.default.as_deref() == Some(endpoint.tag.as_str()) => {}
++                    _ => return Err(rejected),
++                }
++            }
++            return Ok(());
++        }
+         if inbound.kind != "direct"
+             || inbound.tag != "test-metering"
+             || inbound.listen != "127.0.0.1"
+@@ -1710,6 +1775,193 @@ mod tests {
+         }];
+         intent
+     }
++    fn wireguard_udp_intent() -> RuntimeIntent {
++        let mut intent = fixture(protocol_nodes().remove(6));
++        intent.nodes[0].server = "127.0.0.1".to_owned();
++        intent.nodes[0].port = 24002;
++        intent.nodes[0].options = ProtocolOptions::WireGuard {
++            private_key: WG_PRIVATE.to_owned(),
++            peer_public_key: WG_PUBLIC.to_owned(),
++            pre_shared_key: None,
++            local_addresses: vec!["198.18.0.1/32".to_owned()],
++            mtu: Some(1280),
++            reserved: None,
++        };
++        intent.pools.truncate(1);
++        intent.routes.clear();
++        intent
++    }
++
++    fn wireguard_udp_plan(intent: &RuntimeIntent) -> Result<SingBoxPlan, CompileError> {
++        SingBoxCompiler.compile_wireguard_udp(
++            intent,
++            &RouteTarget::Pool(PoolId("manual".to_owned())),
++            DnsPolicy::System,
++            NonZeroU16::new(24001).expect("nonzero test inlet"),
++        )
++    }
++
++    #[test]
++    fn wireguard_udp_test_plan_preserves_product_and_fixed_topology() {
++        let intent = wireguard_udp_intent();
++        assert_eq!(document(&intent)["inbounds"], json!([]));
++        let config = wireguard_udp_plan(&intent)
++            .expect("UDP plan")
++            .finalize(&test_api_secret())
++            .expect("bound UDP plan");
++        config.validate_final().expect("same final bytes");
++        let value: Value = serde_json::from_slice(config.as_bytes()).expect("test JSON");
++        assert_eq!(
++            value["inbounds"],
++            json!([{
++                "type":"direct", "tag":"test-wg-udp", "listen":"127.0.0.1",
++                "listen_port":24001, "network":"udp", "override_address":"198.18.0.2",
++                "override_port":18081
++            }])
++        );
++        assert_eq!(value["route"]["final"], "pool-manual");
++        assert_eq!(
++            value["route"]["rules"],
++            json!([{"inbound":["node-node"],"action":"reject"}])
++        );
++        assert_eq!(value["dns"]["rules"], value["route"]["rules"]);
++        assert_eq!(value["endpoints"].as_array().expect("endpoints").len(), 1);
++        assert_eq!(value["outbounds"].as_array().expect("outbounds").len(), 3);
++    }
++
++    #[test]
++    fn wireguard_udp_test_compilation_rejects_other_network_intents() {
++        let original = wireguard_udp_intent();
++        let mut variants = Vec::new();
++        let mut changed = original.clone();
++        changed.nodes[0].server = "localhost".to_owned();
++        variants.push(changed);
++        let mut changed = original.clone();
++        changed.pools[0].selection = SelectionPolicy::Manual {
++            selected_node_id: None,
++        };
++        variants.push(changed);
++        let mut changed = original.clone();
++        changed
++            .pools
++            .push(fixture(protocol_nodes().remove(6)).pools.remove(1));
++        variants.push(changed);
++        let mut changed = original.clone();
++        changed.routes = fixture(protocol_nodes().remove(6)).routes;
++        variants.push(changed.clone());
++        for route in &mut changed.routes {
++            route.enabled = false;
++        }
++        variants.push(changed);
++        let mut changed = original.clone();
++        changed.nodes = metering_intent().nodes;
++        variants.push(changed);
++        for (index, changed) in variants.iter().enumerate() {
++            assert!(
++                wireguard_udp_plan(changed).is_err(),
++                "UDP intent case {index}"
++            );
++        }
++        for port in [9090, 24002] {
++            assert!(
++                SingBoxCompiler
++                    .compile_wireguard_udp(
++                        &original,
++                        &RouteTarget::Pool(PoolId("manual".to_owned())),
++                        DnsPolicy::System,
++                        NonZeroU16::new(port).expect("nonzero")
++                    )
++                    .is_err()
++            );
++        }
++    }
++
++    #[test]
++    fn wireguard_udp_final_readback_rejects_inlet_and_endpoint_escape() {
++        let config = wireguard_udp_plan(&wireguard_udp_intent())
++            .expect("UDP plan")
++            .finalize(&test_api_secret())
++            .expect("bound");
++        let original: Value = serde_json::from_slice(config.as_bytes()).expect("JSON");
++        for (path, value) in [
++            ("/inbounds/0/type", json!("mixed")),
++            ("/inbounds/0/tag", json!("test-metering")),
++            ("/inbounds/0/listen", json!("0.0.0.0")),
++            ("/inbounds/0/listen_port", json!(0)),
++            ("/inbounds/0/listen_port", json!(9090)),
++            ("/inbounds/0/listen_port", json!(24002)),
++            ("/inbounds/0/network", json!("tcp")),
++            ("/inbounds/0/override_address", json!("127.0.0.1")),
++            ("/inbounds/0/override_port", json!(18080)),
++            ("/endpoints/0/system", json!(true)),
++            ("/endpoints/0/address", json!(["198.18.0.3/32"])),
++            ("/endpoints/0/mtu", json!(1500)),
++            ("/endpoints/0/peers/0/address", json!("localhost")),
++            ("/endpoints/0/peers/0/port", json!(9090)),
++            ("/endpoints/0/peers/0/allowed_ips", json!(["198.18.0.2/32"])),
++            ("/route/final", json!("direct")),
++            ("/route/rules/0/action", json!("route")),
++            ("/dns/rules/0/action", json!("route")),
++            ("/dns/servers/0/type", json!("udp")),
++        ] {
++            let mut changed = original.clone();
++            *changed.pointer_mut(path).expect("known field") = value;
++            rejects(changed);
++        }
++        for path in [
++            "/inbounds",
++            "/endpoints",
++            "/endpoints/0/peers",
++            "/outbounds",
++            "/route/rules",
++            "/dns/rules",
++        ] {
++            let mut changed = original.clone();
++            let values = changed
++                .pointer_mut(path)
++                .expect("array")
++                .as_array_mut()
++                .expect("array");
++            values.push(values[0].clone());
++            rejects(changed);
++        }
++        for path in ["/route/rules", "/dns/rules"] {
++            let mut changed = original.clone();
++            *changed.pointer_mut(path).expect("rules") = json!([]);
++            rejects(changed);
++        }
++        for path in ["/inbounds/0", "/endpoints/0", "/endpoints/0/peers/0"] {
++            let mut changed = original.clone();
++            changed
++                .pointer_mut(path)
++                .expect("object")
++                .as_object_mut()
++                .expect("object")
++                .insert("unexpected".to_owned(), json!(true));
++            rejects(changed);
++        }
++        let mut changed = original.clone();
++        let selector = changed["outbounds"]
++            .as_array_mut()
++            .expect("outbounds")
++            .iter_mut()
++            .find(|outbound| outbound["type"] == "selector")
++            .expect("selector");
++        selector["default"] = Value::Null;
++        rejects(changed);
++        let text = std::str::from_utf8(config.as_bytes())
++            .expect("UTF8")
++            .replace(
++                "\"tag\":\"test-wg-udp\"",
++                "\"tag\":\"test-wg-udp\",\"tag\":\"test-wg-udp\"",
++            );
++        assert!(
++            GeneratedConfig::from_bytes(text.into_bytes())
++                .validate_final()
++                .is_err()
++        );
++    }
++
+     fn metering_plan(intent: &RuntimeIntent) -> Result<SingBoxPlan, CompileError> {
+         SingBoxCompiler.compile_loopback_metering(
+             intent,
+diff --git "a/E:\\wx_lifeilin\\github.com\\lifei6671\\veyra\\src-tauri\\target\\task009-udp-baseline-013\\scripts\\task009-wg-peer\\lifecycle_test.go" b/scripts/task009-wg-peer/lifecycle_test.go
+index 62f797e..0262cb7 100644
+--- "a/E:\\wx_lifeilin\\github.com\\lifei6671\\veyra\\src-tauri\\target\\task009-udp-baseline-013\\scripts\\task009-wg-peer\\lifecycle_test.go"
++++ b/scripts/task009-wg-peer/lifecycle_test.go
+@@ -14,76 +14,90 @@ import (
+ 
+ // peer 单独运行的取消自测，不创建或连接 sing-box DUT。
+ func TestProtocolFailureHoldsPortUntilShutdown(t *testing.T) {
+-	inReader, inWriter := io.Pipe()
+-	outReader, outWriter := io.Pipe()
+-	done := make(chan int, 1)
+-	go func() { done <- run(inReader, outWriter); outWriter.Close() }()
+-	defer inWriter.Close()
+-	defer inReader.Close()
+-	defer outReader.Close()
+-	if _, err := inWriter.Write(initFrame()); err != nil {
+-		t.Fatal(err)
++	for _, scenario := range []struct{ name, initial, invalid string }{
++		{"tcp_early_icmp", "init", "probe_icmp"},
++		{"udp_icmp", "init_udp", "probe_icmp"},
++		{"udp_reinit", "init_udp", "init_udp"},
++		{"udp_to_tcp", "init_udp", "init"},
++		{"tcp_to_udp", "init", "init_udp"},
++	} {
++		t.Run(scenario.name, func(t *testing.T) {
++			inReader, inWriter := io.Pipe()
++			outReader, outWriter := io.Pipe()
++			done := make(chan int, 1)
++			go func() { done <- run(inReader, outWriter); outWriter.Close() }()
++			defer inWriter.Close()
++			defer inReader.Close()
++			defer outReader.Close()
++			initial := strings.Replace(string(initFrame()), `"op":"init"`, `"op":"`+scenario.initial+`"`, 1)
++			if _, err := io.WriteString(inWriter, initial); err != nil {
++				t.Fatal(err)
++			}
++			reader := bufio.NewReader(outReader)
++			readEvent := func() map[string]json.RawMessage {
++				t.Helper()
++				line, err := reader.ReadBytes('\n')
++				if err != nil {
++					t.Fatal(err)
++				}
++				var e map[string]json.RawMessage
++				if err = json.Unmarshal(line, &e); err != nil {
++					t.Fatal(err)
++				}
++				return e
++			}
++			e := readEvent()
++			if string(e["event"]) != `"ready"` {
++				t.Fatalf("unexpected event %s", e["event"])
++			}
++			var port int
++			if err := json.Unmarshal(e["udp_port"], &port); err != nil {
++				t.Fatal(err)
++			}
++			invalid := `{"v":1,"op":"probe_icmp","run_id":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}` + "\n"
++			if scenario.invalid != "probe_icmp" {
++				invalid = strings.Replace(string(initFrame()), `"op":"init"`, `"op":"`+scenario.invalid+`"`, 1)
++			}
++			if _, err := io.WriteString(inWriter, invalid); err != nil {
++				t.Fatal(err)
++			}
++			e = readEvent()
++			if string(e["event"]) != `"failed"` || string(e["stage"]) != `"protocol"` || string(e["code"]) != `"invalid_input"` {
++				t.Fatal("missing failure")
++			}
++			u, err := net.ListenUDP("udp4", &net.UDPAddr{IP: net.IPv4(127, 0, 0, 1), Port: port})
++			if err == nil {
++				u.Close()
++				t.Fatal("failure released owned peer port")
++			}
++			select {
++			case <-done:
++				t.Fatal("failure exited before DUT stop confirmation")
++			default:
++			}
++			shutdown := `{"v":1,"op":"shutdown","run_id":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","dut_stopped":true}` + "\n"
++			if _, err := io.WriteString(inWriter, shutdown); err != nil {
++				t.Fatal(err)
++			}
++			e = readEvent()
++			if string(e["event"]) != `"stopped"` || string(e["resources_closed"]) != "true" {
++				t.Fatal("missing cleanup")
++			}
++			select {
++			case code := <-done:
++				if code == 0 {
++					t.Fatal("business failure reported success")
++				}
++			case <-time.After(3 * time.Second):
++				t.Fatal("helper cleanup blocked")
++			}
++			u, err = net.ListenUDP("udp4", &net.UDPAddr{IP: net.IPv4(127, 0, 0, 1), Port: port})
++			if err != nil {
++				t.Fatal("peer port not released", err)
++			}
++			u.Close()
++		})
+ 	}
+-	reader := bufio.NewReader(outReader)
+-	readEvent := func() map[string]json.RawMessage {
+-		t.Helper()
+-		line, err := reader.ReadBytes('\n')
+-		if err != nil {
+-			t.Fatal(err)
+-		}
+-		var e map[string]json.RawMessage
+-		if err = json.Unmarshal(line, &e); err != nil {
+-			t.Fatal(err)
+-		}
+-		return e
+-	}
+-	e := readEvent()
+-	if string(e["event"]) != `"ready"` {
+-		t.Fatalf("unexpected event %s", e["event"])
+-	}
+-	var port int
+-	if err := json.Unmarshal(e["udp_port"], &port); err != nil {
+-		t.Fatal(err)
+-	}
+-	invalid := `{"v":1,"op":"probe_icmp","run_id":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}` + "\n"
+-	if _, err := io.WriteString(inWriter, invalid); err != nil {
+-		t.Fatal(err)
+-	}
+-	e = readEvent()
+-	if string(e["event"]) != `"failed"` {
+-		t.Fatal("missing failure")
+-	}
+-	u, err := net.ListenUDP("udp4", &net.UDPAddr{IP: net.IPv4(127, 0, 0, 1), Port: port})
+-	if err == nil {
+-		u.Close()
+-		t.Fatal("failure released owned peer port")
+-	}
+-	select {
+-	case <-done:
+-		t.Fatal("failure exited before DUT stop confirmation")
+-	default:
+-	}
+-	shutdown := `{"v":1,"op":"shutdown","run_id":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","dut_stopped":true}` + "\n"
+-	if _, err := io.WriteString(inWriter, shutdown); err != nil {
+-		t.Fatal(err)
+-	}
+-	e = readEvent()
+-	if string(e["event"]) != `"stopped"` || string(e["resources_closed"]) != "true" {
+-		t.Fatal("missing cleanup")
+-	}
+-	select {
+-	case code := <-done:
+-		if code == 0 {
+-			t.Fatal("business failure reported success")
+-		}
+-	case <-time.After(3 * time.Second):
+-		t.Fatal("helper cleanup blocked")
+-	}
+-	u, err = net.ListenUDP("udp4", &net.UDPAddr{IP: net.IPv4(127, 0, 0, 1), Port: port})
+-	if err != nil {
+-		t.Fatal("peer port not released", err)
+-	}
+-	u.Close()
+ }
+ 
+ type cancelledConnection struct {
+diff --git "a/E:\\wx_lifeilin\\github.com\\lifei6671\\veyra\\src-tauri\\target\\task009-udp-baseline-013\\scripts\\task009-wg-peer\\main.go" b/scripts/task009-wg-peer/main.go
+index a19d5f3..fd4400f 100644
+--- "a/E:\\wx_lifeilin\\github.com\\lifei6671\\veyra\\src-tauri\\target\\task009-udp-baseline-013\\scripts\\task009-wg-peer\\main.go"
++++ b/scripts/task009-wg-peer/main.go
+@@ -25,6 +25,7 @@ type livePeer struct {
+ 	bind     *loopBind
+ 	wg       *device.Device
+ 	listener net.Listener
++	udp      *udpService
+ 	watch    *observer
+ 	workers  sync.WaitGroup
+ }
+@@ -39,11 +40,16 @@ func newLive(c command) (*livePeer, string, string, error) {
+ 		return nil, "", "", err
+ 	}
+ 	p := &livePeer{watch: newObserver(tokenBytes(c.Token))}
++	p.watch.udpMode = c.Op == "init_udp"
+ 	p.tun, err = newMemoryTun(peerIP, p.watch)
+ 	if err != nil {
+ 		return nil, "", "", err
+ 	}
+-	p.listener, err = gonet.ListenTCP(p.tun.s, address(peerIP, 18080), ipv4.ProtocolNumber)
++	if p.watch.udpMode {
++		p.udp, err = newUDPService(p.tun)
++	} else {
++		p.listener, err = gonet.ListenTCP(p.tun.s, address(peerIP, 18080), ipv4.ProtocolNumber)
++	}
+ 	if err != nil {
+ 		p.tun.Close()
+ 		return nil, "", "", err
+@@ -63,7 +69,12 @@ func newLive(c command) (*livePeer, string, string, error) {
+ 	return p, base64.StdEncoding.EncodeToString(peer.PublicKey().Bytes()), base64.StdEncoding.EncodeToString(dut.PublicKey().Bytes()), nil
+ }
+ func (p *livePeer) close() error {
+-	err := p.listener.Close()
++	var err error
++	if p.udp != nil {
++		err = p.udp.close()
++	} else {
++		err = p.listener.Close()
++	}
+ 	p.wg.Close()
+ 	p.workers.Wait()
+ 	return err
+@@ -129,7 +140,7 @@ func run(in io.Reader, out io.Writer) int {
+ 	var initial command
+ 	select {
+ 	case input := <-inputs:
+-		if input.err != nil || input.command.Op != "init" {
++		if input.err != nil || (input.command.Op != "init" && input.command.Op != "init_udp") {
+ 			return 1
+ 		}
+ 		initial = input.command
+@@ -188,14 +199,54 @@ func run(in io.Reader, out io.Writer) int {
+ 	workCtx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+ 	cancelBusiness = cancel
+ 	defer cancel()
+-	httpDone := make(chan error, 1)
++	var httpDone, udpDone chan error
+ 	p.workers.Add(1)
+-	go func() { defer p.workers.Done(); httpDone <- serveHTTP(workCtx, p, initial.Token) }()
++	if p.watch.udpMode {
++		udpDone = make(chan error, 1)
++		go func() { defer p.workers.Done(); udpDone <- serveUDP(workCtx, p) }()
++	} else {
++		httpDone = make(chan error, 1)
++		go func() { defer p.workers.Done(); httpDone <- serveHTTP(workCtx, p, initial.Token) }()
++	}
+ 	icmpDone := make(chan error, 1)
+ 	tcpOK, icmpStarted, icmpOK := false, false, false
++	udpOK := false
+ 	workDone := workCtx.Done()
+ 	for {
+ 		select {
++		case uErr := <-udpDone:
++			udpDone = nil
++			if uErr != nil {
++				if errors.Is(workCtx.Err(), context.DeadlineExceeded) {
++					failure("deadline", "timeout")
++				} else {
++					failure("protocol", "unexpected_packet")
++				}
++				continue
++			}
++			if failed {
++				continue
++			}
++			udpOK = true
++			e := base("udp")
++			e["received"] = 3
++			e["replied"] = 3
++			e["sequences"] = []int{1, 2, 3}
++			e["rx_udp_packets"] = 3
++			e["tx_udp_packets"] = 3
++			e["payloads_valid"] = true
++			e["addresses_valid"] = true
++			e["authenticated"] = true
++			if output(e) != nil {
++				failure("protocol", "io_error")
++			}
++			p.workers.Add(1)
++			go func() {
++				defer p.workers.Done()
++				if p.udp.waitReadable(workCtx) == nil {
++					p.watch.fail(errors.New("extra UDP datagram"))
++				}
++			}()
+ 		case hErr := <-httpDone:
+ 			httpDone = nil
+ 			if hErr != nil {
+@@ -286,12 +337,12 @@ func run(in io.Reader, out io.Writer) int {
+ 				if output(e) != nil {
+ 					return 1
+ 				}
+-				if failed || !tcpOK || !icmpOK {
++				if failed || (p.watch.udpMode && !udpOK) || (!p.watch.udpMode && (!tcpOK || !icmpOK)) {
+ 					return 1
+ 				}
+ 				return 0
+ 			}
+-			if c.Op != "probe_icmp" || failed || !tcpOK || icmpStarted {
++			if c.Op != "probe_icmp" || p.watch.udpMode || failed || !tcpOK || icmpStarted {
+ 				failure("protocol", "invalid_input")
+ 				continue
+ 			}
+@@ -301,7 +352,11 @@ func run(in io.Reader, out io.Writer) int {
+ 		case <-p.watch.wake:
+ 			_, _, err := p.watch.result()
+ 			if err != nil {
+-				failure("tcp", "unexpected_packet")
++				if p.watch.udpMode {
++					failure("protocol", "unexpected_packet")
++				} else {
++					failure("tcp", "unexpected_packet")
++				}
+ 			}
+ 		case <-workDone:
+ 			failure("deadline", "timeout")
+diff --git "a/E:\\wx_lifeilin\\github.com\\lifei6671\\veyra\\src-tauri\\target\\task009-udp-baseline-013\\scripts\\task009-wg-peer\\observe.go" b/scripts/task009-wg-peer/observe.go
+index cfb250a..1770c4d 100644
+--- "a/E:\\wx_lifeilin\\github.com\\lifei6671\\veyra\\src-tauri\\target\\task009-udp-baseline-013\\scripts\\task009-wg-peer\\observe.go"
++++ b/scripts/task009-wg-peer/observe.go
+@@ -60,9 +60,18 @@ func parsePacket(raw []byte) (packet, error) {
+ 			return packet{}, errors.New("ICMP bounds/checksum")
+ 		}
+ 	case 17:
+-		if len(p.body) < 8 {
++		if len(p.body) < 8 || int(binary.BigEndian.Uint16(p.body[4:6])) != len(p.body) {
+ 			return packet{}, errors.New("UDP bounds")
+ 		}
++		if binary.BigEndian.Uint16(p.body[6:8]) != 0 {
++			pseudo := uint32(17 + len(p.body))
++			for _, a := range [][4]byte{p.src, p.dst} {
++				pseudo += uint32(binary.BigEndian.Uint16(a[:2])) + uint32(binary.BigEndian.Uint16(a[2:]))
++			}
++			if checksum(p.body, pseudo) != 0 {
++				return packet{}, errors.New("UDP checksum")
++			}
++		}
+ 	default:
+ 		return packet{}, errors.New("protocol")
+ 	}
+@@ -89,6 +98,10 @@ type observer struct {
+ 	icmpSent     int
+ 	icmpReceived int
+ 	allowUDP     bool
++	udpMode      bool
++	udpReceived  int
++	udpReplied   int
++	udpPort      uint16
+ }
+ 
+ func newObserver(token []byte) *observer {
+@@ -130,6 +143,14 @@ func (o *observer) inspect(raw []byte, incoming bool) {
+ 		o.err = errors.New("packet address")
+ 		return
+ 	}
++	if o.udpMode {
++		if p.proto != 17 {
++			o.err = errors.New("UDP scenario protocol")
++			return
++		}
++		o.udp(p, incoming)
++		return
++	}
+ 	switch p.proto {
+ 	case 6:
+ 		o.tcp(p, incoming)
+diff --git "a/E:\\wx_lifeilin\\github.com\\lifei6671\\veyra\\src-tauri\\target\\task009-udp-baseline-013\\scripts\\task009-wg-peer\\protocol_test.go" b/scripts/task009-wg-peer/protocol_test.go
+index 3431324..902a1fd 100644
+--- "a/E:\\wx_lifeilin\\github.com\\lifei6671\\veyra\\src-tauri\\target\\task009-udp-baseline-013\\scripts\\task009-wg-peer\\protocol_test.go"
++++ b/scripts/task009-wg-peer/protocol_test.go
+@@ -41,6 +41,19 @@ func TestProtocolRejectsInvalidFrames(t *testing.T) {
+ 		t.Fatal("unknown field")
+ 	}
+ }
++func TestUDPInitRejectsDuplicateAndUnknownFields(t *testing.T) {
++	good := bytes.Replace(initFrame(), []byte(`"op":"init"`), []byte(`"op":"init_udp"`), 1)
++	c, err := decodeCommand(good)
++	if err != nil || c.Op != "init_udp" {
++		t.Fatal("UDP init rejected", err)
++	}
++	for _, field := range []string{`"op":"init",`, `"token":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",`, `"extra":true,`} {
++		bad := append([]byte("{"+field), good[1:]...)
++		if _, err := decodeCommand(bad); err == nil {
++			t.Fatal("ambiguous or unknown UDP init accepted")
++		}
++	}
++}
+ func TestInputBoundBeforeAllocation(t *testing.T) {
+ 	out := make(chan inputResult, 1)
+ 	done := make(chan struct{})
+diff --git "a/E:\\wx_lifeilin\\github.com\\lifei6671\\veyra\\src-tauri\\target\\task009-udp-baseline-013\\scripts\\task009-wg-peer\\protocol.go" b/scripts/task009-wg-peer/protocol.go
+index 94736e9..1913b58 100644
+--- "a/E:\\wx_lifeilin\\github.com\\lifei6671\\veyra\\src-tauri\\target\\task009-udp-baseline-013\\scripts\\task009-wg-peer\\protocol.go"
++++ b/scripts/task009-wg-peer/protocol.go
+@@ -33,6 +33,28 @@ func hex16(s string) bool {
+ }
+ func decodeCommand(line []byte) (command, error) {
+ 	var c command
++	// 首层字段不允许重复，防止两个初始化场景被不同解码端解释成不同操作。
++	keys := json.NewDecoder(bytes.NewReader(line))
++	first, err := keys.Token()
++	if err != nil || first != json.Delim('{') {
++		return c, errors.New("object required")
++	}
++	seen := make(map[string]bool)
++	for keys.More() {
++		key, err := keys.Token()
++		if err != nil {
++			return c, errors.New("object key")
++		}
++		name, ok := key.(string)
++		if !ok || seen[name] {
++			return c, errors.New("duplicate field")
++		}
++		seen[name] = true
++		var value json.RawMessage
++		if keys.Decode(&value) != nil {
++			return c, errors.New("object value")
++		}
++	}
+ 	decoder := json.NewDecoder(bytes.NewReader(line))
+ 	decoder.DisallowUnknownFields()
+ 	if err := decoder.Decode(&c); err != nil {
+@@ -45,7 +67,7 @@ func decodeCommand(line []byte) (command, error) {
+ 		return c, errors.New("protocol identity")
+ 	}
+ 	switch c.Op {
+-	case "init":
++	case "init", "init_udp":
+ 		if !hex16(c.Token) || len(c.DUT) != 32 || len(c.Peer) != 32 || c.Stopped != nil {
+ 			return c, errors.New("init fields")
+ 		}
+diff --git "a/E:\\wx_lifeilin\\github.com\\lifei6671\\veyra\\src-tauri\\target\\task009-udp-baseline-013\\scripts\\task009-wg-peer\\README.md" b/scripts/task009-wg-peer/README.md
+index 86f4171..68b9c80 100644
+--- "a/E:\\wx_lifeilin\\github.com\\lifei6671\\veyra\\src-tauri\\target\\task009-udp-baseline-013\\scripts\\task009-wg-peer\\README.md"
++++ b/scripts/task009-wg-peer/README.md
+@@ -1,6 +1,6 @@
+ # TASK-009 WireGuard 测试端
+ 
+-仅供 DCR-009 的 Windows 受控测试使用，不是产品组件或独立代理服务。
++仅供 DCR-009/010 的 Windows 受控测试使用，不是产品组件或独立代理服务。
+ 固定 Go 1.27.1；两个直接依赖及版本见 `go.mod`。不安装系统 TUN，不改主机网络设置。
+ 
+ 在此目录执行下面的显式步骤，外层进程调度器应另外设置合理超时（单测 70 秒，下载/构建
+@@ -21,13 +21,15 @@ go build -o ../../src-tauri/target/task009-wg-peer.exe .
+ `gofmt -l .` 应无文件输出；有输出时先格式化再重验。`go.sum` 由 Go 工具生成，不能手改。
+ 输出 EXE 位于忽略的 target 目录；集成前记录 SHA-256，Rust 只运行该固定路径的已核定文件。
+ 上述显式 Go build 是新增 Rust WG 内测的先决条件；缺少该 EXE 时内测失败，不自动构建。
+-WG TCP/ICMP 集成由 Rust Windows Port 内测串行驱动，不能与其它固定 API 9090 测试并行。
++WG TCP/ICMP 和独立 UDP 集成由 Rust Windows Port 内测串行驱动，不能与其它固定 API 9090 测试并行。
+ 
+ 父进程通过私有 stdin 输入 DCR-009 v1 单行 JSON。每行 ≤4096 字节、单向总量 ≤16384 字节。
+ init 包含本次 run_id、token 和两组随机私钥；stdout 只输出公钥及固定摘要，不输出 init、
+ 密钥、完整配置或原始网络报文。不要手工把 init 命令写入终端、命令行或日志。
+ 
+-正常事件顺序为 ready → tcp → icmp → stopped。ready 前自测两个纯内存栈的 TCP/UDP/ICMP；
++`init` 事件顺序为 ready → tcp → icmp → stopped；`init_udp` 使用相同输入字段，事件顺序
++为 ready → udp → stopped。场景之间不能切换，UDP 场景不能发送 probe_icmp。
++ready 前自测两个纯内存栈的 TCP/UDP/ICMP；
+ 随后只在 OS 绑定一个 `127.0.0.1:动态端口` 的 UDP4 socket。HTTP 服务
+ `198.18.0.2:18080` 仅在内存栈，不是主机 TCP listener。
+ 
+@@ -35,11 +37,20 @@ tcp 摘要要求精确 HEAD、固定 204 响应字节、同一连接完整响应
+ `response_acked:true` 只证明交付至 DUT TCP 层，不证明 URLTest 已解析响应。
+ icmp 摘要要求 DUT 虚拟地址三次 Echo 的类型、ID、序号、地址和 token 全部一致。
+ 
++UDP 服务 `198.18.0.2:18081` 仅存在于内存栈。每包必须恰为 20 字节：16 字节解码后的
++随机 token，随后是大端 u32 序号 1、2、3。服务校验 DUT 虚拟源地址、首包源端口及顺序；
++观察器另在 tun 入口和出口验证地址、端口、载荷、IPv4/UDP 校验和及恰好三次请求/响应。
++IPv4 UDP 零校验和合法，非零校验和必须匹配。成功 udp 摘要字段为 received/replied=3、
++sequences=[1,2,3]、rx_udp_packets/tx_udp_packets=3，以及 payloads_valid、addresses_valid、
++authenticated=true。该摘要证明经过 peer 报文边界；实际交付还要求 Rust 客户端收到三个
++完整回显。业务失败使用既有 protocol 摘要，绝对期限使用 deadline，不增加错误分类。
++
+ 工作窗口到期或业务/协议失败会报告 failed 并保留 peer 端口。父必须先停止并确认 DUT，
+ 再发送 `shutdown` 且 `dut_stopped:true`。正常会话限 30 秒工作，父最迟 45 秒开始清理，
+ helper 55 秒硬截止，真实用例外层 60 秒。异常终止/清理失败必须记 FAIL，不能假称端口
+ 归属连续；未确认 DUT 退出不得删除其私有资源。
+ 
+ 单元测试包含内存协议阳性、完整 ACK 和分段/重传/回绕、缺 ACK/部分 ACK/错误连接/RST
+-负例、协议限长、UDP 关闭唤醒和 stdout 写入截止。它们不是真实 DUT 的集成证据。
+-DUT UDP 业务、IPv6、主动入站/转发拒绝矩阵及系统 DNS 不在该测试端本轮交付范围。
++负例、协议限长/重复字段/场景混用、UDP 错 token/顺序/源端口/截断/校验和、缺少报文边界
++证据、取消保留端口和 stdout 写入截止。它们不是真实 DUT 的集成证据。
++UDP 集成仅覆盖上述三次受控回显；IPv6、主动入站/转发拒绝矩阵及系统 DNS 仍不在范围内。
+diff --git a/.sdlc/design/DCR-010-test-wg-udp.md b/.sdlc/design/DCR-010-test-wg-udp.md
+new file mode 100644
+index 0000000..c66a4c9
+--- /dev/null
++++ b/.sdlc/design/DCR-010-test-wg-udp.md
+@@ -0,0 +1,123 @@
++# DCR-010：WireGuard UDP 出站应答的测试入口
++
++状态：PROPOSED，等待独立设计审阅和本项新增边界的用户批准；不是运行证据。
++TASK-009 / SF-003；Requirement `docs/veyra.md`
++`sha256:4a2cd1e2b9698087bcbc4ac892d7b052a5e2c06554e372479fe31c81cbea9d45`。
++基线为 checkpoint012 `sha256:1827c6b72fe6466836eb4e6d4fd32e006a36e581d07c8731ed6757c59b17fc59`。
++沿用 CHANGE-007 的既有依赖、用户态 peer、短时 DUT WG 协议 UDP 绑定和 DCR-009 生命周期。
++本候选仅例外扩展 DCR-008/009 中测试配置的 UDP 业务入口限制；其它冻结契约不变。
++
++## 需要批准的增量
++
++新增一个仅 `cfg(test)` 使用的 `127.0.0.1:动态端口` UDP 业务入口，固定转发到本次
++WG peer 内存栈的 `198.18.0.2:18081`，证明 DUT 发起的 UDP 请求能经 WG 收到应答。
++同时扩展既有 Rust/Go 私有测试协议和回显服务。无新增依赖、锁文件、产品入口或主机配置。
++先审阅此具体设计，再请求用户批准新增入口及其测试实现；“继续下一步”不视为扩大原批准范围。
++
++```text
++Rust 本机 UDP 客户端
++  → DUT direct UDP 127.0.0.1:动态入口
++  → Router → 唯一 Manual Pool → WG 198.18.0.1
++  → 既有本机 WG 协议 socket → peer WG 198.18.0.2
++  → 内存 UDP 198.18.0.2:18081 → 原路返回同一 Rust 客户端
++```
++
++产品 ObservationOnly 仍无业务入站。本用例为测试配置，不能称作产品 UDP 入口支持，
++也不证明主动入站/转发拒绝、IPv6、系统 DNS、URLTest 或整个 TASK-009 通过。
++这些原有验收义务仍保留。单纯 peer 自测或发送成功不能代替 DUT 应答证据。
++
++## 编译与资源约束
++
++1. 在 `compiler.rs` 增加 `cfg(test)` 内部 `compile_wireguard_udp`，输入为既有
++   RuntimeIntent/default_target/DnsPolicy 和一个 NonZeroU16 入口端口；返回 SingBoxPlan。
++   正常 compile ObservationOnly 后建立强类型测试入站；不接收地址、目标端口、任意 JSON
++   或 network 参数。沿用每实例新 secret、finalize、严格 validate、最终字节读回、check/run。
++2. 唯一入站固定 `type=direct, tag=test-wg-udp, listen=127.0.0.1, network=udp,
++   override_address=198.18.0.2, override_port=18081`；入口端口非 9090，且不同于 peer
++   协议端口。私有 cfg(test) 入站模型可改为中性名称，按固定 tag 校验两种完整封闭元组。
++   保留 DCR-008 原 TCP/Direct 元组的全部限制，禁止混用两个元组、增加第二入口或放宽地址。
++3. UDP 元组必须恰有一个 WG endpoint（server=127.0.0.1、peer 实际端口、唯一 peer、
++   local_address=198.18.0.1/32、MTU=1280）和一个 Manual Pool，成员/选中项只能是它。
++   default_target 只能是此 Pool；除固定 Direct/Block 终端外无其它节点或 Pool，无 URLTest、
++   hostname、用户路由。route/DNS 置顶 endpoint reject、系统 DNS 类型及其它现有白名单不变。
++   最终校验也必须检查此完整拓扑，不能仅信任构造函数。普通 compile 在 test 和产品中都为空入口。
++4. 先启动并持有 peer 的 OS UDP4 `127.0.0.1:0`，再预留不同的入口端口；入口预留句柄
++   只在 DUT 启动前释放。Rust 客户端 bind loopback:0 并 connect 到该入口，保持唯一 socket。
++   端口争用直接失败，不重试、不终止无关进程。Ready 后按私有受管 child PID 核定 socket：
++   TCP 仅鉴权 API `127.0.0.1:9090`；业务 UDP 仅本次入口；另允许 CHANGE-007 已批准的
++   WG 协议 wildcard IPv4/IPv6 同端口组。不能将额外 UDP listener 当作 WG 组自动放行。
++5. Go 只增加内存 UDP listener，无 OS TCP/DNS listener。沿用用户态 WG、MTU、密钥生成、
++   私有管道、队列/流量上限和绑定所有权规则。不改路由、接口、代理、DNS、hosts、权限或防火墙。
++
++## 私有协议与应答证据
++
++沿用 DCR-009 v1 帧限制、随机 key/run_id/token、严格未知字段和顺序拒绝、错误摘要及截止。
++新增首帧操作 `init_udp`，字段与 `init` 完全相同，仅选择本次封闭测试场景；不增加任意目标输入。
++原 `init → ready → tcp → probe_icmp → icmp` 场景保持；新场景正常顺序为
++`init_udp → ready → udp → shutdown(dut_stopped:true) → stopped`。
++UDP 场景拒绝 probe_icmp、再次初始化及 tcp/icmp 事件；原场景拒绝 udp 事件。
++ready 的既有内存 TCP/UDP/ICMP 自测继续保留，但自测计数不得混入真实 WG 计数。
++
++新增单个成功事件（共同 v/run_id 同旧协议）：
++
++```text
++{v:1, event:"udp", run_id, received:3, replied:3,
++ sequences:[1,2,3], rx_udp_packets:3, tx_udp_packets:3,
++ payloads_valid:true, addresses_valid:true, authenticated:true}
++```
++
++每个业务载荷固定 20 字节：本次 token 解码的 16 字节，加 big-endian u32 序号 1、2、3。
++Rust 逐个发送，每次须先收到完全相等的应答才发下一个；无自动重发。
++Go 内存服务只回显三个长度、token、顺序均正确的数据报；来源地址必须为 DUT 虚拟地址，
++首次合法请求确定源端口，此后同一四元组。非法/多余数据报进入 failed/Hold，不回显任意数据。
++只有 gVisor 实际收到三个请求、成功提交三个相同应答，并且 WG tun 边界观察到对应三个
++已解密请求及三个送往加密路径的应答后才发送 udp 摘要。观察器匹配 IPv4 地址、UDP 端口、
++长度和精确载荷；拒绝分片/截短或错误报文，不把 WG 握手和其它流量计作业务。
++IPv4 UDP checksum 为零是协议允许值；非零值须验证，IPv4 头也验证；复用现有栈校验能力。
++观察方向可因并发先后不同，不以摘要到达顺序推断客户端消费。
++
++成功必须同时满足：Rust 同一 connected UDP socket 收到三个精确应答 + Go 上述边界摘要 +
++严格配置/实际 socket 归属 + 正常清理。Go 的 replied 只代表提交，最终交付证据由 Rust 接收给出。
++本用例只有 60 字节请求及 60 字节应答载荷；沿用 DCR-009 的 1MiB 硬上限。
++不以总流量统计反推 UDP 完成，不增加 ACK 协议、重传层、后台组件或持久数据。
++
++## 期限、失败与清理
++
++沿用 DCR-009：单次 I/O 最多 2 秒且受绝对工作截止约束，工作窗口 30 秒，父进程最迟
++45 秒转清理，Go 55 秒硬截止，父管道/最终等待 59 秒，用例外层 60 秒。仍使用现有 API
++测试互斥锁。失败取消业务但 peer 保持 WG 绑定和内存 listener 至 DUT 退出已确认；
++父先关闭客户端，再停止并确认 DUT/pending，才发送 shutdown、确认 peer 退出和归属资源清理。
++复用 checkpoint012 的 `finish(false)`：未确认 DUT 退出不发 shutdown、不 kill peer、不提前
++关 stdin，只等 helper 硬退出且本次仍 FAIL。不得提前释放目标，也不删除未确认归属的私有资源。
++记录配置与 helper SHA、DUT/peer PID、固定摘要、socket 和清理结果；不输出私钥、完整配置、
++管道首帧或原始载荷。运行前后只读对比现有主机网络/代理配置摘要。
++
++短时入口可被本机其它进程访问，但只路由至本次无副作用内存回显目标，且随机 token 限制应答。
++它可能造成测试失败，不能成为任意目标代理。现有固定目标、短期限和所有权已限制风险；
++不为测试添加系统防火墙、ACL 服务或额外认证协议。端口预留释放争用和真实 UDP 丢包均如实 FAIL。
++
++## 实施、验证及退出条件
++
++- Rust：`src-tauri/src/singbox/compiler.rs` 的 cfg(test) 入口/模型校验与测试；
++  `src-tauri/src/platform/windows/managed_sidecar_port.rs` 的现有 wg_peer_test 私有模块。
++- Go：`scripts/task009-wg-peer/` 既有协议、内存栈、观察器、生命周期测试和 README；
++  不修改 go.mod/go.sum，不新增工具或依赖。实施可以划分 Rust/Go 两个独立责任区。
++- Orchestrator 在明确批准后才同步 Task/CHANGE/Readiness；重新冻结交付身份，串行运行真实核心，
++  独立审阅完整增量。当前候选不改变 state、Task 验收或其它冻结设计文件。
++- Compiler 定向测试：合法 UDP 元组；旧 TCP 元组的 UDP/WG 负例仍拒绝；普通编译无入口；
++  错误地址/端口/网络/tag、双入口、额外节点/Pool/路由、非唯一 WG、reject 删除或顺序错误、
++  额外字段和最终字节篡改均失败；非 test 库编译验证不含业务入口例外。
++- Go 定向测试：UDP 三次内存回显；错误 token/顺序/四元组/截短报文、只有请求/只有提交却无
++  边界应答不得发成功；新旧场景消息交叉、重复/未知字段和协议限长；继续满足 Hold/硬截止。
++- Rust 真实固定 sing-box 1.14.0：同一最终字节 check/run、实际 WG 三次 UDP 应答、全部 socket
++  归属、DUT 先退出及清理、主机配置不变。原 TCP/ICMP 实测与 finish(false) 定向回归保持。
++- 使用现有 README 的 Go test/vet/gofmt/build/module verify 及仓库 Cargo test/clippy/fmt、
++  git diff --check；测试/构建遵守已有有界 runner 超时。每个结果记录当前源码和 binary 身份。
++  设计审查通过不替代真实运行；任何缺失证据记 NOT_RUN/UNAVAILABLE，不能提高 Task/Gate 状态。
++
++最小实现仍需测试编译元组、新协议场景和内存 UDP 观察。直接复用旧 TCP 入口不能传 UDP；
++只做 peer 自测不能经过 DUT；增加产品通用入口会扩大范围。因此采用此测试专用固定入口。
++
++可行性依据：固定 [sing-box v1.14.0 direct inbound 源码](https://raw.githubusercontent.com/SagerNet/sing-box/v1.14.0/protocol/direct/inbound.go)
++的 UDP override 和 RoutePacketConnectionEx/NAT 回写路径。源码依据只说明方案可实施，
++不代替固定 EXE 的实际验证。
+diff --git a/scripts/task009-wg-peer/udp_test.go b/scripts/task009-wg-peer/udp_test.go
+new file mode 100644
+index 0000000..75a3dd3
+--- /dev/null
++++ b/scripts/task009-wg-peer/udp_test.go
+@@ -0,0 +1,286 @@
++package main
++
++import (
++	"bytes"
++	"context"
++	"encoding/binary"
++	"errors"
++	"sync"
++	"testing"
++	"time"
++
++	"github.com/sagernet/gvisor/pkg/buffer"
++	"github.com/sagernet/gvisor/pkg/tcpip/adapters/gonet"
++	"github.com/sagernet/gvisor/pkg/tcpip/network/ipv4"
++	"github.com/sagernet/gvisor/pkg/tcpip/stack"
++)
++
++func udpPayload(token []byte, seq uint32) []byte {
++	b := make([]byte, 20)
++	copy(b, token)
++	binary.BigEndian.PutUint32(b[16:], seq)
++	return b
++}
++func udpPacket(incoming bool, port uint16, payload []byte, withChecksum bool) []byte {
++	b := make([]byte, 28+len(payload))
++	b[0] = 0x45
++	b[8] = 64
++	b[9] = 17
++	binary.BigEndian.PutUint16(b[2:4], uint16(len(b)))
++	src, dst := peerIP, dutIP
++	sp, dp := uint16(18081), port
++	if incoming {
++		src, dst = dutIP, peerIP
++		sp, dp = dp, sp
++	}
++	copy(b[12:16], src[:])
++	copy(b[16:20], dst[:])
++	binary.BigEndian.PutUint16(b[10:12], checksum(b[:20], 0))
++	h := b[20:]
++	binary.BigEndian.PutUint16(h[:2], sp)
++	binary.BigEndian.PutUint16(h[2:4], dp)
++	binary.BigEndian.PutUint16(h[4:6], uint16(len(h)))
++	copy(h[8:], payload)
++	if withChecksum {
++		pseudo := uint32(17 + len(h))
++		for _, a := range [][4]byte{src, dst} {
++			pseudo += uint32(binary.BigEndian.Uint16(a[:2])) + uint32(binary.BigEndian.Uint16(a[2:]))
++		}
++		sum := checksum(h, pseudo)
++		if sum == 0 {
++			sum = 65535
++		}
++		binary.BigEndian.PutUint16(h[6:8], sum)
++	}
++	return b
++}
++func TestUDPBoundaryValidation(t *testing.T) {
++	token := []byte("0123456789abcdef")
++	for _, name := range []string{"three_replies", "zero_checksum", "wrong_token", "wrong_sequence", "wrong_port", "wrong_source", "truncated", "oversize", "wrong_checksum", "fragment", "requests_only", "reply_without_request", "extra_datagram", "tcp_in_udp", "udp_in_tcp"} {
++		t.Run(name, func(t *testing.T) {
++			o := newObserver(token)
++			o.udpMode = name != "udp_in_tcp"
++			if name == "three_replies" || name == "zero_checksum" || name == "extra_datagram" {
++				for seq := uint32(1); seq <= 3; seq++ {
++					o.inspect(udpPacket(true, 40000, udpPayload(token, seq), name != "zero_checksum"), true)
++					o.inspect(udpPacket(false, 40000, udpPayload(token, seq), name != "zero_checksum"), false)
++				}
++				if name == "extra_datagram" {
++					o.inspect(udpPacket(true, 40000, udpPayload(token, 4), true), true)
++				}
++			} else {
++				payload := udpPayload(token, 1)
++				if name == "wrong_token" {
++					payload[0] ^= 1
++				}
++				if name == "wrong_sequence" {
++					payload[19] = 2
++				}
++				if name == "oversize" {
++					payload = append(payload, 0)
++				}
++				p := udpPacket(true, 40000, payload, true)
++				switch name {
++				case "wrong_port":
++					o.inspect(p, true)
++					p = udpPacket(false, 40001, payload, true)
++				case "wrong_source":
++					p[15] = 3
++					p[10], p[11] = 0, 0
++					p[26], p[27] = 0, 0
++					binary.BigEndian.PutUint16(p[10:12], checksum(p[:20], 0))
++				case "truncated":
++					p = p[:len(p)-1]
++				case "wrong_checksum":
++					p[26] ^= 1
++				case "fragment":
++					p[6] = 0x20
++					p[10], p[11] = 0, 0
++					binary.BigEndian.PutUint16(p[10:12], checksum(p[:20], 0))
++				case "reply_without_request":
++					p = udpPacket(false, 40000, payload, true)
++				case "tcp_in_udp":
++					p = tcpPacket(true, 1, 0, 2, nil)
++				}
++				o.inspect(p, name != "wrong_port" && name != "reply_without_request")
++			}
++			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Millisecond)
++			defer cancel()
++			err := o.waitUDP(ctx)
++			positive := name == "three_replies" || name == "zero_checksum"
++			if (err == nil) != positive {
++				t.Fatalf("UDP boundary positive=%v expected %v", err == nil, positive)
++			}
++			if positive && (o.udpReceived != 3 || o.udpReplied != 3) {
++				t.Fatal("incorrect boundary count")
++			}
++		})
++	}
++}
++
++func memoryUDPPair(t *testing.T, captureOutbound bool) (context.Context, *livePeer, *memoryTun) {
++	t.Helper()
++	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
++	w := newObserver([]byte("0123456789abcdef"))
++	w.udpMode = true
++	a, err := newMemoryTun(peerIP, w)
++	if err != nil {
++		cancel()
++		t.Fatal(err)
++	}
++	b, err := newMemoryTun(dutIP, nil)
++	if err != nil {
++		cancel()
++		a.Close()
++		t.Fatal(err)
++	}
++	u, err := newUDPService(a)
++	if err != nil {
++		cancel()
++		a.Close()
++		b.Close()
++		t.Fatal(err)
++	}
++	p := &livePeer{tun: a, udp: u, watch: w}
++	var bridges sync.WaitGroup
++	bridges.Add(2)
++	bridge := func(from, to *memoryTun) {
++		defer bridges.Done()
++		for {
++			pkt := from.link.ReadContext(ctx)
++			if pkt == nil {
++				return
++			}
++			var raw []byte
++			for _, s := range pkt.AsSlices() {
++				raw = append(raw, s...)
++			}
++			pkt.DecRef()
++			if from.watch != nil && captureOutbound {
++				from.watch.inspect(raw, false)
++			}
++			if to.watch != nil {
++				to.watch.inspect(raw, true)
++			}
++			received := stack.NewPacketBuffer(stack.PacketBufferOptions{Payload: buffer.MakeWithData(raw)})
++			to.link.InjectInbound(ipv4.ProtocolNumber, received)
++			received.DecRef()
++		}
++	}
++	go bridge(a, b)
++	go bridge(b, a)
++	t.Cleanup(func() { cancel(); u.close(); a.Close(); b.Close(); bridges.Wait() })
++	return ctx, p, b
++}
++func TestMemoryUDPServiceRequiresBoundaryReplies(t *testing.T) {
++	for _, capture := range []bool{true, false} {
++		t.Run(map[bool]string{true: "full_boundary", false: "submission_without_boundary"}[capture], func(t *testing.T) {
++			ctx, p, clientStack := memoryUDPPair(t, capture)
++			done := make(chan error, 1)
++			go func() { done <- serveUDP(ctx, p) }()
++			local, remote := address(dutIP, 40000), address(peerIP, 18081)
++			client, err := gonet.DialUDP(clientStack.s, &local, &remote, ipv4.ProtocolNumber)
++			if err != nil {
++				t.Fatal(err)
++			}
++			defer client.Close()
++			if err = client.SetDeadline(deadline(ctx)); err != nil {
++				t.Fatal(err)
++			}
++			for seq := uint32(1); seq <= 3; seq++ {
++				want := udpPayload(p.watch.token, seq)
++				if n, err := client.Write(want); err != nil || n != 20 {
++					t.Fatal("send", err)
++				}
++				var got [21]byte
++				n, err := client.Read(got[:])
++				if err != nil || !bytes.Equal(got[:n], want) {
++					t.Fatal("echo", err)
++				}
++			}
++			select {
++			case err := <-done:
++				if (err == nil) != capture {
++					t.Fatalf("boundary proof=%v expected %v", err == nil, capture)
++				}
++			case <-ctx.Done():
++				t.Fatal("service did not finish")
++			}
++		})
++	}
++}
++func TestUDPServiceRejectsInvalidPayloadAndChangedSource(t *testing.T) {
++	for _, name := range []string{"token", "order", "short", "long", "source_port"} {
++		t.Run(name, func(t *testing.T) {
++			ctx, p, clientStack := memoryUDPPair(t, true)
++			done := make(chan error, 1)
++			go func() { done <- serveUDP(ctx, p) }()
++			local, remote := address(dutIP, 40000), address(peerIP, 18081)
++			client, err := gonet.DialUDP(clientStack.s, &local, &remote, ipv4.ProtocolNumber)
++			if err != nil {
++				t.Fatal(err)
++			}
++			defer client.Close()
++			payload := udpPayload(p.watch.token, 1)
++			if name == "source_port" {
++				client.SetDeadline(deadline(ctx))
++				if _, err = client.Write(payload); err != nil {
++					t.Fatal(err)
++				}
++				var reply [21]byte
++				if n, err := client.Read(reply[:]); err != nil || !bytes.Equal(reply[:n], payload) {
++					t.Fatal("first valid request", err)
++				}
++				local = address(dutIP, 40001)
++				second, err := gonet.DialUDP(clientStack.s, &local, &remote, ipv4.ProtocolNumber)
++				if err != nil {
++					t.Fatal(err)
++				}
++				defer second.Close()
++				client = second
++				payload = udpPayload(p.watch.token, 2)
++			} else {
++				switch name {
++				case "token":
++					payload[0] ^= 1
++				case "order":
++					payload[19] = 2
++				case "short":
++					payload = payload[:19]
++				case "long":
++					payload = append(payload, 0)
++				}
++			}
++			if err = client.SetDeadline(deadline(ctx)); err != nil {
++				t.Fatal(err)
++			}
++			if _, err = client.Write(payload); err != nil {
++				t.Fatal(err)
++			}
++			select {
++			case err := <-done:
++				if err == nil {
++					t.Fatal("invalid request accepted")
++				}
++			case <-ctx.Done():
++				t.Fatal("service did not reject")
++			}
++			client.SetReadDeadline(time.Now().Add(20 * time.Millisecond))
++			var b [21]byte
++			if _, err = client.Read(b[:]); err == nil {
++				t.Fatal("invalid request echoed")
++			}
++		})
++	}
++}
++func TestUDPReadinessCancellationPreservesEndpoint(t *testing.T) {
++	_, p, _ := memoryUDPPair(t, true)
++	ctx, cancel := context.WithCancel(context.Background())
++	cancel()
++	if err := p.udp.waitReadable(ctx); !errors.Is(err, context.Canceled) {
++		t.Fatal("cancel not propagated", err)
++	}
++	if _, err := p.udp.endpoint.GetLocalAddress(); err != nil {
++		t.Fatal("cancellation closed UDP endpoint")
++	}
++}
+diff --git a/scripts/task009-wg-peer/udp.go b/scripts/task009-wg-peer/udp.go
+new file mode 100644
+index 0000000..882a7c4
+--- /dev/null
++++ b/scripts/task009-wg-peer/udp.go
+@@ -0,0 +1,154 @@
++package main
++
++import (
++	"bytes"
++	"context"
++	"encoding/binary"
++	"errors"
++	"io"
++	"net"
++
++	"github.com/sagernet/gvisor/pkg/tcpip"
++	"github.com/sagernet/gvisor/pkg/tcpip/adapters/gonet"
++	"github.com/sagernet/gvisor/pkg/tcpip/network/ipv4"
++	"github.com/sagernet/gvisor/pkg/tcpip/transport/udp"
++	"github.com/sagernet/gvisor/pkg/waiter"
++)
++
++const udpSize = 20
++
++func udpPayloadValid(payload, token []byte, seq int) bool {
++	return len(payload) == udpSize && len(token) == 16 && seq >= 1 && seq <= 3 && bytes.Equal(payload[:16], token) && binary.BigEndian.Uint32(payload[16:]) == uint32(seq)
++}
++
++func (o *observer) udp(p packet, incoming bool) {
++	source, dest := binary.BigEndian.Uint16(p.body[:2]), binary.BigEndian.Uint16(p.body[2:4])
++	if incoming {
++		if source == 0 || dest != 18081 || !udpPayloadValid(p.body[8:], o.token, o.udpReceived+1) || o.udpReceived != o.udpReplied {
++			o.err = errors.New("UDP request")
++			return
++		}
++		if o.udpPort == 0 {
++			o.udpPort = source
++		}
++		if source != o.udpPort {
++			o.err = errors.New("UDP request tuple")
++			return
++		}
++		o.udpReceived++
++	} else {
++		if source != 18081 || dest != o.udpPort || !udpPayloadValid(p.body[8:], o.token, o.udpReplied+1) || o.udpReplied >= o.udpReceived {
++			o.err = errors.New("UDP response")
++			return
++		}
++		o.udpReplied++
++	}
++}
++func (o *observer) waitUDP(ctx context.Context) error {
++	for {
++		if err := ctx.Err(); err != nil {
++			return err
++		}
++		o.mu.Lock()
++		err, rx, tx, changed := o.err, o.udpReceived, o.udpReplied, o.changed
++		o.mu.Unlock()
++		if err != nil {
++			return err
++		}
++		if rx == 3 && tx == 3 {
++			return nil
++		}
++		select {
++		case <-ctx.Done():
++			return ctx.Err()
++		case <-changed:
++		}
++	}
++}
++
++type udpService struct {
++	conn     *gonet.UDPConn
++	endpoint tcpip.Endpoint
++	queue    waiter.Queue
++	entry    waiter.Entry
++	readable chan struct{}
++}
++
++func newUDPService(m *memoryTun) (*udpService, error) {
++	u := &udpService{}
++	e, err := m.s.NewEndpoint(udp.ProtocolNumber, ipv4.ProtocolNumber, &u.queue)
++	if err != nil {
++		return nil, errors.New(err.String())
++	}
++	u.endpoint = e
++	if err = e.Bind(address(peerIP, 18081)); err != nil {
++		e.Close()
++		return nil, errors.New(err.String())
++	}
++	u.entry, u.readable = waiter.NewChannelEntry(waiter.ReadableEvents)
++	u.queue.EventRegister(&u.entry)
++	u.conn = gonet.NewUDPConn(&u.queue, e)
++	return u, nil
++}
++func (u *udpService) close() error {
++	u.queue.EventUnregister(&u.entry)
++	return u.conn.Close()
++}
++func (u *udpService) waitReadable(ctx context.Context) error {
++	for {
++		if err := ctx.Err(); err != nil {
++			return err
++		}
++		if u.endpoint.Readiness(waiter.ReadableEvents) != 0 {
++			return nil
++		}
++		select {
++		case <-ctx.Done():
++			return ctx.Err()
++		case <-u.readable:
++		}
++	}
++}
++
++func serveUDP(ctx context.Context, p *livePeer) error {
++	var port int
++	for seq := 1; seq <= 3; seq++ {
++		if err := p.udp.waitReadable(ctx); err != nil {
++			return err
++		}
++		if err := p.udp.conn.SetReadDeadline(deadline(ctx)); err != nil {
++			return err
++		}
++		var payload [udpSize + 1]byte // 多一字节使过长/截断数据报不能伪装成正确20字节。
++		n, source, err := p.udp.conn.ReadFrom(payload[:])
++		if err != nil {
++			return err
++		}
++		remote, ok := source.(*net.UDPAddr)
++		if !ok || !remote.IP.Equal(net.IP(dutIP[:])) || remote.Port <= 0 || !udpPayloadValid(payload[:n], p.watch.token, seq) {
++			return errors.New("UDP service request")
++		}
++		if port == 0 {
++			port = remote.Port
++		}
++		if remote.Port != port {
++			return errors.New("UDP service tuple")
++		}
++		if err := ctx.Err(); err != nil {
++			return err
++		}
++		if err := p.udp.conn.SetWriteDeadline(deadline(ctx)); err != nil {
++			return err
++		}
++		written, err := p.udp.conn.WriteTo(payload[:n], remote)
++		if err != nil {
++			return err
++		}
++		if written != udpSize {
++			return io.ErrShortWrite
++		}
++	}
++	boundaryCtx, cancel := context.WithDeadline(ctx, deadline(ctx))
++	defer cancel()
++	return p.watch.waitUDP(boundaryCtx)
++}

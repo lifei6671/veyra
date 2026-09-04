@@ -1,0 +1,159 @@
+{
+  "skill_result": {
+    "skill": "code-delivery-review",
+    "target": "TASK-009 checkpoint011 — CHANGE007 controlled WG TCP/IPv4 ICMP subset",
+    "outcome": "FAIL",
+    "next_action_hint": "修复 TASK009-CR-005 的 DUT Stop 失败清理顺序，补有界失败路径证据后冻结增量复审；完整 Task 仍未满足验收。",
+    "review_mode": "CHILD_AGENT",
+    "reviewed_target_identity": "sha256:980308083ee557c8eafcbfc6f6526bf326b28afde88b17c3e24af042a780a642",
+    "review_result": "REWORK",
+    "local_repair_review_result": "REWORK",
+    "coverage": {
+      "strategy": "PARTITIONED_PLUS_INTEGRATION",
+      "status": "INCOMPLETE",
+      "freshness": "FRESH",
+      "independence": "task009_design_reviewer未参与Go helper、Rust用例或本轮验证生产；只读目标、设计、基线和原始证据，仅新增本记录。未重跑测试、业务网络、构建或委派。",
+      "prior_review": ".sdlc/evidence/TASK-009/code-review-checkpoint-010.yaml",
+      "source_freshness": {
+        "result": "FRESH",
+        "manifest_entries": 47,
+        "source_hash_mismatches": 0,
+        "incremental_baseline_snapshots": 33,
+        "baseline_hash_mismatches": 0,
+        "baseline_previous_checkpoint_mismatches": 0,
+        "delivery_owned_original_snapshots": 16,
+        "owned_baseline_hash_mismatches": 0,
+        "verification_artifacts": 40,
+        "artifact_hash_mismatches": 0,
+        "verification_identity": "sha256:355e09f0b7cc03a5320656fa2fd5374f8bb8525e0a0679abb5f31eae974ec383",
+        "helper_identity": "sha256:57a95f5c7382df6b20583c45eaf41068a62162ac70abff593c744d8e57dcad57",
+        "method": "按manifest实际数组顺序重算HEAD/path/hash；核对全部当前源、wg-baseline-011与checkpoint010、已有owned快照和40原始工件。变化仅Task的CHANGE007增量、Windows Port cfg(test)、13个独立Go模块文件及DCR009；原生产/UI字节覆盖承接010。"
+      },
+      "applicable_lanes": [
+        "correctness",
+        "security",
+        "concurrency-performance",
+        "verification",
+        "release"
+      ],
+      "lanes": {
+        "correctness": {
+          "result": "REWORK",
+          "freshness": "FRESH",
+          "finding": "TASK009-CR-005"
+        },
+        "security": {
+          "result": "REWORK",
+          "freshness": "FRESH",
+          "finding": "TASK009-CR-005"
+        },
+        "concurrency-performance": {
+          "result": "REWORK",
+          "freshness": "FRESH",
+          "finding": "TASK009-CR-005"
+        },
+        "verification": {
+          "result": "REWORK",
+          "freshness": "FRESH",
+          "validation": "PARTIAL"
+        },
+        "release": {
+          "result": "REWORK",
+          "freshness": "FRESH",
+          "validation": "NOT_APPLICABLE"
+        }
+      },
+      "partitions": [
+        {
+          "id": "go-peer-protocol-bind-stack",
+          "result": "PASS",
+          "reviewed": "私有有界JSON/输入队列/输出截止；随机独立私钥及标准X25519；独立固定模块，无产品依赖。UDP4 Bind精确loopback、认证交由固定WG库、关闭唤醒；纯内存IPv4栈、引用释放、工作取消、失败Hold及55秒孤儿上限。未发现本分区新增可操作缺陷。"
+        },
+        {
+          "id": "go-packet-oracle-and-tests",
+          "result": "PASS",
+          "reviewed": "IPv4/TCP/ICMP长度与校验和、固定地址/四元组、1MiB总量；逐字节响应序列覆盖、重传/回绕/FIN和累计ACK界限、等待2秒继承截止。3次Echo精确ID/序列/token/地址，完成后继续检查额外回复。ACK负例与内存自测不冒充真实DUT证据。"
+        },
+        {
+          "id": "rust-parent-and-owned-resources",
+          "result": "REWORK",
+          "finding": "TASK009-CR-005",
+          "reviewed": "正常typed Parser/normalize/RuntimeIntent/ObservationOnly compile/finalize/check/run；最终私有字节hash、PID来源、准确socket白名单、无host配置写入、有界管道及脱敏。正常Stop后shutdown/exit/join通过；Stop失败分支提前kill违反冻结顺序。"
+        },
+        {
+          "id": "authority-and-integration",
+          "result": "REWORK",
+          "finding": "TASK009-CR-005",
+          "reviewed": "Task CHANGE007 PRIMARY增量、原Task快照、明确用户资源批准及DCR009 b193f16e...一致；正常真实TCP/IPv4ICMP子集证据匹配当前helper/source。清理异常交互仍需修复。"
+        }
+      ],
+      "integration_result": {
+        "local_result": "REWORK",
+        "whole_task_result": "REWORK",
+        "reviewed": "正常WG阳性链完整且有实际ACK和ICMP证据；父DUT停止失败与peer生命周期交互存在P1。未变化分区承接010，不将此次子集或单次正常清理扩为完整Task通过。"
+      }
+    },
+    "remaining_risks": [
+      "TASK009-CR-005：未确认DUT退出时提前释放peer端点。",
+      "正常用例PASS不覆盖DUT Stop失败路径；修复后需针对该失败顺序提供绑定目标的验证。",
+      "当前Rust仅2项相关测试通过、187 filtered；未运行本目标完整库回归。Go为11项顶层测试，ACK含11子用例，不重复计数race/重跑。",
+      "本轮只证明TCP响应交付至DUT TCP层及认证IPv4虚拟ICMP子集，不证明URLTest应用消费、WG UDP业务、完整入站/转发拒绝矩阵、系统DNS或native GUI/Tray。",
+      "父异常/操作系统拒绝停止DUT时55秒helper硬上限的残余风险按DCR009保留；不能将其解释成任意提前释放peer的授权。"
+    ]
+  },
+  "findings": [
+    {
+      "finding_id": "TASK009-CR-005",
+      "fingerprint": "windows/managed_sidecar_port.rs:Peer::finish:dut-stop-failure-kills-peer-before-hard-hold",
+      "status": "OPEN",
+      "severity": "P1",
+      "target_identity": "sha256:980308083ee557c8eafcbfc6f6526bf326b28afde88b17c3e24af042a780a642",
+      "location": "src-tauri/src/platform/windows/managed_sidecar_port.rs:749",
+      "related_locations": [
+        "src-tauri/src/platform/windows/managed_sidecar_port.rs:787",
+        "src-tauri/src/platform/windows/managed_sidecar_port.rs:1243"
+      ],
+      "title": "DUT停止失败时父端提前强杀peer，破坏端点持续归属",
+      "trigger": "runtime.stop() 返回Err时，1244行仍调用peer.finish(false)。false仅阻止发送shutdown；finish仍进入2秒graceful循环，并在exit为空时执行self.child.kill()，随后关闭stdin。此时DUT并未确认退出。",
+      "impact": "仍存活DUT使用的loopback WG目标端口被父端提前释放，违反DCR009要求DUT先停再释放peer以及失败Hold至既定55秒硬上限的契约；虽最终assert报告FAIL，但资源归属已经被提前破坏。",
+      "evidence": [
+        ".sdlc/design/DCR-009-controlled-wg-peer.md:158",
+        ".sdlc/design/DCR-009-controlled-wg-peer.md:165",
+        ".sdlc/design/DCR-009-controlled-wg-peer.md:173",
+        "src-tauri/src/platform/windows/managed_sidecar_port.rs:749",
+        "src-tauri/src/platform/windows/managed_sidecar_port.rs:787",
+        "src-tauri/src/platform/windows/managed_sidecar_port.rs:1244"
+      ],
+      "minimal_fix": "显式区分未确认DUT退出分支：在该分支禁止shutdown、提前kill及关闭stdin，保持自有peer句柄和绑定直至既定硬上限并如实报告清理失败；只有owner确认DUT停止后才使用正常2秒shutdown/强制清理流程。保持整体有界，不引入无界重试。",
+      "required_validation": "增加父侧dut_stopped=false的有界失败路径用例，客观断言硬上限前未发送shutdown/关闭stdin/kill且绑定仍占用；正常dut_stopped=true退出顺序及现有真实WG子集继续通过。"
+    }
+  ],
+  "covered_previous_findings": [
+    {
+      "finding_id": "TASK009-DCR009-001",
+      "status": "FIXED",
+      "basis": "实际实现完整固定响应序列覆盖与有效累计ACK，包含负例和当前真实tcp_response_acked=true证据。"
+    },
+    {
+      "finding_id": "TASK009-CR-003",
+      "status": "FIXED",
+      "basis": "原计量listener修复字节未变，承接010。"
+    },
+    {
+      "finding_id": "TASK009-CR-004",
+      "status": "FIXED",
+      "basis": "原计量绝对截止修复字节未变，承接010。"
+    }
+  ],
+  "verification_readback": {
+    "result": "PARTIAL",
+    "real_current": "src-tauri/target/task009-remediation/wg-real-verified-011.stdout.txt",
+    "real_summary": "2 passed，0 failed，187 filtered，29.16s；helper57a95f5c...，TCP rx4/tx4且完整响应ACK，ICMP3/3。DUT仅127.0.0.1:9090 TCP及同端口54198的IPv4/IPv6 wildcard UDP；peer仅127.0.0.1:49716 UDP。正常DUT先停、peer退出/管道join、私有实例为空，stderr0。",
+    "go_summary": "11顶层测试及ACK11子用例PASS；race、vet、mod verify、固定module list、build、gofmt原始结果与日志均匹配。",
+    "static_summary": "当前Rust lib Clippy、fmt和diff-check退出0；未把库Clippy视作全部cfg(test)审查或完整回归。",
+    "host_summary": "绑定的before/after/compare工件显示所选interfaces/addresses/routes/DNS/proxy字段hash相同。",
+    "history": "初旧helper的PASS仅历史；CIM3秒超时目标db3f5389...失败保留。当前5秒查询仍受绝对截止、无重试，wg-real-verified-011重新通过。"
+  },
+  "additional_findings": "No additional actionable findings in the reviewed increment.",
+  "gate_action": "NONE — 不迁移Task/Gate/Phase，不代替Human Acceptance。"
+}

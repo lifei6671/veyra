@@ -1,0 +1,109 @@
+{
+  "skill_result": {
+    "skill": "technical-design-review",
+    "target": ".sdlc/design/DCR-009-controlled-wg-peer.md",
+    "outcome": "FAIL",
+    "next_action_hint": "补足真实HTTP响应已到达DUT的阳性证据及其固定协议字段后，冻结新设计身份进行定向复审；不新增产品API、UDP入口或DNS授权。",
+    "review_mode": "CHILD_AGENT",
+    "reviewed_target_identity": "sha256:ddcea48b8072dc9f5801f2ead5034ad7798a433c31de41e5b50bcb6f90730286",
+    "review_result": "REWORK",
+    "coverage": {
+      "strategy": "FOCUSED_CONCERN_REVIEW",
+      "status": "COMPLETE",
+      "freshness": "FRESH",
+      "independence": "task009_design_reviewer未参与设计生产；仅读候选、批准提案/Task/CHANGE-007及必要固定上游源码，仅写此记录，未运行、改设计/Task/state或委派。",
+      "context": [
+        ".sdlc/evidence/TASK-009/wg-network-proposal.md",
+        ".sdlc/evidence/TASK-009/change-control.yaml#EVIDENCE-TASK-009-CHANGE-007",
+        ".sdlc/tasks/TASK-009.md:58",
+        ".sdlc/tasks/TASK-009.md:203"
+      ],
+      "concerns": [
+        {
+          "area": "授权与依赖",
+          "result": "PASS",
+          "summary": "实际提案hash ee61ea74e60237abae9453aa1103680b801561f29c06d86be9e46dcd87399843匹配批准记录；固定两个Go直接依赖及正常传递图、独立测试目录、可能wildcard DUT WG UDP均明确获批。无产品依赖、入口或系统配置扩展，精确二进制/模块证据要求明确。"
+        },
+        {
+          "area": "管道协议与密钥",
+          "result": "PASS",
+          "summary": "固定版本/run_id与顺序，行/会话/stderr上限及封闭错误；私钥和token使用独立熵，私有管道传入，GC擦除限制披露。仅公钥和固定业务摘要返回；绝对期限与有界排空/退出处理明确。"
+        },
+        {
+          "area": "用户态peer与socket归属",
+          "result": "PASS",
+          "summary": "自有loopback UDP4 Bind及内存tun/channel/gonet，避免系统TUN/raw socket；唯一DUT密钥由库认证后学习端点。PID来自父持有句柄，helper一个UDP资源、零TCP listener；DUT API与已批准WG UDP实际枚举，不将loopback目标等同loopback监听。"
+        },
+        {
+          "area": "期限与清理",
+          "result": "PASS",
+          "summary": "每I/O≤2秒且继承绝对截止，工作30秒、父45秒发起DUT清理、helper55秒硬上限/外层60秒。Hold保留peer，正常DUT先停再shutdown；父异常、helper提前退出与OS拒绝Stop的不可兼得限制如实披露。"
+        },
+        {
+          "area": "阳性控制与验收",
+          "result": "REWORK",
+          "summary": "独立纯内存TCP/UDP/ICMP自测、三次真实ICMP精确响应及后续额外包检测清晰；TCP当前只有服务端write和粗粒度双向计数，存在下列假阳性路径。"
+        }
+      ],
+      "complexity_proportionality": {
+        "result": "PASS",
+        "summary": "独立Go peer及两个接口适配是已批准的具体测试资源；复用固定库而不自行实现WG/协议栈，队列、报文和时间受限。无需新增RuntimeProfile、产品API、UDP业务注入或系统DNS；完整拒绝/UDP/IPv6/DNS保持未覆盖。"
+      }
+    },
+    "remaining_risks": [
+      "两个固定模块接口已定向核对，Windows编译兼容性、实际DUT UDP绑定和完整退出仍待运行证据。",
+      "短时wildcard WG握手面由用户明确批准；新密钥/唯一peer/reject规则不能消除所有未认证处理面。",
+      "Go内存副本无法保证即时安全擦除；父或OS异常可能导致peer有界释放与DUT未能停止同时存在，必须失败留证。",
+      "本审阅不证明DUT UDP、IPv6、完整主动入站/转发拒绝、系统DNS或完整TASK-009验收。"
+    ]
+  },
+  "issues": [
+    {
+      "finding_id": "TASK009-DCR009-001",
+      "fingerprint": "DCR-009:tcp-positive-control:peer-write-without-dut-response-confirmation",
+      "status": "NEW",
+      "severity": "P2",
+      "target_identity": "sha256:ddcea48b8072dc9f5801f2ead5034ad7798a433c31de41e5b50bcb6f90730286",
+      "location": {
+        "path": ".sdlc/design/DCR-009-controlled-wg-peer.md",
+        "line": 124,
+        "related_lines": [
+          64,
+          121,
+          126
+        ]
+      },
+      "title": "TCP阳性条件未证明完整204应答到达DUT",
+      "trigger": "DUT完成握手并发送合法HEAD后取消/关闭，peer仍可将204成功写入gVisor发送缓冲。rx/tx_tcp_packets>0可由请求及SYN-ACK等满足；当前条件即可发tcp事件。",
+      "impact": "可能把未收到HTTP响应的DUT记录为WG TCP出站应答成功，低于已批准提案的TCP阳性目标。",
+      "evidence": "固定gonet.TCPConn.Write调用endpoint.Write直到缓冲接受全部字节即返回，Close亦直接返回；候选未要求同连接响应数据确认或DUT成功结果。",
+      "minimal_fix": "在已认证解密/待加密TCP边界绑定唯一四元组，核对发出的完整204响应序列范围，并等待来自DUT的有效累计ACK覆盖末字节后才发成功事件；固定摘要需表达该确认，未确认/超时必须失败。该证据只证明TCP响应交付，不宣称URLTest应用层解析成功；如需后者，应另指定既有授权可观察结果，不能增用未授权产品API。",
+      "verification": "增加负向自测：只有握手/HEAD或peer write成功而响应未被确认时不能产生成功tcp摘要；正确完整响应确认才通过。"
+    }
+  ],
+  "evidence": {
+    "sources": [
+      {
+        "url": "https://raw.githubusercontent.com/SagerNet/wireguard-go/8bd032a91a30/conn/conn.go",
+        "scope": "Bind/ReceiveFunc/Endpoint、关闭唤醒及批次接口"
+      },
+      {
+        "url": "https://raw.githubusercontent.com/SagerNet/wireguard-go/8bd032a91a30/tun/tun.go",
+        "scope": "内存Device offset/batch/Close接口"
+      },
+      {
+        "url": "https://raw.githubusercontent.com/SagerNet/wireguard-go/8bd032a91a30/go.mod",
+        "scope": "直接模块身份与最低Go声明"
+      },
+      {
+        "url": "https://raw.githubusercontent.com/SagerNet/gvisor/v0.0.0-20260727.0-sing-box-mod.1/go.mod",
+        "scope": "直接模块身份与最低Go声明"
+      },
+      {
+        "url": "https://raw.githubusercontent.com/SagerNet/gvisor/v0.0.0-20260727.0-sing-box-mod.1/pkg/tcpip/adapters/gonet/gonet.go",
+        "scope": "Write/Close:338-395，仅本地端点写入，不等待远端响应确认"
+      }
+    ],
+    "limits": "未安装依赖、构建helper或执行新网络用例；上游读取仅支持接口与证据充分性分析。"
+  }
+}

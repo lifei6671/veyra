@@ -1,11 +1,13 @@
 {
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
-  "description": "仅允许主窗口调用固定的启动信息、观测快照与窗口恢复命令。",
+  "description": "仅允许主窗口调用固定的启动信息、观测快照、受管观测运行时启动/停止与窗口恢复命令。",
   "windows": ["main"],
   "permissions": [
     "allow-bootstrap-status",
     "allow-runtime-observation-snapshot",
+    "allow-start-managed-observation-runtime",
+    "allow-stop-managed-observation-runtime",
     "allow-show-main-window"
   ]
 }

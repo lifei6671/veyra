@@ -9,7 +9,7 @@ project:
 
 source:
   requirement: docs/veyra.md
-  identity: sha256:13a1769134ecaa9a1361ff9571513ee2b2a662a7771a056ac974e5bd078349ae
+  identity: sha256:4a2cd1e2b9698087bcbc4ac892d7b052a5e2c06554e372479fe31c81cbea9d45
 
 anchor:
   goal: >-
@@ -18,6 +18,7 @@ anchor:
   must_have:
     - Tauri 2、React、Rust 与独立 sing-box sidecar 的桌面应用架构。
     - 订阅归一化为独立 ProxyNode 领域模型，并保留订阅、Provider、节点与运行时的边界。
+    - 基于 sing-box 1.14.0 的全用户节点协议归一化，以及 Clash、sing-box、URI 与粘贴导入。
     - 多订阅、隐式与自定义出口组、手动选择和 URLTest，以及网站、服务、应用和高级规则分流。
     - Off、SystemProxy、TUN 三种互斥捕获模式，以及 DNS、连接、流量、日志和托盘恢复能力。
     - 受限的原生 sing-box Profile 高级模式；托管模式的生成配置仅可预览和复制。
@@ -34,11 +35,12 @@ anchor:
     - Windows System Proxy、权限与恢复记录由 Platform Adapter 管理；sing-box 独占 Wintun、路由、DNS 与进程分流数据面。
     - macOS V0.2 采用 DMG 直发、普通 Tauri 桌面程序和 sing-box sidecar；System Proxy 与显式特权运行归 macOS Adapter，NetworkExtension/App Store 路线须作为后续 ADR 评审。
   critical_invariants:
+    - 网速与累计量采用sing-box聚合统计（包含内核处理的Direct）；趋势仅存内存最近10分钟，首页显示10分钟、侧栏底部显示60秒，不持久化或混合不同内核实例。
     - UI 不直接写入 sing-box JSON；托管配置不能被原地编辑。
     - Domain 不以 serde_json::Value 或 sing-box outbound tag 作为主要配置模型。
     - 节点和出口组使用稳定身份，不使用显示名称；普通分流目标只能引用 Pool、Direct 或 Block。
     - 新订阅解析或配置检查失败时必须保留旧节点和当前运行配置。
-    - 配置 Build 与 Apply 分离；启动失败优先回滚上一份配置。
+    - 配置 Build 与 Apply 分离；编译/check 失败保留当前实例，启动失败停止候选且不自动恢复旧配置，分别记录脱敏日志与 Toast。
     - Clash API 默认仅绑定 loopback，日志不得泄露订阅凭证、密码、UUID、私钥或 API secret。
     - 只能清理由本应用拥有的 sing-box 进程，窗口恢复不得重新初始化应用。
     - V0.1 不引入 Windows Service、WFP 或全系统 TCP/UDP PID 扫描；用户手动改写的系统代理不得被无条件覆盖。
@@ -53,41 +55,46 @@ anchor:
 
 assumptions: []
 
-phase: PLANNING
+phase: REMEDIATION
 
 focus:
-  task: TASK-006
+  task: TASK-009
 
 gates:
   technical_design:
     status: PENDING
-    target_identity: sha256:dc140dfaa7ba956e29f0891f56a384b0ae70e8e6559fc44aa4326dcaeca1e4ad
-    evidence: []
-    reviewed_by: null
-    approved_by: null
-    evaluated_at: null
-  delivery:
-    status: PASSED
-    target_identity: sha256:03cf332021191ee1d93f45d974ca3f17cb6834df241268c2c94878a7957fde09
+    target_identity: sha256:54c01cbc8f99b080a2d68e5b999ab6fc9f97fe49b1ae30e53e36ae2d402f6641
     evidence:
-      - .sdlc/evidence/TASK-005/implementation.yaml#EVIDENCE-TASK-005-001
-      - .sdlc/evidence/TASK-005/implementation.yaml#EVIDENCE-TASK-005-002
-      - .sdlc/evidence/TASK-005/code-delivery-review.yaml#EVIDENCE-TASK-005-REVIEW-002
-    reviewed_by: CHILD_AGENT:/root/task005_delivery_reviewer
-    approved_by: USER:lifei
-    evaluated_at: 2026-09-03T17:25:00+08:00
+      - .sdlc/design/DCR-011-test-wg-local-reject.md
+      - .sdlc/evidence/TASK-009/wg-reject-design-review-001.yaml
+      - .sdlc/evidence/TASK-009/change-control.yaml#EVIDENCE-TASK-009-CHANGE-009
+      - .sdlc/evidence/TASK-009/readiness-014.yaml
+      - .sdlc/evidence/TASK-009/verification-014.yaml
+      - .sdlc/evidence/TASK-009/wg-reject-runtime-diagnosis-014.md
+    reviewed_by: CHILD_AGENT:/root/task009_design_reviewer
+    approved_by: null
+    evaluated_at: 2026-09-04T18:17:26.2042995+08:00
+  delivery:
+    status: PENDING
+    target_identity: sha256:37feddf0c296a6db8e7552d203c645efa5cd9663b4649243465ace58e3d5c126
+    evidence:
+      - .sdlc/evidence/TASK-009/delivery-checkpoint-014.yaml
+      - .sdlc/evidence/TASK-009/verification-014.yaml
+      - .sdlc/evidence/TASK-009/implementation-014.yaml
+      - .sdlc/evidence/TASK-009/code-review-checkpoint-014.yaml
+    reviewed_by: CHILD_AGENT:/root/task009_design_reviewer
+    approved_by: null
+    evaluated_at: 2026-09-04T18:17:26.2042995+08:00
 
 blocked:
-  kind: DESIGN_CHANGE
-  origin_phase: EXECUTING
-  reason: >-
-    USER:lifei requires fixed sing-box assets to be downloaded, verified and bundled during
-    the build, rather than tracked in Git. DCR-001 requires independent review and a new
-    Human Technical Design Gate before implementation resumes.
+  origin_phase: REMEDIATION
+  reason: DCR011 host127 same-path positive controls cannot succeed with fixed DUT; real virtual TCP/UDP succeed while host TCP/UDP timeout before Router. Phase2/3 not run; source and failed evidence frozen at checkpoint014.
+  owner: Orchestrator
+  scope: TASK-009 SF-003 local rejection comparison; CHANGE009 existing resource authorization remains valid but does not authorize alternate host addresses or additional listeners.
+  unlock_condition: Feasible revised test design and independent review; explicit approval for any new address/listener exposure or changed acceptance before execution.
+  next_check: Independent checkpoint014 REWORK records OPEN P1 TASK009-CR-006; route technical-design remediation of the failed positive-control premise. Do not weaken tests or product rejection.
 
 next:
-  skill: technical-design-review
-  target: TASK-006
-  reason: >-
-    DCR-001 changes core asset delivery from Git-tracked binaries to build-stage verified resources;
-    independently review the candidate and obtain a new Human Technical Design Gate.
+  skill: technical-design
+  target: TASK-009
+  reason: User authorized one local snapshot commit on 2026-09-04. Then revise DCR011 host comparison after actual positive-control failure; preserve original TCP/UDP/ICMP and55/150Hold regression evidence and all remaining DNS/forwarding acceptance. No Task010, push or Task acceptance.

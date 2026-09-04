@@ -1,0 +1,342 @@
+{
+  "id": "TASK009-UDP-BASELINE-013",
+  "timestamp": "2026-09-04T16:49:03.5662380+08:00",
+  "previous_checkpoint": "sha256:1827c6b72fe6466836eb4e6d4fd32e006a36e581d07c8731ed6757c59b17fc59",
+  "starting_head": "9f6cb9fd0484d4be89d37a498658052d6d8a03b9",
+  "manifest": [
+    {
+      "path": "src-tauri/src/singbox/runtime.rs",
+      "sha256": "c9dd583e1ed5a57319a2ce6955c97e014c31fe8803b2153a5795ed93d191d66e",
+      "snapshot": "E:\\wx_lifeilin\\github.com\\lifei6671\\veyra\\src-tauri\\target\\task009-udp-baseline-013\\src-tauri\\src\\singbox\\runtime.rs"
+    },
+    {
+      "path": "src-tauri/Cargo.lock",
+      "sha256": "aab8b81202d0c91438b90e27e72e67f563b7e9fc12f2d1a6acdd4ebcf5ef2aeb",
+      "snapshot": "E:\\wx_lifeilin\\github.com\\lifei6671\\veyra\\src-tauri\\target\\task009-udp-baseline-013\\src-tauri\\Cargo.lock"
+    },
+    {
+      "path": "src-tauri/Cargo.toml",
+      "sha256": "a6844177a8865faf78614049b3002d226dc3aaa494dec59093fda1d5dffb3cad",
+      "snapshot": "E:\\wx_lifeilin\\github.com\\lifei6671\\veyra\\src-tauri\\target\\task009-udp-baseline-013\\src-tauri\\Cargo.toml"
+    },
+    {
+      "path": "docs/veyra.md",
+      "sha256": "4a2cd1e2b9698087bcbc4ac892d7b052a5e2c06554e372479fe31c81cbea9d45",
+      "snapshot": "E:\\wx_lifeilin\\github.com\\lifei6671\\veyra\\src-tauri\\target\\task009-udp-baseline-013\\docs\\veyra.md"
+    },
+    {
+      "path": ".sdlc/design/task008-observation-dns.md",
+      "sha256": "1135b15d073685f12398c4f084e379be3b731cc271ca2832b3d4f48b62c0f404",
+      "snapshot": "E:\\wx_lifeilin\\github.com\\lifei6671\\veyra\\src-tauri\\target\\task009-udp-baseline-013\\.sdlc\\design\\task008-observation-dns.md"
+    },
+    {
+      "path": ".sdlc/design/DCR-004-runtime-update-failures.md",
+      "sha256": "8f06957ff73919f9529dd1740b72f4dd4ccf73745d6481b124133f3ca8d8d944",
+      "snapshot": "E:\\wx_lifeilin\\github.com\\lifei6671\\veyra\\src-tauri\\target\\task009-udp-baseline-013\\.sdlc\\design\\DCR-004-runtime-update-failures.md"
+    },
+    {
+      "path": ".sdlc/design/DCR-003-fixed-core-configuration.md",
+      "sha256": "3040951342ef465fb177b3abb1a7537d73c55bc87e88e1a7b3ba93677033b26d",
+      "snapshot": "E:\\wx_lifeilin\\github.com\\lifei6671\\veyra\\src-tauri\\target\\task009-udp-baseline-013\\.sdlc\\design\\DCR-003-fixed-core-configuration.md"
+    },
+    {
+      "path": ".sdlc/design/DCR-002-full-sing-box-subscription-and-compiler.md",
+      "sha256": "cf546f938714ec431c5a425de51a95d1fd635af1749ab1c1d21c1bc7cc0d1907",
+      "snapshot": "E:\\wx_lifeilin\\github.com\\lifei6671\\veyra\\src-tauri\\target\\task009-udp-baseline-013\\.sdlc\\design\\DCR-002-full-sing-box-subscription-and-compiler.md"
+    },
+    {
+      "path": ".sdlc/design/DCR-001-sing-box-1.14.0.md",
+      "sha256": "fd23ff8fc6842e2cb4d4b9fa9daebccc143af06585d56ad45cb145663d7a09e3",
+      "snapshot": "E:\\wx_lifeilin\\github.com\\lifei6671\\veyra\\src-tauri\\target\\task009-udp-baseline-013\\.sdlc\\design\\DCR-001-sing-box-1.14.0.md"
+    },
+    {
+      "path": ".sdlc/design/foundation.md",
+      "sha256": "a015f0a872c8aeeb1aef275e04e724d49a579c47c2ca142ed7b26ea30590f1aa",
+      "snapshot": "E:\\wx_lifeilin\\github.com\\lifei6671\\veyra\\src-tauri\\target\\task009-udp-baseline-013\\.sdlc\\design\\foundation.md"
+    },
+    {
+      "path": ".sdlc/tasks/TASK-009.md",
+      "sha256": "d5c3163a22806ca596caa9d4ba839c34a73654d31dc304b7a710a0a2f265362a",
+      "snapshot": "E:\\wx_lifeilin\\github.com\\lifei6671\\veyra\\src-tauri\\target\\task009-udp-baseline-013\\.sdlc\\tasks\\TASK-009.md"
+    },
+    {
+      "path": "src-tauri/src/singbox/clash_api.rs",
+      "sha256": "509a516d7cb3b7ccd6eef0998461094c55c345a28f7ab61decf1186b9cd4b616",
+      "snapshot": "E:\\wx_lifeilin\\github.com\\lifei6671\\veyra\\src-tauri\\target\\task009-udp-baseline-013\\src-tauri\\src\\singbox\\clash_api.rs"
+    },
+    {
+      "path": "src-tauri/src/platform/windows/private_runtime.rs",
+      "sha256": "373bd4621bb3923e9688624e8b705c0cc7ff3c417bc6cfbc8d08dea8d71bed6c",
+      "snapshot": "E:\\wx_lifeilin\\github.com\\lifei6671\\veyra\\src-tauri\\target\\task009-udp-baseline-013\\src-tauri\\src\\platform\\windows\\private_runtime.rs"
+    },
+    {
+      "path": "src/lib/observability.test.ts",
+      "sha256": "1a0027059540b433d140c4f42523307ecdd3769fd28c625f3b192e3bc53e8eb2",
+      "snapshot": "E:\\wx_lifeilin\\github.com\\lifei6671\\veyra\\src-tauri\\target\\task009-udp-baseline-013\\src\\lib\\observability.test.ts"
+    },
+    {
+      "path": "src/lib/observability.ts",
+      "sha256": "cc57294ce0e4e0f1923fcf0afc289e1b668ac1cc8d54822b13d0952758ae3b8d",
+      "snapshot": "E:\\wx_lifeilin\\github.com\\lifei6671\\veyra\\src-tauri\\target\\task009-udp-baseline-013\\src\\lib\\observability.ts"
+    },
+    {
+      "path": "src/styles.css",
+      "sha256": "214bddfe9c103258a2c0db802825cf281d55695a880ecb810fab4092b28081b7",
+      "snapshot": "E:\\wx_lifeilin\\github.com\\lifei6671\\veyra\\src-tauri\\target\\task009-udp-baseline-013\\src\\styles.css"
+    },
+    {
+      "path": "src/App.tsx",
+      "sha256": "315b71c9bce476a1657ad11738f4fcab7a696bf2c304b0331226cf12e46f7033",
+      "snapshot": "E:\\wx_lifeilin\\github.com\\lifei6671\\veyra\\src-tauri\\target\\task009-udp-baseline-013\\src\\App.tsx"
+    },
+    {
+      "path": "src-tauri/src/application/observability.rs",
+      "sha256": "f671f54f6079ef103228bc505caee98e6e3afb2d26cb0b8aadd53e38dfa2ca98",
+      "snapshot": "E:\\wx_lifeilin\\github.com\\lifei6671\\veyra\\src-tauri\\target\\task009-udp-baseline-013\\src-tauri\\src\\application\\observability.rs"
+    },
+    {
+      "path": "src-tauri/src/application/runtime.rs",
+      "sha256": "f490f2fbdbac8edc0eb1324167cf0796e0e60757e83c2e85df63e89c87ff950c",
+      "snapshot": "E:\\wx_lifeilin\\github.com\\lifei6671\\veyra\\src-tauri\\target\\task009-udp-baseline-013\\src-tauri\\src\\application\\runtime.rs"
+    },
+    {
+      "path": "src-tauri/src/application/managed_observation_runtime.rs",
+      "sha256": "92620cc3188f07c2863bcef8a9440c9be9de457cd3327384fb8aac8afcb7ff56",
+      "snapshot": "E:\\wx_lifeilin\\github.com\\lifei6671\\veyra\\src-tauri\\target\\task009-udp-baseline-013\\src-tauri\\src\\application\\managed_observation_runtime.rs"
+    },
+    {
+      "path": "src-tauri/src/platform/windows/managed_sidecar_port.rs",
+      "sha256": "205706ebe5e558d1c09dbeb421b87f906fdffa01f2a3865ed5b8f3cc0bc210cc",
+      "snapshot": "E:\\wx_lifeilin\\github.com\\lifei6671\\veyra\\src-tauri\\target\\task009-udp-baseline-013\\src-tauri\\src\\platform\\windows\\managed_sidecar_port.rs"
+    },
+    {
+      "path": "src-tauri/src/singbox/mod.rs",
+      "sha256": "3b6b81154cab124707beed60d0332b651529b733fcef18c3b53404d1e4a6e0aa",
+      "snapshot": "E:\\wx_lifeilin\\github.com\\lifei6671\\veyra\\src-tauri\\target\\task009-udp-baseline-013\\src-tauri\\src\\singbox\\mod.rs"
+    },
+    {
+      "path": "src-tauri/src/singbox/compiler.rs",
+      "sha256": "8ae553bf8a6da43178f2891a2af11892bc5aab8988eafa8eaecb1fa38b844321",
+      "snapshot": "E:\\wx_lifeilin\\github.com\\lifei6671\\veyra\\src-tauri\\target\\task009-udp-baseline-013\\src-tauri\\src\\singbox\\compiler.rs"
+    },
+    {
+      "path": "src-tauri/src/singbox/managed_sidecar.rs",
+      "sha256": "f804c695c61fdd4ff65a30d02417a5108d32107ab6bd8032ab28c50008405509",
+      "snapshot": "E:\\wx_lifeilin\\github.com\\lifei6671\\veyra\\src-tauri\\target\\task009-udp-baseline-013\\src-tauri\\src\\singbox\\managed_sidecar.rs"
+    },
+    {
+      "path": "package.json",
+      "sha256": "acb3fe115b07afdbfe48420ec5a4c3f328b30f54ae331ac058204a0f7bae6e80",
+      "snapshot": "E:\\wx_lifeilin\\github.com\\lifei6671\\veyra\\src-tauri\\target\\task009-udp-baseline-013\\package.json"
+    },
+    {
+      "path": "pnpm-lock.yaml",
+      "sha256": "672e84192c0225d9ffda8ffbbc19e1113777c800af328812a8816148c85b2203",
+      "snapshot": "E:\\wx_lifeilin\\github.com\\lifei6671\\veyra\\src-tauri\\target\\task009-udp-baseline-013\\pnpm-lock.yaml"
+    },
+    {
+      "path": ".sdlc/design/DCR-005-traffic-observation.md",
+      "sha256": "338e0a7f9bb8a4c6ca0722d2fe51eab253c0e1758124907cf759b9459e9714ba",
+      "snapshot": "E:\\wx_lifeilin\\github.com\\lifei6671\\veyra\\src-tauri\\target\\task009-udp-baseline-013\\.sdlc\\design\\DCR-005-traffic-observation.md"
+    },
+    {
+      "path": "src-tauri/src/commands.rs",
+      "sha256": "51a7b3bcb4a06fbb5f0d0c44e9bb045cdd5c6ac1c0e3d5bbcb26c31ca559cac0",
+      "snapshot": "E:\\wx_lifeilin\\github.com\\lifei6671\\veyra\\src-tauri\\target\\task009-udp-baseline-013\\src-tauri\\src\\commands.rs"
+    },
+    {
+      "path": "src/lib/traffic-trend.ts",
+      "sha256": "038390b23864ce0beee7a3c0dc154b2f0ab151f0440d4d56f07eadb21ca73e1d",
+      "snapshot": "E:\\wx_lifeilin\\github.com\\lifei6671\\veyra\\src-tauri\\target\\task009-udp-baseline-013\\src\\lib\\traffic-trend.ts"
+    },
+    {
+      "path": "src/lib/traffic-trend.test.ts",
+      "sha256": "5bc755d01edd1d7d9bca42591d89128a561288e807d16dd1354c084acb7b8879",
+      "snapshot": "E:\\wx_lifeilin\\github.com\\lifei6671\\veyra\\src-tauri\\target\\task009-udp-baseline-013\\src\\lib\\traffic-trend.test.ts"
+    },
+    {
+      "path": ".sdlc/design/DCR-006-memory-traffic-trend.md",
+      "sha256": "c03923b7f396c0791b18c3706fcafe0e824474ca96937ced456057924018d419",
+      "snapshot": "E:\\wx_lifeilin\\github.com\\lifei6671\\veyra\\src-tauri\\target\\task009-udp-baseline-013\\.sdlc\\design\\DCR-006-memory-traffic-trend.md"
+    },
+    {
+      "path": ".sdlc/design/DCR-007-dual-traffic-windows.md",
+      "sha256": "bb1b30db8d7ed97283836f42857ad4568c14664ff081269704774a14b5316cde",
+      "snapshot": "E:\\wx_lifeilin\\github.com\\lifei6671\\veyra\\src-tauri\\target\\task009-udp-baseline-013\\.sdlc\\design\\DCR-007-dual-traffic-windows.md"
+    },
+    {
+      "path": ".sdlc/design/DCR-008-test-loopback-metering.md",
+      "sha256": "689ee9ff2cebfd499e27646c7ea7863b1898e2b5afe739482cee6a57ad06d41f",
+      "snapshot": "E:\\wx_lifeilin\\github.com\\lifei6671\\veyra\\src-tauri\\target\\task009-udp-baseline-013\\.sdlc\\design\\DCR-008-test-loopback-metering.md"
+    },
+    {
+      "path": "scripts/task009-wg-peer/bind_test.go",
+      "sha256": "2a10e1980554fcc2ad970694b9c37d228c135843638729a5a68499db6a86811d",
+      "snapshot": "E:\\wx_lifeilin\\github.com\\lifei6671\\veyra\\src-tauri\\target\\task009-udp-baseline-013\\scripts\\task009-wg-peer\\bind_test.go"
+    },
+    {
+      "path": "scripts/task009-wg-peer/bind.go",
+      "sha256": "b934c1df89275fe5c6491c835baec8ba7cf60a4a510ec6412a611bc9fbb44069",
+      "snapshot": "E:\\wx_lifeilin\\github.com\\lifei6671\\veyra\\src-tauri\\target\\task009-udp-baseline-013\\scripts\\task009-wg-peer\\bind.go"
+    },
+    {
+      "path": "scripts/task009-wg-peer/go.mod",
+      "sha256": "93a13d2846e23de16e838615d617ca5d90a459e5ab2147465b82f4c9c3342045",
+      "snapshot": "E:\\wx_lifeilin\\github.com\\lifei6671\\veyra\\src-tauri\\target\\task009-udp-baseline-013\\scripts\\task009-wg-peer\\go.mod"
+    },
+    {
+      "path": "scripts/task009-wg-peer/go.sum",
+      "sha256": "379fdf81292d25dd451cf8140319524861e073f5862ce94642f98200ecd936db",
+      "snapshot": "E:\\wx_lifeilin\\github.com\\lifei6671\\veyra\\src-tauri\\target\\task009-udp-baseline-013\\scripts\\task009-wg-peer\\go.sum"
+    },
+    {
+      "path": "scripts/task009-wg-peer/lifecycle_test.go",
+      "sha256": "14a3efdbafe723fe5e5985284a9654f80b22ce32a3483a31d9ce3630492e70cc",
+      "snapshot": "E:\\wx_lifeilin\\github.com\\lifei6671\\veyra\\src-tauri\\target\\task009-udp-baseline-013\\scripts\\task009-wg-peer\\lifecycle_test.go"
+    },
+    {
+      "path": "scripts/task009-wg-peer/main.go",
+      "sha256": "01594921a2fd60606b9964337e2fe2e25c12d9c041bede0543d024e6b8054245",
+      "snapshot": "E:\\wx_lifeilin\\github.com\\lifei6671\\veyra\\src-tauri\\target\\task009-udp-baseline-013\\scripts\\task009-wg-peer\\main.go"
+    },
+    {
+      "path": "scripts/task009-wg-peer/observe_test.go",
+      "sha256": "c3549cf67be2d9f4c3edba9536e250132d26fb4e7aabf1ff89ca91b1c0d0a9a6",
+      "snapshot": "E:\\wx_lifeilin\\github.com\\lifei6671\\veyra\\src-tauri\\target\\task009-udp-baseline-013\\scripts\\task009-wg-peer\\observe_test.go"
+    },
+    {
+      "path": "scripts/task009-wg-peer/observe.go",
+      "sha256": "b97e98c7472333930dca29b1489af2a7f7f86452c300ea204c21ff75809c7442",
+      "snapshot": "E:\\wx_lifeilin\\github.com\\lifei6671\\veyra\\src-tauri\\target\\task009-udp-baseline-013\\scripts\\task009-wg-peer\\observe.go"
+    },
+    {
+      "path": "scripts/task009-wg-peer/protocol_test.go",
+      "sha256": "6922d5884fedec74ef19c583e179bff12b0cfc74f839189cba7f3da726fb710b",
+      "snapshot": "E:\\wx_lifeilin\\github.com\\lifei6671\\veyra\\src-tauri\\target\\task009-udp-baseline-013\\scripts\\task009-wg-peer\\protocol_test.go"
+    },
+    {
+      "path": "scripts/task009-wg-peer/protocol.go",
+      "sha256": "44b1e2602e2f96f86fe6947de30d29b292b2310838b27b9a2361dd55d7d9ed6b",
+      "snapshot": "E:\\wx_lifeilin\\github.com\\lifei6671\\veyra\\src-tauri\\target\\task009-udp-baseline-013\\scripts\\task009-wg-peer\\protocol.go"
+    },
+    {
+      "path": "scripts/task009-wg-peer/README.md",
+      "sha256": "26d7f5f86bd0b7289812141c6a36e9fe84c5c8e24a938b3e3bdfdc425fbd58b1",
+      "snapshot": "E:\\wx_lifeilin\\github.com\\lifei6671\\veyra\\src-tauri\\target\\task009-udp-baseline-013\\scripts\\task009-wg-peer\\README.md"
+    },
+    {
+      "path": "scripts/task009-wg-peer/stack_test.go",
+      "sha256": "246fc5f174b8f79822d0e4b507b266ed20fecbe4fe24d61b28f3ba66b8a7b379",
+      "snapshot": "E:\\wx_lifeilin\\github.com\\lifei6671\\veyra\\src-tauri\\target\\task009-udp-baseline-013\\scripts\\task009-wg-peer\\stack_test.go"
+    },
+    {
+      "path": "scripts/task009-wg-peer/stack.go",
+      "sha256": "03a8037388cac1188a341b0dc8a1189e212c6b0c238f42ae869dbbcd348959f8",
+      "snapshot": "E:\\wx_lifeilin\\github.com\\lifei6671\\veyra\\src-tauri\\target\\task009-udp-baseline-013\\scripts\\task009-wg-peer\\stack.go"
+    },
+    {
+      "path": ".sdlc/design/DCR-009-controlled-wg-peer.md",
+      "sha256": "b193f16e6262f8695780af2f18cebc4a4f91dbbbe999f4b91f716059edbb9470",
+      "snapshot": "E:\\wx_lifeilin\\github.com\\lifei6671\\veyra\\src-tauri\\target\\task009-udp-baseline-013\\.sdlc\\design\\DCR-009-controlled-wg-peer.md"
+    }
+  ],
+  "provenance": "Incremental pre-CHANGE008 snapshots only; original delivery provenance retained in checkpoint012",
+  "git_status": [
+    "M  .agents/skills/code-delivery-review/references/result-adapter.md",
+    "M  .agents/skills/implementation/SKILL.md",
+    "A  .agents/skills/sdlc-codex-setup/SKILL.md",
+    "A  .agents/skills/sdlc-codex-setup/agents/openai.yaml",
+    "A  .agents/skills/sdlc-codex-setup/assets/codex/agents/sdlc-expert.toml",
+    "A  .agents/skills/sdlc-codex-setup/assets/codex/agents/sdlc-implementer.toml",
+    "A  .agents/skills/sdlc-codex-setup/assets/codex/agents/sdlc-reviewer.toml",
+    "A  .agents/skills/sdlc-codex-setup/assets/codex/agents/sdlc-routine.toml",
+    "A  .agents/skills/sdlc-codex-setup/assets/codex/sdlc-agent-routing.toml",
+    "M  .agents/skills/sdlc-orchestrator/SKILL.md",
+    "A  .agents/skills/sdlc-orchestrator/references/agent-routing.md",
+    "M  .agents/skills/sdlc-orchestrator/references/phases/technical-design.md",
+    "M  .agents/skills/sdlc-orchestrator/references/workflow-protocol.md",
+    "M  .agents/skills/technical-design-review/SKILL.md",
+    "M  .agents/skills/technical-design/SKILL.md",
+    "A  .codex/agents/sdlc-expert.toml",
+    "A  .codex/agents/sdlc-implementer.toml",
+    "A  .codex/agents/sdlc-reviewer.toml",
+    "A  .codex/agents/sdlc-routine.toml",
+    "A  .codex/sdlc-agent-routing.toml",
+    " M .sdlc/design/DCR-001-sing-box-1.14.0.md",
+    "AM .sdlc/design/DCR-002-full-sing-box-subscription-and-compiler.md",
+    " M .sdlc/design/foundation.md",
+    "A  .sdlc/design/task008-observation-dns.md",
+    "AM .sdlc/evidence/TASK-006/code-delivery-review.yaml",
+    "AM .sdlc/evidence/TASK-006/implementation.yaml",
+    "A  .sdlc/evidence/TASK-007/code-delivery-review.yaml",
+    "A  .sdlc/evidence/TASK-007/implementation.yaml",
+    "AM .sdlc/evidence/TASK-008/readiness.yaml",
+    " M .sdlc/evidence/foundation/technical-design-review.yaml",
+    " M .sdlc/memory/HANDOFF.md",
+    " M .sdlc/state.yaml",
+    " M .sdlc/tasks.yaml",
+    "M  .sdlc/tasks/TASK-006.md",
+    "A  .sdlc/tasks/TASK-007.md",
+    "AM .sdlc/tasks/TASK-008.md",
+    " M docs/veyra.md",
+    " M src-tauri/Cargo.lock",
+    " M src-tauri/Cargo.toml",
+    " M src-tauri/build.rs",
+    " M src-tauri/capabilities/default.json",
+    "A  src-tauri/permissions/autogenerated/start_managed_observation_runtime.toml",
+    "A  src-tauri/permissions/autogenerated/stop_managed_observation_runtime.toml",
+    "A  src-tauri/scripts/fetch-managed-sing-box.ps1",
+    "AM src-tauri/src/application/managed_observation_runtime.rs",
+    " M src-tauri/src/application/mod.rs",
+    " M src-tauri/src/application/observability.rs",
+    "A  src-tauri/src/application/provider_replacement.rs",
+    " M src-tauri/src/application/runtime.rs",
+    " M src-tauri/src/commands.rs",
+    " M src-tauri/src/domain/mod.rs",
+    " M src-tauri/src/domain/state.rs",
+    " M src-tauri/src/lib.rs",
+    "AM src-tauri/src/platform/windows/managed_sidecar_port.rs",
+    " M src-tauri/src/platform/windows/mod.rs",
+    "AM src-tauri/src/platform/windows/private_runtime.rs",
+    "AM src-tauri/src/singbox/clash_api.rs",
+    " M src-tauri/src/singbox/compiler.rs",
+    " M src-tauri/src/singbox/managed_sidecar.rs",
+    " M src-tauri/src/singbox/mod.rs",
+    " M src-tauri/src/singbox/runtime.rs",
+    " M src-tauri/src/storage/migration.rs",
+    " M src-tauri/src/storage/store.rs",
+    " M src-tauri/src/subscription/normalize.rs",
+    " M src-tauri/src/subscription/parser.rs",
+    " M src-tauri/tauri.conf.json",
+    " M src/App.tsx",
+    " M src/lib/observability.test.ts",
+    " M src/lib/observability.ts",
+    " M src/styles.css",
+    "?? .playwright-cli/",
+    "?? .sdlc/design/DCR-003-fixed-core-configuration.md",
+    "?? .sdlc/design/DCR-004-runtime-update-failures.md",
+    "?? .sdlc/design/DCR-005-traffic-observation.md",
+    "?? .sdlc/design/DCR-006-memory-traffic-trend.md",
+    "?? .sdlc/design/DCR-007-dual-traffic-windows.md",
+    "?? .sdlc/design/DCR-008-test-loopback-metering.md",
+    "?? .sdlc/design/DCR-009-controlled-wg-peer.md",
+    "?? .sdlc/design/DCR-010-test-wg-udp.md",
+    "?? .sdlc/evidence/TASK-008/acceptance.yaml",
+    "?? .sdlc/evidence/TASK-008/baseline.patch",
+    "?? .sdlc/evidence/TASK-008/baseline.yaml",
+    "?? .sdlc/evidence/TASK-008/code-delivery-review.yaml",
+    "?? .sdlc/evidence/TASK-008/core-compatibility.yaml",
+    "?? .sdlc/evidence/TASK-008/delivery-001.patch",
+    "?? .sdlc/evidence/TASK-008/delivery-001.yaml",
+    "?? .sdlc/evidence/TASK-008/delivery.patch",
+    "?? .sdlc/evidence/TASK-008/delivery.yaml",
+    "?? .sdlc/evidence/TASK-008/implementation.yaml",
+    "?? .sdlc/evidence/TASK-008/reviewed-task.md",
+    "?? .sdlc/evidence/TASK-008/technical-design-review.yaml",
+    "?? .sdlc/evidence/TASK-009/",
+    "?? .sdlc/tasks/TASK-009.md",
+    "?? scripts/",
+    "?? src/lib/traffic-trend.test.ts",
+    "?? src/lib/traffic-trend.ts"
+  ]
+}

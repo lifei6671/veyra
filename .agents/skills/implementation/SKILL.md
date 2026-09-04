@@ -65,6 +65,12 @@ show-case/evidence-only 模式用于 Delivery Review 通过但 RD Show Case Evid
 2. 每次修改前对账 Anchor、Task Scope、Acceptance、适用的 Frozen Design/ADR 和授权边界。
 3. 只修改 `scope.allow` 内的实现、测试和必要文档；`scope.deny` 永远禁止。
 4. 选择最小实现，不为假想需求增加抽象、Fallback、Feature Flag、重试、配置或兼容层。
+   自主安全加固仅在以下条件同时成立时允许：它关闭已有控制之后仍存在的可信触发路径；保持在
+   当前 Task Scope；不改变已接受的产品语义或 Security Model；不引入 Material dependency、抽象、
+   配置、持久状态、运行组件、后台机制、兼容层或运维负担；且它是最小局部修复。否则立即停止，
+   返回风险、现有控制、剩余路径、最小候选方案和所需授权：尚无覆盖问题的 Frozen Design/ADR 时
+   路由 `technical-design`，只有需要改写既有 Frozen Design/ADR 时才通过 Change Control/DCR；
+   不得推测性实现较大的缓解方案。
 5. 发现已接受 Requirement/Acceptance 需要变化，或需要新增未确认的 Foundation/Material dependency 时
    立即停止，返回 Impact、拟变更内容与所需用户确认；未确认前不得改 canonical Requirement/Task、
    manifest/lockfile/checksum，不得运行安装命令。低影响 dev/test dependency 与可逆开发工具按 L1

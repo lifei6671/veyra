@@ -1,0 +1,26 @@
+version: 1
+records:
+  - id: EVIDENCE-TASK-008-ACCEPTANCE-001
+    type: task_acceptance
+    target: TASK-008
+    target_identity: sha256:d2f866af0f53ad28e8ba1cbe2d9b686b59f5c5f94703a25eb2d55cabaef5bc82
+    timestamp: 2026-09-04T12:02:17+08:00
+    observer: ORCHESTRATOR:/root
+    approved_by: USER:lifei
+    user_statement: 通过 TASK-008
+    result: PASS
+    subfeatures: {SF-001: PASSED, SF-002: PASSED, SF-003: PASSED}
+    task_acceptance: PASSED
+    evidence_refs:
+      - .sdlc/evidence/TASK-008/implementation.yaml#EVIDENCE-TASK-008-002
+      - .sdlc/evidence/TASK-008/code-delivery-review.yaml#EVIDENCE-TASK-008-REVIEW-002
+    freshness:
+      result: FRESH
+      method: Before acceptance, all 22 frozen manifest entries and 12 final verification log hashes matched; the requirement source identity was unchanged.
+      reviewed_task_snapshot: .sdlc/evidence/TASK-008/reviewed-task.md
+      reviewed_task_sha256: 6f252a4e1928e7171db3ddffc26a274ca5a3a5aa1d85b71f320bc2c050f99daf
+      administrative_transition: Only Task status, approval and evidence references change after review; acceptance criteria, scope and implementation remain unchanged. The snapshot preserves the Task bytes in the reviewed identity.
+    transition: VERIFYING -> DONE
+    boundaries:
+      - TASK-009 requires task materialization and readiness before implementation.
+      - Real runtime/network verification, Tor resource approval, GUI E2E, CI, commit and push are not approved or completed by this acceptance.

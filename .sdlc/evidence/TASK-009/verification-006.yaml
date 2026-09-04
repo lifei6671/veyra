@@ -1,0 +1,208 @@
+{
+  "target_identity": "sha256:0b6834cf6ec90174cbc6f7452513f0e2533a5adbf2f7f2a27e0b34947cd593cb",
+  "result": "PASS",
+  "result_scope": "24 Rust targeted tests, 50 frontend tests, 21 browser Mock checks and static/build validation; not whole Task acceptance",
+  "timestamp": "2026-09-04T14:50:31.2140260+08:00",
+  "not_run": [
+    "Complete TASK-009 matrix",
+    "Real positive traffic through business inlet",
+    "Native WebView/Tray E2E",
+    "Full Rust suite",
+    "CI",
+    "commit",
+    "push"
+  ],
+  "remaining_gaps": [
+    "Real metered positive-flow inlet unavailable in existing ObservationOnly profile; no new inlet authorized",
+    "WG/DNS full topology and true in-flight/late-result concurrency acceptance incomplete"
+  ],
+  "delivery": ".sdlc/evidence/TASK-009/delivery-checkpoint-006.yaml",
+  "version": 1,
+  "artifacts": [
+    {
+      "path": "src-tauri/target/task009-remediation/dual-browser-006.txt",
+      "sha256": "41f9c65a851195ed5bdfb50821128b33c1fc98b164e8161960c3229fe86fbc3f"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/dual-build-006.txt",
+      "sha256": "caf359b355e8edd63124123fea026354612ac18dd2ec643bdc37d3acc3595024"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/dual-clippy-006.result.json",
+      "sha256": "62ea0850857f4038f55ba5f108533171fe8d614b0df89d962f88f6f45462c568"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/dual-clippy-006.stderr.txt",
+      "sha256": "abb70a1b8941ac56fcbf4618daab9479290229ce69eb63caba39db371ed2caa4"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/dual-clippy-006.stdout.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/dual-commands-006.result.json",
+      "sha256": "570b3ab4afb5e78c5fc5ebd13e8890d3fc577717b78bd91b9e2ad7a39dec76ca"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/dual-commands-006.stderr.txt",
+      "sha256": "b71701a3355606e3db68f81180c69d391e7240be349c09c035607328a0fba528"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/dual-commands-006.stdout.txt",
+      "sha256": "688926be8fc2ae960a4a6858084b3f21ddfbe6de852261a0c5626e9ae5dedda2"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/dual-desktop-006.png",
+      "sha256": "5ea0db9656fb04735c3fa2e1b33c3f2cdb889034142d8ee777124b3c3573867e"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/dual-diff-check-006.txt",
+      "sha256": "919ceb246eaac0c84061b4fd00370e9b1d6e8e5cf702800d08b92228c30b2c20"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/dual-fmt-006.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/dual-frontend-006.txt",
+      "sha256": "909d528dd74b97354189475b4747a36ce52125c1cb057d0882def849e48fdfef"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/dual-lint-006.txt",
+      "sha256": "5a3973f79ed9becd5f23c4feff467513814de7ea381d75a4d2e339aa8b8edca9"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/dual-mobile-006.png",
+      "sha256": "75756d7a6983021a0828fe3cbfb4a0db8010293b4ac287718c974454f42eaacb"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/dual-observability-006.result.json",
+      "sha256": "94b2e1e76abbdcd10ca221b5c37784425a2c986f5d4013989143ac3af91f7db0"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/dual-observability-006.stderr.txt",
+      "sha256": "46bba7346a51463ad30597042d0e4cfbfcf47d7e9701fd1e522b07bb358ad8c2"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/dual-observability-006.stdout.txt",
+      "sha256": "1c9e3454c5de2d37cd05a00608a8fc938e28641f5a73ff6618f91ecf73fdae45"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/dual-ui-check.js",
+      "sha256": "2c847d065a48b73724598ffaf4e10057eec54bf0e544b12e7850de2b2a3a5f12"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/dual-ui-combined.js",
+      "sha256": "5be8d35a86fdaa0a9f4a15c08821cbe9c83310962a6104b377b1806afdba158d"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/dual-ui-setup.js",
+      "sha256": "0c01bc6dc6bbbbcc8e7b8a4ae368a2e3af26655b78f57628509e6a97d73a41ab"
+    }
+  ],
+  "observed": [
+    {
+      "id": "dual-observability-006",
+      "result": "PASS",
+      "command": "cargo test --manifest-path src-tauri/Cargo.toml --lib application::observability::tests:: -- --nocapture --test-threads=1",
+      "exit_code": 0,
+      "timeout": false,
+      "started": "2026-09-04T14:46:11.802947+08:00",
+      "finished": "2026-09-04T14:46:17.622188+08:00",
+      "summary": [
+        "test result: ok. 19 passed; 0 failed; 0 ignored; 0 measured; 158 filtered out; finished in 0.58s"
+      ],
+      "outer_timeout_seconds": 60
+    },
+    {
+      "id": "dual-commands-006",
+      "result": "PASS",
+      "command": "cargo test --manifest-path src-tauri/Cargo.toml --lib commands::tests:: -- --nocapture --test-threads=1",
+      "exit_code": 0,
+      "timeout": false,
+      "started": "2026-09-04T14:46:31.1925662+08:00",
+      "finished": "2026-09-04T14:46:32.5805089+08:00",
+      "summary": [
+        "test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 172 filtered out; finished in 0.57s"
+      ],
+      "outer_timeout_seconds": 60
+    },
+    {
+      "id": "dual-clippy-006",
+      "result": "PASS",
+      "command": "cargo clippy --manifest-path src-tauri/Cargo.toml --lib -- -D warnings",
+      "exit_code": 0,
+      "timeout": false,
+      "started": "2026-09-04T14:46:33.0226171+08:00",
+      "finished": "2026-09-04T14:46:34.6747825+08:00",
+      "summary": [],
+      "outer_timeout_seconds": 60
+    },
+    {
+      "id": "dual-frontend-006",
+      "result": "PASS",
+      "command": "pnpm test",
+      "exit_code": 0,
+      "summary": "50 passed"
+    },
+    {
+      "id": "dual-lint-006",
+      "result": "PASS",
+      "command": "pnpm lint",
+      "exit_code": 0,
+      "summary": "TypeScript noEmit"
+    },
+    {
+      "id": "dual-build-006",
+      "result": "PASS",
+      "command": "pnpm build",
+      "exit_code": 0,
+      "summary": "tsc and production Vite build"
+    },
+    {
+      "id": "dual-fmt-006",
+      "result": "PASS",
+      "command": "cargo fmt --manifest-path src-tauri/Cargo.toml -- --check",
+      "exit_code": 0,
+      "summary": "Rust formatting"
+    },
+    {
+      "id": "dual-diff-check-006",
+      "result": "PASS",
+      "command": "git diff --check",
+      "exit_code": 0,
+      "summary": "Only pre-existing newline notices"
+    },
+    {
+      "id": "dual-browser-006",
+      "result": "PASS",
+      "command": "playwright-cli -s=task009-dual run-code --filename src-tauri/target/task009-remediation/dual-ui-combined.js",
+      "checks": [
+        "PASS both independent placements have waiting state",
+        "PASS homepage renders all 600 retained samples",
+        "PASS sidebar crops to last sixty seconds including boundary",
+        "PASS each window scales independently of older peak",
+        "PASS continuous lines avoid one marker per sample",
+        "PASS cumulative core bytes remain separate",
+        "PASS compact download retains dashed style",
+        "PASS 60-second graph is at desktop bottom left",
+        "PASS sidebar graph remains anchored during document scroll",
+        "PASS 320px no horizontal overflow",
+        "PASS narrow layout places mini graph below main content",
+        "PASS 60-second expiry does not clear ten-minute graph",
+        "PASS ten-minute expiry clears both visible windows",
+        "PASS shared display clock adds no IPC calls",
+        "PASS both graph paths retain gaps over five seconds",
+        "PASS isolated sample remains visible in both sizes",
+        "PASS snapshot error marks both graphs unavailable",
+        "PASS failure toast remains singular and redacted",
+        "PASS failure toast closes",
+        "PASS confirmed stop clears both graphs",
+        "PASS confirmed stop creates no failure toast"
+      ],
+      "boundary": "Actual React UI with Mock Tauri IPC, not real positive traffic or native WebView evidence",
+      "visual_review": "Root inspected desktop and 320px screenshots: 10-minute homepage, 60-second bottom-left desktop sidebar, narrow layout below content, legends/rates/controls readable. Old peak scales only the homepage."
+    }
+  ],
+  "target": "TASK-009 CHANGE-005 dual traffic windows"
+}

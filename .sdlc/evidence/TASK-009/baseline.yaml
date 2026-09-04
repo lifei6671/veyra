@@ -1,0 +1,164 @@
+{
+  "planned_new_paths": [
+    "src-tauri/tests/task009_managed_runtime.rs",
+    "src-tauri/tests/task009_controlled_network.rs"
+  ],
+  "manifest": [
+    {
+      "path": "src-tauri/src/singbox/runtime.rs",
+      "snapshot": "src-tauri/target/task009-baseline/src-tauri/src/singbox/runtime.rs",
+      "sha256": "52bb2fb2350a28d9b817494bb3236437e924794961a941a457ca654f24239b28"
+    },
+    {
+      "path": "src-tauri/src/singbox/managed_sidecar.rs",
+      "snapshot": "src-tauri/target/task009-baseline/src-tauri/src/singbox/managed_sidecar.rs",
+      "sha256": "4de4ebb813542e57429627d1105de700cb38910150657bce795fbaaaa98cf4ee"
+    },
+    {
+      "path": "src-tauri/src/singbox/compiler.rs",
+      "snapshot": "src-tauri/target/task009-baseline/src-tauri/src/singbox/compiler.rs",
+      "sha256": "4f5796a866cf9ab2f687ccb1455d43372e1fb0255f55125891ef17e3c6c9d087"
+    },
+    {
+      "path": "src-tauri/src/singbox/mod.rs",
+      "snapshot": "src-tauri/target/task009-baseline/src-tauri/src/singbox/mod.rs",
+      "sha256": "22622e75d57fa1313324e93d851720974649d9e85fb7d32be9e41181b6d4ecf1"
+    },
+    {
+      "path": "src-tauri/src/platform/windows/managed_sidecar_port.rs",
+      "snapshot": "src-tauri/target/task009-baseline/src-tauri/src/platform/windows/managed_sidecar_port.rs",
+      "sha256": "cad6c982f0a9238ffcf41aad2995652623c371d29b57cb13808064b4f6ae9338"
+    },
+    {
+      "path": "src-tauri/src/application/managed_observation_runtime.rs",
+      "snapshot": "src-tauri/target/task009-baseline/src-tauri/src/application/managed_observation_runtime.rs",
+      "sha256": "0bf059d97927e5eac3e31182ac08996c862f36f35858351fea71dd7b73f3161f"
+    },
+    {
+      "path": "src-tauri/src/application/runtime.rs",
+      "snapshot": "src-tauri/target/task009-baseline/src-tauri/src/application/runtime.rs",
+      "sha256": "f477cb0055bef47ba94cead0a1852efb9426e40a9333588e1cb57a66a262fe0e"
+    },
+    {
+      "path": "src-tauri/src/application/observability.rs",
+      "snapshot": "src-tauri/target/task009-baseline/src-tauri/src/application/observability.rs",
+      "sha256": "257e5dfa546136d81cc87f3726cef68b810fd7e6eb2ddc7e0a72054d1b0f4d22"
+    },
+    {
+      "path": "src/App.tsx",
+      "snapshot": "src-tauri/target/task009-baseline/src/App.tsx",
+      "sha256": "1e52639d65c56a67773d3d506364eb84a0eab4c236e801320db3d57fd2c1f8f8"
+    },
+    {
+      "path": "src/styles.css",
+      "snapshot": "src-tauri/target/task009-baseline/src/styles.css",
+      "sha256": "8ede7a94df92d866274020070f785add4d1f85edb6d25dec40df5d63264806e1"
+    },
+    {
+      "path": "src/lib/observability.ts",
+      "snapshot": "src-tauri/target/task009-baseline/src/lib/observability.ts",
+      "sha256": "43f176399fd8015c27eff7fadeee9d545137b278322ee235b2be006efc91f300"
+    },
+    {
+      "path": "src/lib/observability.test.ts",
+      "snapshot": "src-tauri/target/task009-baseline/src/lib/observability.test.ts",
+      "sha256": "6f3b8f39231039efc8ece5c84d491228d6a55ee3d9175a738069f5d3cad4df40"
+    }
+  ],
+  "ownership": "Only subsequent scoped source delta belongs to TASK-009; preserve every pre-existing staged, unstaged and untracked change.",
+  "target": "TASK-009",
+  "version": 1,
+  "timestamp": "2026-09-04T12:35:39.2752661+08:00",
+  "starting_head": "9f6cb9fd0484d4be89d37a498658052d6d8a03b9",
+  "status": [
+    "M  .agents/skills/code-delivery-review/references/result-adapter.md",
+    "M  .agents/skills/implementation/SKILL.md",
+    "A  .agents/skills/sdlc-codex-setup/SKILL.md",
+    "A  .agents/skills/sdlc-codex-setup/agents/openai.yaml",
+    "A  .agents/skills/sdlc-codex-setup/assets/codex/agents/sdlc-expert.toml",
+    "A  .agents/skills/sdlc-codex-setup/assets/codex/agents/sdlc-implementer.toml",
+    "A  .agents/skills/sdlc-codex-setup/assets/codex/agents/sdlc-reviewer.toml",
+    "A  .agents/skills/sdlc-codex-setup/assets/codex/agents/sdlc-routine.toml",
+    "A  .agents/skills/sdlc-codex-setup/assets/codex/sdlc-agent-routing.toml",
+    "M  .agents/skills/sdlc-orchestrator/SKILL.md",
+    "A  .agents/skills/sdlc-orchestrator/references/agent-routing.md",
+    "M  .agents/skills/sdlc-orchestrator/references/phases/technical-design.md",
+    "M  .agents/skills/sdlc-orchestrator/references/workflow-protocol.md",
+    "M  .agents/skills/technical-design-review/SKILL.md",
+    "M  .agents/skills/technical-design/SKILL.md",
+    "A  .codex/agents/sdlc-expert.toml",
+    "A  .codex/agents/sdlc-implementer.toml",
+    "A  .codex/agents/sdlc-reviewer.toml",
+    "A  .codex/agents/sdlc-routine.toml",
+    "A  .codex/sdlc-agent-routing.toml",
+    " M .sdlc/design/DCR-001-sing-box-1.14.0.md",
+    "AM .sdlc/design/DCR-002-full-sing-box-subscription-and-compiler.md",
+    " M .sdlc/design/foundation.md",
+    "A  .sdlc/design/task008-observation-dns.md",
+    "AM .sdlc/evidence/TASK-006/code-delivery-review.yaml",
+    "AM .sdlc/evidence/TASK-006/implementation.yaml",
+    "A  .sdlc/evidence/TASK-007/code-delivery-review.yaml",
+    "A  .sdlc/evidence/TASK-007/implementation.yaml",
+    "AM .sdlc/evidence/TASK-008/readiness.yaml",
+    " M .sdlc/evidence/foundation/technical-design-review.yaml",
+    " M .sdlc/memory/HANDOFF.md",
+    " M .sdlc/state.yaml",
+    " M .sdlc/tasks.yaml",
+    "M  .sdlc/tasks/TASK-006.md",
+    "A  .sdlc/tasks/TASK-007.md",
+    "AM .sdlc/tasks/TASK-008.md",
+    " M docs/veyra.md",
+    " M src-tauri/Cargo.lock",
+    " M src-tauri/Cargo.toml",
+    " M src-tauri/build.rs",
+    " M src-tauri/capabilities/default.json",
+    "A  src-tauri/permissions/autogenerated/start_managed_observation_runtime.toml",
+    "A  src-tauri/permissions/autogenerated/stop_managed_observation_runtime.toml",
+    "A  src-tauri/scripts/fetch-managed-sing-box.ps1",
+    "AM src-tauri/src/application/managed_observation_runtime.rs",
+    " M src-tauri/src/application/mod.rs",
+    " M src-tauri/src/application/observability.rs",
+    "A  src-tauri/src/application/provider_replacement.rs",
+    " M src-tauri/src/application/runtime.rs",
+    " M src-tauri/src/commands.rs",
+    " M src-tauri/src/domain/mod.rs",
+    " M src-tauri/src/domain/state.rs",
+    " M src-tauri/src/lib.rs",
+    "AM src-tauri/src/platform/windows/managed_sidecar_port.rs",
+    " M src-tauri/src/platform/windows/mod.rs",
+    "AM src-tauri/src/platform/windows/private_runtime.rs",
+    "AM src-tauri/src/singbox/clash_api.rs",
+    " M src-tauri/src/singbox/compiler.rs",
+    " M src-tauri/src/singbox/managed_sidecar.rs",
+    " M src-tauri/src/singbox/mod.rs",
+    " M src-tauri/src/singbox/runtime.rs",
+    " M src-tauri/src/storage/migration.rs",
+    " M src-tauri/src/storage/store.rs",
+    " M src-tauri/src/subscription/normalize.rs",
+    " M src-tauri/src/subscription/parser.rs",
+    " M src-tauri/tauri.conf.json",
+    " M src/App.tsx",
+    " M src/lib/observability.test.ts",
+    " M src/lib/observability.ts",
+    " M src/styles.css",
+    "?? .sdlc/design/DCR-003-fixed-core-configuration.md",
+    "?? .sdlc/design/DCR-004-runtime-update-failures.md",
+    "?? .sdlc/evidence/TASK-008/acceptance.yaml",
+    "?? .sdlc/evidence/TASK-008/baseline.patch",
+    "?? .sdlc/evidence/TASK-008/baseline.yaml",
+    "?? .sdlc/evidence/TASK-008/code-delivery-review.yaml",
+    "?? .sdlc/evidence/TASK-008/core-compatibility.yaml",
+    "?? .sdlc/evidence/TASK-008/delivery-001.patch",
+    "?? .sdlc/evidence/TASK-008/delivery-001.yaml",
+    "?? .sdlc/evidence/TASK-008/delivery.patch",
+    "?? .sdlc/evidence/TASK-008/delivery.yaml",
+    "?? .sdlc/evidence/TASK-008/implementation.yaml",
+    "?? .sdlc/evidence/TASK-008/reviewed-task.md",
+    "?? .sdlc/evidence/TASK-008/technical-design-review.yaml",
+    "?? .sdlc/evidence/TASK-009/change-control.yaml",
+    "?? .sdlc/evidence/TASK-009/readiness.yaml",
+    "?? .sdlc/evidence/TASK-009/reviewed-dcr004-001.md",
+    "?? .sdlc/evidence/TASK-009/technical-design-review.yaml",
+    "?? .sdlc/tasks/TASK-009.md"
+  ]
+}

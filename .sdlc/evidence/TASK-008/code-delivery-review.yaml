@@ -1,0 +1,128 @@
+version: 1
+reviews:
+  - id: EVIDENCE-TASK-008-REVIEW-001
+    type: code_delivery_review
+    target: TASK-008
+    timestamp: 2026-09-04T11:57:04.1911091+08:00
+    target_identity: sha256:e4f6a99c78eb49c4ceeda68f7e67820c8fd1cd7278e947dedb7ec48ca008019b
+    result: FAIL
+    observer: CHILD_AGENT:/root/task008_design_reviewer
+    produced_by_phase: REVIEW
+    command_or_method: Independent read-only review of all source deltas, contracts and hashed verification logs.
+    review:
+      review_mode: CHILD_AGENT
+      review_result: REWORK
+      coverage:
+        strategy: PARTITIONED_PLUS_INTEGRATION
+        tier: TIER_3_DEEP
+        status: COMPLETE
+        applicable_lanes: [correctness, security, contract-data, verification]
+        lanes:
+          correctness: {result: REWORK, freshness: FRESH}
+          security: {result: PASS, freshness: FRESH}
+          contract-data: {result: REWORK, freshness: FRESH}
+          verification: {result: REWORK, freshness: FRESH}
+        partitions:
+          - {id: compiler_domain, result: REWORK, freshness: FRESH}
+          - {id: final_bytes_and_callers, result: REWORK, freshness: FRESH}
+        integration_result: REWORK
+        freshness: FRESH
+        identity_checks: All manifest, aggregate, baseline snapshot, reconstructed delta and verification log hashes matched at review start and end.
+      findings:
+        - finding_id: TASK-008-REVIEW-001
+          fingerprint: singbox/compiler.rs:CoreTls:reality-missing-required-utls
+          target_identity: sha256:e4f6a99c78eb49c4ceeda68f7e67820c8fd1cd7278e947dedb7ec48ca008019b
+          severity: P1
+          confidence: high
+          status: NEW
+          location: src-tauri/src/singbox/compiler.rs:374
+          problem: Valid Reality inputs finalize without enabled uTLS, which the fixed core requires.
+          evidence: CoreTls lacks utls; core_tls emits enabled Reality; fixed v1.14.0 reality_client.go:54-56 rejects absent or disabled UTLS. Existing Reality tests inspect JSON only; the 30 core matrix rows omit Reality.
+          suggested_fix: Generate typed Reality-only utls with enabled=true, preserve the native default fingerprint, strictly reject missing/disabled/unknown fields and add final Reality core-check cases.
+      remaining_risks:
+        - Existing 142-test and 30-check results do not cover Reality.
+        - Review verified logs rather than independently rerunning tests.
+        - Real protocol traffic, DNS, WireGuard isolation and lifecycle remain TASK-009.
+        - No Human Task acceptance or DONE is authorized.
+      source_links:
+        - https://raw.githubusercontent.com/SagerNet/sing-box/v1.14.0/common/tls/reality_client.go
+        - https://raw.githubusercontent.com/SagerNet/sing-box/v1.14.0/protocol/vless/outbound.go
+  - id: EVIDENCE-TASK-008-REVIEW-002
+    type: code_delivery_review
+    target: TASK-008
+    target_identity: sha256:d2f866af0f53ad28e8ba1cbe2d9b686b59f5c5f94703a25eb2d55cabaef5bc82
+    timestamp: 2026-09-04T11:57:04.1911091+08:00
+    result: PASS
+    observer: CHILD_AGENT:/root/task008_design_reviewer
+    produced_by_phase: REVIEW
+    command_or_method: Independent incremental review of complete Reality remediation and integration, retaining first-review coverage for all hash-unchanged paths and contracts.
+    review:
+      review_mode: CHILD_AGENT
+      reviewed_target_identity: sha256:d2f866af0f53ad28e8ba1cbe2d9b686b59f5c5f94703a25eb2d55cabaef5bc82
+      review_result: PASS
+      coverage:
+        strategy: PARTITIONED_PLUS_INTEGRATION
+        tier: TIER_3_DEEP
+        status: COMPLETE
+        applicable_lanes: [correctness, security, contract-data, verification]
+        lanes:
+          correctness: {result: PASS, validation: COMPLETE, freshness: FRESH}
+          security: {result: PASS, validation: COMPLETE, freshness: FRESH}
+          contract-data: {result: PASS, validation: COMPLETE, freshness: FRESH}
+          verification: {result: PASS, validation: COMPLETE, freshness: FRESH}
+        partitions:
+          - id: compiler_domain
+            paths:
+              - src-tauri/src/domain/state.rs
+              - src-tauri/src/domain/mod.rs
+              - src-tauri/src/singbox/compiler.rs
+              - src-tauri/src/singbox/mod.rs
+            result: PASS
+            freshness: FRESH
+          - id: final_bytes_and_callers
+            paths:
+              - src-tauri/src/singbox/managed_sidecar.rs
+              - src-tauri/src/singbox/runtime.rs
+              - src-tauri/src/platform/windows/managed_sidecar_port.rs
+              - src-tauri/src/application/managed_observation_runtime.rs
+              - src-tauri/src/application/runtime.rs
+            result: PASS
+            freshness: FRESH
+        subfeatures: {SF-001: PASS, SF-002: PASS, SF-003: PASS}
+        integration_result: PASS
+        freshness: FRESH
+        identity_checks:
+          - Aggregate and complete manifest matched at review start and end.
+          - Only compiler.rs and managed_sidecar_port.rs differ from first-review manifest.
+          - Old source was reconstructed from baseline and delivery-001.patch to inspect complete remediation diff.
+          - All EVIDENCE-TASK-008-002 log hashes matched.
+        integration_checked:
+          - Reality input to typed uTLS to recursive allowlist to immutable final bytes.
+          - Parser/Domain/Compiler to private ACL file to fixed core check.
+          - Same secret, byte readback and SHA256 before and after check.
+          - Default target, DNS, WireGuard and failure transaction boundaries remain unchanged.
+      findings:
+        - finding_id: TASK-008-REVIEW-001
+          fingerprint: singbox/compiler.rs:CoreTls:reality-missing-required-utls
+          target_identity: sha256:d2f866af0f53ad28e8ba1cbe2d9b686b59f5c5f94703a25eb2d55cabaef5bc82
+          status: FIXED
+          references:
+            - src-tauri/src/singbox/compiler.rs:380
+            - src-tauri/src/singbox/compiler.rs:630
+            - src-tauri/src/singbox/compiler.rs:685
+            - src-tauri/src/singbox/compiler.rs:1869
+            - src-tauri/src/platform/windows/managed_sidecar_port.rs:469
+            - .sdlc/evidence/TASK-008/implementation.yaml#EVIDENCE-TASK-008-002
+          conclusion: Reality alone generates enabled uTLS. Missing, disabled, detached, fingerprint and unknown-field variants fail closed; four Reality final configs pass fixed-core check. No Domain, dependency or lifecycle change.
+      judge: {result: PASS, unresolved_findings: 0, new_findings: 0}
+      observed_verification:
+        library_tests: 143 passed, 1 real-child test deliberately excluded
+        final_core_matrix: 34 passed, including 4 Reality TCP/WebSocket configurations
+        library_clippy: PASS
+        scoped_format: PASS
+        diff_check: PASS
+      remaining_risks:
+        - Reviewer verified logs and source without independently rerunning tests.
+        - Check does not prove Reality handshake, DNS/URLTest runtime behavior or WireGuard ingress isolation.
+        - Real lifecycle/network verification belongs to TASK-009; CI, commit and push remain NOT_RUN.
+        - Human Task acceptance remains pending; this review does not approve DONE.

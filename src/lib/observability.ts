@@ -2,13 +2,17 @@ import { listen, type UnlistenFn } from "@tauri-apps/api/event";
 import { invoke } from "@tauri-apps/api/core";
 
 const SNAPSHOT_COMMAND = "runtime_observation_snapshot";
+const START_MANAGED_RUNTIME_COMMAND = "start_managed_observation_runtime";
+const STOP_MANAGED_RUNTIME_COMMAND = "stop_managed_observation_runtime";
 const DELTA_EVENT = "runtime_observation_delta";
 
 export type RuntimeObservation = {
-  source: "mock";
+  source: "mock" | "runtime";
   revision: number;
+  observedAtMs: number;
+  trafficHistory: ReadonlyArray<TrafficSample>;
   captureMode: "off" | "systemProxy" | "recoveryRequired";
-  sidecarLifecycle: "notAttached" | "ready" | "recoveryRequired";
+  sidecarLifecycle: "notAttached" | "stopped" | "ready" | "recoveryRequired";
   uploadRateBps: number;
   downloadRateBps: number;
   uploadTotalBytes: number;
@@ -23,8 +27,32 @@ export type LogSummary = {
   occurrences: number;
 };
 
+export type TrafficSample = {
+  sampledAtMs: number;
+  uploadRateBps: number;
+  downloadRateBps: number;
+};
+
+export type ManagedRuntimeStartResult =
+  | "started"
+  | "alreadyRunning"
+  | "stateUnavailable"
+  | "configurationFailed"
+  | "startFailed"
+  | "busy";
+
+export type ManagedRuntimeStopResult = "stopped" | "alreadyStopped" | "stopFailed" | "busy";
+
 export async function runtimeObservationSnapshot(): Promise<RuntimeObservation> {
   return parseRuntimeObservation(await invoke<unknown>(SNAPSHOT_COMMAND));
+}
+
+export async function startManagedObservationRuntime(): Promise<ManagedRuntimeStartResult> {
+  return parseManagedRuntimeStartResult(await invoke<unknown>(START_MANAGED_RUNTIME_COMMAND));
+}
+
+export async function stopManagedObservationRuntime(): Promise<ManagedRuntimeStopResult> {
+  return parseManagedRuntimeStopResult(await invoke<unknown>(STOP_MANAGED_RUNTIME_COMMAND));
 }
 
 export async function subscribeRuntimeObservationDelta(
@@ -39,7 +67,8 @@ export function acceptNewerObservation(
   current: RuntimeObservation | null,
   next: RuntimeObservation,
 ): RuntimeObservation | null {
-  return current === null || next.revision > current.revision ? next : current;
+  return current === null || next.revision > current.revision ||
+    (next.revision === current.revision && next.observedAtMs > current.observedAtMs) ? next : current;
 }
 
 function parseRuntimeObservation(value: unknown): RuntimeObservation {
@@ -48,8 +77,11 @@ function parseRuntimeObservation(value: unknown): RuntimeObservation {
   }
 
   if (
-    value.source !== "mock" ||
+    !isObservationSource(value.source) ||
     !isNonNegativeInteger(value.revision) ||
+    !isNonNegativeInteger(value.observedAtMs) ||
+    !Array.isArray(value.trafficHistory) ||
+    value.trafficHistory.length > 600 ||
     !isCaptureMode(value.captureMode) ||
     !isSidecarLifecycle(value.sidecarLifecycle) ||
     !isNonNegativeNumber(value.uploadRateBps) ||
@@ -62,9 +94,23 @@ function parseRuntimeObservation(value: unknown): RuntimeObservation {
     throw new Error("invalid runtime observation payload");
   }
 
+  const trafficHistory = value.trafficHistory.map((point: unknown, index: number, points: unknown[]) => {
+    if (!isRecord(point) || !hasExactKeys(point, trafficSampleKeys) ||
+      !isNonNegativeInteger(point.sampledAtMs) ||
+      point.sampledAtMs > (value.observedAtMs as number) ||
+      (value.observedAtMs as number) - point.sampledAtMs > 600000 ||
+      !isNonNegativeNumber(point.uploadRateBps) || !isNonNegativeNumber(point.downloadRateBps) ||
+      (index > 0 && point.sampledAtMs <= (points[index - 1] as TrafficSample).sampledAtMs)) {
+      throw new Error("invalid runtime observation payload");
+    }
+    return point as TrafficSample;
+  });
+
   return {
     source: value.source,
     revision: value.revision,
+    observedAtMs: value.observedAtMs,
+    trafficHistory,
     captureMode: value.captureMode,
     sidecarLifecycle: value.sidecarLifecycle,
     uploadRateBps: value.uploadRateBps,
@@ -74,6 +120,31 @@ function parseRuntimeObservation(value: unknown): RuntimeObservation {
     connectionCount: value.connectionCount,
     logSummary: value.logSummary.map(parseLogSummary),
   };
+}
+
+function parseManagedRuntimeStartResult(value: unknown): ManagedRuntimeStartResult {
+  if (
+    value === "started" ||
+    value === "alreadyRunning" ||
+    value === "stateUnavailable" ||
+    value === "configurationFailed" ||
+    value === "startFailed" ||
+    value === "busy"
+  ) {
+    return value;
+  }
+  throw new Error("invalid managed runtime start result");
+}
+
+function parseManagedRuntimeStopResult(value: unknown): ManagedRuntimeStopResult {
+  if (value === "stopped" || value === "alreadyStopped" || value === "stopFailed" || value === "busy") {
+    return value;
+  }
+  throw new Error("invalid managed runtime stop result");
+}
+
+function isObservationSource(value: unknown): value is RuntimeObservation["source"] {
+  return value === "mock" || value === "runtime";
 }
 
 function parseLogSummary(value: unknown): LogSummary {
@@ -93,6 +164,8 @@ function parseLogSummary(value: unknown): LogSummary {
 const observationKeys = [
   "source",
   "revision",
+  "observedAtMs",
+  "trafficHistory",
   "captureMode",
   "sidecarLifecycle",
   "uploadRateBps",
@@ -103,6 +176,7 @@ const observationKeys = [
   "logSummary",
 ] as const;
 const logSummaryKeys = ["category", "level", "occurrences"] as const;
+const trafficSampleKeys = ["sampledAtMs", "uploadRateBps", "downloadRateBps"] as const;
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -131,7 +205,12 @@ function isCaptureMode(value: unknown): value is RuntimeObservation["captureMode
 function isSidecarLifecycle(
   value: unknown,
 ): value is RuntimeObservation["sidecarLifecycle"] {
-  return value === "notAttached" || value === "ready" || value === "recoveryRequired";
+  return (
+    value === "notAttached" ||
+    value === "stopped" ||
+    value === "ready" ||
+    value === "recoveryRequired"
+  );
 }
 
 function isLogCategory(value: unknown): value is LogSummary["category"] {

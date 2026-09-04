@@ -1,0 +1,524 @@
+{
+  "id": "EVIDENCE-TASK-009-VERIFICATION-014",
+  "target": "TASK009 CHANGE009 WG local rejection comparison",
+  "target_identity": "sha256:37feddf0c296a6db8e7552d203c645efa5cd9663b4649243465ace58e3d5c126",
+  "timestamp": "2026-09-04T18:09:20.4067501+08:00",
+  "scope_result": "FAIL",
+  "whole_task_result": "INCOMPLETE",
+  "source_entries": 55,
+  "source_hash_mismatches": 0,
+  "commands": [
+    {
+      "id": "wg-reject-compiler-014",
+      "command": "test --manifest-path src-tauri/Cargo.toml --lib singbox::compiler::tests:: -- --nocapture",
+      "started": "2026-09-04T17:48:06.511399+08:00",
+      "finished": "2026-09-04T17:48:21.2471433+08:00",
+      "exit_code": 0,
+      "timeout": false,
+      "result": "PASS"
+    },
+    {
+      "id": "wg-reject-rust-build-final-014",
+      "command": "test --manifest-path src-tauri/Cargo.toml --lib --no-run",
+      "started": "2026-09-04T18:02:52.0206298+08:00",
+      "finished": "2026-09-04T18:02:57.1070717+08:00",
+      "exit_code": 0,
+      "timeout": false,
+      "result": "PASS"
+    },
+    {
+      "id": "wg-reject-rust-protocol-final-014",
+      "command": "test --manifest-path src-tauri/Cargo.toml --lib wg_peer_test::local_ -- --nocapture",
+      "started": "2026-09-04T17:58:57.9282256+08:00",
+      "finished": "2026-09-04T17:59:06.1769382+08:00",
+      "exit_code": 0,
+      "timeout": false,
+      "result": "PASS"
+    },
+    {
+      "id": "wg-reject-old-protocol-014",
+      "command": "test --manifest-path src-tauri/Cargo.toml --lib wg_peer_test::wg_ -- --nocapture",
+      "started": "2026-09-04T18:08:54.8431327+08:00",
+      "finished": "2026-09-04T18:08:55.7844974+08:00",
+      "exit_code": 0,
+      "timeout": false,
+      "result": "PASS"
+    },
+    {
+      "id": "wg-reject-fmt-014",
+      "command": "fmt --manifest-path src-tauri/Cargo.toml -- --check",
+      "started": "2026-09-04T18:09:12.1092379+08:00",
+      "finished": "2026-09-04T18:09:12.5847196+08:00",
+      "exit_code": 0,
+      "timeout": false,
+      "result": "PASS"
+    },
+    {
+      "id": "wg-reject-clippy-final-014",
+      "command": "clippy --manifest-path src-tauri/Cargo.toml --lib -- -D warnings",
+      "started": "2026-09-04T18:09:12.1597153+08:00",
+      "finished": "2026-09-04T18:09:13.9087398+08:00",
+      "exit_code": 0,
+      "timeout": false,
+      "result": "PASS"
+    },
+    {
+      "id": "wg-reject-go-verified-tests-014",
+      "command": "test -v -count=1 -timeout 60s ./...",
+      "started": "2026-09-04T17:55:55.7182386+08:00",
+      "finished": "2026-09-04T17:56:04.0783062+08:00",
+      "exit_code": 0,
+      "timeout": false,
+      "result": "PASS"
+    },
+    {
+      "id": "wg-reject-go-verified-race-014",
+      "command": "test -race -count=1 -timeout 60s ./...",
+      "started": "2026-09-04T17:55:55.7352088+08:00",
+      "finished": "2026-09-04T17:56:06.7072468+08:00",
+      "exit_code": 0,
+      "timeout": false,
+      "result": "PASS"
+    },
+    {
+      "id": "wg-reject-go-verified-vet-014",
+      "command": "vet ./...",
+      "started": "2026-09-04T17:55:55.7355402+08:00",
+      "finished": "2026-09-04T17:55:56.6359259+08:00",
+      "exit_code": 0,
+      "timeout": false,
+      "result": "PASS"
+    },
+    {
+      "id": "wg-reject-go-build-014",
+      "command": "build -o ../../src-tauri/target/task009-wg-peer.exe .",
+      "started": "2026-09-04T17:56:48.63+08:00",
+      "finished": "2026-09-04T17:56:50.0887264+08:00",
+      "exit_code": 0,
+      "timeout": false,
+      "result": "PASS"
+    },
+    {
+      "id": "wg-reject-go-modverify-014",
+      "command": "mod verify",
+      "started": "2026-09-04T17:57:11.7252275+08:00",
+      "finished": "2026-09-04T17:57:12.2306958+08:00",
+      "exit_code": 0,
+      "timeout": false,
+      "result": "PASS"
+    },
+    {
+      "id": "wg-reject-go-gofmt-014",
+      "command": "gofmt -l scripts/task009-wg-peer",
+      "started": "2026-09-04T17:57:24.8093427+08:00",
+      "finished": "2026-09-04T17:57:24.8669083+08:00",
+      "exit_code": 0,
+      "timeout": false,
+      "result": "PASS"
+    },
+    {
+      "id": "wg-reject-diff-014",
+      "command": "git diff --check scoped compiler Port Go Task state HANDOFF",
+      "started": "2026-09-04T18:09:13.5585325+08:00",
+      "finished": "2026-09-04T18:09:13.6056181+08:00",
+      "exit_code": 0,
+      "timeout": false,
+      "result": "PASS"
+    },
+    {
+      "id": "wg-reject-real-diagnostic-014",
+      "command": "test --manifest-path src-tauri/Cargo.toml --lib real_wireguard_local_reject_has_positive_before_and_after_four_blocked_paths -- --nocapture",
+      "started": "2026-09-04T18:03:02.1841807+08:00",
+      "finished": "2026-09-04T18:03:18.4366846+08:00",
+      "exit_code": 101,
+      "timeout": false,
+      "result": "FAIL"
+    },
+    {
+      "id": "wg-reject-hold150-014",
+      "command": "test --manifest-path src-tauri/Cargo.toml --lib real_reject_peer_and_targets_hold_until_150_second_hard_exit -- --nocapture",
+      "started": "2026-09-04T18:03:26.0638817+08:00",
+      "finished": "2026-09-04T18:05:57.0554378+08:00",
+      "exit_code": 0,
+      "timeout": false,
+      "result": "PASS"
+    },
+    {
+      "id": "wg-reject-tcp-icmp-regression-014",
+      "command": "test --manifest-path src-tauri/Cargo.toml --lib real_wireguard_peer_delivers_tcp_response_and_virtual_icmp -- --nocapture",
+      "started": "2026-09-04T18:06:06.1852135+08:00",
+      "finished": "2026-09-04T18:06:30.4772078+08:00",
+      "exit_code": 0,
+      "timeout": false,
+      "result": "PASS"
+    },
+    {
+      "id": "wg-reject-udp-regression-014",
+      "command": "test --manifest-path src-tauri/Cargo.toml --lib real_wireguard_udp_returns_three_exact_client_datagrams -- --nocapture",
+      "started": "2026-09-04T18:06:43.6454217+08:00",
+      "finished": "2026-09-04T18:07:07.7385965+08:00",
+      "exit_code": 0,
+      "timeout": false,
+      "result": "PASS"
+    },
+    {
+      "id": "wg-reject-hold55-regression-014",
+      "command": "test --manifest-path src-tauri/Cargo.toml --lib real_peer_preserves_binding_until_hard_exit_when_dut_stop_is_unconfirmed -- --nocapture",
+      "started": "2026-09-04T18:07:29.5410039+08:00",
+      "finished": "2026-09-04T18:08:25.6281916+08:00",
+      "exit_code": 0,
+      "timeout": false,
+      "result": "PASS"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "src-tauri/target/task009-remediation/wg-reject-compiler-014.result.json",
+      "sha256": "ba1c7133641e0c0c29c08da325a4aaca0e0affaafde8166df2075f4ca9efdd7d"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-reject-compiler-014.stdout.txt",
+      "sha256": "9f67c06bdb5b3fc1ba1be08688b886899ba5e5c7c458ebb44625eeba6034e8a7"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-reject-compiler-014.stderr.txt",
+      "sha256": "d841a05a4b3f287c71054638e180b736d68b5b281b5d86696edc17381ae05634"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-reject-rust-build-final-014.result.json",
+      "sha256": "b65ccfdc04d91074ce47332b1a52274fbbbeeca8232831303de7154be80a73e2"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-reject-rust-build-final-014.stdout.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-reject-rust-build-final-014.stderr.txt",
+      "sha256": "02e0ad6f16d43ea46a03984ad2984820d4b6a8451fa88823ce55a15cd73dbd19"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-reject-rust-protocol-final-014.result.json",
+      "sha256": "4b5e002ae5d3c063e80cb3b02c8b876906be05d3de63109b1fb8e27afe49449b"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-reject-rust-protocol-final-014.stdout.txt",
+      "sha256": "8103cea321ab78bbd8be55a3b7745a20c637402672188d17b9d142d1db2db3c8"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-reject-rust-protocol-final-014.stderr.txt",
+      "sha256": "1ddd5da209570c27d026c25c53aa576cc750df490c5e05164cb71ad35e196129"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-reject-old-protocol-014.result.json",
+      "sha256": "a0d34bdb523bfe8e97a9f34dfbee1f787c3249e170ac90d0b2b166eb119c7ce1"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-reject-old-protocol-014.stdout.txt",
+      "sha256": "4d36969db5c1aeb03a7e7bc34066223529b3c0bfed3cce32c1c5357857cfa402"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-reject-old-protocol-014.stderr.txt",
+      "sha256": "86ee6298d8d3d8d30615ee781ea9f0fe110cec044c3fa20122a7cd52c4e2c750"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-reject-fmt-014.result.json",
+      "sha256": "29c6359b7de4d31df63b7c92219e63755606838ed9b0187b5e0f940ef9508ea7"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-reject-fmt-014.stdout.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-reject-fmt-014.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-reject-clippy-final-014.result.json",
+      "sha256": "073924ea04bc5e47ea844ecd8091bbb70bcb3a837932d51b1ddda1f875f35c8a"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-reject-clippy-final-014.stdout.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-reject-clippy-final-014.stderr.txt",
+      "sha256": "2a1e930e2e2136c6b54f654c8bbaa93c44d9f6189ab91a7af62f763eeebac936"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-reject-go-verified-tests-014.result.json",
+      "sha256": "025bfe9a90f24f605c5727d81ba53507771a4387aa561d5fdd03e3d637e89ace"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-reject-go-verified-tests-014.stdout.txt",
+      "sha256": "fe6d39f5418b3230825bf2b959a5d09e16bff420633c8d7767f1747ea052fc7f"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-reject-go-verified-tests-014.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-reject-go-verified-race-014.result.json",
+      "sha256": "3f0d39ca1b0b9ff592fd6cfa87324a12ac82c36fdef7c691f863c7d9d08e077d"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-reject-go-verified-race-014.stdout.txt",
+      "sha256": "089c2f71a98ce5f3847248510557104c53f1f71df3e41b10b247a75d233401a4"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-reject-go-verified-race-014.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-reject-go-verified-vet-014.result.json",
+      "sha256": "05bcbd6255497e517fdcd0fa4707b77e0b7490199a1b56fbe2b4ab441e98fdfc"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-reject-go-verified-vet-014.stdout.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-reject-go-verified-vet-014.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-reject-go-build-014.result.json",
+      "sha256": "db97ae80fbab18d62f11da37f1fd4e8c88a1649640a308e75e94370541fda456"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-reject-go-build-014.stdout.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-reject-go-build-014.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-reject-go-modverify-014.result.json",
+      "sha256": "96310555b95b571427c72b8382ea2d5f3ea12b2cc6581f97e2ac122d987593a1"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-reject-go-modverify-014.stdout.txt",
+      "sha256": "b4537ed75f533f993f371954de47e42a793b8e5b0587577de7e27fb3e50696bd"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-reject-go-modverify-014.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-reject-go-gofmt-014.result.json",
+      "sha256": "a42779011fe0e3b90bfe63e5dbb84a5ca37eeb9c65322fbf6cebf9722ea38ab3"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-reject-diff-014.result.json",
+      "sha256": "76039ebf5e4466c0477c3c9e4edb9308575780225f71f2df57cb378295c6eed1"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-reject-real-diagnostic-014.result.json",
+      "sha256": "85bd28a7244fd6150da018338485ae98e47f6d17ea8378737ed20b7926bb43d2"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-reject-real-diagnostic-014.stdout.txt",
+      "sha256": "3e2cf307531e630cdd063bc2faa60e77dff9d6589b06f3c2a79b790de04cc3ec"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-reject-real-diagnostic-014.stderr.txt",
+      "sha256": "0e8d904aec17d8cb31bb364f65e0b8f5e35867b79876c487f5306f848fe5b77b"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-reject-hold150-014.result.json",
+      "sha256": "85c7594166db78e13116765e936e5042ab0df06f02338698f24e51596f1fa9eb"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-reject-hold150-014.stdout.txt",
+      "sha256": "c3a362005af7d9a7a8f4c0c437ca7c66504cc7ac3c55d66d30f0020605ef7b9f"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-reject-hold150-014.stderr.txt",
+      "sha256": "498812d03b02fb0ff221c611a3255113121e0f195bca7e2ccd908333a4af483f"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-reject-tcp-icmp-regression-014.result.json",
+      "sha256": "8858021e1088c7287b7d937c2b0599c28d780cca3a3f20a2b8b847870eec9e05"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-reject-tcp-icmp-regression-014.stdout.txt",
+      "sha256": "a8c73b6ca1f4a4748573cbb5c38016ad4aa4a4bb2e49d0de4b5c3190abe3c135"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-reject-tcp-icmp-regression-014.stderr.txt",
+      "sha256": "86ee6298d8d3d8d30615ee781ea9f0fe110cec044c3fa20122a7cd52c4e2c750"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-reject-udp-regression-014.result.json",
+      "sha256": "c8fbf96da7ce7cd1ff24df61e31abc692b7d946aa4e7b517668ecced8b3f0eeb"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-reject-udp-regression-014.stdout.txt",
+      "sha256": "2b1b525a90f71d236d18aa9958e901087d8f87151d6a1c692f2bd60ceb513c13"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-reject-udp-regression-014.stderr.txt",
+      "sha256": "3539ac486b256b4db20b59959a4b8109c83d5464bf431f1c0192d7752400743f"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-reject-hold55-regression-014.result.json",
+      "sha256": "42ba4bb8b2a84ae9e98a95056b5c595fa29c398a9e271e234be79a1950f30424"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-reject-hold55-regression-014.stdout.txt",
+      "sha256": "9623ffd2a05fdf11e5bb413d551db7a2506c34cceaffa50b05cfaa2b30c4afd6"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-reject-hold55-regression-014.stderr.txt",
+      "sha256": "37410f9e83fef5a4df201f4a9dc7c7785cfbc0be30d4761a99039f362c1b53c8"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-reject-host-before-014.json",
+      "sha256": "35df27e566e9f125022f09f2f814caefe109834c6b9749c82d204273873ebde3"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-reject-host-after-014.json",
+      "sha256": "0876c03939d0aaae75182ce0891475fd45550545487112d12a02802e0fc7c6c4"
+    }
+  ],
+  "host_checks": [
+    {
+      "field": "interfaces",
+      "before": "c3f7f290de2a45015f971f458bfd5e0afec7864f1a2737da26a1e71df99b4633",
+      "after": "c3f7f290de2a45015f971f458bfd5e0afec7864f1a2737da26a1e71df99b4633",
+      "result": "PASS"
+    },
+    {
+      "field": "addresses",
+      "before": "2bd4a3cb1928063095a5f99c448963c1d823c8e95546e00817adae58e2ae265d",
+      "after": "2bd4a3cb1928063095a5f99c448963c1d823c8e95546e00817adae58e2ae265d",
+      "result": "PASS"
+    },
+    {
+      "field": "routes",
+      "before": "1d20414d0a413b8844c8ee2930c02b9bb91eb42586e5b27d827ef05f82ac14ac",
+      "after": "1d20414d0a413b8844c8ee2930c02b9bb91eb42586e5b27d827ef05f82ac14ac",
+      "result": "PASS"
+    },
+    {
+      "field": "dns",
+      "before": "9fc6a6105e79db3c310c6cbdf29355130e1c099e3497f81622c8a0aa23c54dc6",
+      "after": "9fc6a6105e79db3c310c6cbdf29355130e1c099e3497f81622c8a0aa23c54dc6",
+      "result": "PASS"
+    },
+    {
+      "field": "proxy",
+      "before": "fe8d3a14a211ba55e32fce49ac32b12622c0a46a256df836d6678673a8717e79",
+      "after": "fe8d3a14a211ba55e32fce49ac32b12622c0a46a256df836d6678673a8717e79",
+      "result": "PASS"
+    }
+  ],
+  "helper": {
+    "path": "src-tauri/target/task009-wg-peer.exe",
+    "sha256": "b22d775adda493abe3ce4ddf3f511009cd271babb5cd66617ae7293b613792e9",
+    "build": "wg-reject-go-build-014"
+  },
+  "test_counts": {
+    "rust_unique_pass": 39,
+    "rust_unique_fail": 1,
+    "compiler": 30,
+    "rust_protocol": 5,
+    "real_tcp_icmp": 1,
+    "real_udp": 1,
+    "real_helper_hold55": 1,
+    "real_helper_and_targets_hold150": 1,
+    "real_local_comparison_failed": 1,
+    "go_top_level": 22,
+    "go_subtests": 60
+  },
+  "local_comparison": {
+    "result": "FAIL",
+    "elapsed_seconds": 15.47,
+    "phase": 1,
+    "config_sha256": "0230a3d2899b1ae9a9d9adeb3b878155851c6f2a689ee10d61d2b0b9a0dc298e",
+    "dut_pid": 38304,
+    "peer_pid": 82164,
+    "tcp_target_port": 12310,
+    "udp_target_port": 50570,
+    "peer_udp_port": 50571,
+    "bootstrap": "full204ACK",
+    "cases": [
+      "virtual_tcp: sent=true echo=true none",
+      "host_tcp: sent=true echo=false timeout",
+      "virtual_udp: sent=true echo=true none",
+      "host_udp: sent=true echo=false timeout"
+    ],
+    "target_tcp_accepts": [
+      1,
+      0,
+      0
+    ],
+    "target_udp_receives": [
+      1,
+      0,
+      0
+    ],
+    "phase1_payloads": [
+      1,
+      0,
+      1,
+      0
+    ],
+    "cleanup": {
+      "dut_stop_confirmed": true,
+      "dut_owned_empty": true,
+      "peer_exited": true,
+      "peer_exit_code": 1,
+      "private_config_count": 0,
+      "peer_protocol_cleanup": "FAIL because three required phases did not complete"
+    },
+    "excluded_claims": [
+      "No rejection PASS",
+      "Protected phase2 and positive phase3 NOT_RUN",
+      "No whole Task acceptance"
+    ],
+    "diagnosis": ".sdlc/evidence/TASK-009/wg-reject-runtime-diagnosis-014.md"
+  },
+  "development_failures": [
+    {
+      "run": "wg-reject-compiler-diff-014",
+      "result": "FAIL",
+      "resolution": "EOF blank lines removed; final diff check replaces result"
+    },
+    {
+      "run": "wg-reject-go-vet-014",
+      "result": "FAIL",
+      "resolution": "phase context cancellation fixed; final tests/race/vet PASS"
+    },
+    {
+      "run": "wg-reject-rust-protocol-014",
+      "source_sha256": "88c0a09da00217dad224300f656f9ce3b0b75bf9b9af38cc615afd9336a6da9e",
+      "result": "FAIL",
+      "resolution": "worker socket mode/timeouts set on actual Windows cloned handles; three local cases PASS"
+    },
+    {
+      "run": "wg-reject-real-014",
+      "source_sha256": "5c6c964ffe9e1d3fc1ed15af7766c933899be3fd45231405f945ff7c12eb5a82",
+      "result": "FAIL",
+      "resolution": "Added pre-assertion safe summaries; diagnostic rerun confirms infeasible same-path host positive, remains unresolved"
+    }
+  ],
+  "freshness_notes": [
+    "Compiler source unchanged after30tests; final combined Rust no-run and runtime runs use frozen source.",
+    "New local protocol tests passed before diagnostic-only println/cleanup reporting edit; old protocol and final builds cover combined source.",
+    "Hold tests run real peer, but DUT Stop failure is simulated; no OS refusal to stop a live DUT is claimed.",
+    "Library Clippy does not mean all-target Clippy.",
+    "Initial Rust target-handler timeout and Go cancel vet warning were repaired and reverified; initial runtime failure was retained and diagnosed, not suppressed."
+  ],
+  "not_run": [
+    "Protected phase2 and positive phase3 of DCR011",
+    "Full WG reject/forward matrix",
+    "DNS Router rejection and controlled system DNS/Host/SNI matrix",
+    "IPv6 business path",
+    "Full203-test Rust regression",
+    "Native GUI/Tray E2E",
+    "CI",
+    "Commit",
+    "Push"
+  ]
+}

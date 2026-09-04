@@ -1,0 +1,139 @@
+{
+  "stale_files": 0,
+  "logs": [
+    {
+      "path": "src-tauri/target/task009-remediation/clippy.result.json",
+      "sha256": "1eb0e7fe1204ab029e4dd386a94ddf8df6a82639eac7e5f52725ef104376b5a4"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/clippy.stderr.txt",
+      "sha256": "c99ec54726128cc5df393430cccecf4fdd1b299547d22d8f3753bffe7c9a5bf5"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/clippy.stdout.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/compile.result.json",
+      "sha256": "2586097deca4bd5b110f8d74d457ace5cf24beff78895810b0089018049dff81"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/compile.stderr.txt",
+      "sha256": "3dd9b651193561bc1b79ef5794edce4e8403ff4908cfb590ef4cf5a0ba746aad"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/compile.stdout.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/creation-owner.result.json",
+      "sha256": "9be739ab5b847f93acfc37d4d81b0fb0b1bcf7bd7bb213deb910f45ce19520c2"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/creation-owner.stderr.txt",
+      "sha256": "6fb6b627b5db057186c9706687c445f9e4e1f336bf2a3ed9e68311283f9d81e5"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/creation-owner.stdout.txt",
+      "sha256": "92b62caf1cadc46223aba75b08ef11b59c7da95be687b824688f076d4b5c262b"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/diff-check.log",
+      "sha256": "63ddd1d52d4cc1f74741b0172b585840e17c135fd57f189c01bccec3d2e7d80d"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/fmt.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/full-regression.result.json",
+      "sha256": "6ba94ad822c2bd91004e4904c6d818f49fe50226c27ab97c1a3abec8378b6077"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/full-regression.stderr.txt",
+      "sha256": "86ee6298d8d3d8d30615ee781ea9f0fe110cec044c3fa20122a7cd52c4e2c750"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/full-regression.stdout.txt",
+      "sha256": "e7feceaf6ad0557d2b0ba3789e152dbb7a24e348d1c534e3306c3579b71b85f2"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/logs-boundary-002.result.json",
+      "sha256": "df237a2ff93cfbe3a6127dbc8d562d3aba5cb1b3c02fde7beb5d842ca599fcb4"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/logs-boundary-002.stderr.txt",
+      "sha256": "745f341092abbc95899746abd78b8ab2b5e28632b44b1bed1cf2508c6be472ae"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/logs-boundary-002.stdout.txt",
+      "sha256": "775caf43f232531513e1ce298c9777bbb8008e521cb546cb6f05a2b98d85421a"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/logs-boundary.result.json",
+      "sha256": "f1ffb4a7188bdea1867c3b4abeac5d667b21e714eb0f2a1ef22e4f158bb6c3d2"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/logs-boundary.stderr.txt",
+      "sha256": "49af6eddb7f0271f7f7dba584a54dd565ea1854b377b73057e984fe0b2f4e0cb"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/logs-boundary.stdout.txt",
+      "sha256": "17f24d0039dd504dbd21ddea853281c5b994e36528c0a25080df399308572fe2"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/real-log-diagnostic.result.json",
+      "sha256": "11d923aca73573a25778ef47b722c7a45f4214a380531d6e64b542ec33a65679"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/real-log-diagnostic.stderr.txt",
+      "sha256": "324071395e6488d83e520027d52a5b239a2f758770f274c64142beb95dc15082"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/real-log-diagnostic.stdout.txt",
+      "sha256": "e60c8af96bf9c8c8310bda65d5d908334200fe20721e99a1ecbf5cc615c1a889"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/real-log-framing.result.json",
+      "sha256": "e032f30ab214bd211966c331badef430eddfc97cd44204a7f7387fa215006509"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/real-log-framing.stderr.txt",
+      "sha256": "be709e55d9d71d7a086a5487994a00c453704e11670d00d6110a3edb22e535a6"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/real-log-framing.stdout.txt",
+      "sha256": "d72363434c19d5dcc5e51aee59eb8e8d0cf8c720b23e636d528f1f39dbfa07f5"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/real-observation-002.result.json",
+      "sha256": "aa2ef7c5980d0f4a351534ca1b42e0c998754f527c9addc0bb650d7cc7937ede"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/real-observation-002.stderr.txt",
+      "sha256": "cd27ddb7303ab549a24027a0215239e1ee3f8564c62bc2ba674c2e9f06f2cc86"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/real-observation-002.stdout.txt",
+      "sha256": "8531b7c35df1af3309bd9a6c23dd28a0d856f35beb04c2deb147f8875e3e039a"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/real-observation.result.json",
+      "sha256": "d6d257ac21384fe2ef35adb6250ad9af1cea86cb0492fb031e7ca56c92ccc282"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/real-observation.stderr.txt",
+      "sha256": "40122c2b52d561ebafd7178998fbcf4607ceaaa5b4b1ef49e0c60c35ae310a41"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/real-observation.stdout.txt",
+      "sha256": "05a2dda379b3d1f9d15c1a93eec5a9aeb32505e695d6f1e8b732eb582b5057ba"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/static-result.json",
+      "sha256": "7701aab93aadc5af29ba29987e393300f4c9e518a21901d1fd7e3aa86fe585b4"
+    }
+  ],
+  "target_identity": "sha256:cd3edda6984985ad5da0c006743bcb8d1a9ef3b16e4ac105b894224b924322a5",
+  "source_freshness": "FRESH"
+}

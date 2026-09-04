@@ -46,21 +46,29 @@ description: "Produce a greenfield foundation or remediate traceable designs for
 3. `task-boundary` / `remediation` 只处理架构、公共 API、持久化、权限/安全、并发、部署、
    不可逆数据或其它 Material Engineering Decision；局部实现决策留给 Implementation。
 4. 仅将受影响 concern 写入 `.sdlc/design/` 或 ADR；可覆盖 Architecture、Module、Data/API/Protocol、
-   Transaction/Concurrency/Error、Security、Observability、Deployment/Migration/Rollback、
-   Experiment 和 Testing 路由到适用的模块文档。
+    Transaction/Concurrency/Error、Security、Observability、Deployment/Migration/Rollback、
+    Experiment 和 Testing 路由到适用的模块文档。
 5. 不为不适用领域创建文件或 `not_applicable` 记录。
-6. 为重要决策准备 `.sdlc/decisions/ADR-xxx.md`，记录 Options、Decision、Rationale、
+6. 对非 Requirement 明示的 Security、Reliability、Compatibility、Performance 控制，先按
+   `threat/failure -> attacker capability -> reachability/trigger -> existing controls -> credible residual
+   path -> impact -> minimal sufficient mitigation -> complexity/disclosure` 评估。风险理论存在不等于
+   可以把控制纳入 Design；既有控制已关闭路径或剩余路径未证明时，记录为 risk/advisory，不创建
+   Material Control、Task 或独立机制。
+7. 不得仅为该类风险新增模块、抽象层、后台机制、持久状态、配置、Runtime dependency、兼容层或
+   底层替换。若最小可行缓解仍具有 Material complexity，冻结候选必须披露最小已知实现、工程影响、
+   替代方案及其已证明的剩余风险，并等待所需 Owner approval；不得把复杂缓解作为局部实现决策。
+8. 为重要决策准备 `.sdlc/decisions/ADR-xxx.md`，记录 Options、Decision、Rationale、
    Consequences 和 References。
-7. 技术上可逆但会在当前规划窗口被大量代码放大迁移成本的 Framework、项目布局、模块边界、
+9. 技术上可逆但会在当前规划窗口被大量代码放大迁移成本的 Framework、项目布局、模块边界、
    Data Access、API/Transport、Migration、测试基础设施和核心依赖策略视为 Foundation Decision，
    在首次实现前一次集中确认。Foundation/Material dependency 必须列出 package、version/range、
    用途、影响和替代方案并等待用户确认；低影响 dev/test dependency 与可逆开发工具按 L1 Assumption
    处理，除非项目规则要求 `dependency_policy: confirm_all`。
-8. 维护 Requirement → Design → ADR 的追踪关系，返回待审冻结目标身份。
-9. 首次 Foundation 形成时，返回 `signals.design_kind: foundation`，并省略 `architecture_change`
+10. 维护 Requirement → Design → ADR 的追踪关系，返回待审冻结目标身份。
+11. 首次 Foundation 形成时，返回 `signals.design_kind: foundation`，并省略 `architecture_change`
    （或明确为 `false`）；只有改写已接受/Frozen Design 或 accepted ADR 时才置
    `architecture_change: true` 并进入 DCR。
-10. Technical Design Review 为 `REWORK` 时，只修复其 Finding 与受影响范围；生成新目标身份，
+12. Technical Design Review 为 `REWORK` 时，只修复其 Finding 与受影响范围；生成新目标身份，
    使旧 Review/Evidence stale，再交给独立 Reviewer。
 
 ## 权限边界

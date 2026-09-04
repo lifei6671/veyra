@@ -17,7 +17,10 @@ use tauri::{
     tray::TrayIconBuilder,
 };
 
-use application::observability::InMemoryRuntimeObservations;
+use application::{
+    managed_observation_runtime::ManagedObservationRuntimeController,
+    observability::InMemoryRuntimeObservations,
+};
 
 const MAIN_WINDOW_LABEL: &str = "main";
 const TRAY_SHOW_ID: &str = "show-main-window";
@@ -54,7 +57,17 @@ pub fn run() {
     tauri::Builder::default()
         .manage(InMemoryRuntimeObservations::new_mock())
         .manage(MainWindowVisibility::visible())
-        .setup(configure_tray)
+        .setup(|app| {
+            let resource_root = app.path().resource_dir()?;
+            let app_local_data_root = app.path().app_local_data_dir()?;
+            let observations = (*app.state::<InMemoryRuntimeObservations>()).clone();
+            app.manage(ManagedObservationRuntimeController::new(
+                resource_root,
+                app_local_data_root,
+                observations,
+            ));
+            configure_tray(app)
+        })
         .on_window_event(|window, event| {
             if window.label() == MAIN_WINDOW_LABEL
                 && let WindowEvent::CloseRequested { api, .. } = event
@@ -68,6 +81,8 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             commands::bootstrap_status,
             commands::runtime_observation_snapshot,
+            commands::start_managed_observation_runtime,
+            commands::stop_managed_observation_runtime,
             commands::show_main_window
         ])
         .run(tauri::generate_context!())
@@ -99,7 +114,13 @@ fn configure_tray(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>
                 let observations = app.state::<InMemoryRuntimeObservations>();
                 let _ = commands::restore_main_window(app, &observations);
             }
-            TRAY_QUIT_ID => app.exit(0),
+            TRAY_QUIT_ID
+                if app
+                    .state::<ManagedObservationRuntimeController>()
+                    .shutdown() =>
+            {
+                app.exit(0);
+            }
             _ => {}
         });
 

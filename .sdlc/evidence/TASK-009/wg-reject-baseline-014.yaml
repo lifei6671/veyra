@@ -1,0 +1,509 @@
+{
+  "id": "EVIDENCE-TASK-009-REJECT-BASELINE-014",
+  "timestamp": "2026-09-04T17:43:31.6310539+08:00",
+  "previous_checkpoint": "sha256:5f6438663e7d08e0241fde9a733e466c2dc7031dba31dbe050c1b3f36e52f0d5",
+  "starting_head": "9f6cb9fd0484d4be89d37a498658052d6d8a03b9",
+  "manifest": [
+    {
+      "path": "src-tauri/src/singbox/runtime.rs",
+      "sha256": "c9dd583e1ed5a57319a2ce6955c97e014c31fe8803b2153a5795ed93d191d66e",
+      "snapshot": "src-tauri/target/task009-reject-baseline-014/src-tauri/src/singbox/runtime.rs"
+    },
+    {
+      "path": "src-tauri/Cargo.lock",
+      "sha256": "aab8b81202d0c91438b90e27e72e67f563b7e9fc12f2d1a6acdd4ebcf5ef2aeb",
+      "snapshot": "src-tauri/target/task009-reject-baseline-014/src-tauri/Cargo.lock"
+    },
+    {
+      "path": "src-tauri/Cargo.toml",
+      "sha256": "a6844177a8865faf78614049b3002d226dc3aaa494dec59093fda1d5dffb3cad",
+      "snapshot": "src-tauri/target/task009-reject-baseline-014/src-tauri/Cargo.toml"
+    },
+    {
+      "path": "docs/veyra.md",
+      "sha256": "4a2cd1e2b9698087bcbc4ac892d7b052a5e2c06554e372479fe31c81cbea9d45",
+      "snapshot": "src-tauri/target/task009-reject-baseline-014/docs/veyra.md"
+    },
+    {
+      "path": ".sdlc/design/task008-observation-dns.md",
+      "sha256": "1135b15d073685f12398c4f084e379be3b731cc271ca2832b3d4f48b62c0f404",
+      "snapshot": "src-tauri/target/task009-reject-baseline-014/.sdlc/design/task008-observation-dns.md"
+    },
+    {
+      "path": ".sdlc/design/DCR-004-runtime-update-failures.md",
+      "sha256": "8f06957ff73919f9529dd1740b72f4dd4ccf73745d6481b124133f3ca8d8d944",
+      "snapshot": "src-tauri/target/task009-reject-baseline-014/.sdlc/design/DCR-004-runtime-update-failures.md"
+    },
+    {
+      "path": ".sdlc/design/DCR-003-fixed-core-configuration.md",
+      "sha256": "3040951342ef465fb177b3abb1a7537d73c55bc87e88e1a7b3ba93677033b26d",
+      "snapshot": "src-tauri/target/task009-reject-baseline-014/.sdlc/design/DCR-003-fixed-core-configuration.md"
+    },
+    {
+      "path": ".sdlc/design/DCR-002-full-sing-box-subscription-and-compiler.md",
+      "sha256": "cf546f938714ec431c5a425de51a95d1fd635af1749ab1c1d21c1bc7cc0d1907",
+      "snapshot": "src-tauri/target/task009-reject-baseline-014/.sdlc/design/DCR-002-full-sing-box-subscription-and-compiler.md"
+    },
+    {
+      "path": ".sdlc/design/DCR-001-sing-box-1.14.0.md",
+      "sha256": "fd23ff8fc6842e2cb4d4b9fa9daebccc143af06585d56ad45cb145663d7a09e3",
+      "snapshot": "src-tauri/target/task009-reject-baseline-014/.sdlc/design/DCR-001-sing-box-1.14.0.md"
+    },
+    {
+      "path": ".sdlc/design/foundation.md",
+      "sha256": "a015f0a872c8aeeb1aef275e04e724d49a579c47c2ca142ed7b26ea30590f1aa",
+      "snapshot": "src-tauri/target/task009-reject-baseline-014/.sdlc/design/foundation.md"
+    },
+    {
+      "path": ".sdlc/tasks/TASK-009.md",
+      "sha256": "263f8ba5a2cda562f48be9d888bfaceddc085f7f4874d99c62a679614f840192",
+      "snapshot": "src-tauri/target/task009-reject-baseline-014/.sdlc/tasks/TASK-009.md"
+    },
+    {
+      "path": "src-tauri/src/singbox/clash_api.rs",
+      "sha256": "509a516d7cb3b7ccd6eef0998461094c55c345a28f7ab61decf1186b9cd4b616",
+      "snapshot": "src-tauri/target/task009-reject-baseline-014/src-tauri/src/singbox/clash_api.rs"
+    },
+    {
+      "path": "src-tauri/src/platform/windows/private_runtime.rs",
+      "sha256": "373bd4621bb3923e9688624e8b705c0cc7ff3c417bc6cfbc8d08dea8d71bed6c",
+      "snapshot": "src-tauri/target/task009-reject-baseline-014/src-tauri/src/platform/windows/private_runtime.rs"
+    },
+    {
+      "path": "src/lib/observability.test.ts",
+      "sha256": "1a0027059540b433d140c4f42523307ecdd3769fd28c625f3b192e3bc53e8eb2",
+      "snapshot": "src-tauri/target/task009-reject-baseline-014/src/lib/observability.test.ts"
+    },
+    {
+      "path": "src/lib/observability.ts",
+      "sha256": "cc57294ce0e4e0f1923fcf0afc289e1b668ac1cc8d54822b13d0952758ae3b8d",
+      "snapshot": "src-tauri/target/task009-reject-baseline-014/src/lib/observability.ts"
+    },
+    {
+      "path": "src/styles.css",
+      "sha256": "214bddfe9c103258a2c0db802825cf281d55695a880ecb810fab4092b28081b7",
+      "snapshot": "src-tauri/target/task009-reject-baseline-014/src/styles.css"
+    },
+    {
+      "path": "src/App.tsx",
+      "sha256": "315b71c9bce476a1657ad11738f4fcab7a696bf2c304b0331226cf12e46f7033",
+      "snapshot": "src-tauri/target/task009-reject-baseline-014/src/App.tsx"
+    },
+    {
+      "path": "src-tauri/src/application/observability.rs",
+      "sha256": "f671f54f6079ef103228bc505caee98e6e3afb2d26cb0b8aadd53e38dfa2ca98",
+      "snapshot": "src-tauri/target/task009-reject-baseline-014/src-tauri/src/application/observability.rs"
+    },
+    {
+      "path": "src-tauri/src/application/runtime.rs",
+      "sha256": "f490f2fbdbac8edc0eb1324167cf0796e0e60757e83c2e85df63e89c87ff950c",
+      "snapshot": "src-tauri/target/task009-reject-baseline-014/src-tauri/src/application/runtime.rs"
+    },
+    {
+      "path": "src-tauri/src/application/managed_observation_runtime.rs",
+      "sha256": "92620cc3188f07c2863bcef8a9440c9be9de457cd3327384fb8aac8afcb7ff56",
+      "snapshot": "src-tauri/target/task009-reject-baseline-014/src-tauri/src/application/managed_observation_runtime.rs"
+    },
+    {
+      "path": "src-tauri/src/platform/windows/managed_sidecar_port.rs",
+      "sha256": "d216d503f98ef744c2604c9412b0128111c1df035349b15aa8dd604360e03bd5",
+      "snapshot": "src-tauri/target/task009-reject-baseline-014/src-tauri/src/platform/windows/managed_sidecar_port.rs"
+    },
+    {
+      "path": "src-tauri/src/singbox/mod.rs",
+      "sha256": "3b6b81154cab124707beed60d0332b651529b733fcef18c3b53404d1e4a6e0aa",
+      "snapshot": "src-tauri/target/task009-reject-baseline-014/src-tauri/src/singbox/mod.rs"
+    },
+    {
+      "path": "src-tauri/src/singbox/compiler.rs",
+      "sha256": "b6f42970c4af88812ae25060a7c9fe2067f9991907883d33d656e48bf5f654f7",
+      "snapshot": "src-tauri/target/task009-reject-baseline-014/src-tauri/src/singbox/compiler.rs"
+    },
+    {
+      "path": "src-tauri/src/singbox/managed_sidecar.rs",
+      "sha256": "f804c695c61fdd4ff65a30d02417a5108d32107ab6bd8032ab28c50008405509",
+      "snapshot": "src-tauri/target/task009-reject-baseline-014/src-tauri/src/singbox/managed_sidecar.rs"
+    },
+    {
+      "path": "package.json",
+      "sha256": "acb3fe115b07afdbfe48420ec5a4c3f328b30f54ae331ac058204a0f7bae6e80",
+      "snapshot": "src-tauri/target/task009-reject-baseline-014/package.json"
+    },
+    {
+      "path": "pnpm-lock.yaml",
+      "sha256": "672e84192c0225d9ffda8ffbbc19e1113777c800af328812a8816148c85b2203",
+      "snapshot": "src-tauri/target/task009-reject-baseline-014/pnpm-lock.yaml"
+    },
+    {
+      "path": ".sdlc/design/DCR-005-traffic-observation.md",
+      "sha256": "338e0a7f9bb8a4c6ca0722d2fe51eab253c0e1758124907cf759b9459e9714ba",
+      "snapshot": "src-tauri/target/task009-reject-baseline-014/.sdlc/design/DCR-005-traffic-observation.md"
+    },
+    {
+      "path": "src-tauri/src/commands.rs",
+      "sha256": "51a7b3bcb4a06fbb5f0d0c44e9bb045cdd5c6ac1c0e3d5bbcb26c31ca559cac0",
+      "snapshot": "src-tauri/target/task009-reject-baseline-014/src-tauri/src/commands.rs"
+    },
+    {
+      "path": "src/lib/traffic-trend.ts",
+      "sha256": "038390b23864ce0beee7a3c0dc154b2f0ab151f0440d4d56f07eadb21ca73e1d",
+      "snapshot": "src-tauri/target/task009-reject-baseline-014/src/lib/traffic-trend.ts"
+    },
+    {
+      "path": "src/lib/traffic-trend.test.ts",
+      "sha256": "5bc755d01edd1d7d9bca42591d89128a561288e807d16dd1354c084acb7b8879",
+      "snapshot": "src-tauri/target/task009-reject-baseline-014/src/lib/traffic-trend.test.ts"
+    },
+    {
+      "path": ".sdlc/design/DCR-006-memory-traffic-trend.md",
+      "sha256": "c03923b7f396c0791b18c3706fcafe0e824474ca96937ced456057924018d419",
+      "snapshot": "src-tauri/target/task009-reject-baseline-014/.sdlc/design/DCR-006-memory-traffic-trend.md"
+    },
+    {
+      "path": ".sdlc/design/DCR-007-dual-traffic-windows.md",
+      "sha256": "bb1b30db8d7ed97283836f42857ad4568c14664ff081269704774a14b5316cde",
+      "snapshot": "src-tauri/target/task009-reject-baseline-014/.sdlc/design/DCR-007-dual-traffic-windows.md"
+    },
+    {
+      "path": ".sdlc/design/DCR-008-test-loopback-metering.md",
+      "sha256": "689ee9ff2cebfd499e27646c7ea7863b1898e2b5afe739482cee6a57ad06d41f",
+      "snapshot": "src-tauri/target/task009-reject-baseline-014/.sdlc/design/DCR-008-test-loopback-metering.md"
+    },
+    {
+      "path": "scripts/task009-wg-peer/bind_test.go",
+      "sha256": "2a10e1980554fcc2ad970694b9c37d228c135843638729a5a68499db6a86811d",
+      "snapshot": "src-tauri/target/task009-reject-baseline-014/scripts/task009-wg-peer/bind_test.go"
+    },
+    {
+      "path": "scripts/task009-wg-peer/bind.go",
+      "sha256": "b934c1df89275fe5c6491c835baec8ba7cf60a4a510ec6412a611bc9fbb44069",
+      "snapshot": "src-tauri/target/task009-reject-baseline-014/scripts/task009-wg-peer/bind.go"
+    },
+    {
+      "path": "scripts/task009-wg-peer/go.mod",
+      "sha256": "93a13d2846e23de16e838615d617ca5d90a459e5ab2147465b82f4c9c3342045",
+      "snapshot": "src-tauri/target/task009-reject-baseline-014/scripts/task009-wg-peer/go.mod"
+    },
+    {
+      "path": "scripts/task009-wg-peer/go.sum",
+      "sha256": "379fdf81292d25dd451cf8140319524861e073f5862ce94642f98200ecd936db",
+      "snapshot": "src-tauri/target/task009-reject-baseline-014/scripts/task009-wg-peer/go.sum"
+    },
+    {
+      "path": "scripts/task009-wg-peer/lifecycle_test.go",
+      "sha256": "b842cfd53e759be11b255efb553ff5c7bc305eeac6d5bff208a052013486a0cc",
+      "snapshot": "src-tauri/target/task009-reject-baseline-014/scripts/task009-wg-peer/lifecycle_test.go"
+    },
+    {
+      "path": "scripts/task009-wg-peer/main.go",
+      "sha256": "902543d5fd794a6e89b4c0803d19304f609692741c42776dc95da998ecd3206b",
+      "snapshot": "src-tauri/target/task009-reject-baseline-014/scripts/task009-wg-peer/main.go"
+    },
+    {
+      "path": "scripts/task009-wg-peer/observe_test.go",
+      "sha256": "c3549cf67be2d9f4c3edba9536e250132d26fb4e7aabf1ff89ca91b1c0d0a9a6",
+      "snapshot": "src-tauri/target/task009-reject-baseline-014/scripts/task009-wg-peer/observe_test.go"
+    },
+    {
+      "path": "scripts/task009-wg-peer/observe.go",
+      "sha256": "d799592d4ac349152f52352a417afaf14ee9502b9dbe28113bfc87d970d0eeb5",
+      "snapshot": "src-tauri/target/task009-reject-baseline-014/scripts/task009-wg-peer/observe.go"
+    },
+    {
+      "path": "scripts/task009-wg-peer/protocol_test.go",
+      "sha256": "aa725e06bdbae41d6807a79e45a108f0ce6e042be7cc1812369ccda321301daf",
+      "snapshot": "src-tauri/target/task009-reject-baseline-014/scripts/task009-wg-peer/protocol_test.go"
+    },
+    {
+      "path": "scripts/task009-wg-peer/protocol.go",
+      "sha256": "2cf9bb803c4b74774d06bde73b3d3a30ef116a8b2478a40ff3d1f88fbb7a4ba6",
+      "snapshot": "src-tauri/target/task009-reject-baseline-014/scripts/task009-wg-peer/protocol.go"
+    },
+    {
+      "path": "scripts/task009-wg-peer/README.md",
+      "sha256": "41ac0c7783c0e1ee5604988e5eed9316d7ed285a6a6110445ca9661de3cc6b5e",
+      "snapshot": "src-tauri/target/task009-reject-baseline-014/scripts/task009-wg-peer/README.md"
+    },
+    {
+      "path": "scripts/task009-wg-peer/stack_test.go",
+      "sha256": "246fc5f174b8f79822d0e4b507b266ed20fecbe4fe24d61b28f3ba66b8a7b379",
+      "snapshot": "src-tauri/target/task009-reject-baseline-014/scripts/task009-wg-peer/stack_test.go"
+    },
+    {
+      "path": "scripts/task009-wg-peer/stack.go",
+      "sha256": "03a8037388cac1188a341b0dc8a1189e212c6b0c238f42ae869dbbcd348959f8",
+      "snapshot": "src-tauri/target/task009-reject-baseline-014/scripts/task009-wg-peer/stack.go"
+    },
+    {
+      "path": ".sdlc/design/DCR-009-controlled-wg-peer.md",
+      "sha256": "b193f16e6262f8695780af2f18cebc4a4f91dbbbe999f4b91f716059edbb9470",
+      "snapshot": "src-tauri/target/task009-reject-baseline-014/.sdlc/design/DCR-009-controlled-wg-peer.md"
+    },
+    {
+      "path": ".sdlc/design/DCR-010-test-wg-udp.md",
+      "sha256": "36a910c90c247e1b46958ed7890dceabc7d769aee1ca1f18b062154de8ea9c79",
+      "snapshot": "src-tauri/target/task009-reject-baseline-014/.sdlc/design/DCR-010-test-wg-udp.md"
+    },
+    {
+      "path": "scripts/task009-wg-peer/udp_test.go",
+      "sha256": "af8ccceee3dc15173a91a8bcdc670717513a7ce16afff35006eabf1c55b43766",
+      "snapshot": "src-tauri/target/task009-reject-baseline-014/scripts/task009-wg-peer/udp_test.go"
+    },
+    {
+      "path": "scripts/task009-wg-peer/udp.go",
+      "sha256": "197324d848133df5049e33b768cb41cc92c8c731dd300c08c46787f13187b6c5",
+      "snapshot": "src-tauri/target/task009-reject-baseline-014/scripts/task009-wg-peer/udp.go"
+    }
+  ],
+  "git_status": [
+    "M  .agents/skills/code-delivery-review/references/result-adapter.md",
+    "M  .agents/skills/implementation/SKILL.md",
+    "A  .agents/skills/sdlc-codex-setup/SKILL.md",
+    "A  .agents/skills/sdlc-codex-setup/agents/openai.yaml",
+    "A  .agents/skills/sdlc-codex-setup/assets/codex/agents/sdlc-expert.toml",
+    "A  .agents/skills/sdlc-codex-setup/assets/codex/agents/sdlc-implementer.toml",
+    "A  .agents/skills/sdlc-codex-setup/assets/codex/agents/sdlc-reviewer.toml",
+    "A  .agents/skills/sdlc-codex-setup/assets/codex/agents/sdlc-routine.toml",
+    "A  .agents/skills/sdlc-codex-setup/assets/codex/sdlc-agent-routing.toml",
+    "M  .agents/skills/sdlc-orchestrator/SKILL.md",
+    "A  .agents/skills/sdlc-orchestrator/references/agent-routing.md",
+    "M  .agents/skills/sdlc-orchestrator/references/phases/technical-design.md",
+    "M  .agents/skills/sdlc-orchestrator/references/workflow-protocol.md",
+    "M  .agents/skills/technical-design-review/SKILL.md",
+    "M  .agents/skills/technical-design/SKILL.md",
+    "A  .codex/agents/sdlc-expert.toml",
+    "A  .codex/agents/sdlc-implementer.toml",
+    "A  .codex/agents/sdlc-reviewer.toml",
+    "A  .codex/agents/sdlc-routine.toml",
+    "A  .codex/sdlc-agent-routing.toml",
+    " M .sdlc/design/DCR-001-sing-box-1.14.0.md",
+    "AM .sdlc/design/DCR-002-full-sing-box-subscription-and-compiler.md",
+    " M .sdlc/design/foundation.md",
+    "A  .sdlc/design/task008-observation-dns.md",
+    "AM .sdlc/evidence/TASK-006/code-delivery-review.yaml",
+    "AM .sdlc/evidence/TASK-006/implementation.yaml",
+    "A  .sdlc/evidence/TASK-007/code-delivery-review.yaml",
+    "A  .sdlc/evidence/TASK-007/implementation.yaml",
+    "AM .sdlc/evidence/TASK-008/readiness.yaml",
+    " M .sdlc/evidence/foundation/technical-design-review.yaml",
+    " M .sdlc/memory/HANDOFF.md",
+    " M .sdlc/state.yaml",
+    " M .sdlc/tasks.yaml",
+    "M  .sdlc/tasks/TASK-006.md",
+    "A  .sdlc/tasks/TASK-007.md",
+    "AM .sdlc/tasks/TASK-008.md",
+    " M docs/veyra.md",
+    " M src-tauri/Cargo.lock",
+    " M src-tauri/Cargo.toml",
+    " M src-tauri/build.rs",
+    " M src-tauri/capabilities/default.json",
+    "A  src-tauri/permissions/autogenerated/start_managed_observation_runtime.toml",
+    "A  src-tauri/permissions/autogenerated/stop_managed_observation_runtime.toml",
+    "A  src-tauri/scripts/fetch-managed-sing-box.ps1",
+    "AM src-tauri/src/application/managed_observation_runtime.rs",
+    " M src-tauri/src/application/mod.rs",
+    " M src-tauri/src/application/observability.rs",
+    "A  src-tauri/src/application/provider_replacement.rs",
+    " M src-tauri/src/application/runtime.rs",
+    " M src-tauri/src/commands.rs",
+    " M src-tauri/src/domain/mod.rs",
+    " M src-tauri/src/domain/state.rs",
+    " M src-tauri/src/lib.rs",
+    "AM src-tauri/src/platform/windows/managed_sidecar_port.rs",
+    " M src-tauri/src/platform/windows/mod.rs",
+    "AM src-tauri/src/platform/windows/private_runtime.rs",
+    "AM src-tauri/src/singbox/clash_api.rs",
+    " M src-tauri/src/singbox/compiler.rs",
+    " M src-tauri/src/singbox/managed_sidecar.rs",
+    " M src-tauri/src/singbox/mod.rs",
+    " M src-tauri/src/singbox/runtime.rs",
+    " M src-tauri/src/storage/migration.rs",
+    " M src-tauri/src/storage/store.rs",
+    " M src-tauri/src/subscription/normalize.rs",
+    " M src-tauri/src/subscription/parser.rs",
+    " M src-tauri/tauri.conf.json",
+    " M src/App.tsx",
+    " M src/lib/observability.test.ts",
+    " M src/lib/observability.ts",
+    " M src/styles.css",
+    "?? .playwright-cli/console-2026-09-04T04-46-23-588Z.log",
+    "?? .playwright-cli/console-2026-09-04T04-58-59-777Z.log",
+    "?? .playwright-cli/console-2026-09-04T06-04-58-739Z.log",
+    "?? .playwright-cli/console-2026-09-04T06-47-26-251Z.log",
+    "?? .playwright-cli/page-2026-09-04T04-46-27-607Z.yml",
+    "?? .playwright-cli/page-2026-09-04T04-58-59-930Z.yml",
+    "?? .playwright-cli/page-2026-09-04T06-05-29-562Z.yml",
+    "?? .playwright-cli/page-2026-09-04T06-07-51-640Z.yml",
+    "?? .playwright-cli/page-2026-09-04T06-47-32-488Z.yml",
+    "?? .sdlc/design/DCR-003-fixed-core-configuration.md",
+    "?? .sdlc/design/DCR-004-runtime-update-failures.md",
+    "?? .sdlc/design/DCR-005-traffic-observation.md",
+    "?? .sdlc/design/DCR-006-memory-traffic-trend.md",
+    "?? .sdlc/design/DCR-007-dual-traffic-windows.md",
+    "?? .sdlc/design/DCR-008-test-loopback-metering.md",
+    "?? .sdlc/design/DCR-009-controlled-wg-peer.md",
+    "?? .sdlc/design/DCR-010-test-wg-udp.md",
+    "?? .sdlc/design/DCR-011-test-wg-local-reject.md",
+    "?? .sdlc/evidence/TASK-008/acceptance.yaml",
+    "?? .sdlc/evidence/TASK-008/baseline.patch",
+    "?? .sdlc/evidence/TASK-008/baseline.yaml",
+    "?? .sdlc/evidence/TASK-008/code-delivery-review.yaml",
+    "?? .sdlc/evidence/TASK-008/core-compatibility.yaml",
+    "?? .sdlc/evidence/TASK-008/delivery-001.patch",
+    "?? .sdlc/evidence/TASK-008/delivery-001.yaml",
+    "?? .sdlc/evidence/TASK-008/delivery.patch",
+    "?? .sdlc/evidence/TASK-008/delivery.yaml",
+    "?? .sdlc/evidence/TASK-008/implementation.yaml",
+    "?? .sdlc/evidence/TASK-008/reviewed-task.md",
+    "?? .sdlc/evidence/TASK-008/technical-design-review.yaml",
+    "?? .sdlc/evidence/TASK-009/baseline-extension.yaml",
+    "?? .sdlc/evidence/TASK-009/baseline.patch",
+    "?? .sdlc/evidence/TASK-009/baseline.yaml",
+    "?? .sdlc/evidence/TASK-009/change-control.yaml",
+    "?? .sdlc/evidence/TASK-009/code-review-checkpoint-002.yaml",
+    "?? .sdlc/evidence/TASK-009/code-review-checkpoint-003.yaml",
+    "?? .sdlc/evidence/TASK-009/code-review-checkpoint-004.yaml",
+    "?? .sdlc/evidence/TASK-009/code-review-checkpoint-005.yaml",
+    "?? .sdlc/evidence/TASK-009/code-review-checkpoint-006.yaml",
+    "?? .sdlc/evidence/TASK-009/code-review-checkpoint-007.yaml",
+    "?? .sdlc/evidence/TASK-009/code-review-checkpoint-008.yaml",
+    "?? .sdlc/evidence/TASK-009/code-review-checkpoint-009.yaml",
+    "?? .sdlc/evidence/TASK-009/code-review-checkpoint-010.yaml",
+    "?? .sdlc/evidence/TASK-009/code-review-checkpoint-011.yaml",
+    "?? .sdlc/evidence/TASK-009/code-review-checkpoint-012.yaml",
+    "?? .sdlc/evidence/TASK-009/code-review-checkpoint-013.yaml",
+    "?? .sdlc/evidence/TASK-009/code-review-checkpoint.yaml",
+    "?? .sdlc/evidence/TASK-009/concurrency-baseline-007.yaml",
+    "?? .sdlc/evidence/TASK-009/concurrency-incremental-007.patch",
+    "?? .sdlc/evidence/TASK-009/dcr004-before-scope-extension.md",
+    "?? .sdlc/evidence/TASK-009/delivery-checkpoint-001.patch",
+    "?? .sdlc/evidence/TASK-009/delivery-checkpoint-001.yaml",
+    "?? .sdlc/evidence/TASK-009/delivery-checkpoint-002.patch",
+    "?? .sdlc/evidence/TASK-009/delivery-checkpoint-002.yaml",
+    "?? .sdlc/evidence/TASK-009/delivery-checkpoint-003.patch",
+    "?? .sdlc/evidence/TASK-009/delivery-checkpoint-003.yaml",
+    "?? .sdlc/evidence/TASK-009/delivery-checkpoint-004.patch",
+    "?? .sdlc/evidence/TASK-009/delivery-checkpoint-004.yaml",
+    "?? .sdlc/evidence/TASK-009/delivery-checkpoint-005.patch",
+    "?? .sdlc/evidence/TASK-009/delivery-checkpoint-005.yaml",
+    "?? .sdlc/evidence/TASK-009/delivery-checkpoint-006.patch",
+    "?? .sdlc/evidence/TASK-009/delivery-checkpoint-006.yaml",
+    "?? .sdlc/evidence/TASK-009/delivery-checkpoint-007.patch",
+    "?? .sdlc/evidence/TASK-009/delivery-checkpoint-007.yaml",
+    "?? .sdlc/evidence/TASK-009/delivery-checkpoint-008.patch",
+    "?? .sdlc/evidence/TASK-009/delivery-checkpoint-008.yaml",
+    "?? .sdlc/evidence/TASK-009/delivery-checkpoint-009.patch",
+    "?? .sdlc/evidence/TASK-009/delivery-checkpoint-009.yaml",
+    "?? .sdlc/evidence/TASK-009/delivery-checkpoint-010.patch",
+    "?? .sdlc/evidence/TASK-009/delivery-checkpoint-010.yaml",
+    "?? .sdlc/evidence/TASK-009/delivery-checkpoint-011.patch",
+    "?? .sdlc/evidence/TASK-009/delivery-checkpoint-011.yaml",
+    "?? .sdlc/evidence/TASK-009/delivery-checkpoint-012.patch",
+    "?? .sdlc/evidence/TASK-009/delivery-checkpoint-012.yaml",
+    "?? .sdlc/evidence/TASK-009/delivery-checkpoint-013.patch",
+    "?? .sdlc/evidence/TASK-009/delivery-checkpoint-013.yaml",
+    "?? .sdlc/evidence/TASK-009/delivery-checkpoint.patch",
+    "?? .sdlc/evidence/TASK-009/delivery-checkpoint.yaml",
+    "?? .sdlc/evidence/TASK-009/design-scope-review-002.yaml",
+    "?? .sdlc/evidence/TASK-009/design-scope-review.yaml",
+    "?? .sdlc/evidence/TASK-009/dns-verification-proposal.md",
+    "?? .sdlc/evidence/TASK-009/dual-trend-baseline.yaml",
+    "?? .sdlc/evidence/TASK-009/dual-trend-design-review.yaml",
+    "?? .sdlc/evidence/TASK-009/dual-trend-incremental.patch",
+    "?? .sdlc/evidence/TASK-009/empty-log-wire-contract.md",
+    "?? .sdlc/evidence/TASK-009/implementation-002.yaml",
+    "?? .sdlc/evidence/TASK-009/implementation-003.yaml",
+    "?? .sdlc/evidence/TASK-009/implementation-004.yaml",
+    "?? .sdlc/evidence/TASK-009/implementation-005.yaml",
+    "?? .sdlc/evidence/TASK-009/implementation-006.yaml",
+    "?? .sdlc/evidence/TASK-009/implementation-007.yaml",
+    "?? .sdlc/evidence/TASK-009/implementation-008.yaml",
+    "?? .sdlc/evidence/TASK-009/implementation-009.yaml",
+    "?? .sdlc/evidence/TASK-009/implementation-010.yaml",
+    "?? .sdlc/evidence/TASK-009/implementation-011.yaml",
+    "?? .sdlc/evidence/TASK-009/implementation-012.yaml",
+    "?? .sdlc/evidence/TASK-009/implementation-013.yaml",
+    "?? .sdlc/evidence/TASK-009/implementation.yaml",
+    "?? .sdlc/evidence/TASK-009/inflight-baseline-010.yaml",
+    "?? .sdlc/evidence/TASK-009/inflight-incremental-010.patch",
+    "?? .sdlc/evidence/TASK-009/log-manifest-002.yaml",
+    "?? .sdlc/evidence/TASK-009/log-manifest-003.yaml",
+    "?? .sdlc/evidence/TASK-009/log-manifest-004.yaml",
+    "?? .sdlc/evidence/TASK-009/log-manifest.yaml",
+    "?? .sdlc/evidence/TASK-009/loopback-metering-proposal.md",
+    "?? .sdlc/evidence/TASK-009/metering-baseline-008.yaml",
+    "?? .sdlc/evidence/TASK-009/metering-design-manifest.yaml",
+    "?? .sdlc/evidence/TASK-009/metering-design-review.yaml",
+    "?? .sdlc/evidence/TASK-009/metering-design.yaml",
+    "?? .sdlc/evidence/TASK-009/metering-incremental-008.patch",
+    "?? .sdlc/evidence/TASK-009/metering-repair-baseline-009.yaml",
+    "?? .sdlc/evidence/TASK-009/metering-repair-incremental-009.patch",
+    "?? .sdlc/evidence/TASK-009/network-prerequisites.md",
+    "?? .sdlc/evidence/TASK-009/pending-scope.md",
+    "?? .sdlc/evidence/TASK-009/positive-traffic-prerequisites.md",
+    "?? .sdlc/evidence/TASK-009/readiness-003.yaml",
+    "?? .sdlc/evidence/TASK-009/readiness-004.yaml",
+    "?? .sdlc/evidence/TASK-009/readiness-005.yaml",
+    "?? .sdlc/evidence/TASK-009/readiness-006.yaml",
+    "?? .sdlc/evidence/TASK-009/readiness-007.yaml",
+    "?? .sdlc/evidence/TASK-009/readiness-008.yaml",
+    "?? .sdlc/evidence/TASK-009/readiness-009.yaml",
+    "?? .sdlc/evidence/TASK-009/readiness-010.yaml",
+    "?? .sdlc/evidence/TASK-009/readiness-011.yaml",
+    "?? .sdlc/evidence/TASK-009/readiness-012.yaml",
+    "?? .sdlc/evidence/TASK-009/readiness-013.yaml",
+    "?? .sdlc/evidence/TASK-009/readiness.yaml",
+    "?? .sdlc/evidence/TASK-009/reviewed-dcr004-001.md",
+    "?? .sdlc/evidence/TASK-009/technical-design-review.yaml",
+    "?? .sdlc/evidence/TASK-009/traffic-design-review.yaml",
+    "?? .sdlc/evidence/TASK-009/traffic-trend-intake.md",
+    "?? .sdlc/evidence/TASK-009/trend-baseline-extension.yaml",
+    "?? .sdlc/evidence/TASK-009/trend-design-review.yaml",
+    "?? .sdlc/evidence/TASK-009/verification-002.yaml",
+    "?? .sdlc/evidence/TASK-009/verification-003.yaml",
+    "?? .sdlc/evidence/TASK-009/verification-004.yaml",
+    "?? .sdlc/evidence/TASK-009/verification-005.yaml",
+    "?? .sdlc/evidence/TASK-009/verification-006.yaml",
+    "?? .sdlc/evidence/TASK-009/verification-007.yaml",
+    "?? .sdlc/evidence/TASK-009/verification-008.yaml",
+    "?? .sdlc/evidence/TASK-009/verification-009.yaml",
+    "?? .sdlc/evidence/TASK-009/verification-010.yaml",
+    "?? .sdlc/evidence/TASK-009/verification-011.yaml",
+    "?? .sdlc/evidence/TASK-009/verification-012.yaml",
+    "?? .sdlc/evidence/TASK-009/verification-013.yaml",
+    "?? .sdlc/evidence/TASK-009/verification.yaml",
+    "?? .sdlc/evidence/TASK-009/wg-baseline-011.yaml",
+    "?? .sdlc/evidence/TASK-009/wg-delivery-candidate-001.patch",
+    "?? .sdlc/evidence/TASK-009/wg-delivery-candidate-001.yaml",
+    "?? .sdlc/evidence/TASK-009/wg-design-candidate-001.md",
+    "?? .sdlc/evidence/TASK-009/wg-design-review-002.yaml",
+    "?? .sdlc/evidence/TASK-009/wg-design-review.yaml",
+    "?? .sdlc/evidence/TASK-009/wg-incremental-011.patch",
+    "?? .sdlc/evidence/TASK-009/wg-network-proposal.md",
+    "?? .sdlc/evidence/TASK-009/wg-reject-design-review-001.yaml",
+    "?? .sdlc/evidence/TASK-009/wg-reject-peer-feasibility.md",
+    "?? .sdlc/evidence/TASK-009/wg-repair-baseline-012.yaml",
+    "?? .sdlc/evidence/TASK-009/wg-repair-incremental-012.patch",
+    "?? .sdlc/evidence/TASK-009/wg-udp-baseline-013.yaml",
+    "?? .sdlc/evidence/TASK-009/wg-udp-design-review-001.yaml",
+    "?? .sdlc/evidence/TASK-009/wg-udp-incremental-013.patch",
+    "?? .sdlc/tasks/TASK-009.md",
+    "?? scripts/task009-wg-peer/README.md",
+    "?? scripts/task009-wg-peer/bind.go",
+    "?? scripts/task009-wg-peer/bind_test.go",
+    "?? scripts/task009-wg-peer/go.mod",
+    "?? scripts/task009-wg-peer/go.sum",
+    "?? scripts/task009-wg-peer/lifecycle_test.go",
+    "?? scripts/task009-wg-peer/main.go",
+    "?? scripts/task009-wg-peer/observe.go",
+    "?? scripts/task009-wg-peer/observe_test.go",
+    "?? scripts/task009-wg-peer/protocol.go",
+    "?? scripts/task009-wg-peer/protocol_test.go",
+    "?? scripts/task009-wg-peer/stack.go",
+    "?? scripts/task009-wg-peer/stack_test.go",
+    "?? scripts/task009-wg-peer/udp.go",
+    "?? scripts/task009-wg-peer/udp_test.go",
+    "?? src/lib/traffic-trend.test.ts",
+    "?? src/lib/traffic-trend.ts"
+  ]
+}

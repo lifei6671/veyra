@@ -1,0 +1,18 @@
+{
+  "result": "PASS",
+  "checks": [
+    "Canonical requirement and Task synchronized with explicit user direction",
+    "DCR007 independent PASS and hash match",
+    "All checkpoint005 sources initially matched; original provenance preserved",
+    "Reference repo inspected read-only; no dependencies or host changes"
+  ],
+  "task_identity": "sha256:f37a09a0b0aa5c6e275a282c56f85f953c2d78e26bbde8f2931dd7e092d685c0",
+  "requirement_identity": "sha256:4a2cd1e2b9698087bcbc4ac892d7b052a5e2c06554e372479fe31c81cbea9d45",
+  "design_identity": "sha256:bb1b30db8d7ed97283836f42857ad4568c14664ff081269704774a14b5316cde",
+  "authorization": ".sdlc/evidence/TASK-009/change-control.yaml#EVIDENCE-TASK-009-CHANGE-005",
+  "timestamp": "2026-09-04T14:45:13.4183583+08:00",
+  "id": "EVIDENCE-TASK-009-READINESS-006",
+  "baseline": ".sdlc/evidence/TASK-009/dual-trend-baseline.yaml",
+  "design_review": ".sdlc/evidence/TASK-009/dual-trend-design-review.yaml",
+  "target": "TASK-009 CHANGE-005"
+}

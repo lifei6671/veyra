@@ -1,19 +1,75 @@
-use std::fmt;
+use std::{collections::BTreeSet, fmt, net::IpAddr};
 
-use serde_json::{Value, json};
+#[cfg(test)]
+use std::num::NonZeroU16;
+
+use serde::{Deserialize, Serialize};
 
 use crate::domain::{
-    NodeCredentials, ProxyNode, ProxyProtocol, RouteTarget, RuntimeIntent, SelectionPolicy,
-    TlsOptions, TrafficMatcher, Transport,
+    DnsPolicy, NetworkProtocol, NodeId, ProtocolOptions, ProviderId, ProxyNode, ProxyProtocol,
+    RouteTarget, RuntimeIntent, SelectionPolicy, TlsOptions, TrafficMatcher, Transport,
 };
 
-pub trait ConfigCompiler {
-    fn compile(&self, intent: &RuntimeIntent) -> Result<GeneratedConfig, CompileError>;
+use super::managed_sidecar::ApiSecret;
+
+const DNS_TAG: &str = "dns-system";
+const API_ADDRESS: &str = "127.0.0.1:9090";
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum RuntimeProfile {
+    ObservationOnly,
 }
 
-#[derive(Clone, Debug, Eq, PartialEq)]
+pub trait ConfigCompiler {
+    fn compile(
+        &self,
+        intent: &RuntimeIntent,
+        default_target: &RouteTarget,
+        dns: DnsPolicy,
+        profile: RuntimeProfile,
+    ) -> Result<SingBoxPlan, CompileError>;
+}
+
+/// 只有 Compiler 能创建的强类型、未绑定运行期 secret 的配置计划。
+#[derive(Clone)]
+pub struct SingBoxPlan {
+    document: Document,
+}
+
+impl fmt::Debug for SingBoxPlan {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter.write_str("SingBoxPlan([redacted])")
+    }
+}
+
+impl SingBoxPlan {
+    pub(crate) fn finalize(&self, secret: &ApiSecret) -> Result<GeneratedConfig, CompileError> {
+        let mut document = self.document.clone();
+        document.experimental.clash_api.secret = secret.as_str().to_owned();
+        document.validate(true)?;
+        let config = GeneratedConfig {
+            bytes: serde_json::to_vec(&document).map_err(|_| CompileError::SerializationFailed)?,
+        };
+        config.validate_final()?;
+        Ok(config)
+    }
+}
+
+#[derive(Clone, Eq, PartialEq)]
 pub struct GeneratedConfig {
     bytes: Vec<u8>,
+}
+
+impl fmt::Debug for GeneratedConfig {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter.write_str("GeneratedConfig([redacted])")
+    }
+}
+
+impl Drop for GeneratedConfig {
+    fn drop(&mut self) {
+        self.wipe();
+    }
 }
 
 impl GeneratedConfig {
@@ -21,284 +77,1582 @@ impl GeneratedConfig {
         &self.bytes
     }
 
-    #[allow(dead_code)] // 仅供尚未接线的受管 sidecar 配置注入边界使用。
+    #[cfg(test)]
     pub(crate) fn from_bytes(bytes: Vec<u8>) -> Self {
         Self { bytes }
+    }
+
+    pub(crate) fn validate_final(&self) -> Result<(), CompileError> {
+        // 同一个封闭模型负责序列化与读回，嵌套未知字段和重复字段均不能进入 check。
+        let document: Document = serde_json::from_slice(&self.bytes)
+            .map_err(|_| CompileError::InvalidFinalConfiguration)?;
+        document.validate(true)?;
+        let received: serde_json::Value = serde_json::from_slice(&self.bytes)
+            .map_err(|_| CompileError::InvalidFinalConfiguration)?;
+        let canonical =
+            serde_json::to_value(&document).map_err(|_| CompileError::SerializationFailed)?;
+        if received != canonical {
+            return Err(CompileError::InvalidFinalConfiguration);
+        }
+        Ok(())
+    }
+
+    pub(crate) fn wipe(&mut self) {
+        self.bytes.fill(0);
     }
 }
 
 #[derive(Default)]
 pub struct SingBoxCompiler;
 
+#[cfg(test)]
+impl SingBoxCompiler {
+    /// 仅为同路径拒绝验证生成精确阳性对照；正常编译仍以 WG 拒绝规则开头。
+    pub(crate) fn compile_wireguard_local_positive(
+        &self,
+        intent: &RuntimeIntent,
+        default_target: &RouteTarget,
+        dns: DnsPolicy,
+        tcp_port: NonZeroU16,
+        udp_port: NonZeroU16,
+    ) -> Result<SingBoxPlan, CompileError> {
+        if intent.nodes.len() != 1
+            || intent.pools.len() != 1
+            || intent.routes.len() != 1
+            || !intent.routes[0].enabled
+        {
+            return Err(CompileError::InvalidFinalConfiguration);
+        }
+        let mut plan =
+            self.compile(intent, default_target, dns, RuntimeProfile::ObservationOnly)?;
+        let [endpoint] = plan.document.endpoints.as_slice() else {
+            return Err(CompileError::InvalidFinalConfiguration);
+        };
+        let tag = endpoint.tag.clone();
+        plan.document.route.rules.splice(
+            0..0,
+            [
+                (tcp_port, NetworkProtocol::Tcp),
+                (udp_port, NetworkProtocol::Udp),
+            ]
+            .map(|(port, network)| CoreRule {
+                inbound: Some(vec![tag.clone()]),
+                ip_cidr: Some(vec!["127.0.0.1/32".to_owned()]),
+                port: Some(vec![port.get()]),
+                network: Some(vec![network]),
+                outbound: Some("direct".to_owned()),
+                ..CoreRule::default()
+            }),
+        );
+        plan.document.validate(false)?;
+        Ok(plan)
+    }
+
+    /// 仅测试固定 WG UDP 应答路径，不接受可变目的地址或产品运行 Profile。
+    pub(crate) fn compile_wireguard_udp(
+        &self,
+        intent: &RuntimeIntent,
+        default_target: &RouteTarget,
+        dns: DnsPolicy,
+        listen_port: NonZeroU16,
+    ) -> Result<SingBoxPlan, CompileError> {
+        if !intent.routes.is_empty() {
+            return Err(CompileError::InvalidFinalConfiguration);
+        }
+        let mut plan =
+            self.compile(intent, default_target, dns, RuntimeProfile::ObservationOnly)?;
+        plan.document.inbounds.push(TestInbound {
+            kind: "direct".to_owned(),
+            tag: "test-wg-udp".to_owned(),
+            listen: "127.0.0.1".to_owned(),
+            listen_port,
+            network: "udp".to_owned(),
+            override_address: "198.18.0.2".to_owned(),
+            override_port: NonZeroU16::new(18081).expect("fixed nonzero UDP port"),
+        });
+        plan.document.validate(false)?;
+        Ok(plan)
+    }
+
+    /// 仅测试构建可创建的本机计量入口，仍由同一 Plan 完成实例绑定与最终字节校验。
+    pub(crate) fn compile_loopback_metering(
+        &self,
+        intent: &RuntimeIntent,
+        default_target: &RouteTarget,
+        dns: DnsPolicy,
+        listen_port: NonZeroU16,
+        echo_port: NonZeroU16,
+    ) -> Result<SingBoxPlan, CompileError> {
+        let mut plan =
+            self.compile(intent, default_target, dns, RuntimeProfile::ObservationOnly)?;
+        plan.document.inbounds.push(TestInbound {
+            kind: "direct".to_owned(),
+            tag: "test-metering".to_owned(),
+            listen: "127.0.0.1".to_owned(),
+            listen_port,
+            network: "tcp".to_owned(),
+            override_address: "127.0.0.1".to_owned(),
+            override_port: echo_port,
+        });
+        plan.document.validate(false)?;
+        Ok(plan)
+    }
+}
+
 impl ConfigCompiler for SingBoxCompiler {
-    fn compile(&self, intent: &RuntimeIntent) -> Result<GeneratedConfig, CompileError> {
-        let mut outbounds = intent
-            .nodes
-            .iter()
-            .map(node_outbound)
-            .collect::<Result<Vec<_>, _>>()?;
-        for pool in &intent.pools {
+    fn compile(
+        &self,
+        intent: &RuntimeIntent,
+        default_target: &RouteTarget,
+        dns: DnsPolicy,
+        profile: RuntimeProfile,
+    ) -> Result<SingBoxPlan, CompileError> {
+        let (DnsPolicy::System, RuntimeProfile::ObservationOnly) = (dns, profile);
+        let RouteTarget::Pool(default_pool) = default_target else {
+            return Err(CompileError::InvalidRouteTarget);
+        };
+        if !intent.pools.iter().any(|pool| &pool.id == default_pool) {
+            return Err(CompileError::InvalidRouteTarget);
+        }
+        let mut nodes = intent.nodes.iter().collect::<Vec<_>>();
+        nodes.sort_by(|left, right| left.id.cmp(&right.id));
+        let mut outbounds = Vec::new();
+        let mut endpoints = Vec::new();
+        for node in nodes {
+            validate_node(node)?;
+            if node.protocol == ProxyProtocol::WireGuard {
+                endpoints.push(wireguard_endpoint(node)?);
+            } else {
+                outbounds.push(node_outbound(node)?);
+            }
+        }
+        let mut pools = intent.pools.iter().collect::<Vec<_>>();
+        pools.sort_by(|left, right| left.id.cmp(&right.id));
+        for pool in pools {
             if pool.members.is_empty() {
                 return Err(CompileError::EmptyPoolMembership);
             }
-            let members = pool
+            let mut members = pool
                 .members
                 .iter()
-                .map(|id| Value::String(node_tag(&id.0)))
+                .map(|id| node_tag(&id.0))
                 .collect::<Vec<_>>();
-            let outbound = match &pool.selection {
-                SelectionPolicy::Manual { selected_node_id } => {
-                    let mut outbound = json!({
-                        "tag": pool_tag(&pool.id.0),
-                        "type": "selector",
-                        "outbounds": members,
-                    });
-                    if let Some(node_id) = selected_node_id {
-                        outbound
-                            .as_object_mut()
-                            .expect("selector outbound is an object")
-                            .insert("default".to_owned(), Value::String(node_tag(&node_id.0)));
-                    }
-                    outbound
-                }
+            members.sort();
+            members.dedup();
+            let tag = pool_tag(&pool.id.0);
+            outbounds.push(match &pool.selection {
+                SelectionPolicy::Manual { selected_node_id } => CoreOutbound::Selector(Selector {
+                    tag,
+                    outbounds: members,
+                    default: selected_node_id.as_ref().map(|id| node_tag(&id.0)),
+                }),
                 SelectionPolicy::UrlTest {
                     probe_url,
                     interval_secs,
                     tolerance_ms,
-                } => json!({
-                    "tag": pool_tag(&pool.id.0),
-                    "type": "urltest",
-                    "outbounds": members,
-                    "url": probe_url,
-                    "interval": format!("{interval_secs}s"),
-                    "tolerance": tolerance_ms,
+                } => CoreOutbound::Urltest(UrlTest {
+                    tag,
+                    outbounds: members,
+                    url: probe_url.clone(),
+                    interval: format!("{interval_secs}s"),
+                    tolerance: *tolerance_ms,
                 }),
-            };
-            outbounds.push(outbound);
+            });
         }
-        outbounds.push(json!({ "tag": "direct", "type": "direct" }));
-        outbounds.push(json!({ "tag": "block", "type": "block" }));
-
-        let rules = intent
+        outbounds.push(CoreOutbound::Direct(Terminal {
+            tag: "direct".to_owned(),
+        }));
+        outbounds.push(CoreOutbound::Block(Terminal {
+            tag: "block".to_owned(),
+        }));
+        let ingress = endpoints
+            .iter()
+            .map(|endpoint| endpoint.tag.clone())
+            .collect::<Vec<_>>();
+        let mut rules = Vec::new();
+        if !ingress.is_empty() {
+            rules.push(CoreRule::reject(ingress.clone()));
+        }
+        let mut routes = intent
             .routes
             .iter()
-            .map(route_rule)
-            .collect::<Result<Vec<_>, _>>()?;
-        let document = json!({ "outbounds": outbounds, "route": { "rules": rules } });
-        Ok(GeneratedConfig {
-            bytes: serde_json::to_vec(&document).map_err(|_| CompileError::SerializationFailed)?,
-        })
+            .filter(|route| route.enabled)
+            .collect::<Vec<_>>();
+        routes.sort_by_key(|route| (route.priority, &route.id));
+        for route in routes {
+            rules.push(route_rule(route)?);
+        }
+        let document = Document {
+            log: LogConfig { disabled: true },
+            dns: DnsConfig {
+                servers: vec![DnsServer {
+                    kind: "local".to_owned(),
+                    tag: DNS_TAG.to_owned(),
+                }],
+                final_server: DNS_TAG.to_owned(),
+                rules: if ingress.is_empty() {
+                    Vec::new()
+                } else {
+                    vec![CoreRule::reject(ingress)]
+                },
+            },
+            inbounds: Vec::new(),
+            outbounds,
+            endpoints,
+            route: RouteConfig {
+                rules,
+                final_outbound: pool_tag(&default_pool.0),
+                default_domain_resolver: DNS_TAG.to_owned(),
+            },
+            experimental: Experimental {
+                clash_api: ClashApi {
+                    external_controller: API_ADDRESS.to_owned(),
+                    secret: String::new(),
+                },
+            },
+        };
+        document.validate(false)?;
+        Ok(SingBoxPlan { document })
     }
 }
 
-fn node_outbound(node: &ProxyNode) -> Result<Value, CompileError> {
-    validate_node_for_compilation(node)?;
-    let mut output = json!({
-        "tag": node_tag(&node.id.0),
-        "type": protocol_name(node.protocol),
-        "server": node.server,
-        "server_port": node.port,
-    });
-    let object = output.as_object_mut().expect("json object");
-    match &node.credentials {
-        NodeCredentials::None => {}
-        NodeCredentials::Password {
+#[derive(Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct Document {
+    log: LogConfig,
+    dns: DnsConfig,
+    #[cfg(not(test))]
+    inbounds: Vec<()>,
+    #[cfg(test)]
+    inbounds: Vec<TestInbound>,
+    outbounds: Vec<CoreOutbound>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    endpoints: Vec<WireGuardEndpoint>,
+    route: RouteConfig,
+    experimental: Experimental,
+}
+
+#[cfg(test)]
+#[derive(Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct TestInbound {
+    #[serde(rename = "type")]
+    kind: String,
+    tag: String,
+    listen: String,
+    listen_port: NonZeroU16,
+    network: String,
+    override_address: String,
+    override_port: NonZeroU16,
+}
+
+#[derive(Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct LogConfig {
+    disabled: bool,
+}
+
+#[derive(Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct DnsConfig {
+    servers: Vec<DnsServer>,
+    #[serde(rename = "final")]
+    final_server: String,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    rules: Vec<CoreRule>,
+}
+
+#[derive(Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct DnsServer {
+    #[serde(rename = "type")]
+    kind: String,
+    tag: String,
+}
+
+#[derive(Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct RouteConfig {
+    rules: Vec<CoreRule>,
+    #[serde(rename = "final")]
+    final_outbound: String,
+    default_domain_resolver: String,
+}
+
+#[derive(Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct Experimental {
+    clash_api: ClashApi,
+}
+
+#[derive(Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct ClashApi {
+    external_controller: String,
+    secret: String,
+}
+
+// 每种 outbound 都有封闭字段集合；不用 flatten，避免绕开嵌套 deny_unknown_fields。
+macro_rules! node_options {
+    ($name:ident { $($field:ident : $ty:ty),* $(,)? } [ $($optional:ident : $optional_ty:ty),* $(,)? ]) => {
+        #[derive(Clone, Serialize, Deserialize)]
+        #[serde(deny_unknown_fields)]
+        struct $name {
+            tag: String,
+            server: String,
+            server_port: u16,
+            #[serde(skip_serializing_if = "Option::is_none")]
+            tls: Option<CoreTls>,
+            #[serde(skip_serializing_if = "Option::is_none")]
+            transport: Option<CoreTransport>,
+            $($field: $ty,)*
+            $(#[serde(skip_serializing_if = "Option::is_none")]
+            $optional: Option<$optional_ty>,)*
+        }
+    };
+}
+
+node_options!(Socks { version: String } [username: String, password: String]);
+node_options!(Http {} [username: String, password: String]);
+node_options!(Shadowsocks { method: String, password: String } []);
+node_options!(Vmess { uuid: String } [alter_id: u32, security: String]);
+node_options!(Vless { uuid: String } [flow: String]);
+node_options!(Trojan { password: String } []);
+node_options!(Hysteria { auth_str: String, up_mbps: u32, down_mbps: u32 } [obfs: String]);
+node_options!(Hysteria2 { password: String } [obfs: Obfuscation]);
+node_options!(Tuic { uuid: String, password: String, zero_rtt_handshake: bool } [congestion_control: String, udp_relay_mode: String]);
+node_options!(ShadowTls { version: u8, password: String } []);
+node_options!(Ssh { user: String } [password: String, private_key: String, private_key_passphrase: String, host_key: String]);
+node_options!(Naive { username: String, password: String } []);
+node_options!(AnyTls { password: String } []);
+node_options!(Snell { psk: String, version: u8 } []);
+
+#[derive(Clone, Serialize, Deserialize)]
+#[serde(tag = "type", rename_all = "lowercase", deny_unknown_fields)]
+enum CoreOutbound {
+    Socks(Socks),
+    Http(Http),
+    Shadowsocks(Shadowsocks),
+    Vmess(Vmess),
+    Vless(Vless),
+    Trojan(Trojan),
+    Hysteria(Hysteria),
+    Hysteria2(Hysteria2),
+    Tuic(Tuic),
+    Shadowtls(ShadowTls),
+    Ssh(Ssh),
+    Naive(Naive),
+    Anytls(AnyTls),
+    Snell(Snell),
+    Direct(Terminal),
+    Block(Terminal),
+    Selector(Selector),
+    Urltest(UrlTest),
+}
+
+#[derive(Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct Terminal {
+    tag: String,
+}
+
+#[derive(Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct Selector {
+    tag: String,
+    outbounds: Vec<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    default: Option<String>,
+}
+
+#[derive(Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct UrlTest {
+    tag: String,
+    outbounds: Vec<String>,
+    url: String,
+    interval: String,
+    tolerance: u32,
+}
+
+#[derive(Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct Obfuscation {
+    #[serde(rename = "type")]
+    kind: String,
+    password: String,
+}
+
+#[derive(Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct CoreTls {
+    enabled: bool,
+    insecure: bool,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    server_name: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    reality: Option<Reality>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    utls: Option<CoreUtls>,
+}
+
+/// Reality 固定启用 uTLS，指纹由固定核心采用原生默认值，不接受额外输入。
+#[derive(Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct CoreUtls {
+    enabled: bool,
+}
+
+#[derive(Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct Reality {
+    enabled: bool,
+    public_key: String,
+    short_id: String,
+}
+
+#[derive(Clone, Serialize, Deserialize)]
+#[serde(tag = "type", deny_unknown_fields)]
+enum CoreTransport {
+    #[serde(rename = "ws")]
+    Websocket {
+        path: String,
+        #[serde(skip_serializing_if = "Option::is_none")]
+        headers: Option<WebsocketHeaders>,
+    },
+    #[serde(rename = "grpc")]
+    Grpc { service_name: String },
+}
+
+#[derive(Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct WebsocketHeaders {
+    #[serde(rename = "Host")]
+    host: String,
+}
+
+#[derive(Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct WireGuardEndpoint {
+    #[serde(rename = "type")]
+    kind: String,
+    tag: String,
+    system: bool,
+    address: Vec<String>,
+    private_key: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    mtu: Option<u32>,
+    peers: Vec<WireGuardPeer>,
+}
+
+#[derive(Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct WireGuardPeer {
+    address: String,
+    port: u16,
+    public_key: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pre_shared_key: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    reserved: Option<[u8; 3]>,
+    allowed_ips: Vec<String>,
+}
+
+#[derive(Clone, Default, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct CoreRule {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    inbound: Option<Vec<String>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    action: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    outbound: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    domain: Option<Vec<String>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    domain_suffix: Option<Vec<String>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    process_name: Option<Vec<String>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    ip_cidr: Option<Vec<String>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    port: Option<Vec<u16>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    network: Option<Vec<NetworkProtocol>>,
+}
+
+impl CoreRule {
+    fn reject(tags: Vec<String>) -> Self {
+        Self {
+            inbound: Some(tags),
+            action: Some("reject".to_owned()),
+            ..Self::default()
+        }
+    }
+    fn matcher_count(&self) -> usize {
+        [
+            self.domain.is_some(),
+            self.domain_suffix.is_some(),
+            self.process_name.is_some(),
+            self.ip_cidr.is_some(),
+            self.port.is_some(),
+            self.network.is_some(),
+        ]
+        .into_iter()
+        .filter(|present| *present)
+        .count()
+    }
+    fn is_ingress_reject(&self, tags: &[String]) -> bool {
+        self.inbound.as_deref() == Some(tags)
+            && self.action.as_deref() == Some("reject")
+            && self.outbound.is_none()
+            && self.matcher_count() == 0
+    }
+}
+
+macro_rules! make_node {
+    ($name:ident, $node:expr, $($field:ident : $value:expr),* $(,)?) => {
+        $name {
+            tag: node_tag(&$node.id.0), server: $node.server.clone(), server_port: $node.port,
+            tls: core_tls($node), transport: core_transport($node.transport.as_ref()),
+            $($field: $value,)*
+        }
+    };
+}
+
+fn node_outbound(node: &ProxyNode) -> Result<CoreOutbound, CompileError> {
+    Ok(match &node.options {
+        ProtocolOptions::Socks {
+            version,
             username,
             password,
-            cipher,
-        } => {
-            object.insert("password".to_owned(), Value::String(password.clone()));
-            if let Some(username) = username {
-                object.insert("username".to_owned(), Value::String(username.clone()));
-            }
-            if let Some(cipher) = cipher {
-                object.insert("method".to_owned(), Value::String(cipher.clone()));
-            }
+        } => CoreOutbound::Socks(
+            make_node!(Socks, node, version: version.to_string(), username: username.clone(), password: password.clone()),
+        ),
+        ProtocolOptions::Http {
+            username, password, ..
+        } => CoreOutbound::Http(
+            make_node!(Http, node, username: username.clone(), password: password.clone()),
+        ),
+        ProtocolOptions::Shadowsocks { method, password } => CoreOutbound::Shadowsocks(
+            make_node!(Shadowsocks, node, method: method.clone(), password: password.clone()),
+        ),
+        ProtocolOptions::Vmess {
+            uuid,
+            alter_id,
+            security,
+        } => CoreOutbound::Vmess(
+            make_node!(Vmess, node, uuid: uuid.clone(), alter_id: *alter_id, security: security.clone()),
+        ),
+        ProtocolOptions::Vless { uuid, flow } => {
+            CoreOutbound::Vless(make_node!(Vless, node, uuid: uuid.clone(), flow: flow.clone()))
         }
-        NodeCredentials::Uuid { uuid, flow } => {
-            object.insert("uuid".to_owned(), Value::String(uuid.clone()));
-            if let Some(flow) = flow {
-                object.insert("flow".to_owned(), Value::String(flow.clone()));
-            }
+        ProtocolOptions::Trojan { password } => {
+            CoreOutbound::Trojan(make_node!(Trojan, node, password: password.clone()))
         }
-    }
-    if let Some(tls) = &node.tls {
-        object.insert("tls".to_owned(), tls_config(tls));
-    } else if node.protocol == ProxyProtocol::Https {
-        object.insert("tls".to_owned(), json!({ "enabled": true }));
-    }
-    if let Some(transport) = &node.transport
-        && let Some(transport) = transport_config(transport)
-    {
-        object.insert("transport".to_owned(), transport);
-    }
-    Ok(output)
+        ProtocolOptions::Hysteria {
+            auth,
+            obfs,
+            up_mbps,
+            down_mbps,
+        } => CoreOutbound::Hysteria(
+            make_node!(Hysteria, node, auth_str: auth.clone(), obfs: obfs.clone(), up_mbps: up_mbps.ok_or(CompileError::InvalidNodeConfiguration)?, down_mbps: down_mbps.ok_or(CompileError::InvalidNodeConfiguration)?),
+        ),
+        ProtocolOptions::Hysteria2 { password, obfs } => CoreOutbound::Hysteria2(
+            make_node!(Hysteria2, node, password: password.clone(), obfs: obfs.as_ref().map(|password| Obfuscation { kind: "salamander".to_owned(), password: password.clone() })),
+        ),
+        ProtocolOptions::Tuic {
+            uuid,
+            password,
+            congestion_control,
+            udp_relay_mode,
+            zero_rtt,
+        } => CoreOutbound::Tuic(
+            make_node!(Tuic, node, uuid: uuid.clone(), password: password.clone(), congestion_control: congestion_control.clone(), udp_relay_mode: udp_relay_mode.clone(), zero_rtt_handshake: *zero_rtt),
+        ),
+        ProtocolOptions::ShadowTls { version, password } => CoreOutbound::Shadowtls(
+            make_node!(ShadowTls, node, version: *version, password: password.clone()),
+        ),
+        ProtocolOptions::Ssh {
+            user,
+            password,
+            private_key,
+            private_key_passphrase,
+            host_key,
+        } => CoreOutbound::Ssh(
+            make_node!(Ssh, node, user: user.clone(), password: password.clone(), private_key: private_key.clone(), private_key_passphrase: private_key_passphrase.clone(), host_key: host_key.clone()),
+        ),
+        ProtocolOptions::Naive { username, password } => CoreOutbound::Naive(
+            make_node!(Naive, node, username: username.clone(), password: password.clone()),
+        ),
+        ProtocolOptions::AnyTls { password } => {
+            CoreOutbound::Anytls(make_node!(AnyTls, node, password: password.clone()))
+        }
+        ProtocolOptions::Snell { psk, version } => {
+            CoreOutbound::Snell(make_node!(Snell, node, psk: psk.clone(), version: *version))
+        }
+        ProtocolOptions::WireGuard { .. } => return Err(CompileError::UnsupportedNodeProtocol),
+    })
 }
 
-fn validate_node_for_compilation(node: &ProxyNode) -> Result<(), CompileError> {
-    let credentials_are_valid = match node.protocol {
-        ProxyProtocol::Shadowsocks => matches!(
-            node.credentials,
-            NodeCredentials::Password {
-                username: None,
-                cipher: Some(_),
-                ..
-            }
-        ),
-        ProxyProtocol::Vmess | ProxyProtocol::Vless => {
-            matches!(node.credentials, NodeCredentials::Uuid { .. })
-        }
-        ProxyProtocol::Trojan | ProxyProtocol::Hysteria2 | ProxyProtocol::AnyTls => matches!(
-            node.credentials,
-            NodeCredentials::Password {
-                username: None,
-                cipher: None,
-                ..
-            }
-        ),
-        ProxyProtocol::Socks5 | ProxyProtocol::Http | ProxyProtocol::Https => matches!(
-            node.credentials,
-            NodeCredentials::None | NodeCredentials::Password { cipher: None, .. }
-        ),
-        ProxyProtocol::Tuic => return Err(CompileError::UnsupportedNodeProtocol),
-    };
-    let has_reality_fields = node
-        .tls
-        .as_ref()
-        .is_some_and(|tls| tls.reality_public_key.is_some() || tls.reality_short_id.is_some());
-    let has_complete_reality = node.tls.as_ref().is_some_and(|tls| {
-        tls.reality_public_key
-            .as_deref()
-            .is_some_and(|value| !value.trim().is_empty())
-            && tls
-                .reality_short_id
-                .as_deref()
-                .is_some_and(|value| !value.trim().is_empty())
-    });
-    if !credentials_are_valid
-        || matches!(
-            node.protocol,
-            ProxyProtocol::Trojan | ProxyProtocol::Hysteria2 | ProxyProtocol::AnyTls
-        ) && node.tls.is_none()
-        || node.tls.is_some()
-            && !matches!(
-                node.protocol,
-                ProxyProtocol::Vmess
-                    | ProxyProtocol::Vless
-                    | ProxyProtocol::Trojan
-                    | ProxyProtocol::Hysteria2
-                    | ProxyProtocol::Http
-                    | ProxyProtocol::Https
-                    | ProxyProtocol::AnyTls
-            )
-        || has_reality_fields && (node.protocol != ProxyProtocol::Vless || !has_complete_reality)
-        || matches!(
-            node.transport,
-            Some(Transport::Websocket { .. } | Transport::Grpc { .. })
-        ) && !matches!(
-            node.protocol,
-            ProxyProtocol::Vmess | ProxyProtocol::Vless | ProxyProtocol::Trojan
-        )
-    {
+fn wireguard_endpoint(node: &ProxyNode) -> Result<WireGuardEndpoint, CompileError> {
+    let ProtocolOptions::WireGuard {
+        private_key,
+        peer_public_key,
+        pre_shared_key,
+        local_addresses,
+        mtu,
+        reserved,
+    } = &node.options
+    else {
         return Err(CompileError::InvalidNodeConfiguration);
-    }
-    Ok(())
-}
-
-fn tls_config(options: &TlsOptions) -> Value {
-    let mut tls = json!({
-        "enabled": true,
-        "insecure": options.allow_insecure,
-    });
-    let object = tls.as_object_mut().expect("tls configuration is an object");
-    if let Some(server_name) = &options.server_name {
-        object.insert("server_name".to_owned(), Value::String(server_name.clone()));
-    }
-    if let (Some(public_key), Some(short_id)) =
-        (&options.reality_public_key, &options.reality_short_id)
-    {
-        let reality = json!({
-            "enabled": true,
-            "public_key": public_key,
-            "short_id": short_id,
-        });
-        object.insert("reality".to_owned(), reality);
-    }
-    tls
-}
-
-fn transport_config(transport: &Transport) -> Option<Value> {
-    match transport {
-        Transport::Tcp => None,
-        Transport::Websocket { path, host } => {
-            let mut output = json!({ "type": "ws", "path": path });
-            if let Some(host) = host {
-                output
-                    .as_object_mut()
-                    .expect("WebSocket transport is an object")
-                    .insert("headers".to_owned(), json!({ "Host": host }));
-            }
-            Some(output)
-        }
-        Transport::Grpc { service_name } => {
-            Some(json!({ "type": "grpc", "service_name": service_name }))
-        }
-    }
-}
-
-fn route_rule(route: &crate::domain::RoutePolicy) -> Result<Value, CompileError> {
-    let (field, values) = match &route.matcher {
-        TrafficMatcher::Domain(values) => ("domain", values.clone()),
-        TrafficMatcher::DomainSuffix(values) => ("domain_suffix", values.clone()),
-        TrafficMatcher::Application(values) => ("process_name", values.clone()),
-        TrafficMatcher::IpCidr(values) => ("ip_cidr", values.clone()),
-        TrafficMatcher::Port(values) => ("port", values.iter().map(ToString::to_string).collect()),
-        TrafficMatcher::Protocol(values) => (
-            "network",
-            values
-                .iter()
-                .map(|value| format!("{value:?}").to_ascii_lowercase())
-                .collect(),
-        ),
     };
+    Ok(WireGuardEndpoint {
+        kind: "wireguard".to_owned(),
+        tag: node_tag(&node.id.0),
+        system: false,
+        address: local_addresses.clone(),
+        private_key: private_key.clone(),
+        mtu: *mtu,
+        peers: vec![WireGuardPeer {
+            address: node.server.clone(),
+            port: node.port,
+            public_key: peer_public_key.clone(),
+            pre_shared_key: pre_shared_key.clone(),
+            reserved: *reserved,
+            allowed_ips: vec!["0.0.0.0/0".to_owned(), "::/0".to_owned()],
+        }],
+    })
+}
+
+fn core_tls(node: &ProxyNode) -> Option<CoreTls> {
+    node.tls
+        .as_ref()
+        .map(|tls| CoreTls {
+            enabled: true,
+            insecure: tls.allow_insecure,
+            server_name: tls.server_name.clone(),
+            reality: tls
+                .reality_public_key
+                .as_ref()
+                .zip(tls.reality_short_id.as_ref())
+                .map(|(key, id)| Reality {
+                    enabled: true,
+                    public_key: key.clone(),
+                    short_id: id.clone(),
+                }),
+            utls: tls
+                .reality_public_key
+                .as_ref()
+                .map(|_| CoreUtls { enabled: true }),
+        })
+        .or_else(|| {
+            matches!(node.options, ProtocolOptions::Http { tls: true, .. }).then_some(CoreTls {
+                enabled: true,
+                insecure: false,
+                server_name: None,
+                reality: None,
+                utls: None,
+            })
+        })
+}
+
+fn core_transport(transport: Option<&Transport>) -> Option<CoreTransport> {
+    match transport {
+        None | Some(Transport::Tcp) => None,
+        Some(Transport::Websocket { path, host }) => Some(CoreTransport::Websocket {
+            path: path.clone(),
+            headers: host
+                .as_ref()
+                .map(|host| WebsocketHeaders { host: host.clone() }),
+        }),
+        Some(Transport::Grpc { service_name }) => Some(CoreTransport::Grpc {
+            service_name: service_name.clone(),
+        }),
+    }
+}
+
+fn route_rule(route: &crate::domain::RoutePolicy) -> Result<CoreRule, CompileError> {
     let outbound = match &route.target {
         RouteTarget::Pool(id) => pool_tag(&id.0),
         RouteTarget::Direct => "direct".to_owned(),
         RouteTarget::Block => "block".to_owned(),
+        RouteTarget::Unconfigured => return Err(CompileError::InvalidRouteTarget),
     };
-    Ok(json!({ (field): values, "outbound": outbound }))
+    let mut rule = CoreRule {
+        outbound: Some(outbound),
+        ..CoreRule::default()
+    };
+    match &route.matcher {
+        TrafficMatcher::Domain(values) => rule.domain = Some(values.clone()),
+        TrafficMatcher::DomainSuffix(values) => rule.domain_suffix = Some(values.clone()),
+        TrafficMatcher::Application(values) => rule.process_name = Some(values.clone()),
+        TrafficMatcher::IpCidr(values) => rule.ip_cidr = Some(values.clone()),
+        TrafficMatcher::Port(values) => rule.port = Some(values.clone()),
+        TrafficMatcher::Protocol(values) => rule.network = Some(values.clone()),
+    }
+    Ok(rule)
 }
 
+impl CoreTls {
+    fn domain(&self) -> Result<TlsOptions, CompileError> {
+        let valid_reality_utls = match (&self.reality, &self.utls) {
+            (None, None) => true,
+            (Some(reality), Some(utls)) => reality.enabled && utls.enabled,
+            _ => false,
+        };
+        if !self.enabled || !valid_reality_utls {
+            return Err(CompileError::InvalidFinalConfiguration);
+        }
+        Ok(TlsOptions {
+            server_name: self.server_name.clone(),
+            allow_insecure: self.insecure,
+            reality_public_key: self
+                .reality
+                .as_ref()
+                .map(|reality| reality.public_key.clone()),
+            reality_short_id: self
+                .reality
+                .as_ref()
+                .map(|reality| reality.short_id.clone()),
+        })
+    }
+}
+
+impl CoreTransport {
+    fn domain(&self) -> Transport {
+        match self {
+            Self::Websocket { path, headers } => Transport::Websocket {
+                path: path.clone(),
+                host: headers.as_ref().map(|headers| headers.host.clone()),
+            },
+            Self::Grpc { service_name } => Transport::Grpc {
+                service_name: service_name.clone(),
+            },
+        }
+    }
+}
+
+macro_rules! domain_node {
+    ($node:expr, $protocol:ident, $options:expr) => {
+        ProxyNode {
+            id: NodeId(
+                $node
+                    .tag
+                    .strip_prefix("node-")
+                    .ok_or(CompileError::InvalidFinalConfiguration)?
+                    .to_owned(),
+            ),
+            provider_id: ProviderId("compiler".to_owned()),
+            name: String::new(),
+            protocol: ProxyProtocol::$protocol,
+            server: $node.server.clone(),
+            port: $node.server_port,
+            options: $options,
+            tls: $node.tls.as_ref().map(CoreTls::domain).transpose()?,
+            transport: $node.transport.as_ref().map(CoreTransport::domain),
+        }
+    };
+}
+
+impl CoreOutbound {
+    fn tag(&self) -> &str {
+        match self {
+            Self::Socks(node) => &node.tag,
+            Self::Http(node) => &node.tag,
+            Self::Shadowsocks(node) => &node.tag,
+            Self::Vmess(node) => &node.tag,
+            Self::Vless(node) => &node.tag,
+            Self::Trojan(node) => &node.tag,
+            Self::Hysteria(node) => &node.tag,
+            Self::Hysteria2(node) => &node.tag,
+            Self::Tuic(node) => &node.tag,
+            Self::Shadowtls(node) => &node.tag,
+            Self::Ssh(node) => &node.tag,
+            Self::Naive(node) => &node.tag,
+            Self::Anytls(node) => &node.tag,
+            Self::Snell(node) => &node.tag,
+            Self::Direct(node) | Self::Block(node) => &node.tag,
+            Self::Selector(node) => &node.tag,
+            Self::Urltest(node) => &node.tag,
+        }
+    }
+    fn domain(&self) -> Result<Option<ProxyNode>, CompileError> {
+        Ok(Some(match self {
+            Self::Socks(node) => domain_node!(
+                node,
+                Socks,
+                ProtocolOptions::Socks {
+                    version: node
+                        .version
+                        .parse()
+                        .map_err(|_| CompileError::InvalidNodeConfiguration)?,
+                    username: node.username.clone(),
+                    password: node.password.clone()
+                }
+            ),
+            Self::Http(node) => domain_node!(
+                node,
+                Http,
+                ProtocolOptions::Http {
+                    username: node.username.clone(),
+                    password: node.password.clone(),
+                    tls: node.tls.is_some()
+                }
+            ),
+            Self::Shadowsocks(node) => domain_node!(
+                node,
+                Shadowsocks,
+                ProtocolOptions::Shadowsocks {
+                    method: node.method.clone(),
+                    password: node.password.clone()
+                }
+            ),
+            Self::Vmess(node) => domain_node!(
+                node,
+                Vmess,
+                ProtocolOptions::Vmess {
+                    uuid: node.uuid.clone(),
+                    alter_id: node.alter_id,
+                    security: node.security.clone()
+                }
+            ),
+            Self::Vless(node) => domain_node!(
+                node,
+                Vless,
+                ProtocolOptions::Vless {
+                    uuid: node.uuid.clone(),
+                    flow: node.flow.clone()
+                }
+            ),
+            Self::Trojan(node) => domain_node!(
+                node,
+                Trojan,
+                ProtocolOptions::Trojan {
+                    password: node.password.clone()
+                }
+            ),
+            Self::Hysteria(node) => domain_node!(
+                node,
+                Hysteria,
+                ProtocolOptions::Hysteria {
+                    auth: node.auth_str.clone(),
+                    obfs: node.obfs.clone(),
+                    up_mbps: Some(node.up_mbps),
+                    down_mbps: Some(node.down_mbps)
+                }
+            ),
+            Self::Hysteria2(node) => {
+                if node
+                    .obfs
+                    .as_ref()
+                    .is_some_and(|obfs| obfs.kind != "salamander")
+                {
+                    return Err(CompileError::InvalidFinalConfiguration);
+                }
+                domain_node!(
+                    node,
+                    Hysteria2,
+                    ProtocolOptions::Hysteria2 {
+                        password: node.password.clone(),
+                        obfs: node.obfs.as_ref().map(|obfs| obfs.password.clone())
+                    }
+                )
+            }
+            Self::Tuic(node) => domain_node!(
+                node,
+                Tuic,
+                ProtocolOptions::Tuic {
+                    uuid: node.uuid.clone(),
+                    password: node.password.clone(),
+                    congestion_control: node.congestion_control.clone(),
+                    udp_relay_mode: node.udp_relay_mode.clone(),
+                    zero_rtt: node.zero_rtt_handshake
+                }
+            ),
+            Self::Shadowtls(node) => domain_node!(
+                node,
+                ShadowTls,
+                ProtocolOptions::ShadowTls {
+                    version: node.version,
+                    password: node.password.clone()
+                }
+            ),
+            Self::Ssh(node) => domain_node!(
+                node,
+                Ssh,
+                ProtocolOptions::Ssh {
+                    user: node.user.clone(),
+                    password: node.password.clone(),
+                    private_key: node.private_key.clone(),
+                    private_key_passphrase: node.private_key_passphrase.clone(),
+                    host_key: node.host_key.clone()
+                }
+            ),
+            Self::Naive(node) => domain_node!(
+                node,
+                Naive,
+                ProtocolOptions::Naive {
+                    username: node.username.clone(),
+                    password: node.password.clone()
+                }
+            ),
+            Self::Anytls(node) => domain_node!(
+                node,
+                AnyTls,
+                ProtocolOptions::AnyTls {
+                    password: node.password.clone()
+                }
+            ),
+            Self::Snell(node) => domain_node!(
+                node,
+                Snell,
+                ProtocolOptions::Snell {
+                    psk: node.psk.clone(),
+                    version: node.version
+                }
+            ),
+            Self::Direct(_) | Self::Block(_) | Self::Selector(_) | Self::Urltest(_) => {
+                return Ok(None);
+            }
+        }))
+    }
+}
+
+impl Document {
+    fn validate(&self, bound: bool) -> Result<(), CompileError> {
+        #[cfg(test)]
+        if self
+            .route
+            .rules
+            .first()
+            .is_some_and(|rule| rule.inbound.is_some() && rule.action.as_deref() != Some("reject"))
+        {
+            self.validate_test_local_positive()?;
+            // 仅剥离已完整识别的两个测试规则，余下配置复用产品校验。
+            let mut protected = self.clone();
+            protected.route.rules.drain(..2);
+            return protected.validate_standard(bound);
+        }
+        self.validate_standard(bound)
+    }
+
+    fn validate_standard(&self, bound: bool) -> Result<(), CompileError> {
+        let rejected = CompileError::InvalidFinalConfiguration;
+        #[cfg(not(test))]
+        if !self.inbounds.is_empty() {
+            return Err(rejected);
+        }
+        #[cfg(test)]
+        self.validate_test_inbounds()?;
+        if !self.log.disabled
+            || self.experimental.clash_api.external_controller != API_ADDRESS
+            || (bound && !valid_secret(&self.experimental.clash_api.secret))
+            || (!bound && !self.experimental.clash_api.secret.is_empty())
+            || self.dns.servers.len() != 1
+            || self.dns.servers[0].kind != "local"
+            || self.dns.servers[0].tag != DNS_TAG
+            || self.dns.final_server != DNS_TAG
+            || self.route.default_domain_resolver != DNS_TAG
+        {
+            return Err(rejected);
+        }
+        let mut tags = BTreeSet::new();
+        let mut node_tags = BTreeSet::new();
+        let mut pool_tags = BTreeSet::new();
+        let mut direct_count = 0;
+        let mut block_count = 0;
+        for outbound in &self.outbounds {
+            let tag = outbound.tag();
+            if !tags.insert(tag.to_owned()) {
+                return Err(rejected);
+            }
+            if let Some(node) = outbound.domain()? {
+                validate_node(&node)?;
+                node_tags.insert(tag.to_owned());
+            } else {
+                match outbound {
+                    CoreOutbound::Direct(terminal) if terminal.tag == "direct" => direct_count += 1,
+                    CoreOutbound::Block(terminal) if terminal.tag == "block" => block_count += 1,
+                    CoreOutbound::Selector(_) | CoreOutbound::Urltest(_)
+                        if valid_tag(tag, "pool-") =>
+                    {
+                        pool_tags.insert(tag.to_owned());
+                    }
+                    _ => return Err(rejected),
+                }
+            }
+        }
+        let mut ingress = Vec::new();
+        for endpoint in &self.endpoints {
+            if endpoint.kind != "wireguard"
+                || endpoint.system
+                || endpoint.peers.len() != 1
+                || !valid_tag(&endpoint.tag, "node-")
+                || !tags.insert(endpoint.tag.clone())
+            {
+                return Err(rejected);
+            }
+            let peer = &endpoint.peers[0];
+            if peer.allowed_ips != ["0.0.0.0/0", "::/0"] {
+                return Err(rejected);
+            }
+            let node = ProxyNode {
+                id: NodeId(endpoint.tag[5..].to_owned()),
+                provider_id: ProviderId("compiler".to_owned()),
+                name: String::new(),
+                protocol: ProxyProtocol::WireGuard,
+                server: peer.address.clone(),
+                port: peer.port,
+                options: ProtocolOptions::WireGuard {
+                    private_key: endpoint.private_key.clone(),
+                    peer_public_key: peer.public_key.clone(),
+                    pre_shared_key: peer.pre_shared_key.clone(),
+                    local_addresses: endpoint.address.clone(),
+                    mtu: endpoint.mtu,
+                    reserved: peer.reserved,
+                },
+                tls: None,
+                transport: None,
+            };
+            validate_node(&node)?;
+            node_tags.insert(endpoint.tag.clone());
+            ingress.push(endpoint.tag.clone());
+        }
+        ingress.sort();
+        if direct_count != 1
+            || block_count != 1
+            || node_tags.is_empty()
+            || !pool_tags.contains(&self.route.final_outbound)
+        {
+            return Err(CompileError::InvalidRouteTarget);
+        }
+        for outbound in &self.outbounds {
+            match outbound {
+                CoreOutbound::Selector(pool) => {
+                    validate_members(&pool.outbounds, &node_tags)?;
+                    if pool
+                        .default
+                        .as_ref()
+                        .is_some_and(|selected| !pool.outbounds.contains(selected))
+                    {
+                        return Err(CompileError::InvalidRouteTarget);
+                    }
+                }
+                CoreOutbound::Urltest(pool) => {
+                    validate_members(&pool.outbounds, &node_tags)?;
+                    let seconds = pool
+                        .interval
+                        .strip_suffix('s')
+                        .and_then(|value| value.parse::<u64>().ok());
+                    if !valid_probe_url(&pool.url) || !seconds.is_some_and(|value| value > 0) {
+                        return Err(CompileError::InvalidNodeConfiguration);
+                    }
+                }
+                _ => {}
+            }
+        }
+        let user_rules = if ingress.is_empty() {
+            if !self.dns.rules.is_empty() {
+                return Err(rejected);
+            }
+            self.route.rules.as_slice()
+        } else {
+            if self.dns.rules.len() != 1
+                || !self.dns.rules[0].is_ingress_reject(&ingress)
+                || !self
+                    .route
+                    .rules
+                    .first()
+                    .is_some_and(|rule| rule.is_ingress_reject(&ingress))
+            {
+                return Err(rejected);
+            }
+            &self.route.rules[1..]
+        };
+        for rule in user_rules {
+            if rule.inbound.is_some()
+                || rule.action.is_some()
+                || rule.matcher_count() != 1
+                || !rule.outbound.as_ref().is_some_and(|target| {
+                    target == "direct" || target == "block" || pool_tags.contains(target)
+                })
+            {
+                return Err(CompileError::InvalidRouteTarget);
+            }
+            for values in [&rule.domain, &rule.domain_suffix, &rule.process_name]
+                .into_iter()
+                .flatten()
+            {
+                if values.is_empty() || values.iter().any(|value| !present(value)) {
+                    return Err(rejected);
+                }
+            }
+            if rule.ip_cidr.as_ref().is_some_and(|values| {
+                values.is_empty() || values.iter().any(|value| !valid_prefix(value))
+            }) || rule
+                .port
+                .as_ref()
+                .is_some_and(|ports| ports.is_empty() || ports.contains(&0))
+                || rule.network.as_ref().is_some_and(Vec::is_empty)
+            {
+                return Err(rejected);
+            }
+        }
+        Ok(())
+    }
+
+    #[cfg(test)]
+    fn validate_test_local_positive(&self) -> Result<(), CompileError> {
+        let rejected = CompileError::InvalidFinalConfiguration;
+        let [endpoint] = self.endpoints.as_slice() else {
+            return Err(rejected);
+        };
+        let [peer] = endpoint.peers.as_slice() else {
+            return Err(rejected);
+        };
+        let [tcp, udp, _, user_rule] = self.route.rules.as_slice() else {
+            return Err(rejected);
+        };
+        let Some([tcp_port]) = tcp.port.as_deref() else {
+            return Err(rejected);
+        };
+        let Some([udp_port]) = udp.port.as_deref() else {
+            return Err(rejected);
+        };
+        if !self.inbounds.is_empty()
+            || endpoint.address.as_slice() != ["198.18.0.1/32"]
+            || endpoint.mtu != Some(1280)
+            || peer.address != "127.0.0.1"
+            || peer.port == 9090
+            || peer.pre_shared_key.is_some()
+            || peer.reserved.is_some()
+            || tcp_port == udp_port
+            || [*tcp_port, *udp_port]
+                .iter()
+                .any(|port| [0, 9090, peer.port].contains(port))
+            || self.outbounds.len() != 3
+            || user_rule.port.as_deref() != Some(&[*tcp_port, *udp_port])
+            || user_rule.outbound.as_deref() != Some("direct")
+        {
+            return Err(rejected);
+        }
+        for (rule, network) in [(tcp, NetworkProtocol::Tcp), (udp, NetworkProtocol::Udp)] {
+            if rule.inbound.as_deref() != Some(std::slice::from_ref(&endpoint.tag))
+                || rule.ip_cidr.as_deref() != Some(&["127.0.0.1/32".to_owned()])
+                || rule.network.as_deref() != Some(&[network])
+                || rule.outbound.as_deref() != Some("direct")
+                || rule.action.is_some()
+                || rule.matcher_count() != 3
+            {
+                return Err(rejected);
+            }
+        }
+        for outbound in &self.outbounds {
+            match outbound {
+                CoreOutbound::Direct(_) | CoreOutbound::Block(_) => {}
+                CoreOutbound::Urltest(pool)
+                    if pool.tag == self.route.final_outbound
+                        && pool.outbounds.as_slice() == [endpoint.tag.as_str()]
+                        && pool.interval == "300s" =>
+                {
+                    let Some(query) = pool
+                        .url
+                        .strip_prefix("http://198.18.0.2:18080/task009-wg?token=")
+                    else {
+                        return Err(rejected);
+                    };
+                    let Some((token, phase)) = query.split_once("&phase=") else {
+                        return Err(rejected);
+                    };
+                    if token.len() != 32
+                        || !token
+                            .bytes()
+                            .all(|byte| byte.is_ascii_digit() || (b'a'..=b'f').contains(&byte))
+                        || !matches!(phase, "1" | "3")
+                    {
+                        return Err(rejected);
+                    }
+                }
+                _ => return Err(rejected),
+            }
+        }
+        Ok(())
+    }
+
+    #[cfg(test)]
+    fn validate_test_inbounds(&self) -> Result<(), CompileError> {
+        if self.inbounds.is_empty() {
+            return Ok(());
+        }
+        let rejected = CompileError::InvalidFinalConfiguration;
+        let [inbound] = self.inbounds.as_slice() else {
+            return Err(rejected);
+        };
+        if inbound.tag == "test-wg-udp" {
+            let [endpoint] = self.endpoints.as_slice() else {
+                return Err(rejected);
+            };
+            let [peer] = endpoint.peers.as_slice() else {
+                return Err(rejected);
+            };
+            if inbound.kind != "direct"
+                || inbound.listen != "127.0.0.1"
+                || inbound.network != "udp"
+                || inbound.override_address != "198.18.0.2"
+                || inbound.override_port.get() != 18081
+                || inbound.listen_port.get() == 9090
+                || inbound.listen_port.get() == peer.port
+                || endpoint.address.as_slice() != ["198.18.0.1/32"]
+                || endpoint.mtu != Some(1280)
+                || peer.address != "127.0.0.1"
+                || peer.port == 9090
+                || peer.pre_shared_key.is_some()
+                || peer.reserved.is_some()
+                || self.outbounds.len() != 3
+                || self.route.rules.len() != 1
+                || self.dns.rules.len() != 1
+            {
+                return Err(rejected);
+            }
+            // 通用 validate 继续核对唯一 Direct/Block、WG 密钥和两条置顶 reject。
+            for outbound in &self.outbounds {
+                match outbound {
+                    CoreOutbound::Direct(_) | CoreOutbound::Block(_) => {}
+                    CoreOutbound::Selector(pool)
+                        if pool.tag == self.route.final_outbound
+                            && pool.outbounds.as_slice() == [endpoint.tag.as_str()]
+                            && pool.default.as_deref() == Some(endpoint.tag.as_str()) => {}
+                    _ => return Err(rejected),
+                }
+            }
+            return Ok(());
+        }
+        if inbound.kind != "direct"
+            || inbound.tag != "test-metering"
+            || inbound.listen != "127.0.0.1"
+            || inbound.network != "tcp"
+            || inbound.override_address != "127.0.0.1"
+            || inbound.listen_port.get() == 9090
+            || inbound.override_port.get() == 9090
+            || inbound.listen_port == inbound.override_port
+            || !self.endpoints.is_empty()
+            || !self.route.rules.first().is_some_and(|rule| {
+                rule.outbound.as_deref() == Some("direct")
+                    && rule
+                        .ip_cidr
+                        .as_ref()
+                        .is_some_and(|cidrs| cidrs.as_slice() == ["127.0.0.1/32"])
+                    && rule.matcher_count() == 1
+                    && rule.inbound.is_none()
+                    && rule.action.is_none()
+            })
+        {
+            return Err(rejected);
+        }
+        for outbound in &self.outbounds {
+            match outbound {
+                CoreOutbound::Urltest(_) => return Err(rejected),
+                CoreOutbound::Selector(pool) if pool.default.is_none() => return Err(rejected),
+                _ => {}
+            }
+            if let Some(node) = outbound.domain()?
+                && !node
+                    .server
+                    .parse::<IpAddr>()
+                    .is_ok_and(|ip| ip.is_loopback())
+            {
+                return Err(rejected);
+            }
+        }
+        Ok(())
+    }
+}
+
+fn validate_members(members: &[String], node_tags: &BTreeSet<String>) -> Result<(), CompileError> {
+    if members.is_empty() {
+        return Err(CompileError::EmptyPoolMembership);
+    }
+    if members.iter().any(|member| !node_tags.contains(member))
+        || members.iter().collect::<BTreeSet<_>>().len() != members.len()
+    {
+        return Err(CompileError::InvalidRouteTarget);
+    }
+    Ok(())
+}
+
+fn validate_node(node: &ProxyNode) -> Result<(), CompileError> {
+    let invalid = CompileError::InvalidNodeConfiguration;
+    if !present(&node.id.0)
+        || !valid_server(&node.server)
+        || node.port == 0
+        || !node.options.is_compatible_with(node.protocol)
+    {
+        return Err(invalid);
+    }
+    let supports_tls = matches!(
+        node.protocol,
+        ProxyProtocol::Http
+            | ProxyProtocol::Vmess
+            | ProxyProtocol::Vless
+            | ProxyProtocol::Trojan
+            | ProxyProtocol::Hysteria
+            | ProxyProtocol::Hysteria2
+            | ProxyProtocol::Tuic
+            | ProxyProtocol::ShadowTls
+            | ProxyProtocol::Naive
+            | ProxyProtocol::AnyTls
+    );
+    let requires_tls = matches!(
+        node.protocol,
+        ProxyProtocol::Trojan
+            | ProxyProtocol::Hysteria
+            | ProxyProtocol::Hysteria2
+            | ProxyProtocol::Tuic
+            | ProxyProtocol::ShadowTls
+            | ProxyProtocol::Naive
+            | ProxyProtocol::AnyTls
+    );
+    if (node.tls.is_some() && !supports_tls) || (requires_tls && node.tls.is_none()) {
+        return Err(invalid);
+    }
+    if let Some(tls) = &node.tls {
+        if tls
+            .server_name
+            .as_ref()
+            .is_some_and(|name| !valid_server(name))
+        {
+            return Err(invalid);
+        }
+        match (&tls.reality_public_key, &tls.reality_short_id) {
+            (None, None) => {}
+            (Some(key), Some(short_id))
+                if node.protocol == ProxyProtocol::Vless
+                    && valid_key(key, true)
+                    && !short_id.is_empty()
+                    && short_id.len() <= 16
+                    && short_id.len() % 2 == 0
+                    && short_id.bytes().all(|byte| byte.is_ascii_hexdigit()) => {}
+            _ => return Err(invalid),
+        }
+    }
+    if let Some(transport) = &node.transport {
+        match transport {
+            Transport::Tcp => {}
+            Transport::Websocket { path, host }
+                if matches!(
+                    node.protocol,
+                    ProxyProtocol::Vmess | ProxyProtocol::Vless | ProxyProtocol::Trojan
+                ) && path.starts_with('/')
+                    && !path.chars().any(char::is_control)
+                    && host.as_ref().is_none_or(|host| {
+                        present(host) && !host.chars().any(char::is_control)
+                    }) => {}
+            Transport::Grpc { service_name }
+                if matches!(
+                    node.protocol,
+                    ProxyProtocol::Vmess | ProxyProtocol::Vless | ProxyProtocol::Trojan
+                ) && present(service_name) => {}
+            _ => return Err(invalid),
+        }
+    }
+    let valid = match &node.options {
+        ProtocolOptions::Socks {
+            version,
+            username,
+            password,
+        } => {
+            matches!(version, 4 | 5)
+                && username.as_ref().is_none_or(|value| present(value))
+                && password.as_ref().is_none_or(|value| present(value))
+        }
+        ProtocolOptions::Http {
+            username, password, ..
+        } => {
+            username.as_ref().is_none_or(|value| present(value))
+                && password.as_ref().is_none_or(|value| present(value))
+        }
+        ProtocolOptions::Shadowsocks { method, password } => present(method) && present(password),
+        ProtocolOptions::Vmess { uuid, security, .. } => {
+            valid_uuid(uuid)
+                && security.as_ref().is_none_or(|value| {
+                    matches!(
+                        value.as_str(),
+                        "auto" | "none" | "zero" | "aes-128-gcm" | "chacha20-poly1305"
+                    )
+                })
+        }
+        ProtocolOptions::Vless { uuid, flow } => {
+            valid_uuid(uuid)
+                && flow
+                    .as_ref()
+                    .is_none_or(|value| value == "xtls-rprx-vision" && node.tls.is_some())
+        }
+        ProtocolOptions::Trojan { password } | ProtocolOptions::AnyTls { password } => {
+            present(password)
+        }
+        ProtocolOptions::WireGuard {
+            private_key,
+            peer_public_key,
+            pre_shared_key,
+            local_addresses,
+            ..
+        } => {
+            valid_key(private_key, false)
+                && valid_key(peer_public_key, false)
+                && pre_shared_key
+                    .as_ref()
+                    .is_none_or(|key| valid_key(key, false))
+                && !local_addresses.is_empty()
+                && local_addresses.iter().all(|value| valid_prefix(value))
+        }
+        ProtocolOptions::Hysteria {
+            auth,
+            obfs,
+            up_mbps,
+            down_mbps,
+        } => {
+            present(auth)
+                && obfs.as_ref().is_none_or(|value| present(value))
+                && up_mbps.is_some_and(|value| value > 0)
+                && down_mbps.is_some_and(|value| value > 0)
+        }
+        ProtocolOptions::Hysteria2 { password, obfs } => {
+            present(password) && obfs.as_ref().is_none_or(|value| present(value))
+        }
+        ProtocolOptions::Tuic {
+            uuid,
+            password,
+            congestion_control,
+            udp_relay_mode,
+            ..
+        } => {
+            valid_uuid(uuid)
+                && present(password)
+                && congestion_control
+                    .as_ref()
+                    .is_none_or(|value| matches!(value.as_str(), "cubic" | "new_reno" | "bbr"))
+                && udp_relay_mode
+                    .as_ref()
+                    .is_none_or(|value| matches!(value.as_str(), "native" | "quic"))
+        }
+        ProtocolOptions::ShadowTls { version, password } => {
+            matches!(version, 1..=3) && present(password)
+        }
+        ProtocolOptions::Ssh {
+            user,
+            password,
+            private_key,
+            private_key_passphrase,
+            host_key,
+        } => {
+            present(user)
+                && password.as_ref().is_none_or(|value| present(value))
+                && private_key.as_ref().is_none_or(|value| present(value))
+                && private_key_passphrase
+                    .as_ref()
+                    .is_none_or(|_| private_key.is_some())
+                && host_key.as_ref().is_none_or(|value| present(value))
+        }
+        ProtocolOptions::Naive { username, password } => present(username) && present(password),
+        ProtocolOptions::Snell { psk, version } => present(psk) && *version == 4,
+    };
+    if !valid {
+        return Err(invalid);
+    }
+    Ok(())
+}
+
+fn present(value: &str) -> bool {
+    !value.trim().is_empty() && !value.contains('\0')
+}
 fn node_tag(id: &str) -> String {
     format!("node-{id}")
 }
 fn pool_tag(id: &str) -> String {
     format!("pool-{id}")
 }
-
-fn protocol_name(protocol: crate::domain::ProxyProtocol) -> &'static str {
-    match protocol {
-        crate::domain::ProxyProtocol::Shadowsocks => "shadowsocks",
-        crate::domain::ProxyProtocol::Vmess => "vmess",
-        crate::domain::ProxyProtocol::Vless => "vless",
-        crate::domain::ProxyProtocol::Trojan => "trojan",
-        crate::domain::ProxyProtocol::Hysteria2 => "hysteria2",
-        crate::domain::ProxyProtocol::Tuic => "tuic",
-        crate::domain::ProxyProtocol::Socks5 => "socks",
-        crate::domain::ProxyProtocol::Http => "http",
-        crate::domain::ProxyProtocol::Https => "http",
-        crate::domain::ProxyProtocol::AnyTls => "anytls",
+fn valid_tag(tag: &str, prefix: &str) -> bool {
+    tag.strip_prefix(prefix).is_some_and(present)
+}
+fn valid_secret(secret: &str) -> bool {
+    secret.len() == 64
+        && secret
+            .bytes()
+            .all(|byte| byte.is_ascii_hexdigit() && !byte.is_ascii_uppercase())
+}
+fn valid_uuid(uuid: &str) -> bool {
+    uuid.len() == 36
+        && uuid.bytes().enumerate().all(|(index, byte)| {
+            if matches!(index, 8 | 13 | 18 | 23) {
+                byte == b'-'
+            } else {
+                byte.is_ascii_hexdigit()
+            }
+        })
+}
+fn valid_key(key: &str, url_safe: bool) -> bool {
+    let bytes = key.as_bytes();
+    let payload = if url_safe && bytes.len() == 43 {
+        bytes
+    } else if !url_safe && bytes.len() == 44 && bytes[43] == b'=' {
+        &bytes[..43]
+    } else {
+        return false;
+    };
+    let sextet = |byte: u8| match byte {
+        b'A'..=b'Z' => Some(byte - b'A'),
+        b'a'..=b'z' => Some(byte - b'a' + 26),
+        b'0'..=b'9' => Some(byte - b'0' + 52),
+        b'-' if url_safe => Some(62),
+        b'_' if url_safe => Some(63),
+        b'+' if !url_safe => Some(62),
+        b'/' if !url_safe => Some(63),
+        _ => None,
+    };
+    payload.iter().all(|byte| sextet(*byte).is_some())
+        && sextet(payload[42]).is_some_and(|value| value & 3 == 0)
+}
+fn valid_prefix(value: &str) -> bool {
+    let Some((address, prefix)) = value.split_once('/') else {
+        return false;
+    };
+    let (Ok(address), Ok(prefix)) = (address.parse::<IpAddr>(), prefix.parse::<u8>()) else {
+        return false;
+    };
+    prefix <= if address.is_ipv4() { 32 } else { 128 }
+}
+fn valid_server(server: &str) -> bool {
+    if server.parse::<IpAddr>().is_ok() {
+        return true;
     }
+    let host = server.strip_suffix('.').unwrap_or(server);
+    !host.is_empty()
+        && host.len() <= 253
+        && host.split('.').all(|label| {
+            !label.is_empty()
+                && label.len() <= 63
+                && !label.starts_with('-')
+                && !label.ends_with('-')
+                && label
+                    .bytes()
+                    .all(|byte| byte.is_ascii_alphanumeric() || byte == b'-')
+        })
+}
+fn valid_probe_url(value: &str) -> bool {
+    reqwest::Url::parse(value)
+        .is_ok_and(|url| matches!(url.scheme(), "http" | "https") && url.host_str().is_some())
 }
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum CompileError {
     EmptyPoolMembership,
     InvalidNodeConfiguration,
+    InvalidRouteTarget,
     UnsupportedNodeProtocol,
+    InvalidFinalConfiguration,
     SerializationFailed,
 }
-
 impl fmt::Display for CompileError {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         formatter.write_str(match self {
@@ -306,297 +1660,1584 @@ impl fmt::Display for CompileError {
             Self::InvalidNodeConfiguration => {
                 "node configuration cannot be compiled by the current typed model"
             }
+            Self::InvalidRouteTarget => {
+                "route target is not a configured active pool or allowed rule target"
+            }
             Self::UnsupportedNodeProtocol => {
-                "node protocol cannot be compiled by the current typed model"
+                "node protocol is not supported by this compilation boundary"
+            }
+            Self::InvalidFinalConfiguration => {
+                "generated configuration violates the managed profile"
             }
             Self::SerializationFailed => "generated configuration could not be serialized",
         })
     }
 }
-
 impl std::error::Error for CompileError {}
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::domain::{
-        AppState, NodeCredentials, NodeFilter, NodeId, NodePool, PoolId, PoolKind, PoolSource,
-        Provider, ProviderId, ProxyNode, RoutePolicy, RoutePolicyId, Subscription, SubscriptionId,
-        TlsOptions, Transport,
-    };
+    use crate::domain::{AppState, PoolId, RoutePolicy, RoutePolicyId, RuntimePool};
+    use crate::singbox::managed_sidecar::test_api_secret;
+    use serde_json::{Value, json};
 
-    fn intent() -> RuntimeIntent {
-        let mut state = AppState {
-            schema_version: crate::domain::CURRENT_SCHEMA_VERSION,
-            subscriptions: vec![Subscription {
-                id: SubscriptionId("subscription".to_owned()),
-                name: "Subscription".to_owned(),
-            }],
-            providers: vec![Provider {
-                id: ProviderId("provider".to_owned()),
-                subscription_id: SubscriptionId("subscription".to_owned()),
-                name: "Provider".to_owned(),
-            }],
-            nodes: vec![ProxyNode {
-                id: NodeId("node".to_owned()),
-                provider_id: ProviderId("provider".to_owned()),
-                name: "Node".to_owned(),
-                protocol: crate::domain::ProxyProtocol::Vless,
-                server: "example.invalid".to_owned(),
-                port: 443,
-                credentials: NodeCredentials::Uuid {
-                    uuid: "fixture-secret".to_owned(),
+    const UUID: &str = "00000000-0000-4000-8000-000000000001";
+    const WG_PRIVATE: &str = "AQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHyA=";
+    const WG_PUBLIC: &str = "ISIjJCUmJygpKissLS4vMDEyMzQ1Njc4OTo7PD0+P0A=";
+    const PASSWORD: &str = "synthetic-password";
+
+    fn tls() -> TlsOptions {
+        TlsOptions {
+            server_name: Some("example.invalid".to_owned()),
+            allow_insecure: false,
+            reality_public_key: None,
+            reality_short_id: None,
+        }
+    }
+    fn node(protocol: ProxyProtocol, options: ProtocolOptions, with_tls: bool) -> ProxyNode {
+        ProxyNode {
+            id: NodeId("node".to_owned()),
+            provider_id: ProviderId("provider".to_owned()),
+            name: "Display name".to_owned(),
+            protocol,
+            server: "192.0.2.1".to_owned(),
+            port: 443,
+            options,
+            transport: None,
+            tls: with_tls.then(tls),
+        }
+    }
+    fn protocol_nodes() -> Vec<ProxyNode> {
+        vec![
+            node(
+                ProxyProtocol::Socks,
+                ProtocolOptions::Socks {
+                    version: 5,
+                    username: Some("fixture-user".to_owned()),
+                    password: Some(PASSWORD.to_owned()),
+                },
+                false,
+            ),
+            node(
+                ProxyProtocol::Http,
+                ProtocolOptions::Http {
+                    username: Some("fixture-user".to_owned()),
+                    password: Some(PASSWORD.to_owned()),
+                    tls: false,
+                },
+                false,
+            ),
+            node(
+                ProxyProtocol::Shadowsocks,
+                ProtocolOptions::Shadowsocks {
+                    method: "aes-128-gcm".to_owned(),
+                    password: PASSWORD.to_owned(),
+                },
+                false,
+            ),
+            node(
+                ProxyProtocol::Vmess,
+                ProtocolOptions::Vmess {
+                    uuid: UUID.to_owned(),
+                    alter_id: Some(0),
+                    security: Some("auto".to_owned()),
+                },
+                false,
+            ),
+            node(
+                ProxyProtocol::Vless,
+                ProtocolOptions::Vless {
+                    uuid: UUID.to_owned(),
                     flow: None,
                 },
-                transport: Some(Transport::Websocket {
-                    path: "/ws".to_owned(),
-                    host: Some("cdn.example.invalid".to_owned()),
-                }),
-                tls: Some(TlsOptions {
-                    server_name: Some("example.invalid".to_owned()),
-                    allow_insecure: false,
-                    reality_public_key: Some("fixture-public-key".to_owned()),
-                    reality_short_id: Some("fixture-short-id".to_owned()),
-                }),
-            }],
-            pools: vec![
-                NodePool {
-                    id: PoolId("manual".to_owned()),
-                    name: "Manual".to_owned(),
-                    kind: PoolKind::Custom,
-                    sources: vec![PoolSource {
-                        provider_id: ProviderId("provider".to_owned()),
-                        filter: NodeFilter::default(),
-                    }],
-                    selection: SelectionPolicy::Manual {
-                        selected_node_id: Some(NodeId("node-b".to_owned())),
-                    },
-                    enabled: true,
+                false,
+            ),
+            node(
+                ProxyProtocol::Trojan,
+                ProtocolOptions::Trojan {
+                    password: PASSWORD.to_owned(),
                 },
-                NodePool {
+                true,
+            ),
+            node(
+                ProxyProtocol::WireGuard,
+                ProtocolOptions::WireGuard {
+                    private_key: WG_PRIVATE.to_owned(),
+                    peer_public_key: WG_PUBLIC.to_owned(),
+                    pre_shared_key: Some(WG_PRIVATE.to_owned()),
+                    local_addresses: vec!["10.0.0.2/32".to_owned(), "fd00::2/128".to_owned()],
+                    mtu: Some(1280),
+                    reserved: Some([1, 2, 3]),
+                },
+                false,
+            ),
+            node(
+                ProxyProtocol::Hysteria,
+                ProtocolOptions::Hysteria {
+                    auth: PASSWORD.to_owned(),
+                    obfs: Some("fixture-obfs".to_owned()),
+                    up_mbps: Some(10),
+                    down_mbps: Some(20),
+                },
+                true,
+            ),
+            node(
+                ProxyProtocol::Hysteria2,
+                ProtocolOptions::Hysteria2 {
+                    password: PASSWORD.to_owned(),
+                    obfs: Some("fixture-obfs".to_owned()),
+                },
+                true,
+            ),
+            node(
+                ProxyProtocol::Tuic,
+                ProtocolOptions::Tuic {
+                    uuid: UUID.to_owned(),
+                    password: PASSWORD.to_owned(),
+                    congestion_control: Some("bbr".to_owned()),
+                    udp_relay_mode: Some("native".to_owned()),
+                    zero_rtt: false,
+                },
+                true,
+            ),
+            node(
+                ProxyProtocol::ShadowTls,
+                ProtocolOptions::ShadowTls {
+                    version: 3,
+                    password: PASSWORD.to_owned(),
+                },
+                true,
+            ),
+            node(
+                ProxyProtocol::Ssh,
+                ProtocolOptions::Ssh {
+                    user: "fixture-user".to_owned(),
+                    password: Some(PASSWORD.to_owned()),
+                    private_key: None,
+                    private_key_passphrase: None,
+                    host_key: None,
+                },
+                false,
+            ),
+            node(
+                ProxyProtocol::Naive,
+                ProtocolOptions::Naive {
+                    username: "fixture-user".to_owned(),
+                    password: PASSWORD.to_owned(),
+                },
+                true,
+            ),
+            node(
+                ProxyProtocol::AnyTls,
+                ProtocolOptions::AnyTls {
+                    password: PASSWORD.to_owned(),
+                },
+                true,
+            ),
+            node(
+                ProxyProtocol::Snell,
+                ProtocolOptions::Snell {
+                    psk: PASSWORD.to_owned(),
+                    version: 4,
+                },
+                false,
+            ),
+        ]
+    }
+    fn fixture(selected: ProxyNode) -> RuntimeIntent {
+        RuntimeIntent {
+            nodes: vec![selected],
+            pools: vec![
+                RuntimePool {
+                    id: PoolId("manual".to_owned()),
+                    members: vec![NodeId("node".to_owned())],
+                    selection: SelectionPolicy::Manual {
+                        selected_node_id: Some(NodeId("node".to_owned())),
+                    },
+                },
+                RuntimePool {
                     id: PoolId("auto".to_owned()),
-                    name: "Auto".to_owned(),
-                    kind: PoolKind::Custom,
-                    sources: vec![PoolSource {
-                        provider_id: ProviderId("provider".to_owned()),
-                        filter: NodeFilter::default(),
-                    }],
+                    members: vec![NodeId("node".to_owned())],
                     selection: SelectionPolicy::UrlTest {
-                        probe_url: "https://example.invalid/probe".to_owned(),
+                        probe_url: "https://probe.example.invalid/check?x=1".to_owned(),
                         interval_secs: 60,
                         tolerance_ms: 50,
                     },
-                    enabled: true,
                 },
             ],
             routes: vec![
                 RoutePolicy {
-                    id: RoutePolicyId("pool-route".to_owned()),
-                    name: "Pool route".to_owned(),
+                    id: RoutePolicyId("pool-rule".to_owned()),
+                    name: "Pool".to_owned(),
                     enabled: true,
                     priority: 0,
                     matcher: TrafficMatcher::DomainSuffix(vec!["example.com".to_owned()]),
                     target: RouteTarget::Pool(PoolId("manual".to_owned())),
                 },
                 RoutePolicy {
-                    id: RoutePolicyId("direct-route".to_owned()),
-                    name: "Direct route".to_owned(),
+                    id: RoutePolicyId("direct-rule".to_owned()),
+                    name: "Direct".to_owned(),
                     enabled: true,
                     priority: 1,
-                    matcher: TrafficMatcher::Domain(vec!["direct.example".to_owned()]),
+                    matcher: TrafficMatcher::Port(vec![80, 443]),
                     target: RouteTarget::Direct,
                 },
                 RoutePolicy {
-                    id: RoutePolicyId("block-route".to_owned()),
-                    name: "Block route".to_owned(),
+                    id: RoutePolicyId("block-rule".to_owned()),
+                    name: "Block".to_owned(),
                     enabled: true,
                     priority: 2,
-                    matcher: TrafficMatcher::Domain(vec!["block.example".to_owned()]),
+                    matcher: TrafficMatcher::Protocol(vec![NetworkProtocol::Udp]),
                     target: RouteTarget::Block,
                 },
             ],
+        }
+    }
+    fn intent() -> RuntimeIntent {
+        fixture(protocol_nodes().remove(4))
+    }
+    fn metering_intent() -> RuntimeIntent {
+        let mut intent = fixture(protocol_nodes().remove(0));
+        intent.nodes[0].server = "127.0.0.1".to_owned();
+        intent.pools.truncate(1);
+        intent.routes = vec![RoutePolicy {
+            id: RoutePolicyId("metering-direct".to_owned()),
+            name: "本机计量".to_owned(),
+            enabled: true,
+            priority: 0,
+            matcher: TrafficMatcher::IpCidr(vec!["127.0.0.1/32".to_owned()]),
+            target: RouteTarget::Direct,
+        }];
+        intent
+    }
+    fn wireguard_udp_intent() -> RuntimeIntent {
+        let mut intent = fixture(protocol_nodes().remove(6));
+        intent.nodes[0].server = "127.0.0.1".to_owned();
+        intent.nodes[0].port = 24002;
+        intent.nodes[0].options = ProtocolOptions::WireGuard {
+            private_key: WG_PRIVATE.to_owned(),
+            peer_public_key: WG_PUBLIC.to_owned(),
+            pre_shared_key: None,
+            local_addresses: vec!["198.18.0.1/32".to_owned()],
+            mtu: Some(1280),
+            reserved: None,
         };
-        state.nodes.push(ProxyNode {
-            id: NodeId("node-b".to_owned()),
-            name: "Other node".to_owned(),
-            ..state.nodes[0].clone()
-        });
-        RuntimeIntent::from_state(&state).expect("valid runtime intent")
+        intent.pools.truncate(1);
+        intent.routes.clear();
+        intent
+    }
+
+    fn wireguard_local_intent(phase: u8) -> RuntimeIntent {
+        let mut intent = wireguard_udp_intent();
+        intent.pools[0].selection = SelectionPolicy::UrlTest {
+            probe_url: format!(
+                "http://198.18.0.2:18080/task009-wg?token=00112233445566778899aabbccddeeff&phase={phase}"
+            ),
+            interval_secs: 300,
+            tolerance_ms: 50,
+        };
+        intent.routes = vec![RoutePolicy {
+            id: RoutePolicyId("local-targets".to_owned()),
+            name: "Local targets".to_owned(),
+            enabled: true,
+            priority: 0,
+            matcher: TrafficMatcher::Port(vec![24003, 24004]),
+            target: RouteTarget::Direct,
+        }];
+        intent
+    }
+
+    fn wireguard_local_plan(intent: &RuntimeIntent) -> Result<SingBoxPlan, CompileError> {
+        SingBoxCompiler.compile_wireguard_local_positive(
+            intent,
+            &RouteTarget::Pool(PoolId("manual".to_owned())),
+            DnsPolicy::System,
+            NonZeroU16::new(24003).expect("TCP port"),
+            NonZeroU16::new(24004).expect("UDP port"),
+        )
     }
 
     #[test]
-    fn compiles_a_deterministic_typed_snapshot() {
-        let compiler = SingBoxCompiler;
-        let first = compiler.compile(&intent()).expect("compile first");
-        let second = compiler.compile(&intent()).expect("compile second");
-        let document: Value = serde_json::from_slice(first.as_bytes()).expect("parse snapshot");
-        let outbounds = document["outbounds"].as_array().expect("outbounds array");
-        let rules = document["route"]["rules"].as_array().expect("rules array");
+    fn wireguard_local_controls_preserve_normal_reject_and_final_validation() {
+        for phase in [1, 3] {
+            let intent = wireguard_local_intent(phase);
+            let normal = SingBoxCompiler
+                .compile(
+                    &intent,
+                    &RouteTarget::Pool(PoolId("manual".to_owned())),
+                    DnsPolicy::System,
+                    RuntimeProfile::ObservationOnly,
+                )
+                .expect("normal compile");
+            assert_eq!(normal.document.route.rules.len(), 2);
+            assert!(normal.document.route.rules[0].is_ingress_reject(&["node-node".to_owned()]));
+            let plan = wireguard_local_plan(&intent).expect("positive plan");
+            // 非 test 路径仅调用此通用校验，不允许前缀放行。
+            assert!(plan.document.validate_standard(false).is_err());
+            let config = plan
+                .finalize(&test_api_secret())
+                .expect("positive finalize");
+            config
+                .validate_final()
+                .expect("readback validates full tuple");
+            let value: Value = serde_json::from_slice(config.as_bytes()).expect("JSON");
+            assert_eq!(value["inbounds"], json!([]));
+            assert_eq!(
+                value["route"]["rules"],
+                json!([
+                    {"inbound":["node-node"],"ip_cidr":["127.0.0.1/32"],"port":[24003],"network":["tcp"],"outbound":"direct"},
+                    {"inbound":["node-node"],"ip_cidr":["127.0.0.1/32"],"port":[24004],"network":["udp"],"outbound":"direct"},
+                    {"inbound":["node-node"],"action":"reject"},
+                    {"port":[24003,24004],"outbound":"direct"}
+                ])
+            );
+            assert_eq!(
+                value["dns"]["rules"],
+                json!([{"inbound":["node-node"],"action":"reject"}])
+            );
+        }
+    }
 
-        assert_eq!(first, second);
-        assert!(outbounds.iter().any(|outbound| {
-            outbound["tag"] == "pool-manual"
-                && outbound["type"] == "selector"
-                && outbound["default"] == "node-node-b"
-        }));
-        assert!(outbounds.iter().any(|outbound| {
-            outbound["tag"] == "pool-auto"
-                && outbound["type"] == "urltest"
-                && outbound["url"] == "https://example.invalid/probe"
-                && outbound["interval"] == "60s"
-                && outbound["tolerance"] == 50
-        }));
-        let node = outbounds
+    #[test]
+    fn wireguard_local_positive_rejects_unapproved_intents() {
+        let original = wireguard_local_intent(1);
+        let mut variants = vec![wireguard_local_intent(2), wireguard_local_intent(4)];
+        let mut changed = original.clone();
+        changed.routes[0].enabled = false;
+        variants.push(changed);
+        let mut changed = original.clone();
+        let mut extra = changed.routes[0].clone();
+        extra.enabled = false;
+        changed.routes.push(extra);
+        variants.push(changed);
+        let mut changed = original.clone();
+        changed.routes[0].target = RouteTarget::Block;
+        variants.push(changed);
+        let mut changed = original.clone();
+        changed.routes[0].matcher = TrafficMatcher::Port(vec![24004, 24003]);
+        variants.push(changed);
+        let mut changed = original.clone();
+        changed.nodes[0].server = "localhost".to_owned();
+        variants.push(changed);
+        let mut changed = original.clone();
+        changed.nodes.push(changed.nodes[0].clone());
+        variants.push(changed);
+        let mut changed = original.clone();
+        changed.pools.push(changed.pools[0].clone());
+        variants.push(changed);
+        let mut changed = original.clone();
+        changed.pools[0].selection = SelectionPolicy::Manual {
+            selected_node_id: Some(NodeId("node".to_owned())),
+        };
+        variants.push(changed);
+        for (index, changed) in variants.iter().enumerate() {
+            assert!(
+                wireguard_local_plan(changed).is_err(),
+                "unapproved intent {index}"
+            );
+        }
+        for (tcp, udp) in [
+            (9090, 24004),
+            (24003, 9090),
+            (24002, 24004),
+            (24003, 24002),
+            (24003, 24003),
+        ] {
+            assert!(
+                SingBoxCompiler
+                    .compile_wireguard_local_positive(
+                        &original,
+                        &RouteTarget::Pool(PoolId("manual".to_owned())),
+                        DnsPolicy::System,
+                        NonZeroU16::new(tcp).expect("TCP"),
+                        NonZeroU16::new(udp).expect("UDP")
+                    )
+                    .is_err()
+            );
+        }
+    }
+
+    #[test]
+    fn wireguard_local_positive_readback_rejects_modified_prefix_and_topology() {
+        let config = wireguard_local_plan(&wireguard_local_intent(1))
+            .expect("plan")
+            .finalize(&test_api_secret())
+            .expect("config");
+        let original: Value = serde_json::from_slice(config.as_bytes()).expect("JSON");
+        for (path, bad) in [
+            ("/route/rules/0/inbound", json!(["node-other"])),
+            ("/route/rules/0/ip_cidr", json!(["0.0.0.0/0"])),
+            ("/route/rules/0/port", json!([24005])),
+            ("/route/rules/0/network", json!(["udp"])),
+            ("/route/rules/1/network", json!(["tcp"])),
+            ("/route/rules/1/outbound", json!("block")),
+            ("/route/rules/2/action", json!("route")),
+            ("/route/rules/3/port", json!([24004, 24003])),
+            ("/dns/rules/0/action", json!("route")),
+            ("/endpoints/0/address", json!(["198.18.0.3/32"])),
+            ("/endpoints/0/mtu", json!(1400)),
+            ("/endpoints/0/peers/0/address", json!("127.0.0.2")),
+            ("/endpoints/0/peers/0/port", json!(24003)),
+            ("/outbounds/0/interval", json!("30s")),
+            ("/outbounds/0/outbounds", json!(["direct"])),
+            (
+                "/outbounds/0/url",
+                json!(
+                    "http://198.18.0.2:18080/task009-wg?token=00112233445566778899aabbccddeeff&phase=2"
+                ),
+            ),
+            (
+                "/outbounds/0/url",
+                json!(
+                    "http://198.18.0.2:18080/task009-wg?token=00112233445566778899aabbccddeeff&phase=1&extra=1"
+                ),
+            ),
+            (
+                "/outbounds/0/url",
+                json!("http://198.18.0.2:18080/task009-wg?token=bad&phase=1"),
+            ),
+        ] {
+            let mut changed = original.clone();
+            *changed.pointer_mut(path).expect("existing path") = bad;
+            rejects(changed);
+        }
+        for path in [
+            "/route/rules/0",
+            "/route/rules/1",
+            "/route/rules/3",
+            "/endpoints/0",
+            "/outbounds/0",
+        ] {
+            let mut changed = original.clone();
+            changed
+                .pointer_mut(path)
+                .expect("path")
+                .as_object_mut()
+                .expect("object")
+                .insert("unexpected".to_owned(), json!(true));
+            rejects(changed);
+        }
+        for (left, right) in [(0, 1), (0, 2), (1, 3)] {
+            let mut changed = original.clone();
+            changed["route"]["rules"]
+                .as_array_mut()
+                .expect("rules")
+                .swap(left, right);
+            rejects(changed);
+        }
+        let mut changed = original.clone();
+        changed["route"]["rules"][0]["domain"] = json!(["example.invalid"]);
+        rejects(changed);
+        let mut changed = original.clone();
+        changed["route"]["rules"][3]["network"] = json!(["tcp"]);
+        rejects(changed);
+        let mut changed = original.clone();
+        changed["endpoints"][0]["peers"][0]["reserved"] = json!([0, 0, 0]);
+        rejects(changed);
+        let mut changed = original.clone();
+        changed["endpoints"][0]["peers"][0]["pre_shared_key"] = json!(WG_PRIVATE);
+        rejects(changed);
+        let text = std::str::from_utf8(config.as_bytes())
+            .expect("UTF8")
+            .replacen(
+                "\"network\":[\"tcp\"]",
+                "\"network\":[\"tcp\"],\"network\":[\"tcp\"]",
+                1,
+            );
+        assert!(
+            GeneratedConfig::from_bytes(text.into_bytes())
+                .validate_final()
+                .is_err()
+        );
+    }
+
+    fn wireguard_udp_plan(intent: &RuntimeIntent) -> Result<SingBoxPlan, CompileError> {
+        SingBoxCompiler.compile_wireguard_udp(
+            intent,
+            &RouteTarget::Pool(PoolId("manual".to_owned())),
+            DnsPolicy::System,
+            NonZeroU16::new(24001).expect("nonzero test inlet"),
+        )
+    }
+
+    #[test]
+    fn wireguard_udp_test_plan_preserves_product_and_fixed_topology() {
+        let intent = wireguard_udp_intent();
+        assert_eq!(document(&intent)["inbounds"], json!([]));
+        let config = wireguard_udp_plan(&intent)
+            .expect("UDP plan")
+            .finalize(&test_api_secret())
+            .expect("bound UDP plan");
+        config.validate_final().expect("same final bytes");
+        let value: Value = serde_json::from_slice(config.as_bytes()).expect("test JSON");
+        assert_eq!(
+            value["inbounds"],
+            json!([{
+                "type":"direct", "tag":"test-wg-udp", "listen":"127.0.0.1",
+                "listen_port":24001, "network":"udp", "override_address":"198.18.0.2",
+                "override_port":18081
+            }])
+        );
+        assert_eq!(value["route"]["final"], "pool-manual");
+        assert_eq!(
+            value["route"]["rules"],
+            json!([{"inbound":["node-node"],"action":"reject"}])
+        );
+        assert_eq!(value["dns"]["rules"], value["route"]["rules"]);
+        assert_eq!(value["endpoints"].as_array().expect("endpoints").len(), 1);
+        assert_eq!(value["outbounds"].as_array().expect("outbounds").len(), 3);
+    }
+
+    #[test]
+    fn wireguard_udp_test_compilation_rejects_other_network_intents() {
+        let original = wireguard_udp_intent();
+        let mut variants = Vec::new();
+        let mut changed = original.clone();
+        changed.nodes[0].server = "localhost".to_owned();
+        variants.push(changed);
+        let mut changed = original.clone();
+        changed.pools[0].selection = SelectionPolicy::Manual {
+            selected_node_id: None,
+        };
+        variants.push(changed);
+        let mut changed = original.clone();
+        changed
+            .pools
+            .push(fixture(protocol_nodes().remove(6)).pools.remove(1));
+        variants.push(changed);
+        let mut changed = original.clone();
+        changed.routes = fixture(protocol_nodes().remove(6)).routes;
+        variants.push(changed.clone());
+        for route in &mut changed.routes {
+            route.enabled = false;
+        }
+        variants.push(changed);
+        let mut changed = original.clone();
+        changed.nodes = metering_intent().nodes;
+        variants.push(changed);
+        for (index, changed) in variants.iter().enumerate() {
+            assert!(
+                wireguard_udp_plan(changed).is_err(),
+                "UDP intent case {index}"
+            );
+        }
+        for port in [9090, 24002] {
+            assert!(
+                SingBoxCompiler
+                    .compile_wireguard_udp(
+                        &original,
+                        &RouteTarget::Pool(PoolId("manual".to_owned())),
+                        DnsPolicy::System,
+                        NonZeroU16::new(port).expect("nonzero")
+                    )
+                    .is_err()
+            );
+        }
+    }
+
+    #[test]
+    fn wireguard_udp_final_readback_rejects_inlet_and_endpoint_escape() {
+        let config = wireguard_udp_plan(&wireguard_udp_intent())
+            .expect("UDP plan")
+            .finalize(&test_api_secret())
+            .expect("bound");
+        let original: Value = serde_json::from_slice(config.as_bytes()).expect("JSON");
+        for (path, value) in [
+            ("/inbounds/0/type", json!("mixed")),
+            ("/inbounds/0/tag", json!("test-metering")),
+            ("/inbounds/0/listen", json!("0.0.0.0")),
+            ("/inbounds/0/listen_port", json!(0)),
+            ("/inbounds/0/listen_port", json!(9090)),
+            ("/inbounds/0/listen_port", json!(24002)),
+            ("/inbounds/0/network", json!("tcp")),
+            ("/inbounds/0/override_address", json!("127.0.0.1")),
+            ("/inbounds/0/override_port", json!(18080)),
+            ("/endpoints/0/system", json!(true)),
+            ("/endpoints/0/address", json!(["198.18.0.3/32"])),
+            ("/endpoints/0/mtu", json!(1500)),
+            ("/endpoints/0/peers/0/address", json!("localhost")),
+            ("/endpoints/0/peers/0/port", json!(9090)),
+            ("/endpoints/0/peers/0/allowed_ips", json!(["198.18.0.2/32"])),
+            ("/route/final", json!("direct")),
+            ("/route/rules/0/action", json!("route")),
+            ("/dns/rules/0/action", json!("route")),
+            ("/dns/servers/0/type", json!("udp")),
+        ] {
+            let mut changed = original.clone();
+            *changed.pointer_mut(path).expect("known field") = value;
+            rejects(changed);
+        }
+        for path in [
+            "/inbounds",
+            "/endpoints",
+            "/endpoints/0/peers",
+            "/outbounds",
+            "/route/rules",
+            "/dns/rules",
+        ] {
+            let mut changed = original.clone();
+            let values = changed
+                .pointer_mut(path)
+                .expect("array")
+                .as_array_mut()
+                .expect("array");
+            values.push(values[0].clone());
+            rejects(changed);
+        }
+        for path in ["/route/rules", "/dns/rules"] {
+            let mut changed = original.clone();
+            *changed.pointer_mut(path).expect("rules") = json!([]);
+            rejects(changed);
+        }
+        for path in ["/inbounds/0", "/endpoints/0", "/endpoints/0/peers/0"] {
+            let mut changed = original.clone();
+            changed
+                .pointer_mut(path)
+                .expect("object")
+                .as_object_mut()
+                .expect("object")
+                .insert("unexpected".to_owned(), json!(true));
+            rejects(changed);
+        }
+        let mut changed = original.clone();
+        let selector = changed["outbounds"]
+            .as_array_mut()
+            .expect("outbounds")
+            .iter_mut()
+            .find(|outbound| outbound["type"] == "selector")
+            .expect("selector");
+        selector["default"] = Value::Null;
+        rejects(changed);
+        let text = std::str::from_utf8(config.as_bytes())
+            .expect("UTF8")
+            .replace(
+                "\"tag\":\"test-wg-udp\"",
+                "\"tag\":\"test-wg-udp\",\"tag\":\"test-wg-udp\"",
+            );
+        assert!(
+            GeneratedConfig::from_bytes(text.into_bytes())
+                .validate_final()
+                .is_err()
+        );
+    }
+
+    fn metering_plan(intent: &RuntimeIntent) -> Result<SingBoxPlan, CompileError> {
+        SingBoxCompiler.compile_loopback_metering(
+            intent,
+            &RouteTarget::Pool(PoolId("manual".to_owned())),
+            DnsPolicy::System,
+            NonZeroU16::new(24001).expect("nonzero listen port"),
+            NonZeroU16::new(24002).expect("nonzero echo port"),
+        )
+    }
+
+    #[test]
+    fn loopback_metering_uses_typed_plan_and_preserves_product_empty_inbounds() {
+        let intent = metering_intent();
+        assert_eq!(document(&intent)["inbounds"], json!([]));
+        let plan = metering_plan(&intent).expect("test metering plan");
+        let config = plan
+            .finalize(&test_api_secret())
+            .expect("bound test config");
+        let before = config.as_bytes().to_vec();
+        assert_eq!(config.validate_final(), Ok(()));
+        assert_eq!(config.as_bytes(), before);
+        let value: Value = serde_json::from_slice(config.as_bytes()).expect("final JSON");
+        assert_eq!(
+            value["inbounds"],
+            json!([{
+                "type":"direct", "tag":"test-metering", "listen":"127.0.0.1",
+                "listen_port":24001, "network":"tcp", "override_address":"127.0.0.1",
+                "override_port":24002
+            }])
+        );
+        assert_eq!(
+            value["route"]["rules"][0],
+            json!({
+                "ip_cidr":["127.0.0.1/32"], "outbound":"direct"
+            })
+        );
+        assert_eq!(value["route"]["final"], "pool-manual");
+        assert!(value.get("endpoints").is_none());
+        assert_eq!(format!("{plan:?}"), "SingBoxPlan([redacted])");
+        assert_eq!(format!("{config:?}"), "GeneratedConfig([redacted])");
+    }
+
+    #[test]
+    fn loopback_metering_rejects_unisolated_or_active_network_intents() {
+        let original = metering_intent();
+        let mut cases = Vec::new();
+        for server in ["proxy.example.invalid", "192.0.2.1", "0.0.0.0", "::"] {
+            let mut invalid = original.clone();
+            invalid.nodes[0].server = server.to_owned();
+            cases.push(invalid);
+        }
+        let mut invalid = original.clone();
+        invalid.nodes[0] = protocol_nodes().remove(6);
+        invalid.nodes[0].server = "127.0.0.1".to_owned();
+        cases.push(invalid);
+        let mut invalid = original.clone();
+        invalid
+            .pools
+            .push(fixture(protocol_nodes().remove(0)).pools.remove(1));
+        cases.push(invalid);
+        let mut invalid = original.clone();
+        invalid.pools[0].selection = SelectionPolicy::Manual {
+            selected_node_id: None,
+        };
+        cases.push(invalid);
+        let mut invalid = original.clone();
+        invalid.routes.clear();
+        cases.push(invalid);
+        let mut invalid = original.clone();
+        invalid.routes[0].enabled = false;
+        cases.push(invalid);
+        let mut invalid = original.clone();
+        invalid.routes[0].target = RouteTarget::Pool(PoolId("manual".to_owned()));
+        cases.push(invalid);
+        let mut invalid = original.clone();
+        invalid.routes[0].matcher = TrafficMatcher::IpCidr(vec!["127.0.0.0/8".to_owned()]);
+        cases.push(invalid);
+        let mut invalid = original.clone();
+        invalid.routes[0].priority = 1;
+        let mut earlier = invalid.routes[0].clone();
+        earlier.id = RoutePolicyId("earlier".to_owned());
+        earlier.priority = 0;
+        earlier.target = RouteTarget::Block;
+        invalid.routes.push(earlier);
+        cases.push(invalid);
+        for (index, invalid) in cases.into_iter().enumerate() {
+            // 所有样例对普通编译合法；拒绝必须来自本测试的隔离约束。
+            assert!(compile(&invalid).is_ok(), "ordinary case {index}");
+            assert!(metering_plan(&invalid).is_err(), "metering case {index}");
+        }
+        for (listen, echo) in [(9090, 24002), (24001, 9090), (24001, 24001)] {
+            assert!(
+                SingBoxCompiler
+                    .compile_loopback_metering(
+                        &original,
+                        &RouteTarget::Pool(PoolId("manual".to_owned())),
+                        DnsPolicy::System,
+                        NonZeroU16::new(listen).expect("nonzero"),
+                        NonZeroU16::new(echo).expect("nonzero"),
+                    )
+                    .is_err()
+            );
+        }
+    }
+
+    #[test]
+    fn loopback_metering_final_readback_rejects_inbound_field_escape() {
+        let config = metering_plan(&metering_intent())
+            .expect("plan")
+            .finalize(&test_api_secret())
+            .expect("final config");
+        let original: Value = serde_json::from_slice(config.as_bytes()).expect("JSON");
+        for (field, value) in [
+            ("type", json!("mixed")),
+            ("tag", json!("other")),
+            ("listen", json!("0.0.0.0")),
+            ("listen", json!("::1")),
+            ("network", json!("udp")),
+            ("override_address", json!("192.0.2.1")),
+            ("override_address", json!("localhost")),
+            ("listen_port", json!(0)),
+            ("override_port", json!(0)),
+            ("listen_port", json!(9090)),
+            ("override_port", json!(9090)),
+            ("override_port", json!(24001)),
+            ("unexpected", json!(true)),
+        ] {
+            let mut invalid = original.clone();
+            invalid["inbounds"][0][field] = value;
+            rejects(invalid);
+        }
+        let mut invalid = original.clone();
+        invalid["inbounds"]
+            .as_array_mut()
+            .expect("inbounds")
+            .push(original["inbounds"][0].clone());
+        rejects(invalid);
+        let encoded = String::from_utf8(config.as_bytes().to_vec()).expect("UTF8");
+        for fragment in ["\"type\":\"direct\"", "\"listen_port\":24001"] {
+            let duplicate = encoded.replacen(fragment, &format!("{fragment},{fragment}"), 1);
+            assert_ne!(duplicate, encoded);
+            assert!(
+                GeneratedConfig::from_bytes(duplicate.into_bytes())
+                    .validate_final()
+                    .is_err()
+            );
+        }
+    }
+
+    #[test]
+    fn loopback_metering_final_readback_rechecks_routes_and_active_network_features() {
+        let config = metering_plan(&metering_intent())
+            .expect("plan")
+            .finalize(&test_api_secret())
+            .expect("final config");
+        let original: Value = serde_json::from_slice(config.as_bytes()).expect("JSON");
+        for rule in [
+            json!({"ip_cidr":["127.0.0.1/32"],"outbound":"pool-manual"}),
+            json!({"ip_cidr":["127.0.0.0/8"],"outbound":"direct"}),
+            json!({"ip_cidr":["127.0.0.1/32"],"port":[24002],"outbound":"direct"}),
+        ] {
+            let mut invalid = original.clone();
+            invalid["route"]["rules"][0] = rule;
+            rejects(invalid);
+        }
+        let mut invalid = original.clone();
+        invalid["route"]["rules"] = json!([]);
+        rejects(invalid);
+        for server in ["hostname.example.invalid", "192.0.2.1"] {
+            let mut invalid = original.clone();
+            invalid["outbounds"][0]["server"] = json!(server);
+            rejects(invalid);
+        }
+        let ordinary = document(&fixture(protocol_nodes().remove(0)));
+        let urltest = ordinary["outbounds"]
+            .as_array()
+            .expect("outbounds")
+            .iter()
+            .find(|outbound| outbound["type"] == "urltest")
+            .expect("urltest");
+        let mut invalid = original.clone();
+        invalid["outbounds"]
+            .as_array_mut()
+            .expect("outbounds")
+            .push(urltest.clone());
+        rejects(invalid);
+        let mut invalid = document(&fixture(protocol_nodes().remove(6)));
+        invalid["inbounds"] = original["inbounds"].clone();
+        rejects(invalid);
+        let mut invalid = original;
+        invalid["outbounds"][1]
+            .as_object_mut()
+            .expect("selector")
+            .remove("default");
+        rejects(invalid);
+    }
+    fn compile(intent: &RuntimeIntent) -> Result<SingBoxPlan, CompileError> {
+        SingBoxCompiler.compile(
+            intent,
+            &RouteTarget::Pool(PoolId("manual".to_owned())),
+            DnsPolicy::System,
+            RuntimeProfile::ObservationOnly,
+        )
+    }
+    fn final_config(intent: &RuntimeIntent) -> GeneratedConfig {
+        compile(intent)
+            .expect("typed plan")
+            .finalize(&test_api_secret())
+            .expect("final configuration")
+    }
+    fn document(intent: &RuntimeIntent) -> Value {
+        serde_json::from_slice(final_config(intent).as_bytes()).expect("final JSON")
+    }
+    fn user_node(document: &Value) -> &Value {
+        document["outbounds"]
+            .as_array()
+            .expect("outbounds")
             .iter()
             .find(|outbound| outbound["tag"] == "node-node")
-            .expect("VLESS outbound");
-        assert_eq!(node["tls"]["enabled"], true);
-        assert_eq!(node["tls"]["server_name"], "example.invalid");
-        assert_eq!(node["tls"]["reality"]["public_key"], "fixture-public-key");
-        assert_eq!(node["tls"]["reality"]["short_id"], "fixture-short-id");
-        assert_eq!(node["transport"]["type"], "ws");
-        assert_eq!(node["transport"]["path"], "/ws");
-        assert_eq!(node["transport"]["headers"]["Host"], "cdn.example.invalid");
-        assert!(rules.iter().any(|rule| {
-            rule["domain_suffix"] == json!(["example.com"]) && rule["outbound"] == "pool-manual"
-        }));
-        assert!(rules.iter().any(|rule| rule["outbound"] == "direct"));
-        assert!(rules.iter().any(|rule| rule["outbound"] == "block"));
+            .expect("user node")
     }
-
-    #[test]
-    fn stable_tags_do_not_change_when_display_names_change() {
-        let compiler = SingBoxCompiler;
-        let original = intent();
-        let mut renamed = original.clone();
-        renamed.nodes[0].name = "Renamed node".to_owned();
-        renamed.routes[0].name = "Renamed route".to_owned();
-
-        assert_eq!(
-            compiler.compile(&original).expect("compile original"),
-            compiler.compile(&renamed).expect("compile renamed")
+    fn rejects(document: Value) {
+        let config =
+            GeneratedConfig::from_bytes(serde_json::to_vec(&document).expect("fixture JSON"));
+        assert!(
+            config.validate_final().is_err(),
+            "mutated final configuration must fail"
         );
     }
 
     #[test]
-    fn compiles_grpc_transport() {
-        let compiler = SingBoxCompiler;
+    fn all_fifteen_protocols_have_typed_final_plans_and_pool_references() {
+        for (selected, expected) in protocol_nodes().into_iter().zip([
+            "socks",
+            "http",
+            "shadowsocks",
+            "vmess",
+            "vless",
+            "trojan",
+            "wireguard",
+            "hysteria",
+            "hysteria2",
+            "tuic",
+            "shadowtls",
+            "ssh",
+            "naive",
+            "anytls",
+            "snell",
+        ]) {
+            let intent = fixture(selected);
+            let config = final_config(&intent);
+            assert_eq!(config.validate_final(), Ok(()), "{expected}");
+            let document: Value = serde_json::from_slice(config.as_bytes()).expect("JSON");
+            let node = if expected == "wireguard" {
+                &document["endpoints"][0]
+            } else {
+                user_node(&document)
+            };
+            assert_eq!(node["type"], expected);
+            assert_eq!(node["tag"], "node-node");
+            for tag in ["pool-manual", "pool-auto"] {
+                let pool = document["outbounds"]
+                    .as_array()
+                    .expect("outbounds")
+                    .iter()
+                    .find(|outbound| outbound["tag"] == tag)
+                    .expect("pool");
+                assert_eq!(pool["outbounds"], json!(["node-node"]));
+            }
+            assert_eq!(document["route"]["final"], "pool-manual");
+            assert_eq!(document["inbounds"], json!([]));
+            assert_eq!(document["log"], json!({"disabled": true}));
+            assert_eq!(
+                document["experimental"]["clash_api"]["external_controller"],
+                API_ADDRESS
+            );
+            assert_eq!(
+                document["experimental"]["clash_api"]["secret"],
+                "a".repeat(64)
+            );
+            for terminal in ["direct", "block"] {
+                assert_eq!(
+                    document["outbounds"]
+                        .as_array()
+                        .expect("outbounds")
+                        .iter()
+                        .filter(
+                            |outbound| outbound["type"] == terminal && outbound["tag"] == terminal
+                        )
+                        .count(),
+                    1
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn preserves_protocol_fields_instead_of_silently_dropping_them() {
+        let nodes = protocol_nodes();
+        let vmess = document(&fixture(nodes[3].clone()));
+        assert_eq!(user_node(&vmess)["alter_id"], 0);
+        assert_eq!(user_node(&vmess)["security"], "auto");
+        let hy = document(&fixture(nodes[7].clone()));
+        assert_eq!(user_node(&hy)["auth_str"], PASSWORD);
+        assert_eq!(user_node(&hy)["obfs"], "fixture-obfs");
+        assert_eq!(user_node(&hy)["up_mbps"], 10);
+        assert_eq!(user_node(&hy)["down_mbps"], 20);
+        let hy2 = document(&fixture(nodes[8].clone()));
+        assert_eq!(
+            user_node(&hy2)["obfs"],
+            json!({"type":"salamander", "password":"fixture-obfs"})
+        );
+        let tuic = document(&fixture(nodes[9].clone()));
+        assert_eq!(user_node(&tuic)["congestion_control"], "bbr");
+        assert_eq!(user_node(&tuic)["udp_relay_mode"], "native");
+        assert_eq!(user_node(&tuic)["zero_rtt_handshake"], false);
+        let mut ssh = nodes[11].clone();
+        // 确定性测试 seed 1..32 的 PKCS8 Ed25519 密钥，不属于真实账号。
+        let private_key = "-----BEGIN PRIVATE KEY-----\nMC4CAQAwBQYDK2VwBCIEIAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8g\n-----END PRIVATE KEY-----\n";
+        let host_key =
+            "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8g";
+        ssh.options = ProtocolOptions::Ssh {
+            user: "fixture-user".to_owned(),
+            password: None,
+            private_key: Some(private_key.to_owned()),
+            private_key_passphrase: None,
+            host_key: Some(host_key.to_owned()),
+        };
+        let ssh = document(&fixture(ssh));
+        assert_eq!(user_node(&ssh)["private_key"], private_key);
+        assert!(user_node(&ssh).get("private_key_passphrase").is_none());
+        assert_eq!(user_node(&ssh)["host_key"], host_key);
+    }
+
+    #[test]
+    fn wireguard_maps_one_peer_and_generates_both_ingress_reject_rules_first() {
+        let document = document(&fixture(protocol_nodes().remove(6)));
+        let endpoint = &document["endpoints"][0];
+        assert_eq!(endpoint["system"], false);
+        assert_eq!(endpoint["address"], json!(["10.0.0.2/32", "fd00::2/128"]));
+        assert_eq!(endpoint["private_key"], WG_PRIVATE);
+        assert_eq!(endpoint["mtu"], 1280);
+        assert_eq!(endpoint["peers"].as_array().expect("peers").len(), 1);
+        assert_eq!(
+            endpoint["peers"][0],
+            json!({"address":"192.0.2.1", "port":443, "public_key":WG_PUBLIC, "pre_shared_key":WG_PRIVATE, "reserved":[1,2,3], "allowed_ips":["0.0.0.0/0","::/0"]})
+        );
+        for key in ["listen_port", "name", "detour", "bind_interface"] {
+            assert!(endpoint.get(key).is_none());
+        }
+        let reject = json!({"inbound":["node-node"], "action":"reject"});
+        assert_eq!(document["route"]["rules"][0], reject);
+        assert_eq!(document["dns"]["rules"], json!([reject]));
+        assert_eq!(document["route"]["rules"][1]["outbound"], "pool-manual");
+        assert!(
+            !document["outbounds"]
+                .as_array()
+                .expect("outbounds")
+                .iter()
+                .any(|outbound| outbound["type"] == "wireguard")
+        );
+    }
+
+    #[test]
+    fn multiple_wireguard_tags_are_complete_and_stably_sorted_in_both_reject_rules() {
+        let mut intent = fixture(protocol_nodes().remove(6));
+        let mut other = intent.nodes[0].clone();
+        other.id = NodeId("a-other".to_owned());
+        intent.nodes.push(other);
+        let document = document(&intent);
+        assert_eq!(
+            document["route"]["rules"][0]["inbound"],
+            json!(["node-a-other", "node-node"])
+        );
+        assert_eq!(
+            document["dns"]["rules"][0]["inbound"],
+            document["route"]["rules"][0]["inbound"]
+        );
+    }
+
+    #[test]
+    fn system_dns_preserves_node_hostname_and_native_urltest_destination_identity() {
         let mut intent = intent();
+        intent.nodes[0].server = "proxy.example.invalid".to_owned();
+        let document = document(&intent);
+        assert_eq!(
+            document["dns"],
+            json!({"servers":[{"type":"local", "tag":DNS_TAG}], "final":DNS_TAG})
+        );
+        assert_eq!(document["route"]["default_domain_resolver"], DNS_TAG);
+        assert_eq!(user_node(&document)["server"], "proxy.example.invalid");
+        let pool = document["outbounds"]
+            .as_array()
+            .expect("outbounds")
+            .iter()
+            .find(|node| node["type"] == "urltest")
+            .expect("urltest");
+        assert_eq!(pool["url"], "https://probe.example.invalid/check?x=1");
+        assert_eq!(pool["interval"], "60s");
+        assert_eq!(pool["tolerance"], 50);
+        assert!(document.get("endpoints").is_none());
+    }
+
+    #[test]
+    fn deterministic_bytes_and_stable_tags_ignore_display_names_and_input_order() {
+        let original = intent();
+        let mut reordered = original.clone();
+        reordered.nodes[0].name = "Changed display".to_owned();
+        reordered.routes[0].name = "Changed rule".to_owned();
+        reordered.pools.reverse();
+        reordered.routes.reverse();
+        assert_eq!(final_config(&original), final_config(&reordered));
+        let mut with_second = original.clone();
+        let mut second = original.nodes[0].clone();
+        second.id = NodeId("second".to_owned());
+        with_second.nodes.push(second);
+        with_second.pools[0]
+            .members
+            .push(NodeId("second".to_owned()));
+        let stable = final_config(&with_second);
+        with_second.nodes.reverse();
+        with_second.pools[0].members.reverse();
+        assert_eq!(stable, final_config(&with_second));
+    }
+
+    #[test]
+    fn compiles_websocket_reality_grpc_and_https_without_losing_options() {
+        let mut intent = intent();
+        let mut reality = tls();
+        reality.reality_public_key = Some(
+            WG_PUBLIC
+                .trim_end_matches('=')
+                .replace('+', "-")
+                .replace('/', "_"),
+        );
+        reality.reality_short_id = Some("abcdef12".to_owned());
+        intent.nodes[0].tls = Some(reality);
+        intent.nodes[0].transport = Some(Transport::Websocket {
+            path: "/ws".to_owned(),
+            host: Some("cdn.example.invalid".to_owned()),
+        });
+        let ws = document(&intent);
+        assert_eq!(
+            user_node(&ws)["transport"],
+            json!({"type":"ws","path":"/ws","headers":{"Host":"cdn.example.invalid"}})
+        );
+        assert_eq!(user_node(&ws)["tls"]["reality"]["short_id"], "abcdef12");
+        assert_eq!(user_node(&ws)["tls"]["insecure"], false);
+        assert_eq!(user_node(&ws)["tls"]["utls"], json!({"enabled":true}));
         intent.nodes[0].transport = Some(Transport::Grpc {
             service_name: "TunService".to_owned(),
         });
-
-        let document: Value = serde_json::from_slice(
-            compiler
-                .compile(&intent)
-                .expect("compile grpc transport")
-                .as_bytes(),
-        )
-        .expect("parse snapshot");
-        let node = document["outbounds"]
-            .as_array()
-            .expect("outbounds array")
-            .iter()
-            .find(|outbound| outbound["tag"] == "node-node")
-            .expect("VLESS outbound");
-
-        assert_eq!(node["transport"]["type"], "grpc");
-        assert_eq!(node["transport"]["service_name"], "TunService");
-    }
-
-    #[test]
-    fn compiles_https_outbound_with_tls_enabled() {
-        let compiler = SingBoxCompiler;
-        let mut intent = intent();
-        intent.nodes[0].protocol = ProxyProtocol::Https;
-        intent.nodes[0].credentials = NodeCredentials::Password {
-            username: Some("fixture-user".to_owned()),
-            password: "fixture-password".to_owned(),
-            cipher: None,
+        assert_eq!(
+            user_node(&document(&intent))["transport"],
+            json!({"type":"grpc","service_name":"TunService"})
+        );
+        intent.nodes[0] = protocol_nodes().remove(1);
+        intent.nodes[0].options = ProtocolOptions::Http {
+            username: None,
+            password: None,
+            tls: true,
         };
-        intent.nodes[0].transport = None;
-        intent.nodes[0].tls = None;
-
-        let document: Value = serde_json::from_slice(
-            compiler
-                .compile(&intent)
-                .expect("compile HTTPS outbound")
-                .as_bytes(),
-        )
-        .expect("parse snapshot");
-        let node = document["outbounds"]
-            .as_array()
-            .expect("outbounds array")
-            .iter()
-            .find(|outbound| outbound["tag"] == "node-node")
-            .expect("HTTPS outbound");
-
-        assert_eq!(node["type"], "http");
-        assert_eq!(node["tls"]["enabled"], true);
+        assert_eq!(user_node(&document(&intent))["tls"]["enabled"], true);
+        assert!(user_node(&document(&intent))["tls"].get("utls").is_none());
     }
 
     #[test]
-    fn rejects_a_protocol_the_typed_model_cannot_represent_without_credentials() {
-        let compiler = SingBoxCompiler;
+    fn reality_requires_fixed_utls_and_preserves_final_bytes_and_redaction() {
         let mut intent = intent();
-        intent.nodes[0].protocol = ProxyProtocol::Tuic;
-
-        let error = compiler
-            .compile(&intent)
-            .expect_err("TUIC needs both UUID and password");
-
-        assert_eq!(error, CompileError::UnsupportedNodeProtocol);
-        assert!(!error.to_string().contains("fixture-secret"));
+        let public_key = WG_PUBLIC
+            .trim_end_matches('=')
+            .replace('+', "-")
+            .replace('/', "_");
+        let api_secret = "a".repeat(64);
+        intent.nodes[0].tls = Some(TlsOptions {
+            reality_public_key: Some(public_key.clone()),
+            reality_short_id: Some("abcdef12".to_owned()),
+            ..tls()
+        });
+        for transport in [
+            Transport::Tcp,
+            Transport::Websocket {
+                path: "/ws".to_owned(),
+                host: None,
+            },
+        ] {
+            intent.nodes[0].transport = Some(transport);
+            let plan = compile(&intent).expect("Reality plan");
+            let config = plan
+                .finalize(&test_api_secret())
+                .expect("Reality final config");
+            let before = config.as_bytes().to_vec();
+            assert_eq!(config.validate_final(), Ok(()));
+            assert_eq!(config.as_bytes(), before);
+            assert_eq!(
+                config,
+                plan.finalize(&test_api_secret())
+                    .expect("deterministic final")
+            );
+            let original: Value = serde_json::from_slice(config.as_bytes()).expect("final JSON");
+            assert_eq!(user_node(&original)["tls"]["utls"], json!({"enabled":true}));
+            assert_eq!(
+                user_node(&original)["tls"]["reality"]["public_key"],
+                public_key
+            );
+            for debug in [format!("{plan:?}"), format!("{config:?}")] {
+                for secret in [public_key.as_str(), UUID, "abcdef12", api_secret.as_str()] {
+                    assert!(!debug.contains(secret));
+                }
+            }
+            let mut missing = original.clone();
+            missing["outbounds"][0]["tls"]
+                .as_object_mut()
+                .expect("TLS")
+                .remove("utls");
+            rejects(missing);
+            for utls in [
+                Value::Null,
+                json!({}),
+                json!({"enabled":false}),
+                json!({"enabled":true,"fingerprint":"chrome"}),
+                json!({"enabled":true,"unexpected":true}),
+            ] {
+                let mut invalid = original.clone();
+                invalid["outbounds"][0]["tls"]["utls"] = utls;
+                rejects(invalid);
+            }
+            let mut without_reality = original;
+            without_reality["outbounds"][0]["tls"]
+                .as_object_mut()
+                .expect("TLS")
+                .remove("reality");
+            rejects(without_reality);
+        }
+        for selected in protocol_nodes() {
+            let plain = document(&fixture(selected));
+            for outbound in plain["outbounds"].as_array().expect("outbounds") {
+                if let Some(tls) = outbound.get("tls") {
+                    assert!(tls.get("utls").is_none());
+                }
+            }
+        }
     }
 
     #[test]
-    fn rejects_tls_for_a_protocol_that_does_not_support_it() {
-        let compiler = SingBoxCompiler;
-        let mut intent = intent();
-        intent.nodes[0].protocol = ProxyProtocol::Socks5;
-        intent.nodes[0].credentials = NodeCredentials::None;
-        intent.nodes[0].transport = None;
-
-        let error = compiler
-            .compile(&intent)
-            .expect_err("SOCKS5 does not support TLS fields");
-
-        assert_eq!(error, CompileError::InvalidNodeConfiguration);
-        assert!(!error.to_string().contains("fixture-secret"));
+    fn rejects_missing_inactive_or_non_pool_default_and_invalid_pool_members() {
+        for target in [
+            RouteTarget::Unconfigured,
+            RouteTarget::Direct,
+            RouteTarget::Block,
+            RouteTarget::Pool(PoolId("absent-or-disabled".to_owned())),
+        ] {
+            assert_eq!(
+                SingBoxCompiler
+                    .compile(
+                        &intent(),
+                        &target,
+                        DnsPolicy::System,
+                        RuntimeProfile::ObservationOnly
+                    )
+                    .unwrap_err(),
+                CompileError::InvalidRouteTarget
+            );
+        }
+        let mut invalid = intent();
+        invalid.pools.clear();
+        assert!(compile(&invalid).is_err());
+        invalid = intent();
+        invalid.pools[0].members.clear();
+        assert_eq!(
+            compile(&invalid).unwrap_err(),
+            CompileError::EmptyPoolMembership
+        );
+        invalid = intent();
+        invalid.pools[0].members[0] = NodeId("absent".to_owned());
+        assert!(compile(&invalid).is_err());
+        invalid = intent();
+        invalid.pools[0].selection = SelectionPolicy::Manual {
+            selected_node_id: Some(NodeId("absent".to_owned())),
+        };
+        assert!(compile(&invalid).is_err());
+        invalid = intent();
+        invalid.routes[0].target = RouteTarget::Pool(PoolId("absent".to_owned()));
+        assert!(compile(&invalid).is_err());
     }
 
     #[test]
-    fn rejects_incomplete_or_blank_reality_configuration() {
-        let compiler = SingBoxCompiler;
-        for public_key in [None, Some("".to_owned()), Some("  ".to_owned())] {
-            let mut intent = intent();
-            intent.nodes[0]
-                .tls
-                .as_mut()
-                .expect("fixture TLS")
-                .reality_public_key = public_key;
+    fn rejects_duplicate_node_or_pool_tags() {
+        let mut invalid = intent();
+        invalid.nodes.push(invalid.nodes[0].clone());
+        assert!(compile(&invalid).is_err());
+        let mut invalid = intent();
+        invalid.pools.push(invalid.pools[0].clone());
+        assert!(compile(&invalid).is_err());
+    }
 
-            let error = compiler
-                .compile(&intent)
-                .expect_err("Reality requires non-empty public key and short ID");
-
-            assert_eq!(error, CompileError::InvalidNodeConfiguration);
-            assert!(!error.to_string().contains("fixture-secret"));
+    #[test]
+    fn rejects_invalid_uuid_tls_protocol_combinations_and_partial_reality() {
+        let mut invalid = intent();
+        invalid.nodes[0].options = ProtocolOptions::Vless {
+            uuid: "not-a-uuid".to_owned(),
+            flow: None,
+        };
+        assert_eq!(
+            compile(&invalid).unwrap_err(),
+            CompileError::InvalidNodeConfiguration
+        );
+        invalid = intent();
+        invalid.nodes[0].protocol = ProxyProtocol::Tuic;
+        assert!(compile(&invalid).is_err());
+        invalid = fixture(protocol_nodes().remove(0));
+        invalid.nodes[0].tls = Some(tls());
+        assert_eq!(
+            compile(&invalid).unwrap_err(),
+            CompileError::InvalidNodeConfiguration
+        );
+        for public_key in [
+            None,
+            Some(String::new()),
+            Some(" ".to_owned()),
+            Some("not-a-key".to_owned()),
+        ] {
+            let mut invalid = intent();
+            invalid.nodes[0].tls = Some(TlsOptions {
+                reality_public_key: public_key,
+                reality_short_id: Some("abcd".to_owned()),
+                ..tls()
+            });
+            assert!(compile(&invalid).is_err());
         }
-        for short_id in [None, Some("".to_owned()), Some("  ".to_owned())] {
-            let mut intent = intent();
-            intent.nodes[0]
-                .tls
-                .as_mut()
-                .expect("fixture TLS")
-                .reality_short_id = short_id;
-
-            let error = compiler
-                .compile(&intent)
-                .expect_err("Reality requires non-empty public key and short ID");
-
-            assert_eq!(error, CompileError::InvalidNodeConfiguration);
-            assert!(!error.to_string().contains("fixture-secret"));
+        for short_id in [None, Some(String::new()), Some("xyz".to_owned())] {
+            let mut invalid = intent();
+            invalid.nodes[0].tls = Some(TlsOptions {
+                reality_public_key: Some(
+                    WG_PUBLIC
+                        .trim_end_matches('=')
+                        .replace('+', "-")
+                        .replace('/', "_"),
+                ),
+                reality_short_id: short_id,
+                ..tls()
+            });
+            assert!(compile(&invalid).is_err());
         }
+        let mut invalid = fixture(protocol_nodes().remove(5));
+        invalid.nodes[0].tls = None;
+        assert!(compile(&invalid).is_err());
+    }
+
+    #[test]
+    fn rejects_invalid_wireguard_keys_prefixes_and_non_u32_mtu() {
+        for (key, address, mtu) in [
+            ("bad-key", "10.0.0.2/32", Some(1280)),
+            (WG_PRIVATE, "10.0.0.2/99", Some(1280)),
+            (WG_PRIVATE, "invalid/32", Some(1280)),
+        ] {
+            let mut selected = protocol_nodes().remove(6);
+            if let ProtocolOptions::WireGuard {
+                private_key,
+                local_addresses,
+                mtu: value,
+                ..
+            } = &mut selected.options
+            {
+                *private_key = key.to_owned();
+                *local_addresses = vec![address.to_owned()];
+                *value = mtu;
+            }
+            assert!(compile(&fixture(selected)).is_err());
+        }
+        let mut invalid_mtu = document(&fixture(protocol_nodes().remove(6)));
+        invalid_mtu["endpoints"][0]["mtu"] = json!(u64::from(u32::MAX) + 1);
+        rejects(invalid_mtu);
+        let mut native_default = protocol_nodes().remove(6);
+        if let ProtocolOptions::WireGuard { mtu, .. } = &mut native_default.options {
+            *mtu = Some(0);
+        }
+        // 固定核心将显式零解释为默认 MTU；不在 Compiler 猜测新的 MTU 策略。
+        assert_eq!(document(&fixture(native_default))["endpoints"][0]["mtu"], 0);
+    }
+
+    #[test]
+    fn rejects_snell_v3_without_silently_changing_protocol_version() {
+        let mut selected = protocol_nodes().remove(14);
+        selected.options = ProtocolOptions::Snell {
+            psk: PASSWORD.to_owned(),
+            version: 3,
+        };
+        assert_eq!(
+            compile(&fixture(selected)).unwrap_err(),
+            CompileError::InvalidNodeConfiguration
+        );
+        assert!(serde_json::from_value::<ProxyProtocol>(json!("tor")).is_err());
+    }
+
+    #[test]
+    fn rejects_invalid_urltest_and_unexpressible_route_matchers() {
+        for url in ["file:///tmp/probe", "not a URL"] {
+            let mut invalid = intent();
+            invalid.pools[1].selection = SelectionPolicy::UrlTest {
+                probe_url: url.to_owned(),
+                interval_secs: 60,
+                tolerance_ms: 50,
+            };
+            assert!(compile(&invalid).is_err());
+        }
+        let mut native_url = intent();
+        let url = "https://fixture:synthetic@example.invalid/probe?x=1#part";
+        native_url.pools[1].selection = SelectionPolicy::UrlTest {
+            probe_url: url.to_owned(),
+            interval_secs: 60,
+            tolerance_ms: 50,
+        };
+        let document = document(&native_url);
+        assert!(
+            document["outbounds"]
+                .as_array()
+                .expect("outbounds")
+                .iter()
+                .any(|outbound| outbound["url"] == url)
+        );
+        let mut invalid = intent();
+        invalid.routes[0].matcher = TrafficMatcher::IpCidr(vec!["1.2.3.4/99".to_owned()]);
+        assert!(compile(&invalid).is_err());
+        invalid.routes[0].matcher = TrafficMatcher::Domain(Vec::new());
+        assert!(compile(&invalid).is_err());
+    }
+
+    fn object_paths(value: &Value, path: String, output: &mut Vec<String>) {
+        match value {
+            Value::Object(fields) => {
+                output.push(path.clone());
+                for (key, child) in fields {
+                    object_paths(
+                        child,
+                        format!("{path}/{}", key.replace('~', "~0").replace('/', "~1")),
+                        output,
+                    );
+                }
+            }
+            Value::Array(values) => {
+                for (index, child) in values.iter().enumerate() {
+                    object_paths(child, format!("{path}/{index}"), output);
+                }
+            }
+            _ => {}
+        }
+    }
+
+    #[test]
+    fn rejects_unknown_fields_at_every_generated_object_depth_for_all_protocols() {
+        for selected in protocol_nodes() {
+            let original = document(&fixture(selected));
+            let mut paths = Vec::new();
+            object_paths(&original, String::new(), &mut paths);
+            for path in paths {
+                let mut mutated = original.clone();
+                mutated
+                    .pointer_mut(&path)
+                    .expect("object path")
+                    .as_object_mut()
+                    .expect("object")
+                    .insert("unexpected_field".to_owned(), json!(true));
+                rejects(mutated);
+            }
+        }
+        let mut with_transport = intent();
+        with_transport.nodes[0].tls = Some(tls());
+        with_transport.nodes[0].transport = Some(Transport::Websocket {
+            path: "/ws".to_owned(),
+            host: Some("cdn.example.invalid".to_owned()),
+        });
+        let mut mutated = document(&with_transport);
+        mutated["outbounds"][0]["transport"]["headers"]["Authorization"] = json!("synthetic");
+        rejects(mutated);
+    }
+
+    #[test]
+    fn final_allowlist_rejects_dangerous_keys_listeners_dns_and_invalid_targets() {
+        let original = document(&intent());
+        for (pointer, value) in [
+            (
+                "/experimental/clash_api/external_controller",
+                json!("0.0.0.0:9090"),
+            ),
+            ("/experimental/clash_api/secret", json!("short")),
+            ("/log/disabled", json!(false)),
+            (
+                "/inbounds",
+                json!([{"type":"mixed", "listen":"127.0.0.1", "listen_port":1080}]),
+            ),
+            ("/dns/servers/0/type", json!("udp")),
+            ("/dns/final", json!("other")),
+            ("/route/default_domain_resolver", json!("other")),
+            ("/route/final", json!("direct")),
+            ("/route/rules/0/outbound", json!("node-node")),
+        ] {
+            let mut mutated = original.clone();
+            *mutated.pointer_mut(pointer).expect("fixture pointer") = value;
+            rejects(mutated);
+        }
+        for (pointer, key, value) in [
+            ("/log", "output", json!("danger.log")),
+            ("/experimental/clash_api", "external_ui", json!("dashboard")),
+            ("/outbounds/0", "detour", json!("direct")),
+            ("/dns", "fakeip", json!({"enabled":true})),
+        ] {
+            let mut mutated = original.clone();
+            mutated
+                .pointer_mut(pointer)
+                .expect("fixture object")
+                .as_object_mut()
+                .expect("object")
+                .insert(key.to_owned(), value);
+            rejects(mutated);
+        }
+        let mut mutated = original;
+        mutated["outbounds"][0]["type"] = json!("tor");
+        rejects(mutated);
+    }
+
+    #[test]
+    fn wireguard_allowlist_rejects_ingress_bypass_or_system_options() {
+        let original = document(&fixture(protocol_nodes().remove(6)));
+        for (pointer, value) in [
+            ("/endpoints/0/system", json!(true)),
+            ("/endpoints/0/type", json!("tailscale")),
+            ("/endpoints/0/peers/0/allowed_ips", json!(["10.0.0.0/8"])),
+            ("/route/rules/0/action", json!("route")),
+            ("/route/rules/0/inbound", json!([])),
+            ("/dns/rules/0/inbound", json!(["missing"])),
+            ("/dns/rules", json!([])),
+        ] {
+            let mut mutated = original.clone();
+            *mutated.pointer_mut(pointer).expect("fixture pointer") = value;
+            rejects(mutated);
+        }
+        for key in [
+            "listen_port",
+            "name",
+            "namespace",
+            "bind_interface",
+            "routing_mark",
+            "udp_fragment",
+            "detour",
+        ] {
+            let mut mutated = original.clone();
+            mutated["endpoints"][0]
+                .as_object_mut()
+                .expect("endpoint")
+                .insert(key.to_owned(), json!(1));
+            rejects(mutated);
+        }
+        let mut moved = original.clone();
+        moved["route"]["rules"]
+            .as_array_mut()
+            .expect("rules")
+            .swap(0, 1);
+        rejects(moved);
+        let mut duplicate = original;
+        let endpoint = duplicate["endpoints"][0].clone();
+        duplicate["endpoints"]
+            .as_array_mut()
+            .expect("endpoints")
+            .push(endpoint);
+        rejects(duplicate);
+    }
+
+    #[test]
+    fn finalized_bytes_are_immutable_and_debug_output_redacts_all_credentials() {
+        let plan = compile(&intent()).expect("plan");
+        let config = plan.finalize(&test_api_secret()).expect("final");
+        let before = config.as_bytes().to_vec();
+        assert_eq!(config.validate_final(), Ok(()));
+        assert_eq!(config.as_bytes(), before);
+        for debug in [format!("{plan:?}"), format!("{config:?}")] {
+            for secret in [UUID, PASSWORD, WG_PRIVATE, "aaaaaaaa"] {
+                assert!(!debug.contains(secret));
+            }
+        }
+        assert!(
+            !CompileError::InvalidNodeConfiguration
+                .to_string()
+                .contains(PASSWORD)
+        );
+        let mut wipe = config.clone();
+        wipe.wipe();
+        assert!(wipe.as_bytes().iter().all(|byte| *byte == 0));
+        assert!(wipe.validate_final().is_err());
+        assert_eq!(config.as_bytes(), before);
+    }
+
+    #[test]
+    fn final_parser_rejects_duplicate_or_null_fields() {
+        let config = final_config(&intent());
+        let text = String::from_utf8(config.as_bytes().to_vec()).expect("UTF8");
+        let duplicate = text.replacen(
+            "\"disabled\":true",
+            "\"disabled\":true,\"disabled\":true",
+            1,
+        );
+        assert!(
+            GeneratedConfig::from_bytes(duplicate.into_bytes())
+                .validate_final()
+                .is_err()
+        );
+        let mut null = document(&intent());
+        null["endpoints"] = Value::Null;
+        rejects(null);
+    }
+
+    #[test]
+    fn dns_policy_does_not_add_persisted_state_fields() {
+        let state = serde_json::to_value(AppState::empty()).expect("state JSON");
+        assert!(state.get("dns").is_none());
+        assert_eq!(state.as_object().expect("state").len(), 7);
+        assert_eq!(DnsPolicy::System, DnsPolicy::System);
     }
 }

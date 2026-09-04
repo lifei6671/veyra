@@ -1,0 +1,175 @@
+version: 1
+reviews:
+  - id: EVIDENCE-TASK-006-REVIEW-001
+    type: code_delivery_review
+    target: TASK-006 fixed managed-observation runtime entry checkpoint
+    target_identity: sha256:cf652d628c5cbec2556aa144ae509fac1d7953308b04126ed79172aa390bc8e5
+    result: REWORK
+    timestamp: 2026-09-03T21:42:00+08:00
+    observer: CHILD_AGENT:/root/task006_delivery_reviewer
+    review:
+      review_mode: CHILD_AGENT
+      review_result: REWORK
+      coverage:
+        strategy: FULL_SCOPE
+        status: COMPLETE
+        applicable_lanes: [correctness, security, contract-data, concurrency-performance, verification, context-docs]
+        integration_result: REWORK
+        freshness: FRESH
+      findings:
+        - id: FINDING-006-001
+          priority: P1
+          status: REMEDIATED
+          location: src-tauri/build.rs; src-tauri/capabilities/default.json
+          summary: >-
+            The fixed start/stop commands were registered by Rust but absent from the
+            generated AppManifest and default capability, so WebView invocation was denied.
+        - id: FINDING-006-002
+          priority: P1
+          status: REMEDIATED
+          location: src-tauri/src/application/managed_observation_runtime.rs
+          summary: >-
+            A dropped shutdown response could let the worker exit without a caller-side
+            confirmation, preventing a later Tray Quit retry.
+        - id: FINDING-006-003
+          priority: P1
+          status: REMEDIATED
+          location: src-tauri/src/commands.rs; src/lib/observability.ts
+          summary: >-
+            Stopped was mapped as notAttached, preventing the safe DTO from reporting a
+            completed managed-runtime stop.
+      remaining_risks:
+        - Real GUI start/Ready/sample/stop/Tray Quit E2E and installer package-content readback remain NOT_RUN.
+  - id: EVIDENCE-TASK-006-REVIEW-002
+    type: code_delivery_review
+    target: TASK-006 managed-observation runtime entry P1 remediation
+    target_identity: sha256:dc73d2ee24d762829e2622549cce0aba5d83cdf2ec87c583cb3ff7cf52fe6ae8
+    result: PASS
+    timestamp: 2026-09-03T21:48:00+08:00
+    observer: CHILD_AGENT:/root/task006_delivery_reviewer
+    review:
+      review_mode: CHILD_AGENT_INCREMENTAL
+      review_result: PASS
+      coverage:
+        strategy: PARTITIONED_PLUS_INTEGRATION
+        status: COMPLETE
+        applicable_lanes: [correctness, security, contract-data, concurrency-performance, verification, context-docs]
+        partitions: [command_capability, worker_response_recovery, stopped_dto]
+        integration_result: PASS
+        freshness: FRESH
+      reconciled_findings:
+        - id: FINDING-006-001
+          status: FIXED
+        - id: FINDING-006-002
+          status: FIXED
+        - id: FINDING-006-003
+          status: FIXED
+      findings: []
+      remaining_risks:
+        - Real application GUI start/Ready/sample/stop/Tray Quit E2E remains NOT_RUN.
+        - Installer package-content readback remains NOT_RUN.
+        - This PASS covers only the partial remediation checkpoint, not TASK-006 acceptance or Delivery Gate.
+  - id: EVIDENCE-TASK-006-REVIEW-003
+    type: code_delivery_review
+    target: TASK-006 managed sidecar and fixed loopback observation foundation P1 remediation
+    target_identity: sha256:3e9c05b2de3a4069395be32b385dc60a956ec2c55d895e6577ca8f8bfcee6014
+    result: REWORK
+    timestamp: 2026-09-03T22:45:00+08:00
+    observer: CHILD_AGENT:/root/task006_core_gap_auditor
+    review:
+      review_mode: CHILD_AGENT_INCREMENTAL
+      review_result: REWORK
+      coverage:
+        strategy: PARTITIONED_PLUS_INTEGRATION
+        status: COMPLETE
+        applicable_lanes: [correctness, security, contract-data, concurrency-performance, verification, context-docs, release]
+        partitions: [owned_child_failure_cleanup, explicit_recovery_stop, private_orphan_cleanup]
+        integration_result: PASS
+        freshness: FRESH
+      reconciled_findings:
+        - id: FINDING-TASK-006-004
+          priority: P1
+          status: FIXED
+          location: src-tauri/src/singbox/runtime.rs
+          summary: >-
+            Sampling failure now stops only the owned child through the Port before closed
+            recovery, removing its config and dropping its per-instance API secret.
+      findings: []
+      verification_gap:
+        status: UNAVAILABLE
+        location: src-tauri/src/platform/windows/private_runtime.rs
+        summary: >-
+          The actual Windows reparse-point rejection integration branch cannot run on this
+          host because creating the test symlink requires a privilege that is unavailable.
+          Unit coverage and fail-closed code inspection do not substitute for that branch.
+      remaining_risks:
+        - >-
+          Complete reparse-point rejection verification on a controlled Windows host that can
+          create a symlink or equivalent reparse point, then refresh evidence and re-review.
+        - TASK-007 GUI Start/Ready/sample/stop/Tray Quit E2E is separately deferred and is not a TASK-006 defect.
+      human_task_acceptance: >-
+        Not ready: no P0-P3 code finding remains, but the required reparse-point verification
+        is UNAVAILABLE and no Human Task acceptance was requested or granted.
+  - id: EVIDENCE-TASK-006-REVIEW-004
+    type: code_delivery_review
+    target: TASK-006 Junction reparse-point verification remediation
+    target_identity: sha256:f8b56c036dad4c3389f1ea0f7e647dc97dfd4721ae81a004bf4bcad1bbaacf43
+    result: REWORK
+    timestamp: 2026-09-03T22:52:00+08:00
+    observer: CHILD_AGENT:/root/task006_core_gap_auditor
+    review:
+      review_mode: CHILD_AGENT_INCREMENTAL
+      review_result: REWORK
+      coverage:
+        strategy: PARTITIONED_PLUS_INTEGRATION
+        status: COMPLETE
+        applicable_lanes: [correctness, security, verification, context-docs]
+        partitions: [junction_reparse_fixture, websocket_close_fixture]
+        integration_result: PASS
+        freshness: FRESH
+      reconciled_findings:
+        - id: EVIDENCE-TASK-006-REVIEW-003.verification_gap
+          status: FIXED
+          summary: The temporary Junction fixture creates and rejects a real reparse point.
+      findings:
+        - id: FINDING-TASK-006-005
+          priority: P2
+          status: REMEDIATED
+          location: src-tauri/src/singbox/clash_api.rs
+          summary: >-
+            The fixture accepted ConnectionReset after every one-message stream, which could
+            mask a normal bounded stream failing to send a Close frame. Remediation is recorded
+            in EVIDENCE-TASK-006-010 and requires a new incremental review.
+      remaining_risks:
+        - TASK-007 GUI Start/Ready/sample/stop/Tray Quit E2E is separately deferred and is not a TASK-006 defect.
+  - id: EVIDENCE-TASK-006-REVIEW-005
+    type: code_delivery_review
+    target: TASK-006 fixed loopback WebSocket fixture P2 remediation
+    target_identity: sha256:909c4f2cdb4d1f5d246f433c5fd9f1cb77395891dee89e9f5e5f8e72f826ebbb
+    result: PASS
+    timestamp: 2026-09-03T23:00:00+08:00
+    observer: CHILD_AGENT:/root/task006_core_gap_auditor
+    review:
+      review_mode: CHILD_AGENT_INCREMENTAL
+      review_result: PASS
+      coverage:
+        strategy: PARTITIONED_PLUS_INTEGRATION
+        status: COMPLETE
+        applicable_lanes: [correctness, security, contract-data, concurrency-performance, verification, context-docs, release]
+        partitions: [oversized_connection_reset, normal_fixed_stream_close, junction_reparse_rejection]
+        integration_result: PASS
+        freshness: FRESH
+      reconciled_findings:
+        - id: FINDING-TASK-006-005
+          priority: P2
+          status: FIXED
+          summary: >-
+            ConnectionReset is accepted only after an intentionally oversized fixed stream;
+            normal traffic and log fixtures require Close or EOF.
+      findings: []
+      remaining_risks:
+        - CI, commit and push are NOT_RUN and require separate authorization.
+        - TASK-007 GUI Start/Ready/sample/stop/Tray Quit E2E is separately deferred and is not a TASK-006 defect.
+      human_task_acceptance: >-
+        The frozen candidate is ready for USER:lifei Human Task acceptance judgment; this
+        independent review does not accept the Task or migrate a Gate.

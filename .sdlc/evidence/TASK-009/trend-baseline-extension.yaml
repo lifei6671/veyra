@@ -1,0 +1,34 @@
+{
+  "manifest": [
+    {
+      "snapshot": "src-tauri\\target\\task009-trend-baseline\\src-tauri\\src\\commands.rs",
+      "classification": "SCOPE_EXTENSION",
+      "path": "src-tauri/src/commands.rs",
+      "sha256": "df35949489984809d84c0fa53a9972bce9922e17eb5491158e4b0265b9bc809b"
+    },
+    {
+      "snapshot": "src-tauri\\target\\task009-trend-baseline\\docs\\veyra.md",
+      "classification": "AUTHORITY_CHANGE_BASELINE",
+      "path": "docs/veyra.md",
+      "sha256": "42a61775ac324847e5a978c4af70d805d8c671150c2791315b579bd30ccd9481"
+    },
+    {
+      "snapshot": "src-tauri\\target\\task009-trend-baseline\\.sdlc\\tasks\\TASK-009.md",
+      "classification": "AUTHORITY_CHANGE_BASELINE",
+      "path": ".sdlc/tasks/TASK-009.md",
+      "sha256": "1af9984b0c786c9593c2d72db91a095d6d4639d96a4da17c2af31c12693734be"
+    },
+    {
+      "snapshot": "src-tauri\\target\\task009-trend-baseline\\.sdlc\\design\\DCR-001-sing-box-1.14.0.md",
+      "classification": "AUTHORITY_CHANGE_BASELINE",
+      "path": ".sdlc/design/DCR-001-sing-box-1.14.0.md",
+      "sha256": "abfa0c4a21b9006d09054af229f33cb103b20d8c1f2f68980386af181781ab03"
+    }
+  ],
+  "new_paths": [
+    "src/lib/traffic-trend.ts",
+    "src/lib/traffic-trend.test.ts"
+  ],
+  "provenance": "User-requested trend feature; original TASK009 baseline and previous extension retained. Commands existing content remains baseline-owned.",
+  "previous_checkpoint": "sha256:1e08f4e589f3d1aa0aac5665a4aed2c6875fcbb8cd7114872309dace7136b64a"
+}

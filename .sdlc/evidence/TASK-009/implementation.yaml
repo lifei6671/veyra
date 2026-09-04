@@ -1,0 +1,38 @@
+skill_result:
+  skill: implementation
+  target: TASK-009
+  outcome: BLOCKED
+  next_action_hint: Resolve the concrete two-file scope correction, then resume existing implementation; do not start TASK-010.
+  target_identity: sha256:8b375689eabbc6598baf656ce06eaf2f6e553cc6fe419763fd8b0fcdd2fa2071
+  artifacts:
+    - .sdlc/evidence/TASK-009/delivery-checkpoint.yaml
+    - .sdlc/evidence/TASK-009/delivery-checkpoint.patch
+    - .sdlc/evidence/TASK-009/verification.yaml
+    - .sdlc/evidence/TASK-009/code-review-checkpoint.yaml
+    - .sdlc/evidence/TASK-009/pending-scope.md
+    - .sdlc/evidence/TASK-009/network-prerequisites.md
+    - .sdlc/evidence/TASK-009/log-manifest.yaml
+  evidence:
+    reduced_rust_regression: 159 passed; known empty-log failure explicitly filtered and separately FAIL
+    final_config_checks: 34 passed in frozen regression
+    real_replacement_and_fail_stop: PASS
+    http_socks_remote_domain_host_sni_subset: 4 passed
+    frontend_contract_tests: 19 passed
+    browser_mock_ipc_interaction_assertions: 14 passed
+    typecheck_build_lib_clippy_fmt_diff_check: PASS
+    independent_review: REWORK
+    source_freshness: FRESH
+    system_snapshot_comparison: unchanged for executed controlled cases
+  blockers:
+    - TASK009-CR-001 PrivateRuntime create double-failure ownership requires scope correction.
+    - TASK009-CR-002 Fixed Logs empty response compatibility requires scope correction.
+    - Full WG and observable system DNS topology unavailable under current resources and runtime contract.
+  remaining_risks:
+    - Positive traffic semantics and complete identity/concurrency acceptance remain incomplete.
+    - TLS SNI evidence does not prove a successful TLS handshake.
+    - TASK-009 and subfeature acceptance remain PENDING; no Delivery Gate or Human acceptance granted.
+  execution_boundary:
+    - Preserved pre-existing staged, unstaged and untracked changes using per-file baseline snapshots.
+    - No dependency or lockfile edits, commit, push, privileged capture or host network mutation.
+    - Explicitly authorized loopback tests completed; owned Vite/Playwright resources stopped.
+    - Initial composite browser/service command was rejected by automatic tool policy without detailed reason; separate foreground service and dedicated browser verification succeeded.

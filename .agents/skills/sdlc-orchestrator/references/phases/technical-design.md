@@ -22,6 +22,19 @@ Foundation 或 Material runtime/operational dependency 必须在修改 manifest/
 用途和影响；标准库、仓库已有且已批准依赖、低影响 dev/test dependency 与可逆开发工具按项目规则或
 L1 Assumption 处理，不重复询问。安全、权限、生产、外部成本依赖始终按 Material 处理。
 
+## Residual Risk 与 Material Complexity
+
+Risk 不自动授权 Design 或实现。对非 Requirement 明示的 Security、Reliability、Compatibility、
+Performance 控制，先建立 `threat/failure -> attacker capability -> reachability/trigger -> existing
+controls -> credible residual path -> observable impact -> minimal sufficient mitigation` 链。既有 primary
+或 compensating control 已关闭路径、或剩余路径未证明时，不建立 Material Control；保留
+`remaining risk`/advisory 或 Follow-up candidate，不把它伪装为当前 Task。
+
+若最小可行缓解会引入 Runtime dependency、底层 driver/平台 I/O、抽象层、后台机制、持久状态、
+配置、并发/锁模型、兼容层或运维负担，Design 在冻结前必须披露最小已知实现、工程影响、替代方案
+与其已证明的剩余风险，并由有权 Owner 决定是否接受复杂度和扩大 Scope。已接受的 Threat Model 或
+Frozen Security Contract 不得由该规则静默削弱；需要修改时走 DCR/Change Control。
+
 ## Greenfield Foundation
 
 `foundation` 模式不需要 Current Task，只读取 Anchor、完整 Requirement Source、Repository
@@ -70,8 +83,10 @@ Reviewer 第一次只读，验证：
 - Material Decision 是否完整、一致、可执行；
 - Architecture 与当前仓库/约束是否兼容；
 - 只检查受影响 concern 的 Failure、Security、Migration、Rollback、Observability、Test 或
-  Experiment 风险；未受影响 concern 的缺失不构成 Finding；
+   Experiment 风险；未受影响 concern 的缺失不构成 Finding；
 - 是否存在未授权的 Material Scope/Contract 变化。
+- 新增 Material Control 是否针对既有控制之后仍存在的可信剩余路径，是否选择最小充分缓解；高复杂度
+  方案是否披露最小已知实现、工程影响、替代方案、剩余风险和所需 Owner approval。
 
 返回 P0–P3 Finding 和 `PASS/PASS_WITH_CONDITIONS/REWORK`。Producer 修复后必须重新冻结目标并复审受影响范围。
 

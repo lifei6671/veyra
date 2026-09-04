@@ -3,6 +3,8 @@ fn main() {
         tauri_build::AppManifest::new().commands(&[
             "bootstrap_status",
             "runtime_observation_snapshot",
+            "start_managed_observation_runtime",
+            "stop_managed_observation_runtime",
             "show_main_window",
         ]),
     ))

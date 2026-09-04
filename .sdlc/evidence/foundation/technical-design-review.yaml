@@ -506,3 +506,378 @@ records:
       remaining_risks:
         - 1.12/1.13 assets, compatibility profiles and real validation are future work.
         - ACL implementation, real sidecar, child endpoint, no-console and Windows E2E remain NOT_RUN.
+  - id: EVIDENCE-DESIGN-015
+    type: technical_design_review
+    target: .sdlc/design/foundation.md with DCR-001 and TASK-006
+    target_identity: sha256:dc140dfaa7ba956e29f0891f56a384b0ae70e8e6559fc44aa4326dcaeca1e4ad
+    produced_by_phase: PLAN
+    command_or_method: >-
+      Independent child-agent review of the build-stage managed-core asset-delivery
+      amendment against docs/veyra.md, DCR-001, Foundation, TASK-006, current Git
+      asset state, Cargo manifest, Tauri bundle configuration and .gitignore.
+    result: FAIL
+    timestamp: 2026-09-03T19:05:40+08:00
+    summary: >-
+      REWORK. Three P1 findings prevent a Human Technical Design Gate: the fixed
+      1.14.0 catalog entry lacks extracted-content and bundle-resource identities;
+      current-user ACL semantics and write ordering are incomplete; and the Gate
+      identity omits the mutable DCR-001 and TASK-006 contracts.
+    observer: CHILD_AGENT:/root/dcr001_design_reviewer
+    review:
+      review_mode: CHILD_AGENT
+      review_result: REWORK
+      coverage:
+        strategy: focused_dcr_build_asset_delivery_review
+        inputs:
+          - docs/veyra.md
+          - .sdlc/design/DCR-001-sing-box-1.14.0.md
+          - .sdlc/design/foundation.md
+          - .sdlc/tasks/TASK-006.md
+          - .sdlc/state.yaml
+          - src-tauri/Cargo.toml
+          - src-tauri/tauri.conf.json
+          - .gitignore
+        companion_identities:
+          dcr_001: sha256:7a1eab4aec0d1997bc1b2e6bcc90f8b940c6074bd5b3db5f1a5aa73bf7fab3f8
+          task_006: sha256:9e0e664e3f18809b4206eccb63abe70802503a70a2219c3ee7ca2835052cd4ff
+      findings:
+        - id: DCR-001-REVIEW-001
+          priority: P1
+          status: REMEDIATION_REQUIRED
+          location: .sdlc/design/DCR-001-sing-box-1.14.0.md:62-78
+          summary: >-
+            The 1.14.0 catalog entry lacks an executable SHA-256, exact archive
+            member, bundle resource name, and the fixed DLL/license content list,
+            so the build cannot deterministically reject altered extracted contents.
+        - id: DCR-001-REVIEW-002
+          priority: P1
+          status: REMEDIATION_REQUIRED
+          location: .sdlc/design/DCR-001-sing-box-1.14.0.md:115-127
+          summary: >-
+            Current-user ACL semantics, SID provenance, inherited ACE handling,
+            reparse-point rejection, and the requirement to secure and verify the
+            directory before writing a secret config are not frozen.
+        - id: DCR-001-REVIEW-003
+          priority: P1
+          status: REMEDIATION_REQUIRED
+          location: .sdlc/state.yaml:62-68
+          summary: >-
+            The Technical Design Gate identity covers only Foundation, allowing
+            DCR-001 or TASK-006 to change without invalidating the approved target.
+      remaining_risks:
+        - Asset download, archive/executable readback, package contents, Windows ACL, sidecar execution and real E2E are NOT_RUN.
+        - Remediation requires a bounded user decision on pre-Gate asset inspection and the Windows private-DACL policy.
+  - id: EVIDENCE-DESIGN-016
+    type: fixed_asset_content_inspection
+    target: sing-box-1.14.0-windows-amd64.zip Git-ignored local cache
+    target_identity: sha256:3ffb56267da14e287be48bd10cf7e6505260125bad940b75101fbb4d5d58e5d6
+    produced_by_phase: PLAN
+    command_or_method: >-
+      User-authorized read-only inspection of the DCR-001 fixed archive by SHA-256
+      readback and ZIP member extraction to a temporary directory; no Tauri package
+      build and no sing-box process execution.
+    result: PASS
+    timestamp: 2026-09-03T19:05:40+08:00
+    summary: >-
+      Archive size is 32,809,391 bytes and SHA-256 matches DCR-001. Its exact member
+      set is sing-box.exe, libcronet.dll and LICENSE; their SHA-256 values are frozen
+      in the remediated DCR-001 catalog entry. No bundle resource or runtime process
+      was created.
+    observer: ORCHESTRATOR:/root
+    inspection:
+      members:
+        - path: sing-box-1.14.0-windows-amd64/sing-box.exe
+          bytes: 81819136
+          sha256: aad0ede010eafa7b277e520464f3a66fde820103d737eff739f40f3cc9451dcc
+        - path: sing-box-1.14.0-windows-amd64/libcronet.dll
+          bytes: 9528832
+          sha256: eee741046f0a3975124bae349aeac237aa306f3cc4de59ff5de070e74dbfdaeb
+        - path: sing-box-1.14.0-windows-amd64/LICENSE
+          bytes: 808
+          sha256: bb3805862b583aee73ad6f7805ec634747a37257a637a3069857843f05ea589c
+  - id: EVIDENCE-DESIGN-017
+    type: technical_design_review
+    target: DCR-001 + foundation.md + TASK-006 composite candidate
+    target_identity: sha256:23661eef337eb02726ce57bbd94ff8dcc734edd17434c59e0218b2f6bd507316
+    produced_by_phase: PLAN
+    command_or_method: >-
+      Independent child-agent re-review of the remediated DCR-001 fixed asset-content,
+      Windows private-DACL and composite Gate-identity contracts.
+    result: PASS
+    timestamp: 2026-09-03T19:05:40+08:00
+    summary: >-
+      PASS. The complete three-file resource set, TokenUser-SID-exclusive DACL and
+      composite Gate invalidation rules resolve all EVIDENCE-DESIGN-015 P1 findings.
+      Coverage is complete and no P0/P1/P2/P3 findings remain.
+    observer: CHILD_AGENT:/root/dcr001_design_reviewer
+    review:
+      review_mode: CHILD_AGENT
+      review_result: PASS
+      coverage:
+        strategy: focused_dcr_build_asset_delivery_rereview
+        complete: true
+        inputs:
+          - docs/veyra.md
+          - .sdlc/design/DCR-001-sing-box-1.14.0.md
+          - .sdlc/design/foundation.md
+          - .sdlc/tasks/TASK-006.md
+          - .sdlc/state.yaml
+          - .sdlc/evidence/foundation/technical-design-review.yaml#EVIDENCE-DESIGN-015
+          - .sdlc/evidence/foundation/technical-design-review.yaml#EVIDENCE-DESIGN-016
+          - .gitignore
+          - src-tauri/Cargo.toml
+          - src-tauri/tauri.conf.json
+      reviewed_identity:
+        formula: SHA-256(ASCII(foundation=<sha256>\\ndcr_001=<sha256>\\ntask_006=<sha256>\\n))
+        foundation: sha256:15d13434d75056b9156aa29520771e2a5789e888d6cd0c08d712a1c94e539a4b
+        dcr_001: sha256:2072b38be5bc6a6489ec56ab212bb36c9988868ebe0ad2feb49e386152a52bc5
+        task_006: sha256:5c7d676f57f560187447fe9c0b37ea33ef31a2249aa8b924da0504c63f44af1e
+      findings: []
+      remaining_risks:
+        - Controlled build download, package content readback and installation-package offline verification are NOT_RUN.
+        - Windows ACL binding, secret cleanup, child endpoint, no-console and real sidecar/API/Tray E2E are NOT_RUN until TASK-006 implementation.
+        - 1.12/1.13 assets, profiles, selection UI and validation remain future scoped work.
+  - id: EVIDENCE-DESIGN-018
+    type: technical_design_review
+    target: DCR-001 lifecycle-normalized composite identity
+    target_identity: sha256:342e00e3c5d720d3fd7e231ccb68358c574ccf0058fd9087540a45904aa8f793
+    produced_by_phase: PLAN
+    command_or_method: >-
+      Independent child-agent review of the narrow lifecycle-normalized target identity
+      remediation following the stale-on-lifecycle-transition finding.
+    result: PASS
+    timestamp: 2026-09-03T19:05:40+08:00
+    summary: >-
+      PASS. Normalization excludes only three status fields and line-ending representation;
+      all scope, approvals, fixed assets, ACL, endpoint, security and acceptance content remains
+      identity-bearing. Coverage is complete with no P0/P1/P2/P3 findings.
+    observer: CHILD_AGENT:/root/dcr001_design_reviewer
+    review:
+      review_mode: CHILD_AGENT
+      review_result: PASS
+      coverage:
+        strategy: focused_lifecycle_identity_rereview
+        complete: true
+        inputs:
+          - .sdlc/design/DCR-001-sing-box-1.14.0.md
+          - .sdlc/design/foundation.md
+          - .sdlc/tasks/TASK-006.md
+          - .sdlc/state.yaml
+          - .sdlc/memory/HANDOFF.md
+      reviewed_identity:
+        foundation: sha256:4f53235672b5e7da8fedb14b57f7f9d1d71cdd54d3e6ce9d0355c1725dea47ea
+        dcr_001: sha256:0a92d58d971036a657161e9cb523d086a7374f46d964d45ac9e7902425afa861
+        task_006: sha256:9a816d529fbe50420dc1ddd94eb6e5976cda44b10dccba87d28f75b0fac5f5e4
+      findings: []
+      remaining_risks:
+        - Controlled build download, package readback, Windows ACL/reparse binding and real runtime E2E are NOT_RUN.
+        - 1.12/1.13 assets and compatibility evidence remain future scoped work.
+  - id: EVIDENCE-DESIGN-019
+    type: technical_design_review
+    target: DCR-001 fixed loopback WebSocket stream dependency amendment
+    target_identity: sha256:5a69aab647f77ccdd8cc7d46f8bf6e97ade5e1e6af456e4d6ce7feecc7dd6c3d
+    produced_by_phase: EXECUTING
+    command_or_method: >-
+      Independent child-agent review of the DCR-001 WebSocket dependency closure,
+      fixed stream bounds, sampling semantics and safe DTO mapping.
+    result: PASS
+    timestamp: 2026-09-03T20:46:36+08:00
+    summary: >-
+      PASS. The exact dependency features support Close-only protocol shutdown; the
+      fixed loopback paths, authentication, time/size/message limits, single-flight
+      sampling, child-change cancellation and closed log mapping are complete. No
+      P0/P1/P2/P3 finding or unauthorized scope expansion remains.
+    observer: CHILD_AGENT:/root/websocket_dcr_reviewer
+    review:
+      review_mode: CHILD_AGENT
+      review_result: PASS
+      coverage:
+        strategy: focused_fixed_loopback_websocket_dependency_review
+        complete: true
+        inputs:
+          - .sdlc/design/DCR-001-sing-box-1.14.0.md
+          - .sdlc/design/foundation.md
+          - .sdlc/tasks/TASK-006.md
+          - .sdlc/state.yaml
+          - src-tauri/Cargo.toml
+          - src-tauri/src/singbox/clash_api.rs
+      reviewed_identity:
+        formula: SHA-256(ASCII(foundation=<sha256>\ndcr_001=<sha256>\ntask_006=<sha256>\n))
+        foundation: sha256:25c909d16139f8663c4e604b27ffac111d2a8f7fc37ee98448bf4afd0327ec49
+        dcr_001: sha256:f22e3f0262c88355a417f8918c3e76e26c31bf7ca223cd0302e6ece5991770a9
+        task_006: sha256:1f76aa341e7ef8c431b0bb1f2894bb8f664585a8a5b7f6341487b27c1845930e
+      findings: []
+      remaining_risks:
+        - Manifest/lockfile resolution, mock WebSocket contract and real 1.14.0 child handshake remain NOT_RUN until the matching Human Technical Design Gate passes.
+  - id: EVIDENCE-DESIGN-020
+    type: technical_design_review
+    target: DCR-001 managed-observation runtime entry candidate
+    target_identity: sha256:f7493d7e164fd3fbe7ca16e9696649128bd879467aeb9d9175b5ab66692947a2
+    produced_by_phase: PLAN
+    command_or_method: >-
+      Independent child-agent read-only review of the fixed zero-argument runtime entry,
+      worker lifecycle, existing sidecar process behavior and Tray quit boundary.
+    result: REWORK
+    timestamp: 2026-09-03T21:10:00+08:00
+    summary: >-
+      REWORK. The initial candidate left duplicate Start replacement behavior, process/quit
+      bounds and request-queue backpressure under-specified. No implementation was run.
+    observer: CHILD_AGENT:/root/runtime_entry_dcr_reviewer
+    review:
+      review_mode: CHILD_AGENT
+      review_result: REWORK
+      coverage:
+        strategy: focused_managed_observation_runtime_entry_review
+        complete: true
+        inputs:
+          - .sdlc/design/DCR-001-sing-box-1.14.0.md
+          - .sdlc/design/foundation.md
+          - .sdlc/tasks/TASK-006.md
+          - .sdlc/state.yaml
+          - src-tauri/src/lib.rs
+          - src-tauri/src/commands.rs
+          - src-tauri/src/application/runtime.rs
+          - src-tauri/src/singbox/runtime.rs
+          - src-tauri/src/singbox/managed_sidecar.rs
+          - src-tauri/src/platform/windows/managed_sidecar_port.rs
+          - src-tauri/src/storage/store.rs
+      reviewed_identity:
+        formula: SHA-256(ASCII(foundation=<sha256>\ndcr_001=<sha256>\ntask_006=<sha256>\n))
+        foundation: sha256:4b09982275c2e876a8009e875067e407225b6444f10d62d067625da75477a8c0
+        dcr_001: sha256:9e21d47617b8500dcf867b76095481c62101218ccb5ea9434cb3979889645d89
+        task_006: sha256:4e3daec34d04a93c8a507b5e9adef2e91a60c840c7942aeb2b84abcd35fe51e3
+      findings:
+        - id: DCR-001-REVIEW-020-001
+          priority: P1
+          status: REMEDIATION_REQUIRED
+          location: .sdlc/design/DCR-001-sing-box-1.14.0.md
+          summary: >-
+            Duplicate Start semantics conflicted with SidecarRuntime replacement behavior;
+            the candidate must freeze Ready as idempotent AlreadyRunning.
+        - id: DCR-001-REVIEW-020-002
+          priority: P1
+          status: REMEDIATION_REQUIRED
+          location: .sdlc/design/DCR-001-sing-box-1.14.0.md
+          summary: >-
+            Check, stop, controller drop and Tray Quit lacked bounded, ordered shutdown
+            semantics and a recovery outcome for an unconfirmed child stop.
+        - id: DCR-001-REVIEW-020-003
+          priority: P2
+          status: REMEDIATION_REQUIRED
+          location: .sdlc/design/DCR-001-sing-box-1.14.0.md
+          summary: >-
+            Request-channel capacity and queue-full behavior were not fixed, permitting
+            an unbounded IPC request backlog.
+      remaining_risks:
+        - Remediation must be independently re-reviewed under a new composite identity.
+  - id: EVIDENCE-DESIGN-021
+    type: technical_design_review
+    target: DCR-001 managed-observation runtime entry remediated candidate
+    target_identity: sha256:914b051a1c0c02d7fe6d49c7b7e6ae9e88a8111a7e7ad43e7c55cfc7b0bf054a
+    produced_by_phase: PLAN
+    command_or_method: >-
+      Independent child-agent incremental read-only re-review after the duplicate Start,
+      bounded shutdown and queue-backpressure remediations.
+    result: PASS
+    timestamp: 2026-09-03T21:18:00+08:00
+    summary: >-
+      PASS. The candidate now fixes Ready-state Start as idempotent, uses capacity-one
+      request/response queues with a closed Busy result, and gives check, stop, drop,
+      IPC response and Tray Quit bounded, ordered recovery semantics. No P0-P3 remains.
+    observer: CHILD_AGENT:/root/runtime_entry_dcr_reviewer
+    review:
+      review_mode: CHILD_AGENT_INCREMENTAL
+      review_result: PASS
+      coverage:
+        strategy: focused_managed_observation_runtime_entry_remediation_rereview
+        complete: true
+        inputs:
+          - .sdlc/design/DCR-001-sing-box-1.14.0.md
+          - .sdlc/design/foundation.md
+          - .sdlc/tasks/TASK-006.md
+          - .sdlc/state.yaml
+          - .sdlc/evidence/foundation/technical-design-review.yaml#EVIDENCE-DESIGN-020
+          - src-tauri/src/lib.rs
+          - src-tauri/src/commands.rs
+          - src-tauri/src/application/runtime.rs
+          - src-tauri/src/singbox/runtime.rs
+          - src-tauri/src/singbox/managed_sidecar.rs
+          - src-tauri/src/platform/windows/managed_sidecar_port.rs
+          - src-tauri/src/storage/store.rs
+      reviewed_identity:
+        formula: SHA-256(ASCII(foundation=<sha256>\ndcr_001=<sha256>\ntask_006=<sha256>\n))
+        foundation: sha256:6b602ceb50ed5a746a6d3840e9138f6d1d722ffe4e4fa3ff99a70ee8417c3058
+        dcr_001: sha256:7fe44b750d66550f8bd7f1c20e22bf110c33437e575fe92282b2e3fe317387ab
+        task_006: sha256:4e3daec34d04a93c8a507b5e9adef2e91a60c840c7942aeb2b84abcd35fe51e3
+      findings: []
+      remaining_risks:
+        - Real try_wait/kill time limits, response receiver disconnect, concurrent Busy behavior and hidden-window Tray Quit ordering are implementation verification items.
+        - Real Windows E2E must prove no console, no system-network change and only the fixed loopback listener.
+  - id: EVIDENCE-DESIGN-022
+    type: human_technical_design_gate
+    target: DCR-001 managed-observation runtime entry remediated candidate
+    target_identity: sha256:914b051a1c0c02d7fe6d49c7b7e6ae9e88a8111a7e7ad43e7c55cfc7b0bf054a
+    produced_by_phase: PLAN
+    result: PASS
+    timestamp: 2026-09-03T21:20:00+08:00
+    summary: >-
+      USER:lifei approved the exact independently reviewed DCR-001 composite identity.
+    observer: USER:lifei
+    approval:
+      approved_by: USER:lifei
+      approval_text: >-
+        批准 DCR-001 固定受管观测运行时入口 Human Technical Design Gate
+        sha256:914b051a1c0c02d7fe6d49c7b7e6ae9e88a8111a7e7ad43e7c55cfc7b0bf054a
+  - id: EVIDENCE-DESIGN-023
+    type: technical_design_review
+    target: DCR-002 full sing-box subscription and complete-configuration candidate
+    target_identity: sha256:1a02b56d8861bb7c936599d952c822fa99667e8109d6b9b95427cb49e1966989
+    produced_by_phase: PLAN
+    command_or_method: >-
+      Independent child-agent read-only re-review of DCR-002 against the accepted requirement,
+      foundation, DCR-001, TASK-006, future task order, V2 storage and current compiler/runtime boundaries.
+    result: PASS
+    timestamp: 2026-09-04T09:38:18+08:00
+    summary: >-
+      PASS. V2-to-V3 migration preserves existing NodeId and references, imports are atomically
+      all-or-nothing, the protocol/input matrix separates blocked Tor, and ObservationOnly permits
+      only empty inbounds with the fixed loopback API. SystemProxy mixed inbound remains outside this DCR.
+    observer: CHILD_AGENT:/root/dcr002_reviewer
+    review:
+      review_mode: CHILD_AGENT_INCREMENTAL
+      review_result: PASS
+      coverage:
+        strategy: focused_dcr002_remediation_rereview
+        complete: true
+        inputs:
+          - docs/veyra.md
+          - .sdlc/design/DCR-002-full-sing-box-subscription-and-compiler.md
+          - .sdlc/design/foundation.md
+          - .sdlc/design/DCR-001-sing-box-1.14.0.md
+          - .sdlc/tasks.yaml
+          - .sdlc/tasks/TASK-006.md
+          - .sdlc/state.yaml
+          - src-tauri/src/domain/state.rs
+          - src-tauri/src/storage/store.rs
+          - src-tauri/src/subscription/parser.rs
+          - src-tauri/src/singbox/compiler.rs
+          - src-tauri/src/singbox/managed_sidecar.rs
+      findings: []
+      remaining_risks:
+        - Tor remains BLOCKED pending a separate controlled-resource decision and real E2E evidence.
+        - SystemProxy mixed inbound requires a separate DCR that freezes host, port, ownership, lifecycle and verification.
+        - TASK-007 through TASK-009 require their own implementation and verification evidence.
+  - id: EVIDENCE-DESIGN-024
+    type: human_technical_design_gate
+    target: DCR-002 full sing-box subscription and complete-configuration candidate
+    target_identity: sha256:1a02b56d8861bb7c936599d952c822fa99667e8109d6b9b95427cb49e1966989
+    produced_by_phase: PLAN
+    result: PASS
+    timestamp: 2026-09-04T09:40:06+08:00
+    summary: >-
+      USER:lifei approved the exact independently reviewed DCR-002 candidate.
+    observer: USER:lifei
+    approval:
+      approved_by: USER:lifei
+      approval_text: >-
+        批准 DCR-002 Human Technical Design Gate sha256:1a02b56d8861bb7c936599d952c822fa99667e8109d6b9b95427cb49e1966989

@@ -3,7 +3,7 @@ use std::fmt;
 
 use serde::{Deserialize, Serialize};
 
-pub const CURRENT_SCHEMA_VERSION: u32 = 2;
+pub const CURRENT_SCHEMA_VERSION: u32 = 3;
 
 macro_rules! stable_id {
     ($name:ident) => {
@@ -36,6 +36,7 @@ stable_id!(RoutePolicyId);
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 pub struct AppState {
     pub schema_version: u32,
+    pub default_target: RouteTarget,
     pub subscriptions: Vec<Subscription>,
     pub providers: Vec<Provider>,
     pub nodes: Vec<ProxyNode>,
@@ -47,6 +48,7 @@ impl AppState {
     pub fn empty() -> Self {
         Self {
             schema_version: CURRENT_SCHEMA_VERSION,
+            default_target: RouteTarget::Unconfigured,
             subscriptions: Vec::new(),
             providers: Vec::new(),
             nodes: Vec::new(),
@@ -66,6 +68,8 @@ impl AppState {
         let pools = unique_ids(self.pools.iter().map(|value| &value.id))?;
         unique_ids(self.routes.iter().map(|value| &value.id))?;
 
+        self.default_target.validate(&pools)?;
+
         for provider in &self.providers {
             if !provider.subscription_id.is_valid()
                 || !subscriptions.contains(&provider.subscription_id)
@@ -77,6 +81,9 @@ impl AppState {
         for node in &self.nodes {
             if !node.provider_id.is_valid() || !providers.contains(&node.provider_id) {
                 return Err(StateValidationError::MissingProvider);
+            }
+            if !node.options.is_compatible_with(node.protocol) {
+                return Err(StateValidationError::InvalidProtocolOptions);
             }
         }
 
@@ -145,6 +152,12 @@ impl Default for AppState {
     fn default() -> Self {
         Self::empty()
     }
+}
+
+/// 仅供当前后端编译输入使用；不进入 AppState 序列化或状态迁移。
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum DnsPolicy {
+    System,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -225,7 +238,7 @@ pub struct ProxyNode {
     pub protocol: ProxyProtocol,
     pub server: String,
     pub port: u16,
-    pub credentials: NodeCredentials,
+    pub options: ProtocolOptions,
     pub transport: Option<Transport>,
     pub tls: Option<TlsOptions>,
 }
@@ -233,31 +246,169 @@ pub struct ProxyNode {
 #[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq, Serialize)]
 #[serde(rename_all = "snake_case")]
 pub enum ProxyProtocol {
+    Socks,
+    Http,
     Shadowsocks,
     Vmess,
     Vless,
     Trojan,
+    WireGuard,
+    Hysteria,
     Hysteria2,
     Tuic,
-    Socks5,
-    Http,
-    Https,
+    ShadowTls,
+    Ssh,
+    Naive,
     AnyTls,
+    Snell,
 }
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 #[serde(tag = "kind", rename_all = "snake_case")]
-pub enum NodeCredentials {
-    None,
-    Password {
+pub enum ProtocolOptions {
+    Socks {
+        version: u8,
         username: Option<String>,
-        password: String,
-        cipher: Option<String>,
+        password: Option<String>,
     },
-    Uuid {
+    Http {
+        username: Option<String>,
+        password: Option<String>,
+        tls: bool,
+    },
+    Shadowsocks {
+        method: String,
+        password: String,
+    },
+    Vmess {
+        uuid: String,
+        alter_id: Option<u32>,
+        security: Option<String>,
+    },
+    Vless {
         uuid: String,
         flow: Option<String>,
     },
+    Trojan {
+        password: String,
+    },
+    WireGuard {
+        private_key: String,
+        peer_public_key: String,
+        pre_shared_key: Option<String>,
+        local_addresses: Vec<String>,
+        mtu: Option<u32>,
+        reserved: Option<[u8; 3]>,
+    },
+    Hysteria {
+        auth: String,
+        obfs: Option<String>,
+        up_mbps: Option<u32>,
+        down_mbps: Option<u32>,
+    },
+    Hysteria2 {
+        password: String,
+        obfs: Option<String>,
+    },
+    Tuic {
+        uuid: String,
+        password: String,
+        congestion_control: Option<String>,
+        udp_relay_mode: Option<String>,
+        zero_rtt: bool,
+    },
+    ShadowTls {
+        version: u8,
+        password: String,
+    },
+    Ssh {
+        user: String,
+        password: Option<String>,
+        private_key: Option<String>,
+        private_key_passphrase: Option<String>,
+        host_key: Option<String>,
+    },
+    Naive {
+        username: String,
+        password: String,
+    },
+    AnyTls {
+        password: String,
+    },
+    Snell {
+        psk: String,
+        version: u8,
+    },
+}
+
+impl ProtocolOptions {
+    pub fn is_compatible_with(&self, protocol: ProxyProtocol) -> bool {
+        matches!(
+            (protocol, self),
+            (ProxyProtocol::Socks, Self::Socks { version: 4 | 5, .. })
+                | (ProxyProtocol::Http, Self::Http { .. })
+                | (ProxyProtocol::Shadowsocks, Self::Shadowsocks { .. })
+                | (ProxyProtocol::Vmess, Self::Vmess { .. })
+                | (ProxyProtocol::Vless, Self::Vless { .. })
+                | (ProxyProtocol::Trojan, Self::Trojan { .. })
+                | (ProxyProtocol::WireGuard, Self::WireGuard { .. })
+                | (ProxyProtocol::Hysteria, Self::Hysteria { .. })
+                | (ProxyProtocol::Hysteria2, Self::Hysteria2 { .. })
+                | (ProxyProtocol::Tuic, Self::Tuic { .. })
+                | (ProxyProtocol::ShadowTls, Self::ShadowTls { .. })
+                | (ProxyProtocol::Ssh, Self::Ssh { .. })
+                | (ProxyProtocol::Naive, Self::Naive { .. })
+                | (ProxyProtocol::AnyTls, Self::AnyTls { .. })
+                | (ProxyProtocol::Snell, Self::Snell { .. })
+        ) && self.has_required_values()
+    }
+
+    fn has_required_values(&self) -> bool {
+        let present = |value: &str| !value.trim().is_empty();
+        match self {
+            Self::Socks {
+                username, password, ..
+            }
+            | Self::Http {
+                username, password, ..
+            } => {
+                username.as_deref().is_none_or(present)
+                    && password.as_deref().is_none_or(present)
+                    && username.is_some() == password.is_some()
+            }
+            Self::Shadowsocks { method, password } => present(method) && present(password),
+            Self::Vmess { uuid, .. } | Self::Vless { uuid, .. } => present(uuid),
+            Self::Trojan { password }
+            | Self::Hysteria2 { password, .. }
+            | Self::AnyTls { password }
+            | Self::ShadowTls { password, .. } => present(password),
+            Self::WireGuard {
+                private_key,
+                peer_public_key,
+                local_addresses,
+                ..
+            } => {
+                present(private_key)
+                    && present(peer_public_key)
+                    && !local_addresses.is_empty()
+                    && local_addresses.iter().all(|address| present(address))
+            }
+            Self::Hysteria { auth, .. } => present(auth),
+            Self::Tuic { uuid, password, .. } => present(uuid) && present(password),
+            Self::Ssh {
+                user,
+                password,
+                private_key,
+                ..
+            } => {
+                present(user)
+                    && (password.as_deref().is_some_and(present)
+                        || private_key.as_deref().is_some_and(present))
+            }
+            Self::Naive { username, password } => present(username) && present(password),
+            Self::Snell { psk, version } => present(psk) && (1..=5).contains(version),
+        }
+    }
 }
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
@@ -416,9 +567,21 @@ pub enum NetworkProtocol {
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 #[serde(tag = "kind", content = "pool_id", rename_all = "snake_case")]
 pub enum RouteTarget {
+    Unconfigured,
     Pool(PoolId),
     Direct,
     Block,
+}
+
+impl RouteTarget {
+    fn validate(&self, pools: &HashSet<&PoolId>) -> Result<(), StateValidationError> {
+        if let Self::Pool(pool_id) = self
+            && !pools.contains(pool_id)
+        {
+            return Err(StateValidationError::MissingPool);
+        }
+        Ok(())
+    }
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -432,6 +595,7 @@ pub enum StateValidationError {
     InvalidFilter,
     InvalidSelection,
     InvalidRoute,
+    InvalidProtocolOptions,
     EmptyPoolMembership,
     InactivePoolTarget,
     UnsupportedSchemaVersion,
@@ -449,6 +613,7 @@ impl fmt::Display for StateValidationError {
             Self::InvalidFilter => "pool contains an invalid node filter",
             Self::InvalidSelection => "pool contains an invalid selection policy",
             Self::InvalidRoute => "route contains an invalid matcher",
+            Self::InvalidProtocolOptions => "node options do not match the selected protocol",
             Self::EmptyPoolMembership => "enabled pool resolves to no nodes",
             Self::InactivePoolTarget => "enabled route references an inactive pool",
             Self::UnsupportedSchemaVersion => "state schema version is unsupported",
@@ -522,6 +687,7 @@ mod tests {
     fn valid_state() -> AppState {
         AppState {
             schema_version: CURRENT_SCHEMA_VERSION,
+            default_target: RouteTarget::Unconfigured,
             subscriptions: vec![Subscription {
                 id: SubscriptionId(id("subscription-a")),
                 name: id("A"),
@@ -538,7 +704,7 @@ mod tests {
                 protocol: ProxyProtocol::Vless,
                 server: id("example.invalid"),
                 port: 443,
-                credentials: NodeCredentials::Uuid {
+                options: ProtocolOptions::Vless {
                     uuid: id("secret-not-in-errors"),
                     flow: None,
                 },
@@ -585,6 +751,27 @@ mod tests {
         let error = state.validate().expect_err("duplicate node id must fail");
         assert_eq!(error, StateValidationError::DuplicateIdentifier);
         assert!(!error.to_string().contains("secret-not-in-errors"));
+    }
+
+    #[test]
+    fn rejects_options_that_do_not_match_the_protocol() {
+        let mut state = valid_state();
+        state.nodes[0].options = ProtocolOptions::Trojan {
+            password: id("secret-not-in-errors"),
+        };
+
+        assert_eq!(
+            state.validate(),
+            Err(StateValidationError::InvalidProtocolOptions)
+        );
+    }
+
+    #[test]
+    fn keeps_an_unconfigured_default_target_valid_but_distinct() {
+        let state = valid_state();
+
+        assert_eq!(state.default_target, RouteTarget::Unconfigured);
+        assert_eq!(state.validate(), Ok(()));
     }
 
     #[test]

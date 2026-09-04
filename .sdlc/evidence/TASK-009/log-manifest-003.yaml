@@ -1,0 +1,102 @@
+{
+  "logs": [
+    {
+      "sha256": "736a7b3165e1fda9a1f570f565fde5b91d1fb6191f4802197998a71bb0b5d74c",
+      "path": "src-tauri/target/task009-remediation/concurrency-clippy-003.result.json"
+    },
+    {
+      "sha256": "71529dc89a82150bd398656d1d8288da274077e5b369f58b776d223e65e3659f",
+      "path": "src-tauri/target/task009-remediation/concurrency-clippy-003.stderr.txt"
+    },
+    {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "path": "src-tauri/target/task009-remediation/concurrency-clippy-003.stdout.txt"
+    },
+    {
+      "sha256": "df154d57115d4b6800bcc57e3fd0613fd8dd760d67cf501427f0b61616a0cd87",
+      "path": "src-tauri/target/task009-remediation/concurrency-compile-003.result.json"
+    },
+    {
+      "sha256": "9f26310b8c8401adb0e9ecab1a66c993a84e398ecea39b1e056c16b346a27b4b",
+      "path": "src-tauri/target/task009-remediation/concurrency-compile-003.stderr.txt"
+    },
+    {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "path": "src-tauri/target/task009-remediation/concurrency-compile-003.stdout.txt"
+    },
+    {
+      "sha256": "fa49d24f338affe96d624283c4917a1459e7793f369099cdd6ed59260ec83da5",
+      "path": "src-tauri/target/task009-remediation/concurrency-diagnostic-003.result.json"
+    },
+    {
+      "sha256": "6a6d6a3078b14f8cbbfd4225ca53a7e3cf81eec5116f7d302563edcab8ef8fe7",
+      "path": "src-tauri/target/task009-remediation/concurrency-diagnostic-003.stderr.txt"
+    },
+    {
+      "sha256": "7af60a67e01c508b35e36efffccadc814f8a48337caebb9356199c2323e7c2c3",
+      "path": "src-tauri/target/task009-remediation/concurrency-diagnostic-003.stdout.txt"
+    },
+    {
+      "sha256": "b3129f7f7f2e6d812b3e5ab86e5959c9241583e963fefecfdfd5938e368f957c",
+      "path": "src-tauri/target/task009-remediation/concurrency-diff-003.log"
+    },
+    {
+      "sha256": "2d3d6157e04519eb8182e3d3953ae84d97263fb96819cb8fee1e5dc581430ac4",
+      "path": "src-tauri/target/task009-remediation/concurrency-final-003.result.json"
+    },
+    {
+      "sha256": "bb724b86b74c0d40878b356781252765a1a8ee52a158600e6f4e506cccd599bc",
+      "path": "src-tauri/target/task009-remediation/concurrency-final-003.stderr.txt"
+    },
+    {
+      "sha256": "31299e3f701e4ef775a934770404f9e4a68ce29e621422ae1018b0da10632070",
+      "path": "src-tauri/target/task009-remediation/concurrency-final-003.stdout.txt"
+    },
+    {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "path": "src-tauri/target/task009-remediation/concurrency-fmt-003.log"
+    },
+    {
+      "sha256": "e05936d495622eb57e716b5d463fcbeef496df34bdc424444af5b08f386125fb",
+      "path": "src-tauri/target/task009-remediation/concurrency-identity-003.result.json"
+    },
+    {
+      "sha256": "74b43e614c9451da2dcf0faa760efdf12dbc0d55cd6a3f023109235f82292332",
+      "path": "src-tauri/target/task009-remediation/concurrency-identity-003.stderr.txt"
+    },
+    {
+      "sha256": "dad37821fe431dbb6de73642ff5077d63f91c6937918aae2d525b36b19e695a2",
+      "path": "src-tauri/target/task009-remediation/concurrency-identity-003.stdout.txt"
+    },
+    {
+      "sha256": "7b4f44decd971e4630c5c7404e6585465db68fba83e6738a9249440183017948",
+      "path": "src-tauri/target/task009-remediation/concurrency-static-003.result.json"
+    },
+    {
+      "sha256": "5de53b1be0b627b77d8acd8509e8041b160dca66fe6096a2fb81c747548f52db",
+      "path": "src-tauri/target/task009-remediation/concurrency-worker-003.result.json"
+    },
+    {
+      "sha256": "87b3173fa1ac7a6c8320c78e46306a1e8f6be9f57d45ca98bac2bf5f5a2ffcac",
+      "path": "src-tauri/target/task009-remediation/concurrency-worker-003.stderr.txt"
+    },
+    {
+      "sha256": "e5b9b7587f8960c84e263b9be82a2e5c67f5717a3f1a6a009aa4dc36887d00ce",
+      "path": "src-tauri/target/task009-remediation/concurrency-worker-003.stdout.txt"
+    },
+    {
+      "sha256": "fefa79489cf65f56772d864e8d8ca461b2bbbdca75642195e7c2c2b8c2dab4a5",
+      "path": "src-tauri/target/task009-remediation/concurrency-worker-003b.result.json"
+    },
+    {
+      "sha256": "d492b810fff781c121974a771c8926bc013654d91b913b9f37ea01b4149a21e0",
+      "path": "src-tauri/target/task009-remediation/concurrency-worker-003b.stderr.txt"
+    },
+    {
+      "sha256": "ce21c528ac3f5cbfd89fbead89a9bdf18d44bf6027d194f39ec5520bc5b44d3c",
+      "path": "src-tauri/target/task009-remediation/concurrency-worker-003b.stdout.txt"
+    }
+  ],
+  "source_freshness": "FRESH",
+  "target_identity": "sha256:04d3a65432123555c147a33c23dae6fe3f9a3d88786eaaa01ac44d94453a5fdf"
+}

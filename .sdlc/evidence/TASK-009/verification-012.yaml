@@ -1,0 +1,241 @@
+{
+  "artifacts": [
+    {
+      "path": "src-tauri/target/task009-remediation/wg-repair-build-012.result.json",
+      "sha256": "6bb6bba943d03dd3259ef7c71a4fee24b5f58da83daad8f08a620b5ab34edfde"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-repair-build-012.stderr.txt",
+      "sha256": "b9adcd2e009a92b5c087956c8f7dc5c09b8fb89fca8a6ab50d5d587058b8139a"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-repair-build-012.stdout.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-repair-clippy-012.result.json",
+      "sha256": "c5bd419ad4fa4d9a59d332829e1da49db4a056a604d52b5a105529f7ff11da67"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-repair-clippy-012.stderr.txt",
+      "sha256": "8c695467d0d91033f143457b4335eca983201f7b34725f031e056ed0d912ce13"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-repair-clippy-012.stdout.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-repair-diff-check-012.result.json",
+      "sha256": "205abad5664c7b525ed2ea5c5989a06b54dcebd05dd58a8ec14f059a414d829f"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-repair-diff-check-012.txt",
+      "sha256": "3a7cd7af5760a3c0fabb0e1129d8f705775170484db8d94b75f7f59fd9df9d5b"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-repair-fmt-012.result.json",
+      "sha256": "5cf3a8b29ae90308e32634af45d8096951ff3765367eee522cd49815568a13f2"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-repair-fmt-012.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-repair-fmt-012.stdout.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-repair-hold-012.result.json",
+      "sha256": "8802276b71f12e372ad91d038973b67024bce12fa8e1ed9e18bd365e4e4162aa"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-repair-hold-012.stderr.txt",
+      "sha256": "5117300cff703c70ac6b526c3f0b2c8679737b41c95b3d740dcec6ebaa0a8c97"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-repair-hold-012.stdout.txt",
+      "sha256": "4241874df32ed6c4ffdbb0b933ddb5894f186c508b53bad4c7bfd43c86b23c39"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-repair-host-after-012.json",
+      "sha256": "ab1cea7fd83ff99ba7d1eb477307dc988d1a10cca767ef2b7cc422d27d944366"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-repair-host-before-012.json",
+      "sha256": "edfea6bcdfdca323973ded1a843db580f47eb017c6af8a86ca12b1301abe38d0"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-repair-host-compare-012.json",
+      "sha256": "8b7bf1eec8eb6679ef346ab8bcf7de621b49ef4da11f2572fcc30f73a3baed40"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-repair-protocol-012.result.json",
+      "sha256": "e8b410dd8f454a5f57aa4bbe3ecedfd1a8c1fcd5418affdbbc61f6fe40918eed"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-repair-protocol-012.stderr.txt",
+      "sha256": "cd27ddb7303ab549a24027a0215239e1ee3f8564c62bc2ba674c2e9f06f2cc86"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-repair-protocol-012.stdout.txt",
+      "sha256": "533b0150d207e41e0817e7c1f06bbba10ad518d41d903f834bab3a4e3a1cedef"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-repair-real-012.result.json",
+      "sha256": "07bb4d59825e35b0c1248e71a75aa93f4de863a8d12a636df0e16b8b3da5b889"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-repair-real-012.stderr.txt",
+      "sha256": "41128450e9063ec622b3d39bff48fe964663131110725390e62a9b125f93ef70"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-repair-real-012.stdout.txt",
+      "sha256": "4aee13b49d1f565113cc0dfee252102fbd2a7c6659198b2a5dceb8e16d970a79"
+    }
+  ],
+  "unique_rust_tests": 3,
+  "result": "PASS",
+  "remaining_gaps": [
+    "Full WG reject/forward,DUT UDP business and controlled systemDNS remain incomplete.",
+    "Whole Task009 review/human acceptance pending."
+  ],
+  "helper": {
+    "path": "src-tauri/target/task009-wg-peer.exe",
+    "sha256": "57a95f5c7382df6b20583c45eaf41068a62162ac70abff593c744d8e57dcad57"
+  },
+  "version": 1,
+  "timestamp": "2026-09-04T16:33:25.0728137+08:00",
+  "carried_forward": {
+    "sha256": "355e09f0b7cc03a5320656fa2fd5374f8bb8525e0a0679abb5f31eae974ec383",
+    "scope": "Unchanged13Go source/dependency/README files and same helper; Go11top-level/11ACKsubcases,race,vet,module verify,build andformat not rerun. review011 already covered all Go concerns with no findings.",
+    "freshness": "All47source entries match,onlyRust Port cfg(test) differs from011,as preserved in wg-repair-baseline-012.",
+    "verification": ".sdlc/evidence/TASK-009/verification-011.yaml"
+  },
+  "observed": [
+    {
+      "exit_code": 0,
+      "result": "PASS",
+      "command": "test --manifest-path src-tauri/Cargo.toml --lib wg_peer_test:: --no-run",
+      "id": "wg-repair-build-012",
+      "finished": "2026-09-04T16:30:32.2448173+08:00",
+      "timeout": false,
+      "started": "2026-09-04T16:30:26.6898078+08:00",
+      "outer_timeout_seconds": 60
+    },
+    {
+      "exit_code": 0,
+      "result": "PASS",
+      "command": "test --manifest-path src-tauri/Cargo.toml --lib real_peer_preserves_binding_until_hard_exit_when_dut_stop_is_unconfirmed -- --nocapture --test-threads=1",
+      "id": "wg-repair-hold-012",
+      "finished": "2026-09-04T16:31:39.973327+08:00",
+      "timeout": false,
+      "started": "2026-09-04T16:30:43.3696539+08:00",
+      "outer_timeout_seconds": 60
+    },
+    {
+      "exit_code": 0,
+      "result": "PASS",
+      "command": "test --manifest-path src-tauri/Cargo.toml --lib real_wireguard_peer_delivers_tcp_response_and_virtual_icmp -- --nocapture --test-threads=1",
+      "id": "wg-repair-real-012",
+      "finished": "2026-09-04T16:32:22.0772023+08:00",
+      "timeout": false,
+      "started": "2026-09-04T16:31:49.467601+08:00",
+      "outer_timeout_seconds": 60
+    },
+    {
+      "exit_code": 0,
+      "result": "PASS",
+      "command": "test --manifest-path src-tauri/Cargo.toml --lib wg_peer_frames_reject_unknown_fields_versions_and_noncanonical_keys -- --nocapture --test-threads=1",
+      "id": "wg-repair-protocol-012",
+      "finished": "2026-09-04T16:32:34.6102673+08:00",
+      "timeout": false,
+      "started": "2026-09-04T16:32:33.6509434+08:00",
+      "outer_timeout_seconds": 60
+    },
+    {
+      "exit_code": 0,
+      "result": "PASS",
+      "command": "clippy --manifest-path src-tauri/Cargo.toml --lib -- -D warnings",
+      "id": "wg-repair-clippy-012",
+      "finished": "2026-09-04T16:32:36.8216498+08:00",
+      "timeout": false,
+      "started": "2026-09-04T16:32:35.0936166+08:00",
+      "outer_timeout_seconds": 60
+    },
+    {
+      "exit_code": 0,
+      "result": "PASS",
+      "command": "fmt --manifest-path src-tauri/Cargo.toml -- --check",
+      "id": "wg-repair-fmt-012",
+      "finished": "2026-09-04T16:30:53.961165+08:00",
+      "timeout": false,
+      "started": "2026-09-04T16:30:53.5476549+08:00",
+      "outer_timeout_seconds": 60
+    },
+    {
+      "exit_code": 0,
+      "result": "PASS",
+      "command": "git diff --check",
+      "id": "wg-repair-diff-check-012",
+      "finished": "2026-09-04T16:33:24.9460606+08:00",
+      "timeout": false,
+      "started": "2026-09-04T16:33:24.8394667+08:00",
+      "outer_timeout_seconds": 60
+    }
+  ],
+  "target": "TASK009-CR-005 peer lifetime under unconfirmed DUT Stop",
+  "host_before_after": {
+    "checks": [
+      {
+        "after_hash": "c3f7f290de2a45015f971f458bfd5e0afec7864f1a2737da26a1e71df99b4633",
+        "before_hash": "c3f7f290de2a45015f971f458bfd5e0afec7864f1a2737da26a1e71df99b4633",
+        "unchanged": true,
+        "field": "interfaces"
+      },
+      {
+        "after_hash": "2bd4a3cb1928063095a5f99c448963c1d823c8e95546e00817adae58e2ae265d",
+        "before_hash": "2bd4a3cb1928063095a5f99c448963c1d823c8e95546e00817adae58e2ae265d",
+        "unchanged": true,
+        "field": "addresses"
+      },
+      {
+        "after_hash": "1d20414d0a413b8844c8ee2930c02b9bb91eb42586e5b27d827ef05f82ac14ac",
+        "before_hash": "1d20414d0a413b8844c8ee2930c02b9bb91eb42586e5b27d827ef05f82ac14ac",
+        "unchanged": true,
+        "field": "routes"
+      },
+      {
+        "after_hash": "9fc6a6105e79db3c310c6cbdf29355130e1c099e3497f81622c8a0aa23c54dc6",
+        "before_hash": "9fc6a6105e79db3c310c6cbdf29355130e1c099e3497f81622c8a0aa23c54dc6",
+        "unchanged": true,
+        "field": "dns"
+      },
+      {
+        "after_hash": "fe8d3a14a211ba55e32fce49ac32b12622c0a46a256df836d6678673a8717e79",
+        "before_hash": "fe8d3a14a211ba55e32fce49ac32b12622c0a46a256df836d6678673a8717e79",
+        "unchanged": true,
+        "field": "proxy"
+      }
+    ],
+    "result": "PASS",
+    "timestamp": "2026-09-04T16:33:24.9966838+08:00"
+  },
+  "target_identity": "sha256:1827c6b72fe6466836eb4e6d4fd32e006a36e581d07c8731ed6757c59b17fc59",
+  "not_run": [
+    "Go rerun unchanged from011",
+    "Full Rust suite",
+    "Frontend unchanged",
+    "Native GUI/Tray E2E",
+    "CI",
+    "commit",
+    "push"
+  ],
+  "assertions": [
+    "finish(false) never sends shutdown,kills peer or proactively closes stdin; retains owned child until actual helper hard deadline exits,then still returns cleanup failure.",
+    "Real helper only(no DUT started): simulate dut_stopped=false; at3179ms and53001ms actual UDP bind attempt rejected AddrInUse and stdin writer remained open; actual hardexit code1 at~55173ms,exact port rebind succeeds after confirmed exit.",
+    "False-branch fixture elapsed55.64seconds; no clock acceleration or shortened helper timer. This does not emulate OS refusing an actual DUT Stop.",
+    "Normal actual fixed-core TCP complete response ACK rx4/tx3 and3/3virtualIPv4ICMP PASS31.91seconds; DUT PID4916,peerPID40408,configSHA c2bf7feff1b9af77f83aa53206d62e7cbeddf8d60e97a434d0a67bd86a79182c.",
+    "DUT TCP127.0.0.1:9090 and wildcard IPv4/IPv6 UDP53288; peer UDP127.0.0.1:60067; DUT then peer cleanup confirmed,no owned sockets/private instances,stderr0.",
+    "Protocol negative test,non-test library Clippy,fmt,diff and selected host configuration hashes PASS."
+  ]
+}

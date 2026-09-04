@@ -1,0 +1,34 @@
+skill_result:
+  skill: implementation
+  target: TASK-009 CHANGE-003 / DCR-005 traffic correction
+  outcome: PASS
+  target_identity: sha256:1e08f4e589f3d1aa0aac5665a4aed2c6875fcbb8cd7114872309dace7136b64a
+  next_action_hint: Bounded correction independently passed; preserve remaining real positive-flow and Task verification gaps.
+  authorization: .sdlc/evidence/TASK-009/change-control.yaml#EVIDENCE-TASK-009-CHANGE-003
+  artifacts:
+    - .sdlc/evidence/TASK-009/delivery-checkpoint-004.yaml
+    - .sdlc/evidence/TASK-009/delivery-checkpoint-004.patch
+    - .sdlc/evidence/TASK-009/verification-004.yaml
+    - .sdlc/evidence/TASK-009/log-manifest-004.yaml
+    - .sdlc/evidence/TASK-009/positive-traffic-prerequisites.md
+  implemented:
+    - Fixed core one-second window maps directly to rate; REST totals supply cumulative bytes.
+    - Obsolete inter-window differencing helper and previous counter storage removed; only throttle timestamps remain.
+    - Existing DTO/Delta field shape and units verified; REST and WS are explicitly different sampling times.
+    - Equal/increasing/decreasing/zero windows, nonzero first frame, large and invalid numeric payloads, new bridge reset, and authenticated complete Mock sample covered.
+  verification:
+    targeted_tests: 41 PASS; all five filtered runs exit 0, no failed or ignored tests.
+    real_core: Existing fixed-core Ready, observations and Stop test PASS; two real worker sampling and Start/Stop tests PASS.
+    static: Library Clippy, cargo fmt check and git diff check PASS, each bound to current logs.
+    independent_review: code-review-checkpoint-004.yaml passes the bounded correction with no new findings; overall Task remains REWORK with incomplete coverage.
+    real_positive_traffic: UNAVAILABLE in the existing evaluated topology; no executed metered positive-flow claim.
+    whole_library_regression: NOT_RUN for current 170-test binary; previous full 165-pass run remains bound to checkpoint002.
+  execution_boundary:
+    - No new profile/inbound, dependency, host network setting, public IPC/event field, persistent state, commit or push.
+    - Original baseline, extension and all pre-existing user staging retained.
+    - DCR-005 approved bytes unchanged; DCR-001 traffic paragraph and Task scope synchronized under explicit CHANGE-003.
+  remaining_task_gaps:
+    - Routed and metered real positive-flow input, with target-side and API evidence.
+    - True network in-flight Stop, cross-instance late result and remaining stream concurrency/response-loss evidence.
+    - Full controlled WG/DNS topology and mandatory matrix.
+    - Whole Task independent acceptance and Human Task acceptance remain pending.

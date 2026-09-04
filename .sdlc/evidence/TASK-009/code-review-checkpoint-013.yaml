@@ -1,0 +1,133 @@
+{
+  "skill_result": {
+    "skill": "code-delivery-review",
+    "target": "TASK-009 checkpoint013 — CHANGE008 fixed WG UDP response subset",
+    "outcome": "BLOCKED",
+    "next_action_hint": "本轮完整CHANGE008增量局部PASS；保留完整Task的拒绝矩阵、DNS、native等验收缺口，不推进Delivery Gate。",
+    "review_mode": "CHILD_AGENT",
+    "reviewed_target_identity": "sha256:5f6438663e7d08e0241fde9a733e466c2dc7031dba31dbe050c1b3f36e52f0d5",
+    "review_result": "REWORK",
+    "local_repair_review_result": "PASS",
+    "coverage": {
+      "strategy": "PARTITIONED_PLUS_INTEGRATION",
+      "status": "INCOMPLETE",
+      "freshness": "FRESH",
+      "independence": "task009_design_reviewer未参与compiler、Rust Port、Go helper或验证生产；只读冻结增量和物质邻接，仅新增本记录。未运行测试/核心/网络、修改被审工件/Task/state或委派。",
+      "prior_review": ".sdlc/evidence/TASK-009/code-review-checkpoint-012.yaml",
+      "source_freshness": {
+        "result": "FRESH",
+        "manifest_entries": 50,
+        "source_hash_mismatches": 0,
+        "incremental_baseline_snapshots": 47,
+        "baseline_hash_mismatches": 0,
+        "baseline_previous_checkpoint_mismatches": 0,
+        "verification_artifacts": 46,
+        "artifact_hash_mismatches": 0,
+        "verification_identity": "sha256:2b54070715b3634efaaed5a4dc59503af79c20aac085f180e068737e31de3568",
+        "helper_identity": "sha256:70850e6deaf35e6da560dc55b30690d5648aadb9c1d77e0a53bc7505796a4d55",
+        "method": "先按manifest实际数组顺序重算HEAD/path/hash，逐项核对50当前源、47原字节快照及checkpoint012、46原始工件和helper。完整阅读wg-udp-incremental-013.patch及compiler通用validate、UDP服务/观察器/主循环交互；未变分区承接012。"
+      },
+      "applicable_lanes": [
+        "correctness",
+        "security",
+        "concurrency-performance",
+        "verification",
+        "release"
+      ],
+      "lanes": {
+        "correctness": {
+          "result": "PASS",
+          "freshness": "FRESH"
+        },
+        "security": {
+          "result": "PASS",
+          "freshness": "FRESH"
+        },
+        "concurrency-performance": {
+          "result": "PASS",
+          "freshness": "FRESH"
+        },
+        "verification": {
+          "result": "REWORK",
+          "validation": "PARTIAL",
+          "freshness": "FRESH"
+        },
+        "release": {
+          "result": "REWORK",
+          "validation": "NOT_APPLICABLE",
+          "freshness": "FRESH"
+        }
+      },
+      "partitions": [
+        {
+          "id": "closed-compiler-tuples",
+          "result": "PASS",
+          "locations": [
+            "src-tauri/src/singbox/compiler.rs:111",
+            "src-tauri/src/singbox/compiler.rs:982",
+            "src-tauri/src/singbox/compiler.rs:1148"
+          ],
+          "reviewed": "新增cfg(test)固定UDP入口，无任意地址/目标输入；拒绝全部intent用户路由，最终validate重验唯一WG/单peer/Manual选中/固定地址端口MTU/唯一Direct和Block及置顶route/DNS reject。原TCP条件完整保留，产品与普通compile仍为空入口。新增合法、构造拒绝和最终篡改测试，沿用原TCP回归。"
+        },
+        {
+          "id": "rust-protocol-client-and-ownership",
+          "result": "PASS",
+          "locations": [
+            "src-tauri/src/platform/windows/managed_sidecar_port.rs:570",
+            "src-tauri/src/platform/windows/managed_sidecar_port.rs:1108",
+            "src-tauri/src/platform/windows/managed_sidecar_port.rs:1361"
+          ],
+          "reviewed": "私有阶段约束新旧场景及重复/错误事件；UDP成功匹配所有摘要字段。同一connected loopback客户端逐个发送20字节随机token/序号并精确接收，不重发、不打印载荷。typed finalize/check/run私有字节一致；先持有peer再预留入口，PID核验只剔除精确业务端点后验证WG组。包括panic都先关客户端、确认DUT停止再清理peer，继承CR005 Hold和自有目录边界。"
+        },
+        {
+          "id": "go-udp-service-and-boundary",
+          "result": "PASS",
+          "locations": [
+            "scripts/task009-wg-peer/udp.go:23",
+            "scripts/task009-wg-peer/udp.go:112",
+            "scripts/task009-wg-peer/observe.go:60",
+            "scripts/task009-wg-peer/main.go:199"
+          ],
+          "reviewed": "UDP场景仅内存endpoint，waiter等待受工作取消/截止控制；固定长度、token、顺序、虚拟源及首包端口锁定。tun入口/出口分别检查精确UDP元组、长度、IPv4及非零UDP校验和，三次完整请求/响应才满足waitUDP。服务实际ReadFrom/WriteTo及边界完成共同决定摘要；额外报文导致失败，关闭仍归DUT退出后的peer生命周期。"
+        },
+        {
+          "id": "go-tests-authority-and-integration",
+          "result": "PASS",
+          "reviewed": "读审全部新增udp_test及修改的protocol/lifecycle测试：正向、零校验和、错误token/端口/源/截短/分片/校验和、缺边界、场景混用及取消Hold。CHANGE008明确批准DCR010匹配36a910...，Task仅追加测试UDP子集，无产品/依赖/锁/主机设置变化。新helper正常TCP/ICMP及实际55秒Hold回归与本次UDP通过相连。"
+        }
+      ],
+      "integration_result": {
+        "local_result": "PASS",
+        "whole_task_result": "REWORK",
+        "reviewed": "客户端实际精确回包与认证WG边界rx3/tx3、最终配置/端点所有权及正常清理同时成立；不是仅发送或peer自测。原TCP/ICMP与未确认Stop的Hold行为回归通过。完整Task仍有未覆盖必需验收。"
+      }
+    },
+    "remaining_risks": [
+      "完整WG主动入站/转发拒绝矩阵、系统DNS/Host/SNI受控矩阵和native GUI/Tray等尚未完成；局部PASS不等于Task验收。",
+      "本目标完整195项Rust回归NOT_RUN；本轮32项独立测试，编译器27项较早执行但其源码未再变，最终合并源码另经test --no-run和实际相关测试编译。库Clippy不是all-target Clippy。",
+      "Hold用例使用真实helper但模拟dut_stopped=false、未启动DUT，不是OS拒绝停止真实DUT的E2E；原55秒硬上限残余风险保留。",
+      "测试UDP入口仅限获批固定内存回显，不能称作产品ObservationOnly入口支持；TCP ACK只证明TCP层交付。"
+    ]
+  },
+  "findings": [],
+  "covered_previous_findings": [
+    {
+      "finding_id": "TASK009-CR-005",
+      "fingerprint": "windows/managed_sidecar_port.rs:Peer::finish:dut-stop-failure-kills-peer-before-hard-hold",
+      "status": "FIXED",
+      "target_identity": "sha256:5f6438663e7d08e0241fde9a733e466c2dc7031dba31dbe050c1b3f36e52f0d5",
+      "basis": "finish(false)未被本轮放宽；新helper实际3057ms/53000ms绑定及stdin仍保留，55061ms观察exit1后才释放，cleanup仍FAIL。"
+    }
+  ],
+  "verification_readback": {
+    "local_result": "PASS",
+    "verification": ".sdlc/evidence/TASK-009/verification-013.yaml",
+    "real_udp": "wg-udp-real-013.stdout：21.40s，三个精确20字节应答，request60/response60，认证边界rx3/tx3；config3896f127...，DUT82420/peer48700。业务UDP仅127.0.0.1:51567、API127.0.0.1:9090、WG双栈wildcard同51300、peer127.0.0.1:63991。client→DUT→peer清理确认，stderr0。",
+    "regression": "wg-udp-tcp-icmp-regression-013.stdout：21.05s，完整响应ACK rx4/tx4、ICMP3/3及正常清理PASS；wg-udp-hold-regression-013：55.46s，原真实硬限及失败清理结果保持。",
+    "counts": "Rust32 unique＝compiler27＋protocol2＋realUDP1＋TCP/ICMP1＋Hold1；Go16顶层/38子例。race与重复运行不计新增用例。",
+    "static": "读取绑定原始result及日志：test --no-run、Go test/race/vet/build/mod verify/module list/gofmt、Rust lib Clippy/fmt、git diff --check退出0，无超时；依赖/锁字节未变。",
+    "host": "独立读取before/after JSON，interfaces/addresses/routes/dns/proxy五个非空字段序列化值完全一致。"
+  },
+  "additional_findings": "No actionable findings in the complete CHANGE008 increment and affected integration.",
+  "gate_action": "NONE — 保持完整Task REWORK/INCOMPLETE，不迁移状态或代替Human Acceptance。"
+}

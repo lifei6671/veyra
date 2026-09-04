@@ -1,0 +1,95 @@
+version: 1
+records:
+  - id: EVIDENCE-TASK-009-DCR004-REVIEW-001
+    type: technical_design_review
+    target: .sdlc/design/DCR-004-managed-runtime-rollback.md
+    target_identity: sha256:2ecf5c50eff3b2322794d597262d11e81a14d7b285b76d9ea30d79e3d525a8b5
+    timestamp: 2026-09-04T12:11:53+08:00
+    observer: CHILD_AGENT:/root/task009_design_reviewer
+    result: PASS
+    freshness: STALE
+    superseded_reason: Explicit USER change in EVIDENCE-TASK-009-CHANGE-001 rejects automatic configuration rollback.
+    reviewed_snapshot: .sdlc/evidence/TASK-009/reviewed-dcr004-001.md
+    command_or_method: Independent read-only technical-design-review of frozen DCR-004, applicable accepted designs, requirement and Runtime/Windows Port source; start/end identity comparison.
+    review_mode: CHILD_AGENT
+    review_result: PASS
+    coverage:
+      traceability: PASS
+      runtime_and_rollback: PASS
+      security_and_ownership: PASS
+      complexity_and_scope: PASS
+      verification_design: PASS
+      authorization_boundary: PASS
+      freshness: FRESH
+      independence: Reviewer did not author this design or implementation.
+    findings: []
+    references:
+      - docs/veyra.md:2612
+      - .sdlc/design/foundation.md:209
+      - .sdlc/design/DCR-001-sing-box-1.14.0.md:115
+      - .sdlc/design/DCR-001-sing-box-1.14.0.md:217
+      - .sdlc/design/DCR-002-full-sing-box-subscription-and-compiler.md:130
+      - .sdlc/design/DCR-003-fixed-core-configuration.md:70
+      - src-tauri/src/singbox/runtime.rs:163
+      - src-tauri/src/singbox/runtime.rs:300
+      - src-tauri/src/platform/windows/managed_sidecar_port.rs:104
+      - src-tauri/src/platform/windows/managed_sidecar_port.rs:137
+      - src-tauri/src/platform/windows/managed_sidecar_port.rs:181
+    remaining_risks:
+      - Implementation and runtime verification are NOT_RUN; prior Mock evidence does not establish real recovery.
+      - Cover check-child timeout with unconfirmed exit; managed_sidecar.rs currently discards that child, so implementation must retain ownership under the proposed failure contract.
+      - Prove run-before-start byte equality, new secret and observation identity isolation, and cleanup-failure ownership.
+      - TASK-009 must still implement all DCR-003 WireGuard/DNS/URLTest cases after recording a controlled observable topology.
+      - Human approval of interruption semantics and internal interface scope remains pending.
+    routing:
+      role: sdlc_reviewer
+      config_sha256: 0ed1c4fafbb00eab569b4db0c68768ce1e926b518897ad4f2e3c549a44f0336b
+      requested_model: gpt-5.6-sol
+      requested_reasoning: high
+      actual_model_and_reasoning: UNAVAILABLE
+      total_usage: UNAVAILABLE
+      reason: Independent review of lifecycle and security contract change.
+  - id: EVIDENCE-TASK-009-DCR004-REVIEW-002
+    type: technical_design_review
+    target: .sdlc/design/DCR-004-runtime-update-failures.md
+    target_identity: sha256:a90624f97fe9f54999f8db884c7b6c5b709eaeab7862157a080a5e4c0df528e1
+    timestamp: 2026-09-04T12:30:59+08:00
+    observer: CHILD_AGENT:/root/task009_design_reviewer
+    result: PASS
+    review_mode: CHILD_AGENT
+    review_result: PASS
+    command_or_method: Independent full review of revised authorized three-stage failure design against current requirement, frozen constraints and source; no implementation or runtime execution.
+    coverage:
+      requirement_and_authorization: PASS
+      fail_stop_and_no_rollback: PASS
+      checked_bytes_and_resource_ownership: PASS
+      stage_results_and_ui_feedback: PASS
+      idempotency_and_time_bounds: PASS
+      minimal_scope_and_verifiability: PASS
+      requirement_identity: sha256:42a61775ac324847e5a978c4af70d805d8c671150c2791315b579bd30ccd9481
+    findings: []
+    superseded_by: EVIDENCE-TASK-009-DCR004-REVIEW-003
+    remaining_risks:
+      - Implementation, real child and UI interaction evidence are NOT_RUN.
+      - Must retain ownership of unconfirmed check/active/candidate processes and failed cleanup resources.
+      - Verify one failure toast, accurate Stopped/recovery and no stale Ready/traffic.
+      - Controlled WireGuard/DNS/URLTest topology and evidence remain mandatory.
+  - id: EVIDENCE-TASK-009-DCR004-REVIEW-003
+    type: technical_design_review
+    target: .sdlc/design/DCR-004-runtime-update-failures.md
+    target_identity: sha256:6610b072db7f8044f5681140a9241c5da8e89e4ceb80a78d56ae2674ff3542b7
+    timestamp: 2026-09-04T12:30:59+08:00
+    observer: CHILD_AGENT:/root/task009_design_reviewer
+    result: PASS
+    review_mode: CHILD_AGENT
+    review_result: PASS
+    command_or_method: Verify final lifecycle-only difference after prior complete semantic review; reversing status and closing lifecycle wording in memory exactly reconstructs the reviewed a90624 hash.
+    coverage:
+      strategy: Complete REVIEW-002 coverage plus final lifecycle delta
+      freshness: FRESH
+      semantic_delta: NONE
+      independence: Reviewer did not author design or implementation.
+    findings: []
+    remaining_risks:
+      - Implementation and real runtime verification are NOT_RUN.
+      - Orchestrator must read back final Task and perform readiness.

@@ -1,0 +1,169 @@
+version: 1
+records:
+  - id: EVIDENCE-TASK-009-CHANGE-009
+    type: explicit_user_test_design_exception
+    target: TASK-009
+    approved_by: USER:lifei
+    date: 2026-09-04
+    user_direction: 用户回复“允许”，批准上一轮已独立审阅的 DCR011 四格拒绝对照方案。
+    design: .sdlc/design/DCR-011-test-wg-local-reject.md
+    approved_proposal_identity: sha256:54c01cbc8f99b080a2d68e5b999ab6fc9f97fe49b1ae30e53e36ae2d402f6641
+    design_review: .sdlc/evidence/TASK-009/wg-reject-design-review-001.yaml
+    requirement_identity: sha256:4a2cd1e2b9698087bcbc4ac892d7b052a5e2c06554e372479fe31c81cbea9d45
+    previous_checkpoint: sha256:5f6438663e7d08e0241fde9a733e466c2dc7031dba31dbe050c1b3f36e52f0d5
+    scope: Two owned loopback TCP/UDP echo targets; cfg(test) exact positive-control prefix and closed final validation; three serial DUT phases with same WG peer/keys/targets; four IPv4 virtual/host TCP/UDP cases; 40/135/150/159/160 second boundaries.
+    excluded: DNS, non-host forwarding, IPv6, dependencies or locks, product interfaces or settings, host changes or privileges, external targets, commit/push.
+    impact: Approved bounded test exception only; original product rejection remains. New source requires fresh verification and independent review; whole Task remains IN_PROGRESS and acceptance PENDING.
+    baseline: .sdlc/evidence/TASK-009/wg-reject-baseline-014.yaml
+    evidence_boundary: Reviewed proposal bytes remain immutable authority; historical PROPOSED wording is superseded by this approval, which is not runtime evidence or Task acceptance.
+  - id: EVIDENCE-TASK-009-CHANGE-008
+    type: explicit_user_test_design_exception
+    target: TASK-009
+    approved_by: USER:lifei
+    date: 2026-09-04
+    user_direction: 用户回复“允许”，批准上一轮已独立审阅的 WireGuard UDP 测试方案。
+    design: .sdlc/design/DCR-010-test-wg-udp.md
+    approved_proposal_identity: sha256:36a910c90c247e1b46958ed7890dceabc7d769aee1ca1f18b062154de8ea9c79
+    design_review: .sdlc/evidence/TASK-009/wg-udp-design-review-001.yaml
+    requirement_identity: sha256:4a2cd1e2b9698087bcbc4ac892d7b052a5e2c06554e372479fe31c81cbea9d45
+    previous_checkpoint: sha256:1827c6b72fe6466836eb4e6d4fd32e006a36e581d07c8731ed6757c59b17fc59
+    scope: cfg(test) fixed loopback UDP inlet to peer in-memory 198.18.0.2:18081, closed init_udp/udp protocol, Go echo/observer and Rust integration; reuse existing approved dependencies and WG resources.
+    excluded: Dependency or lock changes, product inlet/Profile/IPC, host settings or privileges, external targets, full reject topology, system DNS, commit/push.
+    impact: Only DCR008/009 test inlet exclusion gains the reviewed UDP tuple; production contracts and other acceptance remain. New source requires current verification and independent delivery review; historical checkpoint evidence is retained for its old identity.
+    baseline: .sdlc/evidence/TASK-009/wg-udp-baseline-013.yaml
+    evidence_boundary: Exact reviewed proposal bytes are preserved as the frozen authority despite historical PROPOSED wording; this explicit approval persists and is not runtime evidence or Task acceptance.
+  - id: EVIDENCE-TASK-009-CHANGE-007
+    type: explicit_user_test_resource_authorization
+    target: TASK-009
+    approved_by: USER:lifei
+    date: 2026-09-04
+    user_direction: 用户回复“允许。”，批准已展示的固定 Go 测试依赖、本机 TCP/ICMP 测试及短时可能全接口 WireGuard UDP 监听。
+    proposal: .sdlc/evidence/TASK-009/wg-network-proposal.md
+    approved_proposal_identity: sha256:ee61ea74e60237abae9453aa1103680b801561f29c06d86be9e46dcd87399843
+    design: .sdlc/design/DCR-009-controlled-wg-peer.md
+    requirement_identity: sha256:4a2cd1e2b9698087bcbc4ac892d7b052a5e2c06554e372479fe31c81cbea9d45
+    previous_checkpoint: sha256:ce5ac15928e55ffed92739e1873baf9f84bf6919a2fc0679d39efcc01243bfc2
+    scope:
+      - Independent scripts/task009-wg-peer Go test module with tool-generated go.sum; no product packaging or Cargo/npm dependency change.
+      - Fixed wireguard-go v0.0.5-0.20260823125007-8bd032a91a30 and gvisor v0.0.0-20260727.0-sing-box-mod.1 plus normal transitive dependencies; existing Go only, no automatic toolchain installation.
+      - In-memory tun.Device/channel/gonet glue and exact loopback conn.Bind; real fixed DUT normal ObservationOnly TCP/ICMP subset via existing typed compile/finalize/check/run.
+      - Per-case bounded DUT WG protocol UDP sockets may bind all interfaces; owned peer stays loopback. Observe actual owned sockets and clean up DUT before peer.
+      - Existing Windows Port cfg(test) integration, necessary cfg(test) resource access, Task/design/evidence synchronization.
+    excluded: Product configuration or public IPC changes, WG UDP business inlet, full reject topology, external business targets, system DNS/route/interface/proxy/firewall/TUN changes, dependency version expansion, commit/push.
+    next_action: Independently review concrete DCR009 and complete readiness before implementation. This authorization persists; do not ask again for the same resource scope.
+    evidence_boundary: Preserve original proposal bytes despite historical PROPOSED label. Approval is not executed runtime evidence or whole Task acceptance.
+  - id: EVIDENCE-TASK-009-CHANGE-006
+    type: explicit_user_test_design_exception
+    target: TASK-009
+    approved_by: USER:lifei
+    date: 2026-09-04
+    user_direction: 用户回复“允许”，批准上一轮展示的仅测试本机回显计量入口方案。
+    proposal: .sdlc/evidence/TASK-009/loopback-metering-proposal.md
+    approved_proposal_identity: sha256:dc88abf22f2f86ee42c8f51ec4c603652b25aa1a6091e55e8ec80000c2ed8243
+    design: .sdlc/design/DCR-008-test-loopback-metering.md
+    requirement_identity: sha256:4a2cd1e2b9698087bcbc4ac892d7b052a5e2c06554e372479fe31c81cbea9d45
+    previous_checkpoint: sha256:efc1766a8bf8b2773709008b180dce7df4a51a72e8cbac0a15908ce5a3894d08
+    scope: cfg(test) compiler entry and closed inbound model; real Windows Port loopback echo tests and necessary test-only ownership access; Task/DCR/evidence.
+    excluded: Dependencies, locks, production inbound/Profile/IPC/UI, arbitrary destinations, host settings, WG/DNS topology, commit/push.
+    next_action: Independently review DCR008, complete readiness, implement and verify within this already-authorized proposal; no duplicate human approval for the same scope.
+    evidence_boundary: Proposal is now authorized but its preserved original bytes are historical; neither approval nor design establishes runtime evidence or Task acceptance.
+  - id: EVIDENCE-TASK-009-CHANGE-005
+    type: explicit_user_requirement_change
+    target: TASK-009
+    approved_by: USER:lifei
+    date: 2026-09-04
+    user_direction: 首页展示最近10分钟流量图，左下角展示最近60秒图，UI参考本机Clash Verge Rev。
+    source_before: sha256:4da6092bc3bda5a9a1f62aa772089dbeba5e36aa884817b95e5d6ff5cf905803
+    source_after: sha256:4a2cd1e2b9698087bcbc4ac892d7b052a5e2c06554e372479fe31c81cbea9d45
+    design: .sdlc/design/DCR-007-dual-traffic-windows.md
+    design_identity: sha256:bb1b30db8d7ed97283836f42857ad4568c14664ff081269704774a14b5316cde
+    scope: Existing observation owner, safe DTO validation, App/styles and traffic helper/tests; 600s/600 points and two placements sharing one clock.
+    authorization_basis: Explicit user request authorizes necessary bounded history limit and layout changes; no repeated approval needed.
+    reference: E:/wx_lifeilin/github.com/clash-verge-rev; read-only layout and traffic components inspected using CodeGraph.
+    unchanged: sing-box aggregate includes Direct; no persistence, new command, sampling, dependency, host setting or additional product page.
+    previous_checkpoint: sha256:796c2a0f0e45f3ea71f6f8898fd8d1cf45a3aed003c2eec19f965037254c2cfd
+    evidence_boundary: New dual-window verification and independent review required; prior whole-Task gaps remain.
+  - id: EVIDENCE-TASK-009-CHANGE-004
+    type: explicit_user_requirement_change
+    target: TASK-009
+    approved_by: USER:lifei
+    date: 2026-09-04
+    source_before: sha256:42a61775ac324847e5a978c4af70d805d8c671150c2791315b579bd30ccd9481
+    source_after: sha256:4da6092bc3bda5a9a1f62aa772089dbeba5e36aa884817b95e5d6ff5cf905803
+    user_direction: 用户要求实时网速与累计流量使用sing-box能力、仅内存存储并增加趋势图，随后明确“就是singbox提供的聚合统计”。
+    impact:
+      requirement: docs/veyra.md section 1.1; aggregate includes Direct, no system-NIC monitoring or disk history.
+      design: DCR-006 bounded memory window and minimal safe read-side contract; DCR-001 history restriction narrowed accordingly.
+      scope: Existing Application observation/commands DTO, current UI/parser/tests and optional pure chart helper.
+      safe_read_contract: Add observedAtMs and trafficHistory with only sampledAtMs and two rates; no new command or endpoint.
+      authorization_basis: Necessary bounded data delivery and display implement the explicitly requested trend feature; no duplicate approval for clarified aggregation.
+    defaults: Recent 60 seconds, at most 60 samples, 5-second gap break; reversible presentation choices without new settings.
+    design_gate: Independent DCR-006 review required before implementation; feature request does not substitute for review.
+    previous_checkpoint: sha256:1e08f4e589f3d1aa0aac5665a4aed2c6875fcbb8cd7114872309dace7136b64a
+    excluded: Dependency/lockfile, disk storage, core input/profile changes, host settings, WG/DNS topology, commit/push.
+    evidence_boundary: Prior checkpoint004 results remain historical for their exact identity; chart and new DTO require new verification and review.
+  - id: EVIDENCE-TASK-009-CHANGE-003
+    type: approved_scope_and_design_correction
+    target: TASK-009
+    approved_by: USER:lifei
+    date: 2026-09-04
+    user_direction: 用户明确回复“确认”，批准将流量统计修正纳入 TASK-009 并按已审阅方案实现。
+    design: .sdlc/design/DCR-005-traffic-observation.md
+    approved_design_identity: sha256:338e0a7f9bb8a4c6ca0722d2fe51eab253c0e1758124907cf759b9459e9714ba
+    independent_review: .sdlc/evidence/TASK-009/traffic-design-review.yaml
+    approved_scope:
+      - clash_api.rs uses each fixed core one-second traffic window as rate, and existing REST connection totals as cumulative bytes; remove obsolete differencing state.
+      - Necessary existing Application internal DTO mapping assertions or call adaptations, with unchanged public fields and units.
+      - Existing TASK-009 test scope for boundary, identity and controlled positive-traffic verification, subject to topology assessment before execution.
+      - Synchronize the affected DCR-001 traffic paragraph and TASK-009 scope, then freeze and independently review implementation.
+    excluded: Public IPC or event shape changes, new dependencies, new runtime profile or traffic inlet, WG/DNS topology expansion, host settings, non-loopback exposure, commit/push.
+    previous_checkpoint: sha256:04d3a65432123555c147a33c23dae6fe3f9a3d88786eaaa01ac44d94453a5fdf
+    interpretation: DCR-005 proposal bytes remain the approved authority; its historical PROPOSED wording does not revoke this explicit approval. Prior full regression and reviews remain bound to their original identities.
+  - id: EVIDENCE-TASK-009-CHANGE-002
+    type: approved_scope_extension
+    target: TASK-009
+    approved_by: USER:lifei
+    date: 2026-09-04
+    user_direction: 用户在明确询问两文件修复授权后回复“允许”。
+    approved_scope:
+      - Windows private_runtime.rs creation-error ownership and necessary existing Port adaptation/tests.
+      - singbox/clash_api.rs fixed authenticated Logs HTTP 204 empty summary and negative tests.
+    observed_protocol_correction: >-
+      Real fixed core returns HTTP 200 with explicit Content-Length 0, empty body and no Transfer-Encoding.
+      Support this exact authenticated Logs empty-response form alongside 204, not general HTTP 200.
+      Same approved repair, no new behavior/API/resource; see empty-log-wire-contract.md and design delta review.
+    impact: Implements existing DCR-004 ownership and normal-empty-log requirements; scope inventory amended with unchanged product semantics and permissions; independent design delta review required.
+    excluded: New dependencies, traffic calculation contract changes, WG/DNS topology changes, public IPC, host settings, commit/push.
+    previous_checkpoint: sha256:8b375689eabbc6598baf656ce06eaf2f6e553cc6fe419763fd8b0fcdd2fa2071
+    baseline_extension: .sdlc/evidence/TASK-009/baseline-extension.yaml
+    gates: Prior checkpoint review remains historical; new source requires current verification and independent rereview. Delivery remains PENDING.
+    readiness: PASS for these bounded repairs; owner authorization explicit, requirements and DCR-004 unchanged, fixed resources and commands reusable.
+  - id: EVIDENCE-TASK-009-CHANGE-001
+    type: approved_requirement_change
+    target: TASK-009
+    observer: ORCHESTRATOR:/root
+    approved_by: USER:lifei
+    timestamp: 2026-09-04T12:24:43+08:00
+    source_before: sha256:ffc2c6b1b7a018a11d8b0fdb7cbbf5430aaf6f842563f4cb2e6ba1582c25ac88
+    source_after: sha256:42a61775ac324847e5a978c4af70d805d8c671150c2791315b579bd30ccd9481
+    user_direction: Subscription update and sing-box configuration compilation failures only log and toast for manual retry; core startup failure interrupts service without automatically restoring old configuration, so users are not misled about latest configuration taking effect.
+    accepted_semantics:
+      - Subscription update failure retains valid subscription and last successful update time; user can manually retry.
+      - Compilation/finalization/check failure records a redacted error and toast, without stopping an already running child or claiming the candidate took effect.
+      - Core spawn/Ready failure stops and cleans the failed candidate, leaves service stopped, and never automatically restarts the old configuration.
+      - Only unconfirmed process exit or resource cleanup failure retains a recovery-required state and owned resources; this is cleanup, not configuration fallback.
+      - A successful subscription refresh is distinct from successful core configuration activation.
+    impact:
+      requirement: docs/veyra.md sections 70, 76-78 and capability summary
+      designs: Foundation Build/Apply; DCR-002 runtime failure acceptance; replace proposed DCR-004 with runtime update failure design.
+      current_task: TASK-009 runtime transaction, safe error outcome/log and existing UI toast.
+      future_task: TASK-011 subscription update UI, manual refresh and last successful update display; do not implement a new subscription UI in TASK-009.
+      data_and_dependencies: No schema/migration or dependency change in TASK-009; future subscription task must inspect existing timestamp model before any schema decision.
+      contracts: Add a closed configurationFailed result to existing zero-argument Start for stage-specific feedback; no arbitrary input or new capability.
+      gates_to_invalidate: TASK-009 design review and readiness; future verification must target the revised accepted semantics.
+      historical_evidence: TASK-008 compiler/check delivery remains historical; its source context changes here do not establish TASK-009 runtime correctness.
+    previous_candidate:
+      target_identity: sha256:2ecf5c50eff3b2322794d597262d11e81a14d7b285b76d9ea30d79e3d525a8b5
+      snapshot: .sdlc/evidence/TASK-009/reviewed-dcr004-001.md
+      disposition: SUPERSEDED by explicit user direction; do not execute automatic rollback.
+    next_action: Synchronize requirement/design and Task, independently review the revised design, then repeat readiness. The user has already authorized these product semantics.

@@ -1,0 +1,2907 @@
+diff --git a/src-tauri/target/task009-wg-baseline/.sdlc/tasks/TASK-009.md b/.sdlc/tasks/TASK-009.md
+index f397ff6..724994a 100644
+--- a/src-tauri/target/task009-wg-baseline/.sdlc/tasks/TASK-009.md
++++ b/.sdlc/tasks/TASK-009.md
+@@ -15,7 +15,9 @@ design_refs:
+   - .sdlc/design/DCR-006-memory-traffic-trend.md
+   - .sdlc/design/DCR-007-dual-traffic-windows.md
+   - .sdlc/design/DCR-008-test-loopback-metering.md
++  - .sdlc/design/DCR-009-controlled-wg-peer.md
+ approval_refs:
++  - .sdlc/evidence/TASK-009/change-control.yaml#EVIDENCE-TASK-009-CHANGE-007
+   - .sdlc/evidence/TASK-009/change-control.yaml#EVIDENCE-TASK-009-CHANGE-006
+   - .sdlc/evidence/TASK-009/change-control.yaml#EVIDENCE-TASK-009-CHANGE-005
+   - .sdlc/evidence/TASK-009/change-control.yaml#EVIDENCE-TASK-009-CHANGE-004
+@@ -53,6 +55,10 @@ TASK-010；Tor 仍等待独立资源 Gate，当前不得下载、启动或声称
+ 
+ ### allow
+ 
++- CHANGE-007/DCR-009：`scripts/task009-wg-peer/` 独立 Go 测试端、固定两个直接依赖及工具生成的
++  传递依赖清单；既有 Windows Port 内测和必要 cfg(test) 归属读取。只验证真实 WG 握手、TCP
++  出站应答、虚拟地址 ICMP 和资源清理；正常 ObservationOnly 编译器、产品依赖和打包不变。
++  peer 精确 loopback；DUT 在单用例内可使用已批准的短时全接口 WG 协议 UDP socket。
+ - `src-tauri/src/singbox/runtime.rs`：内部完整配置的 check/prepare/apply/run/Ready/stop、
+   active 候选提交与失败停止；删除仅为自动恢复旧配置存在的分支和无用状态，不添加重试。
+ - `src-tauri/src/singbox/managed_sidecar.rs`、
+@@ -99,6 +105,7 @@ TASK-010；Tor 仍等待独立资源 Gate，当前不得下载、启动或声称
+   任意配置/路径/端口/参数输入、额外 Start/Apply/Reload 产品入口；不把重复 Start 改为 replacement。
+ - Parser/Domain/AppState/Storage/schema/迁移、Provider 替换、第三方依赖与锁文件、构建资源
+   目录和固定资产版本；不为验证任意安装 peer 工具或使用未冻结 binary。
++  CHANGE-007 仅例外允许上述独立 Go 测试模块的已列固定依赖及正常传递依赖，不适用于产品。
+ - System Proxy、TUN、UAC、WFP、Service、系统接口/路由/DNS/hosts 文件修改、生产或第三方
+   未授权网络目标；不增加产品 listener、mixed inbound、Dashboard、远程 API 或 raw JSON 旁路。
+ - 降低固定 ACL、TokenUser 身份、无 reparse point、每实例新 secret、check 后字节不可变、
+@@ -193,6 +200,11 @@ Snapshot/Delta使用DCR-006既有单调时间与安全速率字段，DCR-007严
+ 
+ ### SF-003：WireGuard 与 DNS/URLTest 的受控网络边界
+ 
++**CHANGE-007 首批范围：** 按 DCR-009 实现独立 loopback peer、正常 ObservationOnly 的 TCP
++应答和认证 peer 虚拟地址 ICMP Echo 子集；单用例 60 秒、工作窗口 30 秒、每次 I/O 至多 2 秒。
++运行前后只读比较宿主配置，记录实际 DUT/peer UDP 所有权，先确认 DUT 停止再释放 peer。
++该资源批准不包括 WG UDP 业务入口、完整拒绝路径或系统 DNS 拓扑，不删减下列必需验收。
++
+ **需求：** 使用 TASK-008 Compiler 实际生成、按同一实例最终化并 check 的配置，在已核定
+ 的受控 peer/目标拓扑中运行。分别证明 WireGuard 的允许出站应答、拒绝主动入站/转发及
+ 已批准虚拟地址 ICMP 例外，并观察实际 DNS/URLTest 行为。不能改写 JSON 来方便测试。
+diff --git a/src-tauri/target/task009-wg-baseline/src-tauri/src/platform/windows/managed_sidecar_port.rs b/src-tauri/src/platform/windows/managed_sidecar_port.rs
+index b61bbd0..f097f87 100644
+--- a/src-tauri/target/task009-wg-baseline/src-tauri/src/platform/windows/managed_sidecar_port.rs
++++ b/src-tauri/src/platform/windows/managed_sidecar_port.rs
+@@ -438,6 +438,853 @@ mod tests {
+     use super::*;
+     use crate::singbox::test_support::FIXED_CLASH_API_TEST_LOCK;
+ 
++    // 仅测试构建使用私有父子管道驱动 DCR-009 peer，不加入产品 IPC 或运行配置入口。
++    mod wg_peer_test {
++        use super::*;
++        use crate::{
++            domain::*,
++            singbox::{ConfigCompiler, RuntimeProfile, SingBoxCompiler, runtime::SidecarRuntime},
++            subscription::{normalize_nodes, parse_subscription},
++        };
++        use serde::Deserialize;
++        use std::{
++            io::{Read, Write},
++            os::windows::process::CommandExt,
++            process::{Child, Command, Stdio},
++            sync::{
++                Arc,
++                atomic::{AtomicBool, AtomicUsize, Ordering},
++                mpsc,
++            },
++            thread::{self, JoinHandle},
++            time::{Duration, Instant},
++        };
++
++        #[derive(Deserialize)]
++        #[serde(deny_unknown_fields)]
++        struct Selftest {
++            tcp: bool,
++            udp: bool,
++            icmp: bool,
++        }
++
++        #[derive(Deserialize)]
++        #[serde(tag = "event", deny_unknown_fields)]
++        enum Frame {
++            #[serde(rename = "ready")]
++            Ready {
++                v: u8,
++                run_id: String,
++                udp_port: u16,
++                peer_public_key: String,
++                dut_public_key: String,
++                selftest: Selftest,
++            },
++            #[serde(rename = "tcp")]
++            Tcp {
++                v: u8,
++                run_id: String,
++                requests: u64,
++                response_status: u16,
++                rx_tcp_packets: u64,
++                tx_tcp_packets: u64,
++                authenticated: bool,
++                response_acked: bool,
++            },
++            #[serde(rename = "icmp")]
++            Icmp {
++                v: u8,
++                run_id: String,
++                sent: u64,
++                received: u64,
++                id: u16,
++                sequences: [u16; 3],
++                payloads_valid: bool,
++                addresses_valid: bool,
++            },
++            #[serde(rename = "failed")]
++            Failed {
++                v: u8,
++                run_id: String,
++                stage: FailureStage,
++                code: FailureCode,
++            },
++            #[serde(rename = "stopped")]
++            Stopped {
++                v: u8,
++                run_id: String,
++                resources_closed: bool,
++            },
++        }
++
++        #[derive(Deserialize)]
++        #[serde(rename_all = "snake_case")]
++        enum FailureStage {
++            Init,
++            Selftest,
++            Bind,
++            Tcp,
++            Icmp,
++            Protocol,
++            Deadline,
++            Cleanup,
++        }
++        #[derive(Deserialize)]
++        #[serde(rename_all = "snake_case")]
++        enum FailureCode {
++            InvalidInput,
++            IoError,
++            Timeout,
++            UnexpectedPacket,
++            LimitExceeded,
++            ResourceError,
++        }
++
++        impl Frame {
++            fn belongs_to(&self, expected: &str) -> bool {
++                let (v, run_id) = match self {
++                    Self::Ready { v, run_id, .. }
++                    | Self::Tcp { v, run_id, .. }
++                    | Self::Icmp { v, run_id, .. }
++                    | Self::Failed { v, run_id, .. }
++                    | Self::Stopped { v, run_id, .. } => (v, run_id),
++                };
++                *v == 1 && run_id == expected
++            }
++        }
++
++        enum PipeEvent {
++            Line(Vec<u8>),
++            Eof,
++        }
++        type WriteRequest = (Vec<u8>, mpsc::SyncSender<Result<(), &'static str>>);
++
++        struct Peer {
++            child: Child,
++            input: Option<mpsc::SyncSender<WriteRequest>>,
++            output: mpsc::Receiver<PipeEvent>,
++            threads: Vec<JoinHandle<()>>,
++            pipe_failed: Arc<AtomicBool>,
++            stderr_bytes: Arc<AtomicUsize>,
++            started: Instant,
++            run_id: String,
++        }
++
++        impl Peer {
++            fn spawn(path: &Path, run_id: String) -> Self {
++                let started = Instant::now();
++                let mut child = Command::new(path)
++                    .creation_flags(0x0800_0000)
++                    .stdin(Stdio::piped())
++                    .stdout(Stdio::piped())
++                    .stderr(Stdio::piped())
++                    .spawn()
++                    .expect("start fixed test peer");
++                let mut stdout = child.stdout.take().expect("peer stdout");
++                let mut stderr = child.stderr.take().expect("peer stderr");
++                let mut stdin = child.stdin.take().expect("peer stdin");
++                let (input, writes) = mpsc::sync_channel::<WriteRequest>(1);
++                let (lines, output) = mpsc::sync_channel(8);
++                let pipe_failed = Arc::new(AtomicBool::new(false));
++                let stdout_failed = Arc::clone(&pipe_failed);
++                let stdout_thread = thread::spawn(move || {
++                    let mut chunk = [0; 512];
++                    let mut line = Vec::with_capacity(4096);
++                    let mut total = 0usize;
++                    let mut invalid = false;
++                    loop {
++                        match stdout.read(&mut chunk) {
++                            Ok(0) => {
++                                if !line.is_empty() {
++                                    stdout_failed.store(true, Ordering::SeqCst);
++                                }
++                                let _ = lines.try_send(PipeEvent::Eof);
++                                break;
++                            }
++                            Ok(count) => {
++                                total = total.saturating_add(count);
++                                if total > 16_384 {
++                                    invalid = true;
++                                }
++                                for byte in &chunk[..count] {
++                                    if invalid {
++                                        continue;
++                                    }
++                                    line.push(*byte);
++                                    if line.len() > 4096 {
++                                        invalid = true;
++                                        continue;
++                                    }
++                                    if *byte == b'\n' {
++                                        if lines
++                                            .try_send(PipeEvent::Line(std::mem::take(&mut line)))
++                                            .is_err()
++                                        {
++                                            invalid = true;
++                                        }
++                                        line = Vec::with_capacity(4096);
++                                    }
++                                }
++                                if invalid {
++                                    stdout_failed.store(true, Ordering::SeqCst);
++                                    line.clear();
++                                }
++                            }
++                            Err(_) => {
++                                stdout_failed.store(true, Ordering::SeqCst);
++                                break;
++                            }
++                        }
++                    }
++                });
++                let stderr_bytes = Arc::new(AtomicUsize::new(0));
++                let stderr_count = Arc::clone(&stderr_bytes);
++                let stderr_failed = Arc::clone(&pipe_failed);
++                let stderr_thread = thread::spawn(move || {
++                    let mut chunk = [0; 512];
++                    loop {
++                        match stderr.read(&mut chunk) {
++                            Ok(0) => break,
++                            Ok(count) => {
++                                if stderr_count.fetch_add(count, Ordering::SeqCst) + count > 4096 {
++                                    stderr_failed.store(true, Ordering::SeqCst);
++                                }
++                                chunk.fill(0); // 只保留字节数，绝不转储 peer 原始诊断。
++                            }
++                            Err(_) => {
++                                stderr_failed.store(true, Ordering::SeqCst);
++                                break;
++                            }
++                        }
++                    }
++                });
++                let writer_thread = thread::spawn(move || {
++                    let hard_deadline = started + Duration::from_secs(55);
++                    let mut total = 0usize;
++                    while let Some(remaining) = hard_deadline.checked_duration_since(Instant::now())
++                    {
++                        let Ok((mut bytes, ack)) = writes.recv_timeout(remaining) else {
++                            break;
++                        };
++                        total += bytes.len();
++                        let result = if bytes.len() > 4096 || total > 16_384 {
++                            Err("peer input limit")
++                        } else {
++                            stdin
++                                .write_all(&bytes)
++                                .and_then(|_| stdin.flush())
++                                .map_err(|_| "peer input I/O")
++                        };
++                        bytes.fill(0);
++                        let failed = result.is_err();
++                        let _ = ack.try_send(result);
++                        if failed {
++                            break;
++                        }
++                    }
++                });
++                Self {
++                    child,
++                    input: Some(input),
++                    output,
++                    threads: vec![stdout_thread, stderr_thread, writer_thread],
++                    pipe_failed,
++                    stderr_bytes,
++                    started,
++                    run_id,
++                }
++            }
++
++            fn send(
++                &self,
++                value: serde_json::Value,
++                deadline: Instant,
++            ) -> Result<(), &'static str> {
++                let mut bytes = serde_json::to_vec(&value).map_err(|_| "peer input encoding")?;
++                bytes.push(b'\n');
++                let (ack, received) = mpsc::sync_channel(1);
++                self.input
++                    .as_ref()
++                    .ok_or("peer input closed")?
++                    .try_send((bytes, ack))
++                    .map_err(|_| "peer input queue")?;
++                received
++                    .recv_timeout(remaining(deadline, Duration::from_secs(2))?)
++                    .map_err(|_| "peer input deadline")?
++            }
++
++            fn frame(&mut self, deadline: Instant) -> Result<Frame, &'static str> {
++                loop {
++                    if self.pipe_failed.load(Ordering::SeqCst) {
++                        return Err("peer pipe invalid");
++                    }
++                    if self
++                        .child
++                        .try_wait()
++                        .map_err(|_| "peer process status")?
++                        .is_some()
++                    {
++                        return Err("peer exited before DUT cleanup");
++                    }
++                    match self
++                        .output
++                        .recv_timeout(remaining(deadline, Duration::from_millis(25))?)
++                    {
++                        Ok(PipeEvent::Line(bytes)) => {
++                            let frame: Frame =
++                                serde_json::from_slice(&bytes).map_err(|_| "peer frame invalid")?;
++                            if !frame.belongs_to(&self.run_id) {
++                                return Err("peer frame identity");
++                            }
++                            return Ok(frame);
++                        }
++                        Ok(PipeEvent::Eof) => return Err("peer output ended"),
++                        Err(mpsc::RecvTimeoutError::Timeout) => {}
++                        Err(_) => return Err("peer output closed"),
++                    }
++                }
++            }
++
++            // 不把 kill 当正常清理；所有调用者必须先确认 DUT/pending 已停止。
++            fn finish(&mut self, dut_stopped: bool) -> Result<(), &'static str> {
++                let deadline = (self.started + Duration::from_secs(59))
++                    .min(Instant::now() + Duration::from_secs(5));
++                let mut normal = dut_stopped
++                    && self
++                        .send(
++                            serde_json::json!({
++                                "v":1,"op":"shutdown","run_id":self.run_id,"dut_stopped":true
++                            }),
++                            deadline,
++                        )
++                        .is_ok();
++                let mut stopped = false;
++                let mut eof = false;
++                let mut exit = None;
++                let graceful_deadline = deadline.min(Instant::now() + Duration::from_secs(2));
++                while Instant::now() < graceful_deadline {
++                    match self.output.recv_timeout(Duration::from_millis(10)) {
++                        Ok(PipeEvent::Line(bytes)) => {
++                            match serde_json::from_slice::<Frame>(&bytes) {
++                                Ok(
++                                    frame @ Frame::Stopped {
++                                        resources_closed: true,
++                                        ..
++                                    },
++                                ) if frame.belongs_to(&self.run_id) && !stopped => stopped = true,
++                                _ => normal = false,
++                            }
++                        }
++                        Ok(PipeEvent::Eof) => eof = true,
++                        Err(mpsc::RecvTimeoutError::Timeout) => {}
++                        Err(_) => eof = true,
++                    }
++                    exit = self.child.try_wait().map_err(|_| "peer cleanup status")?;
++                    if exit.is_some() && eof {
++                        break;
++                    }
++                }
++                if exit.is_none() {
++                    normal = false;
++                    self.child.kill().map_err(|_| "peer owned kill")?;
++                    while Instant::now() < deadline {
++                        exit = self
++                            .child
++                            .try_wait()
++                            .map_err(|_| "peer forced exit status")?;
++                        if exit.is_some() {
++                            break;
++                        }
++                        thread::sleep(Duration::from_millis(10));
++                    }
++                }
++                self.input.take();
++                while self.threads.iter().any(|thread| !thread.is_finished())
++                    && Instant::now() < deadline
++                {
++                    thread::sleep(Duration::from_millis(10));
++                }
++                if self.threads.iter().any(|thread| !thread.is_finished()) {
++                    return Err("peer pipe join deadline");
++                }
++                for thread in self.threads.drain(..) {
++                    thread.join().map_err(|_| "peer pipe thread")?;
++                }
++                if !normal
++                    || !stopped
++                    || !exit.is_some_and(|status| status.success())
++                    || self.pipe_failed.load(Ordering::SeqCst)
++                {
++                    return Err("peer cleanup incomplete");
++                }
++                Ok(())
++            }
++        }
++
++        fn remaining(deadline: Instant, limit: Duration) -> Result<Duration, &'static str> {
++            deadline
++                .checked_duration_since(Instant::now())
++                .filter(|time| !time.is_zero())
++                .map(|time| time.min(limit))
++                .ok_or("peer absolute deadline")
++        }
++
++        fn key_base64(bytes: &[u8; 32]) -> String {
++            const ALPHABET: &[u8; 64] =
++                b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
++            let mut encoded = String::with_capacity(44);
++            for chunk in bytes.chunks(3) {
++                let value = chunk
++                    .iter()
++                    .fold(0u32, |value, byte| (value << 8) | u32::from(*byte))
++                    << (8 * (3 - chunk.len()));
++                encoded.push(ALPHABET[((value >> 18) & 63) as usize] as char);
++                encoded.push(ALPHABET[((value >> 12) & 63) as usize] as char);
++                encoded.push(ALPHABET[((value >> 6) & 63) as usize] as char);
++                encoded.push(if chunk.len() == 3 {
++                    ALPHABET[(value & 63) as usize] as char
++                } else {
++                    '='
++                });
++            }
++            encoded
++        }
++
++        fn valid_public_key(key: &str) -> bool {
++            let bytes = key.as_bytes();
++            if bytes.len() != 44 || bytes[43] != b'=' {
++                return false;
++            }
++            let value = |byte: u8| match byte {
++                b'A'..=b'Z' => Some(byte - b'A'),
++                b'a'..=b'z' => Some(byte - b'a' + 26),
++                b'0'..=b'9' => Some(byte - b'0' + 52),
++                b'+' => Some(62),
++                b'/' => Some(63),
++                _ => None,
++            };
++            bytes[..43].iter().all(|byte| value(*byte).is_some())
++                && value(bytes[42]).is_some_and(|last| last & 3 == 0)
++        }
++
++        #[derive(Debug, Deserialize, PartialEq, Eq)]
++        #[serde(deny_unknown_fields)]
++        struct SocketInventory {
++            tcp: Vec<String>,
++            udp: Vec<String>,
++        }
++
++        fn owned_sockets(pid: u32, root: &Path, deadline: Instant) -> SocketInventory {
++            let query_started = Instant::now();
++            assert!(
++                query_started < deadline,
++                "socket query classification=case_deadline"
++            );
++            // PowerShell/CIM 冷启动不是业务网络 I/O；仍受调用方绝对截止约束，不重试。
++            let query_deadline = query_started + Duration::from_secs(5);
++            let until = deadline.min(query_deadline);
++            let powershell = PathBuf::from(std::env::var_os("SystemRoot").expect("Windows root"))
++                .join("System32/WindowsPowerShell/v1.0/powershell.exe");
++            let output_path = root.join(format!("owned-sockets-{pid}.json"));
++            // CIM 在源端只查询持有句柄对应 PID；不保存其它进程的端点。
++            let script = format!(
++                "$ErrorActionPreference='Stop'; $t=@(Get-CimInstance -Namespace root/StandardCimv2 -ClassName MSFT_NetTCPConnection -Filter 'OwningProcess = {pid} AND State = 2' | ForEach-Object {{'['+$_.LocalAddress+']:'+$_.LocalPort}}); $u=@(Get-CimInstance -Namespace root/StandardCimv2 -ClassName MSFT_NetUDPEndpoint -Filter 'OwningProcess = {pid}' | ForEach-Object {{'['+$_.LocalAddress+']:'+$_.LocalPort}}); @{{tcp=$t;udp=$u}} | ConvertTo-Json -Compress"
++            );
++            let mut child = Command::new(powershell)
++                .args(["-NoProfile", "-NonInteractive", "-Command", &script])
++                .creation_flags(0x0800_0000)
++                .stdin(Stdio::null())
++                .stdout(Stdio::from(
++                    fs::File::create(&output_path).expect("owned socket evidence"),
++                ))
++                .stderr(Stdio::null())
++                .spawn()
++                .expect("owned socket query");
++            let mut status = None;
++            while Instant::now() < until {
++                status = child.try_wait().expect("socket query status");
++                if status.is_some() {
++                    break;
++                }
++                thread::sleep(Duration::from_millis(10));
++            }
++            if status.is_none() {
++                let classification = if deadline <= query_deadline {
++                    "case_deadline"
++                } else {
++                    "query_deadline"
++                };
++                let mut exited = child.try_wait().expect("query timeout exit status");
++                if exited.is_none() {
++                    child.kill().expect("stop owned socket query");
++                }
++                let exit_deadline = Instant::now() + Duration::from_secs(2);
++                while exited.is_none() && Instant::now() < exit_deadline {
++                    exited = child.try_wait().expect("query exit status");
++                    if exited.is_some() {
++                        break;
++                    }
++                    thread::sleep(Duration::from_millis(10));
++                }
++                eprintln!(
++                    "task009 socket_query classification={classification} elapsed_ms={} exit_confirmed={} exit_code={:?}",
++                    query_started.elapsed().as_millis(),
++                    exited.is_some(),
++                    exited.and_then(|status| status.code())
++                );
++                assert!(
++                    exited.is_some(),
++                    "socket query classification=cleanup_deadline"
++                );
++                panic!("owned socket query classification={classification}");
++            }
++            let status = status.expect("socket query completed");
++            assert!(
++                status.success(),
++                "owned socket query classification=exit_failure exit_code={:?}",
++                status.code()
++            );
++            assert!(
++                fs::metadata(&output_path)
++                    .expect("socket evidence size")
++                    .len()
++                    <= 16_384
++            );
++            serde_json::from_slice(&fs::read(output_path).expect("owned socket evidence"))
++                .expect("socket evidence format")
++        }
++
++        fn verify_sockets(peer: &SocketInventory, dut: &SocketInventory, peer_port: u16) {
++            assert!(peer.tcp.is_empty());
++            assert_eq!(peer.udp, vec![format!("[127.0.0.1]:{peer_port}")]);
++            assert_eq!(dut.tcp, vec!["[127.0.0.1]:9090"]);
++            assert!(!dut.udp.is_empty() && dut.udp.len() <= 2);
++            let mut ports = BTreeSet::new();
++            for endpoint in &dut.udp {
++                let (address, port) = endpoint.rsplit_once(':').expect("UDP endpoint");
++                assert!(matches!(
++                    address,
++                    "[0.0.0.0]" | "[127.0.0.1]" | "[::]" | "[::1]"
++                ));
++                let port: u16 = port.parse().expect("UDP port");
++                assert!(port != 0 && port != 9090 && port != peer_port);
++                ports.insert(port);
++            }
++            assert_eq!(
++                ports.len(),
++                1,
++                "one WG UDP binding, possibly shared dual stack"
++            );
++        }
++
++        #[test]
++        fn wg_peer_frames_reject_unknown_fields_versions_and_noncanonical_keys() {
++            let stopped =
++                br#"{"v":1,"event":"stopped","run_id":"fixture","resources_closed":true}"#;
++            assert!(
++                serde_json::from_slice::<Frame>(stopped)
++                    .unwrap()
++                    .belongs_to("fixture")
++            );
++            for invalid in [
++                r#"{"v":1,"event":"stopped","run_id":"fixture","resources_closed":true,"extra":1}"#,
++                r#"{"v":1,"event":"stopped","run_id":"fixture","resources_closed":true} {}"#,
++                r#"{"v":1,"event":"stopped","run_id":"fixture","resources_closed":true,"v":1}"#,
++                r#"{"v":1,"event":"tcp","run_id":"fixture","requests":1}"#,
++            ] {
++                assert!(serde_json::from_str::<Frame>(invalid).is_err());
++            }
++            let other = serde_json::from_str::<Frame>(
++                r#"{"v":2,"event":"stopped","run_id":"fixture","resources_closed":true}"#,
++            )
++            .unwrap();
++            assert!(!other.belongs_to("fixture"));
++            assert!(
++                !serde_json::from_slice::<Frame>(stopped)
++                    .unwrap()
++                    .belongs_to("other")
++            );
++            assert_eq!(
++                key_base64(&[1; 32]),
++                "AQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQE="
++            );
++            assert!(valid_public_key(&key_base64(&[255; 32])));
++            assert!(!valid_public_key(
++                "AQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQF="
++            ));
++        }
++
++        #[test]
++        fn real_wireguard_peer_delivers_tcp_response_and_virtual_icmp() {
++            let _lock = FIXED_CLASH_API_TEST_LOCK.lock().expect("fixed API lock");
++            let target = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("target");
++            let helper_path = target.join("task009-wg-peer.exe");
++            assert!(
++                helper_path.is_file(),
++                "build the approved fixed WG test peer before this test"
++            );
++            let helper_hash = format!(
++                "{:x}",
++                Sha256::digest(fs::read(&helper_path).expect("fixed helper bytes"))
++            );
++            let name = format!(
++                "task009-wg-{}-{}",
++                std::process::id(),
++                std::time::SystemTime::now()
++                    .duration_since(std::time::UNIX_EPOCH)
++                    .expect("clock")
++                    .as_nanos()
++            );
++            let root = target.join(&name);
++            let resources = root.join("resources");
++            let bundled = resources.join(RESOURCE_DIRECTORY);
++            fs::create_dir_all(&bundled).expect("owned resources");
++            let cache = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
++                .join("binaries/sing-box-1.14.0-windows-amd64");
++            for file in EXPECTED_RESOURCE_FILES {
++                fs::hard_link(cache.join(file), bundled.join(file))
++                    .expect("fixed resource hardlink");
++            }
++            let data = std::env::temp_dir().join(&name);
++            fs::create_dir(&data).expect("owned app data");
++            let port = WindowsManagedSidecarPort::new(resources, data.clone())
++                .expect("fixed assets and ACL");
++            let mut runtime = SidecarRuntime::new_observation_only(port);
++            let mut run_bytes = [0; 16];
++            let mut token_bytes = [0; 16];
++            let mut dut_private = [0; 32];
++            let mut peer_private = [0; 32];
++            getrandom::fill(&mut run_bytes).expect("run entropy");
++            getrandom::fill(&mut token_bytes).expect("token entropy");
++            getrandom::fill(&mut dut_private).expect("DUT key entropy");
++            getrandom::fill(&mut peer_private).expect("peer key entropy");
++            for key in [&mut dut_private, &mut peer_private] {
++                key[0] &= 248;
++                key[31] &= 127;
++                key[31] |= 64;
++            }
++            let hex = |bytes: &[u8]| {
++                bytes
++                    .iter()
++                    .map(|byte| format!("{byte:02x}"))
++                    .collect::<String>()
++            };
++            let run_id = hex(&run_bytes);
++            let token = hex(&token_bytes);
++            let mut peer = Peer::spawn(&helper_path, run_id.clone());
++            let peer_pid = peer.child.id();
++            let work_deadline = peer.started + Duration::from_secs(45);
++            let mut dut_pid = None;
++            let assertions = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
++                peer.send(
++                    serde_json::json!({"v":1,"op":"init","run_id":run_id,
++                    "dut_private_key":dut_private,"peer_private_key":peer_private,"token":token}),
++                    work_deadline,
++                )
++                .expect("private init write");
++                let Frame::Ready {
++                    udp_port,
++                    peer_public_key,
++                    dut_public_key,
++                    selftest,
++                    ..
++                } = peer
++                    .frame(peer.started + Duration::from_secs(10))
++                    .expect("peer Ready/selftest")
++                else {
++                    panic!("expected peer Ready")
++                };
++                assert!(udp_port != 0 && udp_port != 9090);
++                assert!(selftest.tcp && selftest.udp && selftest.icmp);
++                assert!(valid_public_key(&peer_public_key) && valid_public_key(&dut_public_key));
++                assert!(peer_public_key != dut_public_key);
++                let peer_before = owned_sockets(peer_pid, &root, work_deadline);
++                assert!(peer_before.tcp.is_empty());
++                assert_eq!(peer_before.udp, vec![format!("[127.0.0.1]:{udp_port}")]);
++                let parsed = parse_subscription(&serde_json::json!({"outbounds":[{
++                    "type":"wireguard","tag":"controlled-wg","server":"127.0.0.1","server_port":udp_port,
++                    "private_key":key_base64(&dut_private),"peer_public_key":peer_public_key,
++                    "local_address":["198.18.0.1/32"],"mtu":1280
++                }]}).to_string()).expect("ordinary WG parser");
++                assert!(parsed.skipped.is_empty());
++                assert_eq!(parsed.nodes.len(), 1);
++                let mut state = AppState::empty();
++                state.subscriptions.push(Subscription {
++                    id: SubscriptionId("wg-test".into()),
++                    name: "wg-test".into(),
++                });
++                state.providers.push(Provider {
++                    id: ProviderId("wg-test".into()),
++                    subscription_id: SubscriptionId("wg-test".into()),
++                    name: "wg-test".into(),
++                });
++                state.nodes = normalize_nodes(ProviderId("wg-test".into()), parsed.nodes)
++                    .expect("ordinary WG normalization");
++                state.pools.push(NodePool {
++                    id: PoolId("wg-test".into()),
++                    name: "wg-test".into(),
++                    kind: PoolKind::Custom,
++                    sources: vec![PoolSource {
++                        provider_id: ProviderId("wg-test".into()),
++                        filter: NodeFilter::default(),
++                    }],
++                    selection: SelectionPolicy::UrlTest {
++                        probe_url: format!("http://198.18.0.2:18080/task009-wg?token={token}"),
++                        interval_secs: 300,
++                        tolerance_ms: 50,
++                    },
++                    enabled: true,
++                });
++                state.default_target = RouteTarget::Pool(PoolId("wg-test".into()));
++                let intent = RuntimeIntent::from_state(&state).expect("whole state validation");
++                let config = SingBoxCompiler
++                    .compile(
++                        &intent,
++                        &state.default_target,
++                        DnsPolicy::System,
++                        RuntimeProfile::ObservationOnly,
++                    )
++                    .expect("ordinary typed WG plan")
++                    .finalize(
++                        &crate::singbox::managed_sidecar::generate_api_secret()
++                            .expect("API entropy"),
++                    )
++                    .expect("final WG configuration");
++                let config_hash = format!("{:x}", Sha256::digest(config.as_bytes()));
++                let document: serde_json::Value =
++                    serde_json::from_slice(config.as_bytes()).expect("final readback");
++                assert_eq!(document["inbounds"], serde_json::json!([]));
++                assert_eq!(
++                    document["endpoints"].as_array().expect("WG endpoint").len(),
++                    1
++                );
++                assert_eq!(document["route"]["rules"][0]["action"], "reject");
++                assert_eq!(document["dns"]["rules"][0]["action"], "reject");
++                assert!(
++                    work_deadline.saturating_duration_since(Instant::now())
++                        >= Duration::from_secs(13),
++                    "reserve check and Ready deadlines before final cleanup"
++                );
++                runtime
++                    .start_or_replace(config)
++                    .expect("fixed WG check/run/Ready");
++                let (identity, pid) = runtime
++                    .with_active_port(|port, child| {
++                        let running = port.running.get(&child.identity()).expect("owned WG child");
++                        assert_eq!(
++                            format!(
++                                "{:x}",
++                                Sha256::digest(
++                                    fs::read(running.runtime.config_path())
++                                        .expect("private readback")
++                                )
++                            ),
++                            config_hash
++                        );
++                        Ok((child.identity(), running.child.test_process_id()))
++                    })
++                    .expect("active owner")
++                    .expect("active child");
++                dut_pid = Some(pid);
++                assert!(peer.child.try_wait().expect("peer remains owned").is_none());
++                let dut_sockets = owned_sockets(pid, &root, work_deadline);
++                let peer_sockets = owned_sockets(peer_pid, &root, work_deadline);
++                verify_sockets(&peer_sockets, &dut_sockets, udp_port);
++                let Frame::Tcp {
++                    requests: 1,
++                    response_status: 204,
++                    rx_tcp_packets,
++                    tx_tcp_packets,
++                    authenticated: true,
++                    response_acked: true,
++                    ..
++                } = peer
++                    .frame(work_deadline)
++                    .expect("WG TCP response confirmation")
++                else {
++                    panic!("expected complete authenticated TCP response ACK")
++                };
++                assert!(rx_tcp_packets > 0 && tx_tcp_packets > 0);
++                peer.send(
++                    serde_json::json!({"v":1,"op":"probe_icmp","run_id":run_id}),
++                    work_deadline,
++                )
++                .expect("ICMP request");
++                let Frame::Icmp {
++                    sent: 3,
++                    received: 3,
++                    id: 9,
++                    sequences: [1, 2, 3],
++                    payloads_valid: true,
++                    addresses_valid: true,
++                    ..
++                } = peer.frame(work_deadline).expect("three WG Echo replies")
++                else {
++                    panic!("expected exact authenticated virtual ICMP replies")
++                };
++                let final_dut = owned_sockets(pid, &root, work_deadline);
++                let final_peer = owned_sockets(peer_pid, &root, work_deadline);
++                verify_sockets(&final_peer, &final_dut, udp_port);
++                assert_eq!(
++                    final_dut, dut_sockets,
++                    "WG socket ownership remains unchanged"
++                );
++                assert!(
++                    peer.child
++                        .try_wait()
++                        .expect("peer alive before DUT Stop")
++                        .is_none()
++                );
++                println!(
++                    "task009 wg helper_sha256={helper_hash} config_sha256={config_hash} identity={identity} dut_pid={pid} peer_pid={peer_pid} tcp_response_acked=true rx_tcp_packets={rx_tcp_packets} tx_tcp_packets={tx_tcp_packets} icmp_sent=3 icmp_received=3 dut_sockets={final_dut:?} peer_sockets={final_peer:?}"
++                );
++            }));
++            // 所有失败（包括 panic）均先交由真实 owner 清理 DUT，再结束 peer。
++            let dut_stopped = runtime.stop().is_ok();
++            let peer_cleanup = peer.finish(dut_stopped);
++            dut_private.fill(0);
++            peer_private.fill(0);
++            token_bytes.fill(0);
++            assert!(
++                dut_stopped,
++                "DUT cleanup failed; retain private resources and fixture"
++            );
++            peer_cleanup.expect("peer stopped/exit/pipes all confirmed");
++            let cleanup_deadline = peer.started + Duration::from_secs(59);
++            let peer_after = owned_sockets(peer_pid, &root, cleanup_deadline);
++            assert!(peer_after.tcp.is_empty() && peer_after.udp.is_empty());
++            if let Some(pid) = dut_pid {
++                let dut_after = owned_sockets(pid, &root, cleanup_deadline);
++                assert!(dut_after.tcp.is_empty() && dut_after.udp.is_empty());
++            }
++            let port = runtime.into_port();
++            assert!(port.running.is_empty() && !port.has_pending_cleanup());
++            assert_eq!(
++                fs::read_dir(data.join(RUNTIME_DIRECTORY))
++                    .expect("private runtime root")
++                    .count(),
++                0
++            );
++            println!(
++                "task009 wg cleanup=dut_then_peer confirmed=true stderr_bytes={}",
++                peer.stderr_bytes.load(Ordering::SeqCst)
++            );
++            if let Err(panic) = assertions {
++                std::panic::resume_unwind(panic);
++            }
++            for (owned_path, parent) in [(data, std::env::temp_dir()), (root, target)] {
++                let resolved = owned_path.canonicalize().expect("resolved owned fixture");
++                let parent = parent.canonicalize().expect("resolved parent");
++                assert_eq!(resolved.parent(), Some(parent.as_path()));
++                assert_eq!(
++                    resolved.file_name().expect("owned name"),
++                    std::ffi::OsStr::new(&name)
++                );
++                fs::remove_dir_all(resolved).expect("remove only successful owned fixture");
++            }
++        }
++    }
++
+     // netstat只读枚举；输出留在本次测试目录，日志仅打印已拥有child的两个端点。
+     fn metering_listeners(pid: u32, output_path: &Path) -> BTreeSet<std::net::SocketAddr> {
+         use std::{
+diff --git a/scripts/task009-wg-peer/bind_test.go b/scripts/task009-wg-peer/bind_test.go
+new file mode 100644
+index 0000000..ccc36a9
+--- /dev/null
++++ b/scripts/task009-wg-peer/bind_test.go
+@@ -0,0 +1,46 @@
++package main
++
++import (
++	"errors"
++	"net"
++	"testing"
++	"time"
++
++	"github.com/sagernet/wireguard-go/conn"
++)
++
++func TestLoopbackBindCloseWakesReceiver(t *testing.T) {
++	b := &loopBind{fault: func(error) { t.Error("unexpected bind fault") }}
++	fns, port, err := b.Open(0)
++	if err != nil {
++		t.Fatal(err)
++	}
++	if port == 0 || port == 9090 || b.udp.LocalAddr().(*net.UDPAddr).IP.String() != "127.0.0.1" {
++		t.Fatal("unexpected bind")
++	}
++	done := make(chan error, 1)
++	go func() {
++		_, err := fns[0]([][]byte{make([]byte, 2048)}, make([]int, 1), make([]conn.Endpoint, 1))
++		done <- err
++	}()
++	if err := b.Close(); err != nil {
++		t.Fatal(err)
++	}
++	select {
++	case err := <-done:
++		if !errors.Is(err, net.ErrClosed) {
++			t.Fatal("close not propagated", err)
++		}
++	case <-time.After(time.Second):
++		t.Fatal("receive blocked after close")
++	}
++	if err := b.Close(); err != nil {
++		t.Fatal(err)
++	}
++	if _, err := b.ParseEndpoint("192.0.2.1:1234"); err == nil {
++		t.Fatal("nonloopback accepted")
++	}
++	if err := b.SetMark(1); err == nil {
++		t.Fatal("mark accepted")
++	}
++}
+diff --git a/scripts/task009-wg-peer/bind.go b/scripts/task009-wg-peer/bind.go
+new file mode 100644
+index 0000000..e801693
+--- /dev/null
++++ b/scripts/task009-wg-peer/bind.go
+@@ -0,0 +1,110 @@
++package main
++
++import (
++	"errors"
++	"net"
++	"net/netip"
++	"sync"
++	"time"
++
++	"github.com/sagernet/wireguard-go/conn"
++)
++
++type loopEndpoint struct{ address netip.AddrPort }
++
++func (e *loopEndpoint) ClearSrc()           {}
++func (e *loopEndpoint) SrcToString() string { return "" }
++func (e *loopEndpoint) DstToString() string { return e.address.String() }
++func (e *loopEndpoint) DstIP() netip.Addr   { return e.address.Addr() }
++func (e *loopEndpoint) SrcIP() netip.Addr   { return netip.Addr{} }
++func (e *loopEndpoint) DstToBytes() []byte {
++	b, _ := e.address.MarshalBinary() // 地址仅由成功的 ParseEndpoint/ReadFrom 构造。
++	return b
++}
++
++type loopBind struct {
++	mu    sync.Mutex
++	udp   *net.UDPConn
++	port  uint16
++	fault func(error)
++}
++
++func (b *loopBind) Open(port uint16) ([]conn.ReceiveFunc, uint16, error) {
++	b.mu.Lock()
++	defer b.mu.Unlock()
++	if b.udp != nil || port != 0 {
++		return nil, 0, errors.New("bind state")
++	}
++	u, err := net.ListenUDP("udp4", &net.UDPAddr{IP: net.IPv4(127, 0, 0, 1)})
++	if err != nil {
++		return nil, 0, err
++	}
++	p := uint16(u.LocalAddr().(*net.UDPAddr).Port)
++	if p == 9090 {
++		_ = u.Close()
++		return nil, 0, errors.New("reserved port")
++	}
++	b.udp, b.port = u, p
++	receive := func(packets [][]byte, sizes []int, endpoints []conn.Endpoint) (int, error) {
++		if len(packets) < 1 || len(sizes) < 1 || len(endpoints) < 1 {
++			return 0, errors.New("receive batch")
++		}
++		n, source, readErr := u.ReadFromUDPAddrPort(packets[0])
++		if readErr != nil {
++			return 0, readErr
++		}
++		if !source.Addr().Is4() || !source.Addr().IsLoopback() {
++			return 0, errors.New("nonloopback source")
++		}
++		sizes[0], endpoints[0] = n, &loopEndpoint{source}
++		return 1, nil
++	}
++	return []conn.ReceiveFunc{receive}, p, nil
++}
++
++func (b *loopBind) Close() error {
++	b.mu.Lock()
++	defer b.mu.Unlock()
++	if b.udp == nil {
++		return nil
++	}
++	err := b.udp.Close()
++	b.udp = nil
++	return err
++}
++func (b *loopBind) SetMark(mark uint32) error {
++	if mark != 0 {
++		return errors.New("mark prohibited")
++	}
++	return nil
++}
++func (b *loopBind) BatchSize() int { return 1 }
++func (b *loopBind) ParseEndpoint(value string) (conn.Endpoint, error) {
++	address, err := netip.ParseAddrPort(value)
++	if err != nil || !address.Addr().Is4() || !address.Addr().IsLoopback() || address.Port() == 0 {
++		return nil, errors.New("endpoint prohibited")
++	}
++	return &loopEndpoint{address}, nil
++}
++func (b *loopBind) Send(packets [][]byte, endpoint conn.Endpoint, offset int) error {
++	e, ok := endpoint.(*loopEndpoint)
++	if !ok || !e.address.Addr().Is4() || !e.address.Addr().IsLoopback() || len(packets) != 1 || offset < 0 || offset > len(packets[0]) {
++		return errors.New("send arguments")
++	}
++	b.mu.Lock()
++	u := b.udp
++	b.mu.Unlock()
++	if u == nil {
++		return net.ErrClosed
++	}
++	if err := u.SetWriteDeadline(time.Now().Add(2 * time.Second)); err != nil {
++		return err
++	}
++	_, err := u.WriteToUDPAddrPort(packets[0][offset:], e.address)
++	return err
++}
++func (b *loopBind) SetReservedForEndpoint(_ netip.AddrPort, reserved [3]byte) {
++	if reserved != [3]byte{} {
++		b.fault(errors.New("reserved prohibited"))
++	}
++}
+diff --git a/scripts/task009-wg-peer/go.mod b/scripts/task009-wg-peer/go.mod
+new file mode 100644
+index 0000000..511aa0f
+--- /dev/null
++++ b/scripts/task009-wg-peer/go.mod
+@@ -0,0 +1,19 @@
++module veyra.local/task009-wg-peer
++
++go 1.27.1
++
++require (
++	github.com/sagernet/gvisor v0.0.0-20260727.0-sing-box-mod.1
++	github.com/sagernet/wireguard-go v0.0.5-0.20260823125007-8bd032a91a30
++)
++
++require (
++	github.com/google/btree v1.1.2 // indirect
++	github.com/sagernet/sing v0.7.10 // indirect
++	golang.org/x/crypto v0.13.0 // indirect
++	golang.org/x/exp v0.0.0-20250711185948-6ae5c78190dc // indirect
++	golang.org/x/net v0.15.0 // indirect
++	golang.org/x/sys v0.43.0 // indirect
++	golang.org/x/time v0.15.0 // indirect
++	golang.zx2c4.com/wintun v0.0.0-20230126152724-0fa3db229ce2 // indirect
++)
+diff --git a/scripts/task009-wg-peer/go.sum b/scripts/task009-wg-peer/go.sum
+new file mode 100644
+index 0000000..4c47b8f
+--- /dev/null
++++ b/scripts/task009-wg-peer/go.sum
+@@ -0,0 +1,20 @@
++github.com/google/btree v1.1.2 h1:xf4v41cLI2Z6FxbKm+8Bu+m8ifhj15JuZ9sa0jZCMUU=
++github.com/google/btree v1.1.2/go.mod h1:qOPhT0dTNdNzV6Z/lhRX0YXUafgPLFUh+gZMl761Gm4=
++github.com/sagernet/gvisor v0.0.0-20260727.0-sing-box-mod.1 h1:IdQ7yTKkB2wv8txwshxUroPlO4npOYAV71xb7xQ7Lys=
++github.com/sagernet/gvisor v0.0.0-20260727.0-sing-box-mod.1/go.mod h1:9O3SQskYuCfdHNvHEsWuEAgoyKEF74PiWp4NsNUia8g=
++github.com/sagernet/sing v0.7.10 h1:2yPhZFx+EkyHPH8hXNezgyRSHyGY12CboId7CtwLROw=
++github.com/sagernet/sing v0.7.10/go.mod h1:ARkL0gM13/Iv5VCZmci/NuoOlePoIsW0m7BWfln/Hak=
++github.com/sagernet/wireguard-go v0.0.5-0.20260823125007-8bd032a91a30 h1:Z9QAr893OvR9qDHvxYTsYZhpvqwcc0LWbJ4ECg/eBgg=
++github.com/sagernet/wireguard-go v0.0.5-0.20260823125007-8bd032a91a30/go.mod h1:er10sELpmzLXq7S7Pbc1Zsbyapcr+/gxNAHKTo6fzVA=
++golang.org/x/crypto v0.13.0 h1:mvySKfSWJ+UKUii46M40LOvyWfN0s2U+46/jDd0e6Ck=
++golang.org/x/crypto v0.13.0/go.mod h1:y6Z2r+Rw4iayiXXAIxJIDAJ1zMW4yaTpebo8fPOliYc=
++golang.org/x/exp v0.0.0-20250711185948-6ae5c78190dc h1:TS73t7x3KarrNd5qAipmspBDS1rkMcgVG/fS1aRb4Rc=
++golang.org/x/exp v0.0.0-20250711185948-6ae5c78190dc/go.mod h1:A+z0yzpGtvnG90cToK5n2tu8UJVP2XUATh+r+sfOOOc=
++golang.org/x/net v0.15.0 h1:ugBLEUaxABaB5AJqW9enI0ACdci2RUd4eP51NTBvuJ8=
++golang.org/x/net v0.15.0/go.mod h1:idbUs1IY1+zTqbi8yxTbhexhEEk5ur9LInksu6HrEpk=
++golang.org/x/sys v0.43.0 h1:Rlag2XtaFTxp19wS8MXlJwTvoh8ArU6ezoyFsMyCTNI=
++golang.org/x/sys v0.43.0/go.mod h1:4GL1E5IUh+htKOUEOaiffhrAeqysfVGipDYzABqnCmw=
++golang.org/x/time v0.15.0 h1:bbrp8t3bGUeFOx08pvsMYRTCVSMk89u4tKbNOZbp88U=
++golang.org/x/time v0.15.0/go.mod h1:Y4YMaQmXwGQZoFaVFk4YpCt4FLQMYKZe9oeV/f4MSno=
++golang.zx2c4.com/wintun v0.0.0-20230126152724-0fa3db229ce2 h1:B82qJJgjvYKsXS9jeunTOisW56dUokqW/FOteYJJ/yg=
++golang.zx2c4.com/wintun v0.0.0-20230126152724-0fa3db229ce2/go.mod h1:deeaetjYA+DHMHg+sMSMI58GrEteJUUzzw7en6TJQcI=
+diff --git a/scripts/task009-wg-peer/lifecycle_test.go b/scripts/task009-wg-peer/lifecycle_test.go
+new file mode 100644
+index 0000000..62f797e
+--- /dev/null
++++ b/scripts/task009-wg-peer/lifecycle_test.go
+@@ -0,0 +1,142 @@
++package main
++
++import (
++	"bufio"
++	"context"
++	"encoding/json"
++	"errors"
++	"io"
++	"net"
++	"strings"
++	"testing"
++	"time"
++)
++
++// peer 单独运行的取消自测，不创建或连接 sing-box DUT。
++func TestProtocolFailureHoldsPortUntilShutdown(t *testing.T) {
++	inReader, inWriter := io.Pipe()
++	outReader, outWriter := io.Pipe()
++	done := make(chan int, 1)
++	go func() { done <- run(inReader, outWriter); outWriter.Close() }()
++	defer inWriter.Close()
++	defer inReader.Close()
++	defer outReader.Close()
++	if _, err := inWriter.Write(initFrame()); err != nil {
++		t.Fatal(err)
++	}
++	reader := bufio.NewReader(outReader)
++	readEvent := func() map[string]json.RawMessage {
++		t.Helper()
++		line, err := reader.ReadBytes('\n')
++		if err != nil {
++			t.Fatal(err)
++		}
++		var e map[string]json.RawMessage
++		if err = json.Unmarshal(line, &e); err != nil {
++			t.Fatal(err)
++		}
++		return e
++	}
++	e := readEvent()
++	if string(e["event"]) != `"ready"` {
++		t.Fatalf("unexpected event %s", e["event"])
++	}
++	var port int
++	if err := json.Unmarshal(e["udp_port"], &port); err != nil {
++		t.Fatal(err)
++	}
++	invalid := `{"v":1,"op":"probe_icmp","run_id":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}` + "\n"
++	if _, err := io.WriteString(inWriter, invalid); err != nil {
++		t.Fatal(err)
++	}
++	e = readEvent()
++	if string(e["event"]) != `"failed"` {
++		t.Fatal("missing failure")
++	}
++	u, err := net.ListenUDP("udp4", &net.UDPAddr{IP: net.IPv4(127, 0, 0, 1), Port: port})
++	if err == nil {
++		u.Close()
++		t.Fatal("failure released owned peer port")
++	}
++	select {
++	case <-done:
++		t.Fatal("failure exited before DUT stop confirmation")
++	default:
++	}
++	shutdown := `{"v":1,"op":"shutdown","run_id":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","dut_stopped":true}` + "\n"
++	if _, err := io.WriteString(inWriter, shutdown); err != nil {
++		t.Fatal(err)
++	}
++	e = readEvent()
++	if string(e["event"]) != `"stopped"` || string(e["resources_closed"]) != "true" {
++		t.Fatal("missing cleanup")
++	}
++	select {
++	case code := <-done:
++		if code == 0 {
++			t.Fatal("business failure reported success")
++		}
++	case <-time.After(3 * time.Second):
++		t.Fatal("helper cleanup blocked")
++	}
++	u, err = net.ListenUDP("udp4", &net.UDPAddr{IP: net.IPv4(127, 0, 0, 1), Port: port})
++	if err != nil {
++		t.Fatal("peer port not released", err)
++	}
++	u.Close()
++}
++
++type cancelledConnection struct {
++	reader  *strings.Reader
++	cancel  context.CancelFunc
++	written int
++}
++
++func (c *cancelledConnection) Read(b []byte) (int, error) {
++	n, err := c.reader.Read(b)
++	if c.reader.Len() == 0 {
++		c.cancel()
++	}
++	return n, err
++}
++func (c *cancelledConnection) Write(b []byte) (int, error)    { c.written += len(b); return len(b), nil }
++func (*cancelledConnection) Close() error                     { return nil }
++func (*cancelledConnection) LocalAddr() net.Addr              { return &net.TCPAddr{} }
++func (*cancelledConnection) RemoteAddr() net.Addr             { return &net.TCPAddr{} }
++func (*cancelledConnection) SetDeadline(time.Time) error      { return nil }
++func (*cancelledConnection) SetReadDeadline(time.Time) error  { return nil }
++func (*cancelledConnection) SetWriteDeadline(time.Time) error { return nil }
++
++type singleConnection struct{ net.Conn }
++
++func (l singleConnection) Accept() (net.Conn, error) { return l.Conn, nil }
++func (l singleConnection) Close() error              { return l.Conn.Close() }
++func (l singleConnection) Addr() net.Addr            { return l.Conn.LocalAddr() }
++func TestCancelledRequestDoesNotStartHTTPResponse(t *testing.T) {
++	ctx, cancel := context.WithCancel(context.Background())
++	defer cancel()
++	token := strings.Repeat("a", 32)
++	c := &cancelledConnection{reader: strings.NewReader("HEAD /task009-wg?token=" + token + " HTTP/1.1\r\nHost: 198.18.0.2:18080\r\n\r\n"), cancel: cancel}
++	p := &livePeer{listener: singleConnection{c}}
++	if err := serveHTTP(ctx, p, token); !errors.Is(err, context.Canceled) {
++		t.Fatal("cancellation not propagated", err)
++	}
++	if c.written != 0 {
++		t.Fatal("cancelled request still sent response")
++	}
++}
++func TestOutputInheritsHardDeadline(t *testing.T) {
++	r, w := io.Pipe()
++	done := make(chan struct{})
++	defer close(done)
++	defer r.Close()
++	defer w.Close()
++	output := boundedOutput(w, done, time.Now().Add(30*time.Millisecond))
++	start := time.Now()
++	if err := output(event{"v": 1}); err == nil {
++		t.Fatal("blocked output succeeded")
++	}
++	if time.Since(start) > 500*time.Millisecond {
++		t.Fatal("ignored hard deadline")
++	}
++}
+diff --git a/scripts/task009-wg-peer/main.go b/scripts/task009-wg-peer/main.go
+new file mode 100644
+index 0000000..a19d5f3
+--- /dev/null
++++ b/scripts/task009-wg-peer/main.go
+@@ -0,0 +1,315 @@
++package main
++
++import (
++	"bufio"
++	"context"
++	"crypto/ecdh"
++	"encoding/base64"
++	"encoding/hex"
++	"errors"
++	"io"
++	"net"
++	"net/http"
++	"os"
++	"strings"
++	"sync"
++	"time"
++
++	"github.com/sagernet/gvisor/pkg/tcpip/adapters/gonet"
++	"github.com/sagernet/gvisor/pkg/tcpip/network/ipv4"
++	"github.com/sagernet/wireguard-go/device"
++)
++
++type livePeer struct {
++	tun      *memoryTun
++	bind     *loopBind
++	wg       *device.Device
++	listener net.Listener
++	watch    *observer
++	workers  sync.WaitGroup
++}
++
++func newLive(c command) (*livePeer, string, string, error) {
++	dut, err := ecdh.X25519().NewPrivateKey(keyBytes(c.DUT))
++	if err != nil {
++		return nil, "", "", err
++	}
++	peer, err := ecdh.X25519().NewPrivateKey(keyBytes(c.Peer))
++	if err != nil {
++		return nil, "", "", err
++	}
++	p := &livePeer{watch: newObserver(tokenBytes(c.Token))}
++	p.tun, err = newMemoryTun(peerIP, p.watch)
++	if err != nil {
++		return nil, "", "", err
++	}
++	p.listener, err = gonet.ListenTCP(p.tun.s, address(peerIP, 18080), ipv4.ProtocolNumber)
++	if err != nil {
++		p.tun.Close()
++		return nil, "", "", err
++	}
++	p.bind = &loopBind{fault: p.watch.fail}
++	// 库日志不进入 stdout/stderr；固定错误只通过观察器传播。
++	logger := &device.Logger{Verbosef: func(string, ...any) {}, Errorf: func(string, ...any) { p.watch.fail(errors.New("WG error")) }}
++	p.wg = device.NewDevice(context.Background(), p.tun, p.bind, logger, 1)
++	config := "private_key=" + hex.EncodeToString(peer.Bytes()) + "\npublic_key=" + hex.EncodeToString(dut.PublicKey().Bytes()) + "\nallowed_ip=198.18.0.1/32\n"
++	if err = p.wg.IpcSet(config); err == nil {
++		err = p.wg.Up()
++	}
++	if err != nil {
++		p.close()
++		return nil, "", "", errors.New("WG setup")
++	}
++	return p, base64.StdEncoding.EncodeToString(peer.PublicKey().Bytes()), base64.StdEncoding.EncodeToString(dut.PublicKey().Bytes()), nil
++}
++func (p *livePeer) close() error {
++	err := p.listener.Close()
++	p.wg.Close()
++	p.workers.Wait()
++	return err
++}
++func serveHTTP(ctx context.Context, p *livePeer, token string) error {
++	c, err := p.listener.Accept()
++	if err != nil {
++		return err
++	}
++	defer c.Close()
++	if err := ctx.Err(); err != nil {
++		return err
++	}
++	if err = c.SetDeadline(deadline(ctx)); err != nil {
++		return err
++	}
++	// 限制头字节，避免 ReadRequest 无界读取；只解析已经取得的完整头。
++	r := bufio.NewReader(c)
++	var header strings.Builder
++	for header.Len() < 16384 {
++		b, err := r.ReadByte()
++		if err != nil {
++			return err
++		}
++		header.WriteByte(b)
++		if strings.HasSuffix(header.String(), "\r\n\r\n") {
++			break
++		}
++	}
++	if header.Len() >= 16384 {
++		return errors.New("HTTP header limit")
++	}
++	request, err := http.ReadRequest(bufio.NewReader(strings.NewReader(header.String())))
++	if err != nil {
++		return err
++	}
++	if request.Method != "HEAD" || request.RequestURI != "/task009-wg?token="+token || request.Host != "198.18.0.2:18080" || request.ContentLength > 0 || len(request.TransferEncoding) != 0 {
++		return errors.New("HTTP request")
++	}
++	if err = c.SetWriteDeadline(deadline(ctx)); err != nil {
++		return err
++	}
++	if err := ctx.Err(); err != nil {
++		return err
++	}
++	if n, err := io.WriteString(c, response); err != nil || n != len(response) {
++		return errors.Join(err, io.ErrShortWrite)
++	}
++	ackCtx, cancel := context.WithDeadline(ctx, deadline(ctx))
++	defer cancel()
++	return p.watch.waitACK(ackCtx)
++}
++
++func run(in io.Reader, out io.Writer) int {
++	born := time.Now()
++	hard := time.NewTimer(55 * time.Second)
++	defer hard.Stop()
++	inputs := make(chan inputResult, 4)
++	done := make(chan struct{})
++	defer close(done)
++	go inputLoop(in, inputs, done)
++	output := boundedOutput(out, done, born.Add(55*time.Second))
++	var initial command
++	select {
++	case input := <-inputs:
++		if input.err != nil || input.command.Op != "init" {
++			return 1
++		}
++		initial = input.command
++	case <-time.After(5 * time.Second):
++		return 1
++	}
++	base := func(kind string) event { return event{"v": 1, "event": kind, "run_id": initial.RunID} }
++	failed := false
++	cancelBusiness := func() {}
++	failure := func(stage, code string) {
++		if !failed {
++			failed = true
++			cancelBusiness()
++			e := base("failed")
++			e["stage"] = stage
++			e["code"] = code
++			if output(e) != nil {
++				failed = true
++			}
++		}
++	}
++	selfCtx, selfCancel := context.WithDeadline(context.Background(), born.Add(10*time.Second))
++	selfDone := make(chan error, 1)
++	go func() {
++		ctx, cancel := context.WithTimeout(selfCtx, 5*time.Second)
++		defer cancel()
++		selfDone <- selftest(ctx)
++	}()
++	select {
++	case err := <-selfDone:
++		if err != nil {
++			selfCancel()
++			failure("selftest", "io_error")
++			return 1
++		}
++	case <-selfCtx.Done():
++		selfCancel()
++		failure("selftest", "timeout")
++		return 1
++	}
++	selfCancel()
++	p, peerPublic, dutPublic, err := newLive(initial)
++	if err != nil {
++		failure("bind", "resource_error")
++		return 1
++	}
++	ready := base("ready")
++	ready["udp_port"] = p.bind.port
++	ready["peer_public_key"] = peerPublic
++	ready["dut_public_key"] = dutPublic
++	ready["selftest"] = map[string]bool{"tcp": true, "udp": true, "icmp": true}
++	if err = output(ready); err != nil {
++		p.close()
++		return 1
++	}
++	workCtx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
++	cancelBusiness = cancel
++	defer cancel()
++	httpDone := make(chan error, 1)
++	p.workers.Add(1)
++	go func() { defer p.workers.Done(); httpDone <- serveHTTP(workCtx, p, initial.Token) }()
++	icmpDone := make(chan error, 1)
++	tcpOK, icmpStarted, icmpOK := false, false, false
++	workDone := workCtx.Done()
++	for {
++		select {
++		case hErr := <-httpDone:
++			httpDone = nil
++			if hErr != nil {
++				failure("tcp", "io_error")
++				continue
++			}
++			if failed {
++				continue
++			}
++			rx, tx, observeErr := p.watch.result()
++			if observeErr != nil || rx == 0 || tx == 0 {
++				failure("tcp", "unexpected_packet")
++				continue
++			}
++			tcpOK = true
++			e := base("tcp")
++			e["requests"] = 1
++			e["response_status"] = 204
++			e["rx_tcp_packets"] = rx
++			e["tx_tcp_packets"] = tx
++			e["authenticated"] = true
++			e["response_acked"] = true
++			if output(e) != nil {
++				failure("protocol", "io_error")
++			}
++			p.workers.Add(1)
++			go func() {
++				defer p.workers.Done()
++				c, e := p.listener.Accept()
++				if e == nil {
++					if c.Close() != nil {
++						p.watch.fail(errors.New("extra close"))
++					}
++					p.watch.fail(errors.New("extra connection"))
++				}
++			}()
++		case iErr := <-icmpDone:
++			icmpDone = nil
++			if iErr != nil {
++				failure("icmp", "unexpected_packet")
++				continue
++			}
++			if failed {
++				continue
++			}
++			icmpOK = true
++			e := base("icmp")
++			e["sent"] = 3
++			e["received"] = 3
++			e["id"] = 9
++			e["sequences"] = []int{1, 2, 3}
++			e["payloads_valid"] = true
++			e["addresses_valid"] = true
++			if output(e) != nil {
++				failure("protocol", "io_error")
++			}
++		case input := <-inputs:
++			if input.err != nil {
++				failure("protocol", "invalid_input")
++				inputs = nil
++				continue
++			}
++			c := input.command
++			if c.RunID != initial.RunID {
++				failure("protocol", "invalid_input")
++				continue
++			}
++			if c.Op == "shutdown" {
++				cancel()
++				closed := make(chan error, 1)
++				go func() { closed <- p.close() }()
++				select {
++				case err := <-closed:
++					if err != nil {
++						failure("cleanup", "resource_error")
++						return 1
++					}
++				case <-time.After(2 * time.Second):
++					failure("cleanup", "timeout")
++					return 1
++				}
++				_, _, watchErr := p.watch.result()
++				if watchErr != nil {
++					failure("cleanup", "unexpected_packet")
++				}
++				e := base("stopped")
++				e["resources_closed"] = true
++				if output(e) != nil {
++					return 1
++				}
++				if failed || !tcpOK || !icmpOK {
++					return 1
++				}
++				return 0
++			}
++			if c.Op != "probe_icmp" || failed || !tcpOK || icmpStarted {
++				failure("protocol", "invalid_input")
++				continue
++			}
++			icmpStarted = true
++			p.workers.Add(1)
++			go func() { defer p.workers.Done(); icmpDone <- icmpProbe(workCtx, p.tun, p.watch.token, p.watch) }()
++		case <-p.watch.wake:
++			_, _, err := p.watch.result()
++			if err != nil {
++				failure("tcp", "unexpected_packet")
++			}
++		case <-workDone:
++			failure("deadline", "timeout")
++			workDone = nil
++		case <-hard.C:
++			failure("deadline", "timeout")
++			return 1 // 进程硬退出释放自有资源，父应已先停 DUT。
++		}
++	}
++}
++func main() { os.Exit(run(os.Stdin, os.Stdout)) }
+diff --git a/scripts/task009-wg-peer/observe_test.go b/scripts/task009-wg-peer/observe_test.go
+new file mode 100644
+index 0000000..0e8f11d
+--- /dev/null
++++ b/scripts/task009-wg-peer/observe_test.go
+@@ -0,0 +1,119 @@
++package main
++
++import (
++	"context"
++	"encoding/binary"
++	"testing"
++	"time"
++)
++
++func tcpPacket(incoming bool, seq, ack uint32, flags byte, payload []byte) []byte {
++	b := make([]byte, 40+len(payload))
++	b[0] = 0x45
++	binary.BigEndian.PutUint16(b[2:4], uint16(len(b)))
++	b[8] = 64
++	b[9] = 6
++	src, dst := peerIP, dutIP
++	sp, dp := uint16(18080), uint16(40000)
++	if incoming {
++		src, dst = dutIP, peerIP
++		sp, dp = dp, sp
++	}
++	copy(b[12:16], src[:])
++	copy(b[16:20], dst[:])
++	binary.BigEndian.PutUint16(b[10:12], checksum(b[:20], 0))
++	h := b[20:]
++	binary.BigEndian.PutUint16(h[0:2], sp)
++	binary.BigEndian.PutUint16(h[2:4], dp)
++	binary.BigEndian.PutUint32(h[4:8], seq)
++	binary.BigEndian.PutUint32(h[8:12], ack)
++	h[12] = 0x50
++	h[13] = flags
++	binary.BigEndian.PutUint16(h[14:16], 32768)
++	copy(h[20:], payload)
++	pseudo := uint32(6 + len(h))
++	for _, a := range [][4]byte{src, dst} {
++		pseudo += uint32(binary.BigEndian.Uint16(a[:2])) + uint32(binary.BigEndian.Uint16(a[2:]))
++	}
++	binary.BigEndian.PutUint16(h[16:18], checksum(h, pseudo))
++	return b
++}
++func handshake(o *observer, start uint32) {
++	o.inspect(tcpPacket(true, 100, 0, 2, nil), true)
++	o.inspect(tcpPacket(false, start-1, 101, 18, nil), false)
++	o.inspect(tcpPacket(true, 101, start, 16, []byte("HEAD")), true)
++}
++func TestResponseRequiresCompleteACK(t *testing.T) {
++	for _, name := range []string{"handshake_only", "write_only", "partial_ack", "partial_response", "full", "split_retransmit", "wrap", "reset", "bad_checksum", "future_ack", "wrong_tuple"} {
++		t.Run(name, func(t *testing.T) {
++			o := newObserver(nil)
++			start := uint32(500)
++			if name == "wrap" {
++				start = ^uint32(0) - 20
++			}
++			handshake(o, start)
++			if name != "handshake_only" {
++				if name == "split_retransmit" {
++					o.inspect(tcpPacket(false, start, 105, 24, []byte(response[:20])), false)
++					o.inspect(tcpPacket(false, start, 105, 24, []byte(response[:20])), false)
++					o.inspect(tcpPacket(false, start+20, 105, 24, []byte(response[20:])), false)
++				} else if name == "partial_response" {
++					o.inspect(tcpPacket(false, start, 105, 24, []byte(response[:20])), false)
++				} else {
++					o.inspect(tcpPacket(false, start, 105, 24, []byte(response)), false)
++				}
++			}
++			if name != "handshake_only" && name != "write_only" {
++				ack := start + uint32(len(response))
++				if name == "partial_ack" {
++					ack--
++				}
++				if name == "future_ack" {
++					ack += 2
++				}
++				flags := byte(16)
++				if name == "reset" {
++					flags |= 4
++				}
++				p := tcpPacket(true, 105, ack, flags, nil)
++				if name == "bad_checksum" {
++					p[36] ^= 1
++				}
++				if name == "wrong_tuple" {
++					p[20] = 1
++					binary.BigEndian.PutUint16(p[36:38], 0)
++					pseudo := uint32(26)
++					for _, a := range [][4]byte{dutIP, peerIP} {
++						pseudo += uint32(binary.BigEndian.Uint16(a[:2])) + uint32(binary.BigEndian.Uint16(a[2:]))
++					}
++					binary.BigEndian.PutUint16(p[36:38], checksum(p[20:], pseudo))
++				}
++				o.inspect(p, true)
++			}
++			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Millisecond)
++			defer cancel()
++			err := o.waitACK(ctx)
++			positive := name == "full" || name == "split_retransmit" || name == "wrap"
++			if (err == nil) != positive {
++				t.Fatalf("TCP delivery confirmation=%v expected %v", err == nil, positive)
++			}
++		})
++	}
++}
++func TestACKWaitBroadcastDoesNotCompeteWithFailureObserver(t *testing.T) {
++	o := newObserver(nil)
++	handshake(o, 500)
++	o.inspect(tcpPacket(false, 500, 105, 24, []byte(response)), false)
++	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
++	defer cancel()
++	done := make(chan error, 1)
++	go func() { done <- o.waitACK(ctx) }()
++	o.inspect(tcpPacket(true, 105, 500+uint32(len(response)), 16, nil), true)
++	select {
++	case <-o.wake:
++	default:
++	}
++	if err := <-done; err != nil {
++		t.Fatal(err)
++	}
++}
+diff --git a/scripts/task009-wg-peer/observe.go b/scripts/task009-wg-peer/observe.go
+new file mode 100644
+index 0000000..cfb250a
+--- /dev/null
++++ b/scripts/task009-wg-peer/observe.go
+@@ -0,0 +1,288 @@
++package main
++
++import (
++	"bytes"
++	"context"
++	"encoding/binary"
++	"errors"
++	"sync"
++)
++
++const response = "HTTP/1.1 204 No Content\r\nContent-Length: 0\r\nConnection: close\r\n\r\n"
++
++var dutIP = [4]byte{198, 18, 0, 1}
++var peerIP = [4]byte{198, 18, 0, 2}
++
++type packet struct {
++	src, dst [4]byte
++	proto    byte
++	body     []byte
++}
++
++func checksum(b []byte, sum uint32) uint16 {
++	for len(b) >= 2 {
++		sum += uint32(binary.BigEndian.Uint16(b))
++		b = b[2:]
++	}
++	if len(b) == 1 {
++		sum += uint32(b[0]) << 8
++	}
++	for sum>>16 != 0 {
++		sum = (sum & 65535) + (sum >> 16)
++	}
++	return ^uint16(sum)
++}
++
++func parsePacket(raw []byte) (packet, error) {
++	if len(raw) < 20 || raw[0]>>4 != 4 {
++		return packet{}, errors.New("IPv4 header")
++	}
++	h := int(raw[0]&15) * 4
++	n := int(binary.BigEndian.Uint16(raw[2:4]))
++	if h < 20 || h > len(raw) || n < h || n > len(raw) || binary.BigEndian.Uint16(raw[6:8])&0x3fff != 0 || checksum(raw[:h], 0) != 0 {
++		return packet{}, errors.New("IPv4 bounds/checksum")
++	}
++	p := packet{src: [4]byte(raw[12:16]), dst: [4]byte(raw[16:20]), proto: raw[9], body: raw[h:n]}
++	switch p.proto {
++	case 6:
++		if len(p.body) < 20 || int(p.body[12]>>4)*4 < 20 || int(p.body[12]>>4)*4 > len(p.body) {
++			return packet{}, errors.New("TCP bounds")
++		}
++		pseudo := uint32(6 + len(p.body))
++		for _, addr := range [][4]byte{p.src, p.dst} {
++			pseudo += uint32(binary.BigEndian.Uint16(addr[:2])) + uint32(binary.BigEndian.Uint16(addr[2:]))
++		}
++		if checksum(p.body, pseudo) != 0 {
++			return packet{}, errors.New("TCP checksum")
++		}
++	case 1:
++		if len(p.body) < 8 || checksum(p.body, 0) != 0 {
++			return packet{}, errors.New("ICMP bounds/checksum")
++		}
++	case 17:
++		if len(p.body) < 8 {
++			return packet{}, errors.New("UDP bounds")
++		}
++	default:
++		return packet{}, errors.New("protocol")
++	}
++	return p, nil
++}
++
++// 只有确认同一 TCP 连接的完整响应覆盖和远端累计 ACK，才满足阳性条件。
++type observer struct {
++	mu           sync.Mutex
++	wake         chan struct{}
++	changed      chan struct{}
++	err          error
++	total        uint64
++	rx, tx       uint64
++	clientPort   uint16
++	start        uint32
++	haveStart    bool
++	covered      [len(response)]bool
++	fin          bool
++	acks         []uint32
++	acked        bool
++	token        []byte
++	icmpActive   bool
++	icmpSent     int
++	icmpReceived int
++	allowUDP     bool
++}
++
++func newObserver(token []byte) *observer {
++	return &observer{wake: make(chan struct{}, 1), changed: make(chan struct{}), token: bytes.Clone(token)}
++}
++func (o *observer) signal() {
++	select {
++	case o.wake <- struct{}{}:
++	default:
++	}
++}
++func (o *observer) fail(err error) {
++	o.mu.Lock()
++	if o.err == nil {
++		o.err = err
++	}
++	o.broadcast()
++	o.mu.Unlock()
++}
++func (o *observer) broadcast() { close(o.changed); o.changed = make(chan struct{}); o.signal() }
++func (o *observer) inspect(raw []byte, incoming bool) {
++	p, err := parsePacket(raw)
++	o.mu.Lock()
++	defer o.mu.Unlock()
++	defer o.broadcast()
++	if o.err != nil {
++		return
++	}
++	if err != nil {
++		o.err = err
++		return
++	}
++	o.total += uint64(len(raw))
++	if o.total > 1<<20 {
++		o.err = errors.New("byte limit")
++		return
++	}
++	if (incoming && (p.src != dutIP || p.dst != peerIP)) || (!incoming && (p.src != peerIP || p.dst != dutIP)) {
++		o.err = errors.New("packet address")
++		return
++	}
++	switch p.proto {
++	case 6:
++		o.tcp(p, incoming)
++	case 1:
++		o.icmp(p, incoming)
++	case 17:
++		if !o.allowUDP {
++			o.err = errors.New("unexpected live UDP")
++		}
++	default:
++		o.err = errors.New("unexpected live protocol")
++	}
++}
++func (o *observer) tcp(p packet, incoming bool) {
++	b := p.body
++	source, dest := binary.BigEndian.Uint16(b), binary.BigEndian.Uint16(b[2:])
++	flags := b[13]
++	if incoming {
++		o.rx++
++		if o.clientPort == 0 && dest == 18080 && flags&2 != 0 && flags&16 == 0 {
++			o.clientPort = source
++		}
++		if source != o.clientPort || dest != 18080 {
++			o.err = errors.New("TCP tuple")
++			return
++		}
++	} else {
++		o.tx++
++		if source != 18080 || dest != o.clientPort {
++			o.err = errors.New("TCP tuple")
++			return
++		}
++	}
++	if flags&4 != 0 {
++		o.err = errors.New("TCP reset")
++		return
++	}
++	seq := binary.BigEndian.Uint32(b[4:8])
++	if !incoming {
++		if flags&2 != 0 {
++			if o.haveStart && o.start != seq+1 {
++				o.err = errors.New("SYN changed")
++				return
++			}
++			o.start, o.haveStart = seq+1, true
++		}
++		payload := b[int(b[12]>>4)*4:]
++		if len(payload) != 0 {
++			if !o.haveStart {
++				o.err = errors.New("missing SYN")
++				return
++			}
++			if flags&2 != 0 {
++				seq++
++			}
++			delta := uint32(seq - o.start)
++			if delta >= 1<<31 || uint64(delta)+uint64(len(payload)) > uint64(len(response)) {
++				o.err = errors.New("response range")
++				return
++			}
++			for i, value := range payload {
++				index := int(delta) + i
++				if value != response[index] {
++					o.err = errors.New("response bytes")
++					return
++				}
++				o.covered[index] = true
++			}
++		}
++		if flags&1 != 0 && o.haveStart {
++			if uint32(seq-o.start)+uint32(len(payload)) != uint32(len(response)) {
++				o.err = errors.New("FIN range")
++				return
++			}
++			o.fin = true
++		}
++	} else if flags&16 != 0 {
++		if len(o.acks) >= 128 {
++			o.err = errors.New("ACK limit")
++			return
++		}
++		o.acks = append(o.acks, binary.BigEndian.Uint32(b[8:12]))
++	}
++	o.checkACK()
++}
++func (o *observer) checkACK() {
++	if !o.haveStart {
++		return
++	}
++	for _, covered := range o.covered {
++		if !covered {
++			return
++		}
++	}
++	end := o.start + uint32(len(response))
++	limit := end
++	if o.fin {
++		limit++
++	}
++	for _, ack := range o.acks {
++		if uint32(ack-end) < 1<<31 && uint32(limit-ack) < 1<<31 {
++			o.acked = true
++		}
++	}
++}
++func (o *observer) icmp(p packet, incoming bool) {
++	b := p.body
++	if !o.icmpActive || b[1] != 0 || binary.BigEndian.Uint16(b[4:6]) != 9 || len(b) != 8+len(o.token)+1 || !bytes.Equal(b[8:len(b)-1], o.token) {
++		o.err = errors.New("ICMP content")
++		return
++	}
++	seq := int(binary.BigEndian.Uint16(b[6:8]))
++	if seq < 1 || seq > 3 || b[len(b)-1] != byte(seq) {
++		o.err = errors.New("ICMP sequence")
++		return
++	}
++	if incoming {
++		if b[0] != 0 || seq != o.icmpReceived+1 || seq > o.icmpSent {
++			o.err = errors.New("ICMP reply")
++			return
++		}
++		o.icmpReceived++
++	} else {
++		if b[0] != 8 || seq != o.icmpSent+1 || o.icmpSent != o.icmpReceived {
++			o.err = errors.New("ICMP request")
++			return
++		}
++		o.icmpSent++
++	}
++}
++func (o *observer) waitACK(ctx context.Context) error {
++	for {
++		if err := ctx.Err(); err != nil {
++			return err
++		}
++		o.mu.Lock()
++		err, acked, changed := o.err, o.acked, o.changed
++		o.mu.Unlock()
++		if err != nil {
++			return err
++		}
++		if acked {
++			return nil
++		}
++		select {
++		case <-ctx.Done():
++			return ctx.Err()
++		case <-changed:
++		}
++	}
++}
++func (o *observer) result() (uint64, uint64, error) {
++	o.mu.Lock()
++	defer o.mu.Unlock()
++	return o.rx, o.tx, o.err
++}
+diff --git a/scripts/task009-wg-peer/protocol_test.go b/scripts/task009-wg-peer/protocol_test.go
+new file mode 100644
+index 0000000..3431324
+--- /dev/null
++++ b/scripts/task009-wg-peer/protocol_test.go
+@@ -0,0 +1,78 @@
++package main
++
++import (
++	"bytes"
++	"encoding/json"
++	"io"
++	"strings"
++	"testing"
++	"time"
++)
++
++func initFrame() []byte {
++	dut, peer := make([]uint16, 32), make([]uint16, 32)
++	for i := range dut {
++		dut[i] = uint16(i + 1)
++		peer[i] = uint16(i + 40)
++	}
++	b, _ := json.Marshal(command{V: 1, Op: "init", RunID: strings.Repeat("a", 32), DUT: dut, Peer: peer, Token: strings.Repeat("b", 32)})
++	// 测试输入显式省略未使用字段，和父端协议一致。
++	var fields map[string]any
++	_ = json.Unmarshal(b, &fields)
++	delete(fields, "dut_stopped")
++	b, _ = json.Marshal(fields)
++	return append(b, '\n')
++}
++func TestProtocolRejectsInvalidFrames(t *testing.T) {
++	good := initFrame()
++	if _, err := decodeCommand(good); err != nil {
++		t.Fatal(err)
++	}
++	for _, bad := range [][]byte{append(bytes.TrimSpace(good), []byte(" {}")...), bytes.Replace(good, []byte(`"v":1`), []byte(`"v":2`), 1), bytes.Replace(good, []byte(`"op":"init"`), []byte(`"op":"unknown"`), 1), []byte(`{"v":1,"op":"shutdown","run_id":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","dut_stopped":false}`)} {
++		if _, err := decodeCommand(bad); err == nil {
++			t.Fatal("invalid frame accepted")
++		}
++	}
++	var fields map[string]any
++	json.Unmarshal(good, &fields)
++	fields["extra"] = true
++	unknown, _ := json.Marshal(fields)
++	if _, err := decodeCommand(unknown); err == nil {
++		t.Fatal("unknown field")
++	}
++}
++func TestInputBoundBeforeAllocation(t *testing.T) {
++	out := make(chan inputResult, 1)
++	done := make(chan struct{})
++	defer close(done)
++	go inputLoop(strings.NewReader(strings.Repeat("x", 4097)), out, done)
++	select {
++	case r := <-out:
++		if r.err == nil {
++			t.Fatal("oversize accepted")
++		}
++	case <-time.After(time.Second):
++		t.Fatal("input did not terminate")
++	}
++}
++func TestOutputFailureDoesNotEchoSecrets(t *testing.T) {
++	var output bytes.Buffer
++	if code := run(bytes.NewReader([]byte("secret-not-json\n")), &output); code == 0 || bytes.Contains(output.Bytes(), []byte("secret")) {
++		t.Fatal("invalid input accepted or echoed")
++	}
++}
++func TestBoundedOutputBlocksAtMostTwoSeconds(t *testing.T) {
++	r, w := io.Pipe()
++	done := make(chan struct{})
++	output := boundedOutput(w, done, time.Now().Add(55*time.Second))
++	start := time.Now()
++	if err := output(event{"v": 1}); err == nil {
++		t.Fatal("blocked output succeeded")
++	}
++	if elapsed := time.Since(start); elapsed < 1800*time.Millisecond || elapsed > 3*time.Second {
++		t.Fatal("output deadline", elapsed)
++	}
++	r.Close()
++	w.Close()
++	close(done)
++}
+diff --git a/scripts/task009-wg-peer/protocol.go b/scripts/task009-wg-peer/protocol.go
+new file mode 100644
+index 0000000..94736e9
+--- /dev/null
++++ b/scripts/task009-wg-peer/protocol.go
+@@ -0,0 +1,200 @@
++package main
++
++import (
++	"bufio"
++	"bytes"
++	"encoding/hex"
++	"encoding/json"
++	"errors"
++	"io"
++	"time"
++)
++
++type command struct {
++	V       int      `json:"v"`
++	Op      string   `json:"op"`
++	RunID   string   `json:"run_id"`
++	DUT     []uint16 `json:"dut_private_key"`
++	Peer    []uint16 `json:"peer_private_key"`
++	Token   string   `json:"token"`
++	Stopped *bool    `json:"dut_stopped"`
++}
++
++func hex16(s string) bool {
++	if len(s) != 32 {
++		return false
++	}
++	for _, c := range s {
++		if !(c >= '0' && c <= '9' || c >= 'a' && c <= 'f') {
++			return false
++		}
++	}
++	return true
++}
++func decodeCommand(line []byte) (command, error) {
++	var c command
++	decoder := json.NewDecoder(bytes.NewReader(line))
++	decoder.DisallowUnknownFields()
++	if err := decoder.Decode(&c); err != nil {
++		return c, errors.New("invalid input")
++	}
++	if decoder.Decode(new(any)) != io.EOF {
++		return c, errors.New("trailing input")
++	}
++	if c.V != 1 || !hex16(c.RunID) {
++		return c, errors.New("protocol identity")
++	}
++	switch c.Op {
++	case "init":
++		if !hex16(c.Token) || len(c.DUT) != 32 || len(c.Peer) != 32 || c.Stopped != nil {
++			return c, errors.New("init fields")
++		}
++		for _, key := range [][]uint16{c.DUT, c.Peer} {
++			for _, v := range key {
++				if v > 255 {
++					return c, errors.New("key value")
++				}
++			}
++		}
++		if bytes.Equal(keyBytes(c.DUT), keyBytes(c.Peer)) {
++			return c, errors.New("duplicate key")
++		}
++	case "probe_icmp":
++		if c.Token != "" || c.DUT != nil || c.Peer != nil || c.Stopped != nil {
++			return c, errors.New("probe fields")
++		}
++	case "shutdown":
++		if c.Token != "" || c.DUT != nil || c.Peer != nil || c.Stopped == nil || !*c.Stopped {
++			return c, errors.New("shutdown fields")
++		}
++	default:
++		return c, errors.New("operation")
++	}
++	return c, nil
++}
++func keyBytes(input []uint16) []byte {
++	key := make([]byte, len(input))
++	for i, v := range input {
++		key[i] = byte(v)
++	}
++	if len(key) == 32 {
++		key[0] &= 248
++		key[31] &= 127
++		key[31] |= 64
++	}
++	return key
++}
++
++type inputResult struct {
++	command command
++	err     error
++}
++
++func inputLoop(in io.Reader, out chan<- inputResult, done <-chan struct{}) {
++	r := bufio.NewReaderSize(in, 4096)
++	total := 0
++	for {
++		line, err := r.ReadSlice('\n')
++		total += len(line)
++		if len(line) > 4096 || total > 16384 || err == bufio.ErrBufferFull {
++			err = errors.New("input limit")
++		}
++		var c command
++		if err == nil {
++			c, err = decodeCommand(line)
++		}
++		select {
++		case out <- inputResult{c, err}:
++		case <-done:
++			return
++		}
++		if err != nil {
++			return
++		}
++	}
++}
++
++type event map[string]any
++
++func emit(out io.Writer, e event) error {
++	b, err := json.Marshal(e)
++	if err != nil {
++		return err
++	}
++	b = append(b, '\n')
++	if len(b) > 4096 {
++		return errors.New("output limit")
++	}
++	n, err := out.Write(b)
++	if err != nil {
++		return err
++	}
++	if n != len(b) {
++		return io.ErrShortWrite
++	}
++	return nil
++}
++
++type outputRequest struct {
++	value  event
++	result chan error
++}
++
++// 单一写者避免超时后的后续帧交错；停止读取的父进程不能阻塞状态机。
++func boundedOutput(out io.Writer, done <-chan struct{}, hardDeadline time.Time) func(event) error {
++	queue := make(chan outputRequest)
++	go func() {
++		for {
++			select {
++			case <-done:
++				return
++			case r := <-queue:
++				r.result <- emit(out, r.value)
++			}
++		}
++	}()
++	failed := false
++	total := 0
++	return func(e event) error {
++		if failed {
++			return errors.New("output unavailable")
++		}
++		b, err := json.Marshal(e)
++		if err != nil {
++			return err
++		}
++		total += len(b) + 1
++		if total > 16384 {
++			failed = true
++			return errors.New("output limit")
++		}
++		request := outputRequest{e, make(chan error, 1)}
++		remaining := time.Until(hardDeadline)
++		if remaining <= 0 {
++			failed = true
++			return errors.New("output deadline")
++		}
++		if remaining > 2*time.Second {
++			remaining = 2 * time.Second
++		}
++		timer := time.NewTimer(remaining)
++		defer timer.Stop()
++		select {
++		case queue <- request:
++		case <-timer.C:
++			failed = true
++			return errors.New("output timeout")
++		}
++		select {
++		case err := <-request.result:
++			if err != nil {
++				failed = true
++			}
++			return err
++		case <-timer.C:
++			failed = true
++			return errors.New("output timeout")
++		}
++	}
++}
++func tokenBytes(s string) []byte { b, _ := hex.DecodeString(s); return b }
+diff --git a/scripts/task009-wg-peer/README.md b/scripts/task009-wg-peer/README.md
+new file mode 100644
+index 0000000..86f4171
+--- /dev/null
++++ b/scripts/task009-wg-peer/README.md
+@@ -0,0 +1,45 @@
++# TASK-009 WireGuard 测试端
++
++仅供 DCR-009 的 Windows 受控测试使用，不是产品组件或独立代理服务。
++固定 Go 1.27.1；两个直接依赖及版本见 `go.mod`。不安装系统 TUN，不改主机网络设置。
++
++在此目录执行下面的显式步骤，外层进程调度器应另外设置合理超时（单测 70 秒，下载/构建
++120 秒）。不自动更换工具链、依赖版本，也不自动运行真实 DUT。
++
++```powershell
++$env:GOTOOLCHAIN='local'
++$env:GOWORK='off'
++go mod download
++go mod verify
++go list -m all
++go test -v -count=1 -timeout 60s ./...
++go vet ./...
++gofmt -l .
++go build -o ../../src-tauri/target/task009-wg-peer.exe .
++```
++
++`gofmt -l .` 应无文件输出；有输出时先格式化再重验。`go.sum` 由 Go 工具生成，不能手改。
++输出 EXE 位于忽略的 target 目录；集成前记录 SHA-256，Rust 只运行该固定路径的已核定文件。
++上述显式 Go build 是新增 Rust WG 内测的先决条件；缺少该 EXE 时内测失败，不自动构建。
++WG TCP/ICMP 集成由 Rust Windows Port 内测串行驱动，不能与其它固定 API 9090 测试并行。
++
++父进程通过私有 stdin 输入 DCR-009 v1 单行 JSON。每行 ≤4096 字节、单向总量 ≤16384 字节。
++init 包含本次 run_id、token 和两组随机私钥；stdout 只输出公钥及固定摘要，不输出 init、
++密钥、完整配置或原始网络报文。不要手工把 init 命令写入终端、命令行或日志。
++
++正常事件顺序为 ready → tcp → icmp → stopped。ready 前自测两个纯内存栈的 TCP/UDP/ICMP；
++随后只在 OS 绑定一个 `127.0.0.1:动态端口` 的 UDP4 socket。HTTP 服务
++`198.18.0.2:18080` 仅在内存栈，不是主机 TCP listener。
++
++tcp 摘要要求精确 HEAD、固定 204 响应字节、同一连接完整响应序列覆盖和 DUT 累计 ACK。
++`response_acked:true` 只证明交付至 DUT TCP 层，不证明 URLTest 已解析响应。
++icmp 摘要要求 DUT 虚拟地址三次 Echo 的类型、ID、序号、地址和 token 全部一致。
++
++工作窗口到期或业务/协议失败会报告 failed 并保留 peer 端口。父必须先停止并确认 DUT，
++再发送 `shutdown` 且 `dut_stopped:true`。正常会话限 30 秒工作，父最迟 45 秒开始清理，
++helper 55 秒硬截止，真实用例外层 60 秒。异常终止/清理失败必须记 FAIL，不能假称端口
++归属连续；未确认 DUT 退出不得删除其私有资源。
++
++单元测试包含内存协议阳性、完整 ACK 和分段/重传/回绕、缺 ACK/部分 ACK/错误连接/RST
++负例、协议限长、UDP 关闭唤醒和 stdout 写入截止。它们不是真实 DUT 的集成证据。
++DUT UDP 业务、IPv6、主动入站/转发拒绝矩阵及系统 DNS 不在该测试端本轮交付范围。
+diff --git a/scripts/task009-wg-peer/stack_test.go b/scripts/task009-wg-peer/stack_test.go
+new file mode 100644
+index 0000000..3ba1b1f
+--- /dev/null
++++ b/scripts/task009-wg-peer/stack_test.go
+@@ -0,0 +1,15 @@
++package main
++
++import (
++	"context"
++	"testing"
++	"time"
++)
++
++func TestMemoryTCPUDPICMP(t *testing.T) {
++	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
++	defer cancel()
++	if err := selftest(ctx); err != nil {
++		t.Fatal(err)
++	}
++}
+diff --git a/scripts/task009-wg-peer/stack.go b/scripts/task009-wg-peer/stack.go
+new file mode 100644
+index 0000000..3a243b7
+--- /dev/null
++++ b/scripts/task009-wg-peer/stack.go
+@@ -0,0 +1,314 @@
++package main
++
++import (
++	"bytes"
++	"context"
++	"encoding/binary"
++	"errors"
++	"io"
++	"net"
++	"os"
++	"sync"
++	"time"
++
++	"github.com/sagernet/gvisor/pkg/buffer"
++	"github.com/sagernet/gvisor/pkg/tcpip"
++	"github.com/sagernet/gvisor/pkg/tcpip/adapters/gonet"
++	"github.com/sagernet/gvisor/pkg/tcpip/header"
++	"github.com/sagernet/gvisor/pkg/tcpip/link/channel"
++	"github.com/sagernet/gvisor/pkg/tcpip/network/ipv4"
++	"github.com/sagernet/gvisor/pkg/tcpip/stack"
++	"github.com/sagernet/gvisor/pkg/tcpip/transport/icmp"
++	"github.com/sagernet/gvisor/pkg/tcpip/transport/tcp"
++	"github.com/sagernet/gvisor/pkg/tcpip/transport/udp"
++	"github.com/sagernet/gvisor/pkg/waiter"
++	"github.com/sagernet/wireguard-go/tun"
++)
++
++type memoryTun struct {
++	s      *stack.Stack
++	link   *channel.Endpoint
++	events chan tun.Event
++	ctx    context.Context
++	cancel context.CancelFunc
++	once   sync.Once
++	watch  *observer
++}
++
++func newMemoryTun(address [4]byte, watch *observer) (*memoryTun, error) {
++	ctx, cancel := context.WithCancel(context.Background())
++	m := &memoryTun{link: channel.New(64, 1280, ""), events: make(chan tun.Event, 1), ctx: ctx, cancel: cancel, watch: watch}
++	m.s = stack.New(stack.Options{NetworkProtocols: []stack.NetworkProtocolFactory{ipv4.NewProtocol}, TransportProtocols: []stack.TransportProtocolFactory{tcp.NewProtocol, udp.NewProtocol, icmp.NewProtocol4}})
++	if err := m.s.CreateNIC(1, m.link); err != nil {
++		m.Close()
++		return nil, errors.New(err.String())
++	}
++	if err := m.s.AddProtocolAddress(1, tcpip.ProtocolAddress{Protocol: ipv4.ProtocolNumber, AddressWithPrefix: tcpip.AddrFrom4(address).WithPrefix()}, stack.AddressProperties{}); err != nil {
++		m.Close()
++		return nil, errors.New(err.String())
++	}
++	m.s.SetRouteTable([]tcpip.Route{{Destination: header.IPv4EmptySubnet, NIC: 1}})
++	m.events <- tun.EventUp
++	return m, nil
++}
++func (m *memoryTun) File() *os.File           { return nil }
++func (m *memoryTun) MTU() (int, error)        { return 1280, nil }
++func (m *memoryTun) Name() (string, error)    { return "task009-memory", nil }
++func (m *memoryTun) Events() <-chan tun.Event { return m.events }
++func (m *memoryTun) BatchSize() int           { return 1 }
++func (m *memoryTun) Read(bufs [][]byte, sizes []int, offset int) (int, error) {
++	if len(bufs) < 1 || len(sizes) < 1 || offset < 0 || offset > len(bufs[0]) {
++		return 0, errors.New("tun read arguments")
++	}
++	p := m.link.ReadContext(m.ctx)
++	if p == nil {
++		return 0, os.ErrClosed
++	}
++	defer p.DecRef()
++	n := 0
++	for _, segment := range p.AsSlices() {
++		if len(segment) > len(bufs[0])-offset-n {
++			return 0, io.ErrShortBuffer
++		}
++		n += copy(bufs[0][offset+n:], segment)
++	}
++	if m.watch != nil {
++		m.watch.inspect(bufs[0][offset:offset+n], false)
++	}
++	sizes[0] = n
++	return 1, nil
++}
++func (m *memoryTun) Write(bufs [][]byte, offset int) (int, error) {
++	select {
++	case <-m.ctx.Done():
++		return 0, os.ErrClosed
++	default:
++	}
++	for i, b := range bufs {
++		if offset < 0 || offset >= len(b) {
++			return i, errors.New("tun write arguments")
++		}
++		b = b[offset:]
++		if m.watch != nil {
++			m.watch.inspect(b, true)
++		}
++		p := stack.NewPacketBuffer(stack.PacketBufferOptions{Payload: buffer.MakeWithData(bytes.Clone(b))})
++		m.link.InjectInbound(ipv4.ProtocolNumber, p)
++		p.DecRef()
++	}
++	return len(bufs), nil
++}
++func (m *memoryTun) Close() error {
++	m.once.Do(func() {
++		m.cancel()
++		close(m.events)
++		m.s.Close()
++		for _, e := range m.s.CleanupEndpoints() {
++			e.Abort()
++		}
++		m.link.Close()
++		m.s.Wait()
++	})
++	return nil
++}
++func address(ip [4]byte, port uint16) tcpip.FullAddress {
++	return tcpip.FullAddress{NIC: 1, Addr: tcpip.AddrFrom4(ip), Port: port}
++}
++func deadline(ctx context.Context) time.Time {
++	d := time.Now().Add(2 * time.Second)
++	if global, ok := ctx.Deadline(); ok && global.Before(d) {
++		d = global
++	}
++	return d
++}
++func icmpProbe(ctx context.Context, m *memoryTun, token []byte, watch *observer) error {
++	var queue waiter.Queue
++	e, err := m.s.NewEndpoint(icmp.ProtocolNumber4, ipv4.ProtocolNumber, &queue)
++	if err != nil {
++		return errors.New(err.String())
++	}
++	if err = e.Bind(address(peerIP, 9)); err != nil {
++		e.Close()
++		return errors.New(err.String())
++	}
++	if err = e.Connect(address(dutIP, 0)); err != nil {
++		e.Close()
++		return errors.New(err.String())
++	}
++	c := gonet.NewUDPConn(&queue, e)
++	defer c.Close()
++	if watch != nil {
++		watch.mu.Lock()
++		watch.icmpActive = true
++		watch.mu.Unlock()
++	}
++	for seq := 1; seq <= 3; seq++ {
++		if err := ctx.Err(); err != nil {
++			return err
++		}
++		if err := c.SetDeadline(deadline(ctx)); err != nil {
++			return err
++		}
++		request := make([]byte, 8+len(token)+1)
++		request[0] = 8
++		binary.BigEndian.PutUint16(request[4:6], 9)
++		binary.BigEndian.PutUint16(request[6:8], uint16(seq))
++		copy(request[8:], token)
++		request[len(request)-1] = byte(seq)
++		if n, err := c.Write(request); err != nil || n != len(request) {
++			return errors.Join(err, io.ErrShortWrite)
++		}
++		var reply [128]byte
++		n, err := c.Read(reply[:])
++		if err != nil {
++			return err
++		}
++		if n != len(request) || reply[0] != 0 || reply[1] != 0 || binary.BigEndian.Uint16(reply[4:6]) != 9 || binary.BigEndian.Uint16(reply[6:8]) != uint16(seq) || !bytes.Equal(reply[8:n], request[8:]) {
++			return errors.New("ICMP reply payload")
++		}
++	}
++	if watch != nil {
++		watch.mu.Lock()
++		defer watch.mu.Unlock()
++		if watch.err != nil {
++			return watch.err
++		}
++		if watch.icmpSent != 3 || watch.icmpReceived != 3 {
++			return errors.New("ICMP count")
++		}
++	}
++	return nil
++}
++
++// 自测把两个内存设备相连，不产生操作系统 TCP/UDP listener。
++func selftest(ctx context.Context) error {
++	watch := newObserver([]byte("0123456789abcdef"))
++	watch.allowUDP = true
++	a, err := newMemoryTun(peerIP, watch)
++	if err != nil {
++		return err
++	}
++	b, err := newMemoryTun(dutIP, nil)
++	if err != nil {
++		a.Close()
++		return err
++	}
++	bridgeCtx, cancel := context.WithCancel(ctx)
++	var bridges sync.WaitGroup
++	bridge := func(from, to *memoryTun) {
++		defer bridges.Done()
++		for {
++			p := from.link.ReadContext(bridgeCtx)
++			if p == nil {
++				return
++			}
++			var raw []byte
++			for _, s := range p.AsSlices() {
++				raw = append(raw, s...)
++			}
++			p.DecRef()
++			if from.watch != nil {
++				from.watch.inspect(raw, false)
++			}
++			if _, err := to.Write([][]byte{raw}, 0); err != nil {
++				return
++			}
++		}
++	}
++	bridges.Add(2)
++	go bridge(a, b)
++	go bridge(b, a)
++	defer func() { cancel(); a.Close(); b.Close(); bridges.Wait() }()
++	listener, te := gonet.ListenTCP(a.s, address(peerIP, 18080), ipv4.ProtocolNumber)
++	if te != nil {
++		return te
++	}
++	defer listener.Close()
++	serverDone := make(chan error, 1)
++	go func() {
++		c, err := listener.Accept()
++		if err != nil {
++			serverDone <- err
++			return
++		}
++		defer c.Close()
++		if err = c.SetDeadline(deadline(ctx)); err != nil {
++			serverDone <- err
++			return
++		}
++		var request [4]byte
++		if _, err = io.ReadFull(c, request[:]); err == nil && string(request[:]) != "HEAD" {
++			err = errors.New("selftest TCP request")
++		}
++		if err == nil {
++			_, err = io.WriteString(c, response)
++		}
++		serverDone <- err
++	}()
++	client, err := gonet.DialContextTCP(ctx, b.s, address(peerIP, 18080), ipv4.ProtocolNumber)
++	if err != nil {
++		listener.Close()
++		<-serverDone
++		return err
++	}
++	if err = client.SetDeadline(deadline(ctx)); err == nil {
++		_, err = client.Write([]byte("HEAD"))
++	}
++	buf := make([]byte, len(response))
++	if err == nil {
++		_, err = io.ReadFull(client, buf)
++	}
++	if err == nil && string(buf) != response {
++		err = errors.New("selftest TCP response")
++	}
++	client.Close()
++	select {
++	case se := <-serverDone:
++		err = errors.Join(err, se)
++	case <-ctx.Done():
++		err = ctx.Err()
++	}
++	if err != nil {
++		return err
++	}
++	ackCtx, ackCancel := context.WithDeadline(ctx, deadline(ctx))
++	err = watch.waitACK(ackCtx)
++	ackCancel()
++	if err != nil {
++		return err
++	}
++	// UDP 使用同一内存链，但不混入实际 WG/TCP 观察器。
++	local, remote := address(peerIP, 18081), address(dutIP, 18082)
++	u1, err := gonet.DialUDP(a.s, &local, &remote, ipv4.ProtocolNumber)
++	if err != nil {
++		return err
++	}
++	defer u1.Close()
++	u2, err := gonet.DialUDP(b.s, &remote, &local, ipv4.ProtocolNumber)
++	if err != nil {
++		return err
++	}
++	defer u2.Close()
++	for _, c := range []net.Conn{u1, u2} {
++		if err := c.SetDeadline(deadline(ctx)); err != nil {
++			return err
++		}
++	}
++	payload := []byte("task009-udp-selftest")
++	if _, err = u1.Write(payload); err != nil {
++		return err
++	}
++	recv := make([]byte, 64)
++	n, err := u2.Read(recv)
++	if err != nil || !bytes.Equal(recv[:n], payload) {
++		return errors.Join(err, errors.New("selftest UDP request"))
++	}
++	if _, err = u2.Write(recv[:n]); err != nil {
++		return err
++	}
++	n, err = u1.Read(recv)
++	if err != nil || !bytes.Equal(recv[:n], payload) {
++		return errors.Join(err, errors.New("selftest UDP response"))
++	}
++	return icmpProbe(ctx, a, watch.token, watch)
++}
+diff --git a/.sdlc/design/DCR-009-controlled-wg-peer.md b/.sdlc/design/DCR-009-controlled-wg-peer.md
+new file mode 100644
+index 0000000..969b92d
+--- /dev/null
++++ b/.sdlc/design/DCR-009-controlled-wg-peer.md
+@@ -0,0 +1,209 @@
++# DCR-009：受控 WireGuard 测试 peer
++
++状态：设计候选，待独立审查；不是 Gate 批准或运行证据。
++TASK-009 / SF-003。用户已明确“允许”批准 `wg-network-proposal.md`
++`sha256:ee61ea74e60237abae9453aa1103680b801561f29c06d86be9e46dcd87399843` 的全部最小包。
++原提案字节保持不变；其 PROPOSED 标记为历史来源，不表示需要重复资源授权。
++
++## 目标和冻结边界
++
++补齐正常 ObservationOnly 固定核心的 WG TCP 出站应答、虚拟 IPv4 ICMP Echo 例外，以及
++对应测试资源的归属和清理。保留 DCR-003 的用户态 WG、唯一 peer、route/DNS 置顶 reject；
++不修改生产 Compiler、RuntimeProfile、Domain、AppState、产品 IPC、Cargo/npm 依赖或系统设置。
++不采用 DCR-008 TCP 计量入口；不添加 DUT UDP 入站、DNS 资源、拒绝规则例外或外部目标。
++TCP/UDP/ICMP 自测只验证 peer 本身；DUT UDP、IPv6、完整主动入站/转发拒绝和系统 DNS
++仍是 SF-003 必需但本候选不覆盖的后续项，不改变其 Acceptance。
++
++## 文件与依赖
++
++- Go 责任范围：`scripts/task009-wg-peer/` 的实现、单元测试、README、`go.mod`、工具生成
++  的 `go.sum`。模块名固定 `veyra.local/task009-wg-peer`；仅测试程序，不加入发行或默认 CI。
++- Rust 责任范围：`src-tauri/src/platform/windows/managed_sidecar_port.rs` 现有 cfg(test)
++  模块新增集成内测和局部 helper，以便复用私有 running child 归属及既有计量测试的
++  socket 观测方式；不增加生产访问器，不修改其非 cfg(test) 代码。
++- 设计/授权/Task 同步及证据由 Orchestrator 负责。Go 与 Rust 按下述协议并行实施，
++  不互改对方文件；所有真实核心运行由 Orchestrator 串行调度，复用固定 API 测试锁。
++- 两个固定直接依赖为 `github.com/sagernet/wireguard-go`
++  `v0.0.5-0.20260823125007-8bd032a91a30` 和 `github.com/sagernet/gvisor`
++  `v0.0.0-20260727.0-sing-box-mod.1`，均已由固定 EXE 元数据核实。
++- 使用已安装 Go 1.27.1，`GOTOOLCHAIN=local`、`GOWORK=off`，不自动换工具链。
++  正常间接依赖由 Go 工具解析；保存实际模块清单和校验摘要，不手改 go.sum，
++  不声称间接图全部等同 EXE。新增直接依赖或更改固定版本须返回设计问题。
++- helper 构建输出固定为 `src-tauri/target/task009-wg-peer.exe`。
++  Rust 不接收任意 helper 路径、不在测试中自动下载或编译；文件缺失直接失败并给固定提示。
++  每轮运行前记录其 SHA-256、Go 模块清单及代码目标身份，不能只凭文件名复用未知二进制。
++
++## Rust ↔ Go 测试进程协议 v1
++
++仅父子私有 stdin/stdout 管道的测试协议，不是产品 API/IPC。无 TCP 管理端口、CLI 密钥参数
++或环境变量凭据。UTF-8 单行 JSON，以 LF 结束；每行最多 4096 字节（含 LF），单方向
++整次会话最多 16384 字节，stderr 独立有界读取最多 4096 字节但不得直接转储原文。
++只允许以下字段；未知字段、错误类型、缺失字段、越界值、错误版本/run_id/顺序或重复
++操作均失败。每个帧只解码一个 JSON 对象，拒绝对象后的非空白数据；不回显拒绝帧。
++
++共同字段 `v` 固定整数 1，`run_id` 为 Rust 用现有 getrandom 生成的 16 字节小写 hex。
++`token` 是另外独立生成的 16 字节小写 hex，不复用 WG/API 密钥。
++两组私钥也是 Rust 用 getrandom 生成的独立 `[u8;32]`；在构造 X25519 私钥前执行标准
++clamp（首字节 &=248，末字节 &=127、|=64），禁止测试固定密钥。Go 验证数组长度，
++使用标准库 `crypto/ecdh` X25519 推导公钥；不自行实现曲线运算。
++
++父 → 子固定消息如下（方括号为类型说明，不是字面量）：
++
++```text
++init       {v, op:"init", run_id, dut_private_key:[32个0..255整数],
++            peer_private_key:[32个0..255整数], token}
++probe_icmp {v, op:"probe_icmp", run_id}
++shutdown   {v, op:"shutdown", run_id, dut_stopped:true}
++```
++
++子 → 父固定消息如下：
++
++```text
++ready   {v, event:"ready", run_id, udp_port:u16, peer_public_key:string, dut_public_key:string,
++         selftest:{tcp:true,udp:true,icmp:true}}
++tcp     {v, event:"tcp", run_id, requests:1, response_status:204,
++         rx_tcp_packets:u64, tx_tcp_packets:u64, authenticated:true, response_acked:true}
++icmp    {v, event:"icmp", run_id, sent:3, received:3, id:9,
++         sequences:[1,2,3], payloads_valid:true, addresses_valid:true}
++failed  {v, event:"failed", run_id, stage:enum, code:enum}
++stopped {v, event:"stopped", run_id, resources_closed:true}
++```
++
++两项 public_key 都是标准 Base64 编码的 32 字节公钥；Rust 无需新增 X25519 依赖，
++Go 内部使用 DUT 公钥注册 peer，Rust 可在构建/比对 fixture 时使用公开部分；不返回私钥。
++`udp_port` 必须非零且非 9090，宿主地址隐含固定 127.0.0.1，不由消息输入。
++`stage` 枚举为 init/selftest/bind/tcp/icmp/protocol/deadline/cleanup；`code` 枚举为
++invalid_input/io_error/timeout/unexpected_packet/limit_exceeded/resource_error。
++失败仅输出第一条固定 failed；不包含 error 字符串、私钥、token、原配置或包体。
++正常只产生 ready → tcp → icmp → stopped；父收到 failed/EOF/非法帧即进入 DUT 清理。
++Go 不等待 probe_icmp 才接受 HTTP；TCP 事件可能紧接 ready 到达，Rust 队列须保留它。
++probe_icmp 必须在 tcp 完成后且最多一次；shutdown 在成功或失败后均可用于清理，
++也可在 ready 后取消测试。父只有确认 DUT 从未启动或已退出后才发送 dut_stopped:true。
++
++Rust 采用有界消息通道与持续排空 stdout/stderr 的读侧；所有管道写入/等待读取都由
++绝对期限约束，不能在测试线程无界 read_line、write_all 或 join。超大行要在读完前拒绝，
++不能先无界分配再查长度。Go 同样分离有界输入读取与状态机，不允许阻塞 stdin 延长期限。
++读侧在 child 确认退出/管道关闭后有界 join；未完整收到 stopped 或退出非零不能记清理 PASS。
++业务失败即使随后正常清理，helper 最终仍非零退出；完整正常流程退出 0。
++
++## 内存栈与 WG 传输
++
++地址固定：DUT 198.18.0.1/32，peer 198.18.0.2/32，MTU 1280；只创建用户态 IPv4 NIC。
++Go 使用 gVisor stack/channel/gonet；channel 队列容量 64、WG BatchSize=1。
++内存 tun.Device 的 Read/Write 负责原始 IP 包与 channel 的转接，每次 offset/包长按接口
++处理，PacketBuffer 引用恰好释放一次；关闭 done 后所有阻塞 Read/Write 都必须退出。
++TCP、UDP、ICMP 协议由 gVisor 实现；不开系统 raw socket、tun.CreateTUN 或主机路由。
++
++自有 conn.Bind 使用标准库 UDP4，在 Open 时精确 bind 127.0.0.1:0；不得调用
++StdNetBind 代替。Open 实际取得 9090 则失败，不重选端口。Close 幂等且关闭底层 socket，
++使 ReceiveFunc 返回关闭错误；Send/ParseEndpoint 只接受 IPv4 loopback，单批单包，
++SetMark 对 0 无操作，对非零失败；reserved 只允许固定零值。对输入限长、关闭和超时
++显式处理，不能悄悄忽略库接口错误。
++
++初始化 WG device 时仅注册本次 DUT 公钥，allowed IPs 为 198.18.0.1/32，无预置远端端点；
++让 WG 自身在认证后学习端点。内存 tun 写入收到匹配 DUT IP 的解密包才作为认证佐证；
++不能用未经认证的首个 UDP 来源设置对端。连接过程中 OS UDP 包可能来自其它本机进程，
++认证和学习由库处理；helper 自己不添加“首包信任”或任意转发。
++
++## 自测与真实流量断言
++
++ready 前运行一次纯内存阳性自测：两个隔离 gVisor 栈经有界 channel 相连，分别确认
++TCP、UDP 回显已知字节完全一致及 ICMP Echo 的 ID/序号/载荷；不创建 OS 网络 socket。
++自测栈和计数清理后再创建真实 peer；不能把自测计数混入真实 WG 结果。自测失败不发 ready。
++
++真实 peer 的 HTTP 服务固定在内存 198.18.0.2:18080，不是 Windows listener。
++Rust 将本次 peer 端口/公钥、DUT 私钥 Base64 和固定虚拟地址通过现有 Parser → normalize →
++AppState/RuntimeIntent → Compiler → per-instance secret/finalize → fixed check/run
++建立唯一 WG 节点和唯一 URLTest Pool。探测 URL 精确为
++`http://198.18.0.2:18080/task009-wg?token=<token>`，间隔 300 秒，不手动追加第二次探测。
++正常生产编译无业务 inbounds，route/DNS 首项仍拒绝该 endpoint；最终字节不做 JSON 改写。
++
++HTTP 服务最多接受一条真实流，精确要求 HEAD、上述 RequestURI、Host=198.18.0.2:18080，
++请求头上限 16 KiB，不读 body；回复 HTTP/1.1 204、Content-Length:0、Connection:close。
++发送完成后关闭该连接，listener 持有至 shutdown；若又有连接到达，记失败，不再次应答。
++TCP 事件必须在请求校验、完整响应写成功、完整响应已从 tun.Read 发出且 DUT 已确认
++接收之后发出；rx/tx_tcp_packets 都 >0，以真实 tun 的解密接收/待加密发送为方向，
++排除握手和自测。服务端 Write 成功只证明发送缓冲接受数据，不能单独满足阳性条件。
++
++响应使用固定序列化字节 `HTTP/1.1 204 No Content\r\nContent-Length: 0\r\nConnection: close\r\n\r\n`。
++在 tun.Read 跟踪唯一连接四元组和实际 TCP seq/payload：由服务端 SYN 序号加一确定
++首数据序号 S；逐段对照预期响应字节，允许相同字节重传，必须连续覆盖全部 N 字节。
++S+N（模 2^32）是响应末字节之后的序号，SYN/FIN 消耗的序号不得误计作响应数据。
++在 tun.Write 的已认证解密入口，仅接受该四元组反向、IPv4/TCP 长度与校验有效、
++ACK 标志置位且无 RST 的 DUT 报文作为确认；累计 ACK 必须覆盖 S+N，且不超过
++已观察的发送序列末端（只在实际观察到 FIN 时允许再确认一个 FIN 序号）。
++序号比较使用 RFC 式半区间：`after_or_equal(a,b) = uint32(a-b) < 2^31`；
++每连接观测跨度严格小于 2^31，实际受 1 MiB 上限约束，拒绝模差恰为 2^31 的歧义值。
++保留同一连接已见的有效累计 ACK，处理读写两侧观察的并发顺序；只有完整字节覆盖和
++有效 ACK 两项同时成立才置 response_acked:true。等待 ACK 同样 ≤2 秒且继承工作截止；
++未确认、只有部分 ACK、RST 或超时均失败，不能发成功 tcp 事件。
++
++父同时断言 Ready、精确请求/204、双向计数和 response_acked:true。该证据证明响应完整
++交付到 DUT TCP 层，不证明 URLTest 应用层已解析/消费响应；不把该结论称为 URLTest
++应用层成功，也不以 Clash API 在线或任意延迟数字替代交付证据。
++
++父收 tcp 后发 probe_icmp；Go 使用 ICMP 栈 endpoint，从 198.18.0.2 向 198.18.0.1
++依次发送三次 Echo，ID=9、序号 1/2/3，payload 为 token 的 16 原始字节加序号单字节。
++每次只发送一次，不作应用重试；逐次等待匹配应答后再发送下一次。检查 IPv4 源/目的、
++Echo Reply type/code、ID、序号、完整 payload 和数量。错包/重复/额外 Reply 判失败；
++并从解密边界核对三次目标 Echo Reply，不能只相信业务函数返回 nil。
++完成后报告 icmp；从最后 Reply 到 DUT 停止仍累计检查不得有额外 Echo Reply，异常可再发 failed。
++每次 TCP/ICMP I/O ≤2 秒且不超过统一工作截止；实际业务计数累计上限 1 MiB。
++
++## 时间、失败传播与所有权
++
++真实用例外层 60 秒。父从 helper spawn 起计绝对截止，init/ready 最多 10 秒（含自测
++总计最多 5 秒）；ready 后 peer 工作窗口 30 秒，DUT check 沿用 10 秒、Ready 2 秒、
++Stop 2 秒，父不因阶段切换重置外层期限。父最迟 spawn 后 45 秒开始最终清理。
++Go 在工作期限到达时报告 failed(deadline,timeout)，停止发起业务，进入 Hold，保留 UDP
++socket 和 listener 等待 shutdown；不能先关闭 peer 再等待父停止 DUT。
++
++父持有 helper Child 句柄，Windows 隐藏窗口启动，继承 stdin/stdout/stderr 私有管道。
++固定资产和 DUT 继续使用现有 Windows Port/PrivateRuntime/ACL 与每实例 secret。
++成功、协议失败、panic 和超时路径共享清理顺序：
++
++1. 停止安排新业务，停止并确认自有 DUT/pending；在此之前不发 shutdown、不关 helper stdin。
++2. 若 DUT 已退出（或从未启动），发 shutdown；Go 关闭业务 endpoint、WG device/bind、
++   栈和队列并有界等待 goroutine，2 秒内发 stopped，随后退出。父确认 exit 和管道结束。
++3. 若 helper 不响应，父只终止自己持有句柄的 helper 并确认退出，记录清理 FAIL，不能
++   将强制退出冒充正常 stopped。若 DUT 清理失败，保留归属/私有目录并报告 FAIL；
++   不删除文件或宣布 Stopped，也不启动其它 DUT。
++4. 只有退出已确认，才按已解析自有根边界删除本次测试资源/私有目录；保留失败证据。
++
++Go 若 stdin EOF、父异常消失或协议失败，停止业务并进入 Hold；为避免孤儿长期占用，
++在 spawn 后 55 秒硬上限关闭自有资源退出非零。正常父必须先在 45 秒触发 DUT 清理。
++helper 意外提前退出/硬期限释放端口时，父立即停止 DUT 并判失败，不继续流量。若操作系统
++拒绝停止 DUT，则不能同时保证“端口永久保留”和“helper 有界退出”；这是真实清理失败
++风险，必须保留归属与失败证据，不通过无限等待、杀无关进程或宣称无风险掩盖。
++
++## 实际 socket 与主机边界
++
++Go ready 时和 DUT Ready/流量完成后，父按持有句柄确定的 PID 读取 socket，不能采信
++helper 自报 PID。helper OS 网络资源应恰为一个 127.0.0.1:ready.udp_port UDP4，零 TCP
++listener；198.18.0.2:18080 只在内存栈。DUT TCP listener 必须恰为 127.0.0.1:9090。
++记录 DUT 实际 UDP4/UDP6 端点；只接受本次 WG 产生的动态端口，允许 wildcard/loopback
++绑定并明确记录，不能出现意外业务 listener。对 UDP 双栈同端口视为一组协议资源；
++若出现额外未知端口、无法核定归属或归属改变则失败，不推测其用途并忽略。
++
++固定版本单 peer 的具体 UDP 绑定仍须实测；用户已批准短时可能全接口 WG UDP，
++此处不把 loopback 目标写成 loopback 监听保证。前后只读比较接口、地址、路由、DNS、
++代理配置，并核对退出后自有 socket 消失。只枚举已知 PID 的相关 socket，不扫描全系统
++TCP/UDP 流量。无防火墙、DNS/hosts、系统代理、TUN、UAC、WFP、Service、证书修改。
++
++## 必需验证与交付证据
++
++Go 实现先做 framing/状态/超限、内存栈阳性、Bind loopback/关闭唤醒、绝对期限与失败脱敏
++单测；TCP 阳性判定必须包含仅握手/HEAD、Write 成功但无 ACK、仅部分 ACK、错误四元组/
++RST、响应分段/重传及序号回绕等用例：缺完整确认不得产生成功 tcp 摘要，完整匹配 ACK
++才通过，超时沿用固定错误。纯内存 TCP 自测也通过同一观察器证明完整响应确认。
++执行 `go test -timeout 60s ./...`、`go vet ./...`、gofmt 检查、模块校验和显式 build。
++Windows race 如不可用记 UNAVAILABLE，不改依赖或安装 C 工具链来补。
++Rust 只按现有 Cargo 约定运行新增的 WG 定向内测及受影响静态检查；真实用例由 root 串行
++运行且有外层 60 秒，不能让两个 agent 同时占用 9090 或启动 peer。
++
++证据包含代码/配置/helper/固定 EXE hash、模块版本、opaque DUT 实例身份、父持有的
++两个进程归属、实际 socket、三个 selftest 结果、精确 HEAD/204 和 TCP 双向计数、三次
++ICMP 匹配结果、deadline/退出/清理及主机前后对比摘要。私钥、API secret、init 帧、完整
++配置及原始包体不落盘；只记录固定错误类别，不能将 Go/WG 原始错误转发到产品日志。
++Go GC 不能保证所有密钥副本立即擦除；清理时丢弃引用和有限可擦除缓冲，不声称安全擦除。
++此候选没有安装、编译或真实网络运行证据；来源和精确版本核定见已批准资源提案及 DCR-003。

@@ -1,0 +1,390 @@
+{
+  "skill_result": {
+    "skill": "code-delivery-review",
+    "target": "TASK-009 incomplete implementation checkpoint",
+    "outcome": "FAIL",
+    "next_action_hint": "Orchestrator 对两项相邻文件修复执行 Change Control；完成失败路径和完整 SF-003 验证后重新冻结交付包并复审，不能推进 Task 验收。",
+    "review_mode": "CHILD_AGENT",
+    "reviewed_target_identity": "sha256:8b375689eabbc6598baf656ce06eaf2f6e553cc6fe419763fd8b0fcdd2fa2071",
+    "review_result": "REWORK",
+    "coverage": {
+      "strategy": "PARTITIONED_PLUS_INTEGRATION",
+      "status": "INCOMPLETE",
+      "tier": "TIER_3_DEEP",
+      "independence": "Reviewer 未参与任何目标生产代码、测试或配置实现；此前仅独立审阅设计。",
+      "inventory": "11 PRIMARY、15 CONTEXT_ONLY；12 个业务源/测试路径中 compiler.rs 未改。HEAD、当前文件和 baseline hash 已对账；无 Task-time commit。保留既有 staged/unstaged/untracked 来源及明确 exclusions。",
+      "applicable_lanes": [
+        "correctness",
+        "security",
+        "contract-data",
+        "concurrency-performance",
+        "verification",
+        "release"
+      ],
+      "lanes": {
+        "correctness": {
+          "result": "REWORK",
+          "validation": "NOT_APPLICABLE",
+          "freshness": "FRESH"
+        },
+        "security": {
+          "result": "REWORK",
+          "validation": "COMPLETE",
+          "freshness": "FRESH"
+        },
+        "contract-data": {
+          "result": "REWORK",
+          "validation": "NOT_APPLICABLE",
+          "freshness": "FRESH"
+        },
+        "concurrency-performance": {
+          "result": "REWORK",
+          "validation": "NOT_APPLICABLE",
+          "freshness": "FRESH"
+        },
+        "verification": {
+          "result": "REWORK",
+          "validation": "BLOCKED",
+          "freshness": "FRESH"
+        },
+        "release": {
+          "result": "REWORK",
+          "validation": "NOT_APPLICABLE",
+          "freshness": "FRESH"
+        }
+      },
+      "partitions": [
+        {
+          "id": "runtime",
+          "paths_or_responsibility": [
+            "src-tauri/src/singbox/runtime.rs",
+            "src-tauri/src/singbox/managed_sidecar.rs",
+            "src-tauri/src/platform/windows/managed_sidecar_port.rs",
+            "src-tauri/src/singbox/compiler.rs (CONTEXT_ONLY)",
+            "src-tauri/src/platform/windows/private_runtime.rs (material CONTEXT_ONLY)"
+          ],
+          "applicable_lanes": [
+            "correctness",
+            "security",
+            "contract-data",
+            "concurrency-performance",
+            "verification",
+            "release"
+          ],
+          "lanes": {
+            "correctness": {
+              "result": "REWORK",
+              "validation": "NOT_APPLICABLE",
+              "freshness": "FRESH"
+            },
+            "security": {
+              "result": "REWORK",
+              "validation": "COMPLETE",
+              "freshness": "FRESH"
+            },
+            "contract-data": {
+              "result": "PASS",
+              "validation": "NOT_APPLICABLE",
+              "freshness": "FRESH"
+            },
+            "concurrency-performance": {
+              "result": "REWORK",
+              "validation": "NOT_APPLICABLE",
+              "freshness": "FRESH"
+            },
+            "verification": {
+              "result": "REWORK",
+              "validation": "BLOCKED",
+              "freshness": "FRESH"
+            },
+            "release": {
+              "result": "REWORK",
+              "validation": "NOT_APPLICABLE",
+              "freshness": "FRESH"
+            }
+          },
+          "target_identity": "sha256:8b375689eabbc6598baf656ce06eaf2f6e553cc6fe419763fd8b0fcdd2fa2071",
+          "review_mode": "CHILD_AGENT",
+          "result": "REWORK",
+          "freshness": "FRESH"
+        },
+        {
+          "id": "application",
+          "paths_or_responsibility": [
+            "src-tauri/src/application/managed_observation_runtime.rs",
+            "src-tauri/src/application/observability.rs",
+            "src-tauri/src/application/runtime.rs",
+            "src-tauri/src/singbox/clash_api.rs (material CONTEXT_ONLY)"
+          ],
+          "applicable_lanes": [
+            "correctness",
+            "security",
+            "contract-data",
+            "concurrency-performance",
+            "verification",
+            "release"
+          ],
+          "lanes": {
+            "correctness": {
+              "result": "REWORK",
+              "validation": "NOT_APPLICABLE",
+              "freshness": "FRESH"
+            },
+            "security": {
+              "result": "PASS",
+              "validation": "COMPLETE",
+              "freshness": "FRESH"
+            },
+            "contract-data": {
+              "result": "REWORK",
+              "validation": "NOT_APPLICABLE",
+              "freshness": "FRESH"
+            },
+            "concurrency-performance": {
+              "result": "PASS",
+              "validation": "NOT_APPLICABLE",
+              "freshness": "FRESH"
+            },
+            "verification": {
+              "result": "REWORK",
+              "validation": "BLOCKED",
+              "freshness": "FRESH"
+            },
+            "release": {
+              "result": "REWORK",
+              "validation": "NOT_APPLICABLE",
+              "freshness": "FRESH"
+            }
+          },
+          "target_identity": "sha256:8b375689eabbc6598baf656ce06eaf2f6e553cc6fe419763fd8b0fcdd2fa2071",
+          "review_mode": "CHILD_AGENT",
+          "result": "REWORK",
+          "freshness": "FRESH"
+        },
+        {
+          "id": "ui",
+          "paths_or_responsibility": [
+            "src/App.tsx",
+            "src/styles.css",
+            "src/lib/observability.ts",
+            "src/lib/observability.test.ts"
+          ],
+          "applicable_lanes": [
+            "correctness",
+            "security",
+            "contract-data",
+            "concurrency-performance",
+            "verification"
+          ],
+          "lanes": {
+            "correctness": {
+              "result": "PASS",
+              "validation": "NOT_APPLICABLE",
+              "freshness": "FRESH"
+            },
+            "security": {
+              "result": "PASS",
+              "validation": "COMPLETE",
+              "freshness": "FRESH"
+            },
+            "contract-data": {
+              "result": "PASS",
+              "validation": "NOT_APPLICABLE",
+              "freshness": "FRESH"
+            },
+            "concurrency-performance": {
+              "result": "PASS",
+              "validation": "NOT_APPLICABLE",
+              "freshness": "FRESH"
+            },
+            "verification": {
+              "result": "PASS",
+              "validation": "COMPLETE",
+              "freshness": "FRESH"
+            }
+          },
+          "target_identity": "sha256:8b375689eabbc6598baf656ce06eaf2f6e553cc6fe419763fd8b0fcdd2fa2071",
+          "review_mode": "CHILD_AGENT",
+          "result": "PASS",
+          "freshness": "FRESH"
+        },
+        {
+          "id": "controlled-network",
+          "paths_or_responsibility": [
+            "src-tauri/src/singbox/mod.rs"
+          ],
+          "applicable_lanes": [
+            "correctness",
+            "security",
+            "contract-data",
+            "concurrency-performance",
+            "verification"
+          ],
+          "lanes": {
+            "correctness": {
+              "result": "PASS",
+              "validation": "NOT_APPLICABLE",
+              "freshness": "FRESH"
+            },
+            "security": {
+              "result": "PASS",
+              "validation": "COMPLETE",
+              "freshness": "FRESH"
+            },
+            "contract-data": {
+              "result": "PASS",
+              "validation": "NOT_APPLICABLE",
+              "freshness": "FRESH"
+            },
+            "concurrency-performance": {
+              "result": "PASS",
+              "validation": "NOT_APPLICABLE",
+              "freshness": "FRESH"
+            },
+            "verification": {
+              "result": "REWORK",
+              "validation": "BLOCKED",
+              "freshness": "FRESH"
+            }
+          },
+          "target_identity": "sha256:8b375689eabbc6598baf656ce06eaf2f6e553cc6fe419763fd8b0fcdd2fa2071",
+          "review_mode": "CHILD_AGENT",
+          "result": "REWORK",
+          "freshness": "FRESH"
+        }
+      ],
+      "integration_result": "REWORK",
+      "freshness": "FRESH",
+      "integration_summary": "新封闭响应与 TS 消费端一致；失败后不自动恢复、清理失败保留 owner、旧实例观测失效和有界进程操作已审。两个相邻层缺陷阻止完整运行事务成立。测试子集通过不能替代完整 SF-001/SF-002/SF-003。",
+      "required_validation": {
+        "sf001": "PARTIAL：冻结回归包含真实内部替换/Ready 失败停止、secret/旧认证失效、候选清理；PrivateRuntime 创建失败归属仍有 P1，完整失败验收未闭合。",
+        "sf002": "PARTIAL：真实 React + mocked IPC 14 条交互断言通过；完整真实观测失败；正流量及完整 Start/Stop/sample/worker 超时并发矩阵未完成。",
+        "sf003": "PARTIAL：真实 HTTP/SOCKS 域名、Host 和 SNI 四测通过，已读运行前后系统快照内容身份相同；WG ICMP、主动 TCP/UDP/DNS/转发拒绝、TCP/UDP 合法应答和系统 DNS 可观察拓扑尚未形成证据。"
+      }
+    },
+    "issues": [
+      {
+        "finding_id": "TASK009-CR-001",
+        "fingerprint": "windows/private_runtime.rs:cleanup_after_prepare_failure:lost-cleanup-owner",
+        "status": "NEW",
+        "target_identity": "sha256:8b375689eabbc6598baf656ce06eaf2f6e553cc6fe419763fd8b0fcdd2fa2071",
+        "severity": "P1",
+        "scope_disposition": "CHANGE_CONTROL",
+        "location": "src-tauri/src/platform/windows/private_runtime.rs:202",
+        "related_locations": [
+          "src-tauri/src/platform/windows/private_runtime.rs:123",
+          "src-tauri/src/platform/windows/managed_sidecar_port.rs:135",
+          "src-tauri/src/singbox/runtime.rs:170"
+        ],
+        "confidence": "high",
+        "problem": "私有实例目录创建后，准备失败且清理再次失败时只返回错误，待清理对象丢失。",
+        "trigger": "PrivateRuntime::create 创建实例目录后 ACL/config 准备失败，cleanup_after_prepare_failure 的 remove_config_and_directory 同时失败。",
+        "evidence_and_impact": "局部 PrivateRuntime 未交回调用者；Windows Port 的 self.pending 尚未赋值。Runtime 据 has_pending_cleanup=false 不进入 recovery，手动 Stop 也无对象可清理，后续 Start 可继续创建实例。违反 DCR-004:42-45 及 SF-001 已确认的所有权约束；这是当前新清理事务的 material neighbor interaction，不归因于本轮首次引入。",
+        "suggested_fix": "经范围批准后，让准备错误只在清理未完成时携带明确归属的 PrivateRuntime，由 Port 保留、阻止启动并供手动 Stop 清理；保留现有 ACL/reparse 校验。增加准备失败+删除失败定向故障注入。",
+        "evidence_refs": [
+          ".sdlc/evidence/TASK-009/pending-scope.md",
+          ".sdlc/design/DCR-004-runtime-update-failures.md:42"
+        ]
+      },
+      {
+        "finding_id": "TASK009-CR-002",
+        "fingerprint": "singbox/clash_api.rs:read_single_log_message:disabled-log-handshake-fails",
+        "status": "NEW",
+        "target_identity": "sha256:8b375689eabbc6598baf656ce06eaf2f6e553cc6fe419763fd8b0fcdd2fa2071",
+        "severity": "P1",
+        "scope_disposition": "CHANGE_CONTROL",
+        "location": "src-tauri/src/singbox/clash_api.rs:315",
+        "related_locations": [
+          "src-tauri/src/singbox/clash_api.rs:348",
+          "src-tauri/src/singbox/clash_api.rs:146",
+          "src-tauri/src/application/managed_observation_runtime.rs:401"
+        ],
+        "confidence": "high",
+        "problem": "固定配置禁用日志时，正常空日志响应被视为采样失败，从而停止健康核心。",
+        "trigger": "受管固定 1.14.0 child Ready 后，串行采样调用 read_log_once；Logs 无法升级 WebSocket，open_fixed_stream 将其统一映射为 Unavailable。",
+        "evidence_and_impact": "真实诊断先通过 Ready/REST/traffic，随后在 managed_sidecar_port.rs:495 因空日志 Unavailable 失败。此错误沿 sample 传播到 recover_active_failure 并停止 child，完整 SF-002 不能成立。当前生产配置与本轮真实事务产生 material interaction。",
+        "suggested_fix": "经范围批准后，仅对固定 Logs 的已鉴权正常空响应作精确兼容；若采纳已调查的 HTTP 204 方案，仍保持 Traffic 204、401、非预期状态及超时失败。用真实固定核心和区分状态的 Mock 重新验证，不能整体吞掉握手错误。",
+        "evidence_refs": [
+          "src-tauri/target/task009-verification/real-observation-diagnostic.result.json",
+          "src-tauri/target/task009-verification/real-observation-diagnostic.stderr.txt",
+          ".sdlc/evidence/TASK-009/pending-scope.md"
+        ]
+      }
+    ],
+    "evidence": [
+      {
+        "type": "read_only_identity",
+        "result": "PASS",
+        "method": "所有 manifest 当前 SHA256 与 baseline SHA256 对账；按声明数组顺序重算 target identity。"
+      },
+      {
+        "type": "repair_review",
+        "result": "PASS",
+        "summary": "worker response 未确认改为保守 RecoveryRequired；UI 保留 action 起点 revision，使新 owner Delta 不被旧快照遮蔽；secret/最终配置断言改为无操作数的布尔断言；网络接受 socket 改有界阻塞并在确认清理后释放测试锁。"
+      },
+      {
+        "type": "ui_interaction",
+        "result": "PASS",
+        "reference": "src-tauri/target/task009-verification/ui-interaction-002.log",
+        "summary": "实际 React 页面、官方 mocked IPC，14 条断言；覆盖新 Delta/旧 snapshot 竞态。不是 native runtime/Tray E2E。"
+      },
+      {
+        "type": "frontend",
+        "result": "PASS",
+        "reference": "src-tauri/target/task009-verification/frontend-result.json",
+        "summary": "已读 lint/test/build 三个退出码均为 0 的最终记录。"
+      },
+      {
+        "type": "controlled_network_subset",
+        "result": "PASS",
+        "reference": "src-tauri/target/task009-verification/controlled-urltest-002.result.json",
+        "summary": "四项真实受控 HTTP/SOCKS 域名/Host/SNI 用例通过；源码子集与冻结模块一致，不能泛化为完整 TLS/WG/DNS 验收。"
+      },
+      {
+        "type": "real_runtime_subset",
+        "result": "PASS",
+        "reference": "src-tauri/target/task009-verification/real-replacement.result.json",
+        "summary": "真实内部替换与 Ready 失败停止单测通过，并在最终冻结过滤回归内再次通过。"
+      },
+      {
+        "type": "full_runtime_observation",
+        "result": "FAIL",
+        "reference": "src-tauri/target/task009-verification/real-observation-diagnostic.stderr.txt",
+        "summary": "固定空日志读取 Unavailable，属于未修复 P1。"
+      },
+      {
+        "type": "frozen_filtered_regression",
+        "result": "PASS",
+        "reference": "src-tauri/target/task009-verification/frozen-regression.result.json",
+        "summary": "真实完成159 passed/0 failed/1 filtered，205.55s；命令明确 --skip fixed_bundle_resources_run_and_stop_only_the_owned_loopback_child。包括最终配置矩阵、真实内部替换、四项网络子集及 lost-response 测试。该已知失败用例不因 filtered run 变为通过，不能声明全库通过。"
+      },
+      {
+        "type": "frozen_static",
+        "result": "PASS",
+        "references": [
+          "src-tauri/target/task009-verification/frozen-clippy.result.json",
+          "src-tauri/target/task009-verification/frozen-static-result.json"
+        ],
+        "summary": "已读 Clippy --lib -D warnings、fmt、diff-check 最终退出码均0；不声明 all-target clippy。"
+      },
+      {
+        "type": "system_snapshot_comparison",
+        "result": "PASS",
+        "reference": "src-tauri/target/task009-verification/network-comparison.json",
+        "summary": "运行前后快照SHA256均为8e802248c68d376bf6772be7393187699988d8a13e7111d6629904429c007cd1；仅证明这组已执行用例的快照无变化，不覆盖未运行的WG场景。"
+      }
+    ],
+    "remaining_risks": [
+      "本记录是未完成实现的检查点；review_result REWORK，不是 Task、Delivery Gate 或 Human Acceptance。",
+      "最终冻结过滤回归159项通过，但唯一已知失败的空日志用例被显式排除且独立FAIL；全库与完整Task验证不能标为PASS。",
+      "WG peer、DUT 主动 UDP 输入与可观察系统 DNS 前提未闭合；不自动授权新依赖、非 loopback 监听、系统网络改动或额外运行组件。",
+      "正流量 /traffic 的区间值与累计值语义尚需固定核心证据和阳性流量核对；本次没有把实现方说明视为已验证结论。",
+      "SNI 测试只证明原目标名称，不证明证书校验或完整 TLS 握手；不据此扩大验收声明。",
+      "两项 P1 的最小修复涉及当前 Scope 外文件，须交回 Change Control；Reviewer 未修改这些目标。",
+      "未运行测试、child、网络或主机配置变更；Reviewer 仅读取源码、冻结包、权威文档与已保存执行记录。"
+    ],
+    "artifacts_changed": [
+      ".sdlc/evidence/TASK-009/code-review-checkpoint.yaml"
+    ]
+  }
+}

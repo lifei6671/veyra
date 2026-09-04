@@ -31,6 +31,11 @@
       "icons/128x128@2x.png",
       "icons/icon.icns",
       "icons/icon.ico"
-    ]
+    ],
+    "resources": {
+      "binaries/sing-box-1.14.0-windows-amd64/sing-box.exe": "sing-box/1.14.0/sing-box.exe",
+      "binaries/sing-box-1.14.0-windows-amd64/libcronet.dll": "sing-box/1.14.0/libcronet.dll",
+      "binaries/sing-box-1.14.0-windows-amd64/LICENSE": "sing-box/1.14.0/LICENSE"
+    }
   }
 }
