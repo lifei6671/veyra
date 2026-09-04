@@ -26,13 +26,54 @@ import (
 )
 
 type memoryTun struct {
-	s      *stack.Stack
-	link   *channel.Endpoint
-	events chan tun.Event
-	ctx    context.Context
-	cancel context.CancelFunc
-	once   sync.Once
-	watch  *observer
+	s        *stack.Stack
+	link     *channel.Endpoint
+	events   chan tun.Event
+	ctx      context.Context
+	cancel   context.CancelFunc
+	once     sync.Once
+	watch    *observer
+	dnsProbe *dnsProbeSink
+}
+
+// DNS 预检仅统计 WG 已解密的包；不解析目的、不送入网络栈，也不生成业务应答。
+type dnsProbeSink struct {
+	mu             sync.Mutex
+	packets, bytes uint32
+	closed         bool
+	err            error
+	fail           func(error)
+}
+
+func (d *dnsProbeSink) discard(bufs [][]byte, offset int) (int, error) {
+	d.mu.Lock()
+	defer d.mu.Unlock()
+	if d.closed {
+		return 0, os.ErrClosed
+	}
+	if d.err != nil {
+		return 0, d.err
+	}
+	for i, b := range bufs {
+		if offset < 0 || offset >= len(b) || len(b)-offset > 1280 {
+			d.err = errors.New("DNS probe packet bounds")
+		} else if d.packets >= 64 || uint32(len(b)-offset) > 81920-d.bytes {
+			d.err = errors.New("DNS probe packet limit")
+		}
+		if d.err != nil {
+			d.fail(d.err)
+			return i, d.err
+		}
+		d.packets++
+		d.bytes += uint32(len(b) - offset)
+	}
+	return len(bufs), nil
+}
+
+func (d *dnsProbeSink) result() (uint32, uint32) {
+	d.mu.Lock()
+	defer d.mu.Unlock()
+	return d.packets, d.bytes
 }
 
 func newMemoryTun(address [4]byte, watch *observer) (*memoryTun, error) {
@@ -52,6 +93,12 @@ func newMemoryTun(address [4]byte, watch *observer) (*memoryTun, error) {
 		return nil, errors.New(err.String())
 	}
 	m.s.SetRouteTable([]tcpip.Route{{Destination: header.IPv4EmptySubnet, NIC: 1}})
+	if watch != nil && watch.domain != nil {
+		if err := m.s.AddProtocolAddress(1, tcpip.ProtocolAddress{Protocol: ipv4.ProtocolNumber, AddressWithPrefix: tcpip.AddrFrom4(domainIP).WithPrefix()}, stack.AddressProperties{}); err != nil {
+			m.Close()
+			return nil, errors.New(err.String())
+		}
+	}
 	m.events <- tun.EventUp
 	return m, nil
 }
@@ -88,6 +135,9 @@ func (m *memoryTun) Write(bufs [][]byte, offset int) (int, error) {
 		return 0, os.ErrClosed
 	default:
 	}
+	if m.dnsProbe != nil {
+		return m.dnsProbe.discard(bufs, offset)
+	}
 	for i, b := range bufs {
 		if offset < 0 || offset >= len(b) {
 			return i, errors.New("tun write arguments")
@@ -104,6 +154,11 @@ func (m *memoryTun) Write(bufs [][]byte, offset int) (int, error) {
 }
 func (m *memoryTun) Close() error {
 	m.once.Do(func() {
+		if m.dnsProbe != nil {
+			m.dnsProbe.mu.Lock()
+			m.dnsProbe.closed = true
+			m.dnsProbe.mu.Unlock()
+		}
 		m.cancel()
 		close(m.events)
 		m.s.Close()
@@ -125,6 +180,7 @@ func deadline(ctx context.Context) time.Time {
 	}
 	return d
 }
+
 func icmpProbe(ctx context.Context, m *memoryTun, token []byte, watch *observer) error {
 	var queue waiter.Queue
 	e, err := m.s.NewEndpoint(icmp.ProtocolNumber4, ipv4.ProtocolNumber, &queue)
@@ -135,12 +191,10 @@ func icmpProbe(ctx context.Context, m *memoryTun, token []byte, watch *observer)
 		e.Close()
 		return errors.New(err.String())
 	}
-	if err = e.Connect(address(dutIP, 0)); err != nil {
-		e.Close()
-		return errors.New(err.String())
-	}
 	c := gonet.NewUDPConn(&queue, e)
 	defer c.Close()
+	// 保持单一绑定注册，避免固定依赖的 Bind→Connect 遗留旧 id；目的始终固定。
+	remote := &net.UDPAddr{IP: net.IP(dutIP[:])}
 	if watch != nil {
 		watch.mu.Lock()
 		watch.icmpActive = true
@@ -159,15 +213,15 @@ func icmpProbe(ctx context.Context, m *memoryTun, token []byte, watch *observer)
 		binary.BigEndian.PutUint16(request[6:8], uint16(seq))
 		copy(request[8:], token)
 		request[len(request)-1] = byte(seq)
-		if n, err := c.Write(request); err != nil || n != len(request) {
+		if n, err := c.WriteTo(request, remote); err != nil || n != len(request) {
 			return errors.Join(err, io.ErrShortWrite)
 		}
 		var reply [128]byte
-		n, err := c.Read(reply[:])
+		n, source, err := c.ReadFrom(reply[:])
 		if err != nil {
 			return err
 		}
-		if n != len(request) || reply[0] != 0 || reply[1] != 0 || binary.BigEndian.Uint16(reply[4:6]) != 9 || binary.BigEndian.Uint16(reply[6:8]) != uint16(seq) || !bytes.Equal(reply[8:n], request[8:]) {
+		if !source.(*net.UDPAddr).IP.Equal(remote.IP) || n != len(request) || reply[0] != 0 || reply[1] != 0 || binary.BigEndian.Uint16(reply[4:6]) != 9 || binary.BigEndian.Uint16(reply[6:8]) != uint16(seq) || !bytes.Equal(reply[8:n], request[8:]) {
 			return errors.New("ICMP reply payload")
 		}
 	}

@@ -6,7 +6,7 @@ import (
 	"errors"
 )
 
-var hostIP = [4]byte{127, 0, 0, 1}
+var hostIP = [4]byte{172, 26, 192, 1}
 
 type localFlow struct {
 	started, sent bool
@@ -20,7 +20,7 @@ type localFlow struct {
 	udpRX, udpTX  int
 }
 type rejectObserver struct {
-	tcpPort, udpPort  uint16
+	ports             [4]uint16
 	phase             int
 	active            bool
 	bootstrap, health *observer
@@ -53,10 +53,9 @@ func (o *observer) beginRejectPhase(phase int) error {
 			f.destination = hostIP
 		}
 		f.proto = 6
-		f.port = r.tcpPort
+		f.port = r.ports[i]
 		if i >= 2 {
 			f.proto = 17
-			f.port = r.udpPort
 		}
 		copy(f.payload[:16], o.token)
 		f.payload[16] = byte(phase)

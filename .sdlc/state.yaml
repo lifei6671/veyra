@@ -55,46 +55,39 @@ anchor:
 
 assumptions: []
 
-phase: REMEDIATION
+phase: EXECUTING
 
 focus:
   task: TASK-009
 
 gates:
   technical_design:
-    status: PENDING
-    target_identity: sha256:54c01cbc8f99b080a2d68e5b999ab6fc9f97fe49b1ae30e53e36ae2d402f6641
+    status: PASSED
+    target_identity: sha256:00b0455ffe4f997f58856f6112bea4c02b735387c96361a2b6264638d0fbde79
     evidence:
-      - .sdlc/design/DCR-011-test-wg-local-reject.md
-      - .sdlc/evidence/TASK-009/wg-reject-design-review-001.yaml
-      - .sdlc/evidence/TASK-009/change-control.yaml#EVIDENCE-TASK-009-CHANGE-009
-      - .sdlc/evidence/TASK-009/readiness-014.yaml
-      - .sdlc/evidence/TASK-009/verification-014.yaml
-      - .sdlc/evidence/TASK-009/wg-reject-runtime-diagnosis-014.md
-    reviewed_by: CHILD_AGENT:/root/task009_design_reviewer
-    approved_by: null
-    evaluated_at: 2026-09-04T18:17:26.2042995+08:00
+      - .sdlc/design/DCR-015-test-wg-domain-host-sni.md
+      - .sdlc/evidence/TASK-009/wg-domain-design-preflight-023.json
+      - .sdlc/evidence/TASK-009/wg-domain-design-review-023.yaml
+      - .sdlc/evidence/TASK-009/change-control.yaml#EVIDENCE-TASK-009-CHANGE-013
+    reviewed_by: CHILD_AGENT:/root/wg_domain_design_reviewer
+    approved_by: USER:lifei CHANGE013
+    evaluated_at: 2026-09-04T21:04:51.2812786+08:00
   delivery:
     status: PENDING
-    target_identity: sha256:37feddf0c296a6db8e7552d203c645efa5cd9663b4649243465ace58e3d5c126
+    target_identity: sha256:787deafa226ed2674e7e7a0f78927ee83df380df73e1e664351471d99431c664
     evidence:
-      - .sdlc/evidence/TASK-009/delivery-checkpoint-014.yaml
-      - .sdlc/evidence/TASK-009/verification-014.yaml
-      - .sdlc/evidence/TASK-009/implementation-014.yaml
-      - .sdlc/evidence/TASK-009/code-review-checkpoint-014.yaml
-    reviewed_by: CHILD_AGENT:/root/task009_design_reviewer
+      - .sdlc/evidence/TASK-009/delivery-checkpoint-025.yaml
+      - .sdlc/evidence/TASK-009/verification-025.yaml
+      - .sdlc/evidence/TASK-009/wg-domain-result-025.json
+      - .sdlc/evidence/TASK-009/implementation-025.yaml
+      - .sdlc/evidence/TASK-009/code-review-checkpoint-025.yaml
+      - .sdlc/evidence/TASK-009/diff-exact-025.json
+    reviewed_by: CHILD_AGENT:/root/wg_domain_delivery_reviewer
     approved_by: null
-    evaluated_at: 2026-09-04T18:17:26.2042995+08:00
-
-blocked:
-  origin_phase: REMEDIATION
-  reason: DCR011 host127 same-path positive controls cannot succeed with fixed DUT; real virtual TCP/UDP succeed while host TCP/UDP timeout before Router. Phase2/3 not run; source and failed evidence frozen at checkpoint014.
-  owner: Orchestrator
-  scope: TASK-009 SF-003 local rejection comparison; CHANGE009 existing resource authorization remains valid but does not authorize alternate host addresses or additional listeners.
-  unlock_condition: Feasible revised test design and independent review; explicit approval for any new address/listener exposure or changed acceptance before execution.
-  next_check: Independent checkpoint014 REWORK records OPEN P1 TASK009-CR-006; route technical-design remediation of the failed positive-control premise. Do not weaken tests or product rejection.
+    evaluated_at: 2026-09-04T21:50:00.0217953+08:00
+blocked: null
 
 next:
-  skill: technical-design
+  skill: sdlc-orchestrator
   target: TASK-009
-  reason: User authorized one local snapshot commit on 2026-09-04. Then revise DCR011 host comparison after actual positive-control failure; preserve original TCP/UDP/ICMP and55/150Hold regression evidence and all remaining DNS/forwarding acceptance. No Task010, push or Task acceptance.
+  reason: CHANGE013 bounded WG domain Host and SNI implementation and required successful native evidence independently PASS at checkpoint025. Preserve first HTTP DNS error and reject query timeout as unresolved FAIL attempts. Select next remaining SF003 acceptance scope without closing Task or starting Task010.

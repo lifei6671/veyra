@@ -54,6 +54,30 @@ func TestUDPInitRejectsDuplicateAndUnknownFields(t *testing.T) {
 		}
 	}
 }
+
+func TestDNSProbeInitHasExactFields(t *testing.T) {
+	good := bytes.Replace(initFrame(), []byte(`"op":"init"`), []byte(`"op":"init_dns_probe"`), 1)
+	c, err := decodeCommand(good)
+	if err != nil || c.Op != "init_dns_probe" {
+		t.Fatal("DNS probe init rejected", err)
+	}
+	for _, field := range []string{
+		`"op":"init",`, `"token":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",`,
+		`"phase":null,`, `"virtual_tcp_port":null,`, `"dut_stopped":null,`,
+		`"discarded_packets":0,`, `"extra":true,`,
+	} {
+		bad := append([]byte("{"+field), good[1:]...)
+		if _, err := decodeCommand(bad); err == nil {
+			t.Fatal("ambiguous or extra DNS probe field accepted")
+		}
+	}
+	for _, replacement := range []string{`"token":null`, `"token":123`, `"token":""`} {
+		bad := bytes.Replace(good, []byte(`"token":"`+strings.Repeat("b", 32)+`"`), []byte(replacement), 1)
+		if _, err := decodeCommand(bad); err == nil {
+			t.Fatal("invalid DNS probe token accepted")
+		}
+	}
+}
 func TestInputBoundBeforeAllocation(t *testing.T) {
 	out := make(chan inputResult, 1)
 	done := make(chan struct{})

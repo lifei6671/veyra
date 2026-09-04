@@ -41,15 +41,22 @@ func newLive(c command) (*livePeer, string, string, error) {
 	}
 	p := &livePeer{watch: newObserver(tokenBytes(c.Token))}
 	p.watch.udpMode = c.Op == "init_udp"
+	if c.Op == "init_domain_http" || c.Op == "init_domain_tls" {
+		p.watch.domain = &domainObserver{tls: c.Op == "init_domain_tls"}
+	}
 	if c.Op == "init_reject" {
-		p.watch.reject = &rejectObserver{tcpPort: *c.TCPPort, udpPort: *c.UDPPort}
+		p.watch.reject = &rejectObserver{ports: [4]uint16{*c.VirtualTCPPort, *c.HostTCPPort, *c.VirtualUDPPort, *c.HostUDPPort}}
 	}
 	p.tun, err = newMemoryTun(peerIP, p.watch)
 	if err != nil {
 		return nil, "", "", err
 	}
-	if p.watch.udpMode {
+	if c.Op == "init_dns_probe" {
+		p.tun.dnsProbe = &dnsProbeSink{fail: p.watch.fail}
+	} else if p.watch.udpMode {
 		p.udp, err = newUDPService(p.tun)
+	} else if p.watch.domain != nil {
+		p.listener, err = gonet.ListenTCP(p.tun.s, address(domainIP, p.watch.domain.port()), ipv4.ProtocolNumber)
 	} else {
 		p.listener, err = gonet.ListenTCP(p.tun.s, address(peerIP, 18080), ipv4.ProtocolNumber)
 	}
@@ -63,7 +70,7 @@ func newLive(c command) (*livePeer, string, string, error) {
 	p.wg = device.NewDevice(context.Background(), p.tun, p.bind, logger, 1)
 	config := "private_key=" + hex.EncodeToString(peer.Bytes()) + "\npublic_key=" + hex.EncodeToString(dut.PublicKey().Bytes()) + "\nallowed_ip=198.18.0.1/32\n"
 	if c.Op == "init_reject" {
-		config += "allowed_ip=127.0.0.1/32\n"
+		config += "allowed_ip=172.26.192.1/32\n"
 	}
 	if err = p.wg.IpcSet(config); err == nil {
 		err = p.wg.Up()
@@ -78,7 +85,7 @@ func (p *livePeer) close() error {
 	var err error
 	if p.udp != nil {
 		err = p.udp.close()
-	} else {
+	} else if p.listener != nil {
 		err = p.listener.Close()
 	}
 	p.wg.Close()
@@ -151,7 +158,7 @@ func run(in io.Reader, out io.Writer) int {
 	var initial command
 	select {
 	case input := <-inputs:
-		if input.err != nil || (input.command.Op != "init" && input.command.Op != "init_udp" && input.command.Op != "init_reject") {
+		if input.err != nil || (input.command.Op != "init" && input.command.Op != "init_udp" && input.command.Op != "init_reject" && input.command.Op != "init_dns_probe" && input.command.Op != "init_domain_http" && input.command.Op != "init_domain_tls") {
 			return 1
 		}
 		initial = input.command
@@ -214,11 +221,19 @@ func run(in io.Reader, out io.Writer) int {
 	cancelBusiness = cancel
 	defer cancel()
 	var httpDone, udpDone chan error
-	p.workers.Add(1)
-	if p.watch.udpMode {
+	var domainDone chan domainResult
+	domainOK := false
+	dnsProbe := p.tun.dnsProbe != nil
+	if p.watch.domain != nil {
+		p.workers.Add(1)
+		domainDone = make(chan domainResult, 1)
+		go func() { defer p.workers.Done(); domainDone <- serveDomain(workCtx, p) }()
+	} else if p.watch.udpMode {
+		p.workers.Add(1)
 		udpDone = make(chan error, 1)
 		go func() { defer p.workers.Done(); udpDone <- serveUDP(workCtx, p) }()
-	} else {
+	} else if !dnsProbe {
+		p.workers.Add(1)
 		httpDone = make(chan error, 1)
 		go func() { defer p.workers.Done(); httpDone <- serveHTTP(workCtx, p, initial.Token) }()
 	}
@@ -228,6 +243,30 @@ func run(in io.Reader, out io.Writer) int {
 	workDone := workCtx.Done()
 	for {
 		select {
+		case result := <-domainDone:
+			domainDone = nil
+			rx, tx, observeErr := p.watch.result()
+			if result.err != nil || observeErr != nil || rx == 0 || tx == 0 || workCtx.Err() != nil {
+				failure("protocol", "unexpected_packet")
+				continue
+			}
+			if failed {
+				continue
+			}
+			domainOK = true
+			e := base(p.watch.domain.mode())
+			e["destination_matches"], e["authenticated"] = true, true
+			e["rx_tcp_packets"], e["tx_tcp_packets"] = rx, tx
+			if p.watch.domain.tls {
+				e["connections"], e["sni_matches"], e["https_success"] = 1, true, false
+				e["client_hello_bytes"] = result.bytes
+			} else {
+				e["requests"], e["host_matches"] = 1, true
+				e["response_status"], e["response_acked"] = 204, true
+			}
+			if output(e) != nil {
+				failure("protocol", "io_error")
+			}
 		case uErr := <-udpDone:
 			udpDone = nil
 			if uErr != nil {
@@ -329,6 +368,9 @@ func run(in io.Reader, out io.Writer) int {
 				continue
 			}
 			if c.Op == "shutdown" {
+				if (dnsProbe || p.watch.domain != nil) && workCtx.Err() != nil {
+					failure("deadline", "timeout")
+				}
 				cancel()
 				closed := make(chan error, 1)
 				go func() { closed <- p.close() }()
@@ -348,15 +390,21 @@ func run(in io.Reader, out io.Writer) int {
 				}
 				e := base("stopped")
 				e["resources_closed"] = true
+				if dnsProbe {
+					e["discarded_packets"], e["discarded_bytes"] = p.tun.dnsProbe.result()
+				}
+				if p.watch.domain != nil {
+					e["mode"] = p.watch.domain.mode()
+				}
 				if output(e) != nil {
 					return 1
 				}
-				if failed || (p.watch.udpMode && !udpOK) || (!p.watch.udpMode && (!tcpOK || !icmpOK)) {
+				if failed || (p.watch.domain != nil && !domainOK) || (p.watch.domain == nil && !dnsProbe && ((p.watch.udpMode && !udpOK) || (!p.watch.udpMode && (!tcpOK || !icmpOK)))) {
 					return 1
 				}
 				return 0
 			}
-			if c.Op != "probe_icmp" || p.watch.udpMode || failed || !tcpOK || icmpStarted {
+			if c.Op != "probe_icmp" || dnsProbe || p.watch.domain != nil || p.watch.udpMode || failed || !tcpOK || icmpStarted {
 				failure("protocol", "invalid_input")
 				continue
 			}
@@ -366,7 +414,7 @@ func run(in io.Reader, out io.Writer) int {
 		case <-p.watch.wake:
 			_, _, err := p.watch.result()
 			if err != nil {
-				if p.watch.udpMode {
+				if p.watch.udpMode || dnsProbe {
 					failure("protocol", "unexpected_packet")
 				} else {
 					failure("tcp", "unexpected_packet")

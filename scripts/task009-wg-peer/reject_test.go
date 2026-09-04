@@ -7,6 +7,7 @@ import (
 	"encoding/binary"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"net"
 	"strings"
@@ -26,8 +27,10 @@ func rejectInitFrame() []byte {
 	var fields map[string]any
 	_ = json.Unmarshal(initFrame(), &fields)
 	fields["op"] = "init_reject"
-	fields["tcp_port"] = 41001
-	fields["udp_port"] = 41002
+	fields["virtual_tcp_port"] = 41001
+	fields["host_tcp_port"] = 41002
+	fields["virtual_udp_port"] = 41003
+	fields["host_udp_port"] = 41004
 	b, _ := json.Marshal(fields)
 	return append(b, '\n')
 }
@@ -36,23 +39,52 @@ func TestRejectProtocolStrictFields(t *testing.T) {
 	if _, err := decodeCommand(good); err != nil {
 		t.Fatal(err)
 	}
-	for _, name := range []string{"zero_port", "same_port", "api_port", "missing_port", "phase_on_init", "old_with_port", "missing_phase", "extra_phase", "false_stop", "extra_empty_token"} {
+	portFields := []string{"virtual_tcp_port", "host_tcp_port", "virtual_udp_port", "host_udp_port"}
+	for i, field := range portFields {
+		for _, invalid := range []any{0, 9090, nil, -1, 65536, 1.5, "41005"} {
+			var fields map[string]any
+			_ = json.Unmarshal(good, &fields)
+			fields[field] = invalid
+			b, _ := json.Marshal(fields)
+			if _, err := decodeCommand(b); err == nil {
+				t.Fatalf("invalid %s accepted", field)
+			}
+		}
+		for j := 0; j < i; j++ {
+			var fields map[string]any
+			_ = json.Unmarshal(good, &fields)
+			fields[field] = fields[portFields[j]]
+			b, _ := json.Marshal(fields)
+			if _, err := decodeCommand(b); err == nil {
+				t.Fatalf("duplicate ports %s/%s accepted", field, portFields[j])
+			}
+		}
+		var fields map[string]any
+		_ = json.Unmarshal(good, &fields)
+		delete(fields, field)
+		b, _ := json.Marshal(fields)
+		if _, err := decodeCommand(b); err == nil {
+			t.Fatalf("missing %s accepted", field)
+		}
+	}
+	for _, name := range []string{"old_two_ports", "host_ip", "phase_on_init", "old_with_port", "udp_with_port", "missing_phase", "extra_phase", "false_stop", "extra_empty_token"} {
 		t.Run(name, func(t *testing.T) {
 			var fields map[string]any
 			_ = json.Unmarshal(good, &fields)
 			switch name {
-			case "zero_port":
-				fields["tcp_port"] = 0
-			case "same_port":
-				fields["tcp_port"] = 41002
-			case "api_port":
-				fields["udp_port"] = 9090
-			case "missing_port":
-				delete(fields, "udp_port")
+			case "old_two_ports":
+				for _, field := range portFields {
+					delete(fields, field)
+				}
+				fields["tcp_port"], fields["udp_port"] = 41001, 41002
+			case "host_ip":
+				fields["host_ip"] = "172.26.192.1"
 			case "phase_on_init":
 				fields["phase"] = 1
 			case "old_with_port":
 				fields["op"] = "init"
+			case "udp_with_port":
+				fields["op"] = "init_udp"
 			default:
 				fields = map[string]any{"v": 1, "run_id": strings.Repeat("a", 32), "op": "probe_local"}
 				switch name {
@@ -78,7 +110,7 @@ func TestRejectProtocolStrictFields(t *testing.T) {
 func rejectWatch(t *testing.T) *observer {
 	t.Helper()
 	o := newObserver([]byte("0123456789abcdef"))
-	o.reject = &rejectObserver{tcpPort: 41001, udpPort: 41002}
+	o.reject = &rejectObserver{ports: [4]uint16{41001, 41002, 41003, 41004}}
 	if err := o.beginRejectPhase(1); err != nil {
 		t.Fatal(err)
 	}
@@ -238,6 +270,47 @@ func TestRejectPhaseResetRequiresFreshBootstrap(t *testing.T) {
 	}
 }
 
+func TestRejectFourTupleBoundaries(t *testing.T) {
+	wantIPs := [4][4]byte{{198, 18, 0, 1}, {172, 26, 192, 1}, {198, 18, 0, 1}, {172, 26, 192, 1}}
+	wantPorts := [4]uint16{41001, 41002, 41003, 41004}
+	wantProtocols := [4]byte{6, 6, 17, 17}
+	for i := 0; i < 4; i++ {
+		for _, mutation := range []string{"valid", "wrong_address", "wrong_port", "wrong_case"} {
+			t.Run(fmt.Sprintf("case%d/%s", i+1, mutation), func(t *testing.T) {
+				o := rejectWatch(t)
+				f := &o.reject.flows[i]
+				if f.destination != wantIPs[i] || f.port != wantPorts[i] || f.proto != wantProtocols[i] || f.payload[16] != 1 || f.payload[17] != byte(i+1) {
+					t.Fatal("fixed case tuple mismatch")
+				}
+				f.started = true
+				sample := *f
+				if mutation == "wrong_address" {
+					sample.destination = [4]byte{127, 0, 0, 1}
+				}
+				if mutation == "wrong_port" {
+					sample.port = wantPorts[(i+1)%4]
+				}
+				if mutation == "wrong_case" {
+					sample.payload[17] = byte((i+1)%4 + 1)
+				}
+				if sample.proto == 6 {
+					o.inspect(localPacket(sample, false, 10, 2, nil), false)
+					o.inspect(localPacket(sample, true, 20, 18, nil), true)
+					o.inspect(localPacket(sample, false, 11, 16, sample.payload[:]), false)
+					o.inspect(localPacket(sample, true, 21, 16, sample.payload[:]), true)
+				} else {
+					o.inspect(localPacket(sample, false, 0, 0, sample.payload[:]), false)
+					o.inspect(localPacket(sample, true, 0, 0, sample.payload[:]), true)
+				}
+				sent, err := o.localFlowResult(i, true)
+				if (err == nil) != (mutation == "valid") || (err == nil && !sent) {
+					t.Fatal("incorrect per-case boundary result")
+				}
+			})
+		}
+	}
+}
+
 func TestRejectErrorClassification(t *testing.T) {
 	cases := []struct {
 		err  error
@@ -316,49 +389,58 @@ func TestRejectMemoryFourCasesAndHealth(t *testing.T) {
 			})
 			served := make(chan bool, 4)
 			if open {
-				for _, ip := range [][4]byte{dutIP, hostIP} {
-					listener, err := gonet.ListenTCP(b.s, address(ip, 41001), ipv4.ProtocolNumber)
-					if err != nil {
-						t.Fatal(err)
+				for _, flow := range o.reject.flows {
+					if flow.proto == 6 {
+						listener, err := gonet.ListenTCP(b.s, address(flow.destination, flow.port), ipv4.ProtocolNumber)
+						if err != nil {
+							t.Fatal(err)
+						}
+						closers = append(closers, listener)
+						workers.Add(1)
+						go func() {
+							defer workers.Done()
+							c, err := listener.Accept()
+							if err != nil {
+								return
+							}
+							defer c.Close()
+							if err := c.SetDeadline(deadline(ctx)); err != nil {
+								served <- false
+								return
+							}
+							var payload [20]byte
+							_, err = io.ReadFull(c, payload[:])
+							if err != nil || payload != flow.payload {
+								served <- false
+								return
+							}
+							n, err := c.Write(payload[:])
+							served <- err == nil && n == 20
+						}()
+					} else {
+						local := address(flow.destination, flow.port)
+						u, err := gonet.DialUDP(b.s, &local, nil, ipv4.ProtocolNumber)
+						if err != nil {
+							t.Fatal(err)
+						}
+						closers = append(closers, u)
+						workers.Add(1)
+						go func() {
+							defer workers.Done()
+							if err := u.SetDeadline(deadline(ctx)); err != nil {
+								served <- false
+								return
+							}
+							var payload [21]byte
+							n, remote, err := u.ReadFrom(payload[:])
+							if err != nil || n != 20 || !bytes.Equal(payload[:n], flow.payload[:]) {
+								served <- false
+								return
+							}
+							written, err := u.WriteTo(payload[:n], remote)
+							served <- err == nil && written == 20
+						}()
 					}
-					closers = append(closers, listener)
-					workers.Add(1)
-					go func() {
-						defer workers.Done()
-						c, err := listener.Accept()
-						if err != nil {
-							return
-						}
-						defer c.Close()
-						c.SetDeadline(deadline(ctx))
-						var payload [20]byte
-						_, err = io.ReadFull(c, payload[:])
-						if err != nil {
-							served <- false
-							return
-						}
-						n, err := c.Write(payload[:])
-						served <- err == nil && n == 20
-					}()
-					local := address(ip, 41002)
-					u, err := gonet.DialUDP(b.s, &local, nil, ipv4.ProtocolNumber)
-					if err != nil {
-						t.Fatal(err)
-					}
-					closers = append(closers, u)
-					workers.Add(1)
-					go func() {
-						defer workers.Done()
-						u.SetDeadline(deadline(ctx))
-						var payload [21]byte
-						n, remote, err := u.ReadFrom(payload[:])
-						if err != nil {
-							served <- false
-							return
-						}
-						written, err := u.WriteTo(payload[:n], remote)
-						served <- err == nil && written == 20
-					}()
 				}
 			}
 			results, err := probeLocal(ctx, &livePeer{tun: a, watch: o})
@@ -368,8 +450,8 @@ func TestRejectMemoryFourCasesAndHealth(t *testing.T) {
 			if len(results) != 4 {
 				t.Fatal("case count")
 			}
-			for _, r := range results {
-				if !r.Sent || r.EqualEcho != open || (r.Error == "none") != open {
+			for i, r := range results {
+				if r.CaseID != i+1 || !r.Sent || r.EqualEcho != open || (r.Error == "none") != open {
 					t.Fatalf("unexpected result %#v", r)
 				}
 			}

@@ -42,6 +42,8 @@ pub(crate) struct WindowsManagedSidecarPort {
     next_identity: u64,
     #[cfg(test)]
     after_instance_created: Option<fn(&Path)>,
+    #[cfg(test)]
+    last_dns_probe: Option<crate::singbox::managed_sidecar::TestDnsProbeSnapshot>,
 }
 
 struct RunningChild {
@@ -58,6 +60,19 @@ struct PendingRuntime {
     digest: [u8; 32],
     check_child: Option<ChildProcess>,
     checked: bool,
+    #[cfg(test)]
+    dns_probe_digest: Option<[u8; 32]>,
+}
+
+#[cfg(test)]
+impl PendingRuntime {
+    fn dns_probe_capture(&self) -> Result<bool, SidecarPortError> {
+        match self.dns_probe_digest {
+            Some(digest) if digest == self.digest => Ok(true),
+            Some(_) => Err(SidecarPortError),
+            None => Ok(false),
+        }
+    }
 }
 
 impl WindowsManagedSidecarPort {
@@ -90,6 +105,8 @@ impl WindowsManagedSidecarPort {
             next_identity: 0,
             #[cfg(test)]
             after_instance_created: None,
+            #[cfg(test)]
+            last_dns_probe: None,
         })
     }
 
@@ -136,6 +153,11 @@ impl WindowsManagedSidecarPort {
         }
         self.verify_resources()?;
         let secret = api_secret_from_config(candidate).map_err(|_| SidecarPortError)?;
+        #[cfg(test)]
+        let dns_probe_digest = candidate
+            .is_dns_probe()
+            .map_err(|_| SidecarPortError)?
+            .then(|| Sha256::digest(candidate.as_bytes()).into());
         let (runtime, preparation_failed) = match PrivateRuntime::create(
             &self.runtime_root,
             #[cfg(test)]
@@ -151,6 +173,8 @@ impl WindowsManagedSidecarPort {
             digest: Sha256::digest(candidate.as_bytes()).into(),
             check_child: None,
             checked: false,
+            #[cfg(test)]
+            dns_probe_digest,
         });
         if preparation_failed {
             // 创建阶段已经尝试过清理；保留失败 owner，等待用户手动 Stop。
@@ -252,6 +276,43 @@ impl SidecarPort for WindowsManagedSidecarPort {
             .then_some(())
             .ok_or(SidecarPortError)?;
         let client = ClashApiClient::new(&running.secret).map_err(|_| SidecarPortError)?;
+        #[cfg(test)]
+        if running.child.test_dns_probe_snapshot().is_some() {
+            use crate::singbox::managed_sidecar::TestDnsProbeStatus;
+            // 对同一个 Ready future 分段等待，不重置其请求与总截止。
+            tauri::async_runtime::block_on(async {
+                let mut ready = Box::pin(client.read_ready());
+                loop {
+                    if running
+                        .child
+                        .test_dns_probe_snapshot()
+                        .is_some_and(|snapshot| {
+                            matches!(snapshot.status, TestDnsProbeStatus::Failure(_))
+                        })
+                    {
+                        return Err(SidecarPortError);
+                    }
+                    if let Ok(result) =
+                        tokio::time::timeout(std::time::Duration::from_millis(25), ready.as_mut())
+                            .await
+                    {
+                        result.map_err(|_| SidecarPortError)?;
+                        if running
+                            .child
+                            .test_dns_probe_snapshot()
+                            .is_some_and(|snapshot| {
+                                matches!(snapshot.status, TestDnsProbeStatus::Failure(_))
+                            })
+                        {
+                            return Err(SidecarPortError);
+                        }
+                        return Ok(());
+                    }
+                }
+            })?;
+            running.ready = true;
+            return Ok(());
+        }
         tauri::async_runtime::block_on(client.read_ready())
             .map(|_| running.ready = true)
             .map_err(|_| SidecarPortError)
@@ -265,7 +326,12 @@ impl SidecarPort for WindowsManagedSidecarPort {
                 .get_mut(&instance.identity())
                 .ok_or(SidecarPortError)?;
             running.ready = false;
-            running.child.stop().map_err(|_| SidecarPortError)?;
+            let stopped = running.child.stop();
+            #[cfg(test)]
+            if !running.child.is_running().map_err(|_| SidecarPortError)? {
+                self.last_dns_probe = running.child.test_dns_probe_snapshot();
+            }
+            stopped.map_err(|_| SidecarPortError)?;
             running.runtime.cleanup().map_err(|_| SidecarPortError)?;
         }
         // `remove` 让 RunningChild 中不可复制的 secret 在 config 已删除后立刻被 Drop 擦除。
@@ -285,6 +351,17 @@ impl WindowsManagedSidecarPort {
             return Err(SidecarPortError);
         }
         let identity = self.next_identity.checked_add(1).ok_or(SidecarPortError)?;
+        #[cfg(test)]
+        let child = if pending.dns_probe_capture()? {
+            ChildProcess::start_checked_for_dns_probe(
+                &self.executable_path,
+                pending.runtime.config_path(),
+            )
+        } else {
+            ChildProcess::start_checked(&self.executable_path, pending.runtime.config_path())
+        }
+        .map_err(|_| SidecarPortError)?;
+        #[cfg(not(test))]
         let child =
             ChildProcess::start_checked(&self.executable_path, pending.runtime.config_path())
                 .map_err(|_| SidecarPortError)?;
@@ -293,6 +370,10 @@ impl WindowsManagedSidecarPort {
             .take()
             .expect("checked pending exists until spawn succeeds");
         self.next_identity = identity;
+        #[cfg(test)]
+        {
+            self.last_dns_probe = None;
+        }
         self.running.insert(
             identity,
             RunningChild {
@@ -438,6 +519,74 @@ mod tests {
     use super::*;
     use crate::singbox::test_support::FIXED_CLASH_API_TEST_LOCK;
 
+    #[test]
+    fn dns_probe_capture_qualification_rejects_exchanged_final_digest() {
+        let name = format!(
+            "task009-dns-binding-{}-{}",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_nanos()
+        );
+        let root = std::env::temp_dir().join(&name);
+        let runtime = PrivateRuntime::create(&root, None).expect("owned private fixture");
+        let first = compile_subscription_node(
+            serde_json::json!({
+                "type":"socks","tag":"local","server":"127.0.0.1","server_port":1080
+            }),
+            false,
+        );
+        let second = compile_subscription_node(
+            serde_json::json!({
+                "type":"socks","tag":"other","server":"127.0.0.1","server_port":1081
+            }),
+            false,
+        );
+        let first_digest: [u8; 32] = Sha256::digest(first.as_bytes()).into();
+        let second_digest: [u8; 32] = Sha256::digest(second.as_bytes()).into();
+        assert_ne!(first_digest, second_digest);
+        let mut pending = PendingRuntime {
+            runtime,
+            secret: api_secret_from_config(&first).unwrap(),
+            digest: first_digest,
+            check_child: None,
+            checked: true,
+            dns_probe_digest: Some(first_digest),
+        };
+        // 这里只验证已核定资格的字节绑定；候选本身的封闭 DNS 元组由 Compiler 用例核验。
+        pending.runtime.write_checked_config(&first).unwrap();
+        assert_eq!(pending.dns_probe_capture(), Ok(true));
+        assert!(matches_final_digest(
+            pending.runtime.config_path(),
+            pending.digest
+        ));
+        fs::write(pending.runtime.config_path(), second.as_bytes()).unwrap();
+        assert!(!matches_final_digest(
+            pending.runtime.config_path(),
+            pending.digest
+        ));
+        pending.digest = second_digest;
+        assert!(matches_final_digest(
+            pending.runtime.config_path(),
+            pending.digest
+        ));
+        assert!(
+            pending.dns_probe_capture().is_err(),
+            "another final candidate cannot inherit capture"
+        );
+        pending.dns_probe_digest = None;
+        assert_eq!(pending.dns_probe_capture(), Ok(false));
+        pending.runtime.cleanup().unwrap();
+        let resolved = root.canonicalize().unwrap();
+        assert_eq!(
+            resolved.parent(),
+            Some(std::env::temp_dir().canonicalize().unwrap().as_path())
+        );
+        assert_eq!(resolved.file_name().unwrap(), std::ffi::OsStr::new(&name));
+        fs::remove_dir(resolved).unwrap();
+    }
+
     // 仅测试构建使用私有父子管道驱动 DCR-009 peer，不加入产品 IPC 或运行配置入口。
     mod wg_peer_test {
         use super::*;
@@ -521,6 +670,32 @@ mod tests {
                 authenticated: bool,
                 response_acked: bool,
             },
+            #[serde(rename = "domain_http")]
+            DomainHttp {
+                v: u8,
+                run_id: String,
+                requests: u64,
+                host_matches: bool,
+                response_status: u16,
+                response_acked: bool,
+                destination_matches: bool,
+                authenticated: bool,
+                rx_tcp_packets: u64,
+                tx_tcp_packets: u64,
+            },
+            #[serde(rename = "domain_tls")]
+            DomainTls {
+                v: u8,
+                run_id: String,
+                connections: u64,
+                sni_matches: bool,
+                https_success: bool,
+                destination_matches: bool,
+                authenticated: bool,
+                client_hello_bytes: u64,
+                rx_tcp_packets: u64,
+                tx_tcp_packets: u64,
+            },
             #[serde(rename = "icmp")]
             Icmp {
                 v: u8,
@@ -584,7 +759,7 @@ mod tests {
             },
         }
 
-        #[derive(Deserialize)]
+        #[derive(Debug, Deserialize)]
         #[serde(rename_all = "snake_case")]
         enum FailureStage {
             Init,
@@ -596,7 +771,7 @@ mod tests {
             Deadline,
             Cleanup,
         }
-        #[derive(Deserialize)]
+        #[derive(Debug, Deserialize)]
         #[serde(rename_all = "snake_case")]
         enum FailureCode {
             InvalidInput,
@@ -612,6 +787,8 @@ mod tests {
                 let (v, run_id) = match self {
                     Self::Ready { v, run_id, .. }
                     | Self::Tcp { v, run_id, .. }
+                    | Self::DomainHttp { v, run_id, .. }
+                    | Self::DomainTls { v, run_id, .. }
                     | Self::Icmp { v, run_id, .. }
                     | Self::Udp { v, run_id, .. }
                     | Self::PhaseReady { v, run_id, .. }
@@ -625,8 +802,75 @@ mod tests {
             }
         }
 
+        fn parse_dns_stopped(bytes: &[u8], expected: &str) -> Result<(u32, u32), &'static str> {
+            #[derive(Deserialize)]
+            #[serde(deny_unknown_fields)]
+            struct DnsStopped {
+                v: u8,
+                event: String,
+                run_id: String,
+                resources_closed: bool,
+                discarded_packets: u32,
+                discarded_bytes: u32,
+            }
+            let frame: DnsStopped =
+                serde_json::from_slice(bytes).map_err(|_| "DNS stopped format")?;
+            let packets = frame.discarded_packets;
+            let bytes = frame.discarded_bytes;
+            if frame.v != 1
+                || frame.event != "stopped"
+                || frame.run_id != expected
+                || !frame.resources_closed
+                || packets > 64
+                || bytes > 81_920
+                || (packets == 0) != (bytes == 0)
+                || bytes < packets
+                || bytes > packets * 1280
+            {
+                return Err("DNS stopped identity/counts");
+            }
+            Ok((packets, bytes))
+        }
+
+        fn parse_domain_stopped(
+            bytes: &[u8],
+            expected: &str,
+            mode: &str,
+        ) -> Result<(), &'static str> {
+            #[derive(Deserialize)]
+            #[serde(deny_unknown_fields)]
+            struct DomainStopped {
+                v: u8,
+                event: String,
+                run_id: String,
+                resources_closed: bool,
+                mode: String,
+            }
+            let frame: DomainStopped =
+                serde_json::from_slice(bytes).map_err(|_| "domain stopped format")?;
+            if frame.v != 1
+                || frame.event != "stopped"
+                || frame.run_id != expected
+                || !frame.resources_closed
+                || frame.mode != mode
+                || !matches!(mode, "domain_http" | "domain_tls")
+            {
+                return Err("domain stopped identity/mode");
+            }
+            Ok(())
+        }
+
         #[derive(Clone, Copy, Debug, Eq, PartialEq)]
         enum PeerStage {
+            InitDomainHttp,
+            InitDomainTls,
+            ReadyDomainHttp,
+            ReadyDomainTls,
+            DomainHttp,
+            DomainTls,
+            InitDns,
+            ReadyDns,
+            DnsCollect,
             InitTcp,
             InitUdp,
             InitReject,
@@ -650,6 +894,9 @@ mod tests {
         impl PeerStage {
             fn after_command(self, op: &str) -> Result<Self, &'static str> {
                 match (self, op) {
+                    (Self::InitDomainHttp, "init_domain_http") => Ok(Self::ReadyDomainHttp),
+                    (Self::InitDomainTls, "init_domain_tls") => Ok(Self::ReadyDomainTls),
+                    (Self::InitDns, "init_dns_probe") => Ok(Self::ReadyDns),
                     (Self::InitTcp, "init") => Ok(Self::ReadyTcp),
                     (Self::InitUdp, "init_udp") => Ok(Self::ReadyUdp),
                     (Self::InitReject, "init_reject") => Ok(Self::ReadyReject),
@@ -664,6 +911,37 @@ mod tests {
 
             fn after_frame(self, frame: &Frame) -> Result<Self, &'static str> {
                 match (self, frame) {
+                    (Self::ReadyDomainHttp, Frame::Ready { .. }) => Ok(Self::DomainHttp),
+                    (Self::ReadyDomainTls, Frame::Ready { .. }) => Ok(Self::DomainTls),
+                    (
+                        Self::DomainHttp,
+                        Frame::DomainHttp {
+                            requests: 1,
+                            host_matches: true,
+                            response_status: 204,
+                            response_acked: true,
+                            destination_matches: true,
+                            authenticated: true,
+                            rx_tcp_packets: 1..=1024,
+                            tx_tcp_packets: 1..=1024,
+                            ..
+                        },
+                    ) => Ok(Self::Complete),
+                    (
+                        Self::DomainTls,
+                        Frame::DomainTls {
+                            connections: 1,
+                            sni_matches: true,
+                            https_success: false,
+                            destination_matches: true,
+                            authenticated: true,
+                            client_hello_bytes: 1..=16384,
+                            rx_tcp_packets: 1..=1024,
+                            tx_tcp_packets: 1..=1024,
+                            ..
+                        },
+                    ) => Ok(Self::Complete),
+                    (Self::ReadyDns, Frame::Ready { .. }) => Ok(Self::DnsCollect),
                     (Self::ReadyTcp, Frame::Ready { .. }) => Ok(Self::Tcp),
                     (Self::ReadyUdp, Frame::Ready { .. }) => Ok(Self::Udp),
                     (Self::ReadyReject, Frame::Ready { .. }) => Ok(Self::BeginPhase(1)),
@@ -695,7 +973,12 @@ mod tests {
                     (Self::Icmp, Frame::Icmp { .. }) | (Self::Udp, Frame::Udp { .. }) => {
                         Ok(Self::Complete)
                     }
-                    (_, Frame::Failed { .. }) => Err("peer reported fixed failure"),
+                    (_, Frame::Failed { stage, code, .. }) => {
+                        eprintln!(
+                            "peer fixed failure: state={self:?} stage={stage:?} code={code:?}"
+                        );
+                        Err("peer reported fixed failure")
+                    }
                     _ => Err("peer event scenario/order"),
                 }
             }
@@ -706,6 +989,36 @@ mod tests {
             Eof,
         }
         type WriteRequest = (Vec<u8>, mpsc::SyncSender<Result<(), &'static str>>);
+
+        #[derive(Clone, Debug)]
+        struct DomainCleanup {
+            stopped: bool,
+            exit_code: Option<i32>,
+            eof: bool,
+            threads_joined: bool,
+            input_closed: bool,
+            pipes_valid: bool,
+            business_event: bool,
+            protocol_clean: bool,
+        }
+
+        impl DomainCleanup {
+            fn resources_closed(&self) -> bool {
+                self.stopped
+                    && self.exit_code.is_some()
+                    && self.eof
+                    && self.threads_joined
+                    && self.input_closed
+                    && self.pipes_valid
+            }
+
+            fn business_succeeded(&self) -> bool {
+                self.resources_closed()
+                    && self.exit_code == Some(0)
+                    && self.business_event
+                    && self.protocol_clean
+            }
+        }
 
         struct Peer {
             child: Child,
@@ -720,9 +1033,32 @@ mod tests {
             stage: PeerStage,
             hard_lifetime: Duration,
             final_lifetime: Duration,
+            dns_probe: bool,
+            domain_mode: Option<&'static str>,
+            domain_failed: bool,
+            domain_cleanup: Option<DomainCleanup>,
+            dns_discarded: Option<(u32, u32)>,
         }
 
         impl Peer {
+            fn accept_stopped(&mut self, bytes: &[u8]) -> bool {
+                if let Some(mode) = self.domain_mode {
+                    parse_domain_stopped(bytes, &self.run_id, mode).is_ok()
+                } else if self.dns_probe {
+                    match parse_dns_stopped(bytes, &self.run_id) {
+                        Ok(counts) if self.stage == PeerStage::DnsCollect => {
+                            self.dns_discarded = Some(counts);
+                            true
+                        }
+                        _ => false,
+                    }
+                } else {
+                    matches!(serde_json::from_slice::<Frame>(bytes),
+                        Ok(frame @ Frame::Stopped { resources_closed:true, .. })
+                        if frame.belongs_to(&self.run_id))
+                }
+            }
+
             fn spawn(path: &Path, run_id: String, stage: PeerStage) -> Self {
                 let started = Instant::now();
                 let (hard_lifetime, final_lifetime) = if stage == PeerStage::InitReject {
@@ -846,6 +1182,15 @@ mod tests {
                     writer_closed.store(true, Ordering::SeqCst);
                 });
                 Self {
+                    dns_probe: stage == PeerStage::InitDns,
+                    domain_failed: false,
+                    domain_cleanup: None,
+                    domain_mode: match stage {
+                        PeerStage::InitDomainHttp => Some("domain_http"),
+                        PeerStage::InitDomainTls => Some("domain_tls"),
+                        _ => None,
+                    },
+                    dns_discarded: None,
                     child,
                     input: Some(input),
                     output,
@@ -921,6 +1266,45 @@ mod tests {
                         Err(_) => return Err("peer output closed"),
                     }
                 }
+            }
+
+            fn poll_domain(&mut self) -> Result<bool, &'static str> {
+                let result = (|| {
+                    if self.domain_mode.is_none()
+                        || self.pipe_failed.load(Ordering::SeqCst)
+                        || self.stderr_bytes.load(Ordering::SeqCst) != 0
+                    {
+                        return Err("domain peer pipe/mode failure");
+                    }
+                    if self
+                        .child
+                        .try_wait()
+                        .map_err(|_| "domain peer status")?
+                        .is_some()
+                    {
+                        return Err("domain peer exited before DUT cleanup");
+                    }
+                    loop {
+                        match self.output.try_recv() {
+                            Ok(PipeEvent::Line(bytes)) => {
+                                let frame: Frame = serde_json::from_slice(&bytes)
+                                    .map_err(|_| "domain frame format")?;
+                                if !frame.belongs_to(&self.run_id) {
+                                    return Err("domain frame identity");
+                                }
+                                self.stage = self.stage.after_frame(&frame)?;
+                            }
+                            Ok(PipeEvent::Eof) | Err(mpsc::TryRecvError::Disconnected) => {
+                                return Err("domain peer early EOF");
+                            }
+                            Err(mpsc::TryRecvError::Empty) => {
+                                return Ok(self.stage == PeerStage::Complete);
+                            }
+                        }
+                    }
+                })();
+                self.domain_failed |= result.is_err();
+                result
             }
 
             // 未确认 DUT/pending 停止时保留 peer 至自身硬限；强制清理仅用于已确认分支。
@@ -1004,14 +1388,10 @@ mod tests {
                 while Instant::now() < graceful_deadline {
                     match self.output.recv_timeout(Duration::from_millis(10)) {
                         Ok(PipeEvent::Line(bytes)) => {
-                            match serde_json::from_slice::<Frame>(&bytes) {
-                                Ok(
-                                    frame @ Frame::Stopped {
-                                        resources_closed: true,
-                                        ..
-                                    },
-                                ) if frame.belongs_to(&self.run_id) && !stopped => stopped = true,
-                                _ => normal = false,
+                            if !stopped && self.accept_stopped(&bytes) {
+                                stopped = true;
+                            } else {
+                                normal = false;
                             }
                         }
                         Ok(PipeEvent::Eof) => eof = true,
@@ -1043,16 +1423,41 @@ mod tests {
                 {
                     thread::sleep(Duration::from_millis(10));
                 }
+                if self.domain_mode.is_some() {
+                    self.domain_cleanup = Some(DomainCleanup {
+                        stopped,
+                        exit_code: exit.as_ref().and_then(std::process::ExitStatus::code),
+                        eof,
+                        threads_joined: false,
+                        input_closed: self.stdin_closed.load(Ordering::SeqCst),
+                        pipes_valid: !self.pipe_failed.load(Ordering::SeqCst)
+                            && self.stderr_bytes.load(Ordering::SeqCst) == 0,
+                        business_event: self.stage == PeerStage::Complete,
+                        protocol_clean: normal && !self.domain_failed,
+                    });
+                }
                 if self.threads.iter().any(|thread| !thread.is_finished()) {
                     return Err("peer pipe join deadline");
                 }
                 for thread in self.threads.drain(..) {
                     thread.join().map_err(|_| "peer pipe thread")?;
                 }
+                if let Some(cleanup) = &mut self.domain_cleanup {
+                    cleanup.threads_joined = true;
+                    cleanup.input_closed = self.stdin_closed.load(Ordering::SeqCst);
+                    return cleanup
+                        .resources_closed()
+                        .then_some(())
+                        .ok_or("domain peer resource cleanup incomplete");
+                }
                 if !normal
                     || !stopped
                     || !exit.is_some_and(|status| status.success())
                     || self.pipe_failed.load(Ordering::SeqCst)
+                    || (self.dns_probe
+                        && (!eof
+                            || self.dns_discarded.is_none()
+                            || self.stderr_bytes.load(Ordering::SeqCst) != 0))
                 {
                     return Err("peer cleanup incomplete");
                 }
@@ -1244,13 +1649,544 @@ mod tests {
             verify_sockets(peer, &protocol, peer_port);
         }
 
+        const LOCAL_HOST_IP: &str = "172.26.192.1";
+        const LOCAL_HOST_GUID: &str = "3D816D4D-97AF-48FA-89DC-EA7945796D10";
+
+        #[derive(serde::Deserialize)]
+        #[serde(deny_unknown_fields)]
+        struct LocalHostAddress {
+            guid: String,
+            interface_index: u32,
+            adapter_up: bool,
+            address: String,
+            prefix_length: u8,
+            preferred: bool,
+            skip_as_source: bool,
+            local_route: bool,
+        }
+
+        fn validate_local_host_address(bytes: &[u8]) -> Result<(), &'static str> {
+            let address: LocalHostAddress =
+                serde_json::from_slice(bytes).map_err(|_| "host address query parsing")?;
+            if address.guid != LOCAL_HOST_GUID
+                || address.interface_index == 0
+                || !address.adapter_up
+                || address.address != LOCAL_HOST_IP
+                || address.prefix_length != 20
+                || !address.preferred
+                || address.skip_as_source
+                || !address.local_route
+            {
+                return Err("approved host address unavailable or drifted");
+            }
+            Ok(())
+        }
+
+        fn verify_local_host_address(deadline: Instant) -> Result<(), &'static str> {
+            let powershell = PathBuf::from(std::env::var_os("SystemRoot").ok_or("Windows root")?)
+                .join("System32/WindowsPowerShell/v1.0/powershell.exe");
+            // 只按批准的GUID重解析ifIndex；缺失、重复或读取失败不选择其它地址。
+            let script = format!(
+                "$ErrorActionPreference='Stop'; $a=@(Get-NetAdapter -IncludeHidden | Where-Object {{$_.InterfaceGuid.ToString().Trim('{{}}') -ieq '{LOCAL_HOST_GUID}'}}); if($a.Count -ne 1){{throw 'adapter identity'}}; $i=$a[0].ifIndex; $p=@(Get-NetIPAddress -InterfaceIndex $i -AddressFamily IPv4 | Where-Object {{$_.IPAddress -eq '{LOCAL_HOST_IP}'}}); if($p.Count -ne 1){{throw 'address identity'}}; $r=@(Get-NetRoute -InterfaceIndex $i -AddressFamily IPv4 -DestinationPrefix '{LOCAL_HOST_IP}/32' | Where-Object {{$_.NextHop -eq '0.0.0.0'}}); @{{guid=$a[0].InterfaceGuid.ToString().Trim('{{}}').ToUpperInvariant();interface_index=[uint32]$i;adapter_up=($a[0].Status -eq 'Up');address=$p[0].IPAddress;prefix_length=[byte]$p[0].PrefixLength;preferred=($p[0].AddressState -eq 'Preferred');skip_as_source=[bool]$p[0].SkipAsSource;local_route=($r.Count -eq 1)}} | ConvertTo-Json -Compress"
+            );
+            let until = deadline
+                .checked_sub(Duration::from_secs(2))
+                .ok_or("host address query deadline")?
+                .min(Instant::now() + Duration::from_secs(5));
+            if Instant::now() >= until {
+                return Err("host address query deadline");
+            }
+            let mut child = Command::new(powershell)
+                .args(["-NoProfile", "-NonInteractive", "-Command", &script])
+                .creation_flags(0x0800_0000)
+                .stdin(Stdio::null())
+                .stdout(Stdio::piped())
+                .stderr(Stdio::null())
+                .spawn()
+                .map_err(|_| "host address query spawn")?;
+            loop {
+                match child.try_wait() {
+                    Ok(Some(status)) => {
+                        if !status.success() {
+                            return Err("host address query failed");
+                        }
+                        let mut bytes = Vec::new();
+                        child
+                            .stdout
+                            .take()
+                            .ok_or("host address query output")?
+                            .take(4097)
+                            .read_to_end(&mut bytes)
+                            .map_err(|_| "host address query read")?;
+                        if bytes.len() > 4096 {
+                            return Err("host address query output limit");
+                        }
+                        return validate_local_host_address(&bytes);
+                    }
+                    Ok(None) if Instant::now() < until => {
+                        thread::sleep(Duration::from_millis(10));
+                    }
+                    status => {
+                        let failed_status = status.is_err();
+                        child.kill().map_err(|_| "host address query stop")?;
+                        let exit_deadline = deadline.min(Instant::now() + Duration::from_secs(2));
+                        while Instant::now() < exit_deadline {
+                            if child
+                                .try_wait()
+                                .map_err(|_| "host address query exit")?
+                                .is_some()
+                            {
+                                return Err(if failed_status {
+                                    "host address query status"
+                                } else {
+                                    "host address query deadline"
+                                });
+                            }
+                            thread::sleep(Duration::from_millis(10));
+                        }
+                        return Err("host address query cleanup deadline");
+                    }
+                }
+            }
+        }
+
+        fn local_target_source_matches(case_id: u8, source: std::net::IpAddr) -> bool {
+            match case_id {
+                1 | 3 => source.is_loopback(),
+                2 | 4 => source == std::net::Ipv4Addr::new(172, 26, 192, 1),
+                _ => false,
+            }
+        }
+
+        // 纯本地负例只建loopback资源；host来源规则依然固定，不能在fixture中放宽。
+        fn loopback_target_fixture() -> LocalTargets {
+            LocalTargets::from_sockets(
+                std::array::from_fn(|_| std::net::TcpListener::bind(("127.0.0.1", 0)).unwrap()),
+                std::array::from_fn(|_| std::net::UdpSocket::bind(("127.0.0.1", 0)).unwrap()),
+            )
+        }
+
+        #[test]
+        fn local_host_address_rejects_drift_missing_fields_and_query_failures() {
+            let valid = serde_json::json!({"guid":LOCAL_HOST_GUID,"interface_index":19,"adapter_up":true,
+                "address":LOCAL_HOST_IP,"prefix_length":20,"preferred":true,"skip_as_source":false,"local_route":true});
+            assert!(validate_local_host_address(&serde_json::to_vec(&valid).unwrap()).is_ok());
+            let mut reindexed = valid.clone();
+            reindexed["interface_index"] = serde_json::json!(42);
+            assert!(validate_local_host_address(&serde_json::to_vec(&reindexed).unwrap()).is_ok());
+            for (field, value) in [
+                (
+                    "guid",
+                    serde_json::json!("00000000-0000-0000-0000-000000000000"),
+                ),
+                ("interface_index", serde_json::json!(0)),
+                ("adapter_up", serde_json::json!(false)),
+                ("address", serde_json::json!("172.26.192.2")),
+                ("prefix_length", serde_json::json!(24)),
+                ("preferred", serde_json::json!(false)),
+                ("skip_as_source", serde_json::json!(true)),
+                ("local_route", serde_json::json!(false)),
+            ] {
+                let mut changed = valid.clone();
+                changed[field] = value;
+                assert!(
+                    validate_local_host_address(&serde_json::to_vec(&changed).unwrap()).is_err(),
+                    "{field}"
+                );
+                changed = valid.clone();
+                changed.as_object_mut().unwrap().remove(field);
+                assert!(
+                    validate_local_host_address(&serde_json::to_vec(&changed).unwrap()).is_err(),
+                    "missing {field}"
+                );
+            }
+            for bytes in [b"".as_slice(), b"null", b"[]", b"not json"] {
+                assert!(validate_local_host_address(bytes).is_err());
+            }
+            assert_eq!(
+                verify_local_host_address(Instant::now()),
+                Err("host address query deadline")
+            );
+        }
+
+        #[test]
+        fn local_target_source_and_case_are_exact_for_all_four_targets() {
+            let token = [7; 16];
+            for case_id in 1..=4 {
+                let source = if matches!(case_id, 1 | 3) {
+                    "127.0.0.1"
+                } else {
+                    LOCAL_HOST_IP
+                };
+                assert!(local_target_source_matches(
+                    case_id,
+                    source.parse().unwrap()
+                ));
+                for invalid in ["198.18.0.2", "172.26.192.2", "0.0.0.0"] {
+                    assert!(!local_target_source_matches(
+                        case_id,
+                        invalid.parse().unwrap()
+                    ));
+                }
+                if matches!(case_id, 2 | 4) {
+                    assert!(!local_target_source_matches(
+                        case_id,
+                        "127.0.0.1".parse().unwrap()
+                    ));
+                }
+                for payload_case in 1..=4 {
+                    let mut payload = [0; 20];
+                    payload[..16].copy_from_slice(&token);
+                    payload[16] = 1;
+                    payload[17] = payload_case;
+                    let mut counts = LocalTargetCounts::default();
+                    assert_eq!(
+                        accept_local_payload(&mut counts, &payload, &token, 1, case_id),
+                        case_id == payload_case
+                    );
+                    assert_eq!(counts.failed, case_id != payload_case);
+                }
+            }
+        }
+
+        #[test]
+        fn local_targets_four_owners_hold_and_missing_target_counts_fail() {
+            let targets = loopback_target_fixture();
+            let ports = targets.ports();
+            for index in 0..2 {
+                assert!(std::net::TcpListener::bind(("127.0.0.1", ports[index])).is_err());
+                assert!(std::net::UdpSocket::bind(("127.0.0.1", ports[index + 2])).is_err());
+            }
+            {
+                let mut counts = targets.counts.lock().unwrap();
+                counts.tcp_accepts = [[1; 2], [0; 2], [0; 2]];
+                counts.udp_receives = [[1; 2], [0; 2], [0; 2]];
+                counts.payloads[0] = [1; 4];
+            }
+            targets.settled(1, Instant::now());
+            for case in 0..4 {
+                {
+                    let mut counts = targets.counts.lock().unwrap();
+                    counts.payloads[0][case] = 0;
+                }
+                assert!(
+                    std::panic::catch_unwind(std::panic::AssertUnwindSafe(
+                        || targets.settled(1, Instant::now())
+                    ))
+                    .is_err()
+                );
+                targets.counts.lock().unwrap().payloads[0][case] = 1;
+            }
+            for target in 0..2 {
+                targets.counts.lock().unwrap().tcp_accepts[0][target] = 0;
+                assert!(
+                    std::panic::catch_unwind(std::panic::AssertUnwindSafe(
+                        || targets.settled(1, Instant::now())
+                    ))
+                    .is_err()
+                );
+                targets.counts.lock().unwrap().tcp_accepts[0][target] = 1;
+                targets.counts.lock().unwrap().udp_receives[0][target] = 0;
+                assert!(
+                    std::panic::catch_unwind(std::panic::AssertUnwindSafe(
+                        || targets.settled(1, Instant::now())
+                    ))
+                    .is_err()
+                );
+                targets.counts.lock().unwrap().udp_receives[0][target] = 1;
+            }
+            drop(targets);
+            for index in 0..2 {
+                drop(std::net::TcpListener::bind(("127.0.0.1", ports[index])).unwrap());
+                drop(std::net::UdpSocket::bind(("127.0.0.1", ports[index + 2])).unwrap());
+            }
+        }
+
+        #[test]
+        fn local_targets_partial_bind_failure_releases_prior_owned_sockets() {
+            let occupied = std::net::UdpSocket::bind(("127.0.0.1", 0)).unwrap();
+            let occupied_address = occupied.local_addr().unwrap();
+            let mut retained_ports = [0; 3];
+            let failed = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+                let tcp = std::array::from_fn(|index| {
+                    let socket = std::net::TcpListener::bind(("127.0.0.1", 0)).unwrap();
+                    retained_ports[index] = socket.local_addr().unwrap().port();
+                    socket
+                });
+                let udp = std::net::UdpSocket::bind(("127.0.0.1", 0)).unwrap();
+                retained_ports[2] = udp.local_addr().unwrap().port();
+                let blocked = std::net::UdpSocket::bind(occupied_address)
+                    .expect("injected final bind failure");
+                LocalTargets::from_sockets(tcp, [udp, blocked])
+            }));
+            assert!(failed.is_err());
+            for port in &retained_ports[..2] {
+                drop(std::net::TcpListener::bind(("127.0.0.1", *port)).unwrap());
+            }
+            drop(std::net::UdpSocket::bind(("127.0.0.1", retained_ports[2])).unwrap());
+            assert!(std::net::UdpSocket::bind(occupied_address).is_err());
+        }
+
         #[derive(Clone, Default, Debug)]
         struct LocalTargetCounts {
-            tcp_accepts: [u32; 3],
-            udp_receives: [u32; 3],
+            tcp_accepts: [[u32; 2]; 3],
+            udp_receives: [[u32; 2]; 3],
+            udp_sources: [[Option<std::net::SocketAddr>; 2]; 3],
             payloads: [[u32; 4]; 3],
             active: u32,
             failed: bool,
+        }
+
+        fn record_local_udp_source(
+            counts: &mut LocalTargetCounts,
+            phase: usize,
+            case_id: u8,
+            source: std::net::SocketAddr,
+        ) -> bool {
+            if !matches!(phase, 1 | 3)
+                || !matches!(case_id, 3 | 4)
+                || !local_target_source_matches(case_id, source.ip())
+                || source.port() == 0
+            {
+                counts.failed = true;
+                return false;
+            }
+            let index = usize::from(case_id - 3);
+            if counts.payloads[phase - 1][usize::from(case_id - 1)] != 1
+                || counts.udp_receives[phase - 1][index] != 1
+                || counts.udp_sources[phase - 1][index].is_some()
+            {
+                counts.failed = true;
+                return false;
+            }
+            counts.udp_sources[phase - 1][index] = Some(source);
+            true
+        }
+
+        fn verify_local_post_probe_sockets(
+            peer: &SocketInventory,
+            dut: &SocketInventory,
+            ready: &SocketInventory,
+            peer_port: u16,
+            target_ports: &[u16; 4],
+            counts: &LocalTargetCounts,
+            phase: usize,
+        ) {
+            assert!(matches!(phase, 1..=3));
+            assert!(!counts.failed && counts.active == 0);
+            assert_eq!(counts.udp_sources[1], [None; 2]);
+            assert_eq!(counts.udp_receives[1], [0; 2]);
+            assert_eq!(counts.payloads[1], [0; 4]);
+            if phase == 2 {
+                verify_sockets(peer, dut, peer_port);
+                assert_eq!(
+                    dut, ready,
+                    "protected phase cannot create Direct UDP endpoints"
+                );
+                return;
+            }
+            assert_eq!(counts.udp_receives[phase - 1], [1; 2]);
+            assert_eq!(&counts.payloads[phase - 1][2..], &[1; 2]);
+            let mut direct = BTreeSet::new();
+            for (index, source) in counts.udp_sources[phase - 1].iter().enumerate() {
+                let source = source.expect("positive UDP target source evidence");
+                assert!(local_target_source_matches(index as u8 + 3, source.ip()));
+                assert!(source.port() != 0 && source.port() != 9090 && source.port() != peer_port);
+                assert!(
+                    !target_ports.contains(&source.port()),
+                    "Direct source cannot collide with targets"
+                );
+                for endpoint in &ready.udp {
+                    let (_, port) = endpoint.rsplit_once(':').expect("Ready UDP endpoint");
+                    assert_ne!(source.port(), port.parse::<u16>().expect("Ready UDP port"));
+                }
+                // dut由当前实例PID的owned_sockets查询产生；只扣除目标实际看到的两个IPv4发送端点。
+                let endpoint = format!("[0.0.0.0]:{}", source.port());
+                assert!(
+                    direct.insert(endpoint.clone()),
+                    "two independent Direct UDP sources"
+                );
+                assert_eq!(
+                    dut.udp.iter().filter(|actual| **actual == endpoint).count(),
+                    1,
+                    "each Direct UDP source must have exactly one endpoint owned by this DUT"
+                );
+            }
+            let protocol = SocketInventory {
+                tcp: dut.tcp.clone(),
+                udp: dut
+                    .udp
+                    .iter()
+                    .filter(|endpoint| !direct.contains(*endpoint))
+                    .cloned()
+                    .collect(),
+            };
+            verify_sockets(peer, &protocol, peer_port);
+            assert_eq!(
+                &protocol, ready,
+                "only evidenced Direct UDP endpoints may differ from Ready"
+            );
+        }
+
+        #[test]
+        fn local_udp_source_record_requires_one_valid_payload_and_exact_source() {
+            for phase in [1, 3] {
+                for (case_id, source) in [(3, "127.0.0.1:52001"), (4, "172.26.192.1:52002")] {
+                    let source = source.parse().unwrap();
+                    let mut counts = LocalTargetCounts::default();
+                    assert!(!record_local_udp_source(
+                        &mut counts,
+                        phase,
+                        case_id,
+                        source
+                    ));
+                    assert!(counts.failed && counts.udp_sources == [[None; 2]; 3]);
+                    let mut counts = LocalTargetCounts::default();
+                    counts.payloads[phase - 1][usize::from(case_id - 1)] = 1;
+                    counts.udp_receives[phase - 1][usize::from(case_id - 3)] = 1;
+                    assert!(record_local_udp_source(&mut counts, phase, case_id, source));
+                    assert!(!record_local_udp_source(
+                        &mut counts,
+                        phase,
+                        case_id,
+                        source
+                    ));
+                    assert!(counts.failed);
+                }
+            }
+            for (phase, case_id, source) in [
+                (2, 3, "127.0.0.1:52001"),
+                (3, 4, "127.0.0.1:52001"),
+                (1, 4, "172.26.192.2:52001"),
+                (1, 3, "127.0.0.1:0"),
+            ] {
+                let mut counts = LocalTargetCounts::default();
+                assert!(!record_local_udp_source(
+                    &mut counts,
+                    phase,
+                    case_id,
+                    source.parse().unwrap()
+                ));
+                assert!(counts.failed && counts.udp_sources == [[None; 2]; 3]);
+            }
+        }
+
+        #[test]
+        fn local_post_probe_sockets_require_exact_target_evidence_and_owned_endpoints() {
+            let peer_port = 53000;
+            let target_ports = [51001, 51002, 51003, 51004];
+            let peer = SocketInventory {
+                tcp: vec![],
+                udp: vec!["[127.0.0.1]:53000".into()],
+            };
+            let ready = SocketInventory {
+                tcp: vec!["[127.0.0.1]:9090".into()],
+                udp: vec!["[0.0.0.0]:54000".into(), "[::]:54000".into()],
+            };
+            let positive = || SocketInventory {
+                tcp: ready.tcp.clone(),
+                udp: vec![
+                    "[0.0.0.0]:54000".into(),
+                    "[::]:54000".into(),
+                    "[0.0.0.0]:52001".into(),
+                    "[0.0.0.0]:52002".into(),
+                ],
+            };
+            let mut counts = LocalTargetCounts::default();
+            for phase in [1, 3] {
+                counts.udp_receives[phase - 1] = [1; 2];
+                counts.payloads[phase - 1] = [1; 4];
+                counts.udp_sources[phase - 1] = [
+                    Some("127.0.0.1:52001".parse().unwrap()),
+                    Some("172.26.192.1:52002".parse().unwrap()),
+                ];
+                verify_local_post_probe_sockets(
+                    &peer,
+                    &positive(),
+                    &ready,
+                    peer_port,
+                    &target_ports,
+                    &counts,
+                    phase,
+                );
+            }
+            verify_local_post_probe_sockets(
+                &peer,
+                &ready,
+                &ready,
+                peer_port,
+                &target_ports,
+                &counts,
+                2,
+            );
+            let rejects = |dut: &SocketInventory, counts: &LocalTargetCounts, phase| {
+                assert!(
+                    std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+                        verify_local_post_probe_sockets(
+                            &peer,
+                            dut,
+                            &ready,
+                            peer_port,
+                            &target_ports,
+                            counts,
+                            phase,
+                        )
+                    }))
+                    .is_err()
+                );
+            };
+            rejects(&positive(), &counts, 2);
+            for index in 0..2 {
+                let mut missing = counts.clone();
+                missing.udp_sources[0][index] = None;
+                rejects(&positive(), &missing, 1);
+                missing = counts.clone();
+                missing.udp_receives[0][index] = 0;
+                rejects(&positive(), &missing, 1);
+                missing = counts.clone();
+                missing.payloads[0][index + 2] = 0;
+                rejects(&positive(), &missing, 1);
+            }
+            for source in [
+                "127.0.0.1:0",
+                "127.0.0.1:9090",
+                "127.0.0.1:53000",
+                "127.0.0.1:54000",
+                "127.0.0.1:51003",
+                "127.0.0.1:52002",
+                "172.26.192.1:52001",
+            ] {
+                let mut invalid = counts.clone();
+                invalid.udp_sources[0][0] = Some(source.parse().unwrap());
+                rejects(&positive(), &invalid, 1);
+            }
+            for endpoint in [
+                "[0.0.0.0]:52003",
+                "[127.0.0.1]:52001",
+                "[::]:52001",
+                "[0.0.0.0]:52002",
+            ] {
+                let mut wrong = positive();
+                wrong.udp[2] = endpoint.into();
+                rejects(&wrong, &counts, 1);
+            }
+            let mut extra = positive();
+            extra.udp.push("[0.0.0.0]:52003".into());
+            rejects(&extra, &counts, 1);
+            extra = positive();
+            extra.udp.push("[0.0.0.0]:52001".into());
+            rejects(&extra, &counts, 1);
+            rejects(&ready, &counts, 1);
+            let mut wrong_group = positive();
+            wrong_group.udp[0] = "[0.0.0.0]:54001".into();
+            wrong_group.udp[1] = "[::]:54001".into();
+            rejects(&wrong_group, &counts, 1);
+            let mut protected = counts.clone();
+            protected.udp_sources[1][0] = Some("127.0.0.1:52001".parse().unwrap());
+            rejects(&ready, &protected, 2);
+            let mut failed = counts.clone();
+            failed.failed = true;
+            rejects(&positive(), &failed, 1);
         }
 
         // phase2即使迟到至phase3也永远失败；同一格只允许一个精确载荷。
@@ -1259,18 +2195,15 @@ mod tests {
             bytes: &[u8],
             token: &[u8; 16],
             phase: usize,
-            tcp: bool,
+            case_id: u8,
         ) -> bool {
             let valid = bytes.len() == 20
                 && bytes[..16] == *token
                 && matches!(phase, 1 | 3)
                 && usize::from(bytes[16]) == phase
                 && bytes[18..] == [0, 0]
-                && if tcp {
-                    matches!(bytes[17], 1 | 2)
-                } else {
-                    matches!(bytes[17], 3 | 4)
-                };
+                && (1..=4).contains(&case_id)
+                && bytes[17] == case_id;
             if !valid {
                 counts.failed = true;
                 return false;
@@ -1285,8 +2218,8 @@ mod tests {
         }
 
         struct LocalTargets {
-            tcp: std::net::TcpListener,
-            udp: std::net::UdpSocket,
+            tcp: [std::net::TcpListener; 2],
+            udp: [std::net::UdpSocket; 2],
             counts: Arc<std::sync::Mutex<LocalTargetCounts>>,
             phase: Arc<AtomicUsize>,
             cancel: Arc<AtomicBool>,
@@ -1295,173 +2228,240 @@ mod tests {
 
         impl LocalTargets {
             fn bind() -> Self {
-                let tcp =
-                    std::net::TcpListener::bind(("127.0.0.1", 0)).expect("owned local TCP target");
-                let udp =
-                    std::net::UdpSocket::bind(("127.0.0.1", 0)).expect("owned local UDP target");
-                let tcp_port = tcp.local_addr().expect("TCP target address").port();
-                let udp_port = udp.local_addr().expect("UDP target address").port();
-                assert!(tcp_port != 9090 && udp_port != 9090 && tcp_port != udp_port);
-                tcp.set_nonblocking(true).expect("bounded TCP accept");
-                udp.set_read_timeout(Some(Duration::from_millis(25)))
-                    .expect("bounded UDP target receive");
-                Self {
+                // 任一后续 bind/设置失败时，局部句柄随展开关闭，peer/DUT尚未启动。
+                let tcp = [
+                    std::net::TcpListener::bind(("127.0.0.1", 0))
+                        .expect("owned virtual TCP target"),
+                    std::net::TcpListener::bind((LOCAL_HOST_IP, 0)).expect("owned host TCP target"),
+                ];
+                let udp = [
+                    std::net::UdpSocket::bind(("127.0.0.1", 0)).expect("owned virtual UDP target"),
+                    std::net::UdpSocket::bind((LOCAL_HOST_IP, 0)).expect("owned host UDP target"),
+                ];
+                Self::from_sockets(tcp, udp)
+            }
+
+            fn from_sockets(
+                tcp: [std::net::TcpListener; 2],
+                udp: [std::net::UdpSocket; 2],
+            ) -> Self {
+                let targets = Self {
                     tcp,
                     udp,
                     counts: Arc::new(std::sync::Mutex::new(LocalTargetCounts::default())),
                     phase: Arc::new(AtomicUsize::new(0)),
                     cancel: Arc::new(AtomicBool::new(false)),
                     threads: Vec::new(),
+                };
+                let ports = targets.ports();
+                assert!(ports.iter().all(|port| *port != 0 && *port != 9090));
+                assert_eq!(
+                    ports.into_iter().collect::<BTreeSet<_>>().len(),
+                    4,
+                    "four independent ports"
+                );
+                for listener in &targets.tcp {
+                    listener.set_nonblocking(true).expect("bounded TCP accept");
                 }
+                for socket in &targets.udp {
+                    socket
+                        .set_read_timeout(Some(Duration::from_millis(25)))
+                        .expect("bounded UDP target receive");
+                }
+                targets
+            }
+
+            fn ports(&self) -> [u16; 4] {
+                [
+                    self.tcp[0]
+                        .local_addr()
+                        .expect("virtual TCP address")
+                        .port(),
+                    self.tcp[1].local_addr().expect("host TCP address").port(),
+                    self.udp[0]
+                        .local_addr()
+                        .expect("virtual UDP address")
+                        .port(),
+                    self.udp[1].local_addr().expect("host UDP address").port(),
+                ]
             }
 
             fn start(&mut self, token: [u8; 16], deadline: Instant) {
-                let listener = self.tcp.try_clone().expect("retain TCP target owner");
-                listener
-                    .set_nonblocking(true)
-                    .expect("cloned TCP target nonblocking accept");
-                let counts = Arc::clone(&self.counts);
-                let phase = Arc::clone(&self.phase);
-                let cancel = Arc::clone(&self.cancel);
-                self.threads.push(thread::spawn(move || {
-                    while Instant::now() < deadline {
-                        let (mut stream, source) = match listener.accept() {
-                            Ok(connection) => connection,
-                            Err(error) if error.kind() == std::io::ErrorKind::WouldBlock => {
-                                if cancel.load(Ordering::SeqCst) {
+                for (target_index, original) in self.tcp.iter().enumerate() {
+                    let case_id = target_index as u8 + 1;
+                    let expected_address = original.local_addr().expect("owned TCP address");
+                    let listener = original.try_clone().expect("retain TCP target owner");
+                    listener
+                        .set_nonblocking(true)
+                        .expect("cloned TCP target nonblocking accept");
+                    let counts = Arc::clone(&self.counts);
+                    let phase = Arc::clone(&self.phase);
+                    let cancel = Arc::clone(&self.cancel);
+                    self.threads.push(thread::spawn(move || {
+                        while Instant::now() < deadline {
+                            let (mut stream, source) = match listener.accept() {
+                                Ok(connection) => connection,
+                                Err(error) if error.kind() == std::io::ErrorKind::WouldBlock => {
+                                    if cancel.load(Ordering::SeqCst) {
+                                        break;
+                                    }
+                                    thread::sleep(Duration::from_millis(10));
+                                    continue;
+                                }
+                                Err(_) => {
+                                    counts.lock().expect("target counts").failed = true;
                                     break;
                                 }
-                                thread::sleep(Duration::from_millis(10));
-                                continue;
+                            };
+                            let current = phase.load(Ordering::SeqCst);
+                            {
+                                let mut counts = counts.lock().expect("target counts");
+                                counts.active += 1;
+                                if (1..=3).contains(&current) {
+                                    counts.tcp_accepts[current - 1][target_index] += 1;
+                                } else {
+                                    counts.failed = true;
+                                }
+                                if current == 2
+                                    || counts
+                                        .tcp_accepts
+                                        .iter()
+                                        .map(|phase| phase[target_index])
+                                        .sum::<u32>()
+                                        > 2
+                                {
+                                    counts.failed = true;
+                                }
                             }
-                            Err(_) => {
-                                counts.lock().expect("target counts").failed = true;
-                                break;
-                            }
-                        };
-                        let current = phase.load(Ordering::SeqCst);
-                        {
+                            let served = (|| -> Result<(), &'static str> {
+                                if !local_target_source_matches(case_id, source.ip())
+                                    || stream.local_addr().map_err(|_| "TCP target address")?
+                                        != expected_address
+                                {
+                                    return Err("unexpected TCP target source or destination");
+                                }
+                                stream
+                                    .set_nonblocking(false)
+                                    .map_err(|_| "target TCP mode")?;
+                                let mut payload = [0; 20];
+                                metering_block_io(&mut stream, &mut payload, false, deadline)?;
+                                let accepted = accept_local_payload(
+                                    &mut counts.lock().expect("target counts"),
+                                    &payload,
+                                    &token,
+                                    current,
+                                    case_id,
+                                );
+                                if !accepted {
+                                    return Err("unexpected TCP target payload");
+                                }
+                                metering_block_io(&mut stream, &mut payload, true, deadline)?;
+                                payload.fill(0);
+                                stream
+                                    .set_read_timeout(Some(remaining(
+                                        deadline,
+                                        Duration::from_secs(2),
+                                    )?))
+                                    .map_err(|_| "target TCP final timeout")?;
+                                let mut extra = [0; 1];
+                                if stream
+                                    .read(&mut extra)
+                                    .map_err(|_| "target TCP final read")?
+                                    != 0
+                                {
+                                    return Err("extra TCP target bytes");
+                                }
+                                Ok(())
+                            })();
                             let mut counts = counts.lock().expect("target counts");
-                            counts.active += 1;
-                            if (1..=3).contains(&current) {
-                                counts.tcp_accepts[current - 1] += 1;
-                            } else {
-                                counts.failed = true;
-                            }
-                            if current == 2 || counts.tcp_accepts.iter().sum::<u32>() > 4 {
-                                counts.failed = true;
-                            }
+                            counts.active -= 1;
+                            counts.failed |= served.is_err();
                         }
-                        let served = (|| -> Result<(), &'static str> {
-                            if !source.ip().is_loopback() {
-                                return Err("unexpected TCP target source");
-                            }
-                            stream
-                                .set_nonblocking(false)
-                                .map_err(|_| "target TCP mode")?;
-                            let mut payload = [0; 20];
-                            metering_block_io(&mut stream, &mut payload, false, deadline)?;
-                            let accepted = accept_local_payload(
-                                &mut counts.lock().expect("target counts"),
-                                &payload,
-                                &token,
-                                current,
-                                true,
-                            );
-                            if !accepted {
-                                return Err("unexpected TCP target payload");
-                            }
-                            metering_block_io(&mut stream, &mut payload, true, deadline)?;
-                            payload.fill(0);
-                            stream
-                                .set_read_timeout(Some(remaining(
-                                    deadline,
-                                    Duration::from_secs(2),
-                                )?))
-                                .map_err(|_| "target TCP final timeout")?;
-                            let mut extra = [0; 1];
-                            if stream
-                                .read(&mut extra)
-                                .map_err(|_| "target TCP final read")?
-                                != 0
-                            {
-                                return Err("extra TCP target bytes");
-                            }
-                            Ok(())
-                        })();
-                        let mut counts = counts.lock().expect("target counts");
-                        counts.active -= 1;
-                        counts.failed |= served.is_err();
-                    }
-                }));
-                let socket = self.udp.try_clone().expect("retain UDP target owner");
-                socket
-                    .set_read_timeout(Some(Duration::from_millis(25)))
-                    .expect("cloned UDP target receive deadline");
-                let counts = Arc::clone(&self.counts);
-                let phase = Arc::clone(&self.phase);
-                let cancel = Arc::clone(&self.cancel);
-                self.threads.push(thread::spawn(move || {
-                    let mut bytes = [0; 21];
-                    while Instant::now() < deadline {
-                        let (count, source) = match socket.recv_from(&mut bytes) {
-                            Ok(datagram) => datagram,
-                            Err(error)
-                                if matches!(
-                                    error.kind(),
-                                    std::io::ErrorKind::WouldBlock | std::io::ErrorKind::TimedOut
-                                ) =>
-                            {
-                                if cancel.load(Ordering::SeqCst) {
+                    }));
+                }
+                for (target_index, original) in self.udp.iter().enumerate() {
+                    let case_id = target_index as u8 + 3;
+                    let expected_address = original.local_addr().expect("owned UDP address");
+                    let socket = original.try_clone().expect("retain UDP target owner");
+                    socket
+                        .set_read_timeout(Some(Duration::from_millis(25)))
+                        .expect("cloned UDP target receive deadline");
+                    let counts = Arc::clone(&self.counts);
+                    let phase = Arc::clone(&self.phase);
+                    let cancel = Arc::clone(&self.cancel);
+                    self.threads.push(thread::spawn(move || {
+                        let mut bytes = [0; 21];
+                        while Instant::now() < deadline {
+                            let (count, source) = match socket.recv_from(&mut bytes) {
+                                Ok(datagram) => datagram,
+                                Err(error)
+                                    if matches!(
+                                        error.kind(),
+                                        std::io::ErrorKind::WouldBlock
+                                            | std::io::ErrorKind::TimedOut
+                                    ) =>
+                                {
+                                    if cancel.load(Ordering::SeqCst) {
+                                        break;
+                                    }
+                                    continue;
+                                }
+                                Err(_) => {
+                                    counts.lock().expect("target counts").failed = true;
                                     break;
                                 }
-                                continue;
-                            }
-                            Err(_) => {
-                                counts.lock().expect("target counts").failed = true;
-                                break;
-                            }
-                        };
-                        let current = phase.load(Ordering::SeqCst);
-                        let accepted = {
+                            };
+                            let current = phase.load(Ordering::SeqCst);
+                            let accepted = {
+                                let mut counts = counts.lock().expect("target counts");
+                                counts.active += 1;
+                                if (1..=3).contains(&current) {
+                                    counts.udp_receives[current - 1][target_index] += 1;
+                                } else {
+                                    counts.failed = true;
+                                }
+                                let accepted = accept_local_payload(
+                                    &mut counts,
+                                    &bytes[..count],
+                                    &token,
+                                    current,
+                                    case_id,
+                                );
+                                let source_matches =
+                                    local_target_source_matches(case_id, source.ip())
+                                        && socket.local_addr().ok() == Some(expected_address);
+                                if !source_matches {
+                                    counts.failed = true;
+                                }
+                                accepted
+                                    && source_matches
+                                    && record_local_udp_source(
+                                        &mut counts,
+                                        current,
+                                        case_id,
+                                        source,
+                                    )
+                            };
+                            let served = accepted
+                                && remaining(deadline, Duration::from_secs(2))
+                                    .and_then(|timeout| {
+                                        socket
+                                            .set_write_timeout(Some(timeout))
+                                            .map_err(|_| "target UDP timeout")
+                                    })
+                                    .and_then(|()| {
+                                        socket
+                                            .send_to(&bytes[..count], source)
+                                            .map_err(|_| "target UDP reply")
+                                    })
+                                    == Ok(20);
+                            bytes.fill(0);
                             let mut counts = counts.lock().expect("target counts");
-                            counts.active += 1;
-                            if (1..=3).contains(&current) {
-                                counts.udp_receives[current - 1] += 1;
-                            } else {
-                                counts.failed = true;
-                            }
-                            let accepted = accept_local_payload(
-                                &mut counts,
-                                &bytes[..count],
-                                &token,
-                                current,
-                                false,
-                            );
-                            if !source.ip().is_loopback() {
-                                counts.failed = true;
-                            }
-                            accepted && source.ip().is_loopback()
-                        };
-                        let served = accepted
-                            && remaining(deadline, Duration::from_secs(2))
-                                .and_then(|timeout| {
-                                    socket
-                                        .set_write_timeout(Some(timeout))
-                                        .map_err(|_| "target UDP timeout")
-                                })
-                                .and_then(|()| {
-                                    socket
-                                        .send_to(&bytes[..count], source)
-                                        .map_err(|_| "target UDP reply")
-                                })
-                                == Ok(20);
-                        bytes.fill(0);
-                        let mut counts = counts.lock().expect("target counts");
-                        counts.active -= 1;
-                        counts.failed |= !served;
-                    }
-                }));
+                            counts.active -= 1;
+                            counts.failed |= !served;
+                        }
+                    }));
+                }
             }
 
             fn snapshot(&self) -> LocalTargetCounts {
@@ -1476,7 +2476,11 @@ mod tests {
                         "local target rejected unexpected or late traffic"
                     );
                     if snapshot.active == 0 {
-                        let rounds = if phase == 3 { [2, 0, 2] } else { [2, 0, 0] };
+                        let rounds = if phase == 3 {
+                            [[1; 2], [0; 2], [1; 2]]
+                        } else {
+                            [[1; 2], [0; 2], [0; 2]]
+                        };
                         assert_eq!(snapshot.tcp_accepts, rounds);
                         assert_eq!(snapshot.udp_receives, rounds);
                         assert_eq!(snapshot.payloads[0], [1; 4]);
@@ -1504,13 +2508,7 @@ mod tests {
                 }
                 assert!(
                     self.threads.iter().all(|worker| worker.is_finished()),
-                    "bounded target handler exit tcp_finished={} udp_finished={}",
-                    self.threads
-                        .first()
-                        .is_none_or(|worker| worker.is_finished()),
-                    self.threads
-                        .get(1)
-                        .is_none_or(|worker| worker.is_finished())
+                    "bounded four target handler exit"
                 );
                 for worker in self.threads.drain(..) {
                     worker.join().expect("target handler join");
@@ -1527,52 +2525,34 @@ mod tests {
             payload[16] = 2;
             payload[17] = 1;
             let mut counts = LocalTargetCounts::default();
-            assert!(!accept_local_payload(
-                &mut counts,
-                &payload,
-                &token,
-                3,
-                true
-            ));
+            assert!(!accept_local_payload(&mut counts, &payload, &token, 3, 1));
             assert!(counts.failed && counts.payloads == [[0; 4]; 3]);
             let mut counts = LocalTargetCounts::default();
             payload[16] = 1;
-            assert!(accept_local_payload(&mut counts, &payload, &token, 1, true));
-            assert!(!accept_local_payload(
-                &mut counts,
-                &payload,
-                &token,
-                1,
-                true
-            ));
+            assert!(accept_local_payload(&mut counts, &payload, &token, 1, 1));
+            assert!(!accept_local_payload(&mut counts, &payload, &token, 1, 1));
             assert!(counts.failed);
             let mut counts = LocalTargetCounts::default();
             payload[17] = 3;
-            assert!(!accept_local_payload(
-                &mut counts,
-                &payload,
-                &token,
-                1,
-                true
-            ));
+            assert!(!accept_local_payload(&mut counts, &payload, &token, 1, 1));
             assert!(counts.failed);
         }
 
         #[test]
         fn local_targets_count_empty_tcp_and_late_udp_without_echo() {
             let token = [11; 16];
-            let mut targets = LocalTargets::bind();
+            let mut targets = loopback_target_fixture();
             targets.phase.store(3, Ordering::SeqCst);
             let deadline = Instant::now() + Duration::from_secs(3);
             targets.start(token, deadline);
             let tcp = std::net::TcpStream::connect_timeout(
-                &targets.tcp.local_addr().unwrap(),
+                &targets.tcp[0].local_addr().unwrap(),
                 Duration::from_secs(1),
             )
             .expect("owned empty TCP connection");
             drop(tcp);
             let udp = std::net::UdpSocket::bind(("127.0.0.1", 0)).expect("owned UDP client");
-            udp.connect(targets.udp.local_addr().unwrap())
+            udp.connect(targets.udp[0].local_addr().unwrap())
                 .expect("owned target");
             let mut payload = [0; 20];
             payload[..16].copy_from_slice(&token);
@@ -1582,15 +2562,18 @@ mod tests {
             assert_eq!(udp.send(&payload).expect("late protected payload"), 20);
             while Instant::now() < deadline {
                 let counts = targets.snapshot();
-                if counts.tcp_accepts[2] == 1 && counts.udp_receives[2] == 1 && counts.active == 0 {
+                if counts.tcp_accepts[2] == [1, 0]
+                    && counts.udp_receives[2] == [1, 0]
+                    && counts.active == 0
+                {
                     break;
                 }
                 thread::sleep(Duration::from_millis(10));
             }
             targets.stop_handlers(deadline + Duration::from_secs(1));
             let counts = targets.snapshot();
-            assert_eq!(counts.tcp_accepts, [0, 0, 1]);
-            assert_eq!(counts.udp_receives, [0, 0, 1]);
+            assert_eq!(counts.tcp_accepts, [[0; 2], [0; 2], [1, 0]]);
+            assert_eq!(counts.udp_receives, [[0; 2], [0; 2], [1, 0]]);
             assert_eq!(counts.payloads, [[0; 4]; 3]);
             assert!(counts.failed);
             udp.set_read_timeout(Some(Duration::from_millis(100)))
@@ -1664,6 +2647,71 @@ mod tests {
                 serde_json::from_value::<Frame>(summary).is_err(),
                 "decode failure is never negative-path evidence"
             );
+        }
+
+        #[test]
+        fn dns_probe_stopped_rejects_incomplete_cross_mode_and_invalid_counts() {
+            let valid = serde_json::json!({"v":1,"event":"stopped","run_id":"fixture",
+                "resources_closed":true,"discarded_packets":64,"discarded_bytes":81920});
+            let parse = |value: &serde_json::Value| {
+                parse_dns_stopped(&serde_json::to_vec(value).unwrap(), "fixture")
+            };
+            assert_eq!(parse(&valid), Ok((64, 81920)));
+            assert!(serde_json::from_value::<Frame>(valid.clone()).is_err());
+            for field in [
+                "v",
+                "event",
+                "run_id",
+                "resources_closed",
+                "discarded_packets",
+                "discarded_bytes",
+            ] {
+                let mut missing = valid.clone();
+                missing.as_object_mut().unwrap().remove(field);
+                assert!(parse(&missing).is_err(), "missing {field}");
+            }
+            for (field, value) in [
+                ("v", serde_json::json!(2)),
+                ("event", serde_json::json!("ready")),
+                ("run_id", serde_json::json!("other")),
+                ("resources_closed", serde_json::json!(false)),
+                ("discarded_packets", serde_json::json!(65)),
+                ("discarded_packets", serde_json::json!(-1)),
+                ("discarded_packets", serde_json::json!(1.5)),
+                ("discarded_packets", serde_json::json!(4294967296u64)),
+                ("discarded_bytes", serde_json::json!(81921)),
+                ("extra", serde_json::json!(true)),
+            ] {
+                let mut invalid = valid.clone();
+                invalid[field] = value;
+                assert!(parse(&invalid).is_err(), "invalid {field}");
+            }
+            for (packets, bytes, accepted) in [
+                (0, 0, true),
+                (1, 1, true),
+                (1, 1280, true),
+                (0, 1, false),
+                (1, 0, false),
+                (2, 1, false),
+                (1, 1281, false),
+            ] {
+                let mut counts = valid.clone();
+                counts["discarded_packets"] = serde_json::json!(packets);
+                counts["discarded_bytes"] = serde_json::json!(bytes);
+                assert_eq!(parse(&counts).is_ok(), accepted);
+            }
+            assert!(parse_dns_stopped(br#"{"v":1,"event":"stopped","run_id":"fixture","resources_closed":true,"discarded_packets":0,"discarded_bytes":0,"discarded_bytes":0}"#, "fixture").is_err());
+            assert_eq!(
+                PeerStage::InitDns.after_command("init_dns_probe"),
+                Ok(PeerStage::ReadyDns)
+            );
+            assert!(PeerStage::InitTcp.after_command("init_dns_probe").is_err());
+            assert!(PeerStage::DnsCollect.after_command("probe_icmp").is_err());
+            assert!(PeerStage::DnsCollect.after_command("begin_phase").is_err());
+            let old: Frame = serde_json::from_value(serde_json::json!({"v":1,"event":"stopped","run_id":"fixture","resources_closed":true})).unwrap();
+            assert!(PeerStage::DnsCollect.after_frame(&old).is_err());
+            let failed: Frame = serde_json::from_value(serde_json::json!({"v":1,"event":"failed","run_id":"fixture","stage":"protocol","code":"invalid_input"})).unwrap();
+            assert!(PeerStage::DnsCollect.after_frame(&failed).is_err());
         }
 
         #[test]
@@ -1798,13 +2846,13 @@ mod tests {
                     .collect::<String>()
             };
             let run_id = hex(&run_bytes);
+            if local_reject {
+                verify_local_host_address(Instant::now() + Duration::from_secs(8))
+                    .expect("approved host address before Hold binding");
+            }
+            let case_started = Instant::now();
             let mut targets = local_reject.then(LocalTargets::bind);
-            let target_ports = targets.as_ref().map(|targets| {
-                (
-                    targets.tcp.local_addr().expect("held TCP target").port(),
-                    targets.udp.local_addr().expect("held UDP target").port(),
-                )
-            });
+            let target_ports = targets.as_ref().map(LocalTargets::ports);
             let mut peer = Peer::spawn(
                 &helper_path,
                 run_id.clone(),
@@ -1820,10 +2868,17 @@ mod tests {
                     "dut_private_key":dut_private,"peer_private_key":peer_private,"token":hex(&token_bytes)});
                 if let Some(targets) = &mut targets {
                     targets.start(token_bytes, peer.started + Duration::from_secs(135));
-                    let (tcp_port, udp_port) = target_ports.expect("held ports");
+                    let [
+                        virtual_tcp_port,
+                        host_tcp_port,
+                        virtual_udp_port,
+                        host_udp_port,
+                    ] = target_ports.expect("held ports");
                     initial["op"] = serde_json::json!("init_reject");
-                    initial["tcp_port"] = serde_json::json!(tcp_port);
-                    initial["udp_port"] = serde_json::json!(udp_port);
+                    initial["virtual_tcp_port"] = serde_json::json!(virtual_tcp_port);
+                    initial["host_tcp_port"] = serde_json::json!(host_tcp_port);
+                    initial["virtual_udp_port"] = serde_json::json!(virtual_udp_port);
+                    initial["host_udp_port"] = serde_json::json!(host_udp_port);
                 }
                 peer.send(initial, peer.started + Duration::from_secs(10))
                     .expect("private init write");
@@ -1837,8 +2892,8 @@ mod tests {
                 };
                 assert!(selftest.tcp && selftest.udp && selftest.icmp);
                 assert!(udp_port != 0 && udp_port != 9090);
-                if let Some((tcp, udp)) = target_ports {
-                    assert!(udp_port != tcp && udp_port != udp);
+                if let Some(ports) = target_ports {
+                    assert!(!ports.contains(&udp_port));
                 }
                 udp_port
             }));
@@ -1896,15 +2951,18 @@ mod tests {
                         Err(error) => assert_eq!(error.kind(), std::io::ErrorKind::AddrInUse),
                         Ok(_) => panic!("peer UDP binding was released before its hard limit"),
                     }
-                    if let Some((tcp, udp)) = target_ports {
-                        assert!(
-                            matches!(std::net::TcpListener::bind(("127.0.0.1",tcp)),Err(error) if error.kind()==std::io::ErrorKind::AddrInUse),
-                            "target TCP owner retained until peer hard limit"
-                        );
-                        assert!(
-                            matches!(UdpSocket::bind(("127.0.0.1",udp)),Err(error) if error.kind()==std::io::ErrorKind::AddrInUse),
-                            "target UDP owner retained until peer hard limit"
-                        );
+                    if let Some(ports) = target_ports {
+                        for (index, address) in ["127.0.0.1", LOCAL_HOST_IP].into_iter().enumerate()
+                        {
+                            assert!(
+                                matches!(std::net::TcpListener::bind((address, ports[index])),Err(error) if error.kind()==std::io::ErrorKind::AddrInUse),
+                                "each TCP target owner retained until peer hard limit"
+                            );
+                            assert!(
+                                matches!(UdpSocket::bind((address, ports[index + 2])),Err(error) if error.kind()==std::io::ErrorKind::AddrInUse),
+                                "each UDP target owner retained until peer hard limit"
+                            );
+                        }
                     }
                     println!(
                         "task009 peer_hold peer_pid={peer_pid} elapsed_ms={} udp_binding_retained=true stdin_open=true local_target_ports={target_ports:?} simulated_dut_stop_failure=true",
@@ -1913,7 +2971,7 @@ mod tests {
                 }
             }));
             // 早期断言失败也等待同一真实硬限；测试不通过 kill 缩短被验证的生命周期。
-            let deadline = started + final_lifetime;
+            let deadline = case_started + final_lifetime;
             while !worker.is_finished() && Instant::now() < deadline {
                 thread::sleep(Duration::from_millis(10));
             }
@@ -1952,15 +3010,18 @@ mod tests {
             );
             drop(reclaimed);
             drop(targets);
-            if let Some((tcp, udp)) = target_ports {
-                drop(
-                    std::net::TcpListener::bind(("127.0.0.1", tcp))
-                        .expect("TCP target released after hard exit"),
-                );
-                drop(
-                    UdpSocket::bind(("127.0.0.1", udp))
-                        .expect("UDP target released after hard exit"),
-                );
+            if let Some(ports) = target_ports {
+                for (index, address) in ["127.0.0.1", LOCAL_HOST_IP].into_iter().enumerate() {
+                    drop(
+                        std::net::TcpListener::bind((address, ports[index]))
+                            .expect("TCP target released after hard exit"),
+                    );
+                    drop(
+                        UdpSocket::bind((address, ports[index + 2]))
+                            .expect("UDP target released after hard exit"),
+                    );
+                }
+                verify_local_host_address(deadline).expect("approved host address after Hold");
             }
             println!(
                 "task009 peer_hold helper_sha256={helper_hash} elapsed_ms={} hard_exit_code=1 udp_binding_released=true cleanup_result=FAIL simulated_dut_stop_failure=true",
@@ -2009,9 +3070,18 @@ mod tests {
                 WindowsManagedSidecarPort::new(resources, data.clone())
                     .expect("fixed assets and ACL"),
             );
+            verify_local_host_address(Instant::now() + Duration::from_secs(8))
+                .expect("approved host address before target binding");
+            let case_started = Instant::now();
+            let parent_deadline = case_started + Duration::from_secs(159);
             let mut targets = LocalTargets::bind();
-            let tcp_port = targets.tcp.local_addr().expect("TCP target").port();
-            let udp_port = targets.udp.local_addr().expect("UDP target").port();
+            let ports = targets.ports();
+            let [
+                virtual_tcp_port,
+                host_tcp_port,
+                virtual_udp_port,
+                host_udp_port,
+            ] = ports;
             let mut run_bytes = [0; 16];
             let mut token_bytes = [0; 16];
             let mut dut_private = [0; 32];
@@ -2035,13 +3105,18 @@ mod tests {
             let token = hex(&token_bytes);
             let mut peer = Peer::spawn(&helper_path, run_id.clone(), PeerStage::InitReject);
             let peer_pid = peer.child.id();
-            let work_deadline = peer.started + Duration::from_secs(135);
+            let work_deadline = case_started + Duration::from_secs(135);
             let mut stop_unconfirmed = false;
             let assertions = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
                 targets.start(token_bytes, work_deadline);
-                peer.send(serde_json::json!({"v":1,"op":"init_reject","run_id":run_id,"token":token,
-                    "dut_private_key":dut_private,"peer_private_key":peer_private,"tcp_port":tcp_port,"udp_port":udp_port}),
-                    peer.started + Duration::from_secs(10)).expect("private reject init");
+                peer.send(
+                    serde_json::json!({"v":1,"op":"init_reject","run_id":run_id,"token":token,
+                    "dut_private_key":dut_private,"peer_private_key":peer_private,
+                    "virtual_tcp_port":virtual_tcp_port,"host_tcp_port":host_tcp_port,
+                    "virtual_udp_port":virtual_udp_port,"host_udp_port":host_udp_port}),
+                    peer.started + Duration::from_secs(10),
+                )
+                .expect("private reject init");
                 let Frame::Ready {
                     udp_port: peer_port,
                     peer_public_key,
@@ -2057,15 +3132,33 @@ mod tests {
                 assert!(selftest.tcp && selftest.udp && selftest.icmp);
                 assert!(valid_public_key(&peer_public_key) && valid_public_key(&dut_public_key));
                 assert!(peer_public_key != dut_public_key);
-                assert!(
-                    peer_port != 0
-                        && peer_port != 9090
-                        && peer_port != tcp_port
-                        && peer_port != udp_port
-                );
+                assert!(peer_port != 0 && peer_port != 9090 && !ports.contains(&peer_port));
                 let peer_initial = owned_sockets(peer_pid, &root, work_deadline);
                 assert!(peer_initial.tcp.is_empty());
                 assert_eq!(peer_initial.udp, vec![format!("[127.0.0.1]:{peer_port}")]);
+                let target_inventory = owned_sockets(std::process::id(), &root, work_deadline);
+                for (index, address) in ["127.0.0.1", LOCAL_HOST_IP].into_iter().enumerate() {
+                    assert_eq!(
+                        target_inventory
+                            .tcp
+                            .iter()
+                            .filter(|entry| **entry == format!("[{address}]:{}", ports[index]))
+                            .count(),
+                        1
+                    );
+                    assert_eq!(
+                        target_inventory
+                            .udp
+                            .iter()
+                            .filter(|entry| **entry == format!("[{address}]:{}", ports[index + 2]))
+                            .count(),
+                        1
+                    );
+                }
+                println!(
+                    "task009 target_ownership pid={} addresses=[127.0.0.1,{LOCAL_HOST_IP}] case_ports={ports:?} four_owned_sockets=true",
+                    std::process::id()
+                );
                 let mut hashes = BTreeSet::new();
                 let mut identities = BTreeSet::new();
                 let mut previous_secret: Option<String> = None;
@@ -2074,6 +3167,8 @@ mod tests {
                     let phase_deadline =
                         work_deadline.min(Instant::now() + Duration::from_secs(40));
                     let phase_work = phase_deadline - Duration::from_secs(6);
+                    verify_local_host_address(phase_work)
+                        .expect("approved host address before each phase");
                     targets.phase.store(usize::from(phase), Ordering::SeqCst);
                     peer.send(
                         serde_json::json!({"v":1,"op":"begin_phase","run_id":run_id,"phase":phase}),
@@ -2129,7 +3224,7 @@ mod tests {
                         name: "local-ports".into(),
                         enabled: true,
                         priority: 0,
-                        matcher: TrafficMatcher::Port(vec![tcp_port, udp_port]),
+                        matcher: TrafficMatcher::Port(ports.to_vec()),
                         target: RouteTarget::Direct,
                     });
                     let intent = RuntimeIntent::from_state(&state).expect("whole phase state");
@@ -2145,8 +3240,10 @@ mod tests {
                             &intent,
                             &state.default_target,
                             DnsPolicy::System,
-                            NonZeroU16::new(tcp_port).unwrap(),
-                            NonZeroU16::new(udp_port).unwrap(),
+                            NonZeroU16::new(virtual_tcp_port).unwrap(),
+                            NonZeroU16::new(host_tcp_port).unwrap(),
+                            NonZeroU16::new(virtual_udp_port).unwrap(),
+                            NonZeroU16::new(host_udp_port).unwrap(),
                         )
                     }
                     .expect("phase typed configuration");
@@ -2164,9 +3261,26 @@ mod tests {
                     assert_eq!(document["inbounds"], serde_json::json!([]));
                     assert_eq!(document["dns"]["rules"][0]["action"], "reject");
                     assert_eq!(
-                        document["route"]["rules"][if phase == 2 { 0 } else { 2 }]["action"],
+                        document["route"]["rules"][if phase == 2 { 0 } else { 4 }]["action"],
                         "reject"
                     );
+                    if phase != 2 {
+                        for (index, (address, network)) in [
+                            ("127.0.0.1/32", "tcp"),
+                            ("172.26.192.1/32", "tcp"),
+                            ("127.0.0.1/32", "udp"),
+                            ("172.26.192.1/32", "udp"),
+                        ]
+                        .into_iter()
+                        .enumerate()
+                        {
+                            let rule = &document["route"]["rules"][index];
+                            assert_eq!(rule["ip_cidr"], serde_json::json!([address]));
+                            assert_eq!(rule["network"], serde_json::json!([network]));
+                            assert_eq!(rule["port"], serde_json::json!([ports[index]]));
+                            assert_eq!(rule["outbound"], "direct");
+                        }
+                    }
                     assert!(
                         phase_work.saturating_duration_since(Instant::now())
                             >= Duration::from_secs(13),
@@ -2237,8 +3351,9 @@ mod tests {
                         panic!("expected local probe summary")
                     };
                     println!(
-                        "task009 local_reject phase={phase} reported_phase={confirmed} elapsed_ms={} helper_sha256={helper_hash} config_sha256={config_hash} identity={identity} dut_pid={pid} peer_pid={peer_pid} tcp_target={tcp_port} udp_target={udp_port} peer_udp_port={peer_port} bootstrap_acked=true cases={cases:?} target_counts={:?} dut_ready_sockets={dut_ready:?}",
+                        "task009 local_reject phase={phase} reported_phase={confirmed} elapsed_ms={} helper_sha256={helper_hash} config_sha256={config_hash} identity={identity} dut_pid={pid} peer_pid={peer_pid} target_pid={} virtual_tcp_target={virtual_tcp_port} host_tcp_target={host_tcp_port} virtual_udp_target={virtual_udp_port} host_udp_target={host_udp_port} peer_udp_port={peer_port} bootstrap_acked=true cases={cases:?} target_counts={:?} dut_ready_sockets={dut_ready:?}",
                         phase_started.elapsed().as_millis(),
+                        std::process::id(),
                         targets.snapshot()
                     );
                     assert_eq!(confirmed, phase);
@@ -2277,8 +3392,15 @@ mod tests {
                     let counts = targets.settled(usize::from(phase), phase_work);
                     let peer_current = owned_sockets(peer_pid, &root, phase_work);
                     let dut_current = owned_sockets(pid, &root, phase_work);
-                    verify_sockets(&peer_current, &dut_current, peer_port);
-                    assert_eq!(dut_current, dut_ready);
+                    verify_local_post_probe_sockets(
+                        &peer_current,
+                        &dut_current,
+                        &dut_ready,
+                        peer_port,
+                        &ports,
+                        &counts,
+                        usize::from(phase),
+                    );
                     assert!(
                         peer.child
                             .try_wait()
@@ -2311,6 +3433,8 @@ mod tests {
                         phase_started.elapsed().as_millis()
                     );
                     targets.settled(usize::from(phase), phase_deadline);
+                    verify_local_host_address(phase_deadline)
+                        .expect("approved host address after each phase");
                 }
             }));
             // 不能因断言或服务失败提前释放目标；首先只停止当前自有DUT。
@@ -2330,7 +3454,8 @@ mod tests {
             peer_private.fill(0);
             token_bytes.fill(0);
             let cleanup_assertions = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-                targets.stop_handlers(peer.started + peer.final_lifetime);
+                targets.stop_handlers(parent_deadline);
+                let host_address_result = verify_local_host_address(parent_deadline);
                 let peer_status = peer.child.try_wait();
                 let peer_exited = matches!(&peer_status, Ok(Some(_)));
                 let peer_exit_code = peer_status
@@ -2357,6 +3482,7 @@ mod tests {
                 );
                 assert_eq!(private_count.expect("private runtime root"), 0);
                 peer_cleanup.expect("comparison peer clean exit");
+                host_address_result.expect("approved host address after comparison");
             }));
             // 清理失败仍使测试失败，但不能覆盖先前四格断言的原始失败。
             if let Err(panic) = assertions {
@@ -2367,8 +3493,8 @@ mod tests {
             }
             let final_counts = targets.snapshot();
             assert!(!final_counts.failed && final_counts.active == 0);
-            assert_eq!(final_counts.tcp_accepts, [2, 0, 2]);
-            assert_eq!(final_counts.udp_receives, [2, 0, 2]);
+            assert_eq!(final_counts.tcp_accepts, [[1; 2], [0; 2], [1; 2]]);
+            assert_eq!(final_counts.udp_receives, [[1; 2], [0; 2], [1; 2]]);
             assert_eq!(final_counts.payloads, [[1; 4], [0; 4], [1; 4]]);
             println!(
                 "task009 local_reject final_tcp=4 final_udp=4 protected_lifetime_arrivals=0 cleanup=dut_then_peer_then_targets confirmed=true"
@@ -2693,6 +3819,1036 @@ mod tests {
                     std::ffi::OsStr::new(&name)
                 );
                 fs::remove_dir_all(resolved).expect("remove only successful owned UDP fixture");
+            }
+        }
+
+        fn domain_dns_evidence(
+            snapshot: &crate::singbox::managed_sidecar::TestDnsProbeSnapshot,
+            pid: u32,
+            spawned_at: Instant,
+        ) -> Result<bool, &'static str> {
+            use crate::singbox::managed_sidecar::{
+                TestDnsProbeEvent as Event, TestDnsProbeRecordType as RecordType,
+                TestDnsProbeStatus,
+            };
+            if snapshot.pid != pid
+                || snapshot.spawned_at != spawned_at
+                || matches!(snapshot.status, TestDnsProbeStatus::Failure(_))
+            {
+                return Err("domain DNS owner/reader failure");
+            }
+            let ipv4: std::net::IpAddr = "198.20.0.255".parse().unwrap();
+            let ipv6: std::net::IpAddr = "fc00::fe".parse().unwrap();
+            if snapshot
+                .addresses
+                .iter()
+                .any(|address| *address != ipv4 && *address != ipv6)
+                || snapshot.addresses.iter().collect::<BTreeSet<_>>().len()
+                    != snapshot.addresses.len()
+            {
+                return Err("domain DNS address drift");
+            }
+            let mut lookup = false;
+            let mut exchanged = false;
+            let mut answer = false;
+            let mut succeeded = false;
+            for record in &snapshot.records {
+                if record.domain != "veyra.disign.me"
+                    || record
+                        .address
+                        .is_some_and(|address| address != ipv4 && address != ipv6)
+                    || record.rcode.is_some_and(|rcode| rcode != "NOERROR")
+                    || record.address.is_some_and(|address| {
+                        record.rr_type
+                            != Some(if address.is_ipv4() {
+                                RecordType::A
+                            } else {
+                                RecordType::Aaaa
+                            })
+                    })
+                {
+                    return Err("domain DNS record drift");
+                }
+                match record.event {
+                    Event::Lookup => lookup = true,
+                    Event::Exchanged if record.rcode == Some("NOERROR") && lookup => {
+                        exchanged = true
+                    }
+                    Event::Exchanged if record.address == Some(ipv4) && exchanged => answer = true,
+                    Event::LookupSucceeded if record.address == Some(ipv4) && answer => {
+                        succeeded = true
+                    }
+                    _ => {}
+                }
+            }
+            if snapshot.status == TestDnsProbeStatus::Success {
+                if !succeeded
+                    || snapshot
+                        .addresses
+                        .iter()
+                        .filter(|address| **address == ipv4)
+                        .count()
+                        != 1
+                {
+                    return Err("domain DNS fresh IPv4 exchange chain missing");
+                }
+                return Ok(true);
+            }
+            Ok(false)
+        }
+
+        #[test]
+        fn domain_cleanup_separates_cancelled_resources_from_business_success() {
+            let complete = DomainCleanup {
+                stopped: true,
+                exit_code: Some(0),
+                eof: true,
+                threads_joined: true,
+                input_closed: true,
+                pipes_valid: true,
+                business_event: true,
+                protocol_clean: true,
+            };
+            assert!(complete.resources_closed() && complete.business_succeeded());
+            let mut cancelled = complete.clone();
+            cancelled.exit_code = Some(1);
+            cancelled.business_event = false;
+            assert!(cancelled.resources_closed() && !cancelled.business_succeeded());
+            let mut failed_after_success = complete.clone();
+            failed_after_success.exit_code = Some(1);
+            failed_after_success.protocol_clean = false;
+            assert!(
+                failed_after_success.resources_closed()
+                    && !failed_after_success.business_succeeded()
+            );
+            for index in 0..6 {
+                let mut missing = complete.clone();
+                match index {
+                    0 => missing.stopped = false,
+                    1 => missing.exit_code = None,
+                    2 => missing.eof = false,
+                    3 => missing.threads_joined = false,
+                    4 => missing.input_closed = false,
+                    5 => missing.pipes_valid = false,
+                    _ => unreachable!(),
+                }
+                assert!(!missing.resources_closed() && !missing.business_succeeded());
+            }
+            for index in 0..3 {
+                let mut invalid = complete.clone();
+                match index {
+                    0 => invalid.exit_code = Some(1),
+                    1 => invalid.business_event = false,
+                    2 => invalid.protocol_clean = false,
+                    _ => unreachable!(),
+                }
+                assert!(invalid.resources_closed() && !invalid.business_succeeded());
+            }
+        }
+
+        #[test]
+        fn domain_protocol_rejects_cross_mode_incomplete_duplicate_and_late_events() {
+            let http = serde_json::json!({"v":1,"event":"domain_http","run_id":"fixture","requests":1,
+                "host_matches":true,"response_status":204,"response_acked":true,"destination_matches":true,
+                "authenticated":true,"rx_tcp_packets":4,"tx_tcp_packets":4});
+            let tls = serde_json::json!({"v":1,"event":"domain_tls","run_id":"fixture","connections":1,
+                "sni_matches":true,"https_success":false,"destination_matches":true,"authenticated":true,
+                "client_hello_bytes":512,"rx_tcp_packets":3,"tx_tcp_packets":3});
+            for (value, stage, other) in [
+                (&http, PeerStage::DomainHttp, PeerStage::DomainTls),
+                (&tls, PeerStage::DomainTls, PeerStage::DomainHttp),
+            ] {
+                let frame = serde_json::from_value::<Frame>(value.clone()).unwrap();
+                assert!(frame.belongs_to("fixture") && !frame.belongs_to("other"));
+                assert_eq!(stage.after_frame(&frame), Ok(PeerStage::Complete));
+                for invalid_stage in [
+                    other,
+                    PeerStage::DnsCollect,
+                    PeerStage::Tcp,
+                    PeerStage::Complete,
+                ] {
+                    assert!(invalid_stage.after_frame(&frame).is_err());
+                }
+                for field in value.as_object().unwrap().keys() {
+                    let mut missing = value.clone();
+                    missing.as_object_mut().unwrap().remove(field);
+                    assert!(
+                        serde_json::from_value::<Frame>(missing).is_err(),
+                        "missing {field}"
+                    );
+                }
+                let mut unknown = value.clone();
+                unknown["extra"] = serde_json::json!(true);
+                assert!(serde_json::from_value::<Frame>(unknown).is_err());
+                let encoded = serde_json::to_string(value).unwrap();
+                let duplicate =
+                    encoded.replacen("\"run_id\":", "\"run_id\":\"fixture\",\"run_id\":", 1);
+                assert!(serde_json::from_str::<Frame>(&duplicate).is_err());
+                for (field, replacement) in [
+                    ("rx_tcp_packets", serde_json::json!(0)),
+                    ("tx_tcp_packets", serde_json::json!(1025)),
+                    ("destination_matches", serde_json::json!(false)),
+                    ("authenticated", serde_json::json!(false)),
+                ] {
+                    let mut invalid = value.clone();
+                    invalid[field] = replacement;
+                    assert!(
+                        stage
+                            .after_frame(&serde_json::from_value::<Frame>(invalid).unwrap())
+                            .is_err()
+                    );
+                }
+            }
+            for (field, replacement) in [
+                ("requests", serde_json::json!(2)),
+                ("host_matches", serde_json::json!(false)),
+                ("response_status", serde_json::json!(200)),
+                ("response_acked", serde_json::json!(false)),
+            ] {
+                let mut invalid = http.clone();
+                invalid[field] = replacement;
+                assert!(
+                    PeerStage::DomainHttp
+                        .after_frame(&serde_json::from_value(invalid).unwrap())
+                        .is_err()
+                );
+            }
+            for (field, replacement) in [
+                ("connections", serde_json::json!(2)),
+                ("sni_matches", serde_json::json!(false)),
+                ("https_success", serde_json::json!(true)),
+                ("client_hello_bytes", serde_json::json!(0)),
+                ("client_hello_bytes", serde_json::json!(16385)),
+            ] {
+                let mut invalid = tls.clone();
+                invalid[field] = replacement;
+                assert!(
+                    PeerStage::DomainTls
+                        .after_frame(&serde_json::from_value(invalid).unwrap())
+                        .is_err()
+                );
+            }
+            let failed = Frame::Failed {
+                v: 1,
+                run_id: "fixture".into(),
+                stage: FailureStage::Tcp,
+                code: FailureCode::IoError,
+            };
+            assert!(
+                PeerStage::Complete.after_frame(&failed).is_err(),
+                "late failure overrides success"
+            );
+            assert_eq!(
+                PeerStage::InitDomainHttp.after_command("init_domain_http"),
+                Ok(PeerStage::ReadyDomainHttp)
+            );
+            assert_eq!(
+                PeerStage::InitDomainTls.after_command("init_domain_tls"),
+                Ok(PeerStage::ReadyDomainTls)
+            );
+            assert!(
+                PeerStage::InitTcp
+                    .after_command("init_domain_http")
+                    .is_err()
+            );
+            assert!(
+                PeerStage::InitDomainHttp
+                    .after_command("init_domain_tls")
+                    .is_err()
+            );
+            assert!(PeerStage::DomainHttp.after_command("probe_icmp").is_err());
+            for mode in ["domain_http", "domain_tls"] {
+                let stopped = serde_json::json!({"v":1,"event":"stopped","run_id":"fixture","resources_closed":true,"mode":mode});
+                assert!(
+                    parse_domain_stopped(&serde_json::to_vec(&stopped).unwrap(), "fixture", mode)
+                        .is_ok()
+                );
+                assert!(serde_json::from_value::<Frame>(stopped.clone()).is_err());
+                assert!(
+                    parse_dns_stopped(&serde_json::to_vec(&stopped).unwrap(), "fixture").is_err()
+                );
+                for (field, replacement) in [
+                    ("connections", serde_json::json!(0)),
+                    ("mode", serde_json::json!("dns_probe")),
+                    ("resources_closed", serde_json::json!(false)),
+                    ("run_id", serde_json::json!("other")),
+                ] {
+                    let mut invalid = stopped.clone();
+                    invalid[field] = replacement;
+                    assert!(
+                        parse_domain_stopped(
+                            &serde_json::to_vec(&invalid).unwrap(),
+                            "fixture",
+                            mode
+                        )
+                        .is_err()
+                    );
+                }
+                // 资源关闭帧没有业务语义；完成条件仍由成功事件与exit0共同决定。
+                assert_ne!(PeerStage::DomainHttp, PeerStage::Complete);
+            }
+        }
+
+        #[test]
+        fn domain_dns_requires_same_child_fresh_ipv4_chain_and_rejects_drift() {
+            use crate::singbox::managed_sidecar::{
+                TestDnsProbeEvent as Event, TestDnsProbeRecord as Record,
+                TestDnsProbeRecordType as RecordType, TestDnsProbeSnapshot, TestDnsProbeStatus,
+            };
+            let start = Instant::now();
+            let ipv4 = "198.20.0.255".parse().unwrap();
+            let record = |event, address: Option<std::net::IpAddr>, rcode| Record {
+                event,
+                domain: "veyra.disign.me",
+                rr_type: address.map(|_: std::net::IpAddr| RecordType::A),
+                address,
+                ttl: Some(1),
+                rcode,
+                elapsed_ms: 1,
+            };
+            let valid = TestDnsProbeSnapshot {
+                status: TestDnsProbeStatus::Success,
+                addresses: vec![ipv4],
+                records: vec![
+                    record(Event::Lookup, None, None),
+                    record(Event::Exchanged, None, Some("NOERROR")),
+                    record(Event::Exchanged, Some(ipv4), None),
+                    record(Event::LookupSucceeded, Some(ipv4), None),
+                ],
+                pid: 7,
+                spawned_at: start,
+                received_bytes: 256,
+                eof: false,
+                reader_joined: false,
+            };
+            assert_eq!(domain_dns_evidence(&valid, 7, start), Ok(true));
+            assert!(domain_dns_evidence(&valid, 8, start).is_err());
+            assert!(domain_dns_evidence(&valid, 7, start + Duration::from_millis(1)).is_err());
+            for index in 0..4 {
+                let mut missing = valid.clone();
+                missing.records.remove(index);
+                assert!(domain_dns_evidence(&missing, 7, start).is_err());
+            }
+            let mut cached = valid.clone();
+            cached.records[1].event = Event::Cached;
+            cached.records[2].event = Event::Cached;
+            assert!(domain_dns_evidence(&cached, 7, start).is_err());
+            let mut changed = valid.clone();
+            changed.addresses = vec!["198.20.0.254".parse().unwrap()];
+            assert!(domain_dns_evidence(&changed, 7, start).is_err());
+            changed = valid.clone();
+            changed.records[2].address = Some("198.20.0.254".parse().unwrap());
+            assert!(domain_dns_evidence(&changed, 7, start).is_err());
+            changed = valid.clone();
+            changed.records.swap(1, 2);
+            assert!(domain_dns_evidence(&changed, 7, start).is_err());
+            changed = valid.clone();
+            changed.addresses.push("fc00::fe".parse().unwrap());
+            assert_eq!(domain_dns_evidence(&changed, 7, start), Ok(true));
+            changed.records.push(Record {
+                event: Event::Exchanged,
+                domain: "veyra.disign.me",
+                rr_type: Some(RecordType::Aaaa),
+                address: Some("fc00::ff".parse().unwrap()),
+                ttl: Some(1),
+                rcode: None,
+                elapsed_ms: 2,
+            });
+            assert!(domain_dns_evidence(&changed, 7, start).is_err());
+        }
+
+        #[test]
+        fn real_wireguard_domain_http_preserves_host_with_fresh_dns_and_response_ack() {
+            verify_real_wireguard_domain(PeerStage::InitDomainHttp);
+        }
+
+        #[test]
+        fn real_wireguard_domain_tls_preserves_sni_with_fresh_dns() {
+            verify_real_wireguard_domain(PeerStage::InitDomainTls);
+        }
+
+        fn verify_real_wireguard_domain(initial_stage: PeerStage) {
+            let (mode, initial_op, mode_name) = match initial_stage {
+                PeerStage::InitDomainHttp => (
+                    SingBoxCompiler::WG_DOMAIN_HTTP,
+                    "init_domain_http",
+                    "domain_http",
+                ),
+                PeerStage::InitDomainTls => (
+                    SingBoxCompiler::WG_DOMAIN_TLS,
+                    "init_domain_tls",
+                    "domain_tls",
+                ),
+                _ => panic!("domain fixture requires one closed domain mode"),
+            };
+            let _lock = FIXED_CLASH_API_TEST_LOCK.lock().expect("fixed API lock");
+            // 只尝试保留固定 loopback 地址；占用时不触碰现有 API。
+            let api_reservation = std::net::TcpListener::bind(("127.0.0.1", 9090))
+                .expect("domain prerequisite: fixed API 9090 must be free");
+            let target =
+                PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("target/task009-remediation");
+            fs::create_dir_all(&target).expect("owned domain evidence parent");
+            let helper_path =
+                PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("target/task009-wg-peer.exe");
+            assert!(
+                helper_path.is_file(),
+                "build the approved fixed WG test peer before this test"
+            );
+            let helper_hash = format!(
+                "{:x}",
+                Sha256::digest(fs::read(&helper_path).expect("fixed helper bytes"))
+            );
+            let name = format!(
+                "domain-rust-{mode_name}-{}-{}",
+                std::process::id(),
+                std::time::SystemTime::now()
+                    .duration_since(std::time::UNIX_EPOCH)
+                    .expect("clock")
+                    .as_nanos()
+            );
+            let root = target.join(&name);
+            let resources = root.join("resources");
+            let bundled = resources.join(RESOURCE_DIRECTORY);
+            fs::create_dir_all(&bundled).expect("owned resources");
+            let cache = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+                .join("binaries/sing-box-1.14.0-windows-amd64");
+            for file in EXPECTED_RESOURCE_FILES {
+                fs::hard_link(cache.join(file), bundled.join(file))
+                    .expect("fixed resource hardlink");
+            }
+            let data = std::env::temp_dir().join(&name);
+            fs::create_dir(&data).expect("owned app data");
+            let port = WindowsManagedSidecarPort::new(resources, data.clone())
+                .expect("fixed assets and ACL");
+            let mut runtime = SidecarRuntime::new_observation_only(port);
+            let mut run_bytes = [0; 16];
+            let mut token_bytes = [0; 16];
+            let mut dut_private = [0; 32];
+            let mut peer_private = [0; 32];
+            getrandom::fill(&mut run_bytes).expect("run entropy");
+            getrandom::fill(&mut token_bytes).expect("token entropy");
+            getrandom::fill(&mut dut_private).expect("DUT key entropy");
+            getrandom::fill(&mut peer_private).expect("peer key entropy");
+            for key in [&mut dut_private, &mut peer_private] {
+                key[0] &= 248;
+                key[31] &= 127;
+                key[31] |= 64;
+            }
+            let hex = |bytes: &[u8]| {
+                bytes
+                    .iter()
+                    .map(|byte| format!("{byte:02x}"))
+                    .collect::<String>()
+            };
+            let run_id = hex(&run_bytes);
+            let token = hex(&token_bytes);
+            let mut peer = Peer::spawn(&helper_path, run_id.clone(), initial_stage);
+            let peer_pid = peer.child.id();
+            let work_deadline = peer.started + Duration::from_secs(45);
+            let started_unix_ms = std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .expect("clock")
+                .as_millis();
+            let mut dut_pid = None;
+            let mut dut_spawned_at = None;
+            let assertions = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+                peer.send(
+                    serde_json::json!({"v":1,"op":initial_op,"run_id":run_id,
+                    "dut_private_key":dut_private,"peer_private_key":peer_private,"token":token}),
+                    work_deadline,
+                )
+                .expect("private init write");
+                let Frame::Ready {
+                    udp_port,
+                    peer_public_key,
+                    dut_public_key,
+                    selftest,
+                    ..
+                } = peer
+                    .frame(peer.started + Duration::from_secs(10))
+                    .expect("peer Ready/selftest")
+                else {
+                    panic!("expected peer Ready")
+                };
+                let peer_ready_at = Instant::now();
+                assert!(udp_port != 0 && udp_port != 9090);
+                assert!(selftest.tcp && selftest.udp && selftest.icmp);
+                assert!(valid_public_key(&peer_public_key) && valid_public_key(&dut_public_key));
+                assert!(peer_public_key != dut_public_key);
+                let peer_before = owned_sockets(peer_pid, &root, work_deadline);
+                assert!(peer_before.tcp.is_empty());
+                assert_eq!(peer_before.udp, vec![format!("[127.0.0.1]:{udp_port}")]);
+                let parsed = parse_subscription(&serde_json::json!({"outbounds":[{
+                    "type":"wireguard","tag":"controlled-wg","server":"127.0.0.1","server_port":udp_port,
+                    "private_key":key_base64(&dut_private),"peer_public_key":peer_public_key,
+                    "local_address":["198.18.0.1/32"],"mtu":1280
+                }]}).to_string()).expect("ordinary WG parser");
+                assert!(parsed.skipped.is_empty());
+                assert_eq!(parsed.nodes.len(), 1);
+                let mut state = AppState::empty();
+                state.subscriptions.push(Subscription {
+                    id: SubscriptionId("wg-test".into()),
+                    name: "wg-test".into(),
+                });
+                state.providers.push(Provider {
+                    id: ProviderId("wg-test".into()),
+                    subscription_id: SubscriptionId("wg-test".into()),
+                    name: "wg-test".into(),
+                });
+                state.nodes = normalize_nodes(ProviderId("wg-test".into()), parsed.nodes)
+                    .expect("ordinary WG normalization");
+                state.pools.push(NodePool {
+                    id: PoolId("wg-test".into()),
+                    name: "wg-test".into(),
+                    kind: PoolKind::Custom,
+                    sources: vec![PoolSource {
+                        provider_id: ProviderId("wg-test".into()),
+                        filter: NodeFilter::default(),
+                    }],
+                    selection: SelectionPolicy::UrlTest {
+                        probe_url: mode.url().into(),
+                        interval_secs: 300,
+                        tolerance_ms: 50,
+                    },
+                    enabled: true,
+                });
+                state.default_target = RouteTarget::Pool(PoolId("wg-test".into()));
+                let intent = RuntimeIntent::from_state(&state).expect("whole state validation");
+                let config = SingBoxCompiler
+                    .compile_wireguard_domain(
+                        &intent,
+                        &state.default_target,
+                        DnsPolicy::System,
+                        mode,
+                    )
+                    .expect("ordinary typed WG plan")
+                    .finalize(
+                        &crate::singbox::managed_sidecar::generate_api_secret()
+                            .expect("API entropy"),
+                    )
+                    .expect("final WG configuration");
+                let config_hash = format!("{:x}", Sha256::digest(config.as_bytes()));
+                let document: serde_json::Value =
+                    serde_json::from_slice(config.as_bytes()).expect("final readback");
+                assert_eq!(document["inbounds"], serde_json::json!([]));
+                assert_eq!(
+                    document["endpoints"].as_array().expect("WG endpoint").len(),
+                    1
+                );
+                assert_eq!(document["route"]["rules"][0]["action"], "reject");
+                assert_eq!(document["dns"]["rules"][0]["action"], "reject");
+                assert!(
+                    work_deadline.saturating_duration_since(Instant::now())
+                        >= Duration::from_secs(15),
+                    "reserve check and Ready deadlines before final cleanup"
+                );
+                assert!(
+                    peer_ready_at.elapsed() < Duration::from_secs(15),
+                    "reserve domain peer deadline"
+                );
+                drop(api_reservation);
+                runtime
+                    .start_or_replace(config)
+                    .expect("fixed WG check/run/Ready");
+                let (identity, pid, dut_created_filetime_100ns) = runtime
+                    .with_active_port(|port, child| {
+                        let running = port.running.get(&child.identity()).expect("owned WG child");
+                        assert_eq!(
+                            format!(
+                                "{:x}",
+                                Sha256::digest(
+                                    fs::read(running.runtime.config_path())
+                                        .expect("private readback")
+                                )
+                            ),
+                            config_hash
+                        );
+                        Ok((
+                            child.identity(),
+                            running.child.test_process_id(),
+                            running
+                                .child
+                                .test_creation_time_100ns()
+                                .map_err(|_| SidecarPortError)?,
+                        ))
+                    })
+                    .expect("active owner")
+                    .expect("active child");
+                dut_pid = Some(pid);
+                assert_ne!(dut_created_filetime_100ns, 0);
+                println!(
+                    "task009 wg_domain mode={mode_name} helper_sha256={helper_hash} config_sha256={config_hash} identity={identity} dut_pid={pid} peer_pid={peer_pid} started_unix_ms={started_unix_ms} peer_udp_port={udp_port} dut_created_filetime_100ns={dut_created_filetime_100ns}"
+                );
+                let first = runtime
+                    .with_active_port(|port, child| {
+                        port.running
+                            .get(&child.identity())
+                            .expect("owned DNS child")
+                            .child
+                            .test_dns_probe_snapshot()
+                            .ok_or(SidecarPortError)
+                    })
+                    .expect("snapshot owner")
+                    .expect("DNS capture required");
+                assert_eq!(first.pid, pid);
+                dut_spawned_at = Some(first.spawned_at);
+                let deadline = (first.spawned_at + Duration::from_secs(10))
+                    .min(peer_ready_at + Duration::from_secs(30))
+                    .min(work_deadline);
+                loop {
+                    assert!(
+                        Instant::now() < deadline,
+                        "domain business/DNS collection deadline"
+                    );
+                    let business_complete =
+                        peer.poll_domain().expect("domain peer event/late failure");
+                    let snapshot = runtime
+                        .with_active_port(|port, child| {
+                            let running = port
+                                .running
+                                .get_mut(&child.identity())
+                                .expect("same domain child");
+                            if child.identity() != identity
+                                || running.child.test_process_id() != pid
+                                || !running.child.is_running().map_err(|_| SidecarPortError)?
+                            {
+                                return Err(SidecarPortError);
+                            }
+                            running
+                                .child
+                                .test_dns_probe_snapshot()
+                                .ok_or(SidecarPortError)
+                        })
+                        .expect("live domain owner")
+                        .expect("required domain DNS capture");
+                    let dns_complete = domain_dns_evidence(&snapshot, pid, first.spawned_at)
+                        .expect("domain DNS identity/fresh exchange/fixed answers");
+                    if business_complete && dns_complete {
+                        // 成功事件后仍由Stop和finish排空重复/迟到失败；不启动第二次URLTest。
+                        break;
+                    }
+                    thread::sleep(
+                        remaining(deadline, Duration::from_millis(25))
+                            .expect("domain collection deadline"),
+                    );
+                }
+            }));
+            // 所有失败（包括 panic）均先交由真实 owner 清理 DUT，再结束 peer。
+            let dut_stopped = runtime.stop().is_ok();
+            let port = runtime.into_port();
+            if let Some(snapshot) = &port.last_dns_probe {
+                println!(
+                    "task009 wg_domain mode={mode_name} status={:?} addresses={:?} record_count={} pid={} spawned_at={:?} received_bytes={} eof={} reader_joined={}",
+                    snapshot.status,
+                    snapshot.addresses,
+                    snapshot.records.len(),
+                    snapshot.pid,
+                    snapshot.spawned_at,
+                    snapshot.received_bytes,
+                    snapshot.eof,
+                    snapshot.reader_joined
+                );
+            }
+            let late_peer = peer.poll_domain();
+            let peer_cleanup = peer.finish(dut_stopped);
+            dut_private.fill(0);
+            peer_private.fill(0);
+            token_bytes.fill(0);
+            assert!(
+                dut_stopped,
+                "DUT cleanup failed; retain private resources and fixture"
+            );
+            let cleanup_deadline = peer.started + Duration::from_secs(59);
+            let peer_after = owned_sockets(peer_pid, &root, cleanup_deadline);
+            assert!(peer_after.tcp.is_empty() && peer_after.udp.is_empty());
+            if let Some(pid) = dut_pid {
+                let dut_after = owned_sockets(pid, &root, cleanup_deadline);
+                assert!(dut_after.tcp.is_empty() && dut_after.udp.is_empty());
+            }
+            assert!(port.running.is_empty() && !port.has_pending_cleanup());
+            assert_eq!(
+                fs::read_dir(data.join(RUNTIME_DIRECTORY))
+                    .expect("private runtime root")
+                    .count(),
+                0
+            );
+            println!(
+                "task009 wg_domain mode={mode_name} cleanup=dut_then_reader_then_peer dut_stopped={dut_stopped} peer_resources_closed={} peer_facts={:?} stderr_bytes={}",
+                peer_cleanup.is_ok(),
+                peer.domain_cleanup,
+                peer.stderr_bytes.load(Ordering::SeqCst)
+            );
+            if let Err(panic) = assertions {
+                std::panic::resume_unwind(panic);
+            }
+            assert_eq!(
+                late_peer,
+                Ok(true),
+                "business success and no late event before shutdown"
+            );
+            peer_cleanup.expect("domain stopped/exit/EOF/join resource closure required");
+            assert!(
+                peer.domain_cleanup
+                    .as_ref()
+                    .is_some_and(DomainCleanup::business_succeeded),
+                "resource closure cannot replace unique business success and exit0"
+            );
+            let final_snapshot = port
+                .last_dns_probe
+                .as_ref()
+                .expect("final DNS snapshot required");
+            assert!(final_snapshot.eof && final_snapshot.reader_joined);
+            assert_eq!(
+                domain_dns_evidence(
+                    final_snapshot,
+                    dut_pid.expect("DUT PID"),
+                    dut_spawned_at.expect("same child spawn identity")
+                ),
+                Ok(true)
+            );
+            if mode_name == "domain_http" {
+                println!(
+                    "task009 wg_domain mode=domain_http fresh_dns=true destination_matches=true host_matches=true response_status=204 response_acked=true cleanup_confirmed=true"
+                );
+            } else {
+                println!(
+                    "task009 wg_domain mode=domain_tls fresh_dns=true destination_matches=true sni_observed=true https_success=false cleanup_confirmed=true"
+                );
+            }
+            for (owned_path, parent) in [(data, std::env::temp_dir()), (root, target)] {
+                let resolved = owned_path.canonicalize().expect("resolved owned fixture");
+                let parent = parent.canonicalize().expect("resolved parent");
+                assert_eq!(resolved.parent(), Some(parent.as_path()));
+                assert_eq!(
+                    resolved.file_name().expect("owned name"),
+                    std::ffi::OsStr::new(&name)
+                );
+                fs::remove_dir_all(resolved).expect("remove only successful owned fixture");
+            }
+        }
+
+        #[test]
+        fn real_fixed_core_dns_probe_reports_local_exchange() {
+            let _lock = FIXED_CLASH_API_TEST_LOCK.lock().expect("fixed API lock");
+            // 只尝试保留固定 loopback 地址；占用时不触碰现有 API。
+            let api_reservation = std::net::TcpListener::bind(("127.0.0.1", 9090))
+                .expect("DNS probe prerequisite: fixed API 9090 must be free");
+            let target = PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("target");
+            let helper_path = target.join("task009-wg-peer.exe");
+            assert!(
+                helper_path.is_file(),
+                "build the approved fixed WG test peer before this test"
+            );
+            let helper_hash = format!(
+                "{:x}",
+                Sha256::digest(fs::read(&helper_path).expect("fixed helper bytes"))
+            );
+            let name = format!(
+                "task009-dns-probe-{}-{}",
+                std::process::id(),
+                std::time::SystemTime::now()
+                    .duration_since(std::time::UNIX_EPOCH)
+                    .expect("clock")
+                    .as_nanos()
+            );
+            let root = target.join(&name);
+            let resources = root.join("resources");
+            let bundled = resources.join(RESOURCE_DIRECTORY);
+            fs::create_dir_all(&bundled).expect("owned resources");
+            let cache = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+                .join("binaries/sing-box-1.14.0-windows-amd64");
+            for file in EXPECTED_RESOURCE_FILES {
+                fs::hard_link(cache.join(file), bundled.join(file))
+                    .expect("fixed resource hardlink");
+            }
+            let data = std::env::temp_dir().join(&name);
+            fs::create_dir(&data).expect("owned app data");
+            let port = WindowsManagedSidecarPort::new(resources, data.clone())
+                .expect("fixed assets and ACL");
+            let mut runtime = SidecarRuntime::new_observation_only(port);
+            let mut run_bytes = [0; 16];
+            let mut token_bytes = [0; 16];
+            let mut dut_private = [0; 32];
+            let mut peer_private = [0; 32];
+            getrandom::fill(&mut run_bytes).expect("run entropy");
+            getrandom::fill(&mut token_bytes).expect("token entropy");
+            getrandom::fill(&mut dut_private).expect("DUT key entropy");
+            getrandom::fill(&mut peer_private).expect("peer key entropy");
+            for key in [&mut dut_private, &mut peer_private] {
+                key[0] &= 248;
+                key[31] &= 127;
+                key[31] |= 64;
+            }
+            let hex = |bytes: &[u8]| {
+                bytes
+                    .iter()
+                    .map(|byte| format!("{byte:02x}"))
+                    .collect::<String>()
+            };
+            let run_id = hex(&run_bytes);
+            let token = hex(&token_bytes);
+            let mut peer = Peer::spawn(&helper_path, run_id.clone(), PeerStage::InitDns);
+            let peer_pid = peer.child.id();
+            let work_deadline = peer.started + Duration::from_secs(40);
+            let started_unix_ms = std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .expect("clock")
+                .as_millis();
+            let mut dut_pid = None;
+            let assertions = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+                peer.send(
+                    serde_json::json!({"v":1,"op":"init_dns_probe","run_id":run_id,
+                    "dut_private_key":dut_private,"peer_private_key":peer_private,"token":token}),
+                    work_deadline,
+                )
+                .expect("private init write");
+                let Frame::Ready {
+                    udp_port,
+                    peer_public_key,
+                    dut_public_key,
+                    selftest,
+                    ..
+                } = peer
+                    .frame(peer.started + Duration::from_secs(10))
+                    .expect("peer Ready/selftest")
+                else {
+                    panic!("expected peer Ready")
+                };
+                let peer_ready_at = Instant::now();
+                assert!(udp_port != 0 && udp_port != 9090);
+                assert!(selftest.tcp && selftest.udp && selftest.icmp);
+                assert!(valid_public_key(&peer_public_key) && valid_public_key(&dut_public_key));
+                assert!(peer_public_key != dut_public_key);
+                let peer_before = owned_sockets(peer_pid, &root, work_deadline);
+                assert!(peer_before.tcp.is_empty());
+                assert_eq!(peer_before.udp, vec![format!("[127.0.0.1]:{udp_port}")]);
+                let parsed = parse_subscription(&serde_json::json!({"outbounds":[{
+                    "type":"wireguard","tag":"controlled-wg","server":"127.0.0.1","server_port":udp_port,
+                    "private_key":key_base64(&dut_private),"peer_public_key":peer_public_key,
+                    "local_address":["198.18.0.1/32"],"mtu":1280
+                }]}).to_string()).expect("ordinary WG parser");
+                assert!(parsed.skipped.is_empty());
+                assert_eq!(parsed.nodes.len(), 1);
+                let mut state = AppState::empty();
+                state.subscriptions.push(Subscription {
+                    id: SubscriptionId("wg-test".into()),
+                    name: "wg-test".into(),
+                });
+                state.providers.push(Provider {
+                    id: ProviderId("wg-test".into()),
+                    subscription_id: SubscriptionId("wg-test".into()),
+                    name: "wg-test".into(),
+                });
+                state.nodes = normalize_nodes(ProviderId("wg-test".into()), parsed.nodes)
+                    .expect("ordinary WG normalization");
+                state.pools.push(NodePool {
+                    id: PoolId("wg-test".into()),
+                    name: "wg-test".into(),
+                    kind: PoolKind::Custom,
+                    sources: vec![PoolSource {
+                        provider_id: ProviderId("wg-test".into()),
+                        filter: NodeFilter::default(),
+                    }],
+                    selection: SelectionPolicy::UrlTest {
+                        probe_url: "http://veyra.disign.me:18080/task009-dns-preflight".into(),
+                        interval_secs: 300,
+                        tolerance_ms: 50,
+                    },
+                    enabled: true,
+                });
+                state.default_target = RouteTarget::Pool(PoolId("wg-test".into()));
+                let intent = RuntimeIntent::from_state(&state).expect("whole state validation");
+                let config = SingBoxCompiler
+                    .compile_dns_probe(&intent, &state.default_target)
+                    .expect("ordinary typed WG plan")
+                    .finalize(
+                        &crate::singbox::managed_sidecar::generate_api_secret()
+                            .expect("API entropy"),
+                    )
+                    .expect("final WG configuration");
+                let config_hash = format!("{:x}", Sha256::digest(config.as_bytes()));
+                let document: serde_json::Value =
+                    serde_json::from_slice(config.as_bytes()).expect("final readback");
+                assert_eq!(document["inbounds"], serde_json::json!([]));
+                assert_eq!(
+                    document["endpoints"].as_array().expect("WG endpoint").len(),
+                    1
+                );
+                assert_eq!(document["route"]["rules"][0]["action"], "reject");
+                assert_eq!(document["dns"]["rules"][0]["action"], "reject");
+                assert!(
+                    work_deadline.saturating_duration_since(Instant::now())
+                        >= Duration::from_secs(13),
+                    "reserve check and Ready deadlines before final cleanup"
+                );
+                assert!(
+                    peer_ready_at.elapsed() < Duration::from_secs(12),
+                    "reserve DNS peer deadline"
+                );
+                drop(api_reservation);
+                runtime
+                    .start_or_replace(config)
+                    .expect("fixed WG check/run/Ready");
+                let (identity, pid, dut_created_filetime_100ns) = runtime
+                    .with_active_port(|port, child| {
+                        let running = port.running.get(&child.identity()).expect("owned WG child");
+                        assert_eq!(
+                            format!(
+                                "{:x}",
+                                Sha256::digest(
+                                    fs::read(running.runtime.config_path())
+                                        .expect("private readback")
+                                )
+                            ),
+                            config_hash
+                        );
+                        Ok((
+                            child.identity(),
+                            running.child.test_process_id(),
+                            running
+                                .child
+                                .test_creation_time_100ns()
+                                .map_err(|_| SidecarPortError)?,
+                        ))
+                    })
+                    .expect("active owner")
+                    .expect("active child");
+                dut_pid = Some(pid);
+                assert_ne!(dut_created_filetime_100ns, 0);
+                use crate::singbox::managed_sidecar::TestDnsProbeStatus;
+                println!(
+                    "task009 dns_probe helper_sha256={helper_hash} config_sha256={config_hash} identity={identity} dut_pid={pid} peer_pid={peer_pid} started_unix_ms={started_unix_ms} peer_udp_port={udp_port} dut_created_filetime_100ns={dut_created_filetime_100ns}"
+                );
+                let first = runtime
+                    .with_active_port(|port, child| {
+                        port.running
+                            .get(&child.identity())
+                            .expect("owned DNS child")
+                            .child
+                            .test_dns_probe_snapshot()
+                            .ok_or(SidecarPortError)
+                    })
+                    .expect("snapshot owner")
+                    .expect("DNS capture required");
+                assert_eq!(first.pid, pid);
+                let deadline = (first.spawned_at + Duration::from_secs(10))
+                    .min(peer_ready_at + Duration::from_secs(25))
+                    .min(work_deadline);
+                loop {
+                    assert!(
+                        Instant::now() < deadline,
+                        "DNS result UNAVAILABLE: collection deadline"
+                    );
+                    assert!(
+                        !peer.pipe_failed.load(Ordering::SeqCst),
+                        "DNS peer pipe failure"
+                    );
+                    assert!(
+                        peer.child.try_wait().expect("owned peer status").is_none(),
+                        "DNS peer early exit"
+                    );
+                    match peer.output.try_recv() {
+                        Err(mpsc::TryRecvError::Empty) => {}
+                        _ => panic!("DNS peer unexpected event/EOF before shutdown"),
+                    }
+                    let snapshot = runtime
+                        .with_active_port(|port, child| {
+                            let running = port
+                                .running
+                                .get_mut(&child.identity())
+                                .expect("owned DNS child");
+                            if !running.child.is_running().map_err(|_| SidecarPortError)? {
+                                return Err(SidecarPortError);
+                            }
+                            running
+                                .child
+                                .test_dns_probe_snapshot()
+                                .ok_or(SidecarPortError)
+                        })
+                        .expect("live DNS owner")
+                        .expect("DNS capture required");
+                    assert_eq!(snapshot.pid, pid);
+                    match snapshot.status {
+                        TestDnsProbeStatus::Success => break,
+                        TestDnsProbeStatus::Failure(reason) => {
+                            panic!("DNS probe fixed failure={reason:?}")
+                        }
+                        TestDnsProbeStatus::Pending => {}
+                    }
+                    thread::sleep(
+                        remaining(deadline, Duration::from_millis(25))
+                            .expect("DNS collection deadline"),
+                    );
+                }
+            }));
+            // 所有失败（包括 panic）均先交由真实 owner 清理 DUT，再结束 peer。
+            let dut_stopped = runtime.stop().is_ok();
+            let port = runtime.into_port();
+            if let Some(snapshot) = &port.last_dns_probe {
+                println!(
+                    "task009 dns_probe status={:?} addresses={:?} records={:?} pid={} spawned_at={:?} received_bytes={} eof={} reader_joined={}",
+                    snapshot.status,
+                    snapshot.addresses,
+                    snapshot.records,
+                    snapshot.pid,
+                    snapshot.spawned_at,
+                    snapshot.received_bytes,
+                    snapshot.eof,
+                    snapshot.reader_joined
+                );
+            }
+            let peer_cleanup = peer.finish(dut_stopped);
+            dut_private.fill(0);
+            peer_private.fill(0);
+            token_bytes.fill(0);
+            assert!(
+                dut_stopped,
+                "DUT cleanup failed; retain private resources and fixture"
+            );
+            peer_cleanup.expect("peer stopped/exit/pipes all confirmed");
+            let cleanup_deadline = peer.started + Duration::from_secs(59);
+            let peer_after = owned_sockets(peer_pid, &root, cleanup_deadline);
+            assert!(peer_after.tcp.is_empty() && peer_after.udp.is_empty());
+            if let Some(pid) = dut_pid {
+                let dut_after = owned_sockets(pid, &root, cleanup_deadline);
+                assert!(dut_after.tcp.is_empty() && dut_after.udp.is_empty());
+            }
+            assert!(port.running.is_empty() && !port.has_pending_cleanup());
+            assert_eq!(
+                fs::read_dir(data.join(RUNTIME_DIRECTORY))
+                    .expect("private runtime root")
+                    .count(),
+                0
+            );
+            println!(
+                "task009 dns_probe cleanup=dut_then_reader_then_peer confirmed=true stderr_bytes={} discarded={:?}",
+                peer.stderr_bytes.load(Ordering::SeqCst),
+                peer.dns_discarded
+            );
+            if let Err(panic) = assertions {
+                std::panic::resume_unwind(panic);
+            }
+            let final_snapshot = port
+                .last_dns_probe
+                .as_ref()
+                .expect("final DNS snapshot required");
+            assert_eq!(
+                final_snapshot.status,
+                crate::singbox::managed_sidecar::TestDnsProbeStatus::Success
+            );
+            assert!(final_snapshot.eof && final_snapshot.reader_joined);
+            assert!(!final_snapshot.addresses.is_empty());
+            assert_eq!(Some(final_snapshot.pid), dut_pid);
+            assert!(peer.dns_discarded.is_some());
+            for (owned_path, parent) in [(data, std::env::temp_dir()), (root, target)] {
+                let resolved = owned_path.canonicalize().expect("resolved owned fixture");
+                let parent = parent.canonicalize().expect("resolved parent");
+                assert_eq!(resolved.parent(), Some(parent.as_path()));
+                assert_eq!(
+                    resolved.file_name().expect("owned name"),
+                    std::ffi::OsStr::new(&name)
+                );
+                fs::remove_dir_all(resolved).expect("remove only successful owned fixture");
             }
         }
 

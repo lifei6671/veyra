@@ -48,10 +48,12 @@ func runReject(initial command, born time.Time, inputs <-chan inputResult, out i
 		failure("bind", "resource_error")
 		return 1
 	}
-	if p.bind.port == *initial.TCPPort || p.bind.port == *initial.UDPPort {
-		p.close()
-		failure("bind", "resource_error")
-		return 1
+	for _, port := range p.watch.reject.ports {
+		if p.bind.port == port {
+			p.close()
+			failure("bind", "resource_error")
+			return 1
+		}
 	}
 	ready := base("ready")
 	ready["udp_port"] = p.bind.port
