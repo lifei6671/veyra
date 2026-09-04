@@ -31,3 +31,6 @@ src-tauri/target/
 
 # 受控打包阶段下载并校验的 sing-box 资产；不得作为 Git 大二进制提交。
 src-tauri/binaries/
+.playwright-cli/
+.sdlc/evidence/
+.sdlc/design/
