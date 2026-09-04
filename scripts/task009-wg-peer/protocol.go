@@ -11,16 +11,18 @@ import (
 )
 
 type command struct {
-	V       int      `json:"v"`
-	Op      string   `json:"op"`
-	RunID   string   `json:"run_id"`
-	DUT     []uint16 `json:"dut_private_key"`
-	Peer    []uint16 `json:"peer_private_key"`
-	Token   string   `json:"token"`
-	Stopped *bool    `json:"dut_stopped"`
-	TCPPort *uint16  `json:"tcp_port,omitempty"`
-	UDPPort *uint16  `json:"udp_port,omitempty"`
-	Phase   *int     `json:"phase,omitempty"`
+	V              int      `json:"v"`
+	Op             string   `json:"op"`
+	RunID          string   `json:"run_id"`
+	DUT            []uint16 `json:"dut_private_key"`
+	Peer           []uint16 `json:"peer_private_key"`
+	Token          string   `json:"token"`
+	Stopped        *bool    `json:"dut_stopped"`
+	VirtualTCPPort *uint16  `json:"virtual_tcp_port,omitempty"`
+	HostTCPPort    *uint16  `json:"host_tcp_port,omitempty"`
+	VirtualUDPPort *uint16  `json:"virtual_udp_port,omitempty"`
+	HostUDPPort    *uint16  `json:"host_udp_port,omitempty"`
+	Phase          *int     `json:"phase,omitempty"`
 }
 
 func hex16(s string) bool {
@@ -70,7 +72,7 @@ func decodeCommand(line []byte) (command, error) {
 		return c, errors.New("protocol identity")
 	}
 	switch c.Op {
-	case "init", "init_udp", "init_reject":
+	case "init", "init_udp", "init_reject", "init_dns_probe", "init_domain_http", "init_domain_tls":
 		if !hex16(c.Token) || len(c.DUT) != 32 || len(c.Peer) != 32 || c.Stopped != nil {
 			return c, errors.New("init fields")
 		}
@@ -96,10 +98,18 @@ func decodeCommand(line []byte) (command, error) {
 		return c, errors.New("operation")
 	}
 	if c.Op == "init_reject" {
-		if c.TCPPort == nil || c.UDPPort == nil || *c.TCPPort == 0 || *c.UDPPort == 0 || *c.TCPPort == 9090 || *c.UDPPort == 9090 || *c.TCPPort == *c.UDPPort {
-			return c, errors.New("target ports")
+		ports := []*uint16{c.VirtualTCPPort, c.HostTCPPort, c.VirtualUDPPort, c.HostUDPPort}
+		for i, port := range ports {
+			if port == nil || *port == 0 || *port == 9090 {
+				return c, errors.New("target ports")
+			}
+			for _, previous := range ports[:i] {
+				if *port == *previous {
+					return c, errors.New("target ports")
+				}
+			}
 		}
-	} else if seen["tcp_port"] || seen["udp_port"] {
+	} else if seen["virtual_tcp_port"] || seen["host_tcp_port"] || seen["virtual_udp_port"] || seen["host_udp_port"] {
 		return c, errors.New("unexpected ports")
 	}
 	if c.Op == "begin_phase" {
@@ -111,7 +121,7 @@ func decodeCommand(line []byte) (command, error) {
 	}
 	allowed := map[string]bool{"v": true, "op": true, "run_id": true}
 	switch c.Op {
-	case "init", "init_udp", "init_reject":
+	case "init", "init_udp", "init_reject", "init_dns_probe", "init_domain_http", "init_domain_tls":
 		allowed["dut_private_key"] = true
 		allowed["peer_private_key"] = true
 		allowed["token"] = true
@@ -121,8 +131,10 @@ func decodeCommand(line []byte) (command, error) {
 		allowed["phase"] = true
 	}
 	if c.Op == "init_reject" {
-		allowed["tcp_port"] = true
-		allowed["udp_port"] = true
+		allowed["virtual_tcp_port"] = true
+		allowed["host_tcp_port"] = true
+		allowed["virtual_udp_port"] = true
+		allowed["host_udp_port"] = true
 	}
 	if len(allowed) != len(seen) {
 		return c, errors.New("field set")

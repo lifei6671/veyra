@@ -15,6 +15,23 @@ use super::managed_sidecar::ApiSecret;
 const DNS_TAG: &str = "dns-system";
 const API_ADDRESS: &str = "127.0.0.1:9090";
 
+#[cfg(test)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub(crate) enum WgDomainProbe {
+    Http,
+    Tls,
+}
+
+#[cfg(test)]
+impl WgDomainProbe {
+    pub(crate) fn url(self) -> &'static str {
+        match self {
+            Self::Http => "http://veyra.disign.me:18080/task009-wg-domain",
+            Self::Tls => "https://veyra.disign.me:18443/task009-wg-domain",
+        }
+    }
+}
+
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum RuntimeProfile {
     ObservationOnly,
@@ -73,6 +90,14 @@ impl Drop for GeneratedConfig {
 }
 
 impl GeneratedConfig {
+    #[cfg(test)]
+    pub(crate) fn is_dns_probe(&self) -> Result<bool, CompileError> {
+        self.validate_final()?;
+        let document: Document = serde_json::from_slice(&self.bytes)
+            .map_err(|_| CompileError::InvalidFinalConfiguration)?;
+        Ok(!document.log.disabled)
+    }
+
     pub fn as_bytes(&self) -> &[u8] {
         &self.bytes
     }
@@ -107,14 +132,73 @@ pub struct SingBoxCompiler;
 
 #[cfg(test)]
 impl SingBoxCompiler {
+    // Port通过固定关联常量传递封闭枚举，无需公开compiler模块。
+    pub(crate) const WG_DOMAIN_HTTP: WgDomainProbe = WgDomainProbe::Http;
+    pub(crate) const WG_DOMAIN_TLS: WgDomainProbe = WgDomainProbe::Tls;
+
+    /// DNS预检只扩展测试日志；查询与WG仍走普通编译路径。
+    pub(crate) fn compile_dns_probe(
+        &self,
+        intent: &RuntimeIntent,
+        default_target: &RouteTarget,
+    ) -> Result<SingBoxPlan, CompileError> {
+        if !matches!(intent.pools.as_slice(), [pool] if matches!(
+            &pool.selection,
+            SelectionPolicy::UrlTest { probe_url, .. }
+                if probe_url == "http://veyra.disign.me:18080/task009-dns-preflight"
+        )) {
+            return Err(CompileError::InvalidFinalConfiguration);
+        }
+        let mut plan = self.compile(
+            intent,
+            default_target,
+            DnsPolicy::System,
+            RuntimeProfile::ObservationOnly,
+        )?;
+        plan.document.log = LogConfig {
+            disabled: false,
+            level: Some("debug".into()),
+            output: Some("stderr".into()),
+        };
+        plan.document.validate(false)?;
+        Ok(plan)
+    }
+
+    /// 仅两个固定域名用例可以复用私有DNS日志；普通编译及旧预检资格不变。
+    pub(crate) fn compile_wireguard_domain(
+        &self,
+        intent: &RuntimeIntent,
+        default_target: &RouteTarget,
+        dns: DnsPolicy,
+        mode: WgDomainProbe,
+    ) -> Result<SingBoxPlan, CompileError> {
+        if !matches!(intent.pools.as_slice(), [pool] if matches!(
+            &pool.selection,
+            SelectionPolicy::UrlTest { probe_url, .. } if probe_url == mode.url()
+        )) {
+            return Err(CompileError::InvalidFinalConfiguration);
+        }
+        let mut plan =
+            self.compile(intent, default_target, dns, RuntimeProfile::ObservationOnly)?;
+        plan.document.log = LogConfig {
+            disabled: false,
+            level: Some("debug".into()),
+            output: Some("stderr".into()),
+        };
+        plan.document.validate(false)?;
+        Ok(plan)
+    }
+
     /// 仅为同路径拒绝验证生成精确阳性对照；正常编译仍以 WG 拒绝规则开头。
     pub(crate) fn compile_wireguard_local_positive(
         &self,
         intent: &RuntimeIntent,
         default_target: &RouteTarget,
         dns: DnsPolicy,
-        tcp_port: NonZeroU16,
-        udp_port: NonZeroU16,
+        virtual_tcp_port: NonZeroU16,
+        host_tcp_port: NonZeroU16,
+        virtual_udp_port: NonZeroU16,
+        host_udp_port: NonZeroU16,
     ) -> Result<SingBoxPlan, CompileError> {
         if intent.nodes.len() != 1
             || intent.pools.len() != 1
@@ -132,12 +216,14 @@ impl SingBoxCompiler {
         plan.document.route.rules.splice(
             0..0,
             [
-                (tcp_port, NetworkProtocol::Tcp),
-                (udp_port, NetworkProtocol::Udp),
+                (virtual_tcp_port, "127.0.0.1/32", NetworkProtocol::Tcp),
+                (host_tcp_port, "172.26.192.1/32", NetworkProtocol::Tcp),
+                (virtual_udp_port, "127.0.0.1/32", NetworkProtocol::Udp),
+                (host_udp_port, "172.26.192.1/32", NetworkProtocol::Udp),
             ]
-            .map(|(port, network)| CoreRule {
+            .map(|(port, address, network)| CoreRule {
                 inbound: Some(vec![tag.clone()]),
-                ip_cidr: Some(vec!["127.0.0.1/32".to_owned()]),
+                ip_cidr: Some(vec![address.to_owned()]),
                 port: Some(vec![port.get()]),
                 network: Some(vec![network]),
                 outbound: Some("direct".to_owned()),
@@ -283,7 +369,13 @@ impl ConfigCompiler for SingBoxCompiler {
             rules.push(route_rule(route)?);
         }
         let document = Document {
-            log: LogConfig { disabled: true },
+            log: LogConfig {
+                disabled: true,
+                #[cfg(test)]
+                level: None,
+                #[cfg(test)]
+                output: None,
+            },
             dns: DnsConfig {
                 servers: vec![DnsServer {
                     kind: "local".to_owned(),
@@ -350,6 +442,12 @@ struct TestInbound {
 #[serde(deny_unknown_fields)]
 struct LogConfig {
     disabled: bool,
+    #[cfg(test)]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    level: Option<String>,
+    #[cfg(test)]
+    #[serde(skip_serializing_if = "Option::is_none")]
+    output: Option<String>,
 }
 
 #[derive(Clone, Serialize, Deserialize)]
@@ -1022,6 +1120,18 @@ impl CoreOutbound {
 impl Document {
     fn validate(&self, bound: bool) -> Result<(), CompileError> {
         #[cfg(test)]
+        if !self.log.disabled || self.log.level.is_some() || self.log.output.is_some() {
+            self.validate_dns_probe()?;
+            let mut ordinary = self.clone();
+            ordinary.log = LogConfig {
+                disabled: true,
+                level: None,
+                output: None,
+            };
+            // 完整识别诊断元组后仍执行产品校验；不与其它测试例外组合。
+            return ordinary.validate_standard(bound);
+        }
+        #[cfg(test)]
         if self
             .route
             .rules
@@ -1029,9 +1139,9 @@ impl Document {
             .is_some_and(|rule| rule.inbound.is_some() && rule.action.as_deref() != Some("reject"))
         {
             self.validate_test_local_positive()?;
-            // 仅剥离已完整识别的两个测试规则，余下配置复用产品校验。
+            // 仅剥离已完整识别的四个目标规则，余下配置复用产品校验。
             let mut protected = self.clone();
-            protected.route.rules.drain(..2);
+            protected.route.rules.drain(..4);
             return protected.validate_standard(bound);
         }
         self.validate_standard(bound)
@@ -1203,6 +1313,58 @@ impl Document {
     }
 
     #[cfg(test)]
+    fn validate_dns_probe(&self) -> Result<(), CompileError> {
+        let rejected = CompileError::InvalidFinalConfiguration;
+        let [endpoint] = self.endpoints.as_slice() else {
+            return Err(rejected);
+        };
+        let [peer] = endpoint.peers.as_slice() else {
+            return Err(rejected);
+        };
+        if self.log.disabled
+            || self.log.level.as_deref() != Some("debug")
+            || self.log.output.as_deref() != Some("stderr")
+            || !self.inbounds.is_empty()
+            || self.outbounds.len() != 3
+            || self.route.rules.len() != 1
+            || self.dns.rules.len() != 1
+            || endpoint.address.as_slice() != ["198.18.0.1/32"]
+            || endpoint.mtu != Some(1280)
+            || peer.address != "127.0.0.1"
+            || [0, 9090].contains(&peer.port)
+            || peer.pre_shared_key.is_some()
+            || peer.reserved.is_some()
+        {
+            return Err(rejected);
+        }
+        let mut pools = 0;
+        for outbound in &self.outbounds {
+            match outbound {
+                CoreOutbound::Direct(_) | CoreOutbound::Block(_) => {}
+                CoreOutbound::Urltest(pool)
+                    if pool.tag == self.route.final_outbound
+                        && pool.outbounds.as_slice() == [endpoint.tag.as_str()]
+                        && [
+                            "http://veyra.disign.me:18080/task009-dns-preflight",
+                            WgDomainProbe::Http.url(),
+                            WgDomainProbe::Tls.url(),
+                        ]
+                        .contains(&pool.url.as_str())
+                        && pool.interval == "300s"
+                        && pool.tolerance == 50 =>
+                {
+                    pools += 1;
+                }
+                _ => return Err(rejected),
+            }
+        }
+        if pools != 1 {
+            return Err(rejected);
+        }
+        Ok(())
+    }
+
+    #[cfg(test)]
     fn validate_test_local_positive(&self) -> Result<(), CompileError> {
         let rejected = CompileError::InvalidFinalConfiguration;
         let [endpoint] = self.endpoints.as_slice() else {
@@ -1211,15 +1373,29 @@ impl Document {
         let [peer] = endpoint.peers.as_slice() else {
             return Err(rejected);
         };
-        let [tcp, udp, _, user_rule] = self.route.rules.as_slice() else {
+        let [virtual_tcp, host_tcp, virtual_udp, host_udp, _, user_rule] =
+            self.route.rules.as_slice()
+        else {
             return Err(rejected);
         };
-        let Some([tcp_port]) = tcp.port.as_deref() else {
+        let Some([virtual_tcp_port]) = virtual_tcp.port.as_deref() else {
             return Err(rejected);
         };
-        let Some([udp_port]) = udp.port.as_deref() else {
+        let Some([host_tcp_port]) = host_tcp.port.as_deref() else {
             return Err(rejected);
         };
+        let Some([virtual_udp_port]) = virtual_udp.port.as_deref() else {
+            return Err(rejected);
+        };
+        let Some([host_udp_port]) = host_udp.port.as_deref() else {
+            return Err(rejected);
+        };
+        let ports = [
+            *virtual_tcp_port,
+            *host_tcp_port,
+            *virtual_udp_port,
+            *host_udp_port,
+        ];
         if !self.inbounds.is_empty()
             || endpoint.address.as_slice() != ["198.18.0.1/32"]
             || endpoint.mtu != Some(1280)
@@ -1227,19 +1403,25 @@ impl Document {
             || peer.port == 9090
             || peer.pre_shared_key.is_some()
             || peer.reserved.is_some()
-            || tcp_port == udp_port
-            || [*tcp_port, *udp_port]
+            || ports
                 .iter()
-                .any(|port| [0, 9090, peer.port].contains(port))
+                .enumerate()
+                .any(|(index, port)| ports[..index].contains(port))
+            || ports.iter().any(|port| [0, 9090, peer.port].contains(port))
             || self.outbounds.len() != 3
-            || user_rule.port.as_deref() != Some(&[*tcp_port, *udp_port])
+            || user_rule.port.as_deref() != Some(ports.as_slice())
             || user_rule.outbound.as_deref() != Some("direct")
         {
             return Err(rejected);
         }
-        for (rule, network) in [(tcp, NetworkProtocol::Tcp), (udp, NetworkProtocol::Udp)] {
+        for (rule, address, network) in [
+            (virtual_tcp, "127.0.0.1/32", NetworkProtocol::Tcp),
+            (host_tcp, "172.26.192.1/32", NetworkProtocol::Tcp),
+            (virtual_udp, "127.0.0.1/32", NetworkProtocol::Udp),
+            (host_udp, "172.26.192.1/32", NetworkProtocol::Udp),
+        ] {
             if rule.inbound.as_deref() != Some(std::slice::from_ref(&endpoint.tag))
-                || rule.ip_cidr.as_deref() != Some(&["127.0.0.1/32".to_owned()])
+                || rule.ip_cidr.as_deref() != Some(&[address.to_owned()])
                 || rule.network.as_deref() != Some(&[network])
                 || rule.outbound.as_deref() != Some("direct")
                 || rule.action.is_some()
@@ -1942,10 +2124,291 @@ mod tests {
             name: "Local targets".to_owned(),
             enabled: true,
             priority: 0,
-            matcher: TrafficMatcher::Port(vec![24003, 24004]),
+            matcher: TrafficMatcher::Port(vec![24003, 24004, 24005, 24006]),
             target: RouteTarget::Direct,
         }];
         intent
+    }
+
+    #[test]
+    fn dns_probe_final_bytes_preserve_normal_dns_and_reject_boundaries() {
+        let mut intent = wireguard_udp_intent();
+        intent.pools[0].selection = SelectionPolicy::UrlTest {
+            probe_url: "http://veyra.disign.me:18080/task009-dns-preflight".into(),
+            interval_secs: 300,
+            tolerance_ms: 50,
+        };
+        let target = RouteTarget::Pool(intent.pools[0].id.clone());
+        let ordinary = SingBoxCompiler
+            .compile(
+                &intent,
+                &target,
+                DnsPolicy::System,
+                RuntimeProfile::ObservationOnly,
+            )
+            .unwrap()
+            .finalize(&test_api_secret())
+            .unwrap();
+        assert!(!ordinary.is_dns_probe().unwrap());
+        let candidate = SingBoxCompiler
+            .compile_dns_probe(&intent, &target)
+            .unwrap()
+            .finalize(&test_api_secret())
+            .unwrap();
+        assert!(candidate.is_dns_probe().unwrap());
+        let original: Value = serde_json::from_slice(candidate.as_bytes()).unwrap();
+        let mut restored = original.clone();
+        restored["log"] = json!({"disabled":true});
+        assert_eq!(
+            restored,
+            serde_json::from_slice::<Value>(ordinary.as_bytes()).unwrap()
+        );
+        for (pointer, value) in [
+            ("/log/disabled", json!(true)),
+            ("/log/level", json!("info")),
+            ("/log/output", json!("stdout")),
+            ("/log/output", json!("dns.log")),
+            ("/endpoints/0/peers/0/address", json!("veyra.disign.me")),
+            ("/endpoints/0/peers/0/port", json!(9090)),
+            ("/endpoints/0/address", json!(["198.18.0.9/32"])),
+            ("/endpoints/0/mtu", json!(1400)),
+            ("/route/rules", json!([])),
+            ("/dns/rules", json!([])),
+            ("/dns/servers/0/type", json!("udp")),
+            ("/dns/final", json!("direct")),
+            ("/route/default_domain_resolver", json!("other")),
+            (
+                "/experimental/clash_api/external_controller",
+                json!("0.0.0.0:9090"),
+            ),
+        ] {
+            let mut invalid = original.clone();
+            *invalid.pointer_mut(pointer).unwrap() = value;
+            rejects(invalid);
+        }
+        let pool_index = original["outbounds"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .position(|value| value["type"] == "urltest")
+            .unwrap();
+        for (field, value) in [
+            (
+                "url",
+                json!("http://other.invalid:18080/task009-dns-preflight"),
+            ),
+            ("interval", json!("1s")),
+            ("tolerance", json!(51)),
+            ("outbounds", json!(["direct"])),
+        ] {
+            let mut invalid = original.clone();
+            invalid["outbounds"][pool_index][field] = value;
+            rejects(invalid);
+        }
+        for field in ["level", "output"] {
+            let mut missing = original.clone();
+            missing["log"].as_object_mut().unwrap().remove(field);
+            rejects(missing);
+            let mut null = restored.clone();
+            null["log"][field] = Value::Null;
+            rejects(null);
+        }
+        let mut extra = original.clone();
+        extra["log"]["timestamp"] = json!(false);
+        rejects(extra);
+        let mut unsupported = original.clone();
+        unsupported["log"]["disable_color"] = json!(true);
+        rejects(unsupported);
+        let mut mixed = original.clone();
+        mixed["route"]["rules"]
+            .as_array_mut()
+            .unwrap()
+            .push(json!({"port":[18080],"outbound":"direct"}));
+        rejects(mixed);
+        let mut wrong_secret = original;
+        wrong_secret["experimental"]["clash_api"]["secret"] = json!("invalid");
+        rejects(wrong_secret);
+    }
+
+    #[test]
+    fn dns_probe_rejects_non_probe_intents_and_duplicate_log_fields() {
+        let intent = wireguard_udp_intent();
+        let target = RouteTarget::Pool(intent.pools[0].id.clone());
+        assert!(SingBoxCompiler.compile_dns_probe(&intent, &target).is_err());
+        let mut probe = intent;
+        probe.pools[0].selection = SelectionPolicy::UrlTest {
+            probe_url: "http://veyra.disign.me:18080/task009-dns-preflight".into(),
+            interval_secs: 300,
+            tolerance_ms: 50,
+        };
+        let config = SingBoxCompiler
+            .compile_dns_probe(&probe, &target)
+            .unwrap()
+            .finalize(&test_api_secret())
+            .unwrap();
+        let encoded = String::from_utf8(config.as_bytes().to_vec()).unwrap();
+        for field in [
+            "\"disabled\":false",
+            "\"level\":\"debug\"",
+            "\"output\":\"stderr\"",
+        ] {
+            let duplicate = encoded.replacen(field, &format!("{field},{field}"), 1);
+            assert_ne!(duplicate, encoded);
+            assert!(
+                GeneratedConfig::from_bytes(duplicate.into_bytes())
+                    .is_dns_probe()
+                    .is_err()
+            );
+        }
+    }
+
+    #[test]
+    fn wireguard_domain_modes_preserve_ordinary_configuration_and_reject_wrong_mode() {
+        for mode in [WgDomainProbe::Http, WgDomainProbe::Tls] {
+            let mut intent = wireguard_udp_intent();
+            intent.pools[0].selection = SelectionPolicy::UrlTest {
+                probe_url: mode.url().into(),
+                interval_secs: 300,
+                tolerance_ms: 50,
+            };
+            let target = RouteTarget::Pool(intent.pools[0].id.clone());
+            let ordinary = SingBoxCompiler
+                .compile(
+                    &intent,
+                    &target,
+                    DnsPolicy::System,
+                    RuntimeProfile::ObservationOnly,
+                )
+                .unwrap()
+                .finalize(&test_api_secret())
+                .unwrap();
+            let candidate = SingBoxCompiler
+                .compile_wireguard_domain(&intent, &target, DnsPolicy::System, mode)
+                .unwrap()
+                .finalize(&test_api_secret())
+                .unwrap();
+            assert!(candidate.is_dns_probe().unwrap());
+            assert!(!ordinary.is_dns_probe().unwrap());
+            let mut restored: Value = serde_json::from_slice(candidate.as_bytes()).unwrap();
+            assert_eq!(
+                restored["log"],
+                json!({"disabled":false,"level":"debug","output":"stderr"})
+            );
+            restored["log"] = json!({"disabled":true});
+            assert_eq!(
+                restored,
+                serde_json::from_slice::<Value>(ordinary.as_bytes()).unwrap()
+            );
+            // 旧丢包模式不能被用来启动新业务模式，枚举也不能与另一URL串用。
+            assert!(SingBoxCompiler.compile_dns_probe(&intent, &target).is_err());
+            let wrong = if mode == WgDomainProbe::Http {
+                WgDomainProbe::Tls
+            } else {
+                WgDomainProbe::Http
+            };
+            assert!(
+                SingBoxCompiler
+                    .compile_wireguard_domain(&intent, &target, DnsPolicy::System, wrong)
+                    .is_err()
+            );
+        }
+    }
+
+    #[test]
+    fn wireguard_domain_final_bytes_reject_unapproved_addresses_routes_and_logging() {
+        for mode in [WgDomainProbe::Http, WgDomainProbe::Tls] {
+            let mut intent = wireguard_udp_intent();
+            intent.pools[0].selection = SelectionPolicy::UrlTest {
+                probe_url: mode.url().into(),
+                interval_secs: 300,
+                tolerance_ms: 50,
+            };
+            let target = RouteTarget::Pool(intent.pools[0].id.clone());
+            let config = SingBoxCompiler
+                .compile_wireguard_domain(&intent, &target, DnsPolicy::System, mode)
+                .unwrap()
+                .finalize(&test_api_secret())
+                .unwrap();
+            let original: Value = serde_json::from_slice(config.as_bytes()).unwrap();
+            for (pointer, value) in [
+                ("/log/disabled", json!(true)),
+                ("/log/level", json!("info")),
+                ("/log/output", json!("stdout")),
+                ("/endpoints/0/peers/0/address", json!("veyra.disign.me")),
+                ("/endpoints/0/peers/0/address", json!("203.88.124.39")),
+                ("/endpoints/0/peers/0/port", json!(9090)),
+                (
+                    "/endpoints/0/address",
+                    json!(["198.18.0.1/32", "fc00::1/128"]),
+                ),
+                ("/endpoints/0/mtu", json!(1400)),
+                ("/route/rules", json!([])),
+                ("/dns/rules", json!([])),
+                ("/dns/servers/0/type", json!("udp")),
+                ("/route/default_domain_resolver", json!("other")),
+                (
+                    "/experimental/clash_api/external_controller",
+                    json!("0.0.0.0:9090"),
+                ),
+            ] {
+                let mut invalid = original.clone();
+                *invalid.pointer_mut(pointer).unwrap() = value;
+                rejects(invalid);
+            }
+            let pool = original["outbounds"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .position(|outbound| outbound["type"] == "urltest")
+                .unwrap();
+            for (field, value) in [
+                ("url", json!("http://198.20.0.255:18080/task009-wg-domain")),
+                (
+                    "url",
+                    json!("https://veyra.disign.me:18080/task009-wg-domain"),
+                ),
+                (
+                    "url",
+                    json!("http://veyra.disign.me:18443/task009-wg-domain"),
+                ),
+                ("url", json!(format!("{}?extra=1", mode.url()))),
+                ("interval", json!("1s")),
+                ("tolerance", json!(51)),
+                ("outbounds", json!(["direct"])),
+            ] {
+                let mut invalid = original.clone();
+                invalid["outbounds"][pool][field] = value;
+                rejects(invalid);
+            }
+            for field in ["level", "output"] {
+                let mut missing = original.clone();
+                missing["log"].as_object_mut().unwrap().remove(field);
+                rejects(missing);
+                let mut null = original.clone();
+                null["log"][field] = Value::Null;
+                rejects(null);
+            }
+            let mut invalid = original.clone();
+            invalid["route"]["rules"]
+                .as_array_mut()
+                .unwrap()
+                .push(json!({"port":[18080],"outbound":"direct"}));
+            rejects(invalid);
+            let encoded = String::from_utf8(config.as_bytes().to_vec()).unwrap();
+            let duplicate = encoded.replacen(
+                "\"level\":\"debug\"",
+                "\"level\":\"debug\",\"level\":\"debug\"",
+                1,
+            );
+            assert!(
+                GeneratedConfig::from_bytes(duplicate.into_bytes())
+                    .is_dns_probe()
+                    .is_err()
+            );
+            let mut invalid = original;
+            invalid["log"]["disable_color"] = json!(true);
+            rejects(invalid);
+        }
     }
 
     fn wireguard_local_plan(intent: &RuntimeIntent) -> Result<SingBoxPlan, CompileError> {
@@ -1953,8 +2416,10 @@ mod tests {
             intent,
             &RouteTarget::Pool(PoolId("manual".to_owned())),
             DnsPolicy::System,
-            NonZeroU16::new(24003).expect("TCP port"),
-            NonZeroU16::new(24004).expect("UDP port"),
+            NonZeroU16::new(24003).expect("virtual TCP port"),
+            NonZeroU16::new(24004).expect("host TCP port"),
+            NonZeroU16::new(24005).expect("virtual UDP port"),
+            NonZeroU16::new(24006).expect("host UDP port"),
         )
     }
 
@@ -1987,9 +2452,11 @@ mod tests {
                 value["route"]["rules"],
                 json!([
                     {"inbound":["node-node"],"ip_cidr":["127.0.0.1/32"],"port":[24003],"network":["tcp"],"outbound":"direct"},
-                    {"inbound":["node-node"],"ip_cidr":["127.0.0.1/32"],"port":[24004],"network":["udp"],"outbound":"direct"},
+                    {"inbound":["node-node"],"ip_cidr":["172.26.192.1/32"],"port":[24004],"network":["tcp"],"outbound":"direct"},
+                    {"inbound":["node-node"],"ip_cidr":["127.0.0.1/32"],"port":[24005],"network":["udp"],"outbound":"direct"},
+                    {"inbound":["node-node"],"ip_cidr":["172.26.192.1/32"],"port":[24006],"network":["udp"],"outbound":"direct"},
                     {"inbound":["node-node"],"action":"reject"},
-                    {"port":[24003,24004],"outbound":"direct"}
+                    {"port":[24003,24004,24005,24006],"outbound":"direct"}
                 ])
             );
             assert_eq!(
@@ -2015,7 +2482,7 @@ mod tests {
         changed.routes[0].target = RouteTarget::Block;
         variants.push(changed);
         let mut changed = original.clone();
-        changed.routes[0].matcher = TrafficMatcher::Port(vec![24004, 24003]);
+        changed.routes[0].matcher = TrafficMatcher::Port(vec![24004, 24003, 24005, 24006]);
         variants.push(changed);
         let mut changed = original.clone();
         changed.nodes[0].server = "localhost".to_owned();
@@ -2037,24 +2504,29 @@ mod tests {
                 "unapproved intent {index}"
             );
         }
-        for (tcp, udp) in [
-            (9090, 24004),
-            (24003, 9090),
-            (24002, 24004),
-            (24003, 24002),
-            (24003, 24003),
-        ] {
-            assert!(
-                SingBoxCompiler
-                    .compile_wireguard_local_positive(
-                        &original,
-                        &RouteTarget::Pool(PoolId("manual".to_owned())),
-                        DnsPolicy::System,
-                        NonZeroU16::new(tcp).expect("TCP"),
-                        NonZeroU16::new(udp).expect("UDP")
-                    )
-                    .is_err()
-            );
+        for index in 0..4 {
+            for invalid in [9090, 24002, [24004, 24005, 24006, 24003][index]] {
+                let mut ports = [24003, 24004, 24005, 24006];
+                ports[index] = invalid;
+                let mut changed = original.clone();
+                changed.routes[0].matcher = TrafficMatcher::Port(ports.to_vec());
+                let [vt, ht, vu, hu] = ports.map(|port| NonZeroU16::new(port).expect("port"));
+                assert!(
+                    SingBoxCompiler
+                        .compile_wireguard_local_positive(
+                            &changed,
+                            &RouteTarget::Pool(PoolId("manual".to_owned())),
+                            DnsPolicy::System,
+                            vt,
+                            ht,
+                            vu,
+                            hu,
+                        )
+                        .is_err(),
+                    "invalid target port at case {}",
+                    index + 1
+                );
+            }
         }
     }
 
@@ -2070,10 +2542,17 @@ mod tests {
             ("/route/rules/0/ip_cidr", json!(["0.0.0.0/0"])),
             ("/route/rules/0/port", json!([24005])),
             ("/route/rules/0/network", json!(["udp"])),
-            ("/route/rules/1/network", json!(["tcp"])),
+            ("/route/rules/1/network", json!(["udp"])),
+            ("/route/rules/1/ip_cidr", json!(["127.0.0.1/32"])),
+            ("/route/rules/1/port", json!([24006])),
+            ("/route/rules/2/network", json!(["tcp"])),
+            ("/route/rules/2/ip_cidr", json!(["172.26.192.1/32"])),
+            ("/route/rules/3/network", json!(["tcp"])),
+            ("/route/rules/3/ip_cidr", json!(["172.26.192.2/32"])),
+            ("/route/rules/3/port", json!([24004])),
             ("/route/rules/1/outbound", json!("block")),
-            ("/route/rules/2/action", json!("route")),
-            ("/route/rules/3/port", json!([24004, 24003])),
+            ("/route/rules/4/action", json!("route")),
+            ("/route/rules/5/port", json!([24004, 24003, 24005, 24006])),
             ("/dns/rules/0/action", json!("route")),
             ("/endpoints/0/address", json!(["198.18.0.3/32"])),
             ("/endpoints/0/mtu", json!(1400)),
@@ -2105,7 +2584,10 @@ mod tests {
         for path in [
             "/route/rules/0",
             "/route/rules/1",
+            "/route/rules/2",
             "/route/rules/3",
+            "/route/rules/4",
+            "/route/rules/5",
             "/endpoints/0",
             "/outbounds/0",
         ] {
@@ -2118,7 +2600,7 @@ mod tests {
                 .insert("unexpected".to_owned(), json!(true));
             rejects(changed);
         }
-        for (left, right) in [(0, 1), (0, 2), (1, 3)] {
+        for (left, right) in [(0, 1), (0, 2), (1, 3), (0, 4), (3, 5)] {
             let mut changed = original.clone();
             changed["route"]["rules"]
                 .as_array_mut()
@@ -2130,7 +2612,21 @@ mod tests {
         changed["route"]["rules"][0]["domain"] = json!(["example.invalid"]);
         rejects(changed);
         let mut changed = original.clone();
-        changed["route"]["rules"][3]["network"] = json!(["tcp"]);
+        changed["route"]["rules"][5]["network"] = json!(["tcp"]);
+        rejects(changed);
+        // 完整读回必须同样拒绝保留端口和端口碰撞，不能只依赖构造入口。
+        for index in 0..4 {
+            for invalid in [0, 9090, 24002, [24004, 24005, 24006, 24003][index]] {
+                let mut changed = original.clone();
+                changed["route"]["rules"][index]["port"] = json!([invalid]);
+                changed["route"]["rules"][5]["port"][index] = json!(invalid);
+                rejects(changed);
+            }
+        }
+        let mut changed = original.clone();
+        let rules = changed["route"]["rules"].as_array_mut().expect("rules");
+        rules.remove(3);
+        rules.remove(1);
         rejects(changed);
         let mut changed = original.clone();
         changed["endpoints"][0]["peers"][0]["reserved"] = json!([0, 0, 0]);

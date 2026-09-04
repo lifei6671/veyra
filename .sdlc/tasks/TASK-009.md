@@ -5,6 +5,10 @@ dependencies: [TASK-008]
 risk: HIGH
 status: IN_PROGRESS
 design_refs:
+  - .sdlc/design/DCR-015-test-wg-domain-host-sni.md
+  - .sdlc/design/DCR-014-test-dns-color-argument.md
+  - .sdlc/design/DCR-013-test-dns-observation.md
+  - .sdlc/design/DCR-012-test-wg-host-address.md
   - .sdlc/design/DCR-011-test-wg-local-reject.md
   - .sdlc/design/DCR-010-test-wg-udp.md
   - .sdlc/design/foundation.md
@@ -19,6 +23,10 @@ design_refs:
   - .sdlc/design/DCR-008-test-loopback-metering.md
   - .sdlc/design/DCR-009-controlled-wg-peer.md
 approval_refs:
+  - .sdlc/evidence/TASK-009/change-control.yaml#EVIDENCE-TASK-009-CHANGE-013
+  - .sdlc/evidence/TASK-009/change-control.yaml#EVIDENCE-TASK-009-CHANGE-012
+  - .sdlc/evidence/TASK-009/change-control.yaml#EVIDENCE-TASK-009-CHANGE-011
+  - .sdlc/evidence/TASK-009/change-control.yaml#EVIDENCE-TASK-009-CHANGE-010
   - .sdlc/evidence/TASK-009/change-control.yaml#EVIDENCE-TASK-009-CHANGE-009
   - .sdlc/evidence/TASK-009/change-control.yaml#EVIDENCE-TASK-009-CHANGE-008
   - .sdlc/evidence/TASK-009/change-control.yaml#EVIDENCE-TASK-009-CHANGE-007
@@ -59,10 +67,25 @@ TASK-010；Tor 仍等待独立资源 Gate，当前不得下载、启动或声称
 
 ### allow
 
+- CHANGE-013/DCR-015：compiler.rs、Windows managed_sidecar_port.rs及必要managed_sidecar.rs
+  的cfg(test)封闭WG域名HTTP/TLS元组、最终资格与真实测试；Go测试端main/protocol/stack/observe、
+  新domain.go/domain_test.go及对应既有测试/README新增两个业务模式与固定内存别名198.20.0.255。
+  复用有界私有DNS采集，HTTP原Host/204累计ACK、TLS SNI观察及其底层失败锁存；详细协议、
+  期限、清理和负例按已批准DCR015。不改依赖/锁、产品或主机，不削减其余SF003验收。
+- CHANGE-011/DCR-013：compiler.rs、managed_sidecar.rs、Windows managed_sidecar_port.rs 的
+  cfg(test) 封闭DNS预检日志配置、最终字节资格、私有有界stderr采集及真实预检；Go测试端
+  main/protocol/stack、新模式对应既有测试及README新增init_dns_probe有界丢包模式。
+  精确查询veyra.disign.me，唯一loopback WG/URLTest，无业务转发；采集最多10秒、65536字节。
+  普通产品日志、旧peer模式、依赖/锁和主机配置不变；详细元组/生命周期以DCR013为准。
+- CHANGE-010/DCR-012：在CHANGE009既有文件范围修订host对照为172.26.192.1，精确绑定
+  Default Switch GUID 3D816D4D-97AF-48FA-89DC-EA7945796D10 的TCP/UDP目标各一个，保留两个
+  loopback目标。四端口封闭Compiler/Go元组与独立计数；批准非loopback可达面，执行前及每阶段
+  只读复核地址/路由，漂移失败且无其它地址fallback。原三阶段/期限/清理和其它验收保持。
 - CHANGE-009/DCR-011：compiler.rs 的 cfg(test) 精确阳性规则及最终读回校验、Windows Port
   现有测试模块、scripts/task009-wg-peer 新增封闭三阶段主动探测。两个自有 loopback TCP/UDP
   回显目标跨阳性/受保护/阳性持续绑定；四格仅198.18.0.1与127.0.0.1。阶段40秒、工作135秒、
   helper150秒、父159秒、外层160秒；原场景期限保持。无依赖、锁、产品或系统配置修改。
+  其中host127目的和两个目标契约由CHANGE010明确替换；其原运行FAIL证据保留。
 - CHANGE-008/DCR-010：compiler.rs 的 cfg(test) 固定 WG UDP 编译元组与校验/内测，Windows Port
   wg_peer_test 内的真实 UDP 客户端、协议与资源核验，以及 scripts/task009-wg-peer 既有模块的
   init_udp/udp 私有协议、内存 UDP 回显/观察器、测试和 README。仅入口127.0.0.1:动态端口，
@@ -211,6 +234,29 @@ Snapshot/Delta使用DCR-006既有单调时间与安全速率字段，DCR-007严�
 **acceptance_status：** PENDING
 
 ### SF-003：WireGuard 与 DNS/URLTest 的受控网络边界
+
+**CHANGE-013 WG域名用例：** 用户明确“允许”DCR015
+sha256:00b0455ffe4f997f58856f6112bea4c02b735387c96361a2b6264638d0fbde79。
+同一child的新鲜DNS结果与peer解密IPv4目的、HTTP Host/204 ACK或TLS SNI关联；固定内存
+别名，不更改DNS/TUN。TLS只观察SNI而非HTTPS成功；零连接取消、迟到失败及真实清理必须
+分别诚实记录。两个新用例及共享路径回归均需执行；节点hostname、完整DNS拒绝、非宿主
+转发、IPv6业务和下列整体验收不被替代。候选历史PROPOSED字样由身份绑定批准记录覆盖。
+
+**CHANGE-011 DNS结果预检：** 用户明确“批准”DCR013
+sha256:3b5bf2627d009844e340277adbeffdf73e47a6638afeeedcd675d405f6877181。
+按该封闭测试元组，仅证明固定child的local transport exchange及返回地址；测试日志
+白名单、有界排空、配置/进程归属、先DUT后peer清理、新模式不入栈/不转发、旧模式回归
+均需验证。此预检不证明实际DNS服务器网包、业务成功、Host/SNI或完整DNS验收；下列
+全部必需矩阵保留。现有TUN与Cloudflare记录保持，依据结果再核定业务测试资源。
+
+**CHANGE-010 宿主对照修订：** 用户明确“批准”DCR012
+sha256:3f15ace010e05e1cd201cc4747dddd30101af89d15bdfe613251bcf627330968。
+host TCP/UDP两格改为已核定的172.26.192.1，虚拟两格保持。同一peer/密钥/四目标原句柄跨
+前阳性/保护/后阳性持续持有；每目标按case独立计数，各TCP目标最终2连接、各UDP目标2报文，
+总TCP4/UDP4且phase2全生命周期零载荷。原127失败不改写为PASS，不声称验证其Router拒绝。
+前后每格实际精确回显、phase2真实探测及目标零增量、ICMP/API健康、最终读回/错元组负例、
+地址漂移/错误源/迟到/缺目标负例、四资源Hold及原TCP/ICMP/UDP/55/150秒回归均必需。
+该条只覆盖CHANGE009的宿主地址/资源修订；完整DNS、非宿主转发等下列义务仍保留。
 
 **CHANGE-009 拒绝子集：** 用户明确“允许”实施 DCR-011
 sha256:54c01cbc8f99b080a2d68e5b999ab6fc9f97fe49b1ae30e53e36ae2d402f6641。

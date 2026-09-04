@@ -103,6 +103,7 @@ type observer struct {
 	udpReplied   int
 	udpPort      uint16
 	reject       *rejectObserver
+	domain       *domainObserver
 }
 
 func newObserver(token []byte) *observer {
@@ -142,6 +143,10 @@ func (o *observer) inspect(raw []byte, incoming bool) {
 	}
 	if o.reject != nil {
 		o.reject.inspect(o, p, raw, incoming)
+		return
+	}
+	if o.domain != nil {
+		o.domain.inspect(o, p, raw, incoming)
 		return
 	}
 	if (incoming && (p.src != dutIP || p.dst != peerIP)) || (!incoming && (p.src != peerIP || p.dst != dutIP)) {

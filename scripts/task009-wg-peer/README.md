@@ -1,6 +1,6 @@
 # TASK-009 WireGuard 测试端
 
-仅供 DCR-009/010/011 的 Windows 受控测试使用，不是产品组件或独立代理服务。
+仅供 DCR-009/010/011/012/013/015 的 Windows 受控测试使用，不是产品组件或独立代理服务。
 固定 Go 1.27.1；两个直接依赖及版本见 `go.mod`。不安装系统 TUN，不改主机网络设置。
 
 在此目录执行下面的显式步骤，外层进程调度器应另外设置合理超时（单测 70 秒，下载/构建
@@ -13,6 +13,7 @@ go mod download
 go mod verify
 go list -m all
 go test -v -count=1 -timeout 60s ./...
+go test -race -count=1 -timeout 60s ./...
 go vet ./...
 gofmt -l .
 go build -o ../../src-tauri/target/task009-wg-peer.exe .
@@ -55,18 +56,22 @@ helper 55 秒硬截止，真实用例外层 60 秒。异常终止/清理失败�
 证据、取消保留端口和 stdout 写入截止。它们不是真实 DUT 的集成证据。
 UDP 集成仅覆盖上述三次受控回显；IPv6、主动入站/转发拒绝矩阵及系统 DNS 仍不在范围内。
 
-## 三阶段本地拒绝对照（DCR-011）
+## 三阶段虚拟地址与宿主拒绝对照（DCR-011/012）
 
 `init_reject` 仅增加四格：virtual_tcp、host_tcp、virtual_udp、host_udp。Rust 全程持有
-loopback TCP/UDP 两个目标，依次启动阳性、受保护、阳性三个 DUT；peer/密钥保持。
+127.0.0.1 的 TCP/UDP 目标和 172.26.192.1 的 TCP/UDP 目标，共四个独立句柄，依次启动
+阳性、受保护、阳性三个 DUT；peer/密钥保持。
 本场景内存 IPv4 栈允许 loopback 回包，唯一 WG peer 的 allowed_ips 仅为
-198.18.0.1/32 和 127.0.0.1/32。无主机路由或地址变化、无新增 Go OS listener。
+198.18.0.1/32 和 172.26.192.1/32；宿主地址不加入 peer 内存栈本地地址。
+无主机路由或地址变化、无新增 Go OS listener。Rust 在绑定前及每阶段核对已批准的
+Default Switch GUID/IP/路由；漂移即失败，不自动选择其它宿主地址。
 
 共同字段为 `v:1,run_id`；下面列出全部追加字段，未列字段与重复/跨场景操作都拒绝：
 
 ```text
 父→子
-init_reject: op, dut_private_key, peer_private_key, token, tcp_port, udp_port
+init_reject: op, dut_private_key, peer_private_key, token,
+             virtual_tcp_port, host_tcp_port, virtual_udp_port, host_udp_port
 begin_phase: op, phase（整数 1→2→3）
 probe_local: op
 finish_phase: op, dut_stopped:true
@@ -82,6 +87,12 @@ local_probe: event, phase,
              icmp:{sent:3,received:3,id:9,sequences:[1,2,3],payloads_valid:true,addresses_valid:true}
 failed / stopped: 同原场景的固定字段
 ```
+
+四端口必须非零、互异、非9090，且绑定 peer 后核对非 peer 协议端口。旧 tcp_port/udp_port
+二字段帧、host_ip 输入、未知字段和混合场景一律拒绝。固定四格目的依次为：
+198.18.0.1:virtual_tcp_port TCP、172.26.192.1:host_tcp_port TCP、
+198.18.0.1:virtual_udp_port UDP、172.26.192.1:host_udp_port UDP。
+虚拟目的由固定 DUT 映射到对应 loopback 目标，宿主目的保持原地址。
 
 `error` 仅 none/refused/reset/eof/timeout；其它错误、阶段/全局截止、未见实际 tun 提交或
 错误报文都发送 failed，不当作预期拒绝。cases 恰为四个、按 case_id 1..4 排序。
@@ -102,6 +113,51 @@ ICMP 的内存 token 末字节按 phase 异或，防止旧回复满足新阶段�
 helper 55 秒及外层 60 秒，不能借新场景延长期限。失败取消业务并 Hold；只有确认 DUT
 停止才可 finish_phase 或 shutdown，未确认则保留资源至硬退出并记录清理失败。
 
-单测另覆盖四格纯内存目标、目标关闭、错误载荷/四元组/校验和、假发送、阶段计数重置、
+单测另覆盖四格独立纯内存目标、逐格固定地址/端口/载荷、目标关闭、错误载荷/四元组/校验和、假发送、阶段计数重置、
 旧 ICMP、缺 bootstrap 与资源保留。它们不代表真实 Router 拒绝。DNS、非宿主转发、IPv6
-仍未覆盖，DCR-011 不构成完整 SF-003 验收。
+仍未覆盖，DCR-011/012 不构成完整 SF-003 验收。
+
+## DNS 结果预检（DCR-013）
+
+`init_dns_probe` 与 `init` 使用相同的六个输入字段，只更换 op；不接受端口、phase、
+URL 或地址字段。执行 ready 前的既有纯内存自测，实际 peer 仍仅绑定 loopback WG UDP。
+本模式不创建 HTTP listener/UDP service，也不运行 TCP/UDP/ICMP 业务；唯一正常顺序是：
+
+```text
+init_dns_probe → ready → shutdown(dut_stopped:true)
+→ stopped(resources_closed:true, discarded_packets:u32, discarded_bytes:u32) → exit 0
+```
+
+WG 认证解密后的每包只检查 offset 和长度 1..1280，累计最多 64 包、81920 字节，然后
+丢弃；不调用旧业务 observer、不送入内存 IP 栈、不产生应答或转发。计数由同一锁保护，
+越界后固定失败并进入原 Hold；WG/bind 错误继续传播。只在完整关闭后输出稳定最终计数，
+允许 0 包/0 字节。计数不证明握手、目的 IP、DNS 结果使用或 Host/SNI。
+
+30 秒工作窗口、55 秒硬截止及父先确认 DUT 停止的规则保持。EOF、错误帧、模式串用和
+未确认停止都不能成功退出；失败后保留 peer 端口等待有效 shutdown，最终仍退出非零。
+其它模式的 stopped 不带丢弃计数，仍要求原业务结果。定向纯本地检查可执行：
+
+```powershell
+go test -v -count=1 -timeout 60s -run 'TestDNSProbe|TestProtocolFailureHoldsPortUntilShutdown' ./...
+```
+
+这些测试包含无业务正常停止、模式串用/Hold、无服务、计数上限、错误传播、禁止入栈、
+并发计数、关闭后迟到写入及读侧取消；不启动 sing-box，也不是实际 DNS 预检运行证据。
+
+## 域名 HTTP Host 与 TLS SNI（DCR-015）
+
+`init_domain_http` / `init_domain_tls` 只使用原 init 六字段，不接受目标参数。
+仅在这两个模式的内存 NIC 增加固定198.20.0.255/32；各自唯一内存TCP listener为
+18080/18443。源固定198.18.0.1，首SYN锁定唯一连接，允许其重传和结束报文，
+错误地址/端口/协议、第二连接、超限或后续失败均保持失败，绝不转发到OS网络。
+
+HTTP只接受HEAD `/task009-wg-domain`、Host `veyra.disign.me:18080`、无body/TE、
+最多16384字节的唯一请求；完整固定204字节和同连接累计ACK后输出domain_http。
+TLS通过标准库GetConfigForClient验证SNI `veyra.disign.me`，用私有哨兵终止握手。
+输入最多16384、输出最多4096字节；底层错误/短写/超时独立锁存，不能被哨兵掩盖。
+domain_tls只证明SNI，`https_success:false`；没有证书、CA或跳过证书验证设置。
+
+两模式stopped只增加对应mode及原resources_closed，零连接取消也可确认清理；
+exit0另外要求唯一成功事件和无迟到失败。工作30秒、硬截止55秒、单I/O2秒和先确认DUT
+停止再shutdown的Hold要求保持。ready的selftest仍只代表旧栈自测；新别名HTTP/TLS
+阳性与负例由TestDomain本地内测覆盖，不能代替新child DNS链和真实DUT证据。

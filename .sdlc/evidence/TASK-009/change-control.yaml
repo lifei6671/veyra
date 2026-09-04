@@ -1,5 +1,72 @@
 version: 1
 records:
+  - id: EVIDENCE-TASK-009-CHANGE-013
+    type: explicit_user_test_design_exception
+    target: TASK-009
+    approved_by: USER:lifei
+    date: 2026-09-04
+    user_direction: 用户对已展示并独立审阅的DCR015实施及运行请求回复“允许”。
+    design: .sdlc/design/DCR-015-test-wg-domain-host-sni.md
+    approved_design_identity: sha256:00b0455ffe4f997f58856f6112bea4c02b735387c96361a2b6264638d0fbde79
+    independent_review: .sdlc/evidence/TASK-009/wg-domain-design-review-023.yaml
+    review_identity: sha256:e8b932b5b67b63cab0858010950686c733dd5d9c572e98297f1223e4828cd597
+    scope: Fixed IPv4 memory alias198.20.0.255, two WG domain HTTP/TLS modes, digest-bound test DNS logging qualification, named Rust/Go files and required bounded verification/regression.
+    baseline: .sdlc/evidence/TASK-009/wg-domain-baseline-024.json
+    impact: Extends DCR009 memory-service and DCR013 test qualification boundaries only. Acceptance preserved. New implementation identity, affected tests and independent delivery review required.
+    excluded: Product behavior/APIs, dependencies/locks, host DNS/TUN/Cloudflare, public servers, IPv6 topology, Task010, commit/push and whole Task acceptance.
+    interpretation: Identity-bound user approval freezes these candidate bytes; historical PROPOSED heading remains unchanged. Design findings fixed only at design level until implementation verified.
+  - id: EVIDENCE-TASK-009-CHANGE-012
+    type: equivalent_verification_design_correction
+    target: TASK-009
+    adopted_by: ORCHESTRATOR:root
+    authorization: EVIDENCE-TASK-009-CHANGE-011 explicit user approval for the same bounded colorless DNS probe
+    new_human_approval: NOT_REQUIRED_same_scope_equivalent_verification
+    date: 2026-09-04
+    design: .sdlc/design/DCR-014-test-dns-color-argument.md
+    adopted_design_identity: sha256:a015549fa13f65bd51d8019e3b3c213408cd9099405e5e89288eecd04d7b9986
+    independent_review: .sdlc/evidence/TASK-009/dns-color-design-review-021.yaml
+    review_identity: sha256:faa5b44c4260c2480fa343f5f1003c747a8c8ca0bfb0d263d4481d8bd32aea29
+    finding: TASK009-CR-007
+    impact: Correct unsupported JSON disable_color to fixed cfg(test) DNS run --disable-color; identical private colorless logging capability and limits, no product or system changes.
+    rule: change-control.md permits equivalent Verification in current Scope; original explicit capability authorization persists.
+    scope: Compiler closed three-field log tuple and exact DNS child argv with tests; no Go/dependency/transport/ACL/Host/TUN/Cloudflare changes.
+    invalidated: Affected compiler and child evidence and delivery identity; checkpoint020 FAIL remains historical; no Task acceptance, commit or push.
+    baseline: .sdlc/evidence/TASK-009/dns-baseline-021.json
+  - id: EVIDENCE-TASK-009-CHANGE-011
+    type: explicit_user_test_design_exception
+    target: TASK-009
+    approved_by: USER:lifei
+    timestamp: 2026-09-04T20:01:49.0174655+08:00
+    user_direction: 用户对已独立审阅的DCR013实施并运行请求明确回复“批准”。
+    design: .sdlc/design/DCR-013-test-dns-observation.md
+    approved_design_identity: sha256:3b5bf2627d009844e340277adbeffdf73e47a6638afeeedcd675d405f6877181
+    independent_review: .sdlc/evidence/TASK-009/dns-design-review-019.yaml
+    review_identity: sha256:7688b209288f00dfbfb1031150e3749d61faf1ac7f97becff410595b09fd8faa
+    approved_scope:
+      - Exact cfg(test) compiler log exception, digest-bound private stderr capture and DNS preflight in the three named Rust files.
+      - Existing Go peer main/protocol/stack, corresponding existing tests and README gain bounded init_dns_probe discard-only mode; no new dependencies or forwarding.
+      - Run fixed-child veyra.disign.me DNS result preflight and required local/legacy regressions with bounded lifetimes and existing TUN/Cloudflare unchanged.
+    baseline: .sdlc/evidence/TASK-009/dns-baseline-020.json
+    previous_checkpoint: sha256:d6ef4fa08dfbecec5d332dfc8a6faa54efeefe80df6e2976e613356805031a84
+    gates: Current design approved; changed source requires fresh verification and independent delivery review. Whole Task remains IN_PROGRESS/PENDING.
+    interpretation: Approved proposal bytes retain their historical PROPOSED wording; this identity-bound approval authorizes implementation and runtime of this increment only.
+  - id: EVIDENCE-TASK-009-CHANGE-010
+    type: explicit_user_test_design_exception
+    target: TASK-009
+    approved_by: USER:lifei
+    date: 2026-09-04
+    user_direction: 用户回复“批准”，批准已展示并独立审阅通过的DCR012实现及验证增量。
+    design: .sdlc/design/DCR-012-test-wg-host-address.md
+    approved_proposal_identity: sha256:3f15ace010e05e1cd201cc4747dddd30101af89d15bdfe613251bcf627330968
+    design_review: .sdlc/evidence/TASK-009/wg-host-design-review-001.yaml
+    requirement_identity: sha256:4a2cd1e2b9698087bcbc4ac892d7b052a5e2c06554e372479fe31c81cbea9d45
+    previous_checkpoint: sha256:37feddf0c296a6db8e7552d203c645efa5cd9663b4649243465ace58e3d5c126
+    scope: Replace host127 comparison with exact existing Default Switch GUID 3D816D4D-97AF-48FA-89DC-EA7945796D10 at 172.26.192.1; add one exact TCP and one UDP target, retain two loopback targets, closed four-port compiler and peer protocol, unchanged three-phase comparison and lifecycle deadlines.
+    accepted_risk: Other hosts or VMs with an existing route may access or interfere with the two non-loopback targets; no firewall isolation is assumed. Only bounded fixed-token echo, no proxy or persistent writes.
+    excluded: Alternate addresses, host settings, privileges, dependencies or locks, product interfaces/listeners, DNS and non-host forwarding resource changes, commit/push or Task acceptance.
+    impact: Only approved SF003 host comparison contract changes; original host127 FAIL remains historical, remaining acceptance persists. New implementation identity and independent review required; CR006 not closed by design approval.
+    baseline: .sdlc/evidence/TASK-009/wg-host-baseline-015.yaml
+    evidence_boundary: Unchanged reviewed DCR012 bytes are accepted authority; historical PROPOSED text is superseded by this record. Approval is not runtime evidence.
   - id: EVIDENCE-TASK-009-CHANGE-009
     type: explicit_user_test_design_exception
     target: TASK-009
