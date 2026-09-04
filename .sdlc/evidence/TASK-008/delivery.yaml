@@ -1,0 +1,260 @@
+{
+  "version": 1,
+  "target": "TASK-008",
+  "target_identity": "sha256:d2f866af0f53ad28e8ba1cbe2d9b686b59f5c5f94703a25eb2d55cabaef5bc82",
+  "timestamp": "2026-09-04T11:52:03.551659+08:00",
+  "starting_head": "9f6cb9fd0484d4be89d37a498658052d6d8a03b9",
+  "identity_method": "SHA256 UTF8 of HEAD <head>\\n followed by path space sha256 newline for lexically sorted manifest entries",
+  "manifest": [
+    {
+      "path": ".sdlc/design/DCR-001-sing-box-1.14.0.md",
+      "sha256": "4b7a19f48dc865fae44d46a09d21520d18f0ba71d6b846556ba7f20b3f5667ee",
+      "classification": "CONTEXT_ONLY",
+      "provenance": "Task/design authority or unchanged material dependency; not whole-file TASK-008 authorship"
+    },
+    {
+      "path": ".sdlc/design/DCR-002-full-sing-box-subscription-and-compiler.md",
+      "sha256": "26b86f345c1e5dd6458236e306058b4eab143f1a5acdb6416619370f00873743",
+      "classification": "CONTEXT_ONLY",
+      "provenance": "Task/design authority or unchanged material dependency; not whole-file TASK-008 authorship"
+    },
+    {
+      "path": ".sdlc/design/DCR-003-fixed-core-configuration.md",
+      "sha256": "3040951342ef465fb177b3abb1a7537d73c55bc87e88e1a7b3ba93677033b26d",
+      "classification": "CONTEXT_ONLY",
+      "provenance": "Task/design authority or unchanged material dependency; not whole-file TASK-008 authorship"
+    },
+    {
+      "path": ".sdlc/design/foundation.md",
+      "sha256": "5830d7542327dea9cbbccff337c5ece0cb7863c35abfb3ce3984856cdc3d08de",
+      "classification": "CONTEXT_ONLY",
+      "provenance": "Task/design authority or unchanged material dependency; not whole-file TASK-008 authorship"
+    },
+    {
+      "path": ".sdlc/design/task008-observation-dns.md",
+      "sha256": "1135b15d073685f12398c4f084e379be3b731cc271ca2832b3d4f48b62c0f404",
+      "classification": "CONTEXT_ONLY",
+      "provenance": "Task/design authority or unchanged material dependency; not whole-file TASK-008 authorship"
+    },
+    {
+      "path": ".sdlc/tasks/TASK-008.md",
+      "sha256": "6f252a4e1928e7171db3ddffc26a274ca5a3a5aa1d85b71f320bc2c050f99daf",
+      "classification": "CONTEXT_ONLY",
+      "provenance": "Task/design authority or unchanged material dependency; not whole-file TASK-008 authorship"
+    },
+    {
+      "path": "docs/veyra.md",
+      "sha256": "ffc2c6b1b7a018a11d8b0fdb7cbbf5430aaf6f842563f4cb2e6ba1582c25ac88",
+      "classification": "CONTEXT_ONLY",
+      "provenance": "Task/design authority or unchanged material dependency; not whole-file TASK-008 authorship"
+    },
+    {
+      "path": "src-tauri/Cargo.lock",
+      "sha256": "aab8b81202d0c91438b90e27e72e67f563b7e9fc12f2d1a6acdd4ebcf5ef2aeb",
+      "classification": "CONTEXT_ONLY",
+      "provenance": "Task/design authority or unchanged material dependency; not whole-file TASK-008 authorship"
+    },
+    {
+      "path": "src-tauri/Cargo.toml",
+      "sha256": "a6844177a8865faf78614049b3002d226dc3aaa494dec59093fda1d5dffb3cad",
+      "classification": "CONTEXT_ONLY",
+      "provenance": "Task/design authority or unchanged material dependency; not whole-file TASK-008 authorship"
+    },
+    {
+      "path": "src-tauri/build.rs",
+      "sha256": "5938a68a6a77cff7c73f1f20232f5ee57f2c0abd5946b4be2ef3c60711972bf0",
+      "classification": "CONTEXT_ONLY",
+      "provenance": "Task/design authority or unchanged material dependency; not whole-file TASK-008 authorship"
+    },
+    {
+      "path": "src-tauri/src/application/managed_observation_runtime.rs",
+      "sha256": "0bf059d97927e5eac3e31182ac08996c862f36f35858351fea71dd7b73f3161f",
+      "classification": "PRIMARY",
+      "provenance": "TASK-008 delta against source baseline; preserve prior bytes as contextual history"
+    },
+    {
+      "path": "src-tauri/src/application/runtime.rs",
+      "sha256": "f477cb0055bef47ba94cead0a1852efb9426e40a9333588e1cb57a66a262fe0e",
+      "classification": "PRIMARY",
+      "provenance": "TASK-008 delta against source baseline; preserve prior bytes as contextual history"
+    },
+    {
+      "path": "src-tauri/src/domain/mod.rs",
+      "sha256": "e07227ea394a3c6e6dc80e0eee48083dd75088d7302a80bd7a2976fdd5831efc",
+      "classification": "PRIMARY",
+      "provenance": "TASK-008 delta against source baseline; preserve prior bytes as contextual history"
+    },
+    {
+      "path": "src-tauri/src/domain/state.rs",
+      "sha256": "ae998749daa241386355f9c2beea2b4255d0b27d6b1140cdceb6292f30503884",
+      "classification": "PRIMARY",
+      "provenance": "TASK-008 delta against source baseline; preserve prior bytes as contextual history"
+    },
+    {
+      "path": "src-tauri/src/platform/windows/managed_sidecar_port.rs",
+      "sha256": "cad6c982f0a9238ffcf41aad2995652623c371d29b57cb13808064b4f6ae9338",
+      "classification": "PRIMARY",
+      "provenance": "TASK-008 delta against source baseline; preserve prior bytes as contextual history"
+    },
+    {
+      "path": "src-tauri/src/platform/windows/private_runtime.rs",
+      "sha256": "97b728a12c9ab39c07c1f0f612ac53af1616e1759f678a2ce449e53cda9c759c",
+      "classification": "CONTEXT_ONLY",
+      "provenance": "Task/design authority or unchanged material dependency; not whole-file TASK-008 authorship"
+    },
+    {
+      "path": "src-tauri/src/singbox/compiler.rs",
+      "sha256": "4f5796a866cf9ab2f687ccb1455d43372e1fb0255f55125891ef17e3c6c9d087",
+      "classification": "PRIMARY",
+      "provenance": "TASK-008 delta against source baseline; preserve prior bytes as contextual history"
+    },
+    {
+      "path": "src-tauri/src/singbox/managed_sidecar.rs",
+      "sha256": "4de4ebb813542e57429627d1105de700cb38910150657bce795fbaaaa98cf4ee",
+      "classification": "PRIMARY",
+      "provenance": "TASK-008 delta against source baseline; preserve prior bytes as contextual history"
+    },
+    {
+      "path": "src-tauri/src/singbox/mod.rs",
+      "sha256": "22622e75d57fa1313324e93d851720974649d9e85fb7d32be9e41181b6d4ecf1",
+      "classification": "PRIMARY",
+      "provenance": "TASK-008 delta against source baseline; preserve prior bytes as contextual history"
+    },
+    {
+      "path": "src-tauri/src/singbox/runtime.rs",
+      "sha256": "52bb2fb2350a28d9b817494bb3236437e924794961a941a457ca654f24239b28",
+      "classification": "PRIMARY",
+      "provenance": "TASK-008 delta against source baseline; preserve prior bytes as contextual history"
+    },
+    {
+      "path": "src-tauri/src/subscription/normalize.rs",
+      "sha256": "7fc7103a5f481087f76074f4c7350b92d52e9b6bab887d89fec78cc890e9cfb8",
+      "classification": "CONTEXT_ONLY",
+      "provenance": "Task/design authority or unchanged material dependency; not whole-file TASK-008 authorship"
+    },
+    {
+      "path": "src-tauri/src/subscription/parser.rs",
+      "sha256": "e5f587908c01901252925897c0ac484438252bc4d33cdd395e9c531c67f444aa",
+      "classification": "CONTEXT_ONLY",
+      "provenance": "Task/design authority or unchanged material dependency; not whole-file TASK-008 authorship"
+    }
+  ],
+  "baseline_ref": ".sdlc\\evidence\\TASK-008\\baseline.yaml",
+  "source_delta": ".sdlc\\evidence\\TASK-008\\delivery.patch",
+  "source_delta_sha256": "128a9025f0f93ad7b40bdd4a5686535d14009e321442889de81b8cbccb652497",
+  "source_ownership": {
+    "compiler_domain": [
+      "src-tauri/src/domain/state.rs",
+      "src-tauri/src/domain/mod.rs",
+      "src-tauri/src/singbox/compiler.rs",
+      "src-tauri/src/singbox/mod.rs"
+    ],
+    "final_bytes_and_callers": [
+      "src-tauri/src/singbox/managed_sidecar.rs",
+      "src-tauri/src/singbox/runtime.rs",
+      "src-tauri/src/platform/windows/managed_sidecar_port.rs",
+      "src-tauri/src/application/managed_observation_runtime.rs",
+      "src-tauri/src/application/runtime.rs"
+    ]
+  },
+  "authority_changes": "DCR-003 proposal plus reviewed and approved DNS/WireGuard clauses synchronized in DCR-002 and docs/veyra.md; Task acceptance amended by task-breakdown. Earlier design/readiness records are retained as historical evidence. No other requirement paragraphs authored by TASK-008.",
+  "supporting_artifacts": [
+    ".sdlc/state.yaml",
+    ".sdlc/tasks.yaml",
+    ".sdlc/memory/HANDOFF.md",
+    ".sdlc\\evidence\\TASK-008\\readiness.yaml",
+    ".sdlc\\evidence\\TASK-008\\technical-design-review.yaml",
+    ".sdlc\\evidence\\TASK-008\\core-compatibility.yaml",
+    ".sdlc\\evidence\\TASK-008\\baseline.yaml",
+    ".sdlc\\evidence\\TASK-008\\baseline.patch",
+    ".sdlc\\evidence\\TASK-008\\delivery.patch"
+  ],
+  "generated_verification": "Ignored src-tauri/target/task008-verification logs/helper and task008-preflight/isolated synthetic checks; fixed resource bytes unchanged; private runtime test configs cleaned by successful tests. Failed synthetic diagnostics are not production credentials.",
+  "exclusions": "All pre-existing staged/unstaged/untracked files and HEAD-relative source hunks outside delivery.patch; binary resources, prior Tasks, UI/commands/capabilities, parser/storage, dependencies/lockfiles and production lifecycle unchanged by TASK-008. Context manifests do not authorize changes.",
+  "ambiguities": [],
+  "task_time_commits": [],
+  "git_status": [
+    "M  .agents/skills/code-delivery-review/references/result-adapter.md",
+    "M  .agents/skills/implementation/SKILL.md",
+    "A  .agents/skills/sdlc-codex-setup/SKILL.md",
+    "A  .agents/skills/sdlc-codex-setup/agents/openai.yaml",
+    "A  .agents/skills/sdlc-codex-setup/assets/codex/agents/sdlc-expert.toml",
+    "A  .agents/skills/sdlc-codex-setup/assets/codex/agents/sdlc-implementer.toml",
+    "A  .agents/skills/sdlc-codex-setup/assets/codex/agents/sdlc-reviewer.toml",
+    "A  .agents/skills/sdlc-codex-setup/assets/codex/agents/sdlc-routine.toml",
+    "A  .agents/skills/sdlc-codex-setup/assets/codex/sdlc-agent-routing.toml",
+    "M  .agents/skills/sdlc-orchestrator/SKILL.md",
+    "A  .agents/skills/sdlc-orchestrator/references/agent-routing.md",
+    "M  .agents/skills/sdlc-orchestrator/references/phases/technical-design.md",
+    "M  .agents/skills/sdlc-orchestrator/references/workflow-protocol.md",
+    "M  .agents/skills/technical-design-review/SKILL.md",
+    "M  .agents/skills/technical-design/SKILL.md",
+    "A  .codex/agents/sdlc-expert.toml",
+    "A  .codex/agents/sdlc-implementer.toml",
+    "A  .codex/agents/sdlc-reviewer.toml",
+    "A  .codex/agents/sdlc-routine.toml",
+    "A  .codex/sdlc-agent-routing.toml",
+    " M .sdlc/design/DCR-001-sing-box-1.14.0.md",
+    "AM .sdlc/design/DCR-002-full-sing-box-subscription-and-compiler.md",
+    " M .sdlc/design/foundation.md",
+    "A  .sdlc/design/task008-observation-dns.md",
+    "AM .sdlc/evidence/TASK-006/code-delivery-review.yaml",
+    "AM .sdlc/evidence/TASK-006/implementation.yaml",
+    "A  .sdlc/evidence/TASK-007/code-delivery-review.yaml",
+    "A  .sdlc/evidence/TASK-007/implementation.yaml",
+    "AM .sdlc/evidence/TASK-008/readiness.yaml",
+    " M .sdlc/evidence/foundation/technical-design-review.yaml",
+    " M .sdlc/memory/HANDOFF.md",
+    " M .sdlc/state.yaml",
+    " M .sdlc/tasks.yaml",
+    "M  .sdlc/tasks/TASK-006.md",
+    "A  .sdlc/tasks/TASK-007.md",
+    "AM .sdlc/tasks/TASK-008.md",
+    " M docs/veyra.md",
+    " M src-tauri/Cargo.lock",
+    " M src-tauri/Cargo.toml",
+    " M src-tauri/build.rs",
+    " M src-tauri/capabilities/default.json",
+    "A  src-tauri/permissions/autogenerated/start_managed_observation_runtime.toml",
+    "A  src-tauri/permissions/autogenerated/stop_managed_observation_runtime.toml",
+    "A  src-tauri/scripts/fetch-managed-sing-box.ps1",
+    "AM src-tauri/src/application/managed_observation_runtime.rs",
+    " M src-tauri/src/application/mod.rs",
+    " M src-tauri/src/application/observability.rs",
+    "A  src-tauri/src/application/provider_replacement.rs",
+    " M src-tauri/src/application/runtime.rs",
+    " M src-tauri/src/commands.rs",
+    " M src-tauri/src/domain/mod.rs",
+    " M src-tauri/src/domain/state.rs",
+    " M src-tauri/src/lib.rs",
+    "AM src-tauri/src/platform/windows/managed_sidecar_port.rs",
+    " M src-tauri/src/platform/windows/mod.rs",
+    "AM src-tauri/src/platform/windows/private_runtime.rs",
+    "AM src-tauri/src/singbox/clash_api.rs",
+    " M src-tauri/src/singbox/compiler.rs",
+    " M src-tauri/src/singbox/managed_sidecar.rs",
+    " M src-tauri/src/singbox/mod.rs",
+    " M src-tauri/src/singbox/runtime.rs",
+    " M src-tauri/src/storage/migration.rs",
+    " M src-tauri/src/storage/store.rs",
+    " M src-tauri/src/subscription/normalize.rs",
+    " M src-tauri/src/subscription/parser.rs",
+    " M src-tauri/tauri.conf.json",
+    " M src/App.tsx",
+    " M src/lib/observability.test.ts",
+    " M src/lib/observability.ts",
+    " M src/styles.css",
+    "?? .sdlc/design/DCR-003-fixed-core-configuration.md",
+    "?? .sdlc/evidence/TASK-008/baseline.patch",
+    "?? .sdlc/evidence/TASK-008/baseline.yaml",
+    "?? .sdlc/evidence/TASK-008/core-compatibility.yaml",
+    "?? .sdlc/evidence/TASK-008/delivery.patch",
+    "?? .sdlc/evidence/TASK-008/technical-design-review.yaml"
+  ],
+  "previous_target_identity": "sha256:e4f6a99c78eb49c4ceeda68f7e67820c8fd1cd7278e947dedb7ec48ca008019b",
+  "remediation_for": "TASK-008-REVIEW-001",
+  "remediation_paths": [
+    "src-tauri/src/platform/windows/managed_sidecar_port.rs",
+    "src-tauri/src/singbox/compiler.rs"
+  ]
+}

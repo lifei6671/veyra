@@ -1,0 +1,118 @@
+{
+  "skill_result": {
+    "skill": "technical-design-review",
+    "target": "DCR-011 — controlled WG virtual/host TCP/UDP reject comparisons",
+    "outcome": "PASS",
+    "next_action_hint": "候选可提交用户批准两个持续loopback目标、精确测试规则前缀与新三阶段时限；批准前不实施或运行。随后仍需冻结源码、真实配对验证及独立交付审阅。",
+    "review_mode": "CHILD_AGENT",
+    "reviewed_target_identity": "sha256:54c01cbc8f99b080a2d68e5b999ab6fc9f97fe49b1ae30e53e36ae2d402f6641",
+    "review_result": "PASS",
+    "coverage": {
+      "scope": "仅四格IPv4虚拟地址/宿主TCP/UDP、前后阳性/受保护对照及与DCR003/009/010、checkpoint013的交互；不审或执行DNS/非宿主完整矩阵。",
+      "independence": "task009_design_reviewer未参与该候选编写；只读候选、定向源码和既有记录，仅新增本审阅。未运行核心/网络/依赖命令、修改目标/Task/state或委派。",
+      "freshness": {
+        "result": "FRESH",
+        "candidate_sha256": "54c01cbc8f99b080a2d68e5b999ab6fc9f97fe49b1ae30e53e36ae2d402f6641",
+        "baseline_identity": "sha256:5f6438663e7d08e0241fde9a733e466c2dc7031dba31dbe050c1b3f36e52f0d5",
+        "baseline_entries": 50,
+        "current_source_hash_mismatches": 0,
+        "requirement_sha256": "4a2cd1e2b9698087bcbc4ac892d7b052a5e2c06554e372479fe31c81cbea9d45"
+      },
+      "checks": [
+        {
+          "concern": "traceability-and-approval",
+          "result": "PASS",
+          "location": ".sdlc/design/DCR-011-test-wg-local-reject.md:9",
+          "basis": "追踪SF003拒绝子集，保留DNS/非宿主/IPv6/native等必需验收；新增目标、精确前缀和延长时限明确待新授权，不冒用CHANGE007/008。"
+        },
+        {
+          "concern": "closed-positive-rule-prefix",
+          "result": "PASS",
+          "location": ".sdlc/design/DCR-011-test-wg-local-reject.md:55",
+          "basis": "仅cfg(test)完整识别唯一WG、固定URLTest/token/phase、两条inbound+127.0.0.1/32+精确端口/协议→Direct前缀；剥离后仍走原通用validate。原reject与一条实际Port→Direct用户规则保留，最终字节同样重验，不泛化任意Direct或缺reject。受保护实例走普通compile，原两种测试入口限制保持。"
+        },
+        {
+          "concern": "feasibility-and-routing",
+          "result": "PASS",
+          "basis": "固定endpoint源码把虚拟目的映射到loopback后交Router，host目的直接经同Router；规则有序匹配支持所述精确前缀对照。既有CoreRule能表达固定字段组合。固定gVisor已有AllowExternalLoopbackTraffic，配合仅两个精确allowedIPs和不注册目标本地地址，可保持探测经过WG。源码可行性不代替实测。"
+        },
+        {
+          "concern": "continuous-ownership-and-bootstrap",
+          "result": "PASS",
+          "location": ".sdlc/design/DCR-011-test-wg-local-reject.md:29",
+          "basis": "两个真实目标句柄与peer跨全部阶段保持；三DUT串行退出确认、新secret/配置身份。每阶段先重置有限观察、再由新DUT完成带phase的HEAD/完整204 ACK bootstrap，避免向旧协议端口探测或复用旧成功摘要。"
+        },
+        {
+          "concern": "negative-evidence-admission",
+          "result": "PASS",
+          "location": ".sdlc/design/DCR-011-test-wg-local-reject.md:81",
+          "basis": "前后四格均要求客户端精确应用回显及真实目标唯一载荷；中间要求实际发起探测、目标零到达且全生命周期无phase2迟到，四格后ICMP3/3与同DUT API仍健康。拒绝未启动/解码/队列/全局超时等夹具错误；不把tun发送计数当逐包DUT认证接收。有限窗口推断边界已披露。"
+        },
+        {
+          "concern": "deadlines-cleanup-proportionality",
+          "result": "PASS",
+          "location": ".sdlc/design/DCR-011-test-wg-local-reject.md:115",
+          "basis": "每phase40秒包含check/Ready/bootstrap/四格/ICMP/Stop，全局135秒并留150/159/160秒退出边界；阶段超时不能推进。目标和peer留到DUT退出确认，未确认Stop维持Hold且硬退出仍FAIL。预算是明确新增资源边界，三个实例解释了延长需要，无重试/守护/权限服务。实现仍须按绝对截止分配Stop余量及验证实际耗时。"
+        },
+        {
+          "concern": "verification-and-existing-scenarios",
+          "result": "PASS",
+          "basis": "封闭规则/最终读回、跨阶段/缺bootstrap/假发送/目标关闭、迟到/持有/截止均有验证要求；回归原TCP/UDP/ICMP及Hold，旧场景55秒期限不变。当前没有新场景执行证据，不将既有013结果冒作四格拒绝通过。"
+        }
+      ],
+      "icmp_phase_assessment": {
+        "result": "NO_ACTIONABLE_FINDING",
+        "basis": "复用ID9/seq1..3本身不构成已证跨阶段误计路径：每阶段只有一次三请求，并必须精确收到全部三回复才可成功结束；缺回复/超时不得进入下一phase。当前受控生成路径无业务重试或允许不完整阶段推进，不能仅假定额外重复回复跨阶段延迟就要求新增控制。实施复审仍应核对旧ICMP端点收尾、失败不推进及额外报文失败；若引入重试或不完整阶段推进则重新评估。"
+      }
+    },
+    "remaining_risks": [
+      "新增两个目标、前缀规则及三阶段时限尚待用户明确批准；当前仅设计PASS。",
+      "四格配对与135/150/159/160秒预算尚NOT_RUN；实际实现、固定EXE、配置与helper身份、目标/端点归属、清理及阶段耗时均需验证。",
+      "有限窗口前后阳性和中间目标零到达不能逐包证明DUT内部认证/拒绝动作；候选已限制其结论。",
+      "本机干扰、端口冲突、目标失败、晚到或任一阳性失败必须使本组FAIL/UNAVAILABLE；OS拒绝停止DUT与helper硬上限残余风险仍保留。",
+      "完整Task仍INCOMPLETE：DNS Router独立拒绝、DNS载荷、非宿主转发、IPv6及系统DNS/native等不在本候选四格内。"
+    ]
+  },
+  "issues": [],
+  "authorization": {
+    "new_boundary_approval": "PENDING",
+    "existing_change007_008_sufficient": false,
+    "execution_authorized": false
+  },
+  "evidence": [
+    {
+      "path": ".sdlc/evidence/TASK-009/code-review-checkpoint-013.yaml",
+      "sha256": "e1f0be1c2496775730fbcc1e4ed8b0076454acf93c62545df7d2203fe79365f0"
+    },
+    {
+      "path": "src-tauri/src/singbox/compiler.rs",
+      "locations": [
+        "CoreRule",
+        "Document::validate",
+        "CoreRule::is_ingress_reject"
+      ],
+      "role": "现有强类型及严格规则校验基线"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/SagerNet/sing-box/v1.14.0/protocol/wireguard/endpoint.go",
+      "locations": "JudgeFlow; NewConnectionEx; NewPacketConnectionEx",
+      "role": "固定虚拟目的映射与Router交接一手源码"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/SagerNet/sing-box/v1.14.0/route/route.go",
+      "locations": "PreMatch; preMatchFlow; matchRule",
+      "role": "固定规则匹配/拒绝与流路由一手源码"
+    },
+    {
+      "path": "C:/Users/lifei/go/pkg/mod/github.com/sagernet/gvisor@v0.0.0-20260727.0-sing-box-mod.1/pkg/tcpip/network/ipv4/ipv4.go",
+      "locations": "956;2052",
+      "role": "已下载固定依赖的loopback接收选项；未运行依赖工具"
+    },
+    {
+      "path": ".sdlc/evidence/TASK-009/wg-reject-peer-feasibility.md",
+      "role": "辅助来源索引，非冻结contract；其DNS/非宿主候选不构成本次授权或审阅范围"
+    }
+  ],
+  "summary": "No actionable design findings. PASS applies to this candidate only; new approval and actual runtime evidence remain pending.",
+  "gate_action": "NONE — 不冻结设计、不迁移Task/Gate/Phase、不代替Human Approval。"
+}

@@ -1,0 +1,76 @@
+version: 1
+records:
+  - id: EVIDENCE-TASK-009-PLANNING-001
+    type: task_planning
+    target: TASK-009
+    target_identity: sha256:87e118508f959839042e8430e2bfd24b71f42da67366706567d3d558ec7ae2dc
+    timestamp: 2026-09-04T12:09:38+08:00
+    observer: CHILD_AGENT:/root/task009_planner
+    result: BLOCKED
+    command_or_method: task-breakdown materialize-current; read back Task and rolling index; scoped git diff --check.
+    artifacts:
+      - .sdlc/tasks/TASK-009.md
+      - .sdlc/tasks.yaml
+    outcome: Complete DRAFT contract with three subfeatures and overall acceptance; unresolved material runtime semantics prevent implementation.
+    routing:
+      role: sdlc_expert
+      config_sha256: 7465f69844617ed75ae6d3908a3595250abd21a98b14b0e9a7c93293c4c4d579
+      requested_model: gpt-5.6-sol
+      requested_reasoning: high
+      reason: Lifecycle and security contract planning delegated independently of root code feasibility inspection.
+      actual_model_and_reasoning: UNAVAILABLE
+      total_usage: UNAVAILABLE
+  - id: EVIDENCE-TASK-009-READINESS-001
+    type: task_readiness
+    target: TASK-009
+    target_identity: sha256:87e118508f959839042e8430e2bfd24b71f42da67366706567d3d558ec7ae2dc
+    timestamp: 2026-09-04T12:09:59+08:00
+    observer: ORCHESTRATOR:/root
+    result: BLOCKED
+    command_or_method: Read back producer Task/index, compare accepted requirement hash, inspect frozen design and Runtime/Windows Port with CodeGraph.
+    checks:
+      requirement_identity: sha256:ffc2c6b1b7a018a11d8b0fdb7cbbf5430aaf6f842563f4cb2e6ba1582c25ac88
+      requirement_drift: NONE
+      task_fields_and_scope: PASS
+      dependencies: PASS
+      subfeature_and_overall_acceptance: PRESENT
+      verification_commands: PRESENT
+      task008_acceptance: PASSED
+      task008_evidence: .sdlc/evidence/TASK-008/acceptance.yaml#EVIDENCE-TASK-008-ACCEPTANCE-001
+      material_design: BLOCKED
+    blockers:
+      - Fixed 9090 stop-before-start cannot preserve the same running process on candidate start failure; precise recovery semantics need Owner approval.
+      - Recovery must rebuild a checked attempt with a fresh instance secret and retain failed-cleanup ownership; current consumed pending cannot do this.
+    candidate_design: .sdlc/design/DCR-004-managed-runtime-rollback.md
+    next_action: Independent design review and explicit Human approval, then synchronize accepted contracts and repeat readiness.
+    remaining_work:
+      - Design the controlled WireGuard peer and observable DNS/URLTest topology before execution; absence of an existing harness alone is not a blocker.
+      - Preserve all mandatory SF-003 network cases; check cannot substitute for runtime evidence.
+    not_run: [implementation, Cargo, fixed_core_run, controlled_network, CI, commit, push]
+  - id: EVIDENCE-TASK-009-READINESS-002
+    type: task_readiness
+    target: TASK-009
+    target_identity: sha256:ae84f9d50028f5747c4b9d4f93e4523c08a03bbc57d9aae664d1a220433c2a4d
+    timestamp: 2026-09-04T12:32:23+08:00
+    observer: ORCHESTRATOR:/root
+    result: PASS
+    command_or_method: Read back revised producer Task, requirements, approved change and independently reviewed frozen design; verify dependencies, explicit Scope, all subfeature acceptance/verification and overall acceptance.
+    requirement_identity: sha256:42a61775ac324847e5a978c4af70d805d8c671150c2791315b579bd30ccd9481
+    design_identity: sha256:6610b072db7f8044f5681140a9241c5da8e89e4ceb80a78d56ae2674ff3542b7
+    evidence_refs:
+      - .sdlc/evidence/TASK-009/change-control.yaml#EVIDENCE-TASK-009-CHANGE-001
+      - .sdlc/evidence/TASK-009/technical-design-review.yaml#EVIDENCE-TASK-009-DCR004-REVIEW-003
+      - .sdlc/evidence/TASK-008/acceptance.yaml#EVIDENCE-TASK-008-ACCEPTANCE-001
+    checks:
+      accepted_requirement_and_scope: PASS
+      independent_design_review: PASS
+      dependency_and_window: PASS
+      subfeature_and_overall_contract: PASS
+      validation_command_sources: PASS
+      no_duplicate_human_approval: PASS
+    transition: DRAFT -> READY; only lifecycle status and readiness footer change after this readback.
+    boundaries:
+      - All implementation and acceptance statuses remain PENDING.
+      - Record controlled topology before real network execution; additional material dependencies or permissions are not authorized.
+      - Subscription page and last successful update display remain TASK-011 future work.
+    not_run: [implementation, Cargo, UI_interaction, fixed_core_run, controlled_network, CI, commit, push]

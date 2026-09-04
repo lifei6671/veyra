@@ -1,0 +1,381 @@
+{
+  "id": "EVIDENCE-TASK-009-VERIFICATION-013",
+  "target": "TASK009 CHANGE008 WG UDP response increment",
+  "target_identity": "sha256:5f6438663e7d08e0241fde9a733e466c2dc7031dba31dbe050c1b3f36e52f0d5",
+  "timestamp": "2026-09-04T17:02:16.2144819+08:00",
+  "scope_result": "PASS",
+  "whole_task_result": "INCOMPLETE",
+  "source_entries": 50,
+  "source_hash_mismatches": 0,
+  "commands": [
+    {
+      "id": "wg-udp-compiler-013",
+      "command": "test --manifest-path src-tauri/Cargo.toml --lib singbox::compiler::tests -- --nocapture",
+      "started": "2026-09-04T16:53:35.7732523+08:00",
+      "finished": "2026-09-04T16:53:47.5513407+08:00",
+      "exit_code": 0,
+      "timeout": false,
+      "result": "PASS"
+    },
+    {
+      "id": "wg-udp-rust-build-013",
+      "command": "test --manifest-path src-tauri/Cargo.toml --lib --no-run",
+      "started": "2026-09-04T16:57:45.6189434+08:00",
+      "finished": "2026-09-04T16:57:51.9936372+08:00",
+      "exit_code": 0,
+      "timeout": false,
+      "result": "PASS"
+    },
+    {
+      "id": "wg-udp-rust-protocol-013",
+      "command": "test --manifest-path src-tauri/Cargo.toml --lib wg_peer_test::wg_ -- --nocapture",
+      "started": "2026-09-04T16:58:00.0322986+08:00",
+      "finished": "2026-09-04T16:58:01.1415911+08:00",
+      "exit_code": 0,
+      "timeout": false,
+      "result": "PASS"
+    },
+    {
+      "id": "wg-udp-fmt-013",
+      "command": "fmt --manifest-path src-tauri/Cargo.toml -- --check",
+      "started": "2026-09-04T16:58:24.7076031+08:00",
+      "finished": "2026-09-04T16:58:25.1849498+08:00",
+      "exit_code": 0,
+      "timeout": false,
+      "result": "PASS"
+    },
+    {
+      "id": "wg-udp-clippy-final-013",
+      "command": "clippy --manifest-path src-tauri/Cargo.toml --lib -- -D warnings",
+      "started": "2026-09-04T17:00:54.1759409+08:00",
+      "finished": "2026-09-04T17:00:55.9179086+08:00",
+      "exit_code": 0,
+      "timeout": false,
+      "result": "PASS"
+    },
+    {
+      "id": "wg-udp-go-final-tests-013",
+      "command": "test -v -count=1 -timeout 60s ./...",
+      "started": "2026-09-04T16:58:27.1340328+08:00",
+      "finished": "2026-09-04T16:58:31.2701406+08:00",
+      "exit_code": 0,
+      "timeout": false,
+      "result": "PASS"
+    },
+    {
+      "id": "wg-udp-go-vet-013",
+      "command": "vet ./...",
+      "started": "2026-09-04T16:58:27.1541181+08:00",
+      "finished": "2026-09-04T16:58:27.9524564+08:00",
+      "exit_code": 0,
+      "timeout": false,
+      "result": "PASS"
+    },
+    {
+      "id": "wg-udp-go-race-013",
+      "command": "test -race -count=1 -timeout 60s ./...",
+      "started": "2026-09-04T16:59:27.3888359+08:00",
+      "finished": "2026-09-04T16:59:33.869907+08:00",
+      "exit_code": 0,
+      "timeout": false,
+      "result": "PASS"
+    },
+    {
+      "id": "wg-udp-go-build-013",
+      "command": "build -o ../../src-tauri/target/task009-wg-peer.exe .",
+      "started": "2026-09-04T16:58:55.8646856+08:00",
+      "finished": "2026-09-04T16:58:57.4008436+08:00",
+      "exit_code": 0,
+      "timeout": false,
+      "result": "PASS"
+    },
+    {
+      "id": "wg-udp-go-modverify-013",
+      "command": "mod verify",
+      "started": "2026-09-04T16:59:55.8021899+08:00",
+      "finished": "2026-09-04T16:59:56.1865304+08:00",
+      "exit_code": 0,
+      "timeout": false,
+      "result": "PASS"
+    },
+    {
+      "id": "wg-udp-go-modules-013",
+      "command": "list -m all",
+      "started": "2026-09-04T17:00:05.3919534+08:00",
+      "finished": "2026-09-04T17:00:05.5043768+08:00",
+      "exit_code": 0,
+      "timeout": false,
+      "result": "PASS"
+    },
+    {
+      "id": "wg-udp-go-format-readback-013",
+      "command": "gofmt -l scripts/task009-wg-peer",
+      "started": "2026-09-04T17:00:35.4559745+08:00",
+      "finished": "2026-09-04T17:00:35.5120245+08:00",
+      "exit_code": 0,
+      "timeout": false,
+      "result": "PASS"
+    },
+    {
+      "id": "wg-udp-diff-013",
+      "command": "git diff --check",
+      "started": "2026-09-04T17:00:35.524919+08:00",
+      "finished": "2026-09-04T17:00:35.6011416+08:00",
+      "exit_code": 0,
+      "timeout": false,
+      "result": "PASS"
+    },
+    {
+      "id": "wg-udp-real-013",
+      "command": "test --manifest-path src-tauri/Cargo.toml --lib real_wireguard_udp_returns_three_exact_client_datagrams -- --nocapture",
+      "started": "2026-09-04T16:59:12.160841+08:00",
+      "finished": "2026-09-04T16:59:34.3632309+08:00",
+      "exit_code": 0,
+      "timeout": false,
+      "result": "PASS"
+    },
+    {
+      "id": "wg-udp-tcp-icmp-regression-013",
+      "command": "test --manifest-path src-tauri/Cargo.toml --lib real_wireguard_peer_delivers_tcp_response_and_virtual_icmp -- --nocapture",
+      "started": "2026-09-04T16:59:45.5925068+08:00",
+      "finished": "2026-09-04T17:00:07.3638942+08:00",
+      "exit_code": 0,
+      "timeout": false,
+      "result": "PASS"
+    },
+    {
+      "id": "wg-udp-hold-regression-013",
+      "command": "test --manifest-path src-tauri/Cargo.toml --lib real_peer_preserves_binding_until_hard_exit_when_dut_stop_is_unconfirmed -- --nocapture",
+      "started": "2026-09-04T17:00:25.3112979+08:00",
+      "finished": "2026-09-04T17:01:21.5816783+08:00",
+      "exit_code": 0,
+      "timeout": false,
+      "result": "PASS"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "src-tauri/target/task009-remediation/wg-udp-compiler-013.result.json",
+      "sha256": "2f140a4fd5282ec4f662868c928b3af62c6ffe22ae1ccf8308de9699509f0264"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-udp-compiler-013.stdout.txt",
+      "sha256": "fbcd0f2ae9d93cbcb876e15f52d27f4520ea7ca882dc8541bdb756d5d5b9a109"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-udp-compiler-013.stderr.txt",
+      "sha256": "cd83ad15cf611468809b96d1bf2eedc307fc27430a2e669cf27f1b82bbebc31a"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-udp-rust-build-013.result.json",
+      "sha256": "24e982199ea4e01b6e757a2725dedab0b7038aa02456a94061598a56b028538b"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-udp-rust-build-013.stdout.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-udp-rust-build-013.stderr.txt",
+      "sha256": "02480c183f47d6bc64784deff76f2b1f7a1897b61188031cd3f331e3044ebdc2"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-udp-rust-protocol-013.result.json",
+      "sha256": "5671978cca8f819b572899b9cd22eb242b7219d04649211526f1547bf4e70fd1"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-udp-rust-protocol-013.stdout.txt",
+      "sha256": "3b3e6ef8451c27f2d0aff7672446c4627ddd282b9f3fef59e748699584305f56"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-udp-rust-protocol-013.stderr.txt",
+      "sha256": "b71701a3355606e3db68f81180c69d391e7240be349c09c035607328a0fba528"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-udp-fmt-013.result.json",
+      "sha256": "07aa528ee9ef982d47d6c7dff71cbbe92d95ea8e585cdbfc36bd81e4431c974e"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-udp-fmt-013.stdout.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-udp-fmt-013.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-udp-clippy-final-013.result.json",
+      "sha256": "3dd316cb8474faa8d8ad35c3cec0ed522f9749b556d5cdfc8eaab3f921ea1007"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-udp-clippy-final-013.stdout.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-udp-clippy-final-013.stderr.txt",
+      "sha256": "2a1e930e2e2136c6b54f654c8bbaa93c44d9f6189ab91a7af62f763eeebac936"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-udp-go-final-tests-013.result.json",
+      "sha256": "15ff19d27b6f18483fa4400f824866b28c16e1989c5b89c68a0650e683cb8f35"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-udp-go-final-tests-013.stdout.txt",
+      "sha256": "09d43ca6ee6df85cd264b38378f31b69ce6b6bb869ec6527e78bd55378587907"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-udp-go-final-tests-013.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-udp-go-vet-013.result.json",
+      "sha256": "93141a7709c2a4f6a857c4d3a2836ae69d6755ac206914ea673eec0dfc31f329"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-udp-go-vet-013.stdout.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-udp-go-vet-013.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-udp-go-race-013.result.json",
+      "sha256": "65a8c72201d0463546ff8f862a5e218755cfe9e0a153a28ef98b8277e874d10b"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-udp-go-race-013.stdout.txt",
+      "sha256": "ad0ab73dbe18cfad151c9a7d2b8f23c0f63c8b618a272ebe2be73e9fe8f56d83"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-udp-go-race-013.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-udp-go-build-013.result.json",
+      "sha256": "52c66f3410071c7e410b04ed90b738abefadffc46aba355c857a99fd41eabd2a"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-udp-go-build-013.stdout.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-udp-go-build-013.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-udp-go-modverify-013.result.json",
+      "sha256": "d20e9968625270545d482130bbf6fef49485a603182ee0bf19cdaf22db56d3fd"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-udp-go-modverify-013.stdout.txt",
+      "sha256": "b4537ed75f533f993f371954de47e42a793b8e5b0587577de7e27fb3e50696bd"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-udp-go-modverify-013.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-udp-go-modules-013.result.json",
+      "sha256": "727d331279cc73f782eabfe762d0368d4befc7255bbf514089f7aa4a55f6e739"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-udp-go-modules-013.stdout.txt",
+      "sha256": "fba515e1cd653d9f7d6390721ccc85386b86af4616a24ee8cdf2cbc9ede5e205"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-udp-go-modules-013.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-udp-go-format-readback-013.result.json",
+      "sha256": "9c5f24e57359fdc864e27e2c43531c30676411d575b2e3a0f2e73ea7293eef75"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-udp-diff-013.result.json",
+      "sha256": "c3f71c95ac1d90fedf2e061472bb55d7a987b7c5dbe911e64d052e9196fe3d1c"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-udp-real-013.result.json",
+      "sha256": "2c9cfcc1709fd5b83df33339190d99d67921cf70ad89383c9323bc06466139ac"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-udp-real-013.stdout.txt",
+      "sha256": "393c9aeba7e2f630ec405bbf70585ca2b75245d1617437c6e06a1c756e40605c"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-udp-real-013.stderr.txt",
+      "sha256": "bc3993f627c668e596f7d1ede71b8ab84ebb75e41471f71958da901d22823e95"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-udp-tcp-icmp-regression-013.result.json",
+      "sha256": "98d82775b5a78135dae2f561fee70beaeaeab31c15ce44091242aaa56b7790d1"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-udp-tcp-icmp-regression-013.stdout.txt",
+      "sha256": "9b758438da1eb862088187eb6cfe872f4238aa2ecc36b2365919f8a9ab9a10ce"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-udp-tcp-icmp-regression-013.stderr.txt",
+      "sha256": "bc3993f627c668e596f7d1ede71b8ab84ebb75e41471f71958da901d22823e95"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-udp-hold-regression-013.result.json",
+      "sha256": "6c273897a96d80a9c8200efcacbf15defedb34dcd5b16b2ef77070cdc93b409e"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-udp-hold-regression-013.stdout.txt",
+      "sha256": "30826da97e81af30d88bcb8a1f280799a8d4d4f13b10019b709c2371519769eb"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-udp-hold-regression-013.stderr.txt",
+      "sha256": "25dd96386f2bdadd64ca358f3412a8a4a0aa76e413de5855cdc0019427e2d544"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-udp-host-before-013.json",
+      "sha256": "1fdb32ca7ec62e792e98c5e9000aac150a941f716b71da0a8db7ecb54daa4f2e"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/wg-udp-host-after-013.json",
+      "sha256": "8dd7670e181f2673ea4feaee9b9b88047734069c35bd2a035bfc938804cd3aa0"
+    }
+  ],
+  "helper": {
+    "path": "src-tauri/target/task009-wg-peer.exe",
+    "sha256": "70850e6deaf35e6da560dc55b30690d5648aadb9c1d77e0a53bc7505796a4d55",
+    "build": "wg-udp-go-build-013"
+  },
+  "test_counts": {
+    "rust_unique": 32,
+    "compiler": 27,
+    "rust_protocol": 2,
+    "real_udp": 1,
+    "real_tcp_icmp": 1,
+    "real_helper_hold": 1,
+    "go_top_level": 16,
+    "go_subtests": 38
+  },
+  "assertions": [
+    "UDP: real fixed sing-box1.14.0 typed compile/finalize/final-readback/check/run; only test inlet127.0.0.1:51567 to in-memory198.18.0.2:18081; no product inlet change.",
+    "Same connected Rust UDP socket received three exact20byte responses; total request60/response60; peer authenticated WG boundary rx3/tx3;21.40seconds.",
+    "UDP final config sha3896f127d1e1e5ece4a2665a6110025690aa0b9571500df240dfc393672b0d19;DUT82420/peer48700;DUT API127.0.0.1:9090,WG wildcardIPv4/IPv6port51300 and exact business inlet;peer UDPonly127.0.0.1:63991.",
+    "UDP client then DUT then peer exit confirmed; own sockets/private instances absent and stderr0. Host selected interface/address/route/DNS/proxy hashes unchanged.",
+    "Normal ObservationOnly TCP/ICMP regression with same new helper PASS21.05seconds;full204response ACK rx4/tx4,3IPv4virtualICMP;DUT83500/peer37760;DUT then peer cleanup confirmed.",
+    "Real helper Hold test simulates dut_stopped=false without launching DUT; original55second hardlimit and retained binding/stdin before expiry. Not evidence of actual OS refusing DUT Stop.",
+    "Go positive and boundary/negative cases, race,vet,format,build,moduleverify PASS;go.mod/go.sum unchanged. Rust compiler/protocol/build/libraryClippy/fmt and diff PASS."
+  ],
+  "freshness_notes": [
+    "Compiler tests executed before Port final edit;compiler source unchanged afterwards;final Rust --no-run and protocol/real tests compiled combined current sources.",
+    "Non-test library Clippy is not all-target Clippy.",
+    "Prior partial Task evidence remains bound to its original identity;this record adds no whole-Task PASS."
+  ],
+  "not_run": [
+    "Full WG proactive ingress/forward reject matrix",
+    "IPv6 business path",
+    "System DNS/Host/SNI controlled matrix",
+    "Full195-test Rust regression",
+    "Native GUI/Tray E2E",
+    "CI",
+    "Commit",
+    "Push"
+  ]
+}

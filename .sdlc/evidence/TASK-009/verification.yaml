@@ -1,0 +1,154 @@
+version: 1
+target: TASK-009
+status: INCOMPLETE
+frozen_target_identity: sha256:8b375689eabbc6598baf656ce06eaf2f6e553cc6fe419763fd8b0fcdd2fa2071
+evidence_root: src-tauri/target/task009-verification
+identity_source: .sdlc/evidence/TASK-009/delivery-checkpoint.yaml
+scope_note: >-
+  This is a partial implementation checkpoint, not Task acceptance. Earlier runs with differing
+  source/test inventory are retained as diagnostic evidence. Current frozen-source regression
+  and independent review are recorded separately. No inherited TASK-008 runtime PASS.
+observations:
+  - id: initial-rust-regression
+    command: cargo test --manifest-path src-tauri/Cargo.toml --lib -- --test-threads=1
+    result: FAIL
+    count: 155
+    passed: 152
+    failed: 3
+    source_status: superseded_test_fixtures
+    log_prefix: rust-tests
+    details: >-
+      Real observation failed; fixed matrix expected historical constant secret; replacement
+      test was prevented by poisoned test lock. No failing test was removed.
+  - id: real-replacement
+    command: cargo test --manifest-path src-tauri/Cargo.toml --lib fixed_core_runtime_replacement_check_failure_and_ready_fail_stop -- --nocapture
+    result: PASS
+    count: 1
+    log_prefix: real-replacement
+    details: >-
+      Real fixed child start/replacement, distinct instance binding, old authentication rejection,
+      rejected configuration retaining prior identity, Ready failure cleanup without restarting old
+      configuration, pending/byte checks, cleanup ownership, unrelated listener and child exit.
+  - id: real-observation-diagnostic
+    command: cargo test --manifest-path src-tauri/Cargo.toml --lib fixed_bundle_resources_run_and_stop_only_the_owned_loopback_child -- --nocapture
+    result: FAIL
+    count: 1
+    log_prefix: real-observation-diagnostic
+    details: >-
+      Real Ready, REST and traffic reads passed. Disabled log endpoint returned Unavailable,
+      preventing complete observation. Proposed fixed Logs HTTP 204 handling is outside frozen
+      file scope and is not implemented; see pending-scope.md.
+  - id: fixed-final-config-matrix
+    command: cargo test --manifest-path src-tauri/Cargo.toml --lib fixed_core_checks_final_subscription_matrix_without_starting_children -- --nocapture
+    result: PASS
+    count: 1
+    final_config_checks: 34
+    log_prefix: fixed-config-matrix
+    details: >-
+      Same-instance secret comparison corrected; 34 final-byte checks passed. This run overlapped
+      test-module authoring, so its binary inventory is intermediate, not the final frozen inventory.
+      It is diagnostic support until repeated against the final frozen source.
+  - id: frontend-contract-and-build
+    commands: [pnpm lint, pnpm test, pnpm build]
+    result: PASS
+    exit_code: 0
+    tests: 19
+    files: 2
+    observed_at: 2026-09-04T12:49:28+08:00
+    evidence: root terminal tool output; UI source has not changed since this run
+  - id: toast-interaction
+    command: playwright-cli --session task009 run-code --filename src-tauri/target/task009-verification/ui-interaction.js
+    result: PASS
+    assertions: 13
+    log: ui-interaction.log
+    setup: ui-setup.js
+    method: actual React page in browser with official Tauri mockIPC; exact application modules unchanged
+    details: >-
+      Single failure toast; close; six-second dismissal; durable action failure; failed snapshot
+      cannot show stale Stopped; healthy state after compile failure; Started/AlreadyRunning no
+      error toast; failed cleanup RecoveryRequired; confirmed stop; unknown/raw responses redacted.
+    exclusions: native Tauri transport, actual core backend, Tray/window E2E, subscription page
+  - id: early-static
+    commands:
+      - cargo clippy --manifest-path src-tauri/Cargo.toml --lib -- -D warnings
+      - cargo fmt --manifest-path src-tauri/Cargo.toml -- --check
+      - git diff --check
+    result: PASS
+    details: initial source check; repeat after final test-module changes
+  - id: first-controlled-urltest
+    command: cargo test --manifest-path src-tauri/Cargo.toml --lib task009_controlled_network -- --nocapture --test-threads=1
+    result: FAIL
+    count: 4
+    log_prefix: controlled-urltest
+    details: first HTTP fixture read failed; three later cases failed from poisoned lock; not network PASS
+frozen_verification:
+  rust_regression:
+    command: cargo test --manifest-path src-tauri/Cargo.toml --lib -- --test-threads=1 --skip fixed_bundle_resources_run_and_stop_only_the_owned_loopback_child
+    result: PASS
+    passed: 159
+    failed: 0
+    filtered: 1
+    duration_seconds: 205.55
+    outer_timeout_seconds: 360
+    log_prefix: frozen-regression
+    scope: >-
+      Reduced regression only, not full library PASS. Excludes exactly the separately reproduced
+      disabled-Logs compatibility failure to avoid poisoning the shared 9090 test lock. All other
+      tests execute, including 34 final checks, true replacement/fail-stop and four controlled URLTests.
+  known_full_library_failure:
+    result: FAIL
+    test: fixed_bundle_resources_run_and_stop_only_the_owned_loopback_child
+    diagnostic_log_prefix: real-observation-diagnostic
+    cause: fixed disabled Logs response currently maps to Unavailable
+  frontend:
+    commands: [pnpm lint, pnpm test, pnpm build]
+    result: PASS
+    tests: 19
+    log_prefixes: [frontend-lint, frontend-test, frontend-build]
+    metadata: frontend-result.json
+  ui_interaction:
+    result: PASS
+    assertions: 14
+    log: ui-interaction-002.log
+    source: current App.tsx with official mockIPC on actual browser page
+    added_case: newer owner Stopped Delta arriving during action survives older post-action snapshot
+    exclusions: native Tauri transport, real backend, GUI/Tray combined acceptance
+  rust_static:
+    clippy: PASS
+    command: cargo clippy --manifest-path src-tauri/Cargo.toml --lib -- -D warnings
+    log_prefix: frozen-clippy
+    fmt: PASS
+    diff_check: PASS
+    metadata: frozen-static-result.json
+  controlled_network_subset:
+    result: PASS
+    tests: 4
+    standalone_log_prefix: controlled-urltest-002
+    repeated_in: frozen-regression
+    scope: HTTP and SOCKS5 remote-domain address plus HTTP Host and TLS ClientHello SNI only
+    fix: accepted socket explicitly blocking with bounded IO; successful cleanup precedes test-lock release
+    full_tls_handshake: NOT_RUN
+    wireguard: UNAVAILABLE
+    controlled_system_dns: UNAVAILABLE
+  host_configuration_comparison:
+    result: PASS
+    metadata: network-comparison.json
+    fields: interfaces, routes, DNS servers, user Internet Settings proxy configuration
+    before_sha256: 8e802248c68d376bf6772be7393187699988d8a13e7111d6629904429c007cd1
+    after_sha256: 8e802248c68d376bf6772be7393187699988d8a13e7111d6629904429c007cd1
+    scope: bounded observation window; no claim of complete host-state or production verification
+  owned_ui_resources: local Vite process and Playwright session stopped after verification
+required_unavailable:
+  - complete WireGuard peer ICMP/TCP/UDP/DNS/forward-reject and allowed-response matrix
+  - DUT active UDP path with unchanged ObservationOnly final configuration
+  - controlled observable system DNS topology
+  - full successful TLS handshake
+required_pending:
+  - private runtime create-failure ownership repair and verification
+  - fixed-core normal empty-log compatibility and complete observation
+  - positive traffic rate/total semantics and complete identity/concurrency evidence
+  - explicit Human Task acceptance
+independent_review:
+  record: .sdlc/evidence/TASK-009/code-review-checkpoint.yaml
+  scope: current incomplete checkpoint; not Delivery Gate or Task acceptance
+never_inferred: [CI, commit, push, release, SystemProxy, TUN, WFP, Service, all-protocol-handshake]

@@ -2,7 +2,11 @@
   color: #e9eef8;
   background: #111827;
   font-family: Inter, "Microsoft YaHei UI", sans-serif;
+  --traffic-upload: #86b7ff;
+  --traffic-download: #77d5cb;
 }
+
+* { box-sizing: border-box; }
 
 body {
   margin: 0;
@@ -17,9 +21,8 @@ body {
 .app-shell {
   display: grid;
   min-height: 100vh;
-  place-content: center;
-  gap: 0.5rem;
-  padding: 2rem;
+  grid-template-columns: 220px minmax(0, 1fr);
+  align-items: start;
 }
 
 .app-shell h1,
@@ -30,11 +33,14 @@ body {
 .observation {
   display: grid;
   gap: 0.5rem;
-  max-width: 42rem;
+
   padding: 1rem;
   border: 1px solid #31415e;
   border-radius: 0.75rem;
   background: #172033;
+  min-width: 0;
+
+  overflow-wrap: anywhere;
 }
 
 .observation ul {
@@ -42,7 +48,119 @@ body {
   padding-left: 1.25rem;
 }
 
+.runtime-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.runtime-controls button {
+  border: 1px solid #55739f;
+  border-radius: 0.4rem;
+  padding: 0.4rem 0.7rem;
+  color: inherit;
+  background: #22314a;
+}
+
+.runtime-controls button:disabled {
+  opacity: 0.6;
+}
+
 .eyebrow {
   color: #8da2c0;
   font-size: 0.875rem;
+}
+
+.failure-toast {
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  left: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  width: fit-content;
+  max-width: calc(100% - 4rem);
+  margin-left: auto;
+  padding: 1rem;
+  border: 1px solid #d79595;
+  border-radius: 0.5rem;
+  color: #fff1f1;
+  background: #482b35;
+}
+
+.failure-toast button {
+  flex-shrink: 0;
+  border: 1px solid currentColor;
+  border-radius: 0.25rem;
+  padding: 0.3rem 0.6rem;
+  color: inherit;
+  background: transparent;
+}
+
+.traffic-panel { border: 1px solid #31415e; border-radius: 0.75rem; padding: 1.25rem; min-width: 0; background: #172033; }
+.traffic-heading, .traffic-chart figcaption { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 0.5rem; }
+.traffic-heading h2 { margin: 0; font-size: 1rem; font-weight: 600; }
+.traffic-rates { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; margin-block: 1rem; }
+.traffic-rates dt { color: #a7b8d0; font-size: 0.875rem; }
+.traffic-rates dd { margin: 0.25rem 0 0; font-size: clamp(1rem, 3vw, 1.5rem); font-variant-numeric: tabular-nums; }
+.traffic-chart { margin: 0; font-size: 0.75rem; color: #a7b8d0; }
+.traffic-legend { display: flex; flex-wrap: wrap; gap: 0.75rem; }
+.upload-key { color: var(--traffic-upload); }
+.download-key { color: var(--traffic-download); }
+.upload-key::before, .download-key::before { content: ""; display: inline-block; width: 1rem; margin-right: 0.3rem; vertical-align: middle; border-top: 2px solid currentColor; }
+.download-key::before { border-top-style: dashed; }
+.traffic-axis-top { margin-top: 0.75rem; }
+.traffic-plot { position: relative; height: 240px; }
+.traffic-plot svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.traffic-grid { fill: none; stroke: #31415e; stroke-width: 1; }
+.traffic-upload, .traffic-download { fill: none; stroke-width: 2; vector-effect: non-scaling-stroke; }
+.traffic-upload { stroke: var(--traffic-upload); }
+.traffic-download { stroke: var(--traffic-download); stroke-dasharray: 5 4; }
+circle.traffic-upload { fill: var(--traffic-upload); stroke: none; }
+circle.traffic-download { fill: var(--traffic-download); stroke: none; }
+.traffic-empty { position: absolute; inset: 0; display: grid; place-content: center; text-align: center; }
+.traffic-axis-time { display: flex; justify-content: space-between; margin-top: 0.25rem; }
+.traffic-totals { display: flex; flex-wrap: wrap; gap: 0.5rem 1rem; margin-top: 1rem; font-size: 0.875rem; font-variant-numeric: tabular-nums; }
+.runtime-controls button:hover:not(:disabled) { background: #2c4162; }
+button:focus-visible { outline: 2px solid #86b7ff; outline-offset: 3px; }
+
+.sidebar { position: sticky; top: 0; height: 100dvh; display: flex; flex-direction: column; min-width: 0; padding: 1.5rem 1rem 1rem; border-right: 1px solid #27364f; background: #141d2e; gap: 2rem; }
+.brand { display: flex; align-items: center; gap: 0.75rem; font-size: 1.25rem; font-weight: 650; }
+.brand-mark { display: grid; place-items: center; width: 2rem; height: 2rem; border: 1px solid #55739f; border-radius: 0.5rem; color: #a6cbff; }
+.sidebar nav a { display: flex; gap: 0.75rem; align-items: center; border-radius: 0.5rem; padding: 0.75rem; text-decoration: none; color: #c4dbff; background: #22314a; font-size: 0.875rem; }
+.sidebar nav a span { font-size: 1.25rem; }
+.sidebar-traffic { margin-top: auto; border-top: 1px solid #27364f; padding-top: 1rem; min-width: 0; }
+.home-content { display: grid; gap: 1.5rem; width: 100%; max-width: 76rem; min-width: 0; margin-inline: auto; padding: 2rem; }
+.home-header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem; }
+.home-header h1 { font-size: 1.75rem; font-weight: 600; margin-top: 0.25rem; }
+.home-status { color: #a7b8d0; font-size: 0.875rem; }
+.traffic-panel > .traffic-heading { margin-bottom: 1.25rem; }
+.traffic-panel .traffic-rates { margin: 1.25rem 0 0; }
+.traffic-panel .traffic-rates > div { padding: 0.875rem 1rem; border: 1px solid #2b3d59; border-radius: 0.5rem; background: #1b2940; }
+.traffic-panel .traffic-totals { padding-top: 1rem; border-top: 1px solid #27364f; }
+.traffic-chart-compact .traffic-plot { height: 60px; }
+.traffic-chart-compact { font-size: 0.6875rem; }
+.traffic-rates-compact { margin: 0.75rem 0 0; gap: 0.5rem; }
+.traffic-rates-compact dt { font-size: 0.6875rem; }
+.traffic-rates-compact dd { font-size: 0.75rem; white-space: nowrap; }
+.traffic-rates .upload-key::before, .traffic-rates .download-key::before { content: none; }
+.runtime-controls { margin-top: 0.5rem; }
+.runtime-controls > span { width: 100%; color: #a7b8d0; font-size: 0.8125rem; }
+.runtime-diagnostics { margin-top: 0.5rem; color: #8da2c0; font-size: 0.75rem; }
+.runtime-diagnostics summary { cursor: pointer; padding-block: 0.25rem; }
+a:focus-visible, summary:focus-visible { outline: 2px solid #86b7ff; outline-offset: 3px; }
+@media (max-width: 680px) {
+  .app-shell { grid-template-columns: minmax(0, 1fr); padding: 1rem; gap: 1rem; }
+  .sidebar { display: contents; }
+  .brand { order: 0; }
+  .sidebar nav { order: 1; }
+  .home-content { order: 2; padding: 0; gap: 1rem; }
+  .sidebar-traffic { order: 3; margin-top: 0; padding: 1rem; border: 1px solid #31415e; border-radius: 0.75rem; background: #141d2e; }
+  .traffic-panel, .observation { padding: 0.75rem; }
+  .traffic-rates { gap: 0.5rem; }
+  .traffic-panel .traffic-rates > div { padding: 0.75rem; }
+  .traffic-plot { height: 180px; }
 }

@@ -1,0 +1,215 @@
+{
+  "result": "PASS",
+  "host_before_after": {
+    "timestamp": "2026-09-04T15:28:44.8332511+08:00",
+    "result": "PASS",
+    "checks": [
+      {
+        "field": "interfaces",
+        "before_hash": "c3f7f290de2a45015f971f458bfd5e0afec7864f1a2737da26a1e71df99b4633",
+        "after_hash": "c3f7f290de2a45015f971f458bfd5e0afec7864f1a2737da26a1e71df99b4633",
+        "unchanged": true
+      },
+      {
+        "field": "addresses",
+        "before_hash": "2bd4a3cb1928063095a5f99c448963c1d823c8e95546e00817adae58e2ae265d",
+        "after_hash": "2bd4a3cb1928063095a5f99c448963c1d823c8e95546e00817adae58e2ae265d",
+        "unchanged": true
+      },
+      {
+        "field": "routes",
+        "before_hash": "1d20414d0a413b8844c8ee2930c02b9bb91eb42586e5b27d827ef05f82ac14ac",
+        "after_hash": "1d20414d0a413b8844c8ee2930c02b9bb91eb42586e5b27d827ef05f82ac14ac",
+        "unchanged": true
+      },
+      {
+        "field": "dns",
+        "before_hash": "9fc6a6105e79db3c310c6cbdf29355130e1c099e3497f81622c8a0aa23c54dc6",
+        "after_hash": "9fc6a6105e79db3c310c6cbdf29355130e1c099e3497f81622c8a0aa23c54dc6",
+        "unchanged": true
+      },
+      {
+        "field": "proxy",
+        "before_hash": "fe8d3a14a211ba55e32fce49ac32b12622c0a46a256df836d6678673a8717e79",
+        "after_hash": "fe8d3a14a211ba55e32fce49ac32b12622c0a46a256df836d6678673a8717e79",
+        "unchanged": true
+      }
+    ]
+  },
+  "artifacts": [
+    {
+      "path": "src-tauri/target/task009-remediation/metering-clippy-009.result.json",
+      "sha256": "b3acfd4ab5a17f02dafb486649188829021a95b93bd206b8fea46e36f4cb4889"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/metering-clippy-009.stderr.txt",
+      "sha256": "5c85ca67055a4842d9222028108c84fe975c5277847274313a66e4755b7079b7"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/metering-clippy-009.stdout.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/metering-compiler-009.result.json",
+      "sha256": "9dcfe8f6731f673de839f021ee2a9021bb072807ad0437f8de7d7a247c43e341"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/metering-compiler-009.stderr.txt",
+      "sha256": "13f9dacdbd82b4d4d4373d74d7a171dc2c3c0eeecdc9a15e2809d9457f52ea35"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/metering-compiler-009.stdout.txt",
+      "sha256": "fd3e41ba6342c4a85925ebb3eff29fbd66464ea4fe542787a40eb208a83d4a28"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/metering-diff-check-009.result.json",
+      "sha256": "f4129272f6f69aee07c63e7206323a0bbfa52215380741b55513abb37c633fbb"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/metering-diff-check-009.txt",
+      "sha256": "3a7cd7af5760a3c0fabb0e1129d8f705775170484db8d94b75f7f59fd9df9d5b"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/metering-final-009.result.json",
+      "sha256": "b1f112878356f8aaa747ce566a5e9003fcabe006948ac0c23a6a42520ef16b90"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/metering-final-009.stderr.txt",
+      "sha256": "2e690c7502f6bee76d72e94fd52df0ec73145a429e3212e6097b8b088f11ece3"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/metering-final-009.stdout.txt",
+      "sha256": "363edeb0fb1852ffcb47c4877e108238ac82a4eb355adb98301e672a1ff1124c"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/metering-fmt-009.result.json",
+      "sha256": "8eecbbfa7e17f3411b1868f056d328438840ffb609e1196ae99f50879531d1ec"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/metering-fmt-009.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/metering-fmt-009.stdout.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/metering-host-after-009.json",
+      "sha256": "4f03b1e2fa997dac2928b5dc929c8a50de04938d3014b1fbc8bcb00cf821d847"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/metering-host-before-009.json",
+      "sha256": "2e89f1c8ad8e303b63d94d46b2a84271b9f0795d35c3b020780230cc6d0bb6d4"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/metering-host-compare-009.json",
+      "sha256": "384f0d3990f12da329d046f71fc2b6574e9a086fa23cd2ee7889d09a37a4285e"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/metering-host-snapshot.ps1",
+      "sha256": "2255c289a2dd0eb4467a77ae1e97f275c50f7b0da5f3f1803ffc9bbde1abc6ec"
+    }
+  ],
+  "result_scope": "26 unique tests: 24 compiler plus real fixed-core metering and actual-socket deadline tests. The six-test metering filter includes four compiler tests already counted. Non-test library Clippy, fmt, diff-check and host snapshots PASS; not whole Task acceptance.",
+  "delivery": ".sdlc/evidence/TASK-009/delivery-checkpoint-009.yaml",
+  "verified": [
+    "Typed test-only compiler -> finalize with new entropy -> actual fixed core check/private final bytes -> Ready -> exact owned listeners (API and direct loopback inlet).",
+    "Known byte pattern received and echoed, 1310720 bytes each direction; same real core produced positive rates and exact final REST totals.",
+    "Two quiet samples: rates zero, totals stable and active connections zero.",
+    "Same Port new identity 2 after Stop, independently generated secret and distinct final config SHA; old auth rejected, new totals zero.",
+    "Actual safe core samples feed existing in-memory observation owner; explicit confirmed Stop/newReady clear shared graph history. This test wires lifecycle notifications directly, not through GUI or controller.",
+    "Host interfaces, addresses, routes, DNS and proxy selected configuration hashes unchanged.",
+    "CR003 target port remains owned throughout every child lifetime; main listener released only after confirmed core/pending cleanup.",
+    "CR004 no block read/write resets the shared service deadline; actual socket short/expired deadline cases PASS."
+  ],
+  "timestamp": "2026-09-04T15:29:18.9138749+08:00",
+  "iterations": [
+    "Prior compile/fixture attempts retained in verification008; those old target results do not certify CR003/CR004 repairs.",
+    "CR003: main fixture retains echo listener until both instances stopped. Actual bind attempts after echo thread join and during second instance both fail while retained ownership is held.",
+    "CR004: block I/O deadline is min(service absolute deadline, now+2 seconds); client connect and pacing use same deadline. New real-socket test proves expired write sends nothing and 50ms global read cutoff overrides normal2seconds.",
+    "Final six-test metering filter PASS24.09sec; compiler24tests PASS0.84sec."
+  ],
+  "not_run": [
+    "Full Rust suite",
+    "Frontend rerun (unchanged)",
+    "Native WebView/Tray E2E",
+    "CI",
+    "commit",
+    "push"
+  ],
+  "remaining_gaps": [
+    "True worker network in-flight Stop/cross-instance late publication and complete stream concurrency evidence",
+    "Full WG/DNS controlled topology; positive TCP Direct metering does not establish WG/UDP/ICMP/DNS coverage",
+    "Whole Task009 review and human acceptance"
+  ],
+  "version": 1,
+  "target_identity": "sha256:da3b834d77fd6954d19737188c381849e41f09255e5e30accc8c4b0ce3506b74",
+  "observed": [
+    {
+      "result": "PASS",
+      "outer_timeout_seconds": 60,
+      "command": "test --manifest-path src-tauri/Cargo.toml --lib metering -- --nocapture --test-threads=1",
+      "summary": [
+        "test platform::windows::managed_sidecar_port::tests::real_loopback_metering_tracks_bytes_silence_and_new_instance ... metering phase=transfer identity=1 pid=64028 config_sha256=dd38a64342ee5132d25f07b25d577ae191384e9c8913f8ec89476fccf4179135 up_rate=163840 down_rate=163840 up_total=180224 down_total=180224",
+        "metering phase=transfer identity=1 pid=64028 config_sha256=dd38a64342ee5132d25f07b25d577ae191384e9c8913f8ec89476fccf4179135 up_rate=163840 down_rate=163840 up_total=524288 down_total=524288",
+        "metering phase=transfer identity=1 pid=64028 config_sha256=dd38a64342ee5132d25f07b25d577ae191384e9c8913f8ec89476fccf4179135 up_rate=163840 down_rate=163840 up_total=868352 down_total=868352",
+        "metering phase=transfer identity=1 pid=64028 config_sha256=dd38a64342ee5132d25f07b25d577ae191384e9c8913f8ec89476fccf4179135 up_rate=98304 down_rate=98304 up_total=1212416 down_total=1212416",
+        "metering phase=silent identity=1 exact_bytes_each=1310720 rates=0 totals_stable=true",
+        "metering phase=new_instance identity=2 pid=55284 config_sha256=49ac570deb12763aba034ed345ce332709b341a7d68bd5f2b18116d86a7030f8 old_auth_rejected=true totals=0 history_isolated=true listeners=api+loopback_inlet",
+        "test result: ok. 6 passed; 0 failed; 0 ignored; 0 measured; 179 filtered out; finished in 24.09s"
+      ],
+      "timeout": false,
+      "id": "metering-final-009",
+      "exit_code": 0,
+      "started": "2026-09-04T15:27:35.070126+08:00",
+      "finished": "2026-09-04T15:28:04.8066322+08:00"
+    },
+    {
+      "result": "PASS",
+      "outer_timeout_seconds": 60,
+      "command": "test --manifest-path src-tauri/Cargo.toml --lib singbox::compiler::tests:: -- --nocapture --test-threads=1",
+      "summary": [
+        "test result: ok. 24 passed; 0 failed; 0 ignored; 0 measured; 161 filtered out; finished in 0.84s"
+      ],
+      "timeout": false,
+      "id": "metering-compiler-009",
+      "exit_code": 0,
+      "started": "2026-09-04T15:28:35.2546744+08:00",
+      "finished": "2026-09-04T15:28:36.9789426+08:00"
+    },
+    {
+      "result": "PASS",
+      "outer_timeout_seconds": 60,
+      "command": "clippy --manifest-path src-tauri/Cargo.toml --lib -- -D warnings",
+      "summary": [],
+      "timeout": false,
+      "id": "metering-clippy-009",
+      "exit_code": 0,
+      "started": "2026-09-04T15:28:37.8332057+08:00",
+      "finished": "2026-09-04T15:28:42.1584472+08:00"
+    },
+    {
+      "result": "PASS",
+      "outer_timeout_seconds": 60,
+      "command": "fmt --manifest-path src-tauri/Cargo.toml -- --check",
+      "summary": [],
+      "timeout": false,
+      "id": "metering-fmt-009",
+      "exit_code": 0,
+      "started": "2026-09-04T15:28:42.6984349+08:00",
+      "finished": "2026-09-04T15:28:43.3421328+08:00"
+    },
+    {
+      "result": "PASS",
+      "outer_timeout_seconds": 60,
+      "command": "git diff --check",
+      "summary": [],
+      "timeout": false,
+      "id": "metering-diff-check-009",
+      "exit_code": 0,
+      "started": null,
+      "finished": "2026-09-04T15:28:44.9235708+08:00"
+    }
+  ],
+  "target": "TASK-009 CHANGE006 real loopback aggregate metering"
+}

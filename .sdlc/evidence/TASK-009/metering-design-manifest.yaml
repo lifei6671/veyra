@@ -1,0 +1,18 @@
+[
+  {
+    "path": ".sdlc/design/DCR-008-test-loopback-metering.md",
+    "sha256": "689ee9ff2cebfd499e27646c7ea7863b1898e2b5afe739482cee6a57ad06d41f"
+  },
+  {
+    "path": ".sdlc/design/DCR-001-sing-box-1.14.0.md",
+    "sha256": "fd23ff8fc6842e2cb4d4b9fa9daebccc143af06585d56ad45cb145663d7a09e3"
+  },
+  {
+    "path": ".sdlc/tasks/TASK-009.md",
+    "sha256": "a1341b15a48840a5e15616eba486ff79a4a432c1e7e3c54be2f978b8632093cd"
+  },
+  {
+    "path": ".sdlc/evidence/TASK-009/change-control.yaml",
+    "sha256": "0f9a02b5719ad515a57f9beed7ebd56c1c1058245203c23c1c2dcfbe37d79913"
+  }
+]

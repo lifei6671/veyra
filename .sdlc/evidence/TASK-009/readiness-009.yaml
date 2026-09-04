@@ -1,0 +1,15 @@
+{
+  "result": "PASS",
+  "baseline": ".sdlc/evidence/TASK-009/metering-repair-baseline-009.yaml",
+  "scope": "managed_sidecar_port.rs cfg(test) only: retain target listener until all core cleanup, propagate absolute deadline, add actual socket deadline test",
+  "timestamp": "2026-09-04T15:27:33.4919706+08:00",
+  "authorization": "Existing CHANGE006 DCR008 bounded fixture remediation",
+  "design_identity": "sha256:689ee9ff2cebfd499e27646c7ea7863b1898e2b5afe739482cee6a57ad06d41f",
+  "findings": [
+    "TASK009-CR-003",
+    "TASK009-CR-004"
+  ],
+  "target": "TASK009 CR003/CR004 metering fixture repair",
+  "task_identity": "sha256:a1341b15a48840a5e15616eba486ff79a4a432c1e7e3c54be2f978b8632093cd",
+  "id": "EVIDENCE-TASK-009-READINESS-009"
+}

@@ -1,0 +1,89 @@
+{
+  "logs": [
+    {
+      "sha256": "75f0cc2507077724ea1b848c32e9e414ca0a95c209954b20d692f468dff2e577",
+      "path": "src-tauri/target/task009-remediation/traffic-application-runtime-004.result.json"
+    },
+    {
+      "sha256": "41128450e9063ec622b3d39bff48fe964663131110725390e62a9b125f93ef70",
+      "path": "src-tauri/target/task009-remediation/traffic-application-runtime-004.stderr.txt"
+    },
+    {
+      "sha256": "a444657d70a50df0f0468a85c18543422157e7e7b22f8129cfc1db6e4ad3e201",
+      "path": "src-tauri/target/task009-remediation/traffic-application-runtime-004.stdout.txt"
+    },
+    {
+      "sha256": "5aa5352c4b85268a1dd3665ec83d6d927f0655fd760e0c8d11918989f96af313",
+      "path": "src-tauri/target/task009-remediation/traffic-clash-004.result.json"
+    },
+    {
+      "sha256": "3b271d872be7465b967fdab820065d1b2adedf15475014eddbf25922a7995d87",
+      "path": "src-tauri/target/task009-remediation/traffic-clash-004.stderr.txt"
+    },
+    {
+      "sha256": "0516f4d1c65672878532e1e7db8e1f8915b015484535b80dfdf88e4691e883a9",
+      "path": "src-tauri/target/task009-remediation/traffic-clash-004.stdout.txt"
+    },
+    {
+      "sha256": "0bb873213d3a50d7ff3b387ef973f2c78d60f98a502ee2b52859b55e3f22cc56",
+      "path": "src-tauri/target/task009-remediation/traffic-clippy-004.result.json"
+    },
+    {
+      "sha256": "30dfa5eaa6b4ad3eb360bf28342f550c25823ed997a2333648411a5531eb6f16",
+      "path": "src-tauri/target/task009-remediation/traffic-clippy-004.stderr.txt"
+    },
+    {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "path": "src-tauri/target/task009-remediation/traffic-clippy-004.stdout.txt"
+    },
+    {
+      "sha256": "b3129f7f7f2e6d812b3e5ab86e5959c9241583e963fefecfdfd5938e368f957c",
+      "path": "src-tauri/target/task009-remediation/traffic-diff-004.log"
+    },
+    {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "path": "src-tauri/target/task009-remediation/traffic-fmt-004.log"
+    },
+    {
+      "sha256": "e38ad64c70b3b9d7f94d854aa9bebcb85bba2b17ddd8cca08cbc99ec106902e6",
+      "path": "src-tauri/target/task009-remediation/traffic-observability-004.result.json"
+    },
+    {
+      "sha256": "3539ac486b256b4db20b59959a4b8109c83d5464bf431f1c0192d7752400743f",
+      "path": "src-tauri/target/task009-remediation/traffic-observability-004.stderr.txt"
+    },
+    {
+      "sha256": "7ed7f4226c3c3410f66aba9b0bf55b95ba1272634f61184e69ed769b27c2c1b1",
+      "path": "src-tauri/target/task009-remediation/traffic-observability-004.stdout.txt"
+    },
+    {
+      "sha256": "6fe69380d552d6be7dcd000aa3913cd3fbeaf8d5137f3e5c742dd387c55090e2",
+      "path": "src-tauri/target/task009-remediation/traffic-real-core-004.result.json"
+    },
+    {
+      "sha256": "41128450e9063ec622b3d39bff48fe964663131110725390e62a9b125f93ef70",
+      "path": "src-tauri/target/task009-remediation/traffic-real-core-004.stderr.txt"
+    },
+    {
+      "sha256": "e238ebab5a12ae1c21062a342b031d7f6ebd6899a4434271ea0c29ed513b45fc",
+      "path": "src-tauri/target/task009-remediation/traffic-real-core-004.stdout.txt"
+    },
+    {
+      "sha256": "af6fed8e8af88cc9882641e29a5a28416720425616a4a8ae07a684d42f8341b7",
+      "path": "src-tauri/target/task009-remediation/traffic-static-004.result.json"
+    },
+    {
+      "sha256": "c3fafb283c47e54632f69034522ce9e3d0421d2b0c02f4f68cfdf3648ff0181c",
+      "path": "src-tauri/target/task009-remediation/traffic-worker-004.result.json"
+    },
+    {
+      "sha256": "41128450e9063ec622b3d39bff48fe964663131110725390e62a9b125f93ef70",
+      "path": "src-tauri/target/task009-remediation/traffic-worker-004.stderr.txt"
+    },
+    {
+      "sha256": "ffc322eba107c2bd9ca88df44cde7b0ba1da93f2487ec5567edf91056327b291",
+      "path": "src-tauri/target/task009-remediation/traffic-worker-004.stdout.txt"
+    }
+  ],
+  "target_identity": "sha256:1e08f4e589f3d1aa0aac5665a4aed2c6875fcbb8cd7114872309dace7136b64a"
+}

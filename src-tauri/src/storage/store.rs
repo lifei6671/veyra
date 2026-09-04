@@ -42,7 +42,7 @@ impl JsonStateStore {
         let document =
             serde_json::from_slice(contents).map_err(|_| StateStoreError::InvalidJson)?;
         let (migrated, was_migrated) = migrate_to_current(document)?;
-        let stored = serde_json::from_value::<StoredStateV2>(migrated)
+        let stored = serde_json::from_value::<StoredStateV3>(migrated)
             .map_err(|_| StateStoreError::InvalidStoredState)?;
         let state = validate_state(AppState::try_from(stored)?)?;
         Ok((state, was_migrated))
@@ -55,7 +55,7 @@ impl JsonStateStore {
 
     fn write_current_without_backup(&self, state: &AppState) -> Result<(), StateStoreError> {
         validate_state(state.clone())?;
-        let contents = serde_json::to_vec_pretty(&StoredStateV2::from(state))
+        let contents = serde_json::to_vec_pretty(&StoredStateV3::from(state))
             .map_err(|_| StateStoreError::SerializationFailed)?;
         atomic_replace(&self.state_file, &contents)
     }
@@ -88,7 +88,7 @@ impl StateStore for JsonStateStore {
 
     fn save(&self, state: &AppState) -> Result<(), StateStoreError> {
         validate_state(state.clone())?;
-        let stored = StoredStateV2::from(state);
+        let stored = StoredStateV3::from(state);
         let contents =
             serde_json::to_vec_pretty(&stored).map_err(|_| StateStoreError::SerializationFailed)?;
 
@@ -100,8 +100,9 @@ impl StateStore for JsonStateStore {
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
-struct StoredStateV2 {
+struct StoredStateV3 {
     schema_version: u32,
+    default_target: crate::domain::RouteTarget,
     subscriptions: Vec<Subscription>,
     providers: Vec<Provider>,
     nodes: Vec<ProxyNode>,
@@ -109,10 +110,11 @@ struct StoredStateV2 {
     routes: Vec<RoutePolicy>,
 }
 
-impl From<&AppState> for StoredStateV2 {
+impl From<&AppState> for StoredStateV3 {
     fn from(state: &AppState) -> Self {
         Self {
             schema_version: CURRENT_SCHEMA_VERSION,
+            default_target: state.default_target.clone(),
             subscriptions: state.subscriptions.clone(),
             providers: state.providers.clone(),
             nodes: state.nodes.clone(),
@@ -122,15 +124,16 @@ impl From<&AppState> for StoredStateV2 {
     }
 }
 
-impl TryFrom<StoredStateV2> for AppState {
+impl TryFrom<StoredStateV3> for AppState {
     type Error = StateStoreError;
 
-    fn try_from(stored: StoredStateV2) -> Result<Self, Self::Error> {
+    fn try_from(stored: StoredStateV3) -> Result<Self, Self::Error> {
         if stored.schema_version != CURRENT_SCHEMA_VERSION {
             return Err(StateStoreError::UnsupportedSchemaVersion);
         }
         Ok(Self {
             schema_version: stored.schema_version,
+            default_target: stored.default_target,
             subscriptions: stored.subscriptions,
             providers: stored.providers,
             nodes: stored.nodes,
@@ -149,6 +152,7 @@ pub enum StateStoreError {
     ReplaceFailed,
     InvalidJson,
     MissingSchemaVersion,
+    MigrationFailed,
     InvalidStoredState,
     UnsupportedSchemaVersion,
     NoValidBackup,
@@ -165,6 +169,7 @@ impl fmt::Display for StateStoreError {
             Self::ReplaceFailed => "state snapshot could not be atomically replaced",
             Self::InvalidJson => "state snapshot is not valid JSON",
             Self::MissingSchemaVersion => "state snapshot has no schema version",
+            Self::MigrationFailed => "state snapshot could not be migrated",
             Self::InvalidStoredState => "state snapshot has an invalid structure",
             Self::UnsupportedSchemaVersion => "state snapshot schema version is unsupported",
             Self::NoValidBackup => "state snapshot and backup are not valid",
@@ -195,7 +200,7 @@ mod tests {
 
     use super::*;
     use crate::domain::{
-        NodeCredentials, NodeFilter, NodeId, NodePool, PoolId, PoolKind, PoolSource, ProviderId,
+        NodeFilter, NodeId, NodePool, PoolId, PoolKind, PoolSource, ProtocolOptions, ProviderId,
         ProxyProtocol, RoutePolicy, RoutePolicyId, RouteTarget, SelectionPolicy, SubscriptionId,
         TrafficMatcher, Transport,
     };
@@ -215,6 +220,7 @@ mod tests {
     fn valid_state() -> AppState {
         AppState {
             schema_version: CURRENT_SCHEMA_VERSION,
+            default_target: RouteTarget::Unconfigured,
             subscriptions: vec![Subscription {
                 id: SubscriptionId("subscription".to_owned()),
                 name: "Test".to_owned(),
@@ -231,10 +237,9 @@ mod tests {
                 protocol: ProxyProtocol::Shadowsocks,
                 server: "example.invalid".to_owned(),
                 port: 443,
-                credentials: NodeCredentials::Password {
-                    username: None,
+                options: ProtocolOptions::Shadowsocks {
+                    method: "aes-128-gcm".to_owned(),
                     password: "test-secret".to_owned(),
-                    cipher: Some("aes-128-gcm".to_owned()),
                 },
                 transport: Some(Transport::Tcp),
                 tls: None,
@@ -335,6 +340,53 @@ mod tests {
     }
 
     #[test]
+    fn migrates_v2_nodes_without_changing_ids_or_pool_and_route_references() {
+        let store = unique_test_store();
+        let v2 = serde_json::json!({
+            "schema_version": 2,
+            "subscriptions": [{"id":"subscription","name":"Test"}],
+            "providers": [{"id":"provider","subscription_id":"subscription","name":"Default"}],
+            "nodes": [{
+                "id":"node-preserved","provider_id":"provider","name":"Node","protocol":"vless",
+                "server":"example.invalid","port":443,
+                "credentials":{"kind":"uuid","uuid":"fixture-uuid","flow":"xtls-rprx-vision"},
+                "transport":"tcp","tls":null
+            }],
+            "pools": [{
+                "id":"pool-preserved","name":"Pool","kind":"custom","enabled":true,
+                "sources":[{"provider_id":"provider","filter":{"regions":[],"protocols":[],"include_keywords":[],"exclude_keywords":[],"include_node_ids":[],"exclude_node_ids":[]}}],
+                "selection":{"kind":"manual","selected_node_id":"node-preserved"}
+            }],
+            "routes": [{
+                "id":"route-preserved","name":"Route","enabled":true,"priority":0,
+                "matcher":{"kind":"domain","values":["example.com"]},
+                "target":{"kind":"pool","pool_id":"pool-preserved"}
+            }]
+        });
+        atomic_replace(
+            store.state_file(),
+            &serde_json::to_vec(&v2).expect("encode v2 fixture"),
+        )
+        .expect("write v2 fixture");
+
+        let state = store.load().expect("migrate v2");
+
+        assert_eq!(state.default_target, RouteTarget::Unconfigured);
+        assert_eq!(state.nodes[0].id, NodeId("node-preserved".to_owned()));
+        assert_eq!(state.pools[0].id, PoolId("pool-preserved".to_owned()));
+        assert!(matches!(
+            state.pools[0].selection,
+            SelectionPolicy::Manual { selected_node_id: Some(NodeId(ref id)) } if id == "node-preserved"
+        ));
+        assert!(matches!(
+            state.routes[0].target,
+            RouteTarget::Pool(ref id) if id.0 == "pool-preserved"
+        ));
+        assert!(pre_migration_backup_path(store.state_file()).exists());
+        remove_test_files(&store);
+    }
+
+    #[test]
     fn rejects_an_invalid_v1_migration_candidate_without_writing_it() {
         let store = unique_test_store();
         let state = valid_state();
@@ -345,9 +397,7 @@ mod tests {
             store.decode(include_bytes!(
                 "../../tests/fixtures/state/v1-invalid-reference.json"
             )),
-            Err(StateStoreError::InvalidState(
-                StateValidationError::MissingProvider
-            ))
+            Err(StateStoreError::MigrationFailed)
         ));
         assert_eq!(
             fs::read(store.state_file()).expect("read current state"),
@@ -357,12 +407,45 @@ mod tests {
     }
 
     #[test]
+    fn preserves_an_unmappable_v2_snapshot_even_when_a_backup_exists() {
+        let store = unique_test_store();
+        let state = valid_state();
+        store.save(&state).expect("save initial state");
+        let mut updated = state.clone();
+        updated.nodes[0].name = "Updated".to_owned();
+        store.save(&updated).expect("create valid backup");
+        let unmappable_v2 = serde_json::json!({
+            "schema_version": 2,
+            "subscriptions": [{"id":"subscription","name":"Test"}],
+            "providers": [{"id":"provider","subscription_id":"subscription","name":"Default"}],
+            "nodes": [{
+                "id":"node","provider_id":"provider","name":"Node","protocol":"unsupported",
+                "server":"example.invalid","port":443,
+                "credentials":{"kind":"password","username":null,"password":"secret","cipher":null},
+                "transport":"tcp","tls":null
+            }],
+            "pools": [],
+            "routes": []
+        });
+        let bytes = serde_json::to_vec(&unmappable_v2).expect("encode v2 state");
+        atomic_replace(store.state_file(), &bytes).expect("write unmappable v2 state");
+
+        assert_eq!(store.load(), Err(StateStoreError::MigrationFailed));
+        assert_eq!(
+            fs::read(store.state_file()).expect("read preserved v2 state"),
+            bytes
+        );
+        assert!(!corrupt_copy_path(store.state_file()).exists());
+        remove_test_files(&store);
+    }
+
+    #[test]
     fn rejects_an_unapproved_v0_schema_without_writing_it() {
         let store = unique_test_store();
         let state = valid_state();
         store.save(&state).expect("save current state");
         let before = fs::read(store.state_file()).expect("read current state");
-        let mut candidate = serde_json::to_value(StoredStateV2::from(&state))
+        let mut candidate = serde_json::to_value(StoredStateV3::from(&state))
             .expect("serialize unsupported candidate");
         candidate["schema_version"] = serde_json::json!(0);
 
@@ -426,7 +509,7 @@ mod tests {
     #[test]
     fn rejects_an_unsupported_schema_without_replacing_the_snapshot() {
         let store = unique_test_store();
-        let mut document = serde_json::to_value(StoredStateV2::from(&valid_state()))
+        let mut document = serde_json::to_value(StoredStateV3::from(&valid_state()))
             .expect("serialize future schema");
         document["schema_version"] = serde_json::json!(99);
         let bytes = serde_json::to_vec(&document).expect("encode future schema");

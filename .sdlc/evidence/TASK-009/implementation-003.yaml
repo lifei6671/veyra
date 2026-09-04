@@ -1,0 +1,35 @@
+skill_result:
+  skill: implementation
+  target: TASK-009 SF-002 bounded identity and concurrency tests
+  outcome: PASS
+  target_identity: sha256:04d3a65432123555c147a33c23dae6fe3f9a3d88786eaaa01ac44d94453a5fdf
+  next_action_hint: Incremental review passed; obtain DCR-005 approval before traffic correction and preserve remaining Task verification gaps.
+  artifacts:
+    - .sdlc/evidence/TASK-009/delivery-checkpoint-003.yaml
+    - .sdlc/evidence/TASK-009/delivery-checkpoint-003.patch
+    - .sdlc/evidence/TASK-009/verification-003.yaml
+    - .sdlc/evidence/TASK-009/code-review-checkpoint-003.yaml
+  changes:
+    - Three cfg(test) tests added in existing Application controller and singbox runtime modules.
+    - Real worker Start/Start and Start/Stop ordering, capacity-one queue Busy, repeated Start ownership and configuration stability.
+    - Real sample publication interval and no new Delta or revision after confirmed Stop.
+    - Mock current identity replacement and denial of sampling after failed Ready or Stop.
+  verification:
+    controller_module: 9 PASS; 159 filtered; exit 0; 32.40 seconds
+    runtime_module: 16 PASS; 152 filtered; exit 0; 0.45 seconds
+    formatting_library_clippy_diff: PASS
+    independent_incremental_review: PASS for three test additions; no new findings; full Task remains REWORK with incomplete coverage.
+    full_regression: NOT_RUN for checkpoint003; previous 165-test full run remains checkpoint002 evidence.
+  boundaries:
+    - Production code, public contracts, dependencies and host network configuration unchanged in this increment.
+    - Original baseline plus extension and pre-existing user staging preserved; no commit or push.
+    - Tests at sample publication do not prove Stop during actual in-flight network I/O.
+    - Late cross-instance network results, Start response loss and live stream concurrency count remain incomplete.
+    - DCR-005 traffic correction remains a separately reviewed, unapproved proposal.
+    - Full WireGuard/DNS topology and positive traffic verification remain incomplete.
+  retained_resources:
+    reason: Automatic approval rejected failed-fixture deletion with blocked by policy; no bypass attempted.
+    paths:
+      - src-tauri/target/task009-worker-36284-0
+      - src-tauri/target/task009-worker-64148-0
+    contents: Worker read-only inspection found only the three fixed bundle resource hardlinks per fixture, no config file.

@@ -1,0 +1,430 @@
+{
+  "skill_result": {
+    "skill": "code-delivery-review",
+    "target": "TASK-009 incomplete implementation checkpoint 002 — incremental rereview",
+    "outcome": "BLOCKED",
+    "next_action_hint": "两项 P1 已修复；Orchestrator 保留完整 Task 验收缺口，完成所需网络、正流量及完整身份/并发验证后重新冻结并审阅。不要将本次局部修复通过视为 Task 或 Delivery Gate 通过。",
+    "review_mode": "CHILD_AGENT",
+    "reviewed_target_identity": "sha256:cd3edda6984985ad5da0c006743bcb8d1a9ef3b16e4ac105b894224b924322a5",
+    "review_result": "REWORK",
+    "coverage": {
+      "strategy": "PARTITIONED_PLUS_INTEGRATION",
+      "status": "INCOMPLETE",
+      "tier": "TIER_3_DEEP",
+      "independence": "Reviewer 未参与任何目标生产代码、测试或配置实现；此前仅独立审阅设计。",
+      "inventory": "13 PRIMARY、13 CONTEXT_ONLY；所有当前文件和声明的 baseline snapshot SHA256 已核对。与 checkpoint001 比较仅三处生产源、DCR-004 和 TASK-009 身份变化；其他源覆盖沿用旧独立审阅。新增两文件的原字节与 baseline-extension 及旧 CONTEXT_ONLY hash 一致。",
+      "applicable_lanes": [
+        "correctness",
+        "security",
+        "contract-data",
+        "concurrency-performance",
+        "verification",
+        "release"
+      ],
+      "lanes": {
+        "correctness": {
+          "result": "PASS",
+          "validation": "NOT_APPLICABLE",
+          "freshness": "FRESH"
+        },
+        "security": {
+          "result": "PASS",
+          "validation": "COMPLETE",
+          "freshness": "FRESH"
+        },
+        "contract-data": {
+          "result": "PASS",
+          "validation": "NOT_APPLICABLE",
+          "freshness": "FRESH"
+        },
+        "concurrency-performance": {
+          "result": "PASS",
+          "validation": "NOT_APPLICABLE",
+          "freshness": "FRESH"
+        },
+        "verification": {
+          "result": "REWORK",
+          "validation": "BLOCKED",
+          "freshness": "FRESH"
+        },
+        "release": {
+          "result": "REWORK",
+          "validation": "NOT_APPLICABLE",
+          "freshness": "FRESH"
+        }
+      },
+      "partitions": [
+        {
+          "id": "runtime",
+          "paths_or_responsibility": [
+            "src-tauri/src/singbox/runtime.rs",
+            "src-tauri/src/singbox/managed_sidecar.rs",
+            "src-tauri/src/platform/windows/managed_sidecar_port.rs",
+            "src-tauri/src/singbox/compiler.rs (CONTEXT_ONLY)",
+            "src-tauri/src/platform/windows/private_runtime.rs"
+          ],
+          "applicable_lanes": [
+            "correctness",
+            "security",
+            "contract-data",
+            "concurrency-performance",
+            "verification",
+            "release"
+          ],
+          "lanes": {
+            "correctness": {
+              "result": "PASS",
+              "validation": "NOT_APPLICABLE",
+              "freshness": "FRESH"
+            },
+            "security": {
+              "result": "PASS",
+              "validation": "COMPLETE",
+              "freshness": "FRESH"
+            },
+            "contract-data": {
+              "result": "PASS",
+              "validation": "NOT_APPLICABLE",
+              "freshness": "FRESH"
+            },
+            "concurrency-performance": {
+              "result": "PASS",
+              "validation": "NOT_APPLICABLE",
+              "freshness": "FRESH"
+            },
+            "verification": {
+              "result": "REWORK",
+              "validation": "BLOCKED",
+              "freshness": "FRESH"
+            },
+            "release": {
+              "result": "REWORK",
+              "validation": "NOT_APPLICABLE",
+              "freshness": "FRESH"
+            }
+          },
+          "target_identity": "sha256:cd3edda6984985ad5da0c006743bcb8d1a9ef3b16e4ac105b894224b924322a5",
+          "review_mode": "CHILD_AGENT",
+          "result": "REWORK",
+          "freshness": "FRESH",
+          "review_basis": "PRIOR_REVIEW_PLUS_CHANGED_SOURCE_AND_INTEGRATION_REREVIEW"
+        },
+        {
+          "id": "application",
+          "paths_or_responsibility": [
+            "src-tauri/src/application/managed_observation_runtime.rs",
+            "src-tauri/src/application/observability.rs",
+            "src-tauri/src/application/runtime.rs",
+            "src-tauri/src/singbox/clash_api.rs"
+          ],
+          "applicable_lanes": [
+            "correctness",
+            "security",
+            "contract-data",
+            "concurrency-performance",
+            "verification",
+            "release"
+          ],
+          "lanes": {
+            "correctness": {
+              "result": "PASS",
+              "validation": "NOT_APPLICABLE",
+              "freshness": "FRESH"
+            },
+            "security": {
+              "result": "PASS",
+              "validation": "COMPLETE",
+              "freshness": "FRESH"
+            },
+            "contract-data": {
+              "result": "PASS",
+              "validation": "NOT_APPLICABLE",
+              "freshness": "FRESH"
+            },
+            "concurrency-performance": {
+              "result": "PASS",
+              "validation": "NOT_APPLICABLE",
+              "freshness": "FRESH"
+            },
+            "verification": {
+              "result": "REWORK",
+              "validation": "BLOCKED",
+              "freshness": "FRESH"
+            },
+            "release": {
+              "result": "REWORK",
+              "validation": "NOT_APPLICABLE",
+              "freshness": "FRESH"
+            }
+          },
+          "target_identity": "sha256:cd3edda6984985ad5da0c006743bcb8d1a9ef3b16e4ac105b894224b924322a5",
+          "review_mode": "CHILD_AGENT",
+          "result": "REWORK",
+          "freshness": "FRESH",
+          "review_basis": "PRIOR_REVIEW_PLUS_CHANGED_SOURCE_AND_INTEGRATION_REREVIEW"
+        },
+        {
+          "id": "ui",
+          "paths_or_responsibility": [
+            "src/App.tsx",
+            "src/styles.css",
+            "src/lib/observability.ts",
+            "src/lib/observability.test.ts"
+          ],
+          "applicable_lanes": [
+            "correctness",
+            "security",
+            "contract-data",
+            "concurrency-performance",
+            "verification"
+          ],
+          "lanes": {
+            "correctness": {
+              "result": "PASS",
+              "validation": "NOT_APPLICABLE",
+              "freshness": "FRESH"
+            },
+            "security": {
+              "result": "PASS",
+              "validation": "COMPLETE",
+              "freshness": "FRESH"
+            },
+            "contract-data": {
+              "result": "PASS",
+              "validation": "NOT_APPLICABLE",
+              "freshness": "FRESH"
+            },
+            "concurrency-performance": {
+              "result": "PASS",
+              "validation": "NOT_APPLICABLE",
+              "freshness": "FRESH"
+            },
+            "verification": {
+              "result": "PASS",
+              "validation": "COMPLETE",
+              "freshness": "FRESH"
+            }
+          },
+          "target_identity": "sha256:cd3edda6984985ad5da0c006743bcb8d1a9ef3b16e4ac105b894224b924322a5",
+          "review_mode": "CHILD_AGENT",
+          "result": "PASS",
+          "freshness": "FRESH",
+          "review_basis": "SOURCE_HASH_UNCHANGED_CARRY_FORWARD"
+        },
+        {
+          "id": "controlled-network",
+          "paths_or_responsibility": [
+            "src-tauri/src/singbox/mod.rs"
+          ],
+          "applicable_lanes": [
+            "correctness",
+            "security",
+            "contract-data",
+            "concurrency-performance",
+            "verification"
+          ],
+          "lanes": {
+            "correctness": {
+              "result": "PASS",
+              "validation": "NOT_APPLICABLE",
+              "freshness": "FRESH"
+            },
+            "security": {
+              "result": "PASS",
+              "validation": "COMPLETE",
+              "freshness": "FRESH"
+            },
+            "contract-data": {
+              "result": "PASS",
+              "validation": "NOT_APPLICABLE",
+              "freshness": "FRESH"
+            },
+            "concurrency-performance": {
+              "result": "PASS",
+              "validation": "NOT_APPLICABLE",
+              "freshness": "FRESH"
+            },
+            "verification": {
+              "result": "REWORK",
+              "validation": "BLOCKED",
+              "freshness": "FRESH"
+            }
+          },
+          "target_identity": "sha256:cd3edda6984985ad5da0c006743bcb8d1a9ef3b16e4ac105b894224b924322a5",
+          "review_mode": "CHILD_AGENT",
+          "result": "REWORK",
+          "freshness": "FRESH",
+          "review_basis": "SOURCE_HASH_UNCHANGED_CARRY_FORWARD"
+        }
+      ],
+      "integration_result": "REWORK",
+      "freshness": "FRESH",
+      "integration_summary": "本轮两个跨层失败已闭合：PrivateRuntime 创建/清理双失败携 owner 返回 Port.pending，Runtime 保持 RecoveryRequired 并由手动 Stop 清理；固定鉴权 Logs 的确定空响应返回空摘要，Traffic/鉴权失败/非预期 framing 和握手超时继续失败。真实固定核心完整观测与无过滤全库回归通过。完整 Task 验证仍未闭合。",
+      "required_validation": {
+        "sf001": "PARTIAL：真实内部替换、Ready fail-stop、check/清理所有权及新创建双失败均有通过证据；完整身份和并发验收矩阵尚未全部建立。",
+        "sf002": "PARTIAL：固定核心 Ready/REST/Traffic/Logs/Stop 真实用例已通过；沿用未变 UI 的14交互与19 TS测试。正流量语义及完整 Start/Stop/sample/worker 超时并发矩阵未完成。",
+        "sf003": "PARTIAL：HTTP/SOCKS 原域名/Host/SNI 四用例再次通过；WG ICMP、主动 TCP/UDP/DNS/转发拒绝、TCP/UDP 合法应答和系统 DNS 可观察拓扑仍无完整证据。"
+      },
+      "source_freshness": {
+        "result": "FRESH",
+        "target_identity": "sha256:cd3edda6984985ad5da0c006743bcb8d1a9ef3b16e4ac105b894224b924322a5",
+        "prior_target_identity": "sha256:8b375689eabbc6598baf656ce06eaf2f6e553cc6fe419763fd8b0fcdd2fa2071",
+        "method": "依声明的 manifest 数组实际顺序重算 HEAD/path/SHA256 材料；逐项验证当前文件。",
+        "changed_source_paths": [
+          "src-tauri/src/platform/windows/private_runtime.rs",
+          "src-tauri/src/platform/windows/managed_sidecar_port.rs",
+          "src-tauri/src/singbox/clash_api.rs"
+        ],
+        "unchanged_coverage_ref": ".sdlc/evidence/TASK-009/code-review-checkpoint.yaml",
+        "authorized_scope_ref": ".sdlc/evidence/TASK-009/change-control.yaml#EVIDENCE-TASK-009-CHANGE-002",
+        "design_review_ref": ".sdlc/evidence/TASK-009/design-scope-review-002.yaml"
+      }
+    },
+    "issues": [],
+    "evidence": [
+      {
+        "type": "read_only_identity",
+        "result": "PASS",
+        "reference": ".sdlc/evidence/TASK-009/delivery-checkpoint-002.yaml",
+        "summary": "当前源、baseline原字节及目标材料均独立重算一致；未发现目标漂移。"
+      },
+      {
+        "type": "creation_owner",
+        "result": "PASS",
+        "references": [
+          "src-tauri/target/task009-remediation/creation-owner.result.json",
+          "src-tauri/target/task009-remediation/creation-owner.stdout.txt"
+        ],
+        "summary": "单项真实 create 准备/清理双失败到 Port owner 与 Runtime 手动 Stop 的测试通过；新增3个 PrivateRuntime 边界用例亦在全库回归通过。"
+      },
+      {
+        "type": "logs_boundary",
+        "result": "PASS",
+        "references": [
+          "src-tauri/target/task009-remediation/logs-boundary-002.result.json",
+          "src-tauri/target/task009-remediation/logs-boundary-002.stdout.txt"
+        ],
+        "summary": "1个表驱动 Rust 测试覆盖13案例，非13个独立测试；检查固定路径/认证、不含敏感操作数的断言，服务器读写/握手有界。"
+      },
+      {
+        "type": "real_full_observation",
+        "result": "PASS",
+        "references": [
+          "src-tauri/target/task009-remediation/real-observation-002.result.json",
+          "src-tauri/target/task009-remediation/real-observation-002.stdout.txt",
+          "src-tauri/target/task009-remediation/real-observation-002.stderr.txt"
+        ],
+        "summary": "原失败的 fixed_bundle_resources_run_and_stop_only_the_owned_loopback_child 实际通过；日志无 preflight unavailable，覆盖真实固定 child Ready、REST/Traffic/Logs采样及Stop。"
+      },
+      {
+        "type": "full_library_regression",
+        "result": "PASS",
+        "references": [
+          "src-tauri/target/task009-remediation/full-regression.result.json",
+          "src-tauri/target/task009-remediation/full-regression.stdout.txt",
+          "src-tauri/target/task009-remediation/full-regression.stderr.txt"
+        ],
+        "summary": "已读取最终 exit0/timeout=false；cargo test --lib -- --test-threads=1，无skip/过滤。165 passed/0 failed/0 ignored/0 filtered，238.05s；包括原失败日志观测、新4个owner相关用例、13案例日志边界测试及既有真实替换/受控网络子集。全库通过不等于完整Task验收。"
+      },
+      {
+        "type": "static",
+        "result": "PASS",
+        "references": [
+          "src-tauri/target/task009-remediation/clippy.result.json",
+          "src-tauri/target/task009-remediation/static-result.json"
+        ],
+        "summary": "已读取Clippy --lib -D warnings、fmt和diff-check最终退出码均0；不声明all-target Clippy。"
+      },
+      {
+        "type": "unchanged_ui_and_network_evidence",
+        "result": "PASS",
+        "reference": ".sdlc/evidence/TASK-009/code-review-checkpoint.yaml",
+        "summary": "对应源hash未变，沿用旧独立读取的UI14交互、TS19测试/lint/build及系统网络前后快照一致证据；不扩展其原覆盖声明。"
+      }
+    ],
+    "remaining_risks": [
+      "无开放 P0-P3 实现 Finding；两项历史 P1 按原ID/指纹标FIXED，保留原检查点及旧失败证据。",
+      "总体 REWORK / BLOCKED 由必需验收缺口导致；局部修复 PASS 与165项全库 PASS 均不代表 Task、Delivery Gate、QA或Human Acceptance。",
+      "受控SNI用例证明原目标名称，不证明完整TLS会话；本次没有把完整TLS扩为额外必需验收。",
+      "用户已授权的两文件范围扩入不需要重复批准；剩余WG/DNS拓扑、主机设置、流量契约或新依赖若需改变，仍交Orchestrator按既有Change Control处理。",
+      "本 Reviewer 未参与目标实现，未运行测试/child/网络或修改实现/配置/状态；仅读源码、冻结包和保存证据，仅新增本审阅记录。"
+    ],
+    "artifacts_changed": [
+      ".sdlc/evidence/TASK-009/code-review-checkpoint-002.yaml"
+    ],
+    "covered_previous_findings": [
+      {
+        "finding_id": "TASK009-CR-001",
+        "fingerprint": "windows/private_runtime.rs:cleanup_after_prepare_failure:lost-cleanup-owner",
+        "severity": "P1",
+        "status": "FIXED",
+        "previous_target_identity": "sha256:8b375689eabbc6598baf656ce06eaf2f6e553cc6fe419763fd8b0fcdd2fa2071",
+        "target_identity": "sha256:cd3edda6984985ad5da0c006743bcb8d1a9ef3b16e4ac105b894224b924322a5",
+        "scope_disposition": "AUTHORIZED_CHANGE_002",
+        "locations": [
+          "src-tauri/src/platform/windows/private_runtime.rs:55",
+          "src-tauri/src/platform/windows/private_runtime.rs:139",
+          "src-tauri/src/platform/windows/private_runtime.rs:235",
+          "src-tauri/src/platform/windows/managed_sidecar_port.rs:139",
+          "src-tauri/src/platform/windows/managed_sidecar_port.rs:540"
+        ],
+        "resolution": "创建成功后立即建立可返回路径归属；后续准备/清理双失败返回 CleanupPending(PrivateRuntime)，Port 在错误返回前存 pending，checked=false且无child。新生产 create I/O 故障路径和手动 Stop 测试证明清理失败持续阻止启动；解除自有阻塞后清理成功。错误 Debug 只输出固定类别，test hook 仅 cfg(test)。",
+        "evidence_refs": [
+          "src-tauri/target/task009-remediation/creation-owner.result.json",
+          "src-tauri/target/task009-remediation/creation-owner.stdout.txt",
+          "src-tauri/target/task009-remediation/full-regression.stdout.txt"
+        ]
+      },
+      {
+        "finding_id": "TASK009-CR-002",
+        "fingerprint": "singbox/clash_api.rs:read_single_log_message:disabled-log-handshake-fails",
+        "severity": "P1",
+        "status": "FIXED",
+        "previous_target_identity": "sha256:8b375689eabbc6598baf656ce06eaf2f6e553cc6fe419763fd8b0fcdd2fa2071",
+        "target_identity": "sha256:cd3edda6984985ad5da0c006743bcb8d1a9ef3b16e4ac105b894224b924322a5",
+        "scope_disposition": "AUTHORIZED_CHANGE_002",
+        "locations": [
+          "src-tauri/src/singbox/clash_api.rs:317",
+          "src-tauri/src/singbox/clash_api.rs:331",
+          "src-tauri/src/singbox/clash_api.rs:602"
+        ],
+        "resolution": "仅固定带当前实例 secret 的 Logs 接受空204，或200+显式 Content-Length:0+无 Transfer-Encoding+已收到body为空；一般200、非空/无长度/chunked、Traffic200/204、401/500、握手超时仍拒绝。Option socket 只把允许的空日志返回None；Traffic消费端拒绝None。未修改流量算法/公开IPC/认证/依赖。",
+        "evidence_refs": [
+          "src-tauri/target/task009-remediation/logs-boundary-002.result.json",
+          "src-tauri/target/task009-remediation/logs-boundary-002.stdout.txt",
+          "src-tauri/target/task009-remediation/real-observation-002.result.json",
+          "src-tauri/target/task009-remediation/real-observation-002.stdout.txt"
+        ]
+      }
+    ],
+    "local_repair_review_result": "PASS",
+    "remaining_gaps": [
+      {
+        "status": "BLOCKED",
+        "scope": "SF-003",
+        "description": "受控WireGuard peer、ICMP/TCP/UDP/DNS主动输入拒绝和转发拒绝、合法TCP/UDP响应以及可观察系统DNS拓扑未形成完整验证证据。",
+        "references": [
+          ".sdlc/tasks/TASK-009.md",
+          ".sdlc/evidence/TASK-009/network-prerequisites.md"
+        ]
+      },
+      {
+        "status": "NOT_RUN",
+        "scope": "SF-002 positive traffic",
+        "description": "需要固定核心阳性流量核对 /traffic 区间值与累计值语义；空/零流量观测成功不能替代该证据。",
+        "references": [
+          ".sdlc/tasks/TASK-009.md"
+        ]
+      },
+      {
+        "status": "INCOMPLETE",
+        "scope": "SF-001/SF-002 identity and concurrency",
+        "description": "已覆盖部分lost-response、Start/Stop和UI异步竞态，但完整身份/Start/Stop/sample/worker超时并发矩阵尚未闭合。",
+        "references": [
+          ".sdlc/tasks/TASK-009.md",
+          ".sdlc/evidence/TASK-009/delivery-checkpoint-002.yaml"
+        ]
+      }
+    ]
+  }
+}

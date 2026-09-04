@@ -1,0 +1,634 @@
+diff --git "a/src-tauri\\target\\task009-dual-baseline\\docs\\veyra.md" b/docs/veyra.md
+index 64aa667..513ee32 100644
+--- "a/src-tauri\\target\\task009-dual-baseline\\docs\\veyra.md"
++++ b/docs/veyra.md
+@@ -48,7 +48,9 @@
+ Direct 直连流量，不统计绕过 sing-box 的系统网卡流量。累计量按“本次内核累计”展示，
+ 不以离散网速积分重建历史总量，不跨内核重启拼接。
+ 
+-提供最近一段时间的上下行网速趋势图，默认60秒，按真实采样时间显示。趋势与统计仅在
++首页流量统计展示最近10分钟上下行网速图，左侧栏底部展示最近60秒小图与即时网速，
++界面布局参考Clash Verge Rev。两图共用最近10分钟、最多600个点的内存采样，按真实时间显示。
++趋势与统计仅在
+ 内存保存，不写入配置、数据库、文件或浏览器存储；应用退出清空，新内核实例不混入旧
+ 实例曲线。缺失采样显示为空缺，不能伪造为零流量。窗口隐藏/恢复不增加核心采样或请求。
+ 当前版本不实现按天/月持久化流量历史；后文未来 telemetry 设想不改变此范围。
+diff --git "a/src-tauri\\target\\task009-dual-baseline\\.sdlc\\design\\DCR-001-sing-box-1.14.0.md" b/.sdlc/design/DCR-001-sing-box-1.14.0.md
+index 12d9428..8e35c5d 100644
+--- "a/src-tauri\\target\\task009-dual-baseline\\.sdlc\\design\\DCR-001-sing-box-1.14.0.md"
++++ b/.sdlc/design/DCR-001-sing-box-1.14.0.md
+@@ -133,7 +133,7 @@ affected_task:
+ - 每次受控读取只等待最多一条文本消息，随后主动关闭并释放 WebSocket、header 临时值与 secret 借用；没有
+   日志消息是正常的空摘要，握手/协议/超时失败只映射为封闭 recovery 状态。关闭仅发送 WebSocket 协议
+   Close 帧，不允许业务数据帧；不得建立无限重连、无界或持久历史缓存、任意转发或常驻日志管道。
+-  用户请求的趋势图仅允许 DCR-006 定义的60秒/60点安全速率内存窗口，沿用现有采样与最新Delta队列。
++  用户请求的趋势图按 DCR-007 保留10分钟/600点安全速率内存窗口，首页展示10分钟、侧栏底部展示60秒，沿用现有采样与最新Delta队列及DCR-006生命周期。
+ - 仅后端串行 `RuntimeObservationBridge` 可在当前受管 child 的 Ready 后触发采样：每个流同一时刻最多一条
+   in-flight 读取、两次同类流采样间隔至少 `1s`。IPC Snapshot、事件订阅、窗口隐藏/恢复只读取最新安全
+   Snapshot，不得直接触发网络；child identity 变化或停止时取消/丢弃旧读取结果且不再发起新读取。
+diff --git "a/src-tauri\\target\\task009-dual-baseline\\.sdlc\\tasks\\TASK-009.md" b/.sdlc/tasks/TASK-009.md
+index 1c31c18..1c8afd1 100644
+--- "a/src-tauri\\target\\task009-dual-baseline\\.sdlc\\tasks\\TASK-009.md"
++++ b/.sdlc/tasks/TASK-009.md
+@@ -13,7 +13,9 @@ design_refs:
+   - .sdlc/design/DCR-004-runtime-update-failures.md
+   - .sdlc/design/DCR-005-traffic-observation.md
+   - .sdlc/design/DCR-006-memory-traffic-trend.md
++  - .sdlc/design/DCR-007-dual-traffic-windows.md
+ approval_refs:
++  - .sdlc/evidence/TASK-009/change-control.yaml#EVIDENCE-TASK-009-CHANGE-005
+   - .sdlc/evidence/TASK-009/change-control.yaml#EVIDENCE-TASK-009-CHANGE-004
+   - .sdlc/evidence/TASK-009/change-control.yaml#EVIDENCE-TASK-009-CHANGE-003
+   - .sdlc/evidence/TASK-009/change-control.yaml#EVIDENCE-TASK-009-CHANGE-002
+@@ -75,8 +77,10 @@ TASK-010；Tor 仍等待独立资源 Gate，当前不得下载、启动或声称
+ - `src/App.tsx`、`src/styles.css`、`src/lib/{observability.ts,observability.test.ts}`：仅适配
+   新封闭响应并为现有 Start/Stop 添加可关闭、自动消失的失败 Toast 及定向验证；不新增依赖。
+   CHANGE-004另授权DCR-006的聚合实时网速、本次内核累计和最近60秒趋势图及严格读侧解析。
++  CHANGE-005将其扩展为首页10分钟图与左侧栏底部60秒图，参考Clash Verge Rev的首页/侧栏布局；
++  只实现现有功能的布局、双图及同一显示时钟，完整其它页面/Tray仍不在本次范围。
+ - `src-tauri/src/application/observability.rs`、`src-tauri/src/commands.rs`：为DCR-006维护
+-  60秒/60点内存窗口、生命周期清空、单调相对时间与两个安全读侧字段；不新增命令或采样。
++  内存窗口、生命周期清空、单调相对时间与两个安全读侧字段；DCR-007将上限调整为10分钟/600点，不新增命令或采样。
+ - `src/lib/traffic-trend.ts`、`src/lib/traffic-trend.test.ts`：如需拆分，仅负责时间窗和SVG
+   纯计算及边界验证。上述现有文件内测可作必要字面量适配，不修改存储或内核Profile。
+ - 上述文件内的定向测试，以及 `src-tauri/tests/task009_managed_runtime.rs`、
+@@ -165,10 +169,12 @@ Stop 失败按相同原则显示固定失败提示，成功或 AlreadyRunning 
+ 该局部验证不等于 TASK-010 GUI/Tray 联合验收。
+ 
+ **CHANGE-004 流量展示验收：** 使用 sing-box 聚合统计（包含 Direct），实时网速与本次内核
+-累计分开展示。后端只由成功采样追加最近60秒、最多60点的内存趋势；日志/读取/订阅不造点，
++累计分开展示。CHANGE-005/DCR-007更新为后端只由成功采样追加最近10分钟、最多600点的内存趋势；日志/读取/订阅不造点，
+ 窗口隐藏不丢采样历史。Stop/新Ready/recovery清空，配置失败且旧实例健康时保留；不落盘。
+-Snapshot/Delta只增加DCR-006规定的单调时间与安全速率窗口。UI两曲线、可读单位、零值与空态、
+-大于5秒缺口断线、60秒淘汰、窄屏、旧结果拒绝均需自动测试与浏览器Mock交互/截图验证。
++Snapshot/Delta使用DCR-006既有单调时间与安全速率字段，DCR-007严格校验600点/600000ms上限。
++首页10分钟图与左下角60秒小图共用数据及时钟，较早点只出现在首页，分别按各自窗口缩放。
++两图曲线、可读单位、零值与空态、大于5秒断线、60秒/10分钟淘汰、桌面定位及320px重排、
++旧结果拒绝、停止清空两图和无额外IPC均需自动测试与浏览器Mock交互/截图验证。
+ 真实核心正流量和SF-003仍必需，Mock图表验证不能替代它们。
+ 
+ **implementation_status：** PENDING
+diff --git "a/src-tauri\\target\\task009-dual-baseline\\src\\lib\\observability.test.ts" b/src/lib/observability.test.ts
+index 40b41f1..c82e476 100644
+--- "a/src-tauri\\target\\task009-dual-baseline\\src\\lib\\observability.test.ts"
++++ b/src/lib/observability.test.ts
+@@ -18,7 +18,7 @@ vi.mock("@tauri-apps/api/event", () => ({
+ const observation: RuntimeObservation = {
+   source: "mock",
+   revision: 3,
+-  observedAtMs: 60000,
++  observedAtMs: 600000,
+   trafficHistory: [],
+   captureMode: "off",
+   sidecarLifecycle: "notAttached",
+@@ -81,17 +81,17 @@ describe("runtimeObservationSnapshot", () => {
+   });
+ 
+   it("同 revision 只接受更晚的单调时间；旧 revision 即使时间更晚也拒绝", () => {
+-    const newerTime = { ...observation, observedAtMs: 60001 };
++    const newerTime = { ...observation, observedAtMs: 600001 };
+     expect(acceptNewerObservation(observation, newerTime)).toBe(newerTime);
+     expect(acceptNewerObservation(observation, { ...observation })).toBe(observation);
+-    expect(acceptNewerObservation(observation, { ...observation, observedAtMs: 59999 })).toBe(observation);
++    expect(acceptNewerObservation(observation, { ...observation, observedAtMs: 599999 })).toBe(observation);
+     expect(acceptNewerObservation(observation, { ...newerTime, revision: 2 })).toBe(observation);
+     expect(acceptNewerObservation(null, observation)).toBe(observation);
+   });
+ 
+-  it("接受窗口两端的有效零值和最多 60 个点", async () => {
+-    const trafficHistory = Array.from({ length: 60 }, (_, index) => ({
+-      sampledAtMs: index === 59 ? 60000 : index * 1000,
++  it("接受窗口两端的有效零值和最多 600 个点", async () => {
++    const trafficHistory = Array.from({ length: 600 }, (_, index) => ({
++      sampledAtMs: index === 599 ? 600000 : index * 1000,
+       uploadRateBps: 0, downloadRateBps: 1.5,
+     }));
+     vi.mocked(invoke).mockResolvedValue({ ...observation, trafficHistory });
+@@ -101,9 +101,9 @@ describe("runtimeObservationSnapshot", () => {
+   it.each([
+     { observedAtMs: -1 }, { observedAtMs: 0.5 }, { observedAtMs: Number.MAX_SAFE_INTEGER + 1 },
+     { trafficHistory: null },
+-    { trafficHistory: Array.from({ length: 61 }, (_, sampledAtMs) => ({ sampledAtMs, uploadRateBps: 0, downloadRateBps: 0 })) },
+-    { trafficHistory: [{ sampledAtMs: 60001, uploadRateBps: 0, downloadRateBps: 0 }] },
+-    { observedAtMs: 60001, trafficHistory: [{ sampledAtMs: 0, uploadRateBps: 0, downloadRateBps: 0 }] },
++    { trafficHistory: Array.from({ length: 601 }, (_, sampledAtMs) => ({ sampledAtMs, uploadRateBps: 0, downloadRateBps: 0 })) },
++    { trafficHistory: [{ sampledAtMs: 600001, uploadRateBps: 0, downloadRateBps: 0 }] },
++    { observedAtMs: 600001, trafficHistory: [{ sampledAtMs: 0, uploadRateBps: 0, downloadRateBps: 0 }] },
+     { trafficHistory: [{ sampledAtMs: -1, uploadRateBps: 0, downloadRateBps: 0 }] },
+     { trafficHistory: [{ sampledAtMs: 0.5, uploadRateBps: 0, downloadRateBps: 0 }] },
+     { trafficHistory: [{ sampledAtMs: 1, uploadRateBps: -1, downloadRateBps: 0 }] },
+diff --git "a/src-tauri\\target\\task009-dual-baseline\\src\\lib\\observability.ts" b/src/lib/observability.ts
+index 7f395a6..6c351bb 100644
+--- "a/src-tauri\\target\\task009-dual-baseline\\src\\lib\\observability.ts"
++++ b/src/lib/observability.ts
+@@ -81,7 +81,7 @@ function parseRuntimeObservation(value: unknown): RuntimeObservation {
+     !isNonNegativeInteger(value.revision) ||
+     !isNonNegativeInteger(value.observedAtMs) ||
+     !Array.isArray(value.trafficHistory) ||
+-    value.trafficHistory.length > 60 ||
++    value.trafficHistory.length > 600 ||
+     !isCaptureMode(value.captureMode) ||
+     !isSidecarLifecycle(value.sidecarLifecycle) ||
+     !isNonNegativeNumber(value.uploadRateBps) ||
+@@ -98,7 +98,7 @@ function parseRuntimeObservation(value: unknown): RuntimeObservation {
+     if (!isRecord(point) || !hasExactKeys(point, trafficSampleKeys) ||
+       !isNonNegativeInteger(point.sampledAtMs) ||
+       point.sampledAtMs > (value.observedAtMs as number) ||
+-      (value.observedAtMs as number) - point.sampledAtMs > 60000 ||
++      (value.observedAtMs as number) - point.sampledAtMs > 600000 ||
+       !isNonNegativeNumber(point.uploadRateBps) || !isNonNegativeNumber(point.downloadRateBps) ||
+       (index > 0 && point.sampledAtMs <= (points[index - 1] as TrafficSample).sampledAtMs)) {
+       throw new Error("invalid runtime observation payload");
+diff --git "a/src-tauri\\target\\task009-dual-baseline\\src\\styles.css" b/src/styles.css
+index 5e20177..fdeba9e 100644
+--- "a/src-tauri\\target\\task009-dual-baseline\\src\\styles.css"
++++ b/src/styles.css
+@@ -21,9 +21,8 @@ body {
+ .app-shell {
+   display: grid;
+   min-height: 100vh;
+-  place-content: center;
+-  gap: 0.5rem;
+-  padding: 2rem;
++  grid-template-columns: 220px minmax(0, 1fr);
++  align-items: start;
+ }
+ 
+ .app-shell h1,
+@@ -34,13 +33,13 @@ body {
+ .observation {
+   display: grid;
+   gap: 0.5rem;
+-  max-width: 42rem;
++
+   padding: 1rem;
+   border: 1px solid #31415e;
+   border-radius: 0.75rem;
+   background: #172033;
+   min-width: 0;
+-  width: min(42rem, 100%);
++
+   overflow-wrap: anywhere;
+ }
+ 
+@@ -101,7 +100,7 @@ body {
+   background: transparent;
+ }
+ 
+-.traffic-panel { margin-block: 0.5rem; border-block: 1px solid #31415e; padding-block: 1rem; min-width: 0; }
++.traffic-panel { border: 1px solid #31415e; border-radius: 0.75rem; padding: 1.25rem; min-width: 0; background: #172033; }
+ .traffic-heading, .traffic-chart figcaption { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 0.5rem; }
+ .traffic-heading h2 { margin: 0; font-size: 1rem; font-weight: 600; }
+ .traffic-rates { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; margin-block: 1rem; }
+@@ -114,7 +113,7 @@ body {
+ .upload-key::before, .download-key::before { content: ""; display: inline-block; width: 1rem; margin-right: 0.3rem; vertical-align: middle; border-top: 2px solid currentColor; }
+ .download-key::before { border-top-style: dashed; }
+ .traffic-axis-top { margin-top: 0.75rem; }
+-.traffic-plot { position: relative; height: 160px; }
++.traffic-plot { position: relative; height: 240px; }
+ .traffic-plot svg { display: block; width: 100%; height: 100%; overflow: visible; }
+ .traffic-grid { fill: none; stroke: #31415e; stroke-width: 1; }
+ .traffic-upload, .traffic-download { fill: none; stroke-width: 2; vector-effect: non-scaling-stroke; }
+@@ -127,8 +126,41 @@ circle.traffic-download { fill: var(--traffic-download); stroke: none; }
+ .traffic-totals { display: flex; flex-wrap: wrap; gap: 0.5rem 1rem; margin-top: 1rem; font-size: 0.875rem; font-variant-numeric: tabular-nums; }
+ .runtime-controls button:hover:not(:disabled) { background: #2c4162; }
+ button:focus-visible { outline: 2px solid #86b7ff; outline-offset: 3px; }
+-@media (max-width: 480px) {
+-  .app-shell { padding: 1rem; }
+-  .observation { padding: 0.75rem; }
++
++.sidebar { position: sticky; top: 0; height: 100dvh; display: flex; flex-direction: column; min-width: 0; padding: 1.5rem 1rem 1rem; border-right: 1px solid #27364f; background: #141d2e; gap: 2rem; }
++.brand { display: flex; align-items: center; gap: 0.75rem; font-size: 1.25rem; font-weight: 650; }
++.brand-mark { display: grid; place-items: center; width: 2rem; height: 2rem; border: 1px solid #55739f; border-radius: 0.5rem; color: #a6cbff; }
++.sidebar nav a { display: flex; gap: 0.75rem; align-items: center; border-radius: 0.5rem; padding: 0.75rem; text-decoration: none; color: #c4dbff; background: #22314a; font-size: 0.875rem; }
++.sidebar nav a span { font-size: 1.25rem; }
++.sidebar-traffic { margin-top: auto; border-top: 1px solid #27364f; padding-top: 1rem; min-width: 0; }
++.home-content { display: grid; gap: 1.5rem; width: 100%; max-width: 76rem; min-width: 0; margin-inline: auto; padding: 2rem; }
++.home-header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem; }
++.home-header h1 { font-size: 1.75rem; font-weight: 600; margin-top: 0.25rem; }
++.home-status { color: #a7b8d0; font-size: 0.875rem; }
++.traffic-panel > .traffic-heading { margin-bottom: 1.25rem; }
++.traffic-panel .traffic-rates { margin: 1.25rem 0 0; }
++.traffic-panel .traffic-rates > div { padding: 0.875rem 1rem; border: 1px solid #2b3d59; border-radius: 0.5rem; background: #1b2940; }
++.traffic-panel .traffic-totals { padding-top: 1rem; border-top: 1px solid #27364f; }
++.traffic-chart-compact .traffic-plot { height: 60px; }
++.traffic-chart-compact { font-size: 0.6875rem; }
++.traffic-rates-compact { margin: 0.75rem 0 0; gap: 0.5rem; }
++.traffic-rates-compact dt { font-size: 0.6875rem; }
++.traffic-rates-compact dd { font-size: 0.75rem; white-space: nowrap; }
++.traffic-rates .upload-key::before, .traffic-rates .download-key::before { content: none; }
++.runtime-controls { margin-top: 0.5rem; }
++.runtime-controls > span { width: 100%; color: #a7b8d0; font-size: 0.8125rem; }
++.runtime-diagnostics { margin-top: 0.5rem; color: #8da2c0; font-size: 0.75rem; }
++.runtime-diagnostics summary { cursor: pointer; padding-block: 0.25rem; }
++a:focus-visible, summary:focus-visible { outline: 2px solid #86b7ff; outline-offset: 3px; }
++@media (max-width: 680px) {
++  .app-shell { grid-template-columns: minmax(0, 1fr); padding: 1rem; gap: 1rem; }
++  .sidebar { display: contents; }
++  .brand { order: 0; }
++  .sidebar nav { order: 1; }
++  .home-content { order: 2; padding: 0; gap: 1rem; }
++  .sidebar-traffic { order: 3; margin-top: 0; padding: 1rem; border: 1px solid #31415e; border-radius: 0.75rem; background: #141d2e; }
++  .traffic-panel, .observation { padding: 0.75rem; }
+   .traffic-rates { gap: 0.5rem; }
++  .traffic-panel .traffic-rates > div { padding: 0.75rem; }
++  .traffic-plot { height: 180px; }
+ }
+diff --git "a/src-tauri\\target\\task009-dual-baseline\\src\\App.tsx" b/src/App.tsx
+index 7628b26..6108657 100644
+--- "a/src-tauri\\target\\task009-dual-baseline\\src\\App.tsx"
++++ b/src/App.tsx
+@@ -133,126 +133,104 @@ export default function App() {
+     };
+   }, []);
+ 
++  const nowMs = useObservationClock(observation);
++  const summary = observationError ? (runtimeActionPending ? "运行状态待确认" : "运行观测不可用，当前状态待确认") :
++    observation === null ? "正在读取运行观测" :
++      observation.sidecarLifecycle === "recoveryRequired" ? "停止未完成" :
++        observation.source === "runtime" && observation.sidecarLifecycle === "stopped" ? "服务已停止" :
++          observation.sidecarLifecycle === "ready" ? "服务运行中" : "尚未连接运行内核";
++
+   return (
+-    <main className="app-shell">
+-      <p className="eyebrow">桌面工程基线</p>
+-      <h1>{status.application}</h1>
+-      <p>{hasError ? "启动信息不可用" : `状态：${status.status}`}</p>
+-      <section className="observation" aria-label="运行观测">
+-        <p className="eyebrow">
+-          {observation?.source === "runtime" ? "受管运行时观测" : "内存 Mock 观测"}
+-        </p>
+-        {observationError ? (
+-          <p>{runtimeActionPending ? "运行状态待确认" : "运行观测不可用，当前状态待确认"}</p>
+-        ) : observation === null ? (
+-          <p>正在读取运行观测</p>
+-        ) : (
+-          <>
+-            <p>
+-              捕获：{observation.captureMode}；运行时：{observation.sidecarLifecycle}；修订：
+-              {observation.revision}
+-            </p>
+-            <p>
+-              {observation.sidecarLifecycle === "recoveryRequired" ? "停止未完成" :
+-                observation.source === "runtime" && observation.sidecarLifecycle === "stopped" ? "服务已停止" :
+-                observation.sidecarLifecycle === "ready" ? "服务运行中" : "尚未连接运行内核"}
+-            </p>
+-            <p className="eyebrow">当前连接 {observation.connectionCount}</p>
+-            <ul>
+-              {observation.logSummary.map((entry) => (
+-                <li key={`${entry.category}-${entry.level}`}>
+-                  {entry.category}/{entry.level}: {entry.occurrences}
+-                </li>
+-              ))}
+-            </ul>
+-          </>
+-        )}
+-        <TrafficPanel observation={observation} unavailable={observationError} />
+-        <div className="runtime-controls">
+-          <button
+-            type="button"
+-            disabled={runtimeActionPending}
+-            onClick={() => void runManagedRuntimeAction("start")}
+-          >
+-            启动受管观测运行时
+-          </button>
+-          <button
+-            type="button"
+-            disabled={runtimeActionPending}
+-            onClick={() => void runManagedRuntimeAction("stop")}
+-          >
+-            停止受管观测运行时
+-          </button>
+-          <span>操作：{runtimeAction}</span>
+-        </div>
+-      </section>
+-      {failureToast !== null ? (
+-        <div className="failure-toast" role="alert">
+-          <span>{failureToast.message}</span>
+-          <button type="button" aria-label="关闭失败提示" onClick={() => setFailureToast(null)}>关闭</button>
+-        </div>
+-      ) : null}
+-    </main>
++    <div className="app-shell">
++      <aside className="sidebar" aria-label="主导航与即时网速">
++        <div className="brand"><span className="brand-mark" aria-hidden="true">V</span><span>{status.application}</span></div>
++        <nav aria-label="主导航"><a href="#home" aria-current="page"><span aria-hidden="true">⌂</span> 首页</a></nav>
++        <section className="sidebar-traffic" aria-label="左下角即时网速">
++          <TrafficChart observation={observation} unavailable={observationError} nowMs={nowMs} windowMs={60000} />
++          <TrafficRates observation={observation} unavailable={observationError} compact />
++        </section>
++      </aside>
++      <main className="home-content" id="home">
++        <header className="home-header"><div><p className="eyebrow">网络概览</p><h1>首页</h1></div><span className="home-status">{summary}</span></header>
++        <section className="traffic-panel" aria-label="sing-box 聚合流量">
++          <div className="traffic-heading"><h2>流量统计</h2><span className="eyebrow">sing-box 聚合 · 含直连</span></div>
++          <TrafficChart observation={observation} unavailable={observationError} nowMs={nowMs} windowMs={600000} />
++          <TrafficRates observation={observation} unavailable={observationError} />
++          <div className="traffic-totals"><span className="eyebrow">本次内核累计</span>
++            <span>上传 {observationError || observation === null ? "—" : formatTraffic(observation.uploadTotalBytes)}</span>
++            <span>下载 {observationError || observation === null ? "—" : formatTraffic(observation.downloadTotalBytes)}</span>
++          </div>
++        </section>
++        <section className="observation" aria-label="运行观测">
++          <div className="traffic-heading"><h2>运行状态</h2><span className="eyebrow">{observationError || observation === null ? "连接数待确认" : `当前连接 ${observation.connectionCount}`}</span></div>
++          <p>{summary}</p>
++          <div className="runtime-controls">
++            <button type="button" disabled={runtimeActionPending} onClick={() => void runManagedRuntimeAction("start")}>启动受管观测运行时</button>
++            <button type="button" disabled={runtimeActionPending} onClick={() => void runManagedRuntimeAction("stop")}>停止受管观测运行时</button>
++            <span>操作：{runtimeAction}</span>
++          </div>
++          <details className="runtime-diagnostics"><summary>诊断信息</summary>
++            <p>{hasError ? "启动信息不可用" : `状态：${status.status}`}</p>
++            {observation !== null ? <>
++              <p>{observation.source === "runtime" ? "受管运行时观测" : "内存 Mock 观测"}</p>
++              <p>捕获：{observation.captureMode}；运行时：{observation.sidecarLifecycle}；修订：{observation.revision}</p>
++              <ul>{observation.logSummary.map((entry) => <li key={`${entry.category}-${entry.level}`}>{entry.category}/{entry.level}: {entry.occurrences}</li>)}</ul>
++            </> : null}
++          </details>
++        </section>
++      </main>
++      {failureToast !== null ? <div className="failure-toast" role="alert"><span>{failureToast.message}</span><button type="button" aria-label="关闭失败提示" onClick={() => setFailureToast(null)}>关闭</button></div> : null}
++    </div>
+   );
+ }
+ 
+-function TrafficPanel({ observation, unavailable }: { observation: RuntimeObservation | null; unavailable: boolean }) {
++function useObservationClock(observation: RuntimeObservation | null) {
+   const [clock, setClock] = useState({ observation, nowMs: observation?.observedAtMs ?? 0 });
+   useEffect(() => {
+     if (observation === null) return;
+     const receivedAt = performance.now();
+     setClock({ observation, nowMs: observation.observedAtMs });
+-    // 仅推进显示时间；权威采样窗口始终来自后端，不追加点或请求采样。
++    // 两幅图共用显示时钟；不追加采样点，不增加 IPC 或网络请求。
+     const timer = window.setInterval(() => {
+       setClock({ observation, nowMs: observation.observedAtMs + performance.now() - receivedAt });
+     }, 1000);
+     return () => window.clearInterval(timer);
+   }, [observation]);
++  return clock.observation === observation ? clock.nowMs : observation?.observedAtMs ?? 0;
++}
++
++function TrafficRates({ observation, unavailable, compact = false }: { observation: RuntimeObservation | null; unavailable: boolean; compact?: boolean }) {
++  return <dl className={`traffic-rates${compact ? " traffic-rates-compact" : ""}`} aria-label="实时网速">
++    <div><dt className="upload-key">↑ 上传</dt><dd>{unavailable || observation === null ? "—" : formatTraffic(observation.uploadRateBps, true)}</dd></div>
++    <div><dt className="download-key">↓ 下载</dt><dd>{unavailable || observation === null ? "—" : formatTraffic(observation.downloadRateBps, true)}</dd></div>
++  </dl>;
++}
+ 
+-  const nowMs = clock.observation === observation ? clock.nowMs : observation?.observedAtMs ?? 0;
+-  const running = observation?.sidecarLifecycle === "ready";
+-  const trend = trafficTrend(!unavailable && running ? observation.trafficHistory : [], nowMs);
++function TrafficChart({ observation, unavailable, nowMs, windowMs }: {
++  observation: RuntimeObservation | null; unavailable: boolean; nowMs: number; windowMs: 60000 | 600000;
++}) {
++  const compact = windowMs === 60000;
++  const trend = trafficTrend(!unavailable && observation?.sidecarLifecycle === "ready" ? observation.trafficHistory : [], nowMs, windowMs);
+   const emptyMessage = unavailable ? "网速趋势不可用" : observation?.sidecarLifecycle === "stopped" ? "已停止" :
+     observation?.sidecarLifecycle === "recoveryRequired" ? "网速趋势不可用，停止未完成" : "等待网速采样";
+-
+-  return (
+-    <section className="traffic-panel" aria-label="sing-box 聚合流量">
+-      <div className="traffic-heading">
+-        <h2>实时网速</h2>
+-        <span className="eyebrow">sing-box 聚合 · 含直连</span>
+-      </div>
+-      <dl className="traffic-rates">
+-        <div><dt>↑ 上传</dt><dd>{unavailable || observation === null ? "—" : formatTraffic(observation.uploadRateBps, true)}</dd></div>
+-        <div><dt>↓ 下载</dt><dd>{unavailable || observation === null ? "—" : formatTraffic(observation.downloadRateBps, true)}</dd></div>
+-      </dl>
+-      <figure className="traffic-chart" aria-label="最近 60 秒上下行网速趋势">
+-        <figcaption>
+-          <span>最近 60 秒</span>
+-          <span className="traffic-legend"><span className="upload-key">上传 · 实线</span><span className="download-key">下载 · 虚线</span></span>
+-        </figcaption>
+-        <div className="traffic-axis-top">{formatTraffic(trend.maximum, true)}</div>
+-        <div className="traffic-plot">
+-          <svg viewBox="0 0 600 160" preserveAspectRatio="none" role="img" aria-label="上传实线与下载虚线，采样缺口保持断开">
+-            <path className="traffic-grid" d="M0,4 H600 M0,80 H600 M0,156 H600" />
+-            <path className="traffic-upload" d={trend.uploadPath} />
+-            <path className="traffic-download" d={trend.downloadPath} />
+-            {trend.coordinates.map((point, index) => (
+-              <g key={trend.points[index].sampledAtMs}>
+-                <circle className="traffic-upload" cx={point.x} cy={point.uploadY} r="2" />
+-                <circle className="traffic-download" cx={point.x} cy={point.downloadY} r="2" />
+-              </g>
+-            ))}
+-          </svg>
+-          {trend.points.length === 0 ? <p className="traffic-empty" role="status">{emptyMessage}</p> : null}
+-        </div>
+-        <div className="traffic-axis-zero">0 B/s</div>
+-        <div className="traffic-axis-time"><span>60 秒前</span><span>30 秒前</span><span>现在</span></div>
+-      </figure>
+-      <div className="traffic-totals">
+-        <span className="eyebrow">本次内核累计</span>
+-        <span>上传 {unavailable || observation === null ? "—" : formatTraffic(observation.uploadTotalBytes)}</span>
+-        <span>下载 {unavailable || observation === null ? "—" : formatTraffic(observation.downloadTotalBytes)}</span>
+-      </div>
+-    </section>
+-  );
++  return <figure className={`traffic-chart${compact ? " traffic-chart-compact" : ""}`} aria-label={compact ? "最近 60 秒上下行网速趋势" : "最近 10 分钟上下行网速趋势"}>
++    <figcaption><span>{compact ? "最近 60 秒" : "最近 10 分钟"}</span>
++      {!compact ? <span className="traffic-legend"><span className="upload-key">上传 · 实线</span><span className="download-key">下载 · 虚线</span></span> : null}
++    </figcaption>
++    <div className="traffic-axis-top">{formatTraffic(trend.maximum, true)}</div>
++    <div className="traffic-plot">
++      <svg viewBox="0 0 600 160" preserveAspectRatio="none" role="img" aria-label="上传实线与下载虚线，采样缺口保持断开">
++        <path className="traffic-grid" d="M0,4 H600 M0,80 H600 M0,156 H600" />
++        <path className="traffic-upload" d={trend.uploadPath} />
++        <path className="traffic-download" d={trend.downloadPath} />
++        {trend.isolated.map((point) => <g key={point.x}>
++          <circle className="traffic-upload" cx={point.x} cy={point.uploadY} r={compact ? 5 : 2} />
++          <circle className="traffic-download" cx={point.x} cy={point.downloadY} r={compact ? 5 : 2} />
++        </g>)}
++      </svg>
++      {trend.points.length === 0 ? <p className="traffic-empty" role="status">{emptyMessage}</p> : null}
++    </div>
++    {!compact ? <div className="traffic-axis-zero">0 B/s</div> : null}
++    <div className="traffic-axis-time"><span>{compact ? "60 秒前" : "10 分钟前"}</span>{!compact ? <span>5 分钟前</span> : null}<span>现在</span></div>
++  </figure>;
+ }
+diff --git "a/src-tauri\\target\\task009-dual-baseline\\src-tauri\\src\\application\\observability.rs" b/src-tauri/src/application/observability.rs
+index b1f8d12..f83a1b2 100644
+--- "a/src-tauri\\target\\task009-dual-baseline\\src-tauri\\src\\application\\observability.rs"
++++ b/src-tauri/src/application/observability.rs
+@@ -54,8 +54,8 @@ pub(crate) struct TrafficObservation {
+     pub(crate) download_total_bytes: u64,
+ }
+ 
+-const TRAFFIC_HISTORY_WINDOW_MS: u64 = 60_000;
+-const TRAFFIC_HISTORY_CAPACITY: usize = 60;
++const TRAFFIC_HISTORY_WINDOW_MS: u64 = 600_000;
++const TRAFFIC_HISTORY_CAPACITY: usize = 600;
+ 
+ /// 成功采样发布时刻和聚合速率；不携带连接或核心实例信息。
+ #[derive(Clone, Copy, Debug, Eq, PartialEq, Serialize)]
+@@ -605,17 +605,17 @@ mod tests {
+     #[test]
+     fn traffic_history_is_bounded_and_uses_successful_publication_times() {
+         let observations = InMemoryRuntimeObservations::new_mock();
+-        for index in 0..65 {
++        for index in 0..605 {
+             set_observed_time(&observations, index * 500);
+             observations.record_managed_observation(managed_sample(index, index * 2));
+         }
+         let snapshot = observations.snapshot();
+-        assert_eq!(snapshot.observed_at_ms, 32_000);
+-        assert_eq!(snapshot.traffic_history.len(), 60);
++        assert_eq!(snapshot.observed_at_ms, 302_000);
++        assert_eq!(snapshot.traffic_history.len(), 600);
+         assert_eq!(snapshot.traffic_history[0].sampled_at_ms, 2_500);
+-        assert_eq!(snapshot.traffic_history[59].sampled_at_ms, 32_000);
+-        assert_eq!(snapshot.traffic_history[59].upload_rate_bps, 64);
+-        assert_eq!(snapshot.traffic_history[59].download_rate_bps, 128);
++        assert_eq!(snapshot.traffic_history[599].sampled_at_ms, 302_000);
++        assert_eq!(snapshot.traffic_history[599].upload_rate_bps, 604);
++        assert_eq!(snapshot.traffic_history[599].download_rate_bps, 1_208);
+         assert!(
+             snapshot
+                 .traffic_history
+@@ -631,14 +631,14 @@ mod tests {
+         observations.record_managed_observation(managed_sample(10, 20));
+         let subscription = observations.subscribe();
+ 
+-        set_observed_time(&observations, 61_000);
++        set_observed_time(&observations, 601_000);
+         let boundary = observations.snapshot();
+         assert_eq!(boundary.traffic_history.len(), 1);
+-        assert_eq!(boundary.observed_at_ms, 61_000);
+-        set_observed_time(&observations, 61_001);
++        assert_eq!(boundary.observed_at_ms, 601_000);
++        set_observed_time(&observations, 601_001);
+         let expired = observations.snapshot();
+         assert!(expired.traffic_history.is_empty());
+-        assert_eq!(expired.observed_at_ms, 61_001);
++        assert_eq!(expired.observed_at_ms, 601_001);
+         assert_eq!(expired.revision, boundary.revision);
+         assert_eq!(expired.traffic, boundary.traffic);
+         assert_eq!(subscription.take_latest_delta(), None);
+@@ -664,11 +664,11 @@ mod tests {
+         assert_eq!(observations.snapshot().traffic_history, original);
+ 
+         let subscription = observations.subscribe();
+-        set_observed_time(&observations, 61_001);
++        set_observed_time(&observations, 601_001);
+         observations.record_connection_count(8);
+         let delta = subscription.take_latest_delta().expect("connection delta");
+         assert!(delta.traffic_history.is_empty());
+-        assert_eq!(delta.observed_at_ms, 61_001);
++        assert_eq!(delta.observed_at_ms, 601_001);
+     }
+ 
+     #[test]
+@@ -694,15 +694,15 @@ mod tests {
+         drop(visible);
+         set_observed_time(&observations, 1_000);
+         observations.record_managed_observation(managed_sample(1, 2));
+-        set_observed_time(&observations, 2_000);
++        set_observed_time(&observations, 181_000);
+         observations.record_managed_observation(managed_sample(3, 4));
+         let restored = observations.subscribe();
+         assert_eq!(restored.take_latest_delta(), None);
+         assert_eq!(observations.snapshot().traffic_history.len(), 2);
+ 
+-        set_observed_time(&observations, 3_000);
++        set_observed_time(&observations, 182_000);
+         observations.record_managed_observation(managed_sample(5, 6));
+-        set_observed_time(&observations, 4_000);
++        set_observed_time(&observations, 183_000);
+         observations.record_managed_observation(managed_sample(7, 8));
+         let latest = restored.take_latest_delta().expect("latest delta");
+         assert_eq!(latest.revision, 4);
+diff --git "a/src-tauri\\target\\task009-dual-baseline\\src\\lib\\traffic-trend.ts" b/src/lib/traffic-trend.ts
+index 84292f4..17b53a6 100644
+--- "a/src-tauri\\target\\task009-dual-baseline\\src\\lib\\traffic-trend.ts"
++++ b/src/lib/traffic-trend.ts
+@@ -7,11 +7,11 @@ export function formatTraffic(value: number, rate = false): string {
+   return `${(value / 1024 ** unitIndex).toLocaleString("en-US", { maximumFractionDigits: unitIndex === 0 ? 0 : 1 })} ${units[unitIndex]}${rate ? "/s" : ""}`;
+ }
+ 
+-export function trafficTrend(history: ReadonlyArray<TrafficSample>, nowMs: number) {
+-  const points = history.filter((point) => point.sampledAtMs <= nowMs && nowMs - point.sampledAtMs <= 60000);
++export function trafficTrend(history: ReadonlyArray<TrafficSample>, nowMs: number, windowMs: 60000 | 600000) {
++  const points = history.filter((point) => point.sampledAtMs <= nowMs && nowMs - point.sampledAtMs <= windowMs);
+   const maximum = Math.max(1, ...points.flatMap((point) => [point.uploadRateBps, point.downloadRateBps]));
+   const coordinates = points.map((point) => ({
+-    x: 600 * (1 - (nowMs - point.sampledAtMs) / 60000),
++    x: 600 * (1 - (nowMs - point.sampledAtMs) / windowMs),
+     uploadY: 156 - point.uploadRateBps / maximum * 152,
+     downloadY: 156 - point.downloadRateBps / maximum * 152,
+   }));
+@@ -19,5 +19,8 @@ export function trafficTrend(history: ReadonlyArray<TrafficSample>, nowMs: numbe
+     const disconnected = index === 0 || points[index].sampledAtMs - points[index - 1].sampledAtMs > 5000;
+     return `${disconnected ? "M" : "L"}${point.x.toFixed(2)},${point[direction].toFixed(2)}`;
+   }).join(" ");
+-  return { points, coordinates, maximum, uploadPath: path("uploadY"), downloadPath: path("downloadY") };
++  const isolated = coordinates.filter((_, index) =>
++    (index === 0 || points[index].sampledAtMs - points[index - 1].sampledAtMs > 5000) &&
++    (index === points.length - 1 || points[index + 1].sampledAtMs - points[index].sampledAtMs > 5000));
++  return { points, coordinates, isolated, maximum, uploadPath: path("uploadY"), downloadPath: path("downloadY") };
+ }
+diff --git "a/src-tauri\\target\\task009-dual-baseline\\src\\lib\\traffic-trend.test.ts" b/src/lib/traffic-trend.test.ts
+index 9195351..1e157b6 100644
+--- "a/src-tauri\\target\\task009-dual-baseline\\src\\lib\\traffic-trend.test.ts"
++++ b/src/lib/traffic-trend.test.ts
+@@ -2,12 +2,35 @@ import { describe, expect, it } from "vitest";
+ import { formatTraffic, trafficTrend } from "./traffic-trend";
+ 
+ describe("内存流量趋势显示", () => {
++  it("同一历史裁剪十分钟和六十秒，较早点只影响主图纵轴", () => {
++    const history = [
++      { sampledAtMs: 0, uploadRateBps: 1024, downloadRateBps: 2048 },
++      { sampledAtMs: 540000, uploadRateBps: 10, downloadRateBps: 20 },
++      { sampledAtMs: 600000, uploadRateBps: 20, downloadRateBps: 40 },
++    ];
++    const main = trafficTrend(history, 600000, 600000);
++    const compact = trafficTrend(history, 600000, 60000);
++    expect(main.points).toHaveLength(3);
++    expect(compact.points.map((point) => point.sampledAtMs)).toEqual([540000, 600000]);
++    expect(main.maximum).toBe(2048);
++    expect(compact.maximum).toBe(40);
++    expect(main.coordinates[1].x).toBe(540);
++    expect(compact.coordinates[0].x).toBe(0);
++    expect(trafficTrend(history, 1200001, 600000).points).toHaveLength(0);
++  });
++
++  it("连续的 600 个采样点不渲染装饰圆，断档两侧的孤立点仍可见", () => {
++    const continuous = Array.from({ length: 600 }, (_, index) => ({ sampledAtMs: index * 1000, uploadRateBps: 0, downloadRateBps: 10 }));
++    expect(trafficTrend(continuous, 600000, 600000).isolated).toHaveLength(0);
++    expect(trafficTrend([continuous[0], continuous[8]], 600000, 600000).isolated).toHaveLength(2);
++    expect(trafficTrend([continuous[0]], 600000, 600000).isolated).toHaveLength(1);
++  });
+   it("按真实采样间隔定位，共用上下行最大值，超过 5 秒保持断线", () => {
+     const trend = trafficTrend([
+       { sampledAtMs: 0, uploadRateBps: 50, downloadRateBps: 100 },
+       { sampledAtMs: 5000, uploadRateBps: 0, downloadRateBps: 50 },
+       { sampledAtMs: 10001, uploadRateBps: 25, downloadRateBps: 0 },
+-    ], 60000);
++    ], 60000, 60000);
+     expect(trend.maximum).toBe(100);
+     expect(trend.uploadPath).toBe("M0.00,80.00 L50.00,156.00 M100.01,118.00");
+     expect(trend.downloadPath).toBe("M0.00,4.00 L50.00,80.00 M100.01,156.00");
+@@ -15,17 +38,17 @@ describe("内存流量趋势显示", () => {
+ 
+   it("显示时钟前进只淘汰过期点，不制造零值点或修改后端窗口", () => {
+     const history = [{ sampledAtMs: 1000, uploadRateBps: 0, downloadRateBps: 0 }];
+-    const first = trafficTrend(history, 1000);
++    const first = trafficTrend(history, 1000, 60000);
+     expect(first.coordinates).toEqual([{ x: 600, uploadY: 156, downloadY: 156 }]);
+     expect(first.maximum).toBe(1);
+-    expect(trafficTrend(history, 61000).points).toHaveLength(1);
+-    expect(trafficTrend(history, 61001).points).toEqual([]);
++    expect(trafficTrend(history, 61000, 60000).points).toHaveLength(1);
++    expect(trafficTrend(history, 61001, 60000).points).toEqual([]);
+     expect(history).toEqual([{ sampledAtMs: 1000, uploadRateBps: 0, downloadRateBps: 0 }]);
+   });
+ 
+   it("空窗口无路径，单个点保留可绘制坐标", () => {
+-    expect(trafficTrend([], 0).uploadPath).toBe("");
+-    expect(trafficTrend([{ sampledAtMs: 0, uploadRateBps: 1, downloadRateBps: 2 }], 0).coordinates).toHaveLength(1);
++    expect(trafficTrend([], 0, 60000).uploadPath).toBe("");
++    expect(trafficTrend([{ sampledAtMs: 0, uploadRateBps: 1, downloadRateBps: 2 }], 0, 60000).coordinates).toHaveLength(1);
+   });
+ 
+   it.each([

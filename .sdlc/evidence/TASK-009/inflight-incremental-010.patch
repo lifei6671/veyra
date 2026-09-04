@@ -1,0 +1,552 @@
+diff --git "a/src-tauri\\target\\task009-inflight-baseline\\src-tauri\\src\\singbox\\clash_api.rs" b/src-tauri/src/singbox/clash_api.rs
+index 8cc11b2..27fa495 100644
+--- "a/src-tauri\\target\\task009-inflight-baseline\\src-tauri\\src\\singbox\\clash_api.rs"
++++ b/src-tauri/src/singbox/clash_api.rs
+@@ -261,11 +261,16 @@ impl<'secret> ClashApiClient<'secret> {
+         &self,
+         stream: FixedStream,
+     ) -> Result<String, ClashApiError> {
++        #[cfg(test)]
++        let mut probe = stream_test_probe::Operation::start(stream_test_probe::Kind::Traffic);
+         let mut socket = self
+             .open_fixed_stream(stream)
+             .await?
+             .ok_or(ClashApiError::Unavailable)?;
+-        let next = timeout(REQUEST_TIMEOUT, socket.next())
++        let read = socket.next();
++        #[cfg(test)]
++        let read = probe.watch(read);
++        let next = timeout(REQUEST_TIMEOUT, read)
+             .await
+             .map_err(|_| ClashApiError::Unavailable)?;
+         let _ = timeout(REQUEST_TIMEOUT, socket.close(None)).await;
+@@ -276,10 +281,15 @@ impl<'secret> ClashApiClient<'secret> {
+     }
+ 
+     async fn read_single_log_message(&self) -> Result<Option<String>, ClashApiError> {
++        #[cfg(test)]
++        let mut probe = stream_test_probe::Operation::start(stream_test_probe::Kind::Logs);
+         let Some(mut socket) = self.open_fixed_stream(FixedStream::Logs).await? else {
+             return Ok(None);
+         };
+-        let next = timeout(REQUEST_TIMEOUT, socket.next()).await;
++        let read = socket.next();
++        #[cfg(test)]
++        let read = probe.watch(read);
++        let next = timeout(REQUEST_TIMEOUT, read).await;
+         let _ = timeout(REQUEST_TIMEOUT, socket.close(None)).await;
+         match next {
+             Err(_) | Ok(None) => Ok(None),
+@@ -340,6 +350,140 @@ impl<'secret> ClashApiClient<'secret> {
+     }
+ }
+ 
++/// 仅测试线程安装；观察真实socket future的Pending，不替换响应或修改产品超时。
++#[cfg(test)]
++pub(crate) mod stream_test_probe {
++    use std::{
++        cell::RefCell,
++        future::{Future, poll_fn},
++        pin::Pin,
++        sync::Arc,
++    };
++
++    #[derive(Clone, Copy, Debug, Eq, PartialEq)]
++    pub(crate) enum Kind {
++        Traffic,
++        Logs,
++    }
++    #[derive(Clone, Copy, Debug, Eq, PartialEq)]
++    pub(crate) enum Stage {
++        Started,
++        Pending,
++        Finished,
++    }
++    #[derive(Clone, Copy, Debug, Eq, PartialEq)]
++    pub(crate) struct Event {
++        pub(crate) kind: Kind,
++        pub(crate) stage: Stage,
++    }
++    type Observer = Arc<dyn Fn(Event) + Send + Sync>;
++    thread_local! { static OBSERVER: RefCell<Option<Observer>> = const { RefCell::new(None) }; }
++
++    pub(crate) struct Installation;
++    pub(crate) fn install(observer: Observer) -> Installation {
++        OBSERVER.with(|slot| {
++            assert!(slot.borrow().is_none(), "one observer per test worker");
++            *slot.borrow_mut() = Some(observer);
++        });
++        Installation
++    }
++    impl Drop for Installation {
++        fn drop(&mut self) {
++            OBSERVER.with(|slot| *slot.borrow_mut() = None);
++        }
++    }
++    pub(crate) struct Operation {
++        observer: Option<Observer>,
++        kind: Kind,
++        pending_reported: bool,
++    }
++    impl Operation {
++        pub(crate) fn start(kind: Kind) -> Self {
++            let observer = OBSERVER.with(|slot| slot.borrow().clone());
++            if let Some(observer) = &observer {
++                observer(Event {
++                    kind,
++                    stage: Stage::Started,
++                });
++            }
++            Self {
++                observer,
++                kind,
++                pending_reported: false,
++            }
++        }
++        pub(crate) fn watch<'a, F: Future + Unpin + 'a>(
++            &'a mut self,
++            mut future: F,
++        ) -> impl Future<Output = F::Output> + 'a {
++            poll_fn(move |context| {
++                let polled = Pin::new(&mut future).poll(context);
++                if polled.is_pending() && !self.pending_reported {
++                    self.pending_reported = true;
++                    if let Some(observer) = &self.observer {
++                        observer(Event {
++                            kind: self.kind,
++                            stage: Stage::Pending,
++                        });
++                    }
++                }
++                polled
++            })
++        }
++    }
++    impl Drop for Operation {
++        fn drop(&mut self) {
++            if let Some(observer) = &self.observer {
++                observer(Event {
++                    kind: self.kind,
++                    stage: Stage::Finished,
++                });
++            }
++        }
++    }
++
++    #[test]
++    fn pending_probe_reports_once_and_releases_on_cancel_without_leaking_installation() {
++        use std::{
++            sync::Mutex,
++            task::{Context, Waker},
++        };
++        let events = Arc::new(Mutex::new(Vec::new()));
++        {
++            let observed = events.clone();
++            let _installation =
++                install(Arc::new(move |event| observed.lock().unwrap().push(event)));
++            let mut operation = Operation::start(Kind::Traffic);
++            {
++                let mut waiting = Box::pin(operation.watch(std::future::pending::<()>()));
++                let mut context = Context::from_waker(Waker::noop());
++                assert!(waiting.as_mut().poll(&mut context).is_pending());
++                assert!(waiting.as_mut().poll(&mut context).is_pending());
++            }
++            drop(operation);
++        }
++        // 安装仅属当前测试线程，离开scope后不能把后续操作记入上一实例的记录。
++        drop(Operation::start(Kind::Logs));
++        assert_eq!(
++            *events.lock().unwrap(),
++            vec![
++                Event {
++                    kind: Kind::Traffic,
++                    stage: Stage::Started
++                },
++                Event {
++                    kind: Kind::Traffic,
++                    stage: Stage::Pending
++                },
++                Event {
++                    kind: Kind::Traffic,
++                    stage: Stage::Finished
++                },
++            ]
++        );
++    }
++}
++
+ #[derive(Deserialize)]
+ struct ReadyResponse {
+     hello: String,
+diff --git "a/src-tauri\\target\\task009-inflight-baseline\\src-tauri\\src\\application\\managed_observation_runtime.rs" b/src-tauri/src/application/managed_observation_runtime.rs
+index b82cde2..c8af690 100644
+--- "a/src-tauri\\target\\task009-inflight-baseline\\src-tauri\\src\\application\\managed_observation_runtime.rs"
++++ b/src-tauri/src/application/managed_observation_runtime.rs
+@@ -955,6 +955,367 @@ mod tests {
+         }
+     }
+ 
++    #[test]
++    fn real_worker_finishes_pending_stream_before_stop_and_new_instance_sampling() {
++        use crate::{
++            application::observability::{RuntimeObservationDelta, TrafficObservation},
++            singbox::{
++                clash_api::stream_test_probe::{self, Event, Kind, Stage},
++                test_support::FIXED_CLASH_API_TEST_LOCK,
++            },
++        };
++        use sha2::{Digest, Sha256};
++        use std::sync::{
++            Arc, Mutex,
++            atomic::{AtomicBool, AtomicUsize},
++        };
++
++        enum Trace {
++            Stream(usize, Event),
++            Delta(usize, RuntimeObservationDelta, [usize; 2]),
++        }
++        #[derive(Default)]
++        struct Counts {
++            active: [usize; 2],
++            maximum: [usize; 2],
++            started: [usize; 2],
++            finished: [usize; 2],
++            unbalanced: bool,
++        }
++
++        let _lock = FIXED_CLASH_API_TEST_LOCK
++            .lock()
++            .expect("fixed API test lock");
++        let (root, resources, app_data) = worker_resource_fixture();
++        let observations = InMemoryRuntimeObservations::new_mock();
++        let phase = Arc::new(AtomicUsize::new(1));
++        let counts = Arc::new(Mutex::new(Counts::default()));
++        let (events, traces) = mpsc::sync_channel(32);
++        let (release, gate) = mpsc::sync_channel(1);
++        let gate = Mutex::new(gate);
++        let gate_released = Arc::new(AtomicBool::new(false));
++        let paused = AtomicBool::new(false);
++        let delta_events = events.clone();
++        let delta_phase = Arc::clone(&phase);
++        let delta_counts = Arc::clone(&counts);
++        observations.install_delta_sink(move |delta| {
++            let active = delta_counts.lock().expect("client operation counts").active;
++            let _ = delta_events.try_send(Trace::Delta(
++                delta_phase.load(Ordering::SeqCst),
++                delta,
++                active,
++            ));
++        });
++        let probe_counts = Arc::clone(&counts);
++        let probe_phase = Arc::clone(&phase);
++        let probe_released = Arc::clone(&gate_released);
++        let probe = Arc::new(move |event: Event| {
++            let index = match event.kind {
++                Kind::Traffic => 0,
++                Kind::Logs => 1,
++            };
++            {
++                let mut counts = probe_counts.lock().expect("client operation counts");
++                match event.stage {
++                    Stage::Started => {
++                        counts.active[index] += 1;
++                        counts.started[index] += 1;
++                        counts.maximum[index] = counts.maximum[index].max(counts.active[index]);
++                    }
++                    Stage::Finished => {
++                        counts.unbalanced |= counts.active[index] == 0;
++                        counts.active[index] = counts.active[index].saturating_sub(1);
++                        counts.finished[index] += 1;
++                    }
++                    Stage::Pending => {}
++                }
++            }
++            let first_pending = event.kind == Kind::Traffic
++                && event.stage == Stage::Pending
++                && !paused.swap(true, Ordering::SeqCst);
++            let _ = events.try_send(Trace::Stream(probe_phase.load(Ordering::SeqCst), event));
++            if first_pending {
++                // 仅在真实 socket.next 已返回 Pending 后短暂停住 owner；不持计数锁。
++                // 断言失败会断开 gate，owner 仍能处理 Stop/请求通道关闭并清理 child。
++                let released = gate
++                    .lock()
++                    .expect("pending read gate")
++                    .recv_timeout(Duration::from_millis(800))
++                    .is_ok();
++                probe_released.store(released, Ordering::SeqCst);
++            }
++        });
++        let (requests, receiver) = mpsc::sync_channel(REQUEST_QUEUE_CAPACITY);
++        let controller = ManagedObservationRuntimeController {
++            state_file: PathBuf::new(),
++            requests,
++            observations: observations.clone(),
++        };
++        let worker_observations = observations.clone();
++        let worker_data = app_data.clone();
++        let (finished, finished_receiver) = mpsc::sync_channel(1);
++        let worker = thread::spawn(move || {
++            let _installation = stream_test_probe::install(probe);
++            worker_loop(receiver, resources, worker_data, worker_observations);
++            let _ = finished.try_send(());
++        });
++        let cleanup_data = app_data.clone();
++        let assertions = std::panic::catch_unwind(std::panic::AssertUnwindSafe(move || {
++            let start = || {
++                let (response, receiver) = mpsc::sync_channel(RESPONSE_QUEUE_CAPACITY);
++                controller
++                    .requests
++                    .try_send(WorkerRequest::Start {
++                        intent: valid_compilation_input(),
++                        response,
++                    })
++                    .expect("start queued");
++                assert_eq!(
++                    receiver
++                        .recv_timeout(START_RESPONSE_TIMEOUT)
++                        .expect("start response"),
++                    ManagedRuntimeStartResult::Started
++                );
++            };
++            let read_config = || {
++                let instances = std::fs::read_dir(app_data.join("sidecar-runtime"))
++                    .expect("private runtime directory")
++                    .map(|entry| entry.expect("private instance").path())
++                    .collect::<Vec<_>>();
++                assert_eq!(instances.len(), 1);
++                let bytes =
++                    std::fs::read(instances[0].join("config.json")).expect("private checked bytes");
++                let value: serde_json::Value =
++                    serde_json::from_slice(&bytes).expect("private configuration JSON");
++                let secret = value["experimental"]["clash_api"]["secret"]
++                    .as_str()
++                    .expect("private API secret")
++                    .to_owned();
++                assert!(!secret.is_empty());
++                (
++                    instances[0].clone(),
++                    format!("{:x}", Sha256::digest(&bytes)),
++                    secret,
++                )
++            };
++            start();
++            let Trace::Delta(1, ready, [0, 0]) = traces
++                .recv_timeout(STOP_RESPONSE_TIMEOUT)
++                .expect("first Ready delta")
++            else {
++                panic!("Ready precedes stream operations")
++            };
++            assert_eq!(ready.sidecar_lifecycle, ObservedSidecarLifecycle::Ready);
++            assert!(ready.traffic_history.is_empty());
++            let (old_instance, old_hash, old_secret) = read_config();
++            let mut saw_pending = false;
++            for _ in 0..8 {
++                match traces
++                    .recv_timeout(STOP_RESPONSE_TIMEOUT)
++                    .expect("actual pending stream")
++                {
++                    Trace::Stream(
++                        1,
++                        Event {
++                            kind: Kind::Traffic,
++                            stage: Stage::Started,
++                        },
++                    ) => {}
++                    Trace::Stream(
++                        1,
++                        Event {
++                            kind: Kind::Traffic,
++                            stage: Stage::Pending,
++                        },
++                    ) => {
++                        saw_pending = true;
++                        break;
++                    }
++                    _ => panic!("first traffic read must be pending before publication"),
++                }
++            }
++            assert!(saw_pending);
++            assert_eq!(counts.lock().expect("counts").active, [1, 0]);
++            let (response, stop_receiver) = mpsc::sync_channel(RESPONSE_QUEUE_CAPACITY);
++            controller
++                .requests
++                .try_send(WorkerRequest::Stop { response })
++                .expect("Stop queued during network read");
++            assert_eq!(controller.stop(), ManagedRuntimeStopResult::Busy);
++            assert!(matches!(
++                stop_receiver.try_recv(),
++                Err(mpsc::TryRecvError::Empty)
++            ));
++            assert_eq!(observations.snapshot().revision, ready.revision);
++            release.try_send(()).expect("release actual pending read");
++
++            let mut sample_revision = None;
++            let mut stopped_revision = None;
++            for _ in 0..12 {
++                match traces
++                    .recv_timeout(STOP_RESPONSE_TIMEOUT)
++                    .expect("sample then Stop trace")
++                {
++                    Trace::Stream(1, _) => assert!(sample_revision.is_none()),
++                    Trace::Delta(1, delta, active) => {
++                        assert_eq!(
++                            active,
++                            [0, 0],
++                            "socket operations finish before publication"
++                        );
++                        match delta.sidecar_lifecycle {
++                            ObservedSidecarLifecycle::Ready => {
++                                assert!(sample_revision.is_none());
++                                assert_eq!(delta.traffic_history.len(), 1);
++                                assert!(delta.revision > ready.revision);
++                                sample_revision = Some(delta.revision);
++                            }
++                            ObservedSidecarLifecycle::Stopped => {
++                                assert!(
++                                    delta.revision > sample_revision.expect("sample precedes Stop")
++                                );
++                                assert!(delta.traffic_history.is_empty());
++                                assert_eq!(delta.traffic, TrafficObservation::default());
++                                stopped_revision = Some(delta.revision);
++                                break;
++                            }
++                            _ => panic!("normal stream and Stop must remain healthy"),
++                        }
++                    }
++                    _ => panic!("no new instance phase before old Stop"),
++                }
++            }
++            let stopped_revision = stopped_revision.expect("Stopped published");
++            assert_eq!(
++                stop_receiver
++                    .recv_timeout(STOP_RESPONSE_TIMEOUT)
++                    .expect("Stop response"),
++                ManagedRuntimeStopResult::Stopped
++            );
++            assert!(
++                gate_released.load(Ordering::SeqCst),
++                "gate did not expire before Stop was queued"
++            );
++            assert!(!old_instance.exists());
++            {
++                let counts = counts.lock().expect("counts");
++                assert_eq!(counts.active, [0, 0]);
++                assert_eq!(counts.started, counts.finished);
++                assert_eq!(counts.started, [1, 1]);
++            }
++            assert!(
++                matches!(
++                    traces.recv_timeout(SAMPLE_INTERVAL + Duration::from_millis(200)),
++                    Err(mpsc::RecvTimeoutError::Timeout)
++                ),
++                "stopped worker creates no stream or old Delta"
++            );
++            assert_eq!(observations.snapshot().revision, stopped_revision);
++
++            // 只有旧客户端操作全部释放且 Stop 已确认，才在同一 owner 开始新实例阶段。
++            phase.store(2, Ordering::SeqCst);
++            start();
++            let Trace::Delta(2, new_ready, [0, 0]) = traces
++                .recv_timeout(STOP_RESPONSE_TIMEOUT)
++                .expect("new Ready delta")
++            else {
++                panic!("new Ready precedes new streams")
++            };
++            assert_eq!(new_ready.sidecar_lifecycle, ObservedSidecarLifecycle::Ready);
++            assert!(new_ready.revision > stopped_revision);
++            assert!(new_ready.traffic_history.is_empty());
++            assert_eq!(new_ready.traffic, TrafficObservation::default());
++            let (new_instance, new_hash, new_secret) = read_config();
++            assert!(old_instance != new_instance);
++            assert!(old_hash != new_hash);
++            assert!(old_secret != new_secret);
++            let mut new_sample_revision = None;
++            for _ in 0..12 {
++                match traces
++                    .recv_timeout(STOP_RESPONSE_TIMEOUT)
++                    .expect("new instance sample")
++                {
++                    Trace::Stream(2, _) => {}
++                    Trace::Delta(2, delta, active) => {
++                        assert_eq!(active, [0, 0]);
++                        assert_eq!(delta.sidecar_lifecycle, ObservedSidecarLifecycle::Ready);
++                        assert!(delta.revision > new_ready.revision);
++                        assert_eq!(delta.traffic_history.len(), 1);
++                        assert!(delta.traffic_history[0].sampled_at_ms >= new_ready.observed_at_ms);
++                        let safe = serde_json::to_string(&delta).expect("safe Delta");
++                        assert!(!safe.contains(&old_secret) && !safe.contains(&new_secret));
++                        new_sample_revision = Some(delta.revision);
++                        break;
++                    }
++                    _ => panic!("old phase cannot publish into new instance"),
++                }
++            }
++            assert!(new_sample_revision.is_some());
++            assert_eq!(controller.stop(), ManagedRuntimeStopResult::Stopped);
++            let Trace::Delta(2, stopped, [0, 0]) = traces
++                .recv_timeout(STOP_RESPONSE_TIMEOUT)
++                .expect("new Stop delta")
++            else {
++                panic!("no stream remains after second sample")
++            };
++            assert_eq!(stopped.sidecar_lifecycle, ObservedSidecarLifecycle::Stopped);
++            assert!(stopped.revision > new_sample_revision.expect("new sample"));
++            assert!(stopped.traffic_history.is_empty());
++            assert!(!new_instance.exists());
++            {
++                let counts = counts.lock().expect("counts");
++                assert!(!counts.unbalanced);
++                assert_eq!(counts.active, [0, 0]);
++                assert_eq!(counts.maximum, [1, 1]);
++                assert_eq!(counts.started, [2, 2]);
++                assert_eq!(counts.started, counts.finished);
++            }
++            assert!(controller.shutdown());
++            println!(
++                "task009 pending-stream client_ops_max=1,1 client_ops_final=0,0 old_config_sha256={old_hash} new_config_sha256={new_hash}"
++            );
++        }));
++        finished_receiver
++            .recv_timeout(START_RESPONSE_TIMEOUT)
++            .expect("owner completes bounded cleanup after channels close");
++        let worker_result = worker.join();
++        let private_root = cleanup_data.join("sidecar-runtime");
++        if private_root.exists() {
++            assert_eq!(
++                std::fs::read_dir(private_root)
++                    .expect("owned runtime directory")
++                    .count(),
++                0,
++                "retain fixture if private resource cleanup was not confirmed"
++            );
++        }
++        for (owned_path, expected_parent) in [
++            (cleanup_data, std::env::temp_dir()),
++            (
++                root,
++                PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("target"),
++            ),
++        ] {
++            let resolved = owned_path.canonicalize().expect("resolved owned fixture");
++            let expected_parent = expected_parent
++                .canonicalize()
++                .expect("resolved fixture parent");
++            assert_eq!(resolved.parent(), Some(expected_parent.as_path()));
++            assert!(
++                resolved
++                    .file_name()
++                    .expect("fixture name")
++                    .to_string_lossy()
++                    .starts_with(&format!("task009-worker-{}-", std::process::id()))
++            );
++            std::fs::remove_dir_all(resolved).expect("remove only this test's owned fixture");
++        }
++        worker_result.expect("worker joined");
++        if let Err(panic) = assertions {
++            std::panic::resume_unwind(panic);
++        }
++    }
++
+     #[test]
+     fn real_worker_samples_at_least_one_second_apart_and_publishes_nothing_after_stop() {
+         use crate::singbox::test_support::FIXED_CLASH_API_TEST_LOCK;

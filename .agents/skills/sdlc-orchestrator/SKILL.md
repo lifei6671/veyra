@@ -118,6 +118,13 @@ Inspect state and minimal context
 后续 Task；当前 Task 必须独立验收并 `DONE` 后才能推进下一 Task。给每个子任务明确代理名称、
 任务定义、执行动作、边界和预期结果；所有结果返回后由 Orchestrator 统一校验，子代理不得直接改状态。
 
+模型路由是可选安装能力。普通使用、复制 Skill 或初始化 `.sdlc/` 都不安装 Agent 配置。
+仅在 Codex 宿主且项目存在 `.codex/sdlc-agent-routing.toml` 时，读取
+[agent-routing.md](references/agent-routing.md) 检查是否启用，再决定当前动作是否值得委派。
+缺少配置或 `enabled = false` 时沿用普通 Skill 路径，不要求 named Agent 或特定模型；
+既有项目指令要求的并行、独立 Review 和人工验收仍然有效。只有用户主动请求安装/更新/停用时，
+才调用可选的 `sdlc-codex-setup` Skill；不得在恢复或任务执行时自动安装、修复或升级配置。
+
 ## Gate 与 Evidence
 
 进入任何 Gate 前，先定义所需证据，再执行验证。读取 [evidence-and-results.md](references/evidence-and-results.md) 处理 Evidence、Reviewer、SkillResult 和最终报告。

@@ -1,10 +1,13 @@
 use serde::Serialize;
 use tauri::{AppHandle, Emitter, Manager, State};
 
+use crate::application::managed_observation_runtime::{
+    ManagedObservationRuntimeController, ManagedRuntimeStartResult, ManagedRuntimeStopResult,
+};
 use crate::application::observability::{
     InMemoryRuntimeObservations, ObservationLogCategory, ObservationLogLevel, ObservationSource,
     ObservedCaptureMode, ObservedSidecarLifecycle, RuntimeObservationDelta, RuntimeObservationPort,
-    RuntimeObservationSnapshot,
+    RuntimeObservationSnapshot, TrafficHistoryPoint,
 };
 
 const MAIN_WINDOW_LABEL: &str = "main";
@@ -25,12 +28,14 @@ pub fn bootstrap_status() -> BootstrapStatus {
     }
 }
 
-/// 仅返回封闭的、脱敏且明确标注为 Mock-only 的内存观测快照。
+/// 仅返回封闭、脱敏且带明确来源标记的内存观测快照。
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct RuntimeObservationResponse {
     source: &'static str,
     revision: u64,
+    observed_at_ms: u64,
+    traffic_history: Vec<TrafficHistoryPointResponse>,
     capture_mode: &'static str,
     sidecar_lifecycle: &'static str,
     upload_rate_bps: u64,
@@ -39,6 +44,24 @@ pub struct RuntimeObservationResponse {
     download_total_bytes: u64,
     connection_count: u32,
     log_summary: Vec<ObservationLogSummaryResponse>,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TrafficHistoryPointResponse {
+    sampled_at_ms: u64,
+    upload_rate_bps: u64,
+    download_rate_bps: u64,
+}
+
+impl From<TrafficHistoryPoint> for TrafficHistoryPointResponse {
+    fn from(point: TrafficHistoryPoint) -> Self {
+        Self {
+            sampled_at_ms: point.sampled_at_ms,
+            upload_rate_bps: point.upload_rate_bps,
+            download_rate_bps: point.download_rate_bps,
+        }
+    }
 }
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]
@@ -65,6 +88,12 @@ impl From<RuntimeObservationSnapshot> for RuntimeObservationResponse {
         Self {
             source: map_source(snapshot.source),
             revision: snapshot.revision,
+            observed_at_ms: snapshot.observed_at_ms,
+            traffic_history: snapshot
+                .traffic_history
+                .into_iter()
+                .map(Into::into)
+                .collect(),
             capture_mode: map_capture_mode(snapshot.capture_mode),
             sidecar_lifecycle: map_sidecar_lifecycle(snapshot.sidecar_lifecycle),
             upload_rate_bps: snapshot.traffic.upload_bytes_per_second,
@@ -91,8 +120,10 @@ impl From<RuntimeObservationDelta> for RuntimeObservationResponse {
             .collect();
 
         Self {
-            source: "mock",
+            source: map_source(delta.source),
             revision: delta.revision,
+            observed_at_ms: delta.observed_at_ms,
+            traffic_history: delta.traffic_history.into_iter().map(Into::into).collect(),
             capture_mode: map_capture_mode(delta.capture_mode),
             sidecar_lifecycle: map_sidecar_lifecycle(delta.sidecar_lifecycle),
             upload_rate_bps: delta.traffic.upload_bytes_per_second,
@@ -111,6 +142,22 @@ pub(crate) fn runtime_observation_snapshot(
     observations: State<'_, InMemoryRuntimeObservations>,
 ) -> RuntimeObservationResponse {
     observations.snapshot().into()
+}
+
+/// 固定、零参数的受管观测运行时启动入口；配置、路径、端口和 secret 都由后端拥有。
+#[tauri::command]
+pub(crate) fn start_managed_observation_runtime(
+    runtime: State<'_, ManagedObservationRuntimeController>,
+) -> ManagedRuntimeStartResult {
+    runtime.start()
+}
+
+/// 固定、零参数的受管观测运行时停止入口；只处理当前 controller 所拥有的 child。
+#[tauri::command]
+pub(crate) fn stop_managed_observation_runtime(
+    runtime: State<'_, ManagedObservationRuntimeController>,
+) -> ManagedRuntimeStopResult {
+    runtime.stop()
 }
 
 /// 主窗口恢复失败时仅回传封闭错误类别，不泄露平台细节或路径。
@@ -154,6 +201,7 @@ pub(crate) fn restore_main_window(
 fn map_source(source: ObservationSource) -> &'static str {
     match source {
         ObservationSource::MockOnly => "mock",
+        ObservationSource::ManagedSidecar => "runtime",
     }
 }
 
@@ -169,7 +217,7 @@ fn map_capture_mode(mode: ObservedCaptureMode) -> &'static str {
 fn map_sidecar_lifecycle(lifecycle: ObservedSidecarLifecycle) -> &'static str {
     match lifecycle {
         ObservedSidecarLifecycle::NotObserved => "notAttached",
-        ObservedSidecarLifecycle::Stopped => "notAttached",
+        ObservedSidecarLifecycle::Stopped => "stopped",
         ObservedSidecarLifecycle::Ready => "ready",
         ObservedSidecarLifecycle::RecoveryRequired => "recoveryRequired",
     }
@@ -245,5 +293,53 @@ mod tests {
         assert_eq!(response.source, "mock");
         assert_eq!(response.connection_count, 2);
         assert_eq!(response.revision, 1);
+    }
+
+    #[test]
+    fn traffic_history_response_has_only_fixed_timing_and_rate_fields() {
+        let observations = InMemoryRuntimeObservations::new_mock();
+        let mut snapshot = observations.snapshot();
+        snapshot.observed_at_ms = 2_000;
+        snapshot.traffic_history = vec![TrafficHistoryPoint {
+            sampled_at_ms: 1_000,
+            upload_rate_bps: 100,
+            download_rate_bps: 200,
+        }];
+        let delta_response =
+            RuntimeObservationResponse::from(RuntimeObservationDelta::from(&snapshot));
+        let snapshot_response = RuntimeObservationResponse::from(snapshot);
+        assert_eq!(delta_response, snapshot_response);
+        assert_eq!(
+            serde_json::to_value(snapshot_response).expect("safe response"),
+            serde_json::json!({
+                "source": "mock",
+                "revision": 0,
+                "observedAtMs": 2_000,
+                "trafficHistory": [{
+                    "sampledAtMs": 1_000,
+                    "uploadRateBps": 100,
+                    "downloadRateBps": 200,
+                }],
+                "captureMode": "off",
+                "sidecarLifecycle": "notAttached",
+                "uploadRateBps": 0,
+                "downloadRateBps": 0,
+                "uploadTotalBytes": 0,
+                "downloadTotalBytes": 0,
+                "connectionCount": 0,
+                "logSummary": [],
+            })
+        );
+    }
+
+    #[test]
+    fn stopped_managed_runtime_has_a_distinct_safe_lifecycle_value() {
+        let observations = InMemoryRuntimeObservations::new_mock();
+        observations.record_managed_stopped();
+
+        let response = RuntimeObservationResponse::from(observations.snapshot());
+
+        assert_eq!(response.source, "runtime");
+        assert_eq!(response.sidecar_lifecycle, "stopped");
     }
 }

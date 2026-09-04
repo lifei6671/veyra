@@ -1,0 +1,230 @@
+{
+  "timestamp": "2026-09-04T14:12:01.8043078+08:00",
+  "version": 1,
+  "artifacts": [
+    {
+      "path": "src-tauri/target/task009-remediation/trend-browser-005.txt",
+      "sha256": "f5910d0d4d2aea77b7b6499445e522e701e43eafa54074449241f900f0933556"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/trend-build-005.txt",
+      "sha256": "115671a79f5c57dab57cad45154d3b169a6d6bd58530f6272b71d5207ca4c6fd"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/trend-clippy-005.result.json",
+      "sha256": "06d7674e79239489a60bb98d8a909d02d5d23e0f4fa85102b02fe33b2e8a82b8"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/trend-clippy-005.stderr.txt",
+      "sha256": "b29565c1b6cb4365af22bafd0d0860f1a38488fc1de9c29ea80c494239b0bf68"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/trend-clippy-005.stdout.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/trend-commands-005.result.json",
+      "sha256": "d6265c816fd51d7309d17954aaf313e708362124d525b2ccb09ed976ed73d879"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/trend-commands-005.stderr.txt",
+      "sha256": "3539ac486b256b4db20b59959a4b8109c83d5464bf431f1c0192d7752400743f"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/trend-commands-005.stdout.txt",
+      "sha256": "b2e41741386206b101279ee7001d8b4634dfc5440482c0c0e4789330a73d0306"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/trend-desktop-005.png",
+      "sha256": "8efe49e3cc9c8d087b840ba6312c6c21c08d0aa4c17f624bb001f3c22ada11be"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/trend-diff-check-005.txt",
+      "sha256": "b3129f7f7f2e6d812b3e5ab86e5959c9241583e963fefecfdfd5938e368f957c"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/trend-fmt-005.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/trend-frontend-005.txt",
+      "sha256": "3d9254dd89bd296f18b71381df2d49c2128c92c309fb16c7c0926e63155ef9fb"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/trend-lint-005.txt",
+      "sha256": "5a3973f79ed9becd5f23c4feff467513814de7ea381d75a4d2e339aa8b8edca9"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/trend-mobile-005.png",
+      "sha256": "5b96a2c6767c46c61bc4fae824f9573c01d481ce90e9bceabd1b173eaba3d216"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/trend-observability-005.result.json",
+      "sha256": "30670879333e1f7b0ebafeead39e939f528545edb11c3b9f2a23e95526a971fa"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/trend-observability-005.stderr.txt",
+      "sha256": "879a3cdcba69919c4e30a800530a50667a00b22de29f54a23b634fd504fa6b7b"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/trend-observability-005.stdout.txt",
+      "sha256": "41fe65a30d82500ee1bee21bbdd9906683177f661bd8afd35c965d0364674eab"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/trend-runtime-005.result.json",
+      "sha256": "2dcf12c6889b3f95cc14b4d657995c9b9b344f0b69e1053f6b426c54e17132dd"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/trend-runtime-005.stderr.txt",
+      "sha256": "41128450e9063ec622b3d39bff48fe964663131110725390e62a9b125f93ef70"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/trend-runtime-005.stdout.txt",
+      "sha256": "3d53174e2f7579c5d25c8158cfed381a1e549a219c9745cffe6a6208ab151147"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/trend-ui-check.js",
+      "sha256": "20ca545580fa75dd7ccc44487ad51d615b9e829dfe5bdb974b2fccea0bea8a53"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/trend-ui-combined.js",
+      "sha256": "a63ebfc936e632e8b38fd5010b6c06ed1e22894d471bcd3b149e53bcab3703d4"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/trend-ui-setup.js",
+      "sha256": "0c01bc6dc6bbbbcc8e7b8a4ae368a2e3af26655b78f57628509e6a97d73a41ab"
+    }
+  ],
+  "not_run": [
+    "Complete TASK-009 matrix",
+    "Real positive traffic through business inlet",
+    "Native WebView/Tray/window lifecycle E2E",
+    "CI",
+    "commit",
+    "push"
+  ],
+  "target_identity": "sha256:796c2a0f0e45f3ea71f6f8898fd8d1cf45a3aed003c2eec19f965037254c2cfd",
+  "result_scope": "33 Rust targeted tests, 48 frontend tests, 18 browser Mock checks and static/build validation; not whole Task acceptance",
+  "observed": [
+    {
+      "id": "trend-observability-005",
+      "result": "PASS",
+      "command": "cargo test --manifest-path src-tauri/Cargo.toml --lib application::observability::tests:: -- --nocapture --test-threads=1",
+      "exit_code": 0,
+      "timeout": false,
+      "started": "2026-09-04T14:07:59.8007811+08:00",
+      "finished": "2026-09-04T14:08:10.0460293+08:00",
+      "summary": [
+        "test result: ok. 19 passed; 0 failed; 0 ignored; 0 measured; 158 filtered out; finished in 0.34s"
+      ],
+      "outer_timeout_seconds": 60
+    },
+    {
+      "id": "trend-commands-005",
+      "result": "PASS",
+      "command": "cargo test --manifest-path src-tauri/Cargo.toml --lib commands::tests:: -- --nocapture --test-threads=1",
+      "exit_code": 0,
+      "timeout": false,
+      "started": "2026-09-04T14:08:29.2640031+08:00",
+      "finished": "2026-09-04T14:08:30.3873041+08:00",
+      "summary": [
+        "test result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 172 filtered out; finished in 0.32s"
+      ],
+      "outer_timeout_seconds": 60
+    },
+    {
+      "id": "trend-runtime-005",
+      "result": "PASS",
+      "command": "cargo test --manifest-path src-tauri/Cargo.toml --lib application::managed_observation_runtime::tests:: -- --nocapture --test-threads=1",
+      "exit_code": 0,
+      "timeout": false,
+      "started": "2026-09-04T14:08:46.1271244+08:00",
+      "finished": "2026-09-04T14:09:14.8120308+08:00",
+      "summary": [
+        "test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 168 filtered out; finished in 28.04s"
+      ],
+      "outer_timeout_seconds": 60
+    },
+    {
+      "id": "trend-clippy-005",
+      "result": "PASS",
+      "command": "cargo clippy --manifest-path src-tauri/Cargo.toml --lib -- -D warnings",
+      "exit_code": 0,
+      "timeout": false,
+      "started": "2026-09-04T14:09:46.508495+08:00",
+      "finished": "2026-09-04T14:09:49.3738769+08:00",
+      "summary": [],
+      "outer_timeout_seconds": 60
+    },
+    {
+      "id": "trend-frontend-005",
+      "result": "PASS",
+      "command": "pnpm test",
+      "exit_code": 0,
+      "summary": "48 passed"
+    },
+    {
+      "id": "trend-lint-005",
+      "result": "PASS",
+      "command": "pnpm lint",
+      "exit_code": 0,
+      "summary": "TypeScript noEmit"
+    },
+    {
+      "id": "trend-build-005",
+      "result": "PASS",
+      "command": "pnpm build",
+      "exit_code": 0,
+      "summary": "tsc and production Vite build"
+    },
+    {
+      "id": "trend-fmt-005",
+      "result": "PASS",
+      "command": "cargo fmt --manifest-path src-tauri/Cargo.toml -- --check",
+      "exit_code": 0,
+      "summary": "Rust formatting"
+    },
+    {
+      "id": "trend-diff-check-005",
+      "result": "PASS",
+      "command": "git diff --check",
+      "exit_code": 0,
+      "summary": "Only existing newline notices"
+    },
+    {
+      "id": "trend-browser-005",
+      "result": "PASS",
+      "command": "playwright-cli -s=task009-trend run-code --filename src-tauri/target/task009-remediation/trend-ui-combined.js",
+      "checks": [
+        "PASS empty window waiting state",
+        "PASS nonzero upload and download curves",
+        "PASS bounded 60 real sample pairs",
+        "PASS line-style legend and separate current rate",
+        "PASS core cumulative bytes separate from rate",
+        "PASS download has visible dashed stroke",
+        "PASS 320px no horizontal overflow",
+        "PASS 60-second aging removes stale points",
+        "PASS display clock creates no IPC requests",
+        "PASS gap over five seconds breaks path",
+        "PASS zero sample is visible data rather than missing",
+        "PASS snapshot failure displays unavailable and omits raw error",
+        "PASS one failure toast per action",
+        "PASS failure toast can be closed",
+        "PASS configuration failure preserves healthy runtime display",
+        "PASS toast auto-dismiss preserves action outcome",
+        "PASS confirmed stop clears trend",
+        "PASS confirmed stop has no failure toast"
+      ],
+      "boundary": "Real React browser with mocked Tauri IPC, not core positive-traffic or native tray evidence",
+      "visual_review": "Root viewed desktop and 320px screenshots; axes, units, legends, totals and controls readable without horizontal overflow.",
+      "harness_note": "Initial route fixture missed Vite cache query suffix; fixed glob to main.tsx*. Final combined run passed all 18 checks. Clock resumed in subsequent tool call to release paused browser completion."
+    }
+  ],
+  "delivery": ".sdlc/evidence/TASK-009/delivery-checkpoint-005.yaml",
+  "result": "PASS",
+  "target": "TASK-009 CHANGE-004 memory traffic trend",
+  "remaining_gaps": [
+    "Real metered positive-flow inlet unavailable in existing ObservationOnly profile; no new inlet authorized",
+    "WG/DNS full topology and true in-flight/late-result concurrency acceptance incomplete"
+  ]
+}

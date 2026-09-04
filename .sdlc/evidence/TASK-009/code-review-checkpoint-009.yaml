@@ -1,0 +1,144 @@
+{
+  "skill_result": {
+    "skill": "code-delivery-review",
+    "target": "TASK-009 checkpoint009 — CR-003/CR-004 remediation",
+    "outcome": "BLOCKED",
+    "next_action_hint": "CR-003及CR-004已修复，局部复审通过；完整Task继续保留真实worker并发与WG/DNS等验收缺口，不据此推进Gate。",
+    "review_mode": "CHILD_AGENT",
+    "reviewed_target_identity": "sha256:da3b834d77fd6954d19737188c381849e41f09255e5e30accc8c4b0ce3506b74",
+    "review_result": "REWORK",
+    "local_repair_review_result": "PASS",
+    "coverage": {
+      "strategy": "PARTITIONED_PLUS_INTEGRATION",
+      "status": "INCOMPLETE",
+      "freshness": "FRESH",
+      "independence": "task009_design_reviewer未参与修复实现或测试生产；只读冻结差异和原始证据，仅新增此记录，未重跑、改源/状态或委派。",
+      "prior_review": ".sdlc/evidence/TASK-009/code-review-checkpoint-008.yaml",
+      "source_freshness": {
+        "result": "FRESH",
+        "manifest_entries": 33,
+        "source_hash_mismatches": 0,
+        "baseline_snapshots": 33,
+        "baseline_hash_mismatches": 0,
+        "baseline_previous_checkpoint_mismatches": 0,
+        "verification_artifacts": 18,
+        "artifact_hash_mismatches": 0,
+        "method": "重算manifest顺序HEAD/path/hash身份；逐项比对当前源、metering-repair-baseline-009与checkpoint008原字节。仅Windows Port cfg(test)变化，Compiler/生产/UI/设计未变并沿用008覆盖。"
+      },
+      "applicable_lanes": [
+        "correctness",
+        "security",
+        "concurrency-performance",
+        "verification",
+        "release"
+      ],
+      "lanes": {
+        "correctness": {
+          "result": "PASS",
+          "freshness": "FRESH"
+        },
+        "security": {
+          "result": "PASS",
+          "freshness": "FRESH"
+        },
+        "concurrency-performance": {
+          "result": "PASS",
+          "freshness": "FRESH"
+        },
+        "verification": {
+          "result": "REWORK",
+          "validation": "BLOCKED",
+          "freshness": "FRESH"
+        },
+        "release": {
+          "result": "REWORK",
+          "validation": "NOT_APPLICABLE",
+          "freshness": "FRESH"
+        }
+      },
+      "partitions": [
+        {
+          "id": "echo-port-ownership",
+          "locations": [
+            "src-tauri/src/platform/windows/managed_sidecar_port.rs:733",
+            "src-tauri/src/platform/windows/managed_sidecar_port.rs:856",
+            "src-tauri/src/platform/windows/managed_sidecar_port.rs:938",
+            "src-tauri/src/platform/windows/managed_sidecar_port.rs:988"
+          ],
+          "applicable_lanes": [
+            "correctness",
+            "security",
+            "verification"
+          ],
+          "result": "PASS",
+          "reviewed": "原echo listener留在主测试；echo线程仅持有clone。线程join后及第二core运行期间实际bind同端口失败。成功与catch_unwind收尾均在runtime.stop及running/pending空确认后才释放主listener，消除目标端口提前失去所有权路径。"
+        },
+        {
+          "id": "absolute-service-deadline",
+          "locations": [
+            "src-tauri/src/platform/windows/managed_sidecar_port.rs:503",
+            "src-tauri/src/platform/windows/managed_sidecar_port.rs:541",
+            "src-tauri/src/platform/windows/managed_sidecar_port.rs:736",
+            "src-tauri/src/platform/windows/managed_sidecar_port.rs:784"
+          ],
+          "applicable_lanes": [
+            "correctness",
+            "concurrency-performance",
+            "verification"
+          ],
+          "result": "PASS",
+          "reviewed": "两线程共用绝对30秒截止，块I/O取min(service deadline, now+2s)，每次分段读取只使用剩余期限；connect/accept轮询/发送节奏受同一截止约束。真实TCP新增测试验证过期write未发送字节，以及50ms读截止在1秒内结束、不会重新获得2秒。"
+        }
+      ],
+      "integration_result": {
+        "local_result": "PASS",
+        "whole_task_result": "REWORK",
+        "reviewed": "真实fixed core两实例计量用例在修复后重跑；保留listener不增加accept次数或统计流，未影响精确累计、静默、新认证和历史隔离。未改Compiler白名单及正常产品空入站边界。"
+      }
+    },
+    "remaining_risks": [
+      "完整真实worker网络in-flight Stop、跨实例晚到发布和streams并发证据仍不足。",
+      "Direct TCP真实计量不替代WG/UDP/ICMP/DNS完整拓扑或controller/WebView联测；这些Task缺口继续保留。",
+      "未运行185项全库、Native WebView/Tray E2E或CI；未变UI沿用先前身份和覆盖，不追认为本轮重跑。"
+    ]
+  },
+  "covered_previous_findings": [
+    {
+      "finding_id": "TASK009-CR-003",
+      "fingerprint": "windows/managed_sidecar_port.rs:metering-echo-listener:released-before-owned-core-stop",
+      "status": "FIXED",
+      "target_identity": "sha256:da3b834d77fd6954d19737188c381849e41f09255e5e30accc8c4b0ce3506b74",
+      "evidence": "主listener跨越所有child生命周期保持；实际重新bind失败断言及修复后真实计量测试PASS。"
+    },
+    {
+      "finding_id": "TASK009-CR-004",
+      "fingerprint": "windows/managed_sidecar_port.rs:metering-block-io:ignores-global-deadline",
+      "status": "FIXED",
+      "target_identity": "sha256:da3b834d77fd6954d19737188c381849e41f09255e5e30accc8c4b0ce3506b74",
+      "evidence": "全局截止贯穿block/connect/pacing；实际socket的短截止与过期零写测试PASS。"
+    },
+    {
+      "finding_id": "TASK009-CR-001",
+      "status": "FIXED",
+      "basis": "生产修复未变，沿用既有覆盖。"
+    },
+    {
+      "finding_id": "TASK009-CR-002",
+      "status": "FIXED",
+      "basis": "Logs生产修复未变，沿用既有覆盖。"
+    }
+  ],
+  "issues": [],
+  "evidence": {
+    "delivery_ref": ".sdlc/evidence/TASK-009/delivery-checkpoint-009.yaml",
+    "diff_ref": ".sdlc/evidence/TASK-009/metering-repair-incremental-009.patch",
+    "verification_ref": ".sdlc/evidence/TASK-009/verification-009.yaml",
+    "verification_sha256": "3604b52e52f49fe425bef2cb4a7d12832d152d7b809ea813dc585bb2e2c63c4f",
+    "raw_directory": "src-tauri/target/task009-remediation/",
+    "observed": "独立读取metering-final-009原始stdout/result：6测试PASS，24.09秒；compiler模块24项PASS，0.84秒。去除重叠4项Compiler测试，共26项唯一测试。library Clippy/fmt/diff元数据退出码0且无超时；不宣称测试代码Clippy。",
+    "functional_result": "同一真实核心每向1310720字节、非零速率、静默精确稳定累计；新identity/secret及新实例零值仍通过。历史通知由测试直连owner，不是controller/WebView联测。",
+    "host_readback": "本轮before/after JSON的interfaces/addresses/routes/dns/proxy五组所选配置hash独立逐项比较相等。",
+    "historical_evidence": "checkpoint008及旧失败日志保留；旧目标通过不作为本轮修复验证。"
+  },
+  "conclusion": "CR-003/CR-004均FIXED，无新增Finding，局部PASS；完整Task仍REWORK/INCOMPLETE，未迁移任何Gate或验收状态。"
+}

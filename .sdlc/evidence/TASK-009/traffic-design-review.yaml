@@ -1,0 +1,112 @@
+{
+  "skill_result": {
+    "skill": "technical-design-review",
+    "target": ".sdlc/design/DCR-005-traffic-observation.md",
+    "outcome": "PASS",
+    "next_action_hint": "提案可交 Owner 审批；CHANGE-002 不授权流量算法变更。获得本提案授权后再同步 DCR-001/TASK-009、实施并验证；真实正流量入口须按提案先核定。",
+    "review_mode": "CHILD_AGENT",
+    "reviewed_target_identity": "sha256:338e0a7f9bb8a4c6ca0722d2fe51eab253c0e1758124907cf759b9459e9714ba",
+    "review_result": "PASS",
+    "coverage": {
+      "strategy": "FOCUSED_CONCERN_REVIEW",
+      "status": "COMPLETE",
+      "freshness": "FRESH",
+      "independence": "Reviewer 未参与 DCR-005 编写或拟议流量修正实现；本次仅读目标、约束、相关源码与固定版本一手来源，仅写独立审阅记录。",
+      "covered_concerns": [
+        "Requirement 实时上下行流量与 TASK-009 SF-002 当前实例安全摘要的追踪性",
+        "DCR-001 固定 WebSocket 流契约的待授权语义修订，以及 CHANGE-002 排除流量算法变更的边界",
+        "固定核心一秒窗口增量、REST 总量来源与现有二次差分错误",
+        "REST/WS 非原子时点、单帧重新连接的采样间隙及名义一秒速率精度限制",
+        "最小实现范围、内部差分状态删除、既有 DTO 映射与饱和数字类型边界",
+        "固定地址/当前实例鉴权、串行采样/节流、2s/16KiB/单消息限制与失败停止",
+        "正流量入口先核定、阴性/边界测试、真实计量证据与实例隔离验证"
+      ],
+      "not_covered": [
+        "尚未编写或冻结的流量算法实现与测试",
+        "真实固定核心正流量端到端执行",
+        "并行 concurrency_worker 的新测试交付",
+        "完整 TASK-009 Delivery Gate 或 Human Acceptance"
+      ],
+      "traceability_refs": [
+        "docs/veyra.md:35",
+        ".sdlc/tasks/TASK-009.md:128",
+        ".sdlc/tasks/TASK-009.md:143",
+        ".sdlc/design/DCR-001-sing-box-1.14.0.md:127",
+        ".sdlc/evidence/TASK-009/change-control.yaml:17"
+      ],
+      "source_findings": [
+        {
+          "result": "CONFIRMED",
+          "claim": "traffic handler 在连接建立后记录 Manager.Total；每个 time.Second tick 输出新旧累计量差，并更新其连接局部基线。因此该帧是核心名义一秒窗口值，不是累计量；相邻独立采样再差分会误算。",
+          "references": [
+            "https://raw.githubusercontent.com/SagerNet/sing-box/v1.14.0/experimental/clashapi/server.go#L287-L335",
+            "src-tauri/src/singbox/clash_api.rs:169"
+          ]
+        },
+        {
+          "result": "CONFIRMED",
+          "claim": "connectionsSnapshot 将同一 Manager.Total 写为 uploadTotal/downloadTotal；Total 汇总活跃连接、关闭连接和已淘汰关闭连接累计值。现有只读取安全计数并丢弃连接明细的客户端可复用。",
+          "references": [
+            "https://raw.githubusercontent.com/SagerNet/sing-box/v1.14.0/experimental/clashapi/connections.go#L29-L42",
+            "https://raw.githubusercontent.com/SagerNet/sing-box/v1.14.0/common/trafficcontrol/manager.go#L91-L131",
+            "src-tauri/src/singbox/clash_api.rs:249",
+            "src-tauri/src/singbox/clash_api.rs:389"
+          ]
+        },
+        {
+          "result": "CONFIRMED",
+          "claim": "现有 bridge 先读取 REST，再打开单帧 traffic WS；目标设计显式承认两个时点，并拒绝通过离散 WS 窗口求累计值。现有 DTO 可保留字段/单位，只修正内部值来源和相关断言。",
+          "references": [
+            "src-tauri/src/singbox/clash_api.rs:131",
+            "src-tauri/src/application/observability.rs:277",
+            "src-tauri/src/application/runtime.rs:589",
+            ".sdlc/design/DCR-005-traffic-observation.md:17"
+          ]
+        }
+      ],
+      "complexity_proportionality": {
+        "result": "PASS",
+        "failure": "核心窗口值被再次差分并误作累计量。",
+        "credible_trigger": "相邻窗口上传量相等或变小，现有算法输出零速率；非零首帧被当作仅建立基线。",
+        "minimal_mitigation": "直接映射固定核心窗口值为名义每秒速率，REST安全摘要提供累计量；移除错误差分状态而保留既有时间节流。",
+        "alternatives": "对单帧连接窗口求和会漏掉采样间隙；按本地请求间隔除窗口值不等于核心采样窗口。提案已说明不采用这两条路径。",
+        "added_controls": "无新增依赖、后台机制、权限、持久化、配置项、锁模型或产品入口。"
+      }
+    },
+    "issues": [],
+    "evidence": [
+      {
+        "type": "target_identity",
+        "result": "PASS",
+        "reference": ".sdlc/design/DCR-005-traffic-observation.md",
+        "method": "读取候选全文并对当前文件计算 SHA256，与派发身份匹配。"
+      },
+      {
+        "type": "primary_source_review",
+        "result": "PASS",
+        "method": "通过只读网络工具直接读取 SagerNet/sing-box v1.14.0 的 traffic handler、connectionsSnapshot 和 Manager.Total；未运行服务或发送业务测试流量。"
+      },
+      {
+        "type": "local_structural_review",
+        "result": "PASS",
+        "method": "通过 CodeGraph 读取 record_traffic_sample、sample、DTO映射与反序列化结构，并核对当前 DCR-001/Task/CHANGE-002。"
+      },
+      {
+        "type": "positive_traffic_e2e",
+        "result": "NOT_RUN",
+        "summary": "本次为设计审查，不以静态源码或HTTP/URLTest成功替代计量链路证据。"
+      }
+    ],
+    "remaining_risks": [
+      "本 PASS 只代表 PROPOSED 设计候选具备审阅通过条件；不构成 Owner approval、FROZEN 状态、Scope 扩入或实施授权。",
+      "CHANGE-002 明确不包含流量算法修改；批准本提案后方可同步 DCR-001 对应段和 TASK-009 allow，再冻结实现目标。",
+      "ObservationOnly profile 的受控可计量正流量入口尚未证明可用；若不存在，需要报告 UNAVAILABLE 并提出最小测试入口，不能私改生成 JSON 或增加产品入口。",
+      "核心定时器的一秒窗口是名义速率，调度停顿时不保证精确墙钟瞬时速率；REST累计值与随后WS速率不是原子快照。",
+      "实施验收仍需证实连续/变化/零/非零首帧、REST累计值不被覆盖、安全DTO与实例隔离，并保留已有数值边界和采样限制。",
+      "新并发测试和完整 TASK-009 缺口未由本设计审查关闭。"
+    ],
+    "artifacts_changed": [
+      ".sdlc/evidence/TASK-009/traffic-design-review.yaml"
+    ]
+  }
+}

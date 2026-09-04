@@ -1,0 +1,18 @@
+{
+  "timestamp": "2026-09-04T15:34:26.2992795+08:00",
+  "requirement_identity": "sha256:4a2cd1e2b9698087bcbc4ac892d7b052a5e2c06554e372479fe31c81cbea9d45",
+  "checks": [
+    "All33 prior sources matched and original baselines retained",
+    "Task008 DONE;Task009 only current task",
+    "No new profile,dependency,public IPC,host settings or endpoint",
+    "Existing fixed assets/loopback API/worker fixture reused",
+    "Instrumentation reports actual socket future Poll::Pending, not publication-tail gating; Stop queue and old/new sample sequencing asserted"
+  ],
+  "result": "PASS",
+  "authorization": "User continue next existing-scope development; existing SF002 concurrency acceptance",
+  "id": "EVIDENCE-TASK-009-READINESS-010",
+  "task_identity": "sha256:a1341b15a48840a5e15616eba486ff79a4a432c1e7e3c54be2f978b8632093cd",
+  "scope": "clash_api.rs cfg(test) thread-local pending-read observer, application managed_observation_runtime.rs real worker test only",
+  "baseline": ".sdlc/evidence/TASK-009/inflight-baseline-010.yaml",
+  "target": "TASK009 SF002 real worker pending stream/Stop/new Start ordering"
+}

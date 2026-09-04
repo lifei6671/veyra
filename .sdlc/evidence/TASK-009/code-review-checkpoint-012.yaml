@@ -1,0 +1,123 @@
+{
+  "skill_result": {
+    "skill": "code-delivery-review",
+    "target": "TASK-009 checkpoint012 — TASK009-CR-005 bounded peer Hold repair",
+    "outcome": "BLOCKED",
+    "next_action_hint": "CR-005局部修复审阅通过；继续保留完整Task验收缺口，不推进Delivery Gate。",
+    "review_mode": "CHILD_AGENT",
+    "reviewed_target_identity": "sha256:1827c6b72fe6466836eb4e6d4fd32e006a36e581d07c8731ed6757c59b17fc59",
+    "review_result": "REWORK",
+    "local_repair_review_result": "PASS",
+    "coverage": {
+      "strategy": "PARTITIONED_PLUS_INTEGRATION",
+      "status": "INCOMPLETE",
+      "freshness": "FRESH",
+      "independence": "task009_design_reviewer未参与修复、测试或验证生产；只读冻结增量与绑定日志，仅新增本记录；未重跑、修改被审目标/Task/状态或委派。",
+      "prior_review": ".sdlc/evidence/TASK-009/code-review-checkpoint-011.yaml",
+      "source_freshness": {
+        "result": "FRESH",
+        "manifest_entries": 47,
+        "source_hash_mismatches": 0,
+        "incremental_baseline_snapshots": 47,
+        "baseline_hash_mismatches": 0,
+        "baseline_previous_checkpoint_mismatches": 0,
+        "verification_artifacts": 23,
+        "artifact_hash_mismatches": 0,
+        "verification_identity": "sha256:81c56f3a62f2e2d8c8b179c40a725ef07c6cb665b5e6594458b25c0bd795e93e",
+        "helper_identity": "sha256:57a95f5c7382df6b20583c45eaf41068a62162ac70abff593c744d8e57dcad57",
+        "method": "按manifest实际数组顺序重算HEAD/path/hash；逐项核对47当前源、47修复前快照与checkpoint011、23验证工件及固定helper。仅Windows Port cfg(test)变化，Go13文件/设计/Task/生产源码未变。"
+      },
+      "applicable_lanes": [
+        "correctness",
+        "security",
+        "concurrency-performance",
+        "verification",
+        "release"
+      ],
+      "lanes": {
+        "correctness": {
+          "result": "PASS",
+          "freshness": "FRESH"
+        },
+        "security": {
+          "result": "PASS",
+          "freshness": "FRESH"
+        },
+        "concurrency-performance": {
+          "result": "PASS",
+          "freshness": "FRESH"
+        },
+        "verification": {
+          "result": "REWORK",
+          "validation": "PARTIAL",
+          "freshness": "FRESH"
+        },
+        "release": {
+          "result": "REWORK",
+          "validation": "NOT_APPLICABLE",
+          "freshness": "FRESH"
+        }
+      },
+      "partitions": [
+        {
+          "id": "parent-unconfirmed-stop",
+          "result": "PASS",
+          "locations": [
+            "src-tauri/src/platform/windows/managed_sidecar_port.rs:755"
+          ],
+          "reviewed": "finish(false)独立分支仅排空摘要、观察真实exit，不执行shutdown/kill/input.take；观察exit后才断开写侧并有界join。无exit/异常/过早exit及正常硬exit均返回Err，不冒充DUT停止。writer绝对截止由55改59，避免父计时先于helper时提前结束写侧。"
+        },
+        {
+          "id": "affected-normal-cleanup-and-failure-test",
+          "result": "PASS",
+          "locations": [
+            "src-tauri/src/platform/windows/managed_sidecar_port.rs:1086"
+          ],
+          "reviewed": "finish(true)保留确认DUT已停止后的正常shutdown/2秒强制清理逻辑。新用例使用原真实helper及55秒硬限、不启动DUT；3秒和53秒检查worker未结束、stdin打开、实际UDP重绑AddrInUse；确认exit1后输入/线程结束、同端口可绑定且清理结果仍Err。初始化或中途断言失败有对应有界清理/等待路径，摘要无密钥。"
+        },
+        {
+          "id": "unchanged-go-and-authority",
+          "result": "PASS",
+          "reviewed": "承接011 Go协议/Bind/栈/ACK/ICMP与授权审阅。固定helper/source全未变；readiness012仅既有DCR009失败清理修复，无新增资源或产品接口。"
+        }
+      ],
+      "integration_result": {
+        "local_result": "PASS",
+        "whole_task_result": "REWORK",
+        "reviewed": "原未确认DUT停止便提前kill的路径已消除；无DUT真实helper失败分支证据与正常真实核心TCP/ICMP/清理回归互补，未把模拟停止确认缺失夸为操作系统拒绝真实DUT Stop。"
+      }
+    },
+    "remaining_risks": [
+      "新失败用例模拟dut_stopped=false且没有DUT，不是实际操作系统拒绝停止DUT的E2E；父异常/OS拒绝停止时55秒硬上限残余风险仍按DCR009披露。",
+      "仅本轮3项相关Rust测试通过，未执行完整库回归；Go/UI未变而沿用已有覆盖，不称本轮重跑。",
+      "完整Task仍缺WG UDP业务、完整拒绝矩阵、系统DNS及native GUI/Tray等验收；TCP ACK证明传输层交付，不证明URLTest应用消费。"
+    ]
+  },
+  "findings": [],
+  "covered_previous_findings": [
+    {
+      "finding_id": "TASK009-CR-005",
+      "fingerprint": "windows/managed_sidecar_port.rs:Peer::finish:dut-stop-failure-kills-peer-before-hard-hold",
+      "status": "FIXED",
+      "severity": "P1",
+      "target_identity": "sha256:1827c6b72fe6466836eb4e6d4fd32e006a36e581d07c8731ed6757c59b17fc59",
+      "location": "src-tauri/src/platform/windows/managed_sidecar_port.rs:755",
+      "resolution": "未确认DUT退出时提前kill的触发路径已消除；待helper实际硬exit后仍返回清理失败。",
+      "evidence": [
+        ".sdlc/evidence/TASK-009/wg-repair-incremental-012.patch",
+        "src-tauri/target/task009-remediation/wg-repair-hold-012.stdout.txt",
+        "src-tauri/target/task009-remediation/wg-repair-hold-012.stderr.txt",
+        "src-tauri/target/task009-remediation/wg-repair-real-012.stdout.txt"
+      ]
+    }
+  ],
+  "verification_readback": {
+    "local_result": "PASS",
+    "hold": "原始日志：3179ms及53001ms端口仍占用、stdin打开；55173ms观察真实exit1，55370ms确认端口可重绑；用例55.64s，结果为预期cleanup FAIL。无时钟加速、未启动DUT。",
+    "normal_real": "当前真实固定core用例31.91s PASS；TCP完整响应ACK rx4/tx3、IPv4ICMP3/3；DUT PID4916、peer PID40408。API仅127.0.0.1:9090，DUT双栈wildcard UDP同53288，peer仅127.0.0.1:60067；DUT先停、peer退出/管道/私有实例清理确认，stderr0。",
+    "static": "3项相关Rust测试、test --no-run、lib Clippy、fmt、diff-check原始退出码均0，无超时；所选host配置before/after字段hash一致。Go模块及helper未变，沿用011。",
+    "binding": ".sdlc/evidence/TASK-009/verification-012.yaml"
+  },
+  "additional_findings": "No new findings in the repair and affected interactions.",
+  "gate_action": "NONE — 完整Task保持REWORK/INCOMPLETE；不迁移状态或代替Human Acceptance。"
+}

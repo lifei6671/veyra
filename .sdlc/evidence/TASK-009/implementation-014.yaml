@@ -1,0 +1,44 @@
+{
+  "skill_result": {
+    "skill": "implementation",
+    "target": "TASK009 CHANGE009 local WG rejection comparisons",
+    "outcome": "BLOCKED",
+    "signals": {
+      "target_identity": "sha256:37feddf0c296a6db8e7552d203c645efa5cd9663b4649243465ace58e3d5c126",
+      "authorization": "CHANGE009 / DCR011",
+      "producers": [
+        "ORCHESTRATOR:/root compiler cfg(test)",
+        "CHILD_AGENT:/root/task009_inflight_worker Port tests",
+        "CHILD_AGENT:/root/task009_wg_proposal Go peer"
+      ],
+      "code_written": true,
+      "acceptance": "PENDING",
+      "runtime_result": "FAIL",
+      "reason": "Fixed DUT gVisor rejects raw127/8 destination before Router; host positive control cannot succeed under approved same-path topology",
+      "independent_review": "REWORK; OPEN P1 TASK009-CR-006; no additional implementation findings"
+    },
+    "artifacts": [
+      ".sdlc/evidence/TASK-009/delivery-checkpoint-014.yaml",
+      ".sdlc/evidence/TASK-009/wg-reject-runtime-diagnosis-014.md",
+      ".sdlc/evidence/TASK-009/verification-014.yaml",
+      ".sdlc/evidence/TASK-009/code-review-checkpoint-014.yaml"
+    ],
+    "next_action_hint": "Technical-design remediation for TASK009-CR-006 before changing addresses/listeners/rules/acceptance; original authorization persists. Task not accepted.",
+    "execution_summary": {
+      "routing": "enabled max_parallel2",
+      "roles": [
+        "existing sdlc_expert Go lifecycle and probe",
+        "existing sdlc_expert Rust lifecycle and targets",
+        "independent sdlc_reviewer frozen delivery"
+      ],
+      "reason": "Go peer and Rust target lifecycle can be implemented without file write conflicts; compiler owned by root",
+      "configured_model": "gpt-5.6-sol",
+      "configured_reasoning": "high",
+      "actual_model_and_usage": "UNAVAILABLE from host telemetry",
+      "speedup_claim": "NONE",
+      "expert_role_sha256": "7465f69844617ed75ae6d3908a3595250abd21a98b14b0e9a7c93293c4c4d579",
+      "reviewer_role_sha256": "0ed1c4fafbb00eab569b4db0c68768ce1e926b518897ad4f2e3c549a44f0336b"
+    }
+  },
+  "timestamp": "2026-09-04T18:08:33.0237203+08:00"
+}

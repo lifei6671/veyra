@@ -1,6 +1,6 @@
 # 技术基线
 
-状态：候选（DCR-001 构建期资产交付与 Git ignore 修订，等待独立复审后重新冻结）
+状态：冻结（DCR-001 固定受管观测运行时启动/停止入口已由 EVIDENCE-DESIGN-021 独立复审，并获 USER:lifei 对规范化复合身份的技术设计门批准）
 
 ## 范围与追踪
 
@@ -22,7 +22,10 @@ StateStore、Compiler 和 sidecar 边界，不反向扩大 V0.1 Scope。
   `tracing ^0.1`、`tracing-subscriber ^0.3`；订阅传输使用启用 Rustls TLS 的 Reqwest `^0.12`。TASK-006
   还批准 `sha2 = "=0.10.9"`（关闭 default features），只用于离线验证内置 archive 与 executable 的
   SHA-256，不产生网络、Shell、前端或系统权限能力。`getrandom = "=0.4.3"` 只从 Windows 系统熵为
-  每个受管实例生成 32-byte API secret；不得用于其它标识或任何 UI/网络输入。
+  每个受管实例生成 32-byte API secret；不得用于其它标识或任何 UI/网络输入。DCR-001 候选修订还固定
+  `tokio-tungstenite = "=0.30.0"`（关闭默认 feature，仅 `connect`）与
+  `futures-util = "=0.3.34"`（关闭默认 feature，仅 `std`、`async-await`、`sink`）用于后端读取固定 loopback
+  Clash API 的单条 WebSocket 流摘要；不得启用 TLS/代理 feature 或形成任意网络能力。
 - 配置状态：V0.1 使用版本化 JSON `state.json`，由 `StateStore` 抽象和 `JsonStateStore` 实现；不引入
   SQLx、SQLite 或其他配置数据库依赖。未来的历史遥测数据库不属于 V0.1。
 - 运行内核：`CoreVersionCatalog` 以固定 URL、archive/executable SHA-256、资源名和兼容 profile 管理
@@ -32,6 +35,9 @@ StateStore、Compiler 和 sidecar 边界，不反向扩大 V0.1 Scope。
   `3ffb56267da14e287be48bd10cf7e6505260125bad940b75101fbb4d5d58e5d6`。1.12/1.13 是后续必须逐项
   验证后才能登记的兼容线，不能由 1.14.0 的结果推断支持。Git 不跟踪 core 二进制；构建期验证后将资源
   打入安装包，运行期不下载。Windows arm64 不在当前 TASK-006 范围。
+- `1.14.0` 目录项还冻结 archive 内唯一的 `sing-box.exe`、`libcronet.dll` 与 `LICENSE` 成员、各自 SHA-256
+  及 bundle resource 目标名；构建和包内容 readback 必须验证完全相同的三文件集合。精确值、私有 ACL
+  语义和复合 Gate 身份算法以 `.sdlc/design/DCR-001-sing-box-1.14.0.md` 为唯一来源，不在本基线重复维护。
 - 参考边界：UI 依赖组合与 clash-verge-rev 的 Tauri/React 桌面形态保持同类；Rust 边界参考
   satelite-proxy 的 Tauri sidecar 形态，但不复制其完整依赖树或功能集。首个脚手架 Task 固化具体
   package 版本、包管理器与 Tauri capability，且不得擅自加入数据库依赖。Capability 基线为默认拒绝：
@@ -183,6 +189,15 @@ sidecar Ready 判据满足后，才提交新的 `stable` 记录。未验证的�
   Clash API 凭证。普通预览、日志、错误事件和 telemetry 只可使用脱敏文本；用户显式触发的“查看/复制
   生成配置”可取得一次性、可运行的原文，但原文不得进入 Zustand 持久化状态、事件载荷、日志、错误报告
   或 telemetry，复制后即从后端与前端临时内存释放。
+- TASK-006 的观测 sidecar 产品入口固定为零参数 `start_managed_observation_runtime` 与
+  `stop_managed_observation_runtime`。它们只从既有且完整校验的私有 `state.json` 取得 `AppState` 与
+  `RuntimeIntent`；无可用 state 或无节点时 fail-closed，绝不生成 direct/空配置。该入口不增加保存、编辑、
+  创建或修复配置的 IPC，既有 `StateStore::load` 的 migration/backup-recovery 语义保持不变。应用拥有的串行 controller
+  独占 child/采样生命周期，启动、停止、窗口退出和 drop 都只处理可证明归属的 child。该入口不调用
+  System Proxy、WinINet、TUN、UAC、WFP 或 Service，不改变 `CaptureMode`，也不接受任何 IPC 启动参数。
+  该入口的重复 Start 在 Ready 时固定返回 `AlreadyRunning`，不替换 child；请求与响应均为容量一有界队列，
+  满时返回封闭 `Busy`。check、Ready、Stop、命令响应与 Tray Quit 必须遵守 DCR-001 的固定超时和 recovery
+  顺序，Tray Quit 只有在 worker 已确认 Shutdown 后才可退出。
 
 ## 关键决策
 
@@ -193,7 +208,8 @@ sidecar Ready 判据满足后，才提交新的 `stable` 记录。未验证的�
    恢复与回滚面向完整状态快照，而非单表补偿。
 3. **配置 Build/Apply 分离。** 先 Build、Validate、`sing-box check` 和 Prepare，再 Apply。Apply
    只能原子替换已批准的 generated config、重启受管 sidecar、验证 Process/API/mixed port Ready，并在
-   Health Check 失败时回滚上一份配置。
+   Health Check 失败时停止并清理失败候选，不自动恢复旧配置或重启。编译/check 失败保留当前实例，
+   三类失败按 DCR-004 分别记录脱敏日志与 Toast；订阅成功更新时间不代表内核配置已生效。
 4. **sidecar、版本目录与本地 API 边界。** 后端拥有单一串行化 Runtime Supervisor 和封闭
    `CoreVersionCatalog`；它只能以应用控制的配置路径
    与固定参数调用随包 sing-box `check`、`run`，且只能停止可证明为本应用 child/已记录 instance 的进程。
@@ -202,6 +218,9 @@ sidecar Ready 判据满足后，才提交新的 `stable` 记录。未验证的�
    只允许既有托管字段与唯一 `127.0.0.1:9090` Clash API listener；不得启用 API service、Dashboard、
    远程控制、TUN、bridge、TLS spoof、USB/IP 或任何额外 listener。私有 runtime config 只允许当前
    Windows 用户读取，API secret 仅存在于该实例 config 与短生命周期内存。
+   实例目录与 config 的 owner 和唯一 allow ACE 都是从当前进程 `TokenUser` 取得的当前用户 SID；DACL
+   受保护、无继承或额外主体，并在无 reparse-point 路径上先设置和回读成功，再写入 secret。ACL 失败
+   绝不回退到继承 ACL 或既有路径。
 5. **Windows 适配边界。** Tauri 负责通用 Desktop/IPC/Tray 能力，Windows Adapter 负责用户级
    System Proxy、权限检查、显式 UAC 和受管运行态恢复。系统代理必须快照、通知、回读和有条件恢复；
    CaptureMode 以串行、可补偿事务切换，sing-box 独占 TUN/路由/DNS 数据面。Service、WFP、全系统
@@ -232,9 +251,9 @@ sidecar Ready 判据满足后，才提交新的 `stable` 记录。未验证的�
   fixture；不支持的数据必须产生类型化 skip/error，且不得替换旧节点。
 - Compiler：确定性 Snapshot 加上固定 sidecar 的 `sing-box check`；Integration 覆盖
   `Subscription -> Parser -> AppState -> Compiler -> check`。
-- Runtime：通过 Local/Mock Upstream 校验 Ready、流量、连接增量、selector 更新、重启、回滚、停止和
+- Runtime：通过 Local/Mock Upstream 校验 Ready、流量、连接增量、selector 更新、手动重启、失败停止和
   受管进程清理；配置更新后重启应用须恢复同一有效状态。1.14.0 的真实验证还必须断言生成配置的
-  allowlist、危险键拒绝、唯一 child-owned loopback listener、私有目录 ACL，以及正常 stop、启动失败、
+  allowlist、危险键拒绝、精确 bundle 内容 readback、唯一 child-owned loopback listener、私有目录 ACL，以及正常 stop、启动失败、
   child 崩溃和后续启动清理时 secret 不泄露。
 - 安全边界：覆盖默认拒绝的 Tauri capability、前端不能直连文件/进程/任意网络、私有数据目录权限，
   以及真实生成配置仅能经显式查看/复制路径出现且不进入持久化 UI 状态、事件和日志。

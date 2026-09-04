@@ -1,0 +1,140 @@
+{
+  "skill_result": {
+    "skill": "code-delivery-review",
+    "target": "TASK-009 checkpoint010 — actual pending stream and queued Stop",
+    "outcome": "BLOCKED",
+    "next_action_hint": "本轮增量局部审阅通过；以明确的串行排除与客户端操作计数边界使用证据，继续保留完整Task/WG-DNS/native验收缺口。",
+    "review_mode": "CHILD_AGENT",
+    "reviewed_target_identity": "sha256:ce5ac15928e55ffed92739e1873baf9f84bf6919a2fc0679d39efcc01243bfc2",
+    "review_result": "REWORK",
+    "local_repair_review_result": "PASS",
+    "coverage": {
+      "strategy": "PARTITIONED_PLUS_INTEGRATION",
+      "status": "INCOMPLETE",
+      "freshness": "FRESH",
+      "independence": "task009_design_reviewer未参与本轮实现或测试生产；只读冻结增量与原始证据，仅新增本记录，未重跑、修改源/Task/状态或委派。",
+      "prior_review": ".sdlc/evidence/TASK-009/code-review-checkpoint-009.yaml",
+      "source_freshness": {
+        "result": "FRESH",
+        "manifest_entries": 33,
+        "source_hash_mismatches": 0,
+        "baseline_snapshots": 33,
+        "baseline_hash_mismatches": 0,
+        "baseline_previous_checkpoint_mismatches": 0,
+        "verification_artifacts": 20,
+        "artifact_hash_mismatches": 0,
+        "method": "按manifest实际数组顺序重算HEAD/path/hash；逐项核对当前源、inflight-baseline-010原字节和checkpoint009。仅clash_api.rs及managed_observation_runtime.rs变化；观察器/用例为cfg(test)，非test仅等价提取socket.next局部绑定，原超时与响应语义不变。"
+      },
+      "applicable_lanes": [
+        "correctness",
+        "security",
+        "concurrency-performance",
+        "verification",
+        "release"
+      ],
+      "lanes": {
+        "correctness": {
+          "result": "PASS",
+          "freshness": "FRESH"
+        },
+        "security": {
+          "result": "PASS",
+          "freshness": "FRESH"
+        },
+        "concurrency-performance": {
+          "result": "PASS",
+          "freshness": "FRESH"
+        },
+        "verification": {
+          "result": "REWORK",
+          "validation": "BLOCKED",
+          "freshness": "FRESH"
+        },
+        "release": {
+          "result": "REWORK",
+          "validation": "NOT_APPLICABLE",
+          "freshness": "FRESH"
+        }
+      },
+      "partitions": [
+        {
+          "id": "pending-probe-and-drop-order",
+          "locations": [
+            "src-tauri/src/singbox/clash_api.rs:264",
+            "src-tauri/src/singbox/clash_api.rs:284",
+            "src-tauri/src/singbox/clash_api.rs:354"
+          ],
+          "applicable_lanes": [
+            "correctness",
+            "security",
+            "concurrency-performance",
+            "verification"
+          ],
+          "result": "PASS",
+          "reviewed": "watch先poll真实Future，仅首次Poll::Pending回调，不替换响应；Operation先于socket声明，正常/错误/取消时socket先Drop再发Finished。安装仅当前测试线程，作用域退出清除；取消与Pending去重有精确序列断言。Started包含握手尝试，Logs空HTTP响应也计一次操作。"
+        },
+        {
+          "id": "real-worker-queued-stop-and-restart",
+          "location": "src-tauri/src/application/managed_observation_runtime.rs:959",
+          "applicable_lanes": [
+            "correctness",
+            "security",
+            "concurrency-performance",
+            "verification"
+          ],
+          "result": "PASS",
+          "reviewed": "实际Traffic Pending点最多800ms gate、不持计数锁；Stop入队、重复Stop Busy且响应仍空，gate必须由测试释放而非过期。核对操作完成后样本Delta、再Stopped；停后1.2秒无trace/revision变化。同owner新实例配置/secret不同、Ready清空、首样本时间与历史隔离、两次私有目录删除。计数最终平衡且最大每类1。catch_unwind释放gate/请求，等待owner结束后join，解析路径限制清理。"
+        }
+      ],
+      "integration_result": {
+        "local_result": "PASS",
+        "whole_task_result": "REWORK",
+        "reviewed": "真实Pending同步与串行worker路径相连，旧客户端操作先释放、旧样本先发布、再确认Stop，然后新实例采样；未变设计、计量fixture和UI承接009覆盖。"
+      }
+    },
+    "remaining_risks": [
+      "此处证明串行排除，不是跨代异步迟到响应注入；phase为测试阶段标签，不是核心响应附带的实例身份。",
+      "计数是客户端stream操作尝试，含握手和禁用Logs空响应，不是服务端live WebSocket数量；未证明开启Logs流的并发压力路径。",
+      "完整受控WG/DNS矩阵与Native WebView/Tray等整体验收未完成；wg-network-proposal.md仅候选，不能据本review执行。",
+      "本身份未跑187项全库、UI重跑或CI，既有证据保持原身份与范围；不推进Task/Gate或Human接受。"
+    ]
+  },
+  "evidence": {
+    "delivery_ref": ".sdlc/evidence/TASK-009/delivery-checkpoint-010.yaml",
+    "diff_ref": ".sdlc/evidence/TASK-009/inflight-incremental-010.patch",
+    "verification_ref": ".sdlc/evidence/TASK-009/verification-010.yaml",
+    "verification_sha256": "a3780f667a1b5bbf7464c3d01be4fa2cea8242cfb82c2fdbd2de76bb72f4b3b6",
+    "raw_directory": "src-tauri/target/task009-remediation/",
+    "observed": "独立读取inflight-controller-010 stdout/result：11项PASS，58.36秒（模块外层120秒）；inflight-clash-010：13项PASS，4.66秒。共24唯一测试，单跑目标不重复计数。library Clippy/fmt/diff结果退出0、无超时；不宣称测试代码Clippy。",
+    "host_readback": "独立比较本轮before/after JSON，interfaces/addresses/routes/dns/proxy五组所选配置hash相等。",
+    "scope": "真实固定核心正常无业务入站配置；本轮不新增运行权限或业务流量入口。"
+  },
+  "covered_previous_findings": [
+    {
+      "finding_id": "TASK009-CR-001",
+      "status": "FIXED",
+      "basis": "相关生产修复未变，沿用009。"
+    },
+    {
+      "finding_id": "TASK009-CR-002",
+      "status": "FIXED",
+      "basis": "Logs生产修复未变，本轮仅加观察器，沿用009。"
+    },
+    {
+      "finding_id": "TASK009-CR-003",
+      "fingerprint": "windows/managed_sidecar_port.rs:metering-echo-listener:released-before-owned-core-stop",
+      "status": "FIXED",
+      "target_identity": "sha256:ce5ac15928e55ffed92739e1873baf9f84bf6919a2fc0679d39efcc01243bfc2",
+      "basis": "Port测试修复未变，沿用009。"
+    },
+    {
+      "finding_id": "TASK009-CR-004",
+      "fingerprint": "windows/managed_sidecar_port.rs:metering-block-io:ignores-global-deadline",
+      "status": "FIXED",
+      "target_identity": "sha256:ce5ac15928e55ffed92739e1873baf9f84bf6919a2fc0679d39efcc01243bfc2",
+      "basis": "Port测试全局截止修复未变，沿用009。"
+    }
+  ],
+  "issues": [],
+  "conclusion": "无新增Finding，局部PASS；完整Task仍REWORK/INCOMPLETE，证据边界不扩大。"
+}

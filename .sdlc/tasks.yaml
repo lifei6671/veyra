@@ -49,7 +49,7 @@ milestones:
           - .sdlc/evidence/TASK-004/code-delivery-review.yaml#EVIDENCE-TASK-004-REVIEW-003
   - id: M5
     title: 可观测性与桌面完善
-    objective: 交付连接、流量、日志、托盘恢复与 Windows V0.1 验收闭环。
+    objective: 交付受管 sidecar、连接/流量/日志观测与其安全运行时基础。
     status: IN_PROGRESS
     completed:
       - id: TASK-005
@@ -66,7 +66,67 @@ milestones:
           - .sdlc/evidence/TASK-005/implementation.yaml#EVIDENCE-TASK-005-001
           - .sdlc/evidence/TASK-005/implementation.yaml#EVIDENCE-TASK-005-002
           - .sdlc/evidence/TASK-005/code-delivery-review.yaml#EVIDENCE-TASK-005-REVIEW-002
+      - id: TASK-006
+        result: >-
+          Managed sing-box sidecar, fixed loopback Clash API, private runtime config and redacted
+          observation foundation delivered; GUI/Tray E2E remains deferred.
+        target_identity: sha256:909c4f2cdb4d1f5d246f433c5fd9f1cb77395891dee89e9f5e5f8e72f826ebbb
+        decision_refs:
+          - USER:lifei 2026-09-04 TASK-006 Human Task acceptance
+        evidence_refs:
+          - .sdlc/evidence/TASK-006/implementation.yaml#EVIDENCE-TASK-006-001
+          - .sdlc/evidence/TASK-006/code-delivery-review.yaml#EVIDENCE-TASK-006-REVIEW-004
+  - id: M6
+    title: 全协议订阅与完整配置
+    objective: 交付全 sing-box 用户节点协议、受限订阅转换与可运行配置编译。
+    status: IN_PROGRESS
+    completed:
+      - id: TASK-007
+        result: >-
+          V3 typed non-Tor protocol domain, fail-closed migration, strict four-input normalization,
+          and atomic Provider replacement delivered. Complete runnable sing-box configuration
+          generation remains TASK-008.
+        target_identity: sha256:c83dd3e2df82c45ab6cb9d7c46c1e16ef266093e3db8abc2cf73686b4ea1442c
+        decision_refs:
+          - USER:lifei 2026-09-04 TASK-007 Human Task acceptance
+        evidence_refs:
+          - .sdlc/evidence/TASK-007/implementation.yaml#EVIDENCE-TASK-007-001
+          - .sdlc/evidence/TASK-007/code-delivery-review.yaml#EVIDENCE-TASK-007-REVIEW-001
+      - id: TASK-008
+        result: >-
+          Complete ObservationOnly configuration compilation and immutable final-byte checks
+          delivered for 15 non-Tor protocols; Reality remediation independently reviewed and
+          all subfeatures and Task acceptance approved by USER:lifei.
+        target_identity: sha256:d2f866af0f53ad28e8ba1cbe2d9b686b59f5c5f94703a25eb2d55cabaef5bc82
+        decision_refs:
+          - USER:lifei 2026-09-04 TASK-008 Human Task acceptance
+        evidence_refs:
+          - .sdlc/evidence/TASK-008/implementation.yaml#EVIDENCE-TASK-008-002
+          - .sdlc/evidence/TASK-008/code-delivery-review.yaml#EVIDENCE-TASK-008-REVIEW-002
+          - .sdlc/evidence/TASK-008/acceptance.yaml#EVIDENCE-TASK-008-ACCEPTANCE-001
+  - id: M7
+    title: Windows 桌面联合验收
+    objective: 以完整受管配置完成 GUI、Tray 与可观测性的 Windows E2E 验收。
+    status: PLANNED
 
 window:
-  - id: TASK-006
-    task_ref: .sdlc/tasks/TASK-006.md
+  - id: TASK-009
+    task_ref: .sdlc/tasks/TASK-009.md
+  - id: TASK-010
+    milestone_ref: M7
+    objective: 验收真实受管 sidecar 的 GUI Start/Stop、脱敏观测、窗口隐藏与 Tray 恢复联合路径。
+    dependencies: [TASK-009]
+    risk: HIGH
+    acceptance_summary: >-
+      Windows GUI E2E 证明完整配置、同一受管 child、固定 loopback API、脱敏 UI 和 Tray hide/restore
+      正确协作，且无控制台、System Proxy、TUN、UAC、WFP、Service 或额外 listener 变化。
+  - id: TASK-011
+    milestone_ref: M6
+    objective: 交付订阅手动更新入口、失败日志与toast，以及最后成功更新时间展示。
+    dependencies: [TASK-010]
+    risk: HIGH
+    acceptance_summary: >-
+      订阅获取、解析、归一化或保存失败只记录脱敏日志并显示toast，不自动重试、不替换旧节点或
+      停止已有core；最后成功更新时间保持不变，用户可手动重试。只有整批成功提交后才更新该时间。
+      有效缓存的304完成有效更新流程后算成功检查，但不代表内容变化或运行配置已生效。
+      订阅生成sing-box配置失败同样仅日志与toast，明确新配置未生效，不额外启动、停止或回滚。

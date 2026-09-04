@@ -1,0 +1,74 @@
+version: 1
+target: TASK-009 CHANGE-002 bounded repair
+target_identity: sha256:cd3edda6984985ad5da0c006743bcb8d1a9ef3b16e4ac105b894224b924322a5
+baseline: .sdlc/evidence/TASK-009/baseline.yaml
+baseline_extension: .sdlc/evidence/TASK-009/baseline-extension.yaml
+delivery: .sdlc/evidence/TASK-009/delivery-checkpoint-002.yaml
+evidence_root: src-tauri/target/task009-remediation
+observed:
+  - id: logs-boundary-002
+    result: PASS
+    command: cargo test --manifest-path src-tauri/Cargo.toml --lib fixed_logs_accept_only_authenticated_no_content -- --nocapture
+    tests: 1
+    cases: 13
+    outer_timeout_seconds: 60
+    scope: >-
+      Logs 204 and exactly-empty 200 accepted; nonempty, undeclared-length, chunked, conflicting
+      framing, Traffic 200/204, unauthorized, server error and handshake timeout rejected.
+      Fixture checks exact path and current authorization without rendering credentials.
+  - id: creation-owner
+    result: PASS
+    command: cargo test --manifest-path src-tauri/Cargo.toml --lib creation_cleanup_failure_stays_owned_by_port_until_manual_stop -- --nocapture
+    tests: 1
+    outer_timeout_seconds: 60
+    scope: >-
+      Instance-local test hook causes real create_new file-open and cleanup failure inside production
+      create; pending owner retained by real Windows Port, Start blocked, failed Stop retains owner,
+      then removal of owned blocker followed by manual Stop confirms cleanup and Stopped.
+  - id: real-observation-002
+    result: PASS
+    command: cargo test --manifest-path src-tauri/Cargo.toml --lib fixed_bundle_resources_run_and_stop_only_the_owned_loopback_child -- --nocapture
+    tests: 1
+    outer_timeout_seconds: 60
+    scope: real fixed child Ready, REST, traffic WebSocket, empty Logs, complete summary and normal stop/cleanup
+  - id: clippy
+    result: PASS
+    command: cargo clippy --manifest-path src-tauri/Cargo.toml --lib -- -D warnings
+    outer_timeout_seconds: 180
+    scope: library only; does not imply all-target clippy
+  - id: format-and-diff
+    result: PASS
+    commands:
+      - cargo fmt --manifest-path src-tauri/Cargo.toml -- --check
+      - git diff --check
+    metadata: static-result.json
+full_regression:
+  result: PASS
+  tests_passed: 165
+  tests_failed: 0
+  tests_ignored: 0
+  tests_filtered: 0
+  elapsed_seconds: 238.05
+  exit_code: 0
+  metadata: full-regression.result.json
+  stdout: full-regression.stdout.txt
+  command: cargo test --manifest-path src-tauri/Cargo.toml --lib -- --test-threads=1
+  outer_timeout_seconds: 360
+  skipped_tests: 0
+historical_diagnostics:
+  real-observation: FAIL; first 204-only implementation did not fix actual 200 empty response
+  real-log-diagnostic: FAIL; safe status-only diagnostic observed HTTP 200
+  real-log-framing: FAIL; observed 200, explicit zero length, empty body, no transfer encoding
+  interpretation: >-
+    The original upstream render.Status call sets a request-context hint only. Actual wire response
+    is authoritative; design-scope-review-002 approved exact-empty 200 handling within the same repair.
+    Diagnostic-only printing was removed before this frozen target.
+unchanged_frontend:
+  rerun: NOT_RUN
+  rationale: no UI/TS source changes; prior 19 unit tests and 14 browser mockIPC assertions remain scoped evidence
+remaining_task_gaps:
+  - complete WireGuard/DNS controlled topology and mandatory network matrix
+  - positive traffic rate/total semantics and complete identity/concurrency verification
+  - full GUI/Tray evidence belongs to TASK-010; no claim here
+  - Human Task acceptance and Delivery Gate remain pending
+independent_review: .sdlc/evidence/TASK-009/code-review-checkpoint-002.yaml

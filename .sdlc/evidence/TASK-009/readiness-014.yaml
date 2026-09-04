@@ -1,0 +1,23 @@
+{
+  "id": "EVIDENCE-TASK-009-READINESS-014",
+  "target": "TASK009 CHANGE009 local reject comparisons",
+  "timestamp": "2026-09-04T17:44:42.1831555+08:00",
+  "result": "PASS",
+  "authorization": ".sdlc/evidence/TASK-009/change-control.yaml#EVIDENCE-TASK-009-CHANGE-009",
+  "design_identity": "sha256:54c01cbc8f99b080a2d68e5b999ab6fc9f97fe49b1ae30e53e36ae2d402f6641",
+  "task_identity": "sha256:5147e917ee710b268812f275e2e094f44d1f0873afb28901bf0c657c0b50f577",
+  "requirement_identity": "sha256:4a2cd1e2b9698087bcbc4ac892d7b052a5e2c06554e372479fe31c81cbea9d45",
+  "baseline": ".sdlc/evidence/TASK-009/wg-reject-baseline-014.yaml",
+  "design_review": ".sdlc/evidence/TASK-009/wg-reject-design-review-001.yaml",
+  "checks": [
+    "Requirement and all50 checkpoint013 sources matched before scoped Task update",
+    "TASK008 accepted; TASK009 is sole current IN_PROGRESS task with full SF and Task acceptance",
+    "DCR011 candidate and independent PASS review hashes match explicit user approval",
+    "Root compiler; Rust worker Port tests; Go worker peer module; root real-core runs serially",
+    "No dependency or lock changes; old scope approvals persist"
+  ],
+  "not_run": [
+    "new implementation and runtime verification",
+    "full DNS and non-host forwarding"
+  ]
+}

@@ -1,0 +1,329 @@
+diff --git "a/src-tauri\\target\\task009-concurrency-baseline\\src-tauri\\src\\singbox\\clash_api.rs" b/src-tauri/src/singbox/clash_api.rs
+index fa980c7..8cc11b2 100644
+--- "a/src-tauri\\target\\task009-concurrency-baseline\\src-tauri\\src\\singbox\\clash_api.rs"
++++ b/src-tauri/src/singbox/clash_api.rs
+@@ -911,6 +911,112 @@ mod tests {
+         });
+     }
+ 
++    #[test]
++    fn traffic_first_frame_timeout_releases_socket_before_fresh_authenticated_sample() {
++        let _lock = FIXED_CLASH_API_TEST_LOCK
++            .lock()
++            .unwrap_or_else(|poisoned| poisoned.into_inner());
++        let old_secret = generate_api_secret().expect("old instance entropy");
++        let new_secret = generate_api_secret().expect("new instance entropy");
++        assert!(
++            old_secret.as_str() != new_secret.as_str(),
++            "distinct instance secrets"
++        );
++        let old_authorization = format!("Bearer {}", old_secret.as_str());
++        let new_authorization = format!("Bearer {}", new_secret.as_str());
++        let runtime = tokio::runtime::Runtime::new().expect("test runtime");
++        runtime.block_on(async {
++            let listener = tokio::net::TcpListener::bind("127.0.0.1:9090")
++                .await
++                .expect("bind fixed loopback fixture");
++            let (expired, mut expiry) = tokio::sync::oneshot::channel();
++            let server = tokio::spawn(async move {
++                for (index, authorization) in [old_authorization, new_authorization]
++                    .into_iter()
++                    .enumerate()
++                {
++                    let (stream, _) = timeout(REQUEST_TIMEOUT, listener.accept())
++                        .await
++                        .expect("bounded accept")
++                        .expect("accept fixed traffic request");
++                    let mut socket = timeout(
++                        REQUEST_TIMEOUT,
++                        accept_hdr_async(stream, |request: &Request, response: Response| {
++                            assert_eq!(request.uri().path(), "/traffic");
++                            assert!(
++                                request
++                                    .headers()
++                                    .get("authorization")
++                                    .and_then(|value| value.to_str().ok())
++                                    == Some(authorization.as_str()),
++                                "current instance authentication"
++                            );
++                            Ok(response)
++                        }),
++                    )
++                    .await
++                    .expect("bounded handshake")
++                    .expect("authenticated handshake");
++                    if index == 0 {
++                        // 首帧保持未发送，真正等待客户端网络读取期限耗尽，再确认旧连接释放。
++                        timeout(Duration::from_secs(4), &mut expiry)
++                            .await
++                            .expect("bounded timeout notification")
++                            .expect("client timeout observed");
++                        assert!(
++                            matches!(
++                                timeout(REQUEST_TIMEOUT, socket.next()).await,
++                                Ok(None) | Ok(Some(Err(_))) | Ok(Some(Ok(Message::Close(_))))
++                            ),
++                            "expired read releases old socket"
++                        );
++                    } else {
++                        timeout(
++                            REQUEST_TIMEOUT,
++                            socket.send(Message::Text(r#"{"up":17,"down":23}"#.into())),
++                        )
++                        .await
++                        .expect("bounded new frame")
++                        .expect("send new instance counters");
++                        assert!(
++                            matches!(
++                                timeout(REQUEST_TIMEOUT, socket.next()).await,
++                                Ok(Some(Ok(Message::Close(_))))
++                            ),
++                            "successful sample closes stream"
++                        );
++                    }
++                }
++            });
++            let old_client = ClashApiClient::new(&old_secret).expect("old client");
++            let started = Instant::now();
++            let error = timeout(Duration::from_secs(4), old_client.read_traffic_once())
++                .await
++                .expect("bounded client failure")
++                .expect_err("missing traffic is an error, not zero");
++            assert_eq!(error, ClashApiError::Unavailable);
++            assert!(started.elapsed() >= REQUEST_TIMEOUT);
++            assert!(!error.to_string().contains(old_secret.as_str()));
++            expired.send(()).expect("notify completed timeout");
++            let new_client = ClashApiClient::new(&new_secret).expect("fresh client");
++            let counters = timeout(Duration::from_secs(4), new_client.read_traffic_once())
++                .await
++                .expect("bounded fresh sample")
++                .expect("new instance can sample");
++            assert_eq!(
++                counters,
++                ClashTrafficCounters {
++                    up_bytes: 17,
++                    down_bytes: 23
++                }
++            );
++            timeout(Duration::from_secs(4), server)
++                .await
++                .expect("bounded fixture join")
++                .expect("fixture completes");
++        });
++    }
++
+     async fn spawn_websocket_fixture(
+         expected_path: &'static str,
+         expected_authorization: String,
+diff --git "a/src-tauri\\target\\task009-concurrency-baseline\\src-tauri\\src\\application\\managed_observation_runtime.rs" b/src-tauri/src/application/managed_observation_runtime.rs
+index 3642699..b82cde2 100644
+--- "a/src-tauri\\target\\task009-concurrency-baseline\\src-tauri\\src\\application\\managed_observation_runtime.rs"
++++ b/src-tauri/src/application/managed_observation_runtime.rs
+@@ -754,6 +754,207 @@ mod tests {
+         }
+     }
+ 
++    #[test]
++    fn real_worker_lost_start_response_retains_owned_child_until_manual_stop() {
++        use crate::{
++            application::observability::{
++                ObservationLogCategory, ObservationLogLevel, TrafficObservation,
++            },
++            singbox::{
++                clash_api::{
++                    ClashConnectionSnapshot, ClashRuntimeObservation, ClashTrafficObservation,
++                },
++                test_support::FIXED_CLASH_API_TEST_LOCK,
++            },
++        };
++        use std::sync::Mutex;
++
++        let _lock = FIXED_CLASH_API_TEST_LOCK
++            .lock()
++            .expect("fixed API test lock");
++        let (root, resources, app_data) = worker_resource_fixture();
++        let observations = InMemoryRuntimeObservations::new_mock();
++        // 旧图表数据仅为内存夹具，不把它记作真实核心正流量证据。
++        observations.record_managed_observation(ClashRuntimeObservation {
++            connections: ClashConnectionSnapshot {
++                upload_total_bytes: 300,
++                download_total_bytes: 400,
++                connection_count: 2,
++            },
++            traffic: Some(ClashTrafficObservation {
++                upload_bytes_per_second: 30,
++                download_bytes_per_second: 40,
++                upload_total_bytes: 300,
++                download_total_bytes: 400,
++            }),
++            latest_log: None,
++        });
++        let previous = observations.snapshot();
++        assert_eq!(previous.traffic_history.len(), 1);
++        let (events, event_receiver) = mpsc::sync_channel(4);
++        let (release, gate) = mpsc::sync_channel(1);
++        let gate = Mutex::new(gate);
++        observations.install_delta_sink(move |delta| {
++            let paused = matches!(
++                delta.sidecar_lifecycle,
++                ObservedSidecarLifecycle::Ready | ObservedSidecarLifecycle::RecoveryRequired
++            );
++            let _ = events.try_send(delta);
++            if paused {
++                // 发布后暂停 owner，精确控制响应丢失交错；断言失败断开 gate 即可收尾。
++                let _ = gate
++                    .lock()
++                    .expect("publication gate")
++                    .recv_timeout(Duration::from_secs(10));
++            }
++        });
++        let (requests, receiver) = mpsc::sync_channel(REQUEST_QUEUE_CAPACITY);
++        let (response, lost_receiver) = mpsc::sync_channel(RESPONSE_QUEUE_CAPACITY);
++        requests
++            .try_send(WorkerRequest::Start {
++                intent: valid_compilation_input(),
++                response,
++            })
++            .expect("start queued");
++        let worker_observations = observations.clone();
++        let worker_data = app_data.clone();
++        let (finished, finished_receiver) = mpsc::sync_channel(1);
++        let worker = thread::spawn(move || {
++            worker_loop(receiver, resources, worker_data, worker_observations);
++            let _ = finished.try_send(());
++        });
++        let cleanup_data = app_data.clone();
++        let assertions = std::panic::catch_unwind(std::panic::AssertUnwindSafe(move || {
++            let ready = event_receiver
++                .recv_timeout(START_RESPONSE_TIMEOUT)
++                .expect("real core ready");
++            assert_eq!(ready.sidecar_lifecycle, ObservedSidecarLifecycle::Ready);
++            assert_eq!(ready.revision, previous.revision + 1);
++            assert!(ready.traffic_history.is_empty());
++            assert_eq!(ready.traffic, TrafficObservation::default());
++            let instances = std::fs::read_dir(app_data.join("sidecar-runtime"))
++                .expect("private runtime directory")
++                .map(|entry| entry.expect("instance").path())
++                .collect::<Vec<_>>();
++            assert_eq!(instances.len(), 1);
++            let config_path = instances[0].join("config.json");
++            let original_config =
++                std::fs::read(&config_path).expect("private checked configuration");
++
++            // 核心已 Ready，但调用方丢失接收端；该失败不能丢弃仍运行的 child 所有权。
++            drop(lost_receiver);
++            release.try_send(()).expect("release ready publication");
++            let recovery = event_receiver
++                .recv_timeout(STOP_RESPONSE_TIMEOUT)
++                .expect("lost response recovery");
++            assert_eq!(
++                recovery.sidecar_lifecycle,
++                ObservedSidecarLifecycle::RecoveryRequired
++            );
++            assert_eq!(recovery.revision, ready.revision + 1);
++            assert!(recovery.traffic_history.is_empty());
++            assert_eq!(recovery.traffic, TrafficObservation::default());
++            assert_eq!(recovery.connections.active, 0);
++            let log = recovery.latest_log.as_ref().expect("closed worker summary");
++            assert_eq!(log.level, ObservationLogLevel::Error);
++            assert_eq!(log.category, ObservationLogCategory::Runtime);
++            assert_eq!(log.message, "Runtime worker response unavailable");
++            let snapshot = observations.snapshot();
++            assert_eq!(snapshot.revision, recovery.revision);
++            assert_eq!(snapshot.latest_log, recovery.latest_log);
++            assert!(snapshot.traffic_history.is_empty());
++            let config: serde_json::Value =
++                serde_json::from_slice(&original_config).expect("private configuration JSON");
++            let secret = config["experimental"]["clash_api"]["secret"]
++                .as_str()
++                .expect("private API secret");
++            assert!(!secret.is_empty());
++            let safe_delta = serde_json::to_string(&recovery).expect("safe recovery delta");
++            assert!(!safe_delta.contains(secret));
++            assert!(!safe_delta.contains(&app_data.to_string_lossy().to_string()));
++
++            let mut invalid_input = valid_compilation_input();
++            invalid_input.default_target = RouteTarget::Unconfigured;
++            let (repeat_response, repeat_receiver) = mpsc::sync_channel(RESPONSE_QUEUE_CAPACITY);
++            requests
++                .try_send(WorkerRequest::Start {
++                    intent: invalid_input,
++                    response: repeat_response,
++                })
++                .expect("repeat start queued");
++            release.try_send(()).expect("release recovery publication");
++            assert_eq!(
++                repeat_receiver
++                    .recv_timeout(START_RESPONSE_TIMEOUT)
++                    .expect("repeat start response"),
++                ManagedRuntimeStartResult::AlreadyRunning
++            );
++            // 重复 Start 没有编译、替换实例或删除仍由 owner 持有的私有配置。
++            assert!(original_config == std::fs::read(&config_path).expect("same private bytes"));
++            assert_eq!(
++                std::fs::read_dir(app_data.join("sidecar-runtime"))
++                    .expect("runtime directory")
++                    .count(),
++                1
++            );
++            // 后续采样不再需要发布门；这里只验证响应丢失，不注入网络采样延迟。
++            drop(release);
++            let controller = ManagedObservationRuntimeController {
++                state_file: PathBuf::new(),
++                requests,
++                observations: observations.clone(),
++            };
++            assert_eq!(controller.stop(), ManagedRuntimeStopResult::Stopped);
++            assert!(!instances[0].exists());
++            let stopped = observations.snapshot();
++            assert_eq!(stopped.sidecar_lifecycle, ObservedSidecarLifecycle::Stopped);
++            assert!(stopped.revision > recovery.revision);
++            assert_eq!(stopped.traffic, TrafficObservation::default());
++            assert!(stopped.traffic_history.is_empty());
++            assert!(controller.shutdown());
++        }));
++        finished_receiver
++            .recv_timeout(START_RESPONSE_TIMEOUT)
++            .expect("owner finishes bounded cleanup after channels close");
++        let worker_result = worker.join();
++        let private_root = cleanup_data.join("sidecar-runtime");
++        if private_root.exists() {
++            assert_eq!(
++                std::fs::read_dir(private_root)
++                    .expect("owned runtime directory")
++                    .count(),
++                0,
++                "retain fixture if owner did not clean its private resources"
++            );
++        }
++        // 只删除本次夹具，先核对解析后的直接父目录，保留其它历史失败证据。
++        for (owned_path, expected_parent) in [
++            (cleanup_data, std::env::temp_dir()),
++            (
++                root,
++                PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("target"),
++            ),
++        ] {
++            let resolved = owned_path.canonicalize().expect("resolved owned fixture");
++            let expected_parent = expected_parent
++                .canonicalize()
++                .expect("resolved fixture parent");
++            assert_eq!(resolved.parent(), Some(expected_parent.as_path()));
++            assert!(
++                resolved
++                    .file_name()
++                    .expect("fixture name")
++                    .to_string_lossy()
++                    .starts_with(&format!("task009-worker-{}-", std::process::id()))
++            );
++            std::fs::remove_dir_all(resolved).expect("remove this test's owned fixture");
++        }
++        worker_result.expect("worker joined");
++        if let Err(panic) = assertions {
++            std::panic::resume_unwind(panic);
++        }
++    }
++
+     #[test]
+     fn real_worker_samples_at_least_one_second_apart_and_publishes_nothing_after_stop() {
+         use crate::singbox::test_support::FIXED_CLASH_API_TEST_LOCK;

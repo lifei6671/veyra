@@ -113,6 +113,10 @@ evidence_ref: <owner decision reference>
 
 ## Severity 与结果
 
+Severity 必须综合可观察 impact、实际可利用性、exposure/reachability、攻击者能力和既有
+compensating controls；Impact 单独不得决定 P0/P1。先完成 Finding Admission 与适用的 Security
+Validation，再按以下后果分级。
+
 - `P0`：安全绕过、Secret 泄露、数据损坏、不可恢复状态、确定性死锁、重大 Contract 破坏、
   大范围不可用等阻断问题，映射为 `REWORK`；
 - `P1`：已证明的正确性缺陷、关键失败路径缺失、资源泄漏、非法状态迁移、关键测试缺口或

@@ -1,0 +1,722 @@
+{
+  "version": 1,
+  "records": [
+    {
+      "id": "EVIDENCE-TASK-008-001",
+      "type": "implementation_verification",
+      "target": "TASK-008",
+      "target_identity": "sha256:e4f6a99c78eb49c4ceeda68f7e67820c8fd1cd7278e947dedb7ec48ca008019b",
+      "produced_by_phase": "EXECUTING",
+      "timestamp": "2026-09-04T11:43:05.281019+08:00",
+      "observer": "IMPLEMENTATION:/root",
+      "command_or_method": "cargo test --manifest-path src-tauri/Cargo.toml --lib -- --skip fixed_bundle_resources_run_and_stop_only_the_owned_loopback_child --nocapture; scoped rustfmt --check; cargo clippy --manifest-path src-tauri/Cargo.toml --lib -- -D warnings; git diff --check",
+      "result": "PASS",
+      "exit_code": 0,
+      "summary": "142 Rust library tests passed; one existing real-child run/stop test deliberately excluded under TASK-008 scope. 30 compiler-generated final configs for 15 protocols x manual/urltest pools passed fixed 1.14.0 check through private Windows runtime files with exact pre/post byte and SHA256 equality. No child run/ready/stop invoked by this matrix.",
+      "delivery_ref": ".sdlc/evidence/TASK-008/delivery.yaml",
+      "verification": [
+        {
+          "name": "final-tests",
+          "result": "PASS",
+          "execution": {
+            "timeout": false,
+            "args": [
+              "test",
+              "--manifest-path",
+              "src-tauri/Cargo.toml",
+              "--lib",
+              "--",
+              "--skip",
+              "fixed_bundle_resources_run_and_stop_only_the_owned_loopback_child",
+              "--nocapture"
+            ],
+            "name": "final-tests",
+            "exit_code": 0,
+            "finished": "2026-09-04T11:41:55.9162187+08:00",
+            "started": "2026-09-04T11:40:03.3989637+08:00"
+          }
+        },
+        {
+          "name": "final-clippy",
+          "result": "PASS",
+          "execution": {
+            "started": "2026-09-04T11:42:17.0767769+08:00",
+            "name": "final-clippy",
+            "timeout": false,
+            "exit_code": 0,
+            "finished": "2026-09-04T11:42:18.6363121+08:00",
+            "args": [
+              "clippy",
+              "--manifest-path",
+              "src-tauri/Cargo.toml",
+              "--lib",
+              "--",
+              "-D",
+              "warnings"
+            ]
+          }
+        },
+        {
+          "name": "fmt",
+          "result": "PASS",
+          "execution": {
+            "timestamp": "2026-09-04T11:41:52.4012226+08:00",
+            "exit_code": 0
+          }
+        },
+        {
+          "name": "diff-check",
+          "result": "PASS",
+          "execution": {
+            "exit_code": 0,
+            "timestamp": "2026-09-04T11:41:52.3499261+08:00"
+          }
+        }
+      ],
+      "final_config_matrix": [
+        {
+          "protocol": "socks",
+          "urltest": false,
+          "final_config_sha256": "f99fba88954f9023e3cae8b7c39503666e4070961b2fc8c54c9c1c9069c27540",
+          "result": "PASS"
+        },
+        {
+          "protocol": "socks",
+          "urltest": true,
+          "final_config_sha256": "bcff83f6ca93678b4bdbe804643db85db9483f8502a34ced689429ec6733f617",
+          "result": "PASS"
+        },
+        {
+          "protocol": "http",
+          "urltest": false,
+          "final_config_sha256": "7087e83fe62ceafd3aebd665e9726bb3c9da1c796709d0100d52ef01587751c0",
+          "result": "PASS"
+        },
+        {
+          "protocol": "http",
+          "urltest": true,
+          "final_config_sha256": "df616fdb0a4042aed524f710e3b71eda0543d1a2af262d0ae161be3e247a4264",
+          "result": "PASS"
+        },
+        {
+          "protocol": "shadowsocks",
+          "urltest": false,
+          "final_config_sha256": "b024417671bd39bd89ab5f299f362e3e2155939432392a2cb488c8010bc536cf",
+          "result": "PASS"
+        },
+        {
+          "protocol": "shadowsocks",
+          "urltest": true,
+          "final_config_sha256": "8113366b6b11c0f190cf14bcb0eb1c7a7cfd964f2b5d6283eb06357390536d11",
+          "result": "PASS"
+        },
+        {
+          "protocol": "vmess",
+          "urltest": false,
+          "final_config_sha256": "c271d1bb29230aaa8de2c04e1983877e276cd09dd7def444a07fc0fb1559e090",
+          "result": "PASS"
+        },
+        {
+          "protocol": "vmess",
+          "urltest": true,
+          "final_config_sha256": "b7dad5e2abc56a58073d59d9793daf870378e75f870f56cb3226570157684528",
+          "result": "PASS"
+        },
+        {
+          "protocol": "vless",
+          "urltest": false,
+          "final_config_sha256": "cf8be0b078cac3576d7a6c55647673ea8d6a51e92c2a840dacf437d8397b02df",
+          "result": "PASS"
+        },
+        {
+          "protocol": "vless",
+          "urltest": true,
+          "final_config_sha256": "e44152aac2623837455986cf69489b7d1d23d0af20371fa1fa1e7d96fa577856",
+          "result": "PASS"
+        },
+        {
+          "protocol": "trojan",
+          "urltest": false,
+          "final_config_sha256": "518a6fd88f280e17ece92101221604311ab0011f3aeb99f632ff2582a1a42fef",
+          "result": "PASS"
+        },
+        {
+          "protocol": "trojan",
+          "urltest": true,
+          "final_config_sha256": "9255bae5d4f24e071d08c2297cb89b8bc49ffcd6334f0a4c75604fa847b0c8e3",
+          "result": "PASS"
+        },
+        {
+          "protocol": "hysteria",
+          "urltest": false,
+          "final_config_sha256": "d40b1c3d42e989d849315f5c19c364baa8f545807dd308148bfdd3dfc91fe3dd",
+          "result": "PASS"
+        },
+        {
+          "protocol": "hysteria",
+          "urltest": true,
+          "final_config_sha256": "a9aae62e159499579773a832c4618f5e3f38648e072ce0b6b22bb5f67679ce7f",
+          "result": "PASS"
+        },
+        {
+          "protocol": "hysteria2",
+          "urltest": false,
+          "final_config_sha256": "1cc0a2378e4b9a7af06135d6c358da91316d7bc9daee13ea084407ab21b704bb",
+          "result": "PASS"
+        },
+        {
+          "protocol": "hysteria2",
+          "urltest": true,
+          "final_config_sha256": "7a499addc99e70490e539b17f66f93033f3d5929217f09540c58802afc0b82bf",
+          "result": "PASS"
+        },
+        {
+          "protocol": "tuic",
+          "urltest": false,
+          "final_config_sha256": "25433cf0017407c9fad1f4435689b5a9cfbd80006f72730c152960b55a5282ad",
+          "result": "PASS"
+        },
+        {
+          "protocol": "tuic",
+          "urltest": true,
+          "final_config_sha256": "1409abd09fe968d123c669051c414adf565a85e57d6daa9ad9e4fe8f9dca5db4",
+          "result": "PASS"
+        },
+        {
+          "protocol": "shadowtls",
+          "urltest": false,
+          "final_config_sha256": "b0671a755d80161f4b70595009eba081126b0b4b968c822c1e35d7ef40c16086",
+          "result": "PASS"
+        },
+        {
+          "protocol": "shadowtls",
+          "urltest": true,
+          "final_config_sha256": "92a3eacb438d8f92f4ed675a4dea0c6fb3249293634a9308aaa9c2df21c88188",
+          "result": "PASS"
+        },
+        {
+          "protocol": "ssh",
+          "urltest": false,
+          "final_config_sha256": "14eeaaffbab896157209b44ccc3ce2eea441d0756465a3e9ed91793683c23996",
+          "result": "PASS"
+        },
+        {
+          "protocol": "ssh",
+          "urltest": true,
+          "final_config_sha256": "5d1c9e48c90a94d302d8a5dfbbbb1ee4874de6dbbbed7a3f2d9ea6d9b327e9ba",
+          "result": "PASS"
+        },
+        {
+          "protocol": "naive",
+          "urltest": false,
+          "final_config_sha256": "084b0700b03e570f2a5333de274804a3836ecc441e0037daab9ea687efd7b512",
+          "result": "PASS"
+        },
+        {
+          "protocol": "naive",
+          "urltest": true,
+          "final_config_sha256": "0a52041d7c3125e085c5f4e0b436d17679db83bcec27a4dec002bc7d5baea040",
+          "result": "PASS"
+        },
+        {
+          "protocol": "anytls",
+          "urltest": false,
+          "final_config_sha256": "5567851e28c8e1b1b5aef7dec385b66d228444f0e584bfba1c2408ad688fe55a",
+          "result": "PASS"
+        },
+        {
+          "protocol": "anytls",
+          "urltest": true,
+          "final_config_sha256": "d29b286ee0db3413f220533e13dd0004e818b7d4e6d970b4db297eafb7d3eb40",
+          "result": "PASS"
+        },
+        {
+          "protocol": "snell",
+          "urltest": false,
+          "final_config_sha256": "28f641eb777da3cb1e95a1fe4ca435c96d69d6df1ce37dd30961a3b818397a57",
+          "result": "PASS"
+        },
+        {
+          "protocol": "snell",
+          "urltest": true,
+          "final_config_sha256": "185fbeecc426456b7ea88b12ecc279ef9f09f39e34cd7e713215df95d0db5f45",
+          "result": "PASS"
+        },
+        {
+          "protocol": "wireguard",
+          "urltest": false,
+          "final_config_sha256": "67e690d42fce495f812f1dfeda54b466230f4f602c8631baec3eb39d12a59c48",
+          "result": "PASS"
+        },
+        {
+          "protocol": "wireguard",
+          "urltest": true,
+          "final_config_sha256": "080041d134f25439782407d5cf54261e903f637d4fe6bd8ff4968634255ca6d9",
+          "result": "PASS"
+        }
+      ],
+      "logs": [
+        {
+          "path": "src-tauri/target/task008-verification/final-tests.stdout.txt",
+          "sha256": "44d46c65781b53114893786506fa1dc5f021dba8fcb70a0fa30f343bb00f5480"
+        },
+        {
+          "path": "src-tauri/target/task008-verification/final-tests.stderr.txt",
+          "sha256": "06c6f9742ee64445249235fd5a18ac89bc6d6d08eb6c33aaf120b316c177cd61"
+        },
+        {
+          "path": "src-tauri/target/task008-verification/final-tests.result.json",
+          "sha256": "1dd0b3d075a9ea259bac7f0d273ad23903a5e04375347b8755fbc02498203732"
+        },
+        {
+          "path": "src-tauri/target/task008-verification/final-clippy.stdout.txt",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": "src-tauri/target/task008-verification/final-clippy.stderr.txt",
+          "sha256": "1464b1d176a3dfb666e78e7710567e67161c17838a772ac5d99371d0368799e6"
+        },
+        {
+          "path": "src-tauri/target/task008-verification/final-clippy.result.json",
+          "sha256": "fa39112900a468f178fe428dc35e3659369b4efc8d622d1fd95f7f8241b195ee"
+        },
+        {
+          "path": "src-tauri/target/task008-verification/core-version.txt",
+          "sha256": "148bcd72bf9e8fa45a7cf7052c415eefafd718476bdd1de3ab95d5d061818877"
+        },
+        {
+          "path": "src-tauri/target/task008-verification/fmt.txt",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": "src-tauri/target/task008-verification/fmt.result.json",
+          "sha256": "5c8c9297af9b1740043c720d1c96973b4b188f7a6b308f4ff2179ec6de425aca"
+        },
+        {
+          "path": "src-tauri/target/task008-verification/diff-check.txt",
+          "sha256": "ed48ff5ab377023af8476099e0e992844a15263b540dc3bbe856eda97ce88254"
+        },
+        {
+          "path": "src-tauri/target/task008-verification/diff-check.result.json",
+          "sha256": "b7c7e8ee1cbee1e4ace0b3b3a7a2a64f42639581711e15a1da267d750d637bb2"
+        },
+        {
+          "path": "src-tauri/target/task008-verification/run-cargo.ps1",
+          "sha256": "e5f307893db244508db99a7860a63f6ff745086b6b5eebd9b414f5a9f5655a2f"
+        }
+      ],
+      "core": {
+        "version": "1.14.0",
+        "revision": "0b8995879f29a9b98ee027bc17b75e101445b238",
+        "executable_sha256": "aad0ede010eafa7b277e520464f3a66fde820103d737eff739f40f3cc9451dcc",
+        "library_sha256": "eee741046f0a3975124bae349aeac237aa306f3cc4de59ff5de070e74dbfdaeb",
+        "license_sha256": "bb3805862b583aee73ad6f7805ec634747a37257a637a3069857843f05ea589c"
+      },
+      "environment_note": "Fixed assets reside in the approved build cache; private test configs use the existing Windows test convention under current-user local temporary directory. An early E-drive fixture failed the private check boundary; that probe is not evidence of arbitrary runtime-root support.",
+      "coverage": {
+        "SF-001": "15-protocol typed mapping, stable tags/order, all Pool/Route targets, invalid defaults and Snell v3 rejection",
+        "SF-002": "Strict recursive allowlist and fixed API/DNS/empty inbounds, WG endpoint constraints and complete leading route/DNS rejection, redacted Debug, immutable final bytes",
+        "SF-003": "Parser/normalize/validated AppState/RuntimeIntent/compiler/private file/fixed check integration, same secret/bytes/hash, no run identity and existing transaction mock assertions"
+      },
+      "not_run": [
+        "Independent review (separate evidence)",
+        "TASK-009 real child startup/replacement/ready/rollback and protocol network behavior",
+        "WireGuard authenticated-peer ICMP/DNS/forwarding isolation runtime verification",
+        "Tor runtime",
+        "CI",
+        "commit",
+        "push",
+        "all-target Clippy (outside required library gate)"
+      ],
+      "freshness": "STALE",
+      "superseded_by": "EVIDENCE-TASK-008-002"
+    },
+    {
+      "id": "EVIDENCE-TASK-008-002",
+      "type": "implementation_verification",
+      "target": "TASK-008",
+      "target_identity": "sha256:d2f866af0f53ad28e8ba1cbe2d9b686b59f5c5f94703a25eb2d55cabaef5bc82",
+      "produced_by_phase": "EXECUTING",
+      "timestamp": "2026-09-04T11:54:22.099455+08:00",
+      "observer": "IMPLEMENTATION:/root",
+      "command_or_method": "cargo test --manifest-path src-tauri/Cargo.toml --lib -- --skip fixed_bundle_resources_run_and_stop_only_the_owned_loopback_child --nocapture; scoped rustfmt --check; cargo clippy --manifest-path src-tauri/Cargo.toml --lib -- -D warnings; git diff --check",
+      "result": "PASS",
+      "exit_code": 0,
+      "summary": "Reality P1 remediation verified: 143 library tests passed (one real-child test excluded), 34 final configurations passed private-file fixed-core check: original 15 protocols x two Pools plus Reality TCP/WS x two Pools. Same byte/hash and no-run assertions preserved.",
+      "delivery_ref": ".sdlc/evidence/TASK-008/delivery.yaml",
+      "verification": [
+        {
+          "name": "remediation-tests",
+          "result": "PASS",
+          "execution": {
+            "name": "remediation-tests",
+            "started": "2026-09-04T11:51:15.1139877+08:00",
+            "exit_code": 0,
+            "timeout": false,
+            "finished": "2026-09-04T11:53:07.6104642+08:00",
+            "args": [
+              "test",
+              "--manifest-path",
+              "src-tauri/Cargo.toml",
+              "--lib",
+              "--",
+              "--skip",
+              "fixed_bundle_resources_run_and_stop_only_the_owned_loopback_child",
+              "--nocapture"
+            ]
+          }
+        },
+        {
+          "name": "remediation-clippy",
+          "result": "PASS",
+          "execution": {
+            "name": "remediation-clippy",
+            "started": "2026-09-04T11:53:31.5687854+08:00",
+            "finished": "2026-09-04T11:53:34.1469273+08:00",
+            "exit_code": 0,
+            "args": [
+              "clippy",
+              "--manifest-path",
+              "src-tauri/Cargo.toml",
+              "--lib",
+              "--",
+              "-D",
+              "warnings"
+            ],
+            "timeout": false
+          }
+        },
+        {
+          "name": "remediation-fmt",
+          "result": "PASS",
+          "execution": {
+            "timestamp": "2026-09-04T11:53:31.7318571+08:00",
+            "exit_code": 0
+          }
+        },
+        {
+          "name": "remediation-diff",
+          "result": "PASS",
+          "execution": {
+            "timestamp": "2026-09-04T11:53:31.6925062+08:00",
+            "exit_code": 0
+          }
+        }
+      ],
+      "final_config_matrix": [
+        {
+          "protocol": "vless",
+          "urltest": false,
+          "final_config_sha256": "2369dcc049226d7e62c544de17e2865cd5e1ff560e6e9877bfe8060ae0dc0cdd",
+          "case": "vless-reality-tcp",
+          "result": "PASS"
+        },
+        {
+          "protocol": "vless",
+          "urltest": true,
+          "final_config_sha256": "3652413d04aef9e210543f605e007b607a448fa70e838e27607324e638504fca",
+          "case": "vless-reality-tcp",
+          "result": "PASS"
+        },
+        {
+          "protocol": "vless",
+          "urltest": false,
+          "final_config_sha256": "0ccdd7cd60926f23bc6736e5772d8b9e783674a237bb0bdd916414cf82ee2d83",
+          "case": "vless-reality-websocket",
+          "result": "PASS"
+        },
+        {
+          "protocol": "vless",
+          "urltest": true,
+          "final_config_sha256": "826a0acb3884c2964c34f7d92f762a29e82417f5d383c485b9df5c56b9f9f735",
+          "case": "vless-reality-websocket",
+          "result": "PASS"
+        },
+        {
+          "protocol": "socks",
+          "urltest": false,
+          "final_config_sha256": "f99fba88954f9023e3cae8b7c39503666e4070961b2fc8c54c9c1c9069c27540",
+          "case": "socks",
+          "result": "PASS"
+        },
+        {
+          "protocol": "socks",
+          "urltest": true,
+          "final_config_sha256": "bcff83f6ca93678b4bdbe804643db85db9483f8502a34ced689429ec6733f617",
+          "case": "socks",
+          "result": "PASS"
+        },
+        {
+          "protocol": "http",
+          "urltest": false,
+          "final_config_sha256": "7087e83fe62ceafd3aebd665e9726bb3c9da1c796709d0100d52ef01587751c0",
+          "case": "http",
+          "result": "PASS"
+        },
+        {
+          "protocol": "http",
+          "urltest": true,
+          "final_config_sha256": "df616fdb0a4042aed524f710e3b71eda0543d1a2af262d0ae161be3e247a4264",
+          "case": "http",
+          "result": "PASS"
+        },
+        {
+          "protocol": "shadowsocks",
+          "urltest": false,
+          "final_config_sha256": "b024417671bd39bd89ab5f299f362e3e2155939432392a2cb488c8010bc536cf",
+          "case": "shadowsocks",
+          "result": "PASS"
+        },
+        {
+          "protocol": "shadowsocks",
+          "urltest": true,
+          "final_config_sha256": "8113366b6b11c0f190cf14bcb0eb1c7a7cfd964f2b5d6283eb06357390536d11",
+          "case": "shadowsocks",
+          "result": "PASS"
+        },
+        {
+          "protocol": "vmess",
+          "urltest": false,
+          "final_config_sha256": "c271d1bb29230aaa8de2c04e1983877e276cd09dd7def444a07fc0fb1559e090",
+          "case": "vmess",
+          "result": "PASS"
+        },
+        {
+          "protocol": "vmess",
+          "urltest": true,
+          "final_config_sha256": "b7dad5e2abc56a58073d59d9793daf870378e75f870f56cb3226570157684528",
+          "case": "vmess",
+          "result": "PASS"
+        },
+        {
+          "protocol": "vless",
+          "urltest": false,
+          "final_config_sha256": "cf8be0b078cac3576d7a6c55647673ea8d6a51e92c2a840dacf437d8397b02df",
+          "case": "vless",
+          "result": "PASS"
+        },
+        {
+          "protocol": "vless",
+          "urltest": true,
+          "final_config_sha256": "e44152aac2623837455986cf69489b7d1d23d0af20371fa1fa1e7d96fa577856",
+          "case": "vless",
+          "result": "PASS"
+        },
+        {
+          "protocol": "trojan",
+          "urltest": false,
+          "final_config_sha256": "518a6fd88f280e17ece92101221604311ab0011f3aeb99f632ff2582a1a42fef",
+          "case": "trojan",
+          "result": "PASS"
+        },
+        {
+          "protocol": "trojan",
+          "urltest": true,
+          "final_config_sha256": "9255bae5d4f24e071d08c2297cb89b8bc49ffcd6334f0a4c75604fa847b0c8e3",
+          "case": "trojan",
+          "result": "PASS"
+        },
+        {
+          "protocol": "hysteria",
+          "urltest": false,
+          "final_config_sha256": "d40b1c3d42e989d849315f5c19c364baa8f545807dd308148bfdd3dfc91fe3dd",
+          "case": "hysteria",
+          "result": "PASS"
+        },
+        {
+          "protocol": "hysteria",
+          "urltest": true,
+          "final_config_sha256": "a9aae62e159499579773a832c4618f5e3f38648e072ce0b6b22bb5f67679ce7f",
+          "case": "hysteria",
+          "result": "PASS"
+        },
+        {
+          "protocol": "hysteria2",
+          "urltest": false,
+          "final_config_sha256": "1cc0a2378e4b9a7af06135d6c358da91316d7bc9daee13ea084407ab21b704bb",
+          "case": "hysteria2",
+          "result": "PASS"
+        },
+        {
+          "protocol": "hysteria2",
+          "urltest": true,
+          "final_config_sha256": "7a499addc99e70490e539b17f66f93033f3d5929217f09540c58802afc0b82bf",
+          "case": "hysteria2",
+          "result": "PASS"
+        },
+        {
+          "protocol": "tuic",
+          "urltest": false,
+          "final_config_sha256": "25433cf0017407c9fad1f4435689b5a9cfbd80006f72730c152960b55a5282ad",
+          "case": "tuic",
+          "result": "PASS"
+        },
+        {
+          "protocol": "tuic",
+          "urltest": true,
+          "final_config_sha256": "1409abd09fe968d123c669051c414adf565a85e57d6daa9ad9e4fe8f9dca5db4",
+          "case": "tuic",
+          "result": "PASS"
+        },
+        {
+          "protocol": "shadowtls",
+          "urltest": false,
+          "final_config_sha256": "b0671a755d80161f4b70595009eba081126b0b4b968c822c1e35d7ef40c16086",
+          "case": "shadowtls",
+          "result": "PASS"
+        },
+        {
+          "protocol": "shadowtls",
+          "urltest": true,
+          "final_config_sha256": "92a3eacb438d8f92f4ed675a4dea0c6fb3249293634a9308aaa9c2df21c88188",
+          "case": "shadowtls",
+          "result": "PASS"
+        },
+        {
+          "protocol": "ssh",
+          "urltest": false,
+          "final_config_sha256": "14eeaaffbab896157209b44ccc3ce2eea441d0756465a3e9ed91793683c23996",
+          "case": "ssh",
+          "result": "PASS"
+        },
+        {
+          "protocol": "ssh",
+          "urltest": true,
+          "final_config_sha256": "5d1c9e48c90a94d302d8a5dfbbbb1ee4874de6dbbbed7a3f2d9ea6d9b327e9ba",
+          "case": "ssh",
+          "result": "PASS"
+        },
+        {
+          "protocol": "naive",
+          "urltest": false,
+          "final_config_sha256": "084b0700b03e570f2a5333de274804a3836ecc441e0037daab9ea687efd7b512",
+          "case": "naive",
+          "result": "PASS"
+        },
+        {
+          "protocol": "naive",
+          "urltest": true,
+          "final_config_sha256": "0a52041d7c3125e085c5f4e0b436d17679db83bcec27a4dec002bc7d5baea040",
+          "case": "naive",
+          "result": "PASS"
+        },
+        {
+          "protocol": "anytls",
+          "urltest": false,
+          "final_config_sha256": "5567851e28c8e1b1b5aef7dec385b66d228444f0e584bfba1c2408ad688fe55a",
+          "case": "anytls",
+          "result": "PASS"
+        },
+        {
+          "protocol": "anytls",
+          "urltest": true,
+          "final_config_sha256": "d29b286ee0db3413f220533e13dd0004e818b7d4e6d970b4db297eafb7d3eb40",
+          "case": "anytls",
+          "result": "PASS"
+        },
+        {
+          "protocol": "snell",
+          "urltest": false,
+          "final_config_sha256": "28f641eb777da3cb1e95a1fe4ca435c96d69d6df1ce37dd30961a3b818397a57",
+          "case": "snell",
+          "result": "PASS"
+        },
+        {
+          "protocol": "snell",
+          "urltest": true,
+          "final_config_sha256": "185fbeecc426456b7ea88b12ecc279ef9f09f39e34cd7e713215df95d0db5f45",
+          "case": "snell",
+          "result": "PASS"
+        },
+        {
+          "protocol": "wireguard",
+          "urltest": false,
+          "final_config_sha256": "67e690d42fce495f812f1dfeda54b466230f4f602c8631baec3eb39d12a59c48",
+          "case": "wireguard",
+          "result": "PASS"
+        },
+        {
+          "protocol": "wireguard",
+          "urltest": true,
+          "final_config_sha256": "080041d134f25439782407d5cf54261e903f637d4fe6bd8ff4968634255ca6d9",
+          "case": "wireguard",
+          "result": "PASS"
+        }
+      ],
+      "logs": [
+        {
+          "path": "src-tauri/target/task008-verification/remediation-tests.stdout.txt",
+          "sha256": "e007e0782b36a47c9f066fcd697436971bfa83bb341a1ff5fd66da59af58edc9"
+        },
+        {
+          "path": "src-tauri/target/task008-verification/remediation-tests.stderr.txt",
+          "sha256": "8b542ccf8c00f686d3e92c090c5ccfdae66b155a2ba6a5baa2f21cf8dedcfe63"
+        },
+        {
+          "path": "src-tauri/target/task008-verification/remediation-tests.result.json",
+          "sha256": "0fb82807b61f71ad32dc5ba58eba832cec472d84b52380c99791fede1b550a01"
+        },
+        {
+          "path": "src-tauri/target/task008-verification/remediation-clippy.stdout.txt",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": "src-tauri/target/task008-verification/remediation-clippy.stderr.txt",
+          "sha256": "0ebb2753592531bbe2e1007a600cab568a99603b74425078c005de80cf5f43c6"
+        },
+        {
+          "path": "src-tauri/target/task008-verification/remediation-clippy.result.json",
+          "sha256": "d917879ab319ba65c72e31b794472e362326907ec60365a16c8c2c3d6add24e1"
+        },
+        {
+          "path": "src-tauri/target/task008-verification/remediation-fmt.txt",
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        {
+          "path": "src-tauri/target/task008-verification/remediation-fmt.result.json",
+          "sha256": "bd77939dd5fb4a6019ce89b56cdc66610d0adc43fd5cee2469ae9f18370392d3"
+        },
+        {
+          "path": "src-tauri/target/task008-verification/remediation-diff.txt",
+          "sha256": "bb8099eafd93ad6c69bb52afa573372f998c0e894017862e93ad53ae4b6727e6"
+        },
+        {
+          "path": "src-tauri/target/task008-verification/remediation-diff.result.json",
+          "sha256": "f3f9bd19d7faf2d517636f9ba39050146b6dfb7a224f69ef4a8fd3d589222fb3"
+        },
+        {
+          "path": "src-tauri/target/task008-verification/core-version.txt",
+          "sha256": "148bcd72bf9e8fa45a7cf7052c415eefafd718476bdd1de3ab95d5d061818877"
+        },
+        {
+          "path": "src-tauri/target/task008-verification/run-cargo.ps1",
+          "sha256": "e5f307893db244508db99a7860a63f6ff745086b6b5eebd9b414f5a9f5655a2f"
+        }
+      ],
+      "core": {
+        "version": "1.14.0",
+        "revision": "0b8995879f29a9b98ee027bc17b75e101445b238",
+        "executable_sha256": "aad0ede010eafa7b277e520464f3a66fde820103d737eff739f40f3cc9451dcc",
+        "library_sha256": "eee741046f0a3975124bae349aeac237aa306f3cc4de59ff5de070e74dbfdaeb",
+        "license_sha256": "bb3805862b583aee73ad6f7805ec634747a37257a637a3069857843f05ea589c"
+      },
+      "environment_note": "Fixed assets reside in the approved build cache; private test configs use the existing Windows test convention under current-user local temporary directory. An early E-drive fixture failed the private check boundary; that probe is not evidence of arbitrary runtime-root support.",
+      "coverage": {
+        "SF-001": "15-protocol typed mapping, stable tags/order, all Pool/Route targets, invalid defaults and Snell v3 rejection",
+        "SF-002": "Strict recursive allowlist and fixed API/DNS/empty inbounds, WG endpoint constraints and complete leading route/DNS rejection, redacted Debug, immutable final bytes; Reality-only required typed uTLS rejects missing, disabled, detached and arbitrary fields",
+        "SF-003": "Parser/normalize/validated AppState/RuntimeIntent/compiler/private file/fixed check integration, same secret/bytes/hash, no run identity and existing transaction mock assertions; Reality TCP and WebSocket both pass real fixed-core check with both Pool policies"
+      },
+      "not_run": [
+        "Independent review (separate evidence)",
+        "TASK-009 real child startup/replacement/ready/rollback and protocol network behavior",
+        "WireGuard authenticated-peer ICMP/DNS/forwarding isolation runtime verification",
+        "Tor runtime",
+        "CI",
+        "commit",
+        "push",
+        "all-target Clippy (outside required library gate)"
+      ],
+      "remediation_for": "TASK-008-REVIEW-001"
+    }
+  ]
+}

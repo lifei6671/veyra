@@ -1,0 +1,109 @@
+{
+  "version": 1,
+  "target": "TASK-009 CHANGE-003 traffic correction",
+  "target_identity": "sha256:1e08f4e589f3d1aa0aac5665a4aed2c6875fcbb8cd7114872309dace7136b64a",
+  "result": "PASS",
+  "result_scope": "41 targeted tests and library static checks; not whole Task acceptance",
+  "delivery": ".sdlc/evidence/TASK-009/delivery-checkpoint-004.yaml",
+  "observed": [
+    {
+      "id": "traffic-clash-004",
+      "result": "PASS",
+      "command": "cargo test --manifest-path src-tauri/Cargo.toml --lib singbox::clash_api::tests:: -- --nocapture --test-threads=1",
+      "exit_code": 0,
+      "timeout": false,
+      "started": "2026-09-04T13:46:25.3589499+08:00",
+      "finished": "2026-09-04T13:46:40.3577623+08:00",
+      "summary": [
+        "test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 159 filtered out; finished in 2.97s"
+      ],
+      "log_prefix": "src-tauri/target/task009-remediation/traffic-clash-004",
+      "outer_timeout_seconds": 60
+    },
+    {
+      "id": "traffic-observability-004",
+      "result": "PASS",
+      "command": "cargo test --manifest-path src-tauri/Cargo.toml --lib application::observability::tests:: -- --nocapture --test-threads=1",
+      "exit_code": 0,
+      "timeout": false,
+      "started": "2026-09-04T13:47:01.9592605+08:00",
+      "finished": "2026-09-04T13:47:03.0576561+08:00",
+      "summary": [
+        "test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 157 filtered out; finished in 0.34s"
+      ],
+      "log_prefix": "src-tauri/target/task009-remediation/traffic-observability-004",
+      "outer_timeout_seconds": 60
+    },
+    {
+      "id": "traffic-application-runtime-004",
+      "result": "PASS",
+      "command": "cargo test --manifest-path src-tauri/Cargo.toml --lib application::runtime::tests:: -- --nocapture --test-threads=1",
+      "exit_code": 0,
+      "timeout": false,
+      "started": "2026-09-04T13:47:03.5296094+08:00",
+      "finished": "2026-09-04T13:47:04.6470474+08:00",
+      "summary": [
+        "test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 156 filtered out; finished in 0.48s"
+      ],
+      "log_prefix": "src-tauri/target/task009-remediation/traffic-application-runtime-004",
+      "outer_timeout_seconds": 60
+    },
+    {
+      "id": "traffic-real-core-004",
+      "result": "PASS",
+      "command": "cargo test --manifest-path src-tauri/Cargo.toml --lib fixed_bundle_resources_run_and_stop_only_the_owned_loopback_child -- --nocapture --test-threads=1",
+      "exit_code": 0,
+      "timeout": false,
+      "started": "2026-09-04T13:47:05.1294974+08:00",
+      "finished": "2026-09-04T13:47:10.9215042+08:00",
+      "summary": [
+        "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 169 filtered out; finished in 5.01s"
+      ],
+      "log_prefix": "src-tauri/target/task009-remediation/traffic-real-core-004",
+      "outer_timeout_seconds": 60
+    },
+    {
+      "id": "traffic-worker-004",
+      "result": "PASS",
+      "command": "cargo test --manifest-path src-tauri/Cargo.toml --lib real_worker_ -- --nocapture --test-threads=1",
+      "exit_code": 0,
+      "timeout": false,
+      "started": "2026-09-04T13:47:20.9846318+08:00",
+      "finished": "2026-09-04T13:47:48.0124198+08:00",
+      "summary": [
+        "test result: ok. 2 passed; 0 failed; 0 ignored; 0 measured; 168 filtered out; finished in 26.27s"
+      ],
+      "log_prefix": "src-tauri/target/task009-remediation/traffic-worker-004",
+      "outer_timeout_seconds": 60
+    },
+    {
+      "id": "traffic-clippy-004",
+      "result": "PASS",
+      "command": "cargo clippy --manifest-path src-tauri/Cargo.toml --lib -- -D warnings",
+      "exit_code": 0,
+      "timeout": false,
+      "started": "2026-09-04T13:47:49.482536+08:00",
+      "finished": "2026-09-04T13:47:51.9401367+08:00",
+      "summary": [],
+      "log_prefix": "src-tauri/target/task009-remediation/traffic-clippy-004",
+      "outer_timeout_seconds": 180
+    }
+  ],
+  "static": {
+    "result": "PASS",
+    "metadata": "src-tauri/target/task009-remediation/traffic-static-004.result.json"
+  },
+  "real_positive_traffic": {
+    "result": "UNAVAILABLE",
+    "evidence": ".sdlc/evidence/TASK-009/positive-traffic-prerequisites.md",
+    "scope": "Existing evaluated topology lacks routed metered business input; source assessment is not an executed positive-flow test."
+  },
+  "not_run": [
+    "Full 170-test library regression for checkpoint004; prior 165 test result remains checkpoint002 evidence",
+    "New frontend/GUI/Tray tests; UI unchanged",
+    "Complete true in-flight/late-result concurrency and WG/DNS matrix",
+    "CI, commit, push"
+  ],
+  "independent_review": ".sdlc/evidence/TASK-009/code-review-checkpoint-004.yaml",
+  "retained_prior_resources": "The two prior failed fixture directories remain; no new attempt to remove them."
+}

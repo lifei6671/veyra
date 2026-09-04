@@ -32,15 +32,28 @@
 * DNS 管理
 * Rule Set 管理
 * 实时连接查看
-* 实时上下行流量
+* sing-box 聚合实时网速、本次内核累计流量与内存趋势图
 * 运行日志
 * 原生 sing-box 配置高级模式
 * Windows V0.1 / macOS V0.2 / Linux Beta 跨平台运行
 * 快速托盘恢复
-* 内核配置校验与回滚
+* 内核配置校验与启动失败提示
 * 后续增加其他网络内核的架构空间
 
 产品交互层参考 Clash Verge Rev 的信息架构与桌面交互经验。
+
+### 1.1 流量观测口径
+
+实时上下行网速和累计上下行流量均采用 sing-box 提供的聚合统计，包含由内核处理的
+Direct 直连流量，不统计绕过 sing-box 的系统网卡流量。累计量按“本次内核累计”展示，
+不以离散网速积分重建历史总量，不跨内核重启拼接。
+
+首页流量统计展示最近10分钟上下行网速图，左侧栏底部展示最近60秒小图与即时网速，
+界面布局参考Clash Verge Rev。两图共用最近10分钟、最多600个点的内存采样，按真实时间显示。
+趋势与统计仅在
+内存保存，不写入配置、数据库、文件或浏览器存储；应用退出清空，新内核实例不混入旧
+实例曲线。缺失采样显示为空缺，不能伪造为零流量。窗口隐藏/恢复不增加核心采样或请求。
+当前版本不实现按天/月持久化流量历史；后文未来 telemetry 设想不改变此范围。
 
 订阅标准化、统一节点模型、配置编译方式参考 Satelite Proxy 的架构思想。
 
@@ -127,7 +140,7 @@ Subscription
      ↓
 Subscription Parser
      ↓
-Normalized ProxyNode
+Normalized ProxyNode（Clash / sing-box / URI / 粘贴文本）
      ↓
 Domain
      ↓
@@ -980,42 +993,39 @@ struct ProxyNode {
 
 # 18. Protocol
 
-V0.1 优先支持：
+受管模式以当前受支持的 sing-box `1.14.0` 为协议基线。V0.1 必须完整归一化、持久化并编译以下
+**用户代理节点协议**；不是“能解析就静默跳过”的可选集合：
 
 ```rust
 enum Protocol {
-    Shadowsocks,
-
-    VMess,
-
-    VLess,
-
-    Trojan,
-
-    Hysteria2,
-
-    TUIC,
-
-    Socks5,
-
+    Socks,        // SOCKS4 / SOCKS4a / SOCKS5
     Http,
-
+    Shadowsocks,
+    VMess,
+    VLess,
+    Trojan,
     WireGuard,
-
+    Hysteria,
+    Hysteria2,
+    TUIC,
+    ShadowTLS,
+    SSH,
+    Naive,
+    Tor,
     AnyTLS,
+    Snell,
 }
 ```
 
-后续：
+`direct`、`block`、`selector`、`urltest` 是编译器拥有的内部出站，不能作为订阅节点或普通分流目标；
+`dns` 是内部 DNS 语义，也不作为节点。`bridge` 需要特权 L3 能力，与当前普通用户、无 TUN/UAC 的
+受管订阅范围不兼容，因此不导入、不持久化、不编译为用户节点。
 
-```text
-SSH
-Hysteria1
-Tor
-Naive
-ShadowTLS
-Snell
-```
+每种协议使用强类型 `ProtocolOptions` 记录其必需认证、密钥、UDP、obfs、packet encoding、
+multiplex 和协议专有字段；不得把未知字段塞入 `serde_json::Value` 或原样透传到运行配置。公共 TLS
+与 Transport 字段只在目标协议和 sing-box 版本明确支持时才可出现。`Tor` 只能引用应用受控、版本化且
+经 hash 校验的 Tor 资源目录；不接受用户提供 executable path、extra args、torrc 或 data path。该资源
+目录的精确来源、版本、成员和 hash 必须在实现 Tor 前单独冻结。
 
 ---
 
@@ -1034,6 +1044,10 @@ struct TlsConfig {
     utls: Option<UtlsConfig>,
 
     reality: Option<RealityConfig>,
+
+    ech: Option<EchConfig>,
+
+    client_certificate: Option<ClientCertificate>,
 }
 ```
 
@@ -1054,9 +1068,25 @@ enum Transport {
         service_name: String,
     },
 
+    Http {
+        host: Vec<String>,
+        path: String,
+        method: String,
+        headers: Map<String, String>,
+    },
+
+    Quic,
+
     HttpUpgrade {
         path: String,
         host: Option<String>,
+    },
+
+    XHttp {
+        host: Option<String>,
+        path: String,
+        mode: String,
+        headers: Map<String, String>,
     },
 }
 ```
@@ -1098,6 +1128,10 @@ stable_hash(
 
 显示名和 identity 分离。
 
+存储模型扩展时不得重算已存节点的 ID。V2 升级到 V3 时，已存节点 ID、Pool 成员、手工选择与 Route
+引用必须逐字保留；只有新导入节点才使用版本化的 canonical identity material。V2 无法映射到 V3 的
+字段、重复 ID 或整体引用失败使迁移失败，保留旧文件和当前运行配置，不写入半迁移状态。
+
 ---
 
 # 22. Subscription Parser
@@ -1124,6 +1158,14 @@ struct ParseResult {
     metadata: SubscriptionMetadata,
 }
 ```
+
+入口分为远程订阅、URI 导入和粘贴导入。粘贴不是另一套解析器：它把完整文本交给同一受限格式识别
+流程，并返回格式、已归一化节点、逐项跳过原因和不含凭证的统计。远程源与粘贴源都可承载 Clash 或
+sing-box 节点集合；URI 导入既可是一条 URI，也可是一组换行 URI。失败时不得覆盖旧 Provider 节点。
+
+解析诊断与提交分离：格式/编码失败直接拒绝整批；任何未知协议/字段、缺少必需字段、非法组合或
+归一化/引用校验失败都只产生脱敏预览诊断，且阻止提交。只有至少一个节点、零 skipped 项并通过整体
+`AppState` 校验的候选才能原子替换 Provider 节点。粘贴、URI 与远程刷新一律采用此全有或全无规则。
 
 ---
 
@@ -1154,21 +1196,34 @@ Base64
 
 # 24. URI 支持
 
-第一阶段：
+必须覆盖与上述 16 种节点协议对应、由 sing-box/订阅生态实际使用的 URI 形式；至少包括：
 
 ```text
 ss://
 vmess://
 vless://
 trojan://
+hysteria://
 hysteria2://
 hy2://
 tuic://
+socks://
+socks4://
+socks4a://
 socks5://
 http://
 https://
+wg://
+shadowtls://
+ssh://
+naive://
 anytls://
+snell://
 ```
+
+对不具备稳定 URI 规范的协议，Parser 必须支持 Clash `proxies` 或 sing-box `outbounds` 的受限节点
+表达；不能伪造 URI，也不能把无法表达的字段静默丢失。Tor 的 import 只接受受限 Clash/sing-box 节点
+表达，直至其受控 Tor 资源决策完成。
 
 ---
 
@@ -1210,6 +1265,10 @@ DNS
 TUN
 Script
 ```
+
+sing-box 订阅同样只提取 `outbounds` 中上述受支持的用户节点类型；`inbounds`、`route`、`dns`、
+`experimental`、`log`、`api` 与其它运行配置均不继承。Native sing-box Profile 是单独受限的高级
+运行模式，不是订阅导入的 raw JSON 旁路。
 
 ---
 
@@ -1819,6 +1878,7 @@ trait ConfigCompiler {
     fn compile(
         &self,
         intent: &RuntimeIntent,
+        profile: &RuntimeProfile,
     ) -> Result<GeneratedConfig>;
 }
 ```
@@ -1848,20 +1908,37 @@ Compile Pool Outbounds
       ↓
 Compile Direct / Block
       ↓
-Compile Inbounds
+Build Complete SingBoxPlan
+      ├── log
+      ├── dns
+      ├── inbounds（由 RuntimeProfile 决定）
+      ├── outbounds
+      ├── route（rules + final）
+      └── fixed Clash API（仅受管运行时）
       ↓
-Compile Rules
+Bind Fixed Runtime Secrets / Resources
       ↓
-Compile Rule Sets
+Serialize Final GeneratedConfig
       ↓
-Compile DNS
+Structural Allowlist Check
       ↓
-Compile Clash API
-      ↓
-Serialize JSON
-      ↓
-sing-box check
+sing-box check（针对最终字节）
 ```
+
+`SingBoxPlan` 是内部的强类型中间表示，用于把领域语义与运行期 secret/resource 绑定分开；它不是
+可运行配置，也不得暴露给 UI。`GeneratedConfig` 才是完整、可独立被指定 sing-box 版本 `check` 与
+`run` 的最终 JSON：不允许只生成 `outbounds + route.rules` 的片段，也不允许在 `check` 之后追加字段。
+观察专用 Profile 可以没有用户流量入站，但仍须生成完整顶层配置并仅暴露已经批准的 loopback Clash API。
+
+`RuntimeProfile` 在本轮是封闭的 `ObservationOnly`：必须显式生成空 `inbounds`、一个已启用 Pool 的
+`route.final` 和唯一 `127.0.0.1:9090` Clash API。SystemProxy mixed inbound 需要单独 DCR 冻结 host/port、
+所有权、启停和验证；TUN 与 Native Profile 也不属于本 Compiler 的受管输出。最终 JSON 只允许 `log`、
+`dns`、`inbounds`、`outbounds`、`route` 与必要的 `experimental.clash_api`；按已批准 DCR-003，存在
+WireGuard 节点时额外允许仅由编译器生成的用户态 `endpoints`（`system: false`、无 `listen_port`），
+并强制生成置顶的 endpoint TCP/UDP/DNS 入站与 Router 转发拒绝规则。虚拟地址仍可能响应 peer ICMP Echo，
+该边界须在运行任务验证。节点服务器域名使用系统 DNS；URLTest 目的域名保留成员协议原生解析行为。
+运行期 secret 在私有 ACL config
+写入前绑定，随后执行结构 allowlist 和 `sing-box check`；`check` 后不得再改变字节。
 
 ---
 
@@ -2421,6 +2498,10 @@ Invalid Nodes
 旧节点继续保留
 ```
 
+失败只记录脱敏日志并显示一次 Toast，不自动重试、不清空订阅，也不触发内核切换。
+订阅页面显示“最后成功更新时间”；失败不刷新该时间，用户可手动更新。
+获取、解析、整体校验及保存成功后才更新成功时间；订阅更新成功不代表内核配置已经生效。
+
 禁止：
 
 ```text
@@ -2591,29 +2672,19 @@ candidate → active
 
 ---
 
-# 78. Rollback
+# 78. 配置更新与内核启动失败
 
-如果新配置：
+三类操作分别反馈，不把订阅更新时间作为内核生效时间：
 
-```text
-check success
-```
+- 订阅配置更新失败：保留旧订阅及最后成功更新时间，记录脱敏日志并显示 Toast，由用户手动重试。
+- 将订阅编译为 sing-box 执行配置失败（包括最终化和 check 失败）：记录脱敏日志并显示
+  “配置生成失败，未应用新配置”提示；不切换内核，已运行的旧实例保持原状，不自动重试。
+- 已检查配置启动内核失败或未通过 Ready：停止失败的候选并清理其私有资源，记录脱敏日志并
+  显示“内核启动失败，服务已停止”提示；不自动恢复旧配置、不自动重启，等待用户手动操作。
 
-但启动后：
-
-```text
-sing-box crash
-```
-
-应：
-
-```text
-停止新实例
-   ↓
-恢复 previous.json
-   ↓
-启动旧配置
-```
+只有确认进程退出且清理完成才能显示“已停止”。退出或清理无法确认时保留受管资源归属并显示
+“停止未完成”状态，不谎报成功；这不触发旧配置恢复。正常运行后的内核异常退出同样不自动重启。
+配置只在新实例通过 Ready 后标为已生效；候选失败不能将最新配置显示为正在运行。
 
 ---
 
@@ -4110,13 +4181,18 @@ RuntimeIntent
 输出：
 
 ```text
-JSON Snapshot
+完整 GeneratedConfig
 ```
 
-然后运行：
+验证包括：
 
 ```text
-sing-box check
+15 种非 Tor 协议的正反 fixture；Tor 资源决策完成后补齐第 16 种
+Clash / sing-box / URI / 粘贴的等价归一化
+稳定 tag 与持久化迁移
+危险字段、未知字段与 raw JSON 透传拒绝
+完整配置结构断言
+sing-box check（最终字节）
 ```
 
 ---

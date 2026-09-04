@@ -1,0 +1,68 @@
+version: 1
+target: TASK-009 SF-002 bounded identity and concurrency verification
+previous_checkpoint: .sdlc/evidence/TASK-009/delivery-checkpoint-002.yaml
+target_identity: sha256:04d3a65432123555c147a33c23dae6fe3f9a3d88786eaaa01ac44d94453a5fdf
+result: PASS
+result_scope: Only the named bounded verification below, not full TASK-009 acceptance.
+delivery: .sdlc/evidence/TASK-009/delivery-checkpoint-003.yaml
+evidence_root: src-tauri/target/task009-remediation
+scope:
+  - Existing worker queue serialization and Busy behavior for overlapping Start/Start and Start/Stop.
+  - Existing sampling interval and Stop publication ordering.
+  - Runtime active identity isolation after replacement, failure and Stop.
+boundary:
+  - Only cfg(test) code is authorized for this increment; production behavior stays at checkpoint002.
+  - Complete TASK-009 acceptance is pending, including positive traffic and WG/DNS prerequisites.
+  - The proposed DCR-005 traffic correction is independently reviewed but not authorized or implemented.
+  - Historical 165-test full regression applies to checkpoint002; this increment requires its own targeted results.
+independent_review: .sdlc/evidence/TASK-009/code-review-checkpoint-003.yaml
+observed:
+  - id: concurrency-final-003
+    command: cargo test --manifest-path src-tauri/Cargo.toml --lib application::managed_observation_runtime::tests:: -- --nocapture --test-threads=1
+    result: PASS
+    passed: 9
+    failed: 0
+    ignored: 0
+    filtered: 159
+    elapsed_seconds: 32.40
+    exit_code: 0
+    outer_timeout_seconds: 60
+  - id: concurrency-identity-003
+    command: cargo test --manifest-path src-tauri/Cargo.toml --lib singbox::runtime::tests:: -- --nocapture --test-threads=1
+    result: PASS
+    passed: 16
+    failed: 0
+    ignored: 0
+    filtered: 152
+    elapsed_seconds: 0.45
+    exit_code: 0
+    outer_timeout_seconds: 60
+  - id: concurrency-clippy-003
+    command: cargo clippy --manifest-path src-tauri/Cargo.toml --lib -- -D warnings
+    result: PASS
+    exit_code: 0
+    outer_timeout_seconds: 180
+  - id: formatting-and-diff
+    metadata: concurrency-static-003.result.json
+    logs: [concurrency-fmt-003.log, concurrency-diff-003.log]
+    commands:
+      - cargo fmt --manifest-path src-tauri/Cargo.toml -- --check
+      - git diff --check
+    result: PASS
+    exit_codes: [0, 0]
+historical_attempts:
+  - concurrency-worker-003 failed before Ready with ConfigurationFailed; a subsequent test hit the poisoned shared test lock.
+  - concurrency-diagnostic-003 retained the unsuccessful diagnostic attempt.
+  - Tests now use the established TEMP private-runtime fixture; exact cause of repository-volume preparation failure was not established.
+  - concurrency-worker-003b passed the initial two real worker tests, superseded by the final nine-test module run after test-only cleanup changes.
+cleanup:
+  final_owned_workers: Joined after successful Shutdown; no matching fixed TCP 9090 listener observed in the worker's bounded check.
+  limitation: No full host process or network snapshot audit in this increment.
+  retained_failed_fixtures:
+    - src-tauri/target/task009-worker-36284-0
+    - src-tauri/target/task009-worker-64148-0
+  reason: Automatic approval review rejected deletion with blocked by policy and no detailed reason; no workaround attempted.
+remaining_concurrency_evidence:
+  - Stop while a network read is truly in-flight; the new test synchronizes at Delta publication, not inside the network read.
+  - Late network result crossing an instance replacement boundary.
+  - Start response loss and live same-stream in-flight count.

@@ -9,6 +9,34 @@
 V0.2 是 structured soft enforcement，没有自研 Enforcement Runtime。它以 Intent Anchor 和
 滚动交付为主线；Phase 和 Gate 只描述实际会阻止主线的状态，不要求 Agent 表演完整 SDLC。
 
+## 风险、剩余风险与复杂度
+
+**Risk ≠ Authorization**：发现风险、边界条件、兼容性 concern 或加固机会，不自动授权扩大
+Requirement、Task Scope、Frozen Design 或实现。除非已接受的 Requirement/Threat Model 明确要求，
+不得仅因某种攻击或故障理论上存在就新增控制；已接受的安全契约仍只能通过适用的 DCR/Owner
+决策改变，Implementation 不得自行削弱或忽略。
+
+新增 Security Control 必须针对评估既有控制后仍存在的**可信剩余攻击路径**，并能说明：
+
+```text
+threat / failure
+-> attacker capability
+-> reachability / credible trigger
+-> existing primary or compensating controls
+-> residual path
+-> observable impact
+-> minimal sufficient mitigation
+```
+
+既有控制已关闭该路径、或剩余路径未被证明时，不把该控制写入当前 Design 或 Task；如实记录
+`remaining risk`/advisory 或 Follow-up candidate，不宣称风险不存在。Security、Reliability、
+Compatibility、Performance 等控制同样适用此规则。
+
+**Complexity Proportionality + Disclosure**：最小可行缓解若会引入 Runtime dependency、底层
+driver/平台 I/O 层、抽象层、后台机制、持久状态、配置、并发/锁模型、兼容层或运维负担，冻结前
+必须披露最小已知实现、工程影响、替代方案及其已证明的剩余风险。只有有权 Owner 才能接受该
+复杂度、提升 Scope 或冻结相应 Material Decision；不得把高复杂度防御伪装成局部加固。
+
 ## Sparse Canonical State
 
 `.sdlc/state.yaml` 只保存稳定意图、当前位置、焦点、实际进入的 Gate、Blocker 和下一个路由。

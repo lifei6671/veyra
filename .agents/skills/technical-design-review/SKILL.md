@@ -46,6 +46,20 @@ description: "Independently review a frozen technical-design candidate for trace
 3. 检查与当前仓库和约束的兼容性，只审实际受影响 concern 的 Failure、Security、Migration、
    Rollback、Observability、Testing 或 Experiment 闭环；未受影响 concern 的缺失不构成 Finding。
 4. 标记未授权的 Material Scope/Contract、持久数据、运行依赖、权限安全或架构变化。
+   对每个新增 Material Control 追加 Residual-risk / Complexity-proportionality Check：
+
+   ```text
+   threat/failure -> attacker capability -> credible trigger/reachability
+   -> existing primary or compensating controls -> residual path
+   -> observable impact -> minimal sufficient mitigation -> proposed design
+   ```
+
+   对非已接受 Requirement/Threat Model 明示的新增控制，该链任一关键证据缺失、既有控制已经
+   关闭路径、提案未针对剩余风险，或提案的复杂度明显超过最小充分方案时，输出 `REWORK`。需要
+   Runtime dependency、底层 driver/平台 I/O、抽象层、后台机制、持久状态、配置、并发/锁模型、
+   兼容层或运维负担的方案，还必须检查冻结前是否披露最小已知实现、工程影响、替代方案、已证明
+   的剩余风险和所需 Owner approval。已接受 Requirement/Threat Model 明示的控制不得因本检查被
+   静默删除或弱化；若提案改变它，要求 DCR/Owner 决策，而不是用比例性替代既有安全契约。
 5. 以 P0/P1/P2/P3 给出可定位、可执行、证据支持的 `issues`，并说明覆盖范围与残余风险。
 6. 首次审查不修改 Design、ADR、源码或测试；Producer 修复后，对新目标重新审查受影响范围。
 

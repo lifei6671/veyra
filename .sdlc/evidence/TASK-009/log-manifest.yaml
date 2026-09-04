@@ -1,0 +1,171 @@
+{
+  "logs": [
+    {
+      "path": "E:\\wx_lifeilin\\github.com\\lifei6671\\veyra\\src-tauri\\target\\task009-verification\\clippy.result.json",
+      "sha256": "4a529a3720500a917fbbc26e99c3101ddb87312da723335fb90ffb52f9ab7a9d"
+    },
+    {
+      "path": "E:\\wx_lifeilin\\github.com\\lifei6671\\veyra\\src-tauri\\target\\task009-verification\\clippy.stderr.txt",
+      "sha256": "d8909685aca80e5516ff7728a4038e80181e033a60d71adf4a817109eeedc2ea"
+    },
+    {
+      "path": "E:\\wx_lifeilin\\github.com\\lifei6671\\veyra\\src-tauri\\target\\task009-verification\\clippy.stdout.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "E:\\wx_lifeilin\\github.com\\lifei6671\\veyra\\src-tauri\\target\\task009-verification\\compile.result.json",
+      "sha256": "1deaf59ff5da7bb6afa7f1b982b5768ad5cab4c1f3a2b21027fd08c9f0ce5d38"
+    },
+    {
+      "path": "E:\\wx_lifeilin\\github.com\\lifei6671\\veyra\\src-tauri\\target\\task009-verification\\compile.stderr.txt",
+      "sha256": "1eea2a1e7ede29b81d55d12b580ff8327fa06aa2431d55db6a36607030a54453"
+    },
+    {
+      "path": "E:\\wx_lifeilin\\github.com\\lifei6671\\veyra\\src-tauri\\target\\task009-verification\\compile.stdout.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "E:\\wx_lifeilin\\github.com\\lifei6671\\veyra\\src-tauri\\target\\task009-verification\\controlled-urltest-002.result.json",
+      "sha256": "e9113e9816f2ef817d7c13e3964d0aeb0b312c8343c52dbbf57ed6c69ccb38f1"
+    },
+    {
+      "path": "E:\\wx_lifeilin\\github.com\\lifei6671\\veyra\\src-tauri\\target\\task009-verification\\controlled-urltest-002.stderr.txt",
+      "sha256": "42e1101e7ff56553558d0c32b322128d990c4a25a31d5bddd03462aaaf3898bb"
+    },
+    {
+      "path": "E:\\wx_lifeilin\\github.com\\lifei6671\\veyra\\src-tauri\\target\\task009-verification\\controlled-urltest-002.stdout.txt",
+      "sha256": "1c6e0e953ee5b4ccbf019762e6051c85c26cb5c250acb6f1573520308381e65c"
+    },
+    {
+      "path": "E:\\wx_lifeilin\\github.com\\lifei6671\\veyra\\src-tauri\\target\\task009-verification\\controlled-urltest.result.json",
+      "sha256": "de7c8aee00c97a31cca2c065508a88a7064e23b5a1840f040e4383996cf1c8de"
+    },
+    {
+      "path": "E:\\wx_lifeilin\\github.com\\lifei6671\\veyra\\src-tauri\\target\\task009-verification\\controlled-urltest.stderr.txt",
+      "sha256": "8bdcddff216ab487b97e79e7e9a5a3ceda7d36f1dba68a21ab8fcb4d9b182c70"
+    },
+    {
+      "path": "E:\\wx_lifeilin\\github.com\\lifei6671\\veyra\\src-tauri\\target\\task009-verification\\controlled-urltest.stdout.txt",
+      "sha256": "591b6828627f5e606fc8753ed1c7efbb130042f93c695914a716f09cd58d0c46"
+    },
+    {
+      "path": "E:\\wx_lifeilin\\github.com\\lifei6671\\veyra\\src-tauri\\target\\task009-verification\\fixed-config-matrix.result.json",
+      "sha256": "bb96b7f83ce220fe26e7e8fe368c15e03b67c816e989279b42ab9bee73cc354e"
+    },
+    {
+      "path": "E:\\wx_lifeilin\\github.com\\lifei6671\\veyra\\src-tauri\\target\\task009-verification\\fixed-config-matrix.stderr.txt",
+      "sha256": "a26a83458e97a0cf548ee573bf8b541103e330af02596ed5b061f0dd485b00bd"
+    },
+    {
+      "path": "E:\\wx_lifeilin\\github.com\\lifei6671\\veyra\\src-tauri\\target\\task009-verification\\fixed-config-matrix.stdout.txt",
+      "sha256": "aa6ccd70783d84f4770376428e7776a494d31f86d130d68bc8cfe7b10088eaa8"
+    },
+    {
+      "path": "E:\\wx_lifeilin\\github.com\\lifei6671\\veyra\\src-tauri\\target\\task009-verification\\frontend-build.log",
+      "sha256": "59d173dfe9d51d2fa2e3fb6a06e28967d01330aa1c7c9a0a0605141ebad92689"
+    },
+    {
+      "path": "E:\\wx_lifeilin\\github.com\\lifei6671\\veyra\\src-tauri\\target\\task009-verification\\frontend-lint.log",
+      "sha256": "5a3973f79ed9becd5f23c4feff467513814de7ea381d75a4d2e339aa8b8edca9"
+    },
+    {
+      "path": "E:\\wx_lifeilin\\github.com\\lifei6671\\veyra\\src-tauri\\target\\task009-verification\\frontend-result.json",
+      "sha256": "cc2e2e16cbc1d0cdba6caeefcdae0f638a695e23db713b1f356b69a66f9b0794"
+    },
+    {
+      "path": "E:\\wx_lifeilin\\github.com\\lifei6671\\veyra\\src-tauri\\target\\task009-verification\\frontend-test.log",
+      "sha256": "b9ef5a21f0c0c9792f771e0c7f9a6fd43187d8b251b95329c84268140319d1e5"
+    },
+    {
+      "path": "E:\\wx_lifeilin\\github.com\\lifei6671\\veyra\\src-tauri\\target\\task009-verification\\frozen-clippy.result.json",
+      "sha256": "780c2fe10f6b0f1d5b223dbd6548b8d91315675f28b17b383514ba62e4b7e31e"
+    },
+    {
+      "path": "E:\\wx_lifeilin\\github.com\\lifei6671\\veyra\\src-tauri\\target\\task009-verification\\frozen-clippy.stderr.txt",
+      "sha256": "f3c26e0028ed8e2efd2aef42ed4f9cc0f303ee9325a41f34d2d632e05a4ebcba"
+    },
+    {
+      "path": "E:\\wx_lifeilin\\github.com\\lifei6671\\veyra\\src-tauri\\target\\task009-verification\\frozen-clippy.stdout.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "E:\\wx_lifeilin\\github.com\\lifei6671\\veyra\\src-tauri\\target\\task009-verification\\frozen-diff-check.log",
+      "sha256": "63ddd1d52d4cc1f74741b0172b585840e17c135fd57f189c01bccec3d2e7d80d"
+    },
+    {
+      "path": "E:\\wx_lifeilin\\github.com\\lifei6671\\veyra\\src-tauri\\target\\task009-verification\\frozen-fmt.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "E:\\wx_lifeilin\\github.com\\lifei6671\\veyra\\src-tauri\\target\\task009-verification\\frozen-regression.result.json",
+      "sha256": "4db1cc3b901861780d7aaf0bba5874248514b23b3391a53d575c058430902849"
+    },
+    {
+      "path": "E:\\wx_lifeilin\\github.com\\lifei6671\\veyra\\src-tauri\\target\\task009-verification\\frozen-regression.stderr.txt",
+      "sha256": "9d68d17edf2eba0a78469a3ff261546406c98ea8061d32984aad925b801015c4"
+    },
+    {
+      "path": "E:\\wx_lifeilin\\github.com\\lifei6671\\veyra\\src-tauri\\target\\task009-verification\\frozen-regression.stdout.txt",
+      "sha256": "076e393b202cb9668b8bb6bb793c3e0890dc6b43cb670ff56f1bcabd19fa282d"
+    },
+    {
+      "path": "E:\\wx_lifeilin\\github.com\\lifei6671\\veyra\\src-tauri\\target\\task009-verification\\frozen-static-result.json",
+      "sha256": "0b0c2ac84ecfed34d3a0a8ed9e291be1f97d2a87a2807a1035da7ba5119e3139"
+    },
+    {
+      "path": "E:\\wx_lifeilin\\github.com\\lifei6671\\veyra\\src-tauri\\target\\task009-verification\\network-comparison.json",
+      "sha256": "911bd620127f0243bb9802349a26c32fb07dfc593d89664607ee7c574199d5a2"
+    },
+    {
+      "path": "E:\\wx_lifeilin\\github.com\\lifei6671\\veyra\\src-tauri\\target\\task009-verification\\real-observation-diagnostic.result.json",
+      "sha256": "9ee3c06a66388f76738f79903dd47b7c12665e72cc58bdece25ece2732d05d88"
+    },
+    {
+      "path": "E:\\wx_lifeilin\\github.com\\lifei6671\\veyra\\src-tauri\\target\\task009-verification\\real-observation-diagnostic.stderr.txt",
+      "sha256": "4b6e98ee23a483cc78ac751dd3cd31190663ebb96f12d52c8ea5cfa274686151"
+    },
+    {
+      "path": "E:\\wx_lifeilin\\github.com\\lifei6671\\veyra\\src-tauri\\target\\task009-verification\\real-observation-diagnostic.stdout.txt",
+      "sha256": "ba8c0d40a78439a9d583141208a26b68553f81471c39013b9afa8807a9a4f457"
+    },
+    {
+      "path": "E:\\wx_lifeilin\\github.com\\lifei6671\\veyra\\src-tauri\\target\\task009-verification\\real-replacement.result.json",
+      "sha256": "d48d5f51cd0ae9df0d6d830ab0cde735d9debb59a5c827b9254160727d8b94b9"
+    },
+    {
+      "path": "E:\\wx_lifeilin\\github.com\\lifei6671\\veyra\\src-tauri\\target\\task009-verification\\real-replacement.stderr.txt",
+      "sha256": "7864225ae7357ec36ee9e133403da8a09e999f1d88c09954bfb2f47789e01a90"
+    },
+    {
+      "path": "E:\\wx_lifeilin\\github.com\\lifei6671\\veyra\\src-tauri\\target\\task009-verification\\real-replacement.stdout.txt",
+      "sha256": "134773770b77a30ca08cbba735f77ad64dacaee67d311883ba485825acb9145a"
+    },
+    {
+      "path": "E:\\wx_lifeilin\\github.com\\lifei6671\\veyra\\src-tauri\\target\\task009-verification\\rust-tests.result.json",
+      "sha256": "aaaba87f875178b663a7eff5b254f356c2f91447936fb7e5aabfa3c3d9aca906"
+    },
+    {
+      "path": "E:\\wx_lifeilin\\github.com\\lifei6671\\veyra\\src-tauri\\target\\task009-verification\\rust-tests.stderr.txt",
+      "sha256": "5cb04fb6870e7e6f7ac6077a7ad5ac9fd2ce38e839b39f6f3395715cb6745953"
+    },
+    {
+      "path": "E:\\wx_lifeilin\\github.com\\lifei6671\\veyra\\src-tauri\\target\\task009-verification\\rust-tests.stdout.txt",
+      "sha256": "66d8b03531c9764fcbf734ed23a2271b85bb838591fd627ffc4fbbdd6f22ddf5"
+    },
+    {
+      "path": "E:\\wx_lifeilin\\github.com\\lifei6671\\veyra\\src-tauri\\target\\task009-verification\\ui-interaction-002.log",
+      "sha256": "6007b33d736ed0cf5eeae8e5e7d18e9feb5f674b18db7d1c74a276a19ee80bb8"
+    },
+    {
+      "path": "E:\\wx_lifeilin\\github.com\\lifei6671\\veyra\\src-tauri\\target\\task009-verification\\ui-interaction.js",
+      "sha256": "168a4367193b33414262e12eb2cdf69d2242637c907c7f9c0da6babd4e564419"
+    },
+    {
+      "path": "E:\\wx_lifeilin\\github.com\\lifei6671\\veyra\\src-tauri\\target\\task009-verification\\ui-interaction.log",
+      "sha256": "165039e491a43578b6214aa36ba1280dc26ff9cf24aa5852d3ae7bdb7eacfde6"
+    }
+  ],
+  "timestamp": "2026-09-04T13:02:53.5910477+08:00",
+  "target_identity": "sha256:8b375689eabbc6598baf656ce06eaf2f6e553cc6fe419763fd8b0fcdd2fa2071",
+  "boundary": "Ignored diagnostic logs may contain old test fixture bytes; summaries do not expose credentials."
+}

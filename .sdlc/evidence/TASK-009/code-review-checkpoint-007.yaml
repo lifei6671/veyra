@@ -1,0 +1,126 @@
+{
+  "skill_result": {
+    "skill": "code-delivery-review",
+    "target": "TASK-009 checkpoint007 — lost Start response and stream deadline tests",
+    "outcome": "BLOCKED",
+    "next_action_hint": "两项测试增量局部审阅通过；继续保留完整Task验证缺口，未经批准的计量入站提案不可据此执行。",
+    "review_mode": "CHILD_AGENT",
+    "reviewed_target_identity": "sha256:efc1766a8bf8b2773709008b180dce7df4a51a72e8cbac0a15908ce5a3894d08",
+    "review_result": "REWORK",
+    "local_repair_review_result": "PASS",
+    "coverage": {
+      "strategy": "PARTITIONED_PLUS_INTEGRATION",
+      "status": "INCOMPLETE",
+      "freshness": "FRESH",
+      "independence": "task009_design_reviewer未参与新增测试生产；只读冻结差异、必要调用上下文和原始日志，仅写此独立记录；未重跑测试、修改源/Task/状态或委派。",
+      "prior_review": ".sdlc/evidence/TASK-009/code-review-checkpoint-006.yaml",
+      "source_freshness": {
+        "result": "FRESH",
+        "manifest_entries": 32,
+        "current_hash_mismatches": 0,
+        "baseline_snapshots": 32,
+        "baseline_hash_mismatches": 0,
+        "baseline_previous_checkpoint_mismatches": 0,
+        "verification_artifacts": 23,
+        "artifact_hash_mismatches": 0,
+        "method": "按manifest数组顺序重算HEAD/path/hash身份；核对当前源、concurrency-baseline-007快照及checkpoint006逐项身份。仅clash_api.rs和managed_observation_runtime.rs的cfg(test)新增hunk，生产/UI/设计无变化。",
+        "evidence_correction": "Orchestrator明确撤销初始verification a02743...清单；改用8c475cef...的23项本轮007日志，历史003日志不计入当前验证。"
+      },
+      "applicable_lanes": [
+        "correctness",
+        "security",
+        "concurrency-performance",
+        "verification",
+        "release"
+      ],
+      "lanes": {
+        "correctness": {
+          "result": "PASS",
+          "freshness": "FRESH"
+        },
+        "security": {
+          "result": "PASS",
+          "freshness": "FRESH"
+        },
+        "concurrency-performance": {
+          "result": "PASS",
+          "freshness": "FRESH"
+        },
+        "verification": {
+          "result": "REWORK",
+          "validation": "BLOCKED",
+          "freshness": "FRESH"
+        },
+        "release": {
+          "result": "REWORK",
+          "validation": "NOT_APPLICABLE",
+          "freshness": "FRESH"
+        }
+      },
+      "partitions": [
+        {
+          "id": "real-owner-response-loss",
+          "location": "src-tauri/src/application/managed_observation_runtime.rs:758",
+          "applicable_lanes": [
+            "correctness",
+            "security",
+            "concurrency-performance",
+            "verification"
+          ],
+          "result": "PASS",
+          "reviewed": "真实fixed core Ready后用发布门控制接收端丢失，精确断言RecoveryRequired/revision/封闭日志和趋势清空；无效intent重复Start仍AlreadyRunning，私有配置字节和目录保持，随后手动Stop清理并shutdown。敏感配置仅内存读取，比对使用布尔断言，公开Delta排除secret和路径。",
+          "cleanup": "发布门及响应等待均有期限；catch_unwind使失败时释放发送端，等待owner完成后join。删除前核对canonical直接父目录和本次PID夹具前缀；私有资源未清空则保留失败证据。",
+          "evidence_limit": "证明实际owner响应丢失后的保有、幂等和手动Stop路径；预置历史速率是Mock。未据私有目录数量声称完整系统进程live-count审计，也不声称网络I/O中Stop或跨实例晚到发布。"
+        },
+        {
+          "id": "first-frame-deadline-and-fresh-authentication",
+          "location": "src-tauri/src/singbox/clash_api.rs:915",
+          "applicable_lanes": [
+            "correctness",
+            "security",
+            "concurrency-performance",
+            "verification"
+          ],
+          "result": "PASS",
+          "reviewed": "固定127.0.0.1:9090真实TCP/WebSocket夹具延迟首帧，等待2秒生产读取超时，确认Unavailable及旧socket关闭/EOF/错误；随后独立secret认证的新client读取17/23并发送Close。accept/handshake/frame/通知/join均有有界等待，认证断言不回显secret。",
+          "evidence_limit": "测试直接调用ClashApiClient与Mock API，未经过真实worker Stop/实例切换协调；新认证成功不能代替跨实例迟到结果丢弃验收。"
+        }
+      ],
+      "integration_result": {
+        "local_result": "PASS",
+        "whole_task_result": "REWORK",
+        "reviewed": "结合worker_loop响应失败发布路径和固定流读取超时路径核对断言可达性；未变生产及UI沿用006覆盖，新增两项测试不重复计数。"
+      }
+    },
+    "remaining_risks": [
+      "真实worker网络I/O中Stop、跨实例迟到发布及完整并发验收仍不齐。",
+      "真实核心聚合正流量与WG/DNS完整拓扑仍欠缺；loopback-metering-proposal.md仅未批准候选，不是当前执行授权。",
+      "当前未运行179项全库、Native WebView/Tray E2E或CI；UI未重跑，仅沿用未变006覆盖。局部通过不推进完整Task/Gate。"
+    ]
+  },
+  "evidence": {
+    "delivery_ref": ".sdlc/evidence/TASK-009/delivery-checkpoint-007.yaml",
+    "diff_ref": ".sdlc/evidence/TASK-009/concurrency-incremental-007.patch",
+    "baseline_ref": ".sdlc/evidence/TASK-009/concurrency-baseline-007.yaml",
+    "readiness_ref": ".sdlc/evidence/TASK-009/readiness-007.yaml",
+    "verification_ref": ".sdlc/evidence/TASK-009/verification-007.yaml",
+    "verification_sha256": "8c475cef09b169bbcc98494ac7deffdce83ae382a7e8084b58c710be8e9154b0",
+    "observed": "独立读取concurrency-clash-007及concurrency-controller-007原始stdout/stderr/result：12+10=22项PASS、退出码0、未超时。两项单跑不额外计数。读取当前library Clippy/fmt/diff-check结果元数据，均退出码0；Clippy --lib不代表测试代码Clippy。",
+    "raw_directory": "src-tauri/target/task009-remediation/",
+    "failed_iteration": "初次stream测试E0382失败证据保留；通过的受影响模块验证属于修正后的测试。"
+  },
+  "covered_previous_findings": [
+    {
+      "finding_id": "TASK009-CR-001",
+      "status": "FIXED",
+      "basis": "生产修复未变，沿用既有闭合覆盖。"
+    },
+    {
+      "finding_id": "TASK009-CR-002",
+      "status": "FIXED",
+      "basis": "Logs生产修复未变，沿用既有闭合覆盖。"
+    }
+  ],
+  "issues": [],
+  "conclusion": "无可信新增Finding；测试增量局部PASS，完整Task因既有验证缺口仍REWORK/INCOMPLETE。"
+}

@@ -1,0 +1,25 @@
+{
+  "timestamp": "2026-09-04T15:58:17.5182818+08:00",
+  "target": "TASK009 CHANGE007 WG TCP/ICMP subset",
+  "authorization": ".sdlc/evidence/TASK-009/change-control.yaml#EVIDENCE-TASK-009-CHANGE-007",
+  "task_identity": "sha256:d5c3163a22806ca596caa9d4ba839c34a73654d31dc304b7a710a0a2f265362a",
+  "requirement_identity": "sha256:4a2cd1e2b9698087bcbc4ac892d7b052a5e2c06554e372479fe31c81cbea9d45",
+  "id": "EVIDENCE-TASK-009-READINESS-011",
+  "checks": [
+    "Task008 accepted;Task009 only current task",
+    "Requirement unchanged; Task scoped exception synchronized",
+    "Concrete proposal already explicitly authorized; design independent PASS; no duplicate approval",
+    "Existing Go1.27.1 local/no auto toolchain; fixed two direct deps",
+    "Existing ordinary typed ObservationOnly compilation and Port test fixture; no product changes",
+    "Go helper and Rust test disjoint ownership; all real-core runs root serial"
+  ],
+  "result": "PASS",
+  "design_review": ".sdlc/evidence/TASK-009/wg-design-review-002.yaml",
+  "baseline": ".sdlc/evidence/TASK-009/wg-baseline-011.yaml",
+  "not_run": [
+    "Go implementation/build/tests",
+    "real WG TCP/ICMP",
+    "full WG/DNS"
+  ],
+  "design_identity": "sha256:b193f16e6262f8695780af2f18cebc4a4f91dbbbe999f4b91f716059edbb9470"
+}

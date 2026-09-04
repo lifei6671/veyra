@@ -1,0 +1,156 @@
+{
+  "skill_result": {
+    "skill": "code-delivery-review",
+    "target": "TASK-009 checkpoint014 / CHANGE009",
+    "outcome": "FAIL",
+    "next_action_hint": "先修订DCR011的host同路径阳性前提；涉及地址、资源或验收语义变化时走Change Control。保留本轮FAIL与phase2/3 NOT_RUN，不推进Delivery Gate。",
+    "review_mode": "CHILD_AGENT",
+    "reviewed_target_identity": "sha256:37feddf0c296a6db8e7552d203c645efa5cd9663b4649243465ace58e3d5c126",
+    "review_result": "REWORK",
+    "local_repair_review_result": "REWORK",
+    "coverage": {
+      "strategy": "PARTITIONED_PLUS_INTEGRATION",
+      "status": "INCOMPLETE",
+      "freshness": "FRESH",
+      "independence": "task009_design_reviewer未参与本轮Rust/Go实现或验证生产。曾审DCR011不构成实现自审；本次独立纠正此前设计可行性漏判。仅只读增量、物质邻接与原始证据，未重跑测试/核心、启动业务网络、修改被审工件/状态或委派。",
+      "prior_review": ".sdlc/evidence/TASK-009/code-review-checkpoint-013.yaml",
+      "source_freshness": {
+        "result": "FRESH",
+        "manifest_entries": 55,
+        "source_hash_mismatches": 0,
+        "incremental_baseline_snapshots": 50,
+        "baseline_hash_mismatches": 0,
+        "baseline_previous_checkpoint_mismatches": 0,
+        "verification_artifacts": 52,
+        "artifact_hash_mismatches": 0,
+        "verification_identity": "sha256:597b315d8e9015e651ad36a348c8aeeead47751c099ec369c87018d2230ccd76",
+        "helper_identity": "sha256:b22d775adda493abe3ce4ddf3f511009cd271babb5cd66617ae7293b613792e9",
+        "method": "按manifest实际数组顺序重算HEAD/path/hash；逐项核对当前55源、50基线原字节及checkpoint013对应身份、52原始工件，审阅结束再次核对零漂移。起始HEAD和原始交付来源承接013，未将基线内容重新归属本轮。"
+      },
+      "applicable_lanes": [
+        "correctness",
+        "security",
+        "concurrency-performance",
+        "verification"
+      ],
+      "lanes": {
+        "correctness": {
+          "result": "REWORK",
+          "reason": "完整四格前后阳性契约在固定DUT不可成立，见TASK009-CR-006。"
+        },
+        "security": {
+          "result": "PASS",
+          "scope": "本轮静态边界；不替代未运行的受保护阶段证据。"
+        },
+        "concurrency-performance": {
+          "result": "PASS",
+          "scope": "封闭场景状态、期限/取消和所有权增量；真实150秒Hold仅模拟DUT停止确认缺失。"
+        },
+        "verification": {
+          "result": "REWORK",
+          "reason": "新真实四格FAIL；phase2/3未运行，整Task验收不完整。"
+        }
+      },
+      "partitions": [
+        {
+          "id": "authority-and-inventory",
+          "result": "PASS",
+          "paths": [
+            ".sdlc/tasks/TASK-009.md",
+            ".sdlc/design/DCR-011-test-wg-local-reject.md"
+          ],
+          "reviewed": "CHANGE009/readiness014已记录用户允许；两目标、三个阶段和135/150/159/160秒范围与实际增量一致。冻结设计文字PROPOSED由外部批准记录说明，不将候选旧状态或本轮失败当撤销原批准。后续资源扩展并未获得本轮授权。"
+        },
+        {
+          "id": "compiler",
+          "result": "PASS",
+          "paths": [
+            "src-tauri/src/singbox/compiler.rs"
+          ],
+          "reviewed": "cfg(test)前置两个精确规则，唯一WG/URLTest、两个端口、唯一Port→Direct用户规则、固定地址/MTU/phase/token完整校验；剥离后仍原validate。普通compile及非test拒绝前缀，DCR008/010元组保留。构造/读回篡改负例覆盖；无任意Direct例外。"
+        },
+        {
+          "id": "rust-fixture-and-lifecycle",
+          "result": "PASS",
+          "paths": [
+            "src-tauri/src/platform/windows/managed_sidecar_port.rs"
+          ],
+          "reviewed": "完整新目标服务、阶段DTO/状态机、真实四格测试和Hold增量。目标原句柄跨阶段保留，服务线程clone；空TCP接受/UDP接收、phase2迟到、重复/错误载荷均失败。每阶段新config/secret/identity、URLTest bootstrap后才探测；失败catch后DUT先Stop、peer后finish、目标最后释放。未确认Stop保留至150秒；旧55秒分支保留。业务IO继承绝对期限，日志仅固定摘要。"
+        },
+        {
+          "id": "go-protocol-probes-observation",
+          "result": "PASS",
+          "paths": [
+            "scripts/task009-wg-peer/main.go",
+            "scripts/task009-wg-peer/observe.go",
+            "scripts/task009-wg-peer/protocol.go",
+            "scripts/task009-wg-peer/stack.go",
+            "scripts/task009-wg-peer/reject.go",
+            "scripts/task009-wg-peer/reject_probe.go",
+            "scripts/task009-wg-peer/reject_observe.go",
+            "scripts/task009-wg-peer/reject_test.go",
+            "scripts/task009-wg-peer/README.md"
+          ],
+          "reviewed": "新init_reject严格字段和场景/阶段顺序；仅peer新场景允许外部loopback，非本地注册目标，固定四元组经WG。每阶段清空bootstrap/flow/health而总字节限额不重置，ICMP token按phase区分。完整应用回显结合tun边界，未发送/异常包/非白名单错误不能当负向。单active工作流与容量1结果队列、取消与Hold/硬截止、shutdown顺序无额外可操作缺陷。纯内存四格测试明确启用loopback，不能外推固定DUT。"
+        },
+        {
+          "id": "unchanged-partitions",
+          "result": "PASS",
+          "reviewed": "其余42源身份未变，承接checkpoint013及其历史覆盖；没有生产API/UI/依赖/锁修改。未重审无关历史源码。"
+        }
+      ],
+      "integration_result": "REWORK：13路径增量已覆盖。实现忠实执行了DCR011，但host127的固定DUT路径先于Router被网络层丢弃，无法满足前后阳性。新增真实用例正确失败，没有将超时、静态校验或纯内存模拟算作产品拒绝通过。"
+    },
+    "remaining_risks": [
+      "DCR011 phase1 host TCP/UDP阳性失败，phase2受保护与phase3后阳性均NOT_RUN；三实例新secret/连续归属完整实际链未被此次失败运行证明。",
+      "Hold150使用真实helper/目标和真实时间，但没有运行一个实际拒绝Stop的DUT；它证明模拟未确认条件下的父/helper资源顺序。",
+      "原完整WG拒绝/非宿主转发、DNS Router与受控系统DNS/Host/SNI矩阵、IPv6、native GUI/Tray及整Task验收仍不完整。",
+      "本轮没有全203项Rust回归或all-target Clippy；既有TCP/ICMP/UDP只是已批准子集，TCP ACK证据为TCP层交付，不是应用消费。",
+      "网络层丢弃的解释由固定源码与真实结果分布共同支持，没有逐包读取DUT内部丢弃计数。"
+    ]
+  },
+  "findings": [
+    {
+      "finding_id": "TASK009-CR-006",
+      "fingerprint": "DCR-011:host-loopback-positive-control:dut-ipv4-drops-before-router",
+      "status": "OPEN",
+      "severity": "P1",
+      "target_identity": "sha256:37feddf0c296a6db8e7552d203c645efa5cd9663b4649243465ace58e3d5c126",
+      "location": ".sdlc/design/DCR-011-test-wg-local-reject.md:11; :19; :34; :61; :103; src-tauri/src/platform/windows/managed_sidecar_port.rs:2252",
+      "trigger": "按已批准配置在phase1经WG发往127.0.0.1的TCP/UDP；Router虽有精确Direct前缀，但固定DUT的非loopback NIC先进入默认IPv4网络层。",
+      "impact": "host两格在阳性阶段即超时，必需同路径前后对照不可建立，因而不能验证当前声明的四格Router拒绝。phase2/3未运行。此前独立设计PASS漏判DUT侧这一网络层边界，本记录纠正该可行性判断，不修改或隐去原审阅历史。",
+      "evidence": [
+        ".sdlc/evidence/TASK-009/verification-014.yaml",
+        "src-tauri/target/task009-remediation/wg-reject-real-diagnostic-014.stdout.txt",
+        "src-tauri/target/task009-remediation/wg-reject-real-diagnostic-014.stderr.txt",
+        ".sdlc/evidence/TASK-009/wg-reject-runtime-diagnosis-014.md",
+        "https://raw.githubusercontent.com/SagerNet/sing-box/v1.14.0/transport/wireguard/device_stack.go:45-52,209-226",
+        "https://raw.githubusercontent.com/SagerNet/sing-tun/v0.9.0-beta.4/stack_gvisor.go:204-238",
+        "C:/Users/lifei/go/pkg/mod/github.com/sagernet/gvisor@v0.0.0-20260727.0-sing-box-mod.1/pkg/tcpip/network/ipv4/ipv4.go:956-970,2093-2096",
+        "https://raw.githubusercontent.com/SagerNet/sing-box/v1.14.0/protocol/wireguard/endpoint.go:214-254"
+      ],
+      "analysis": "NewGVisorStackWithOptions第三个true是allowRawEndpoint，IPv4仍用NewProtocol空Options，wireEndpoint不是loopback。127/8目的在DeliverNetworkPacket后、TCP/UDP forwarder及Router前返回；peer侧AllowExternalLoopbackTraffic不会改变DUT。虚拟目的198.18.0.1则可先到endpoint并映射loopback，所以真实virtual两格成功与host两格失败一致。",
+      "minimal_fix": "交回technical-design修订同路径阳性方案与验收映射，保留当前失败。若更改host地址、增加非loopback目标或改变验收语义，须明确新的资源暴露和用户批准；不能仅改断言、跳过host格、把超时记PASS或修改固定核心来绕过契约。",
+      "required_validation": "修订设计及授权之后，以新冻结目标取得同一目标持续归属的前阳性/普通保护/后阳性完整证据；保留错误/迟到与Hold回归，或如实报告UNAVAILABLE。"
+    }
+  ],
+  "additional_implementation_findings": [],
+  "covered_previous_findings": [
+    {
+      "finding_id": "TASK009-CR-005",
+      "status": "FIXED",
+      "reviewed": "原55秒以及新增150秒finish(false)均不提前shutdown/kill/close stdin；目标原句柄持有到硬限。真实55/150日志支持模拟停止确认缺失时的持续归属。"
+    }
+  ],
+  "evidence_summary": {
+    "verification": ".sdlc/evidence/TASK-009/verification-014.yaml",
+    "diagnosis_identity": "sha256:ccd53d058b07b72c6139e7269f1c0e25e47179c5edd85162983863ec1eeb2b32",
+    "rust": "39 unique PASS，1 unique real comparison FAIL；失败首轮和诊断复验不重复算两个用例。",
+    "go": "22顶层、60子例PASS；race/vet/mod verify/build/gofmt PASS。",
+    "static": "Rust library Clippy/fmt/diff PASS。compiler30测试后该源未变；local3测试后只有诊断摘要/清理报告增量，最终组合no-run及真实测试绑定当前源。",
+    "actual_failure": "15.47秒 exit101，phase1 virtual_tcp/udp精确回显，host_tcp/udp Timeout；目标载荷[1,0,1,0]。DUT停止确认、owner空、peer退出、private0，但peer exit1/cleanup incomplete，协议清理仍FAIL。",
+    "hold": "150秒真实helper在3054ms/148000ms仍保有peer及TCP/UDP目标绑定、stdin开；150217ms exit1。DUT停止失败仅模拟。原55秒回归亦PASS。",
+    "host": "接口/地址/路由/DNS/proxy五类前后hash一致；不证明缺失的矩阵验收。",
+    "whole_task_result": "INCOMPLETE"
+  }
+}

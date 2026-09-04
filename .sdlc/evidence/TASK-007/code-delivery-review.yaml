@@ -1,0 +1,36 @@
+version: 1
+reviews:
+  - id: EVIDENCE-TASK-007-REVIEW-001
+    type: code_delivery_review
+    target: TASK-007 V3 protocol domain and subscription conversion delivery
+    target_identity: sha256:c83dd3e2df82c45ab6cb9d7c46c1e16ef266093e3db8abc2cf73686b4ea1442c
+    produced_by_phase: REVIEW
+    command_or_method: >-
+      Independent child-agent incremental re-review of the final delivery-owned inventory,
+      including the fresh strict legacy Base64 VMess regression tests.
+    result: PASS
+    timestamp: 2026-09-04T10:41:58+08:00
+    summary: >-
+      The final candidate review found no P0/P1. It verified that malformed legacy Base64 VMess
+      values produce only InvalidNode diagnostics, without a parser panic or partial Provider
+      replacement. Earlier remediation checkpoints were incorporated into the frozen candidate.
+    observer: CHILD_AGENT:/root/dcr002_reviewer
+    review:
+      review_mode: CHILD_AGENT
+      review_result: PASS
+      coverage:
+        strategy: INCREMENTAL_REREVIEW
+        status: COMPLETE
+        applicable_lanes: [correctness, security, contract-data, concurrency-performance, verification, context-docs]
+        partitions: [strict_legacy_base64_vmess, task007_delivery_inventory]
+        integration_result: PASS
+        freshness: FRESH
+      findings: []
+      remaining_risks:
+        - >-
+          The all-target Clippy workspace probe remains FAIL for two out-of-scope existing findings;
+          the scoped library Clippy result is PASS.
+        - Tor runtime support remains BLOCKED by the Task scope and requires a separate resource Gate.
+        - CI, commit and push remain NOT_RUN.
+      human_task_acceptance: >-
+        USER:lifei accepted TASK-007 on 2026-09-04 after this current independent review.

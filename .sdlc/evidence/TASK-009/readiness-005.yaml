@@ -1,0 +1,18 @@
+{
+  "id": "EVIDENCE-TASK-009-READINESS-005",
+  "target": "TASK-009 CHANGE-004 memory traffic trend",
+  "result": "PASS",
+  "timestamp": "2026-09-04T14:00:25.4886049+08:00",
+  "task_identity": "sha256:aadbf4df0b93ed2dd6879d655e73c96ffddb56901f8bb6c00c46da4ad8021f41",
+  "requirement_identity": "sha256:4da6092bc3bda5a9a1f62aa772089dbeba5e36aa884817b95e5d6ff5cf905803",
+  "design_identity": "sha256:c03923b7f396c0791b18c3706fcafe0e824474ca96937ced456057924018d419",
+  "design_review": ".sdlc/evidence/TASK-009/trend-design-review.yaml",
+  "authorization": ".sdlc/evidence/TASK-009/change-control.yaml#EVIDENCE-TASK-009-CHANGE-004",
+  "checks": [
+    "Requirement Task and DCR001 synchronized after user clarified aggregate scope",
+    "DCR006 independent PASS matched hash",
+    "Original baseline and two scope extensions preserved",
+    "No dependency/new core inlet/host mutation authorized or required"
+  ],
+  "boundary": "Chart Mock evidence does not close real positive traffic or TASK009 full acceptance."
+}

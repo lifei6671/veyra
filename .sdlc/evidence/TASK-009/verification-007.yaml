@@ -1,0 +1,210 @@
+{
+  "iteration": "Initial stream-test compile failed E0382 (oneshot receiver moved in loop); fixed by mutable receiver borrowing. Failed raw result retained. Final edition2024 formatting restored original import ordering; no semantic changes after successful tests.",
+  "timestamp": "2026-09-04T15:05:41.7367858+08:00",
+  "remaining_gaps": [
+    "Real metered positive traffic requires approval of proposed test-only routed inlet.",
+    "True worker in-flight Stop, cross-instance late network publication and full WG/DNS topology remain incomplete."
+  ],
+  "delivery": ".sdlc/evidence/TASK-009/delivery-checkpoint-007.yaml",
+  "evidence_boundaries": [
+    "Lost Start response uses real fixed core and actual owner; preset historical counters are an in-memory fixture only.",
+    "First-frame timeout uses actual loopback TCP/WebSocket with Mock server, distinct per-client authentication and bounded close/new read; it does not test worker Stop while network I/O is in flight.",
+    "Only cfg(test) additions; production code and UI unchanged from checkpoint006. Prior UI evidence retains its original identity and scope."
+  ],
+  "target_identity": "sha256:efc1766a8bf8b2773709008b180dce7df4a51a72e8cbac0a15908ce5a3894d08",
+  "artifacts": [
+    {
+      "path": "src-tauri/target/task009-remediation/concurrency-clash-007.stderr.txt",
+      "sha256": "5216c99eeafd539ce5f3da3c9afcefce490cdced6fc88c456caad91f7e77ca20"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/concurrency-clash-007.stdout.txt",
+      "sha256": "e674a34c8640c55522381658124daac7664bf1fc768f8f62f2022d439d17c0a4"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/concurrency-clippy-007.stderr.txt",
+      "sha256": "19bb1d82ee1eca14e4a23c2f6d30fc88bd431ad1d11c64419baa5eaa451066b9"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/concurrency-clippy-007.stdout.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/concurrency-controller-007.stderr.txt",
+      "sha256": "6fb6b627b5db057186c9706687c445f9e4e1f336bf2a3ed9e68311283f9d81e5"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/concurrency-controller-007.stdout.txt",
+      "sha256": "6354c08db4e5bacd240d4e06bb3b34e2c0fe2838fbf1ef56821a5aa7fdcea48f"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/concurrency-diff-check-007.txt",
+      "sha256": "919ceb246eaac0c84061b4fd00370e9b1d6e8e5cf702800d08b92228c30b2c20"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/concurrency-fmt-007.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/concurrency-fmt-007.stdout.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/concurrency-stream-007-first.stderr.txt",
+      "sha256": "65c0d3b7cc967d8d1643ffc34517ac532a33067bf59baf624e83eb48ff2d5266"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/concurrency-stream-007-first.stdout.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/concurrency-stream-007.stderr.txt",
+      "sha256": "38319de16e47dc45d419adf22366f11f90fc3fef6dcbd83b43cafed6f790dbb1"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/concurrency-stream-007.stdout.txt",
+      "sha256": "85a0102832c6b3350c39dc43cd79f25246866cc2c6668a441c1f8b7ede345f85"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/concurrency-worker-007.stderr.txt",
+      "sha256": "7e6107237f4a903a30a8349dc1c176b94ae6b848f123fbf344abb662dfe9e245"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/concurrency-worker-007.stdout.txt",
+      "sha256": "6a65cd0454721a5b0fac1a17bc11a5abf92cef313328b0d0232769c1c3b102dd"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/concurrency-clash-007.result.json",
+      "sha256": "b8af115e779c1cb4dde88d5a6cb47fa4e16be6b57a104e79b99db43847619c57"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/concurrency-clippy-007.result.json",
+      "sha256": "8e61b4b4462e2023d50b687f8ef2eb012038bcc589d53e4f216271aa5c3809e3"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/concurrency-controller-007.result.json",
+      "sha256": "cd08024296033fd65136a6b3e76f8b24f819c989a136bae2257d699c31ede708"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/concurrency-diff-check-007.result.json",
+      "sha256": "50389f9a1f478ad628ba412e006b9b04ad9d1dcc4cc9a0faa92964f5ecd8d562"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/concurrency-fmt-007.result.json",
+      "sha256": "2dbacaa43e66aa0855432d604bdf66b66e38ecbe230132b0f2bfc077b620dd08"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/concurrency-stream-007-first.result.json",
+      "sha256": "ddd3b1afab9c3946326c5c5ecaf1d633048f02a85ba85e60ec0a003a0612b065"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/concurrency-stream-007.result.json",
+      "sha256": "991075b75312a06e46f05e521c561450bc8393532c3df3c2d901f153552c3c09"
+    },
+    {
+      "path": "src-tauri/target/task009-remediation/concurrency-worker-007.result.json",
+      "sha256": "fb8307a775826432d1d38be0346f314fa5ca82d23c5a26cbfc53dcb965441e26"
+    }
+  ],
+  "result_scope": "22 unique affected-module tests (12 Clash API, 10 controller), plus library Clippy, fmt and diff check. Two new targeted tests also passed separately; not added again to unique count.",
+  "version": 1,
+  "result": "PASS",
+  "not_run": [
+    "Full Rust suite",
+    "Frontend rerun (unchanged)",
+    "Native WebView/Tray E2E",
+    "New metered inlet",
+    "Host network before-after snapshot (no host settings changed)",
+    "CI",
+    "commit",
+    "push"
+  ],
+  "observed": [
+    {
+      "id": "concurrency-stream-007",
+      "result": "PASS",
+      "command": "test --manifest-path src-tauri/Cargo.toml --lib traffic_first_frame_timeout_releases_socket_before_fresh_authenticated_sample -- --nocapture --test-threads=1",
+      "exit_code": 0,
+      "timeout": false,
+      "started": "2026-09-04T14:58:17.3131385+08:00",
+      "finished": "2026-09-04T14:58:27.0958421+08:00",
+      "outer_timeout_seconds": 60,
+      "summary": [
+        "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 177 filtered out; finished in 2.09s"
+      ]
+    },
+    {
+      "id": "concurrency-worker-007",
+      "result": "PASS",
+      "command": "test --manifest-path src-tauri/Cargo.toml --lib real_worker_lost_start_response_retains_owned_child_until_manual_stop -- --nocapture --test-threads=1",
+      "exit_code": 0,
+      "timeout": false,
+      "started": "2026-09-04T15:00:38.9140453+08:00",
+      "finished": "2026-09-04T15:00:47.2249785+08:00",
+      "outer_timeout_seconds": 60,
+      "summary": [
+        "test result: ok. 1 passed; 0 failed; 0 ignored; 0 measured; 178 filtered out; finished in 3.13s"
+      ]
+    },
+    {
+      "id": "concurrency-clash-007",
+      "result": "PASS",
+      "command": "test --manifest-path src-tauri/Cargo.toml --lib singbox::clash_api::tests:: -- --nocapture --test-threads=1",
+      "exit_code": 0,
+      "timeout": false,
+      "started": "2026-09-04T15:03:32.0504687+08:00",
+      "finished": "2026-09-04T15:03:44.1226163+08:00",
+      "outer_timeout_seconds": 60,
+      "summary": [
+        "test result: ok. 12 passed; 0 failed; 0 ignored; 0 measured; 167 filtered out; finished in 5.13s"
+      ]
+    },
+    {
+      "id": "concurrency-controller-007",
+      "result": "PASS",
+      "command": "test --manifest-path src-tauri/Cargo.toml --lib application::managed_observation_runtime::tests:: -- --nocapture --test-threads=1",
+      "exit_code": 0,
+      "timeout": false,
+      "started": "2026-09-04T15:04:01.2021743+08:00",
+      "finished": "2026-09-04T15:04:46.4283128+08:00",
+      "outer_timeout_seconds": 60,
+      "summary": [
+        "test result: ok. 10 passed; 0 failed; 0 ignored; 0 measured; 169 filtered out; finished in 44.53s"
+      ]
+    },
+    {
+      "id": "concurrency-clippy-007",
+      "result": "PASS",
+      "command": "clippy --manifest-path src-tauri/Cargo.toml --lib -- -D warnings",
+      "exit_code": 0,
+      "timeout": false,
+      "started": "2026-09-04T15:04:57.7686817+08:00",
+      "finished": "2026-09-04T15:04:59.4628238+08:00",
+      "outer_timeout_seconds": 60,
+      "summary": []
+    },
+    {
+      "id": "concurrency-fmt-007",
+      "result": "PASS",
+      "command": "fmt --manifest-path src-tauri/Cargo.toml -- --check",
+      "exit_code": 0,
+      "timeout": false,
+      "started": "2026-09-04T15:05:06.467881+08:00",
+      "finished": "2026-09-04T15:05:06.85177+08:00",
+      "outer_timeout_seconds": 60,
+      "summary": []
+    },
+    {
+      "id": "concurrency-diff-check-007",
+      "result": "PASS",
+      "command": "diff --check",
+      "exit_code": 0,
+      "timeout": false,
+      "started": null,
+      "finished": "2026-09-04T15:05:40.802855+08:00",
+      "outer_timeout_seconds": 60,
+      "summary": []
+    }
+  ],
+  "target": "TASK-009 SF002 lost Start response and transport deadline"
+}

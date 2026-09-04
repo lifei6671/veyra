@@ -1,0 +1,167 @@
+{
+  "version": 1,
+  "records": [
+    {
+      "id": "EVIDENCE-TASK-008-CORE-001",
+      "type": "fixed_core_compatibility_preflight",
+      "target": "TASK-008 fixed Windows amd64 core candidate syntax",
+      "target_identity": "sha256:aad0ede010eafa7b277e520464f3a66fde820103d737eff739f40f3cc9451dcc",
+      "produced_by_phase": "EXECUTING",
+      "timestamp": "2026-09-04T11:11:26.1195012+08:00",
+      "observer": "AGENT:/root + CHILD_AGENT:/root/task008_contract_check",
+      "result": "PASS",
+      "command_or_method": "Fixed sing-box.exe version, then check -c each synthetic candidate; CreateNoWindow, 10-second timeout per process; no run or compatibility environment overrides.",
+      "asset_verification": {
+        "version": "1.14.0",
+        "exe": "aad0ede010eafa7b277e520464f3a66fde820103d737eff739f40f3cc9451dcc",
+        "revision": "0b8995879f29a9b98ee027bc17b75e101445b238",
+        "dll": "eee741046f0a3975124bae349aeac237aa306f3cc4de59ff5de070e74dbfdaeb",
+        "license": "bb3805862b583aee73ad6f7805ec634747a37257a637a3069857843f05ea589c"
+      },
+      "summary": "14 non-WireGuard protocol minimal candidates and guarded user-space WireGuard endpoint syntax accepted. This is feasibility evidence only, not compiler delivery or runtime evidence.",
+      "positive_protocol_checks": [
+        {
+          "protocol": "socks",
+          "exit": 0,
+          "timed_out": false,
+          "config_file": "matrix-socks.json",
+          "sha256": "3ad7c527f7c45da70ea2e797427e73a4a5cde60b2fa1f472d403b6bc6a3cc62d",
+          "error": ""
+        },
+        {
+          "protocol": "http",
+          "exit": 0,
+          "timed_out": false,
+          "config_file": "matrix-http.json",
+          "sha256": "472effd5320b04c8e55cd41a773cb83e88e28a62b4a1c9875b5f26aa279d46b8",
+          "error": ""
+        },
+        {
+          "protocol": "shadowsocks",
+          "exit": 0,
+          "timed_out": false,
+          "config_file": "matrix-shadowsocks.json",
+          "sha256": "7b22bf3d77788192b97b3d6a1cd144032c968084b2135e99ed4900dd4520e4d1",
+          "error": ""
+        },
+        {
+          "protocol": "vmess",
+          "exit": 0,
+          "timed_out": false,
+          "config_file": "matrix-vmess.json",
+          "sha256": "6cd99af296a5f3171772b72b20f6c1ef32ad3369316e12c8e769fe67233bcc6c",
+          "error": ""
+        },
+        {
+          "protocol": "vless",
+          "exit": 0,
+          "timed_out": false,
+          "config_file": "matrix-vless.json",
+          "sha256": "14234faeec62b6b075193358e217aca77c0fb277a445e6e73ad954da481e7fb0",
+          "error": ""
+        },
+        {
+          "protocol": "trojan",
+          "exit": 0,
+          "timed_out": false,
+          "config_file": "matrix-trojan.json",
+          "sha256": "3f86e8e6de811cbe6e731419eafe6db0619789b86acb30cf7f26cb8dff3a440f",
+          "error": ""
+        },
+        {
+          "protocol": "hysteria",
+          "exit": 0,
+          "timed_out": false,
+          "config_file": "matrix-hysteria.json",
+          "sha256": "5983f047595ab1c8a2af3deeb6a3eeb68fa34e3235b46ac9cebd6cabb2756dc1",
+          "error": ""
+        },
+        {
+          "protocol": "hysteria2",
+          "exit": 0,
+          "timed_out": false,
+          "config_file": "matrix-hysteria2.json",
+          "sha256": "d4de2607b69a85aac537aacaaa025048d8aabad97841812246303c3be26fb4a3",
+          "error": ""
+        },
+        {
+          "protocol": "tuic",
+          "exit": 0,
+          "timed_out": false,
+          "config_file": "matrix-tuic.json",
+          "sha256": "9c8bf87fc32b23cc86f3d8dbc1760b2e9141250b169395457d09f78ba4a8d56f",
+          "error": ""
+        },
+        {
+          "protocol": "shadowtls",
+          "exit": 0,
+          "timed_out": false,
+          "config_file": "matrix-shadowtls.json",
+          "sha256": "2daa218274a1f8557790383f80495957486d34ab0db2eb19fe8ac842871e6f57",
+          "error": ""
+        },
+        {
+          "protocol": "ssh",
+          "exit": 0,
+          "timed_out": false,
+          "config_file": "matrix-ssh.json",
+          "sha256": "1740ab415a95d93bf921dd76f97a94cbf242115f3e10a5118c7bf3893abbb20c",
+          "error": ""
+        },
+        {
+          "protocol": "naive",
+          "exit": 0,
+          "timed_out": false,
+          "config_file": "matrix-naive.json",
+          "sha256": "8434079643e6f265acc777376e917b4c2325157436c57429dd1082c0f5677d60",
+          "error": ""
+        },
+        {
+          "protocol": "anytls",
+          "exit": 0,
+          "timed_out": false,
+          "config_file": "matrix-anytls.json",
+          "sha256": "1ae5d0eb1119cfa31210f9166db5dd7f876f3d30f0ffa3e3f114c9a8664c1eae",
+          "error": ""
+        },
+        {
+          "protocol": "snell",
+          "version": 4,
+          "exit": 0,
+          "timed_out": false,
+          "config_file": "matrix-snell-v4.json",
+          "sha256": "84d956bb81ad5a8c33506fe6c5b600d3b42ecac05aa747a1d1be23db46b0ddc6",
+          "error": ""
+        }
+      ],
+      "wireguard": {
+        "endpoint_exit": 0,
+        "endpoint_sha256": "216cec630d33b78afc0eb7be7a5d3b209413395e0745ac5443653be807e1215b",
+        "guarded_endpoint_exit": 0,
+        "legacy_outbound_exit": 1,
+        "guarded_endpoint_sha256": "809c67460e5da6500619978128d9964e7a8ccac98d046749987be0f982fe3c1e",
+        "diagnostic": "WireGuard outbound is deprecated in sing-box 1.11.0 and removed in sing-box 1.13.0, use WireGuard endpoint instead"
+      },
+      "other_checks": {
+        "snell_v3_diagnostic": "snell: unsupported version: 3",
+        "snell_v3_exit": 1,
+        "block_outbound_exit": 0
+      },
+      "raw_artifact_directory": "src-tauri/target/task008-preflight",
+      "limitations": [
+        "All options combinations not verified.",
+        "Synthetic configurations were not emitted by the application compiler.",
+        "Real child lifecycle, transport, DNS behavior and ingress isolation NOT_RUN.",
+        "WireGuard endpoints remain a proposed Design change; no implementation authorization inferred.",
+        "Snell v4 accepted; unsupported versions must fail closed, not be silently rewritten."
+      ],
+      "routing": {
+        "requested_reasoning": "high",
+        "requested_model": "gpt-5.6-sol",
+        "actual_model_and_reasoning": "UNAVAILABLE",
+        "role": "sdlc_expert",
+        "comparative_usage": "UNAVAILABLE"
+      }
+    }
+  ]
+}
