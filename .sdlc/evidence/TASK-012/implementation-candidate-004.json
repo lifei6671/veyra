@@ -1,0 +1,18 @@
+{
+  "task": "TASK-012",
+  "candidate": "implementation-candidate-004",
+  "created_at": "2026-09-06T12:44:00Z",
+  "target_identity": "sha256:cabd42f6db8677468fafa7166c65559a5ab4df61bae20b30d3288475733681b3",
+  "design_identity": "sha256:c0d90aba66e5dbe20e2187b83138288f57c119b162f4fab933c16205aa9138a6",
+  "scope_override": ".sdlc/evidence/TASK-012/change-control-001.json",
+  "remediation": [
+    "T012-DELIVERY-006: added production-page state rendering tests, reproducible native read-back, recoverable Apply-failure evidence, actual empty/busy/context-menu captures and a dimension-by-dimension parity review.",
+    "T012-DELIVERY-009: the unique Provider now refreshes on existing runtime observation identity/lifecycle changes without a second cache or page polling queue.",
+    "T012-DELIVERY-010: Manual selection tracks only the transient clicked target and exposes inline pending plus aria-busy while authoritative snapshots remain the selected-state owner."
+  ],
+  "scope_statement": "No schema, RuntimeIntent, RouteTarget, wire union, tag rule, runtime mode, dependency, DCR-019 projection or Compiler change beyond approved change-control-001 was introduced.",
+  "verification": ".sdlc/evidence/TASK-012/verification-004.json",
+  "native_evidence": ".sdlc/evidence/TASK-012/native-ui-final-004.json",
+  "state_readback": ".sdlc/evidence/TASK-012/native-integration-readback-001.json",
+  "visual_parity": ".sdlc/evidence/TASK-012/visual-parity-review-001.md"
+}

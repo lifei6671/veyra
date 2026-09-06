@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-mutate-proxy-routing"
+description = "Enables the mutate_proxy_routing command without any pre-configured scope."
+commands.allow = ["mutate_proxy_routing"]
+
+[[permission]]
+identifier = "deny-mutate-proxy-routing"
+description = "Denies the mutate_proxy_routing command without any pre-configured scope."
+commands.deny = ["mutate_proxy_routing"]

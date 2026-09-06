@@ -1,0 +1,29 @@
+{
+  "task": "TASK-012",
+  "verified_at": "2026-09-06T12:42:00Z",
+  "source_state": "Current working tree after bounded remediation of T012-DELIVERY-006/009/010; no production file changed after these commands.",
+  "results": [
+    {"command":"pnpm test","result":"PASS","evidence":"9 files, 116 tests passed"},
+    {"command":"pnpm lint","result":"PASS","evidence":"tsc --noEmit exited 0"},
+    {"command":"pnpm build","result":"PASS","evidence":"tsc and Vite production build exited 0; only the pre-existing chunk-size warning was emitted"},
+    {"command":"cargo test --manifest-path src-tauri/Cargo.toml singbox::compiler::tests --lib","result":"PASS","evidence":"38 passed; includes exact Pool/Direct/Block final mapping and Unconfigured/missing/invalid-final rejection"},
+    {"command":"cargo test --manifest-path src-tauri/Cargo.toml application::proxy_routing::tests --lib","result":"PASS","evidence":"16 passed"},
+    {"command":"cargo test --manifest-path src-tauri/Cargo.toml selected_subscription --lib","result":"PASS","evidence":"6 passed; DCR-019 projection matrix"},
+    {"command":"cargo test --manifest-path src-tauri/Cargo.toml routing_apply_ --lib","result":"PASS","evidence":"3 passed"},
+    {"command":"cargo test --manifest-path src-tauri/Cargo.toml manual_selection --lib","result":"PASS","evidence":"3 passed"},
+    {"command":"cargo test --manifest-path src-tauri/Cargo.toml selector_put_and_get_use_the_fixed_encoded_endpoint_and_authenticated_shape --lib","result":"PASS","evidence":"1 passed against the fixed loopback selector endpoint"},
+    {"command":"cargo test --manifest-path src-tauri/Cargo.toml stored_default_target_is_carried_exactly_into_compilation --lib","result":"PASS","evidence":"1 passed; persisted Pool/Direct/Block target traversed selected projection into exact Compiler output without changing stored state"},
+    {"command":"cargo clippy --manifest-path src-tauri/Cargo.toml --lib -- -D warnings","result":"PASS","evidence":"exited 0"},
+    {"command":"cargo fmt --manifest-path src-tauri/Cargo.toml -- --check","result":"PASS","evidence":"exited 0"},
+    {"command":"git diff --check","result":"PASS","evidence":"exited 0; Git emitted line-ending notices only"}
+  ],
+  "native_validation": {
+    "result": "PASS",
+    "evidence": [
+      ".sdlc/evidence/TASK-012/native-integration-readback-001.json",
+      ".sdlc/evidence/TASK-012/native-ui-final-004.json",
+      ".sdlc/evidence/TASK-012/visual-parity-review-001.md"
+    ]
+  },
+  "required_validation_complete": true
+}

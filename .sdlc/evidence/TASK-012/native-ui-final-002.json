@@ -1,0 +1,28 @@
+{
+  "task": "TASK-012",
+  "recorded_at": "2026-09-06T11:23:49.3923106Z",
+  "target_identity": "sha256:119c63942b2de5e02a7f7230c7466e2a4bc53a392055bd74299db5326cb944ce",
+  "platform": "Windows Tauri WebView2",
+  "display_scale": "150%",
+  "isolated_identifier": "com.lifei6671.veyra.task012",
+  "fixture": ".sdlc/evidence/TASK-012/native-state-fixture-001.json",
+  "fixture_sha256": "11e25359e361025a74afdce9711db10c8daa25080cdc032754af17c4e999987c",
+  "observations": [
+    "Light 960x640 rendered Proxies and Routing from one isolated authoritative state.",
+    "Light 520x520 rendered Proxies without horizontal overflow and collapsed the node grid to one column.",
+    "The Routing create dialog rendered in the current native build with focused input and visible controls.",
+    "With runtime stopped, selecting node-b persisted the selector without changing active_configuration_generation=3 and displayed the saved-only Notice.",
+    "After process restart, node-b remained selected in the expanded Manual Pool.",
+    "Dark capture used a temporary Windows application-theme switch; AppsUseLightTheme and SystemUsesLightTheme were restored to 1 in the same verification sequence."
+  ],
+  "screenshots": [
+    {"path":"docs/ui/reference/veyra/windows-light/task012-final-proxies-light-960.png","sha256":"8a2ab69dd5aeee69ef3847e206879c9fd68a5776004766a59dac2aff25e3dc60"},
+    {"path":"docs/ui/reference/veyra/windows-light/task012-final-proxies-light-520.png","sha256":"5c5bfd8eee27f880a02c36197c5912f4543ad64e7f01954bd7a693a6ac9f41cd"},
+    {"path":"docs/ui/reference/veyra/windows-light/task012-final-routing-light-960.png","sha256":"905f58a48938a962881a9d2a956b1df362d2fee3baeaf71cd638c88b5ae45030"},
+    {"path":"docs/ui/reference/veyra/windows-light/task012-final-routing-dialog-light-960.png","sha256":"0135f456234d478fb7221a78fc313a3e7aacd1c8e592e8e5b19460ba3a58bd17"},
+    {"path":"docs/ui/reference/veyra/windows-light/task012-final-selector-saved-only-light-960.png","sha256":"1620c7b34dd360b5a3b87cbdad430a18b92bcd46a11da886ae4d9a033b38f2e3"},
+    {"path":"docs/ui/reference/veyra/windows-light/task012-final-restart-persistence-light-960.png","sha256":"b1a211a7fd14429ff223fd771be82f2b0ce130aeb4516962b9ee3360d88e991d"},
+    {"path":"docs/ui/reference/veyra/windows-dark/task012-final-proxies-dark-960.png","sha256":"afa824ba29bbcda52fbdd0bedc4a43fdf146f2a6b6e26ba98b56f2dc8e45502d"}
+  ],
+  "data_boundary": "The isolated state was reset from the repository fixture before and after verification. No screenshot or Evidence contains subscription URLs, credentials, API secrets, runtime tags, or generated core configuration."
+}

@@ -1,0 +1,80 @@
+{
+  "task": "TASK-012",
+  "recorded_at": "2026-09-06T12:28:00Z",
+  "platform": "Windows Tauri WebView2",
+  "display_scale": "150%",
+  "isolated_identifier": "com.lifei6671.veyra.task012",
+  "fixture": ".sdlc/evidence/TASK-012/native-state-fixture-001.json",
+  "data_boundary": "Repository-owned isolated fixture only; values below exclude subscription URLs, credentials, API secrets, generated core configuration and runtime tags.",
+  "final_executable_sha256": "22e6816c608db4e23f08f2cc5779de8695deed1c31ed59fa9116c4a04ba09275",
+  "apply_and_selector_success": {
+    "session_executable_sha256": "38a82a3129dc9cd0693491a886fd6fac151cee3a91314ea34b6a9107ceb44ed4",
+    "operation": "The final executable applied the fixture to Ready, then changed the Manual member from node-a to node-b through the production UI and fixed owned Clash API.",
+    "persisted_readback": {
+      "schemaVersion": 6,
+      "activeConfigurationGeneration": 3,
+      "defaultTargetKind": "pool",
+      "poolCount": 1,
+      "routeCount": 1,
+      "selectedNodeId": "node-b"
+    },
+    "generation_conclusion": "The hot-swappable selector mutation persisted node-b without advancing activeConfigurationGeneration.",
+    "visible_result": "The node-b row became authoritative selected state and the pool selector state became 运行中 after PUT/GET read-back.",
+    "screenshot": {
+      "path": "docs/ui/reference/veyra/windows-light/task012-final-selector-applied-light-960.png",
+      "sha256": "48ba94ac8ed8c2d1ec5bb9d47b52932cb1032bbc29135031e6918f3a6fd6f78e"
+    }
+  },
+  "recoverable_apply_failure": {
+    "session_executable_sha256": "38a82a3129dc9cd0693491a886fd6fac151cee3a91314ea34b6a9107ceb44ed4",
+    "setup": "A valid structural configuration was applied to Ready before saving one domain-valid but Compiler-invalid IP CIDR matcher.",
+    "persisted_readback": {
+      "desiredGeneration": 4,
+      "routeCount": 2,
+      "invalidMatcherKind": "ip_cidr",
+      "invalidMatcherValue": "1.2.3.4、99"
+    },
+    "runtime_readback": {
+      "ownedChildPidBeforeFailure": 79280,
+      "ownedChildPidAfterFailure": 79280,
+      "ownedChildStartTime": "2026-09-06T12:17:11.7027111Z",
+      "runtimeApiListeningAfterFailure": true,
+      "sidecarExecutableSha256": "aad0dcb30ec817474162879b7bf66bedfc656622658e6bc663fa4696698f4dcc"
+    },
+    "visible_result": "配置检查失败，旧运行配置保持不变",
+    "conclusion": "The saved desired state advanced and remained persisted; pre-stop compile failure preserved the same owned Ready child and its listening API.",
+    "screenshot": {
+      "path": "docs/ui/reference/veyra/windows-light/task012-final-apply-failed-old-ready-light-960.png",
+      "sha256": "fba14e82629995584f44d01eee62131a8ae9f08c96b38140bd7e6ce30514e0fd"
+    }
+  },
+  "runtime_event_invalidation": {
+    "session_executable_sha256": "38a82a3129dc9cd0693491a886fd6fac151cee3a91314ea34b6a9107ceb44ed4",
+    "setup": "A valid configuration reached Ready/applied; the owned isolated child was then stopped externally while Proxies held a terminal applied snapshot.",
+    "runtime_readback": {
+      "ownedChildPidBeforeExit": 74476,
+      "observationDelaySeconds": 4
+    },
+    "visible_result": "The page changed from applied/running to 有未应用更改 and 已保存 without a subscription mutation or Apply poll.",
+    "conclusion": "The existing runtime observation event invalidated the authoritative shared Provider snapshot after owned-child exit.",
+    "screenshot": {
+      "path": "docs/ui/reference/veyra/windows-light/task012-final-runtime-exit-refresh-light-960.png",
+      "sha256": "48c3456b4763b2b5f915ea922fb1918c4e3e58b390b0abcd0657334e0887af23"
+    }
+  },
+  "final_webview_ipc_readback": {
+    "method": "The final Tauri WebView2 process was launched with a loopback-only temporary DevTools port; Runtime.evaluate invoked only the existing main-window get/mutate commands and returned a sanitized subset.",
+    "initial_restart": {"revision":1,"desiredGeneration":3,"appliedGeneration":null,"runtimeState":"stopped","applyState":{"type":"savedPendingApply"},"defaultTarget":{"type":"pool","poolId":"pool-cross"},"poolCount":1,"routeCount":1,"selectorState":"savedOnly"},
+    "saved_mutation": {"outcome":"saved","revision":2,"desiredGeneration":4,"appliedGeneration":null,"runtimeState":"stopped","applyState":{"type":"savedPendingApply"},"defaultTarget":{"type":"direct"}},
+    "webview_reload": {"revision":2,"desiredGeneration":4,"appliedGeneration":null,"runtimeState":"stopped","applyState":{"type":"savedPendingApply"},"defaultTarget":{"type":"direct"},"proxiesDomDirty":true,"proxiesDomSelectorSaved":true,"routingDomDefault":"direct"},
+    "process_restart": {"revision":1,"desiredGeneration":4,"appliedGeneration":null,"runtimeState":"stopped","applyState":{"type":"savedPendingApply"},"defaultTarget":{"type":"direct"},"poolCount":1,"routeCount":1,"selectorState":"savedOnly"},
+    "conclusion": "Reload retained the same persisted dirty state and in-process revision 2. Process restart retained desired Domain state, reset non-persistent routingRevision to 1, exposed no operationId, and both hidden production pages consumed the same Provider snapshot."
+  },
+  "final_webview_query_error": {
+    "setup": "Both state.json and its isolated backup were temporarily replaced by invalid one-byte JSON after stopping the process.",
+    "query": {"status":"error","error":"stateUnavailable"},
+    "dom": {"proxiesVisible":true,"errorText":"出口配置不可用","retryVisible":true},
+    "screenshot": {"path":"docs/ui/reference/veyra/windows-light/task012-final-query-error-light-960.png","sha256":"0347a32523958a7171dd492362349dd09cd6d2cbdb636a5f6b58421cecea1577"}
+  },
+  "cleanup": "All isolated application and owned-child processes were stopped; ports 9090 and 9223 had zero listeners; state.json and state.json.bak were reset from the repository fixture; system theme values remained AppsUseLightTheme=1 and SystemUsesLightTheme=1."
+}

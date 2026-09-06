@@ -1,0 +1,123 @@
+{
+  "id": "EVIDENCE-TASK-012-DESIGN-REVIEW-003",
+  "type": "technical-design-review",
+  "target": "TASK-012",
+  "target_identity": "sha256:2989c6949657da7dcb02eb715232dc2df2df94b7ff9bdf29a03c13ffc802dbdc",
+  "produced_by_phase": "PLAN",
+  "result": "FAIL",
+  "timestamp": "2026-09-06T07:18:25.3825654Z",
+  "review_mode": "CHILD_AGENT",
+  "reviewed_target_identity": "sha256:2989c6949657da7dcb02eb715232dc2df2df94b7ff9bdf29a03c13ffc802dbdc",
+  "reviewer": "Codex child agent /root/task012_candidate003_reviewer",
+  "reviewer_independence": "The reviewer did not produce candidate-003 and did not perform design-review-001 or design-review-002. The reviewer changed only this review evidence record and did not modify the candidate, DCR, production code, tests, Task, or SDLC state.",
+  "review_result": "REWORK",
+  "review_strategy": "Targeted independent review of candidate-003 for T012-DESIGN-007/008 closure, regression of T012-DESIGN-001 through 006, current state/runtime/IPC compatibility, and the user-frozen convergence rules. New blocking analysis was limited to concrete state sequences and exact frozen-contract conflicts.",
+  "coverage": {
+    "strategy": "TARGETED_DESIGN_REVIEW",
+    "target": ".sdlc/design/TASK-012-proxy-routing-candidate-003.json",
+    "manifest": [
+      {
+        "path": ".sdlc/design/TASK-012-proxy-routing.md",
+        "expected_sha256": "90e1286f7d9bc3e909d7ef201bd29fba84c243374b05b0065918455d66f21684",
+        "actual_sha256": "90e1286f7d9bc3e909d7ef201bd29fba84c243374b05b0065918455d66f21684",
+        "result": "PASS"
+      },
+      {
+        "path": "docs/decisions/DCR-019-task012-custom-pool-projection-amendment.md",
+        "expected_sha256": "31d7b1cac7b7a6f4f3803ee445f5c30c263ffb755155300f3f2dea8093047c12",
+        "actual_sha256": "31d7b1cac7b7a6f4f3803ee445f5c30c263ffb755155300f3f2dea8093047c12",
+        "result": "PASS"
+      }
+    ],
+    "candidate_manifest_sha256": "2989c6949657da7dcb02eb715232dc2df2df94b7ff9bdf29a03c13ffc802dbdc",
+    "requirement_identity": "sha256:93b60509f5ff04b07dcab093aa82f26ff17cf6feb446b82c82dd6615fc2dbad4",
+    "included": [
+      "T012-DESIGN-007 structural generation versus hot-swappable Manual selection semantics",
+      "AppliedRoutingIndex provenance, eligibility, owned-instance binding, PUT-then-GET read-back, supersede handling, and required selector state table",
+      "T012-DESIGN-008 request and response discriminated unions, exact snapshot DTOs, apply and selector outcome mapping, error closure, null and omitted rules, and deny_unknown_fields",
+      "T012-DESIGN-001 and DCR-019 minimal cross-subscription closure regression",
+      "T012-DESIGN-002 and 003 Manual consistency plus Save-Apply state regression",
+      "T012-DESIGN-004, 005, and 006 closed request, rollback, routingRevision, and shared snapshot regression",
+      "current AppState generation, StateAccessGate and JsonStateStore transaction, owned runtime identity, DCR-004 failure, Clash API ownership, IPC capability, security, and test boundaries"
+    ],
+    "prior_findings": {
+      "T012-DESIGN-001": "FIXED",
+      "T012-DESIGN-002": "FIXED; its wire representation caveat remains tracked only under T012-DESIGN-008",
+      "T012-DESIGN-003": "FIXED; its exact Apply failure encoding caveat remains tracked only under T012-DESIGN-008",
+      "T012-DESIGN-004": "FIXED",
+      "T012-DESIGN-005": "FIXED",
+      "T012-DESIGN-006": "FIXED",
+      "T012-DESIGN-007": "FIXED",
+      "T012-DESIGN-008": "PARTIAL"
+    },
+    "required_validation": {
+      "target_identity": "PASS",
+      "requirement_traceability": "PASS",
+      "architecture_and_scope": "PASS",
+      "custom_pool_projection_amendment": "PASS",
+      "state_transaction_and_concurrency": "PASS",
+      "structural_and_selector_generation_orthogonality": "PASS",
+      "applied_routing_index_and_selector_read_back": "PASS",
+      "save_apply_user_semantics": "PASS",
+      "ipc_request_closure_and_security": "PASS",
+      "ipc_response_exactness": "FAIL",
+      "runtime_failure_wire_mapping": "FAIL",
+      "migration": "PASS",
+      "rollback": "PASS",
+      "testing_design": "PASS",
+      "implementation_or_runtime_tests": "NOT_RUN"
+    },
+    "freshness": "FRESH"
+  },
+  "issues": [
+    {
+      "finding_id": "T012-DESIGN-008",
+      "severity": "P1",
+      "title": "响应闭集仍不能唯一表达 query failure、Apply Recovery 终态和 Manual 保存后的 dispatch failure",
+      "location": [
+        ".sdlc/design/TASK-012-proxy-routing.md:351-389",
+        ".sdlc/design/TASK-012-proxy-routing.md:408-441",
+        ".sdlc/design/DCR-004-runtime-update-failures.md:21-43",
+        "src-tauri/src/application/managed_observation_runtime.rs:1561-1585",
+        "src-tauri/src/singbox/runtime.rs:169-188"
+      ],
+      "evidence": "Candidate-003 closes the success DTOs and selector read-back states, but three concrete wire states remain implementation-defined. First, SnapshotResult names QueryError without defining its closed codes, so an exact TypeScript parser cannot distinguish or reject unknown query failures. Second, after structural Save, an old-child stop failure leaves runtimeState=recoveryRequired with the old applied identity, yet savedApplyFailed.error may be either stopFailed or recoveryRequired; similarly candidate spawn/Ready cleanup failure can be startFailed or recoveryRequired. The design lists all codes but does not give the unique DCR-004 state-to-code mapping required by review-002. Third, after a Manual selection save succeeds while the owned runtime is Ready and the Pool/Node are in AppliedRoutingIndex, a worker dispatch/queue failure before any PUT/GET has no truthful closed outcome: selectorSavedOnly reasons are only runtimeStopped/runtimeNotReady/notInAppliedArtifact, selectorApplyUnknown reasons are only readBackUnavailable/unknownRuntimeNode/instanceChanged/superseded, and runtimeUnavailable is forbidden after save. Returning error would hide the committed desired selection; using an existing reason would state an event that did not occur. These are current reachable transaction/failure sequences, not future extensibility concerns.",
+      "required_change": "Complete only T012-DESIGN-008: define QueryError as an explicit closed scalar/union; freeze one unique runtimeState + applyState/error mapping for each DCR-004 terminal sequence (at minimum configuration/check failure, pre-commit state change, old-child stop failure, candidate spawn/Ready failure with successful cleanup, and cleanup failure/RecoveryRequired); and either prove the selector dispatch cannot fail after persistence or add one exact post-save ok outcome reason that truthfully covers pre-I/O dispatch unavailability. Keep every post-save Manual result as ok + authoritative snapshot, retain the existing MutationResult outer shape, and add the corresponding Rust serialization and TypeScript exact-parser fixtures. No new IPC, persisted field, schema version, runtime abstraction, or TASK-012 scope is needed."
+    }
+  ],
+  "remaining_risks": [
+    "The fixed sing-box 1.14.0 selector PUT/GET URL, request body, and response shape still require implementation-stage fixture evidence; the design correctly requires fail-closed behavior and this does not block design once the wire gap is closed.",
+    "DCR-019 projection behavior, selector runtime behavior, and all visual states remain unimplemented and unverified; this review does not treat design text as runtime evidence.",
+    "Cross-subscription data rollback remains roll-forward-first and requires the documented data convergence plus successful Apply before old projection code can be considered safe.",
+    "No production build, test, Windows runtime, or UI verification was run because this is an independent design review before implementation."
+  ],
+  "skill_result": {
+    "skill": "technical-design-review",
+    "target": "TASK-012",
+    "outcome": "FAIL",
+    "next_action_hint": "technical-design",
+    "review_mode": "CHILD_AGENT",
+    "reviewed_target_identity": "sha256:2989c6949657da7dcb02eb715232dc2df2df94b7ff9bdf29a03c13ffc802dbdc",
+    "coverage": {
+      "prior_findings": {
+        "T012-DESIGN-001": "FIXED",
+        "T012-DESIGN-002": "FIXED",
+        "T012-DESIGN-003": "FIXED",
+        "T012-DESIGN-004": "FIXED",
+        "T012-DESIGN-005": "FIXED",
+        "T012-DESIGN-006": "FIXED",
+        "T012-DESIGN-007": "FIXED",
+        "T012-DESIGN-008": "PARTIAL"
+      },
+      "freshness": "FRESH"
+    },
+    "issues": [
+      "T012-DESIGN-008"
+    ],
+    "remaining_risks": [
+      "selector PUT/GET runtime shape requires implementation evidence",
+      "DCR-019 and all user-visible runtime states remain unimplemented"
+    ],
+    "review_result": "REWORK"
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "task": "TASK-012",
+  "candidate": "implementation-candidate-005",
+  "created_at": "2026-09-06T13:05:00Z",
+  "target_identity": "sha256:c5b325d3de2d5c91a9d09fb44a075dc3e76be63be104ee940b3d0e0df4628762",
+  "design_identity": "sha256:c0d90aba66e5dbe20e2187b83138288f57c119b162f4fab933c16205aa9138a6",
+  "scope_override": ".sdlc/evidence/TASK-012/change-control-001.json",
+  "focus": "Close only T012-DELIVERY-006 after delivery-review-004; all other findings remain fixed.",
+  "changes_after_target_004": [
+    "Added a 31-check real React/Provider interaction run with official Tauri mockIPC covering all 10 closed mutation variants, UrlTest, selector transient ownership, error/retry, Dialog retention/focus, Context Menu keyboard behavior, Apply and runtime-event cross-page synchronization.",
+    "Stopped the explicit Pool menu click from propagating into its global close listener; no menu contract or composition changed.",
+    "Disabled structural controls while canonical Apply state is applying or applyUnknown, matching the existing backend busy boundary.",
+    "Added actual final-WebView startup loading and stateUnavailable/retry captures plus sanitized WebView IPC read-back for same-process reload dirty and process-restart routingRevision reset."
+  ],
+  "scope_statement": "No backend, Compiler, schema, RuntimeIntent, RouteTarget, wire union, tag rule, runtime mode, dependency, DCR-019 projection or persistence contract changed after target-004.",
+  "verification": ".sdlc/evidence/TASK-012/verification-005.json",
+  "browser_evidence": [".sdlc/evidence/TASK-012/proxy-routing-browser-005.js", ".sdlc/evidence/TASK-012/proxy-routing-browser-005.log"],
+  "native_evidence": ".sdlc/evidence/TASK-012/native-ui-final-004.json",
+  "state_readback": ".sdlc/evidence/TASK-012/native-integration-readback-001.json"
+}

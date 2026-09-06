@@ -294,12 +294,18 @@ impl ConfigCompiler for SingBoxCompiler {
         profile: RuntimeProfile,
     ) -> Result<SingBoxPlan, CompileError> {
         let (DnsPolicy::System, RuntimeProfile::ObservationOnly) = (dns, profile);
-        let RouteTarget::Pool(default_pool) = default_target else {
-            return Err(CompileError::InvalidRouteTarget);
+        let final_outbound = match default_target {
+            RouteTarget::Pool(default_pool)
+                if intent.pools.iter().any(|pool| &pool.id == default_pool) =>
+            {
+                pool_tag(&default_pool.0)
+            }
+            RouteTarget::Direct => "direct".to_owned(),
+            RouteTarget::Block => "block".to_owned(),
+            RouteTarget::Pool(_) | RouteTarget::Unconfigured => {
+                return Err(CompileError::InvalidRouteTarget);
+            }
         };
-        if !intent.pools.iter().any(|pool| &pool.id == default_pool) {
-            return Err(CompileError::InvalidRouteTarget);
-        }
         let mut nodes = intent.nodes.iter().collect::<Vec<_>>();
         nodes.sort_by(|left, right| left.id.cmp(&right.id));
         let mut outbounds = Vec::new();
@@ -393,7 +399,7 @@ impl ConfigCompiler for SingBoxCompiler {
             endpoints,
             route: RouteConfig {
                 rules,
-                final_outbound: pool_tag(&default_pool.0),
+                final_outbound,
                 default_domain_resolver: DNS_TAG.to_owned(),
             },
             experimental: Experimental {
@@ -1274,11 +1280,10 @@ impl Document {
             ingress.push(endpoint.tag.clone());
         }
         ingress.sort();
-        if direct_count != 1
-            || block_count != 1
-            || node_tags.is_empty()
-            || !pool_tags.contains(&self.route.final_outbound)
-        {
+        let valid_final_outbound = pool_tags.contains(&self.route.final_outbound)
+            || self.route.final_outbound == "direct"
+            || self.route.final_outbound == "block";
+        if direct_count != 1 || block_count != 1 || node_tags.is_empty() || !valid_final_outbound {
             return Err(CompileError::InvalidRouteTarget);
         }
         for outbound in &self.outbounds {
@@ -2815,7 +2820,7 @@ mod tests {
             ("/endpoints/0/peers/0/address", json!("localhost")),
             ("/endpoints/0/peers/0/port", json!(9090)),
             ("/endpoints/0/peers/0/allowed_ips", json!(["198.18.0.2/32"])),
-            ("/route/final", json!("direct")),
+            ("/route/final", json!("node-node")),
             ("/route/rules/0/action", json!("route")),
             ("/dns/rules/0/action", json!("route")),
             ("/dns/servers/0/type", json!("udp")),
@@ -3075,9 +3080,15 @@ mod tests {
         rejects(invalid);
     }
     fn compile(intent: &RuntimeIntent) -> Result<SingBoxPlan, CompileError> {
+        compile_target(intent, &RouteTarget::Pool(PoolId("manual".to_owned())))
+    }
+    fn compile_target(
+        intent: &RuntimeIntent,
+        default_target: &RouteTarget,
+    ) -> Result<SingBoxPlan, CompileError> {
         SingBoxCompiler.compile(
             intent,
-            &RouteTarget::Pool(PoolId("manual".to_owned())),
+            default_target,
             DnsPolicy::System,
             RuntimeProfile::ObservationOnly,
         )
@@ -3090,6 +3101,13 @@ mod tests {
     }
     fn document(intent: &RuntimeIntent) -> Value {
         serde_json::from_slice(final_config(intent).as_bytes()).expect("final JSON")
+    }
+    fn document_for_target(intent: &RuntimeIntent, default_target: &RouteTarget) -> Value {
+        let config = compile_target(intent, default_target)
+            .expect("typed plan")
+            .finalize(&test_api_secret())
+            .expect("final configuration");
+        serde_json::from_slice(config.as_bytes()).expect("final JSON")
     }
     fn user_node(document: &Value) -> &Value {
         document["outbounds"]
@@ -3615,11 +3633,33 @@ mod tests {
     }
 
     #[test]
-    fn rejects_missing_inactive_or_non_pool_default_and_invalid_pool_members() {
+    fn compiles_only_pool_direct_or_block_as_exact_final_outbound() {
+        let intent = intent();
+        for (target, expected) in [
+            (
+                RouteTarget::Pool(PoolId("manual".to_owned())),
+                "pool-manual",
+            ),
+            (RouteTarget::Direct, "direct"),
+            (RouteTarget::Block, "block"),
+        ] {
+            assert_eq!(
+                document_for_target(&intent, &target)["route"]["final"],
+                expected
+            );
+        }
+
+        for invalid_final in ["node-node", "arbitrary-outbound"] {
+            let mut invalid = document_for_target(&intent, &RouteTarget::Direct);
+            invalid["route"]["final"] = json!(invalid_final);
+            rejects(invalid);
+        }
+    }
+
+    #[test]
+    fn rejects_unconfigured_or_missing_pool_default_and_invalid_pool_members() {
         for target in [
             RouteTarget::Unconfigured,
-            RouteTarget::Direct,
-            RouteTarget::Block,
             RouteTarget::Pool(PoolId("absent-or-disabled".to_owned())),
         ] {
             assert_eq!(
@@ -3866,12 +3906,17 @@ mod tests {
             ("/dns/servers/0/type", json!("udp")),
             ("/dns/final", json!("other")),
             ("/route/default_domain_resolver", json!("other")),
-            ("/route/final", json!("direct")),
+            ("/route/final", json!("node-node")),
             ("/route/rules/0/outbound", json!("node-node")),
         ] {
             let mut mutated = original.clone();
             *mutated.pointer_mut(pointer).expect("fixture pointer") = value;
-            rejects(mutated);
+            let config =
+                GeneratedConfig::from_bytes(serde_json::to_vec(&mutated).expect("fixture JSON"));
+            assert!(
+                config.validate_final().is_err(),
+                "mutated pointer must fail: {pointer}"
+            );
         }
         for (pointer, key, value) in [
             ("/log", "output", json!("danger.log")),

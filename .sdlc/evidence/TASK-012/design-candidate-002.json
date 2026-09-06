@@ -1,0 +1,14 @@
+{
+  "id": "EVIDENCE-TASK-012-DESIGN-002",
+  "type": "technical-design-remediation-candidate",
+  "target": "TASK-012",
+  "target_identity": "sha256:4a39f41dc82deb1c979157798423375c02e852c31c7b6424bed1ef170233169b",
+  "produced_by_phase": "REMEDIATION",
+  "command_or_method": "technical-design remediation of T012-DESIGN-001 through T012-DESIGN-006 under the user-frozen 2026-09-06 product semantics",
+  "result": "PASS",
+  "timestamp": "2026-09-06T06:48:58.1037620Z",
+  "summary": "Revised the TASK-012 design and added DCR-019. The candidate freezes the exact custom-pool dependency closure, desired/applied generation semantics, Save-Apply state table, owned-runtime selector PUT plus read-back outcomes, process-only routingRevision CAS, shared frontend snapshot ownership, closed wire unions, behavioral rollback and verification matrix. No production code was modified.",
+  "observer": "Codex technical-design producer",
+  "artifact": ".sdlc/design/TASK-012-proxy-routing-candidate-002.json",
+  "supersedes_target_identity": "sha256:fd633968285f579a91e31444ef31f434b049c3f14cb00e38a79ca403804dd6aa"
+}

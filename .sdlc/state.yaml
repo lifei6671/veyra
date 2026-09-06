@@ -61,24 +61,15 @@ anchor:
 
 assumptions: []
 
-phase: REMEDIATION
+phase: PLAN
 
 focus:
-  task: TASK-012
+  task: null
 
-gates:
-  technical_design:
-    status: FAILED
-    target_identity: sha256:4a39f41dc82deb1c979157798423375c02e852c31c7b6424bed1ef170233169b
-    evidence:
-      - .sdlc/evidence/TASK-012/design-candidate-002.json
-      - .sdlc/evidence/TASK-012/design-review-002.json
-    reviewed_by: CHILD_AGENT:/root/task012_remediation_reviewer
-    approved_by: null
-    evaluated_at: "2026-09-06T06:55:17.6932015Z"
+gates: {}
 blocked: null
 
 next:
-  skill: technical-design
-  target: TASK-012
-  reason: Remediate T012-DESIGN-007 and T012-DESIGN-008, produce candidate-003, then repeat independent review; do not materialize or implement TASK-012.
+  skill: task-breakdown
+  target: TASK-013
+  reason: TASK-012 is DONE after independent Delivery Review and USER:lifei acceptance; stop at the TASK-013 materialization and planning entry without implementation.

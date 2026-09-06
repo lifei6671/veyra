@@ -1,0 +1,26 @@
+{
+  "task": "TASK-012",
+  "status": "STALE_CHECKPOINT_NOT_FINAL_EVIDENCE",
+  "platform": "Windows Tauri WebView2",
+  "display_scale": "150%",
+  "isolated_identifier": "com.lifei6671.veyra.task012",
+  "window_targets": ["960x640 CSS px", "520x520 CSS px"],
+  "theme": "light",
+  "fixture": ".sdlc/evidence/TASK-012/native-state-fixture-001.json",
+  "observations": [
+    "The shared native snapshot rendered a two-provider enabled Custom Manual Pool and one Route.",
+    "Selecting node-b while runtime was stopped persisted selected_node_id=node-b while active_configuration_generation remained 3.",
+    "The UI returned selectorSavedOnly semantics and displayed the saved-only Notice.",
+    "The 520 viewport rendered one-column node rows without observed horizontal overflow.",
+    "These captures predate DELIVERY-003/004 frontend remediation and therefore must be recaptured against the final target."
+  ],
+  "screenshots": [
+    {"path":"docs/ui/reference/veyra/windows-light/task012-checkpoint-001-proxies-light-960.png","sha256":"b1b29d0327a9ddbefd6a3e850f99298807989f75a2f0ee38b1a1855ee85eda21"},
+    {"path":"docs/ui/reference/veyra/windows-light/task012-checkpoint-001-proxies-expanded-light-960.png","sha256":"f6a6fea058483e773282ecfc458ec9ab15edec59e6e49eb4a50f564b29601cee"},
+    {"path":"docs/ui/reference/veyra/windows-light/task012-checkpoint-001-selector-saved-only-light-960.png","sha256":"cc9bb6f56f11029cc87cb11ef7558477b4b5098283663955701de6a9aa515d2e"},
+    {"path":"docs/ui/reference/veyra/windows-light/task012-checkpoint-001-routing-light-960.png","sha256":"6c99e00d9f97ecbc5117129ff74c85bf26a32efd13001d480459ed8bc3dbf6bd"},
+    {"path":"docs/ui/reference/veyra/windows-light/task012-checkpoint-001-routing-dialog-light-960.png","sha256":"8b39bc6eb0109c76b18d5d6ab4482d2e20420fd77404f72449cdd9f0554a6b01"},
+    {"path":"docs/ui/reference/veyra/windows-light/task012-checkpoint-001-proxies-light-520.png","sha256":"22184dbd51f58d3eb3de7013230e1b7e04894521e2615a342d02503646c3e930"}
+  ],
+  "dark_boundary": "A Chromium dark-theme mockIPC capture exists under ignored output/playwright, but no native dark capture is claimed."
+}

@@ -1,0 +1,23 @@
+{
+  "id": "EVIDENCE-TASK-012-DELIVERY-BASELINE-001",
+  "type": "delivery-unit-baseline",
+  "target": "TASK-012",
+  "target_identity": "git:f2dc91c3e1f444e0b1d3dca6c60e80a312dba443",
+  "result": "PASS",
+  "timestamp": "2026-09-06T07:43:44.3524808Z",
+  "starting_head": "f2dc91c3e1f444e0b1d3dca6c60e80a312dba443",
+  "production_diff_at_start": [],
+  "preimplementation_governance_changes": [
+    ".sdlc/design/TASK-012-proxy-routing.md",
+    ".sdlc/design/TASK-012-proxy-routing-candidate-003.json",
+    ".sdlc/design/TASK-012-proxy-routing-candidate-004.json",
+    ".sdlc/tasks/TASK-012.md",
+    ".sdlc/tasks.yaml",
+    ".sdlc/state.yaml",
+    ".sdlc/memory/HANDOFF.md",
+    ".sdlc/evidence/TASK-012/**"
+  ],
+  "authority": "USER:lifei approved Candidate-004 and instructed readiness followed by TASK-012 implementation.",
+  "scope_boundary": ".sdlc/tasks/TASK-012.md",
+  "observer": "Codex implementation producer"
+}

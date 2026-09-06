@@ -1,7 +1,8 @@
-//! 受管 sing-box 的固定只读 Clash API client。
+//! 受管 sing-box 的固定 Clash API client。
 //!
 //! URL、路径、认证 header 和 secret 均不接受调用方输入。响应只提取可进入安全 DTO 的
-//! 数字摘要；连接对象中的目标、进程、规则和链路信息在反序列化时即被丢弃。
+//! 数字摘要；连接对象中的目标、进程、规则和链路信息在反序列化时即被丢弃。唯一写操作是由
+//! runtime owner 以 applied artifact tag 驱动的 selector PUT，并强制由同实例 GET read-back 收敛。
 // 连接摘要接线将在 SF-002 的观测桥接步骤使用；当前端口先将 Ready 接入启动事务。
 #![allow(dead_code)]
 
@@ -12,7 +13,7 @@ use reqwest::{
     Client,
     header::{AUTHORIZATION, HeaderValue},
 };
-use serde::{Deserialize, de::IgnoredAny};
+use serde::{Deserialize, Serialize, de::IgnoredAny};
 use thiserror::Error;
 use tokio::time::timeout;
 use tokio_tungstenite::{
@@ -235,12 +236,61 @@ impl<'secret> ClashApiClient<'secret> {
         parse_log_message(&message).map(Some)
     }
 
+    /// 对固定 loopback Clash API 的一个内部 selector 发起切换。
+    ///
+    /// selector/node tag 只能来自当前 worker 持有的 applied artifact index；该方法不接受 URL、
+    /// header 或 secret。调用方无论此结果如何都必须在同一实例上执行 `read_selector`。
+    pub(crate) async fn write_selector(
+        &self,
+        selector_tag: &str,
+        node_tag: &str,
+    ) -> Result<(), ClashApiError> {
+        let authorization = self.authorization()?;
+        let response = self
+            .client
+            .put(selector_url(selector_tag)?)
+            .header(AUTHORIZATION, authorization)
+            .json(&SelectorMutation { name: node_tag })
+            .send()
+            .await
+            .map_err(|_| ClashApiError::Unavailable)?;
+        response
+            .status()
+            .is_success()
+            .then_some(())
+            .ok_or(ClashApiError::Unavailable)
+    }
+
+    /// 从固定 loopback Clash API 读回 selector 当前 runtime tag。
+    pub(crate) async fn read_selector(&self, selector_tag: &str) -> Result<String, ClashApiError> {
+        let authorization = self.authorization()?;
+        let response = self
+            .client
+            .get(selector_url(selector_tag)?)
+            .header(AUTHORIZATION, authorization)
+            .send()
+            .await
+            .map_err(|_| ClashApiError::Unavailable)?;
+        if !response.status().is_success() {
+            return Err(ClashApiError::Unavailable);
+        }
+        response
+            .json::<SelectorResponse>()
+            .await
+            .map(|response| response.now)
+            .map_err(|_| ClashApiError::InvalidResponse)
+    }
+
+    fn authorization(&self) -> Result<HeaderValue, ClashApiError> {
+        HeaderValue::from_str(&format!("Bearer {}", self.secret.as_str()))
+            .map_err(|_| ClashApiError::Unavailable)
+    }
+
     async fn get_json<T>(&self, url: &'static str) -> Result<T, ClashApiError>
     where
         T: for<'de> Deserialize<'de>,
     {
-        let authorization = HeaderValue::from_str(&format!("Bearer {}", self.secret.as_str()))
-            .map_err(|_| ClashApiError::Unavailable)?;
+        let authorization = self.authorization()?;
         let response = self
             .client
             .get(url)
@@ -348,6 +398,25 @@ impl<'secret> ClashApiClient<'secret> {
             Err(_) => Err(ClashApiError::Unavailable),
         }
     }
+}
+
+fn selector_url(selector_tag: &str) -> Result<reqwest::Url, ClashApiError> {
+    let mut url =
+        reqwest::Url::parse(CLASH_API_ROOT_URL).map_err(|_| ClashApiError::Unavailable)?;
+    url.path_segments_mut()
+        .map_err(|_| ClashApiError::Unavailable)?
+        .extend(["proxies", selector_tag]);
+    Ok(url)
+}
+
+#[derive(Serialize)]
+struct SelectorMutation<'value> {
+    name: &'value str,
+}
+
+#[derive(Deserialize)]
+struct SelectorResponse {
+    now: String,
 }
 
 /// 仅测试线程安装；观察真实socket future的Pending，不替换响应或修改产品超时。
@@ -623,6 +692,79 @@ mod tests {
 
         assert_eq!(error, ClashApiError::InvalidResponse);
         assert!(!error.to_string().contains(secret.as_str()));
+    }
+
+    #[test]
+    fn selector_url_and_body_are_closed_and_encoded() {
+        assert_eq!(
+            selector_url("pool with/slash")
+                .expect("fixed selector URL")
+                .as_str(),
+            "http://127.0.0.1:9090/proxies/pool%20with%2Fslash"
+        );
+        assert_eq!(
+            serde_json::to_string(&SelectorMutation {
+                name: "node-runtime"
+            })
+            .expect("fixed selector body"),
+            r#"{"name":"node-runtime"}"#
+        );
+    }
+
+    #[test]
+    fn selector_put_and_get_use_the_fixed_encoded_endpoint_and_authenticated_shape() {
+        let _lock = FIXED_CLASH_API_TEST_LOCK
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
+        let listener = TcpListener::bind("127.0.0.1:9090").expect("bind fixed loopback fixture");
+        let server = thread::spawn(move || {
+            let (mut put, _) = listener.accept().expect("accept selector PUT");
+            let request = read_http_request(&mut put);
+            assert!(request.starts_with("PUT /proxies/pool-with%20space HTTP/1.1\r\n"));
+            assert!(
+                request
+                    .to_ascii_lowercase()
+                    .contains("authorization: bearer ")
+            );
+            assert!(request.ends_with(r#"{"name":"node-runtime"}"#));
+            write!(put, "HTTP/1.1 204 No Content\r\nConnection: close\r\n\r\n")
+                .expect("write PUT response");
+
+            let (mut get, _) = listener.accept().expect("accept selector GET");
+            let request = read_http_request(&mut get);
+            assert!(request.starts_with("GET /proxies/pool-with%20space HTTP/1.1\r\n"));
+            assert!(
+                request
+                    .to_ascii_lowercase()
+                    .contains("authorization: bearer ")
+            );
+            let body = r#"{"name":"pool-with space","now":"node-runtime","all":["node-runtime"]}"#;
+            write!(
+                get,
+                "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{}",
+                body.len(),
+                body
+            )
+            .expect("write GET response");
+        });
+        let secret = generate_api_secret().expect("system entropy");
+        let client = ClashApiClient::new(&secret).expect("construct fixed client");
+        let runtime = tokio::runtime::Runtime::new().expect("test runtime");
+
+        runtime.block_on(async {
+            client
+                .write_selector("pool-with space", "node-runtime")
+                .await
+                .expect("selector PUT");
+            assert_eq!(
+                client
+                    .read_selector("pool-with space")
+                    .await
+                    .expect("selector GET"),
+                "node-runtime"
+            );
+        });
+        server.join().expect("fixed API fixture completes");
     }
 
     #[test]
@@ -1233,5 +1375,38 @@ mod tests {
             body
         )
         .expect("write fixture response");
+    }
+
+    fn read_http_request(stream: &mut std::net::TcpStream) -> String {
+        stream
+            .set_read_timeout(Some(Duration::from_secs(2)))
+            .expect("bound request read");
+        let mut bytes = Vec::new();
+        let mut buffer = [0_u8; 1024];
+        loop {
+            let read = stream.read(&mut buffer).expect("read request");
+            if read == 0 {
+                break;
+            }
+            bytes.extend_from_slice(&buffer[..read]);
+            let Some(headers_end) = bytes.windows(4).position(|value| value == b"\r\n\r\n") else {
+                continue;
+            };
+            let headers_end = headers_end + 4;
+            let headers = std::str::from_utf8(&bytes[..headers_end]).expect("ASCII headers");
+            let content_length = headers
+                .lines()
+                .find_map(|line| {
+                    line.split_once(':').and_then(|(name, value)| {
+                        name.eq_ignore_ascii_case("content-length")
+                            .then(|| value.trim().parse::<usize>().expect("content length"))
+                    })
+                })
+                .unwrap_or(0);
+            if bytes.len() >= headers_end + content_length {
+                break;
+            }
+        }
+        String::from_utf8(bytes).expect("HTTP request is UTF-8")
     }
 }

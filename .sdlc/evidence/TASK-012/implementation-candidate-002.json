@@ -1,0 +1,24 @@
+{
+  "task": "TASK-012",
+  "recorded_at": "2026-09-06T11:23:49.3923106Z",
+  "git_head": "f2dc91c3e1f444e0b1d3dca6c60e80a312dba443",
+  "target_identity": "sha256:119c63942b2de5e02a7f7230c7466e2a4bc53a392055bd74299db5326cb944ce",
+  "design_identity": "sha256:c0d90aba66e5dbe20e2187b83138288f57c119b162f4fab933c16205aa9138a6",
+  "approval_refs": [
+    ".sdlc/evidence/TASK-012/design-approval-004.json",
+    ".sdlc/evidence/TASK-012/change-control-001.json"
+  ],
+  "change_control_result": "T012-DELIVERY-001 implemented within the approved default Pool/Direct/Block Compiler mapping override.",
+  "amendment_files": [
+    "src-tauri/src/singbox/compiler.rs",
+    "src-tauri/src/application/managed_observation_runtime.rs"
+  ],
+  "amendment_behavior": [
+    "Pool(existing) emits its pool-* runtime tag as route.final.",
+    "Direct emits direct and Block emits block as route.final.",
+    "Unconfigured and a missing Pool remain rejected.",
+    "Final read-back accepts only a valid Pool tag, direct, or block and rejects node or arbitrary outbound tags.",
+    "Persisted Direct and Block survive selected projection and compile to the exact final outbound."
+  ],
+  "scope_integrity": "No RuntimeIntent, RouteTarget, StoredState/schema, wire contract, tag rule, runtime mode, dependency, lockfile, or Compiler structural refactor change was made."
+}

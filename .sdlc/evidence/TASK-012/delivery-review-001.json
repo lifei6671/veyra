@@ -1,0 +1,47 @@
+{
+  "task": "TASK-012",
+  "review_mode": "CHILD_AGENT",
+  "reviewed_by": "CHILD_AGENT:/root/task012_delivery_reviewer",
+  "reviewed_at": "2026-09-06T08:41:52.8020474Z",
+  "reviewed_target_identity": "git:f2dc91c3e1f444e0b1d3dca6c60e80a312dba443+delivery:sha256:910331377a0a87303b1dd00f1854c53e68a40bab4c2e5f0ea0e91ce1eed77fb4+design:sha256:c0d90aba66e5dbe20e2187b83138288f57c119b162f4fab933c16205aa9138a6",
+  "review_result": "REWORK",
+  "findings": [
+    {
+      "id": "T012-DELIVERY-001",
+      "severity": "P1",
+      "status": "OPEN_MATERIAL_CHANGE",
+      "summary": "Candidate-004 exposes Direct and Block as valid default targets while its deny scope freezes SingBoxCompiler unchanged; the current compiler accepts only Pool as final outbound, so either value saves successfully but every Apply deterministically fails configurationFailed."
+    },
+    {
+      "id": "T012-DELIVERY-002",
+      "severity": "P1",
+      "status": "REMEDIATED_PENDING_REREVIEW",
+      "summary": "Pre-worker Apply failures lacked generation- and operation-bound authoritative terminal memory."
+    },
+    {
+      "id": "T012-DELIVERY-003",
+      "severity": "P1",
+      "status": "REMEDIATED_PENDING_REREVIEW",
+      "summary": "The shared Provider lacked event invalidation, continuing Apply convergence and stale-response ordering."
+    },
+    {
+      "id": "T012-DELIVERY-004",
+      "severity": "P1",
+      "status": "REMEDIATED_PENDING_REREVIEW",
+      "summary": "Dialog Escape handlers captured stale non-busy state and could discard input during a pending mutation."
+    },
+    {
+      "id": "T012-DELIVERY-005",
+      "severity": "P1",
+      "status": "REMEDIATED_PENDING_REREVIEW",
+      "summary": "The mutation command synchronously waited on Apply or selector runtime work."
+    },
+    {
+      "id": "T012-DELIVERY-006",
+      "severity": "P1",
+      "status": "PARTIAL_REMEDIATION",
+      "summary": "The frozen acceptance and evidence matrix was incomplete; unit coverage was expanded, but final current-source native, real selector fixture, restart, visual parity and independent rereview remain pending."
+    }
+  ],
+  "next_action": "Change Control for T012-DELIVERY-001; after approval, finish implementation and create a new immutable delivery target for independent rereview."
+}

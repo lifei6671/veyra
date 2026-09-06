@@ -1,0 +1,104 @@
+{
+  "schema_version": 6,
+  "default_target": {
+    "kind": "pool",
+    "pool_id": "pool-cross"
+  },
+  "active_subscription_id": "sub-a",
+  "active_configuration_generation": 3,
+  "subscriptions": [
+    {
+      "id": "sub-a",
+      "name": "工作订阅",
+      "description": "",
+      "source": { "kind": "manual" },
+      "last_success_at_ms": null,
+      "last_attempt_at_ms": null,
+      "http_metadata": null,
+      "remote_request": null,
+      "update_policy": { "allow_auto_update": false, "interval_minutes": null }
+    },
+    {
+      "id": "sub-b",
+      "name": "备用订阅",
+      "description": "",
+      "source": { "kind": "manual" },
+      "last_success_at_ms": null,
+      "last_attempt_at_ms": null,
+      "http_metadata": null,
+      "remote_request": null,
+      "update_policy": { "allow_auto_update": false, "interval_minutes": null }
+    }
+  ],
+  "providers": [
+    { "id": "provider-a", "subscription_id": "sub-a", "name": "工作订阅" },
+    { "id": "provider-b", "subscription_id": "sub-b", "name": "备用订阅" }
+  ],
+  "nodes": [
+    {
+      "id": "node-a",
+      "provider_id": "provider-a",
+      "name": "香港 A",
+      "protocol": "socks",
+      "server": "127.0.0.1",
+      "port": 1080,
+      "options": { "kind": "socks", "version": 5, "username": null, "password": null },
+      "transport": "tcp",
+      "tls": null
+    },
+    {
+      "id": "node-b",
+      "provider_id": "provider-b",
+      "name": "日本 B",
+      "protocol": "socks",
+      "server": "127.0.0.1",
+      "port": 1081,
+      "options": { "kind": "socks", "version": 5, "username": null, "password": null },
+      "transport": "tcp",
+      "tls": null
+    }
+  ],
+  "pools": [
+    {
+      "id": "pool-cross",
+      "name": "跨订阅手动组",
+      "kind": "custom",
+      "sources": [
+        {
+          "provider_id": "provider-a",
+          "filter": {
+            "regions": [],
+            "protocols": [],
+            "include_keywords": [],
+            "exclude_keywords": [],
+            "include_node_ids": ["node-a"],
+            "exclude_node_ids": []
+          }
+        },
+        {
+          "provider_id": "provider-b",
+          "filter": {
+            "regions": [],
+            "protocols": [],
+            "include_keywords": [],
+            "exclude_keywords": [],
+            "include_node_ids": ["node-b"],
+            "exclude_node_ids": []
+          }
+        }
+      ],
+      "selection": { "kind": "manual", "selected_node_id": "node-a" },
+      "enabled": true
+    }
+  ],
+  "routes": [
+    {
+      "id": "route-work",
+      "name": "工作域名",
+      "enabled": true,
+      "priority": 0,
+      "matcher": { "kind": "domain_suffix", "values": ["example.test"] },
+      "target": { "kind": "pool", "pool_id": "pool-cross" }
+    }
+  ]
+}

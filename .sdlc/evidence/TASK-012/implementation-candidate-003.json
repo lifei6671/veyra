@@ -1,0 +1,16 @@
+{
+  "task": "TASK-012",
+  "recorded_at": "2026-09-06T11:53:40.8948930Z",
+  "git_head": "f2dc91c3e1f444e0b1d3dca6c60e80a312dba443",
+  "target_identity": "sha256:d2fe1dad626080775628b8925b1a428514cadd6bb0dccbbcbb9d71af6b539f00",
+  "design_identity": "sha256:c0d90aba66e5dbe20e2187b83138288f57c119b162f4fab933c16205aa9138a6",
+  "approval_refs": [
+    ".sdlc/evidence/TASK-012/design-approval-004.json",
+    ".sdlc/evidence/TASK-012/change-control-001.json"
+  ],
+  "review_remediation": {
+    "T012-DELIVERY-007": "Custom Pool draft membership now applies the same provider, region, protocol, include/exclude keyword and node allow/deny semantics as backend NodeFilter; an initial Manual selection is cleared as soon as the draft excludes it.",
+    "T012-DELIVERY-008": "Probe validation now matches the backend boundary: HTTPS, or HTTP only for 127.0.0.1/[::1] without userinfo, query or fragment."
+  },
+  "scope_integrity": "No schema, RuntimeIntent, RouteTarget, wire contract, tag rule, runtime mode, dependency, Compiler structure, Settings or later Task scope changed."
+}

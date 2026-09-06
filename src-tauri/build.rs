@@ -18,6 +18,8 @@ fn main() {
             "format_subscription_document",
             "save_subscription_document",
             "get_running_configuration",
+            "get_proxy_routing_snapshot",
+            "mutate_proxy_routing",
         ]),
     ))
     .expect("failed to build the Tauri application manifest");

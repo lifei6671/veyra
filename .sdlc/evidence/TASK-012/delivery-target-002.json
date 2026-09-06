@@ -1,0 +1,24 @@
+{
+  "task": "TASK-012",
+  "frozen_at": "2026-09-06T11:23:49.3923106Z",
+  "git_head": "f2dc91c3e1f444e0b1d3dca6c60e80a312dba443",
+  "target_identity": "sha256:119c63942b2de5e02a7f7230c7466e2a4bc53a392055bd74299db5326cb944ce",
+  "inventory_kind": "delivery-owned executable and final visual artifacts",
+  "context_refs": [
+    ".sdlc/tasks/TASK-012.md",
+    ".sdlc/design/TASK-012-proxy-routing-candidate-004.json",
+    "docs/decisions/DCR-019-task012-custom-pool-projection-amendment.md",
+    ".sdlc/evidence/TASK-012/design-approval-004.json",
+    ".sdlc/evidence/TASK-012/change-control-001.json",
+    ".sdlc/evidence/TASK-012/verification-002.json",
+    ".sdlc/evidence/TASK-012/native-ui-final-002.json"
+  ],
+  "excluded": [
+    ".gitignore .serena entry: unrelated workspace tooling change",
+    "docs/skills-agents-audit-2026-09-06.md: pre-existing user-owned staged file",
+    "task012-checkpoint-001 screenshots: stale checkpoint artifacts, retained only as history",
+    ".sdlc state, task index, HANDOFF, and Evidence records: orchestration/context artifacts rather than executable target content",
+    "ignored build output and isolated AppData/WebView data"
+  ],
+  "remaining_verification_constraint": "The real fixed-address selector PUT/GET fixture is UNAVAILABLE while 127.0.0.1:9090 is occupied by an existing process outside this verification run."
+}

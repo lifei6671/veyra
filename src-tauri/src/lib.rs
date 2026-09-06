@@ -19,8 +19,8 @@ use tauri::{
 
 use application::{
     managed_observation_runtime::ManagedObservationRuntimeController,
-    observability::InMemoryRuntimeObservations, state_access::StateAccessGate,
-    subscription_management::SubscriptionManager,
+    observability::InMemoryRuntimeObservations, proxy_routing::ProxyRoutingManager,
+    state_access::StateAccessGate, subscription_management::SubscriptionManager,
 };
 
 const MAIN_WINDOW_LABEL: &str = "main";
@@ -74,12 +74,20 @@ pub fn run() {
             );
             let runtime = Arc::new(ManagedObservationRuntimeController::new(
                 resource_root,
-                app_local_data_root,
-                observations,
-                state_gate,
+                app_local_data_root.clone(),
+                observations.clone(),
+                state_gate.clone(),
                 Arc::clone(&subscriptions),
                 Some(scheduler),
             ));
+            let routing = Arc::new(
+                ProxyRoutingManager::new(
+                    app_local_data_root.join("state.json"),
+                    state_gate.clone(),
+                    Arc::clone(&runtime),
+                )
+                .map_err(|_| "failed to initialize proxy routing manager")?,
+            );
             subscriptions.set_managed_proxy_port(runtime.managed_proxy_port());
             let subscription_events = app.handle().clone();
             subscriptions.install_change_sink(Arc::new(move |event| {
@@ -92,6 +100,7 @@ pub fn run() {
             }));
             app.manage(subscriptions);
             app.manage(runtime);
+            app.manage(routing);
             configure_tray(app)
         })
         .on_window_event(|window, event| {
@@ -121,7 +130,9 @@ pub fn run() {
             commands::get_subscription_document,
             commands::format_subscription_document,
             commands::save_subscription_document,
-            commands::get_running_configuration
+            commands::get_running_configuration,
+            commands::get_proxy_routing_snapshot,
+            commands::mutate_proxy_routing
         ])
         .run(tauri::generate_context!())
         .expect("failed to run Veyra");

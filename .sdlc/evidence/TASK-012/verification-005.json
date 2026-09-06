@@ -1,0 +1,40 @@
+{
+  "task": "TASK-012",
+  "verified_at": "2026-09-06T13:03:00Z",
+  "source_state": "Current working tree after closing the remaining T012-DELIVERY-006 interaction and native evidence gaps.",
+  "current_results": [
+    {"command":"pnpm test","result":"PASS","evidence":"9 files, 116 tests passed after the menu and Apply-busy fixes"},
+    {"command":"pnpm lint","result":"PASS","evidence":"tsc --noEmit exited 0"},
+    {"command":"pnpm build","result":"PASS","evidence":"tsc and Vite production build exited 0; only the pre-existing chunk-size warning was emitted"},
+    {"command":"playwright-cli run-code proxy-routing-browser-005.js","result":"PASS","evidence":"31 real React/Provider interaction checks with official Tauri mockIPC; all 10 mutation variants, query error/retry, UrlTest, selector transient, Dialog, menu keyboard, Apply and runtime-event cross-page synchronization passed"},
+    {"command":"pnpm tauri build --debug --no-bundle --config .sdlc/evidence/TASK-012/native-config-001.json","result":"PASS","evidence":"final executable built at the isolated target path; linker emitted its existing import-library warning"},
+    {"command":"git diff --check","result":"PASS","evidence":"exited 0; Git emitted line-ending notices only"},
+    {"command":"Evidence JSON parse","result":"PASS","evidence":"delivery-review-004, native-integration-readback-001 and native-ui-final-004 parsed successfully"}
+  ],
+  "unchanged_rust_partition_from_verification_004": {
+    "freshness": "FRESH",
+    "reason": "No Rust source changed after verification-004.",
+    "results": [
+      "Compiler 38 PASS",
+      "proxy routing manager 16 PASS",
+      "DCR-019 selected projection 6 PASS",
+      "routing Apply 3 PASS",
+      "Manual selection 3 PASS",
+      "fixed selector PUT/GET 1 PASS",
+      "persisted default target through projection and Compiler 1 PASS",
+      "cargo fmt --check PASS",
+      "cargo clippy --lib -- -D warnings PASS"
+    ]
+  },
+  "native_validation": {
+    "result": "PASS",
+    "final_executable_sha256": "22e6816c608db4e23f08f2cc5779de8695deed1c31ed59fa9116c4a04ba09275",
+    "evidence": [
+      ".sdlc/evidence/TASK-012/native-integration-readback-001.json",
+      ".sdlc/evidence/TASK-012/native-ui-final-004.json",
+      ".sdlc/evidence/TASK-012/visual-parity-review-001.md"
+    ],
+    "observed": "Actual startup loading frame, stateUnavailable/retry, empty, busy/disabled, selected, Dialog, Notice, left-click Context Menu, recoverable Apply failure, runtime exit invalidation, reload dirty and process-restart revision reset."
+  },
+  "required_validation_complete": true
+}

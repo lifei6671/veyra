@@ -1,0 +1,131 @@
+{
+  "id": "EVIDENCE-TASK-012-DESIGN-REVIEW-001",
+  "type": "technical-design-review",
+  "target": "TASK-012",
+  "target_identity": "sha256:fd633968285f579a91e31444ef31f434b049c3f14cb00e38a79ca403804dd6aa",
+  "produced_by_phase": "PLAN",
+  "timestamp": "2026-09-06T06:34:47.3438989Z",
+  "observer": "Codex independent child-agent technical-design reviewer",
+  "review_mode": "CHILD_AGENT",
+  "reviewed_target_identity": "sha256:fd633968285f579a91e31444ef31f434b049c3f14cb00e38a79ca403804dd6aa",
+  "result": "FAIL",
+  "review_result": "REWORK",
+  "architecture_change": true,
+  "coverage": {
+    "strategy": "TARGETED_DESIGN_REVIEW",
+    "target": ".sdlc/design/TASK-012-proxy-routing.md",
+    "requirement_identity": "sha256:93b60509f5ff04b07dcab093aa82f26ff17cf6feb446b82c82dd6615fc2dbad4",
+    "included": [
+      "TASK-011 frozen active-subscription projection and selectionConflict compatibility",
+      "cross-subscription Custom Pool dependency closure",
+      "AppState, JsonStateStore and shared StateAccessGate transaction model",
+      "Manual selected_node_id persistence and fixed Clash selector API switching",
+      "Pool, Route and default save-versus-runtime-Apply semantics",
+      "closed tagged-mutation IPC, main-window capability and sensitive-data boundary",
+      "migration, rollback, concurrency, observability and test strategy",
+      "Proxies and Routing page composition constraints"
+    ],
+    "required_validation": {
+      "target_identity": "PASS",
+      "requirement_traceability": "PASS",
+      "architecture_and_scope": "FAIL",
+      "state_transaction_and_concurrency": "FAIL",
+      "ipc_and_security": "FAIL",
+      "runtime_failure_and_compensation": "FAIL",
+      "migration": "PASS",
+      "rollback": "FAIL",
+      "testing_closure": "FAIL",
+      "implementation_or_runtime_tests": "NOT_RUN"
+    },
+    "freshness": "FRESH"
+  },
+  "issues": [
+    {
+      "finding_id": "T012-DESIGN-001",
+      "severity": "P1",
+      "title": "跨订阅 Custom Pool 改变 TASK-011 已冻结的 selectionConflict 语义，但没有形成明确 amendment 和精确最小依赖闭包",
+      "location": [
+        ".sdlc/design/TASK-012-proxy-routing.md:145-158",
+        ".sdlc/design/TASK-012-proxy-routing.md:257-264",
+        ".sdlc/tasks/TASK-011.md:252-259",
+        "src-tauri/src/application/selected_subscription.rs:43-58",
+        "src-tauri/src/application/selected_subscription.rs:83-105"
+      ],
+      "evidence": "TASK-011 SF-004 明确冻结运行投影只含目标订阅 Provider/Node，跨订阅 Pool source/default/route/manual-selected 硬引用返回 selectionConflict；当前代码也先只收集激活订阅 Provider/Node，再过滤 Pool source。候选改为所有 enabled Custom Pool 的显式 source 可引入其它订阅 Provider/Node，并仅称其为对 DCR-018 的“受控解释”，没有声明替代 TASK-011 哪些冻结条款、优先级和 Owner approval，也没有把闭包根、边、排除项和冲突规则精确定义到可测试算法。",
+      "required_change": "建立独立且可批准的 TASK-011 投影语义 amendment（或适用 DCR），明确 supersede TASK-011 SF-004 与 DCR-018 的具体句段；冻结最小闭包算法：闭包根集合、是否仅含 enabled 且被 default/enabled route 引用的 Custom Pool 或全部 enabled Custom Pool、PoolSource 到 Provider 再到 NodeFilter 匹配节点的唯一扩展边、Manual selected node 约束、未引用 sibling Provider/Node/Subscription 的排除，以及空成员、禁用 Pool、删除/刷新后失效时的 selectionConflict。补齐原冻结行为与新行为的正反测试矩阵。"
+    },
+    {
+      "finding_id": "T012-DESIGN-002",
+      "severity": "P1",
+      "title": "Manual 选择持久化后的 selector 切换存在不可判定结果，savedApplyFailed 文案和补偿模型不真实",
+      "location": [
+        ".sdlc/design/TASK-012-proxy-routing.md:170-182",
+        ".sdlc/design/TASK-012-proxy-routing.md:197-200",
+        "docs/veyra.md:2892-2949",
+        "src-tauri/src/singbox/clash_api.rs:178-258"
+      ],
+      "evidence": "候选先提交 selected_node_id，再调用 selector；任何超时、连接中断或响应解析失败均被收敛成 savedApplyFailed，并向用户断言“当前服务未切换”。但写请求可能已被 core 接收，现有 ClashApiClient 只有 Unavailable/InvalidResponse 两类并且没有 selector read-back，无法区分“未切换”与“已切换但响应丢失”。候选也没有把操作绑定到持久化时观察到的受管 instance/applied subscription/generation，串行 worker 入队期间实例替换会使切换目标不确定。",
+      "required_change": "冻结持久提交后的确定性一致性模型：在 worker 中绑定并复核受管 instance identity、applied subscription/generation 和 Pool/Node 运行 tag；明确 HTTP 成功、明确拒绝、请求结果不确定、实例漂移、Pool 不在实际投影、Stopped 的互斥终态。对不确定写结果必须使用固定 selector state GET 做 read-after-write 对账，或新增 truthful 的 savedApplyUnknown/reapplyRequired 终态，禁止声称未切换。说明不回滚持久选择的理由、可重复 Apply/重试语义和每一终态的 UI 文案，并补齐响应丢失与实例切换竞争测试。"
+    },
+    {
+      "finding_id": "T012-DESIGN-003",
+      "severity": "P1",
+      "title": "保存与 Runtime Apply 被定义为两个用户动作，但设计没有可持续观察的 saved-versus-applied 身份和 Apply 失败后状态表",
+      "location": [
+        ".sdlc/design/TASK-012-proxy-routing.md:160-168",
+        ".sdlc/design/TASK-012-proxy-routing.md:193-199",
+        ".sdlc/tasks/TASK-011.md:261-276",
+        "src-tauri/src/application/managed_observation_runtime.rs:500-548",
+        "src/lib/observability.ts:105-107",
+        "src/lib/observability.ts:142-143"
+      ],
+      "evidence": "候选明确要求保存后另点“应用到当前服务”，但 Pool/Route/default mutation 不增加 active_configuration_generation；当前权威观测只暴露 appliedSubscriptionId/appliedConfigurationGeneration。因而保存后持久 active 元组仍可能与旧 child 的 applied 元组相同，页面重新查询、切页或 WebView reload 后无法判断“已保存未应用”。候选只规定即时 Notice，并笼统继承 activate DTO，没有冻结 compile/check、旧 child stop、spawn、Ready、timeout/pending 各失败点之后的持久配置、实际 child、dirty/apply 状态、可重试动作和显示规则。",
+      "required_change": "明确这是用户操作分离而非仅实现阶段分离，并新增不泄密的配置身份对账设计：例如规范化 projected-config revision/fingerprint 同时记录在持久 snapshot 响应和当前受管 instance 观测中，或采用等价的可证明机制；不得只比较订阅 generation。冻结 Save 后、Apply pending、Apply 成功以及 compile/check/stop/spawn/Ready/timeout/recovery 各终态的 persisted state、running state、observable apply state、Notice/按钮和重试规则，且与 TASK-011 已冻结的 post-commit 失败语义逐项一致。补齐切页/reload 后仍能准确显示 dirty 状态的验收。"
+    },
+    {
+      "finding_id": "T012-DESIGN-004",
+      "severity": "P1",
+      "title": "mutate_proxy_routing 只列出 tag 名称，尚未冻结为可审计的 discriminated union wire schema",
+      "location": [
+        ".sdlc/design/TASK-012-proxy-routing.md:130-139",
+        ".sdlc/design/TASK-012-proxy-routing.md:184-200"
+      ],
+      "evidence": "候选列出了七个 action tag，但没有定义每个 variant 的确切字段、必填/可空规则、create 与 update 的区分、NodeFilter/SelectionPolicy/TrafficMatcher/RouteTarget 的 wire discriminant、大小和数量边界，也未冻结 Rust 顶层及嵌套 DTO 的 deny_unknown_fields。upsertCustomPool/upsertRoute 因此仍可在实现时退化为可选 ID 加任意领域对象或 serde_json payload 的通用 mutation。前端 exact response parsing 不能约束后端 request surface。",
+      "required_change": "在设计中给出完整封闭 wire contract：顶层 request 和每个 mutation variant 的 exact keys、camelCase discriminant、标量/集合上限、null/omitted 语义、create/update 身份规则，以及嵌套 PoolSource/NodeFilter/SelectionPolicy/TrafficMatcher/RouteTarget DTO；Rust 所有 request 层级使用 deny_unknown_fields，禁止 serde_json::Value、flatten map 和直接接收完整 AppState/NodePool/RoutePolicy。reorderRoutes 必须定义完整 ID 集合/重复/遗漏规则。TypeScript encoder/parser 与 Rust 序列化正反 fixture 必须枚举 unknown tag/field、非法组合和过大 payload。"
+    },
+    {
+      "finding_id": "T012-DESIGN-005",
+      "severity": "P2",
+      "title": "回滚章节忽略了跨订阅 Custom Pool 数据对旧投影实现的运行兼容性",
+      "location": [
+        ".sdlc/design/TASK-012-proxy-routing.md:247-255",
+        "src-tauri/src/application/selected_subscription.rs:83-105"
+      ],
+      "evidence": "候选声称移除投影增量后 StoredStateV6 数据仍可读取，但旧实现虽然能反序列化这些 Pool/Route，却会过滤掉跨订阅 source，并可能在 Start/Use 时返回 selectionConflict。若 default/route 指向该 Pool，代码回滚后用户可能无法重新应用已持久化配置；“旧 UI 不可编辑”也意味着没有恢复入口。",
+      "required_change": "冻结数据已被用户写入后的真实回滚策略：定义何时只允许 roll-forward，或在回滚前把 default/route 移回激活订阅可用 Pool并禁用/移除跨订阅依赖的有界步骤；明确运行中、Stopped、重启后三种结果并增加旧投影兼容测试。不得把“schema 可读取”等同于行为可回滚。"
+    },
+    {
+      "finding_id": "T012-DESIGN-006",
+      "severity": "P2",
+      "title": "opaque revision 与双页面刷新传播规则不足以形成确定的并发契约",
+      "location": [
+        ".sdlc/design/TASK-012-proxy-routing.md:128-141",
+        ".sdlc/design/TASK-012-proxy-routing.md:193-195"
+      ],
+      "evidence": "设计只称对若干字段做“规范序列”SHA-256，未冻结字段全集、排序、编码和版本域；同时 mutation 后只返回调用页 snapshot，而现有 subscription-state-changed 不会自然表达 Pool/Route/default 变化。Proxies 与 Routing 在 activePage+hidden 下可能同时挂载，一个页面成功保存后另一个页面保持陈旧直到冲突。",
+      "required_change": "冻结 revision 的版本化 canonical encoding、字段全集和排序，或改用被明确拥有的单调 revision；定义同一 WebView 内 Proxies/Route query cache 的唯一 owner 与 mutation 成功后的双页面同步/失效机制。若不新增 backend event，应明确前端共享 cache/invalidation，不能依赖订阅事件表达非订阅 mutation。"
+    }
+  ],
+  "remaining_risks": [
+    "尚未验证 sing-box 1.14.0 固定 selector 写入及 selector state 读取的实际响应形状；重做设计后仍需最小受控集成验证。",
+    "跨订阅投影 amendment 尚未获得 Owner 批准；在批准前 TASK-011 的 active-subscription-only 和 selectionConflict 语义仍是权威。",
+    "本次是设计只读审查，未运行实现、编译、测试、原生窗口或视觉验证；这些不能由设计 Review 代替。",
+    "Routing 的 RuleSet/Inbound 仍按候选 Non-Scope 排除，后续产品能力 Task 需要独立 Owner、持久化和 Compiler Gate。"
+  ],
+  "skill_result": {
+    "skill": "technical-design-review",
+    "target": "TASK-012",
+    "outcome": "FAIL",
+    "next_action_hint": "technical-design"
+  }
+}

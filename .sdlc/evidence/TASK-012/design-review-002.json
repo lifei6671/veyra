@@ -1,0 +1,129 @@
+{
+  "id": "EVIDENCE-TASK-012-DESIGN-REVIEW-002",
+  "type": "technical-design-review",
+  "target": "TASK-012",
+  "target_identity": "sha256:4a39f41dc82deb1c979157798423375c02e852c31c7b6424bed1ef170233169b",
+  "produced_by_phase": "PLAN",
+  "result": "FAIL",
+  "timestamp": "2026-09-06T06:55:17.6932015Z",
+  "review_mode": "CHILD_AGENT",
+  "reviewed_target_identity": "sha256:4a39f41dc82deb1c979157798423375c02e852c31c7b6424bed1ef170233169b",
+  "reviewer": "Codex child agent /root/task012_remediation_reviewer",
+  "reviewer_independence": "The reviewer did not produce candidate-002, did not perform the first design review, and made no changes to the reviewed design, DCR, production code, tests, Task, or SDLC state.",
+  "review_result": "REWORK",
+  "review_strategy": "Targeted independent remediation review of the two-file manifest, all six prior findings, the user-frozen product semantics, current active-subscription projection/runtime identity implementation, closed IPC boundary, rollback, and test closure.",
+  "coverage": {
+    "strategy": "TARGETED_DESIGN_REVIEW",
+    "target": ".sdlc/design/TASK-012-proxy-routing-candidate-002.json",
+    "manifest": [
+      {
+        "path": ".sdlc/design/TASK-012-proxy-routing.md",
+        "expected_sha256": "df66ec9a3afd1707ba24a0c7750e6a0099ab20ee56a64a81da05506852235f05",
+        "actual_sha256": "df66ec9a3afd1707ba24a0c7750e6a0099ab20ee56a64a81da05506852235f05",
+        "result": "PASS"
+      },
+      {
+        "path": "docs/decisions/DCR-019-task012-custom-pool-projection-amendment.md",
+        "expected_sha256": "31d7b1cac7b7a6f4f3803ee445f5c30c263ffb755155300f3f2dea8093047c12",
+        "actual_sha256": "31d7b1cac7b7a6f4f3803ee445f5c30c263ffb755155300f3f2dea8093047c12",
+        "result": "PASS"
+      }
+    ],
+    "candidate_manifest_sha256": "4a39f41dc82deb1c979157798423375c02e852c31c7b6424bed1ef170233169b",
+    "requirement_identity": "sha256:93b60509f5ff04b07dcab093aa82f26ff17cf6feb446b82c82dd6615fc2dbad4",
+    "included": [
+      "TASK-011 SF-004 and DCR-018 projection semantics amended by DCR-019",
+      "minimal cross-subscription Custom Pool closure and selectionConflict matrix",
+      "Manual desired persistence, owned-runtime selector PUT and GET read-back, response-loss and instance drift",
+      "desired and applied generation identity, Save-Apply user semantics, DCR-004 failure stages and old applied artifact",
+      "process-only routingRevision CAS and the shared authoritative Proxies/Routing snapshot",
+      "closed tagged mutation request union, nested discriminants, exact keys, boundary values and main-window capability",
+      "migration, rollback, security, observability, test and visual verification boundaries"
+    ],
+    "prior_findings": {
+      "T012-DESIGN-001": "FIXED",
+      "T012-DESIGN-002": "PARTIAL",
+      "T012-DESIGN-003": "PARTIAL",
+      "T012-DESIGN-004": "FIXED",
+      "T012-DESIGN-005": "FIXED",
+      "T012-DESIGN-006": "FIXED"
+    },
+    "required_validation": {
+      "target_identity": "PASS",
+      "requirement_traceability": "PASS",
+      "architecture_and_scope": "PASS",
+      "custom_pool_projection_amendment": "PASS",
+      "state_transaction_and_concurrency": "FAIL",
+      "ipc_request_closure_and_security": "PASS",
+      "ipc_response_and_observable_state_closure": "FAIL",
+      "runtime_failure_and_compensation": "FAIL",
+      "migration": "PASS",
+      "rollback": "PASS",
+      "testing_closure": "FAIL",
+      "implementation_or_runtime_tests": "NOT_RUN"
+    },
+    "freshness": "FRESH"
+  },
+  "issues": [
+    {
+      "finding_id": "T012-DESIGN-007",
+      "severity": "P1",
+      "title": "Manual read-back 成功会在已有结构性 dirty 时错误地把未应用配置标记为已应用",
+      "location": [
+        ".sdlc/design/TASK-012-proxy-routing.md:134-144",
+        ".sdlc/design/TASK-012-proxy-routing.md:183-205",
+        ".sdlc/design/TASK-012-proxy-routing.md:207-230",
+        "src-tauri/src/application/managed_observation_runtime.rs:1036-1042",
+        "src-tauri/src/singbox/runtime.rs:169-186"
+      ],
+      "evidence": "候选允许 Pool/Route/default Save 先把 desired generation 从 G 推进到 G+1，同时旧 Ready child 和 applied generation 仍为 G；随后 Manual selection 又保存为 G+2。若旧 child 上同名 selector 的 PUT/GET 成功，表格要求直接把 applied generation 对齐 G+2。该原地操作只证明 selector 当前选中节点，不能证明 G+1 中 Pool/Route/default 的结构变化已加载，也没有替换 SidecarRuntime 的 active GeneratedConfig。于是页面会清除 dirty，并把未 Apply 的结构变化错误报告为已应用。reconcile-only 在已有 dirty 时同样可能产生该误判。候选还未冻结 read-back NodeId/tag 必须来自 worker 持有的 applied projection/artifact，而不能从已修改的 AppState 重算。",
+      "required_change": "冻结 Manual 即时切换的 generation 前置条件和竞争状态机。最小充分方案是：只有 mutation 前 desired tuple 与 owned Ready instance 的 applied tuple 完全一致，且 Pool/Node 均存在于该 applied artifact/projection 时，保存后的 PUT+GET 成功才可把 applied generation推进到该次 Manual generation；若此前已有任何结构性 dirty，则仍持久化 desired selection，但不得对旧 child 声称完整 applied，应返回 truthful 的 savedOnly（或另一个已冻结的四态映射）并要求完整 Apply。并明确 read-back 使用 worker 保存的 applied Pool/Node tag map；后续并发 Save 只能让 applied 停在本次 generation，不能对齐更新后的最新 desired。补齐“先结构 Save、再 Manual”“dirty 下 reconcile-only”“Manual 期间并发结构 Save”测试。"
+    },
+    {
+      "finding_id": "T012-DESIGN-008",
+      "severity": "P1",
+      "title": "两个 IPC 的成功/失败响应仍未封闭，保存后的 Manual 结果与可重载 Apply 状态可由实现自行决定",
+      "location": [
+        ".sdlc/design/TASK-012-proxy-routing.md:192-201",
+        ".sdlc/design/TASK-012-proxy-routing.md:235-247",
+        ".sdlc/design/TASK-012-proxy-routing.md:316-328"
+      ],
+      "evidence": "请求侧 discriminated union 已封闭，但 SnapshotResult 只列顶层 key，未冻结 runtimeState/applyState 的 discriminant、variant exact keys、null 规则和与 DCR-004 表格的映射；providers/nodes/pools/routes 也只称为 safe 或类型化 DTO，未列完整响应结构。MutationResult 同时允许四种 saved effect 与 runtimeUnavailable error，却没有规定 Manual 已完成持久保存后若 worker busy、入队失败或 read-back infrastructure unavailable，到底必须返回哪个保存成功 effect，还是返回会掩盖已保存事实的 error。结构 mutation 的 effect 也没有逐 variant 映射。前端因而无法用 exact-shape parser 在 reload、pending、RecoveryRequired 和 post-save runtime failure 上保持冻结的用户语义。",
+      "required_change": "补全两个 IPC 的响应 wire contract：为 runtimeState、applyState、Pool/Route/Selection/Matcher snapshot DTO 和每个 success/error variant 列出 discriminant、exact keys、null/omitted 规则及封闭值；逐个 mutation variant 冻结 effect。Manual 一旦保存成功，任何后续 runtime busy/dispatch/transport/read-back 问题都必须保留 ok+snapshot 并映射到四种 truthful effect，不能退化为不说明已保存事实的通用 error；runtimeUnavailable 只能定义在未持久提交的明确阶段。Apply pending 的 operationId、DCR-004 各终态和 reload dirty 必须有唯一 wire 映射，并加入 Rust serialization 与 TypeScript exact parser 正反 fixture。"
+    }
+  ],
+  "remaining_risks": [
+    "尚未以固定 sing-box 1.14.0 fixture 验证 selector PUT/GET 的实际 URL、请求体和响应 shape；设计已要求 fail closed，但该项仍是实现阶段必需 Evidence。",
+    "DCR-019 已获得产品语义授权，但其实现、原冻结行为回归和跨订阅正反矩阵尚未执行；本 Review 不把设计文本当作运行证明。",
+    "本次只审设计，没有运行生产实现、编译、测试、原生 Windows 或视觉验收；这些在 Review PASS 后仍须按 Task Delivery Gate 单独完成。",
+    "跨订阅数据上线后的代码回滚依赖先行数据收敛并成功 Apply；未完成时按设计只能 roll-forward。"
+  ],
+  "skill_result": {
+    "skill": "technical-design-review",
+    "target": "TASK-012",
+    "outcome": "FAIL",
+    "next_action_hint": "technical-design",
+    "review_mode": "CHILD_AGENT",
+    "reviewed_target_identity": "sha256:4a39f41dc82deb1c979157798423375c02e852c31c7b6424bed1ef170233169b",
+    "coverage": {
+      "prior_findings": {
+        "T012-DESIGN-001": "FIXED",
+        "T012-DESIGN-002": "PARTIAL",
+        "T012-DESIGN-003": "PARTIAL",
+        "T012-DESIGN-004": "FIXED",
+        "T012-DESIGN-005": "FIXED",
+        "T012-DESIGN-006": "FIXED"
+      },
+      "freshness": "FRESH"
+    },
+    "issues": [
+      "T012-DESIGN-007",
+      "T012-DESIGN-008"
+    ],
+    "remaining_risks": [
+      "selector PUT/GET runtime shape requires implementation evidence",
+      "DCR-019 and all user-visible runtime states remain unimplemented"
+    ],
+    "review_result": "REWORK"
+  }
+}
