@@ -1,0 +1,36 @@
+@font-face {
+  font-family: "codicon";
+  font-display: block;
+  src: url("../../node_modules/monaco-editor/esm/vs/base/browser/ui/codicons/codicon/codicon.ttf") format("truetype");
+}
+
+.visual-harness {
+  display: grid;
+  grid-template-rows: var(--page-header-height) minmax(0, 1fr);
+  width: 100%;
+  height: 100dvh;
+  color: var(--primary-text);
+  background: var(--page-background);
+  overflow: hidden;
+}
+
+.visual-harness-header { display: flex; align-items: center; justify-content: space-between; gap: var(--component-gap-large); padding: 0 var(--header-padding-inline); border-bottom: 1px solid var(--divider); background: var(--shell-background); }
+.visual-harness-header p,
+.visual-harness-header h1 { margin: 0; }
+.visual-harness-header p { color: var(--secondary-text); font-size: var(--font-caption-size); line-height: var(--font-caption-line-height); }
+.visual-harness-header h1 { font-size: var(--font-page-title-size); line-height: var(--font-page-title-line-height); }
+.visual-harness-header strong { color: var(--error); font-size: var(--font-supporting-size); line-height: var(--font-supporting-line-height); }
+.visual-harness-canvas { min-height: 0; padding: var(--page-padding); overflow: auto; }
+.visual-harness-chevron,
+.visual-harness-codicon { font: normal normal normal 16px/1 codicon; }
+.visual-harness-chevron { color: var(--secondary-text); }
+.visual-harness-icon-button { display: grid; place-items: center; width: var(--icon-button-size); height: var(--icon-button-size); padding: 0; border: 0; border-radius: var(--control-radius); color: var(--primary-text); background: transparent; cursor: pointer; }
+.visual-harness-icon-button:hover { background: var(--selection); }
+.visual-harness-notice-close { padding: 0; border: 0; color: var(--primary); background: transparent; cursor: pointer; }
+.visual-harness-dialog-copy { margin: 0; color: var(--secondary-text); font-size: var(--font-supporting-size); line-height: var(--font-supporting-line-height); }
+.visual-harness-dialog-field { display: grid; gap: var(--component-gap-compact); margin-top: var(--component-gap-large); color: var(--secondary-text); font-size: var(--font-supporting-size); }
+.visual-harness-dialog-field input { height: var(--control-height); padding: 0 10px; border: 1px solid var(--divider); border-radius: var(--control-radius); color: var(--primary-text); background: var(--control-background); }
+
+@media (max-width: 720px) {
+  .visual-harness-header strong { max-width: 180px; text-align: right; }
+}
