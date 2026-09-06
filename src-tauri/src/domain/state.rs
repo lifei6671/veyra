@@ -3,7 +3,17 @@ use std::fmt;
 
 use serde::{Deserialize, Serialize};
 
-pub const CURRENT_SCHEMA_VERSION: u32 = 3;
+pub const CURRENT_SCHEMA_VERSION: u32 = 6;
+pub const MAX_SAFE_INTEGER: u64 = 9_007_199_254_740_991;
+pub const MAX_SUBSCRIPTION_DOCUMENT_BYTES: usize = 4 * 1024 * 1024;
+
+fn is_zero_u32(value: &u32) -> bool {
+    *value == 0
+}
+
+fn is_false(value: &bool) -> bool {
+    !*value
+}
 
 macro_rules! stable_id {
     ($name:ident) => {
@@ -37,6 +47,8 @@ stable_id!(RoutePolicyId);
 pub struct AppState {
     pub schema_version: u32,
     pub default_target: RouteTarget,
+    pub active_subscription_id: Option<SubscriptionId>,
+    pub active_configuration_generation: u64,
     pub subscriptions: Vec<Subscription>,
     pub providers: Vec<Provider>,
     pub nodes: Vec<ProxyNode>,
@@ -49,6 +61,8 @@ impl AppState {
         Self {
             schema_version: CURRENT_SCHEMA_VERSION,
             default_target: RouteTarget::Unconfigured,
+            active_subscription_id: None,
+            active_configuration_generation: 0,
             subscriptions: Vec::new(),
             providers: Vec::new(),
             nodes: Vec::new(),
@@ -69,6 +83,18 @@ impl AppState {
         unique_ids(self.routes.iter().map(|value| &value.id))?;
 
         self.default_target.validate(&pools)?;
+        if self.active_configuration_generation > MAX_SAFE_INTEGER
+            || self
+                .active_subscription_id
+                .as_ref()
+                .is_some_and(|id| !subscriptions.contains(id))
+        {
+            return Err(StateValidationError::InvalidSubscription);
+        }
+
+        for subscription in &self.subscriptions {
+            subscription.validate()?;
+        }
 
         for provider in &self.providers {
             if !provider.subscription_id.is_valid()
@@ -82,7 +108,13 @@ impl AppState {
             if !node.provider_id.is_valid() || !providers.contains(&node.provider_id) {
                 return Err(StateValidationError::MissingProvider);
             }
-            if !node.options.is_compatible_with(node.protocol) {
+            if !node.options.is_compatible_with(node.protocol)
+                || node.tls.as_ref().is_some_and(|tls| !tls.is_valid())
+                || node
+                    .transport
+                    .as_ref()
+                    .is_some_and(|transport| !transport.has_valid_early_data())
+            {
                 return Err(StateValidationError::InvalidProtocolOptions);
             }
         }
@@ -217,10 +249,219 @@ pub struct RuntimePool {
     pub selection: SelectionPolicy,
 }
 
+#[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[serde(rename_all = "snake_case")]
+pub enum SubscriptionDocumentFormat {
+    Json,
+    Yaml,
+}
+
+#[derive(Clone, Deserialize, Eq, PartialEq, Serialize)]
+pub struct SubscriptionDocument {
+    pub format: SubscriptionDocumentFormat,
+    pub content: String,
+    #[serde(default, skip_serializing_if = "is_false")]
+    pub local_override: bool,
+}
+
+impl fmt::Debug for SubscriptionDocument {
+    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter
+            .debug_struct("SubscriptionDocument")
+            .field("format", &self.format)
+            .field("content", &"[redacted]")
+            .field("local_override", &self.local_override)
+            .finish()
+    }
+}
+
+impl SubscriptionDocument {
+    fn is_valid(&self) -> bool {
+        !self.content.is_empty() && self.content.len() <= MAX_SUBSCRIPTION_DOCUMENT_BYTES
+    }
+}
+
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 pub struct Subscription {
     pub id: SubscriptionId,
     pub name: String,
+    pub description: String,
+    pub source: SubscriptionSource,
+    pub last_success_at_ms: Option<u64>,
+    pub last_attempt_at_ms: Option<u64>,
+    pub http_metadata: Option<SubscriptionHttpMetadata>,
+    pub remote_request: Option<RemoteRequestOptions>,
+    pub update_policy: SubscriptionUpdatePolicy,
+    #[serde(default, skip_serializing_if = "is_zero_u32")]
+    pub skipped_unsupported_nodes: u32,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub document: Option<SubscriptionDocument>,
+}
+
+impl Subscription {
+    fn validate(&self) -> Result<(), StateValidationError> {
+        if self
+            .last_success_at_ms
+            .into_iter()
+            .chain(self.last_attempt_at_ms)
+            .any(|value| value > MAX_SAFE_INTEGER)
+            || self.description != self.description.trim()
+            || self.description.chars().count() > 280
+            || self.description.chars().any(char::is_control)
+            || self
+                .document
+                .as_ref()
+                .is_some_and(|document| !document.is_valid())
+        {
+            return Err(StateValidationError::InvalidSubscription);
+        }
+        match &self.source {
+            SubscriptionSource::Remote { url }
+                if url.trim().is_empty()
+                    || url.len() > 8_192
+                    || self
+                        .remote_request
+                        .as_ref()
+                        .is_none_or(|value| !value.is_valid()) =>
+            {
+                Err(StateValidationError::InvalidSubscription)
+            }
+            SubscriptionSource::Manual
+                if self.http_metadata.is_some()
+                    || self.remote_request.is_some()
+                    || self.update_policy.allow_auto_update
+                    || self.update_policy.interval_minutes.is_some()
+                    || self
+                        .document
+                        .as_ref()
+                        .is_some_and(|document| document.local_override) =>
+            {
+                Err(StateValidationError::InvalidSubscription)
+            }
+            _ if self
+                .http_metadata
+                .as_ref()
+                .is_some_and(|metadata| !metadata.is_valid()) =>
+            {
+                Err(StateValidationError::InvalidSubscription)
+            }
+            _ if !self.update_policy.is_valid() => Err(StateValidationError::InvalidSubscription),
+            _ => Ok(()),
+        }
+    }
+}
+
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+pub struct RemoteRequestOptions {
+    pub user_agent: Option<String>,
+    pub timeout_seconds: u16,
+    pub proxy_mode: SubscriptionProxyMode,
+    pub verify_tls: bool,
+}
+
+impl RemoteRequestOptions {
+    pub fn default_remote() -> Self {
+        Self {
+            user_agent: None,
+            timeout_seconds: 30,
+            proxy_mode: SubscriptionProxyMode::Direct,
+            verify_tls: true,
+        }
+    }
+
+    fn is_valid(&self) -> bool {
+        (5..=120).contains(&self.timeout_seconds)
+            && self.user_agent.as_ref().is_none_or(|value| {
+                (1..=256).contains(&value.len())
+                    && value.bytes().all(|byte| (0x20..=0x7e).contains(&byte))
+            })
+    }
+}
+
+#[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[serde(rename_all = "snake_case")]
+pub enum SubscriptionProxyMode {
+    Direct,
+    System,
+    ManagedCore,
+}
+
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+pub struct SubscriptionUpdatePolicy {
+    pub allow_auto_update: bool,
+    pub interval_minutes: Option<u32>,
+}
+
+impl SubscriptionUpdatePolicy {
+    pub fn default_remote() -> Self {
+        Self {
+            allow_auto_update: true,
+            interval_minutes: None,
+        }
+    }
+
+    pub fn manual() -> Self {
+        Self {
+            allow_auto_update: false,
+            interval_minutes: None,
+        }
+    }
+
+    fn is_valid(&self) -> bool {
+        self.interval_minutes.is_none_or(|minutes| minutes >= 1_440)
+    }
+}
+
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[serde(tag = "kind", rename_all = "snake_case")]
+pub enum SubscriptionSource {
+    Remote { url: String },
+    Manual,
+}
+
+#[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
+pub struct SubscriptionHttpMetadata {
+    pub etag: Option<String>,
+    pub last_modified: Option<String>,
+    pub subscription_userinfo: Option<SubscriptionTraffic>,
+    pub content_disposition: Option<String>,
+}
+
+impl SubscriptionHttpMetadata {
+    fn is_valid(&self) -> bool {
+        bounded_visible(&self.etag, 1_024)
+            && bounded_visible(&self.last_modified, 128)
+            && bounded_visible(&self.content_disposition, 255)
+            && self
+                .subscription_userinfo
+                .as_ref()
+                .is_none_or(SubscriptionTraffic::is_valid)
+    }
+}
+
+#[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
+pub struct SubscriptionTraffic {
+    pub upload: Option<u64>,
+    pub download: Option<u64>,
+    pub total: Option<u64>,
+    pub expire_at_ms: Option<u64>,
+}
+
+impl SubscriptionTraffic {
+    fn is_valid(&self) -> bool {
+        [self.upload, self.download, self.total, self.expire_at_ms]
+            .into_iter()
+            .flatten()
+            .all(|value| value <= 9_007_199_254_740_991)
+    }
+}
+
+fn bounded_visible(value: &Option<String>, max_bytes: usize) -> bool {
+    value.as_ref().is_none_or(|value| {
+        !value.is_empty()
+            && value.len() <= max_bytes
+            && value.chars().all(|character| !character.is_control())
+    })
 }
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
@@ -309,6 +550,12 @@ pub enum ProtocolOptions {
     Hysteria2 {
         password: String,
         obfs: Option<String>,
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        up_mbps: Option<u32>,
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        down_mbps: Option<u32>,
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        disable_path_mtu_discovery: Option<bool>,
     },
     Tuic {
         uuid: String,
@@ -379,9 +626,20 @@ impl ProtocolOptions {
             Self::Shadowsocks { method, password } => present(method) && present(password),
             Self::Vmess { uuid, .. } | Self::Vless { uuid, .. } => present(uuid),
             Self::Trojan { password }
-            | Self::Hysteria2 { password, .. }
             | Self::AnyTls { password }
             | Self::ShadowTls { password, .. } => present(password),
+            Self::Hysteria2 {
+                password,
+                obfs,
+                up_mbps,
+                down_mbps,
+                ..
+            } => {
+                present(password)
+                    && obfs.as_deref().is_none_or(present)
+                    && up_mbps.is_none_or(|value| value > 0)
+                    && down_mbps.is_none_or(|value| value > 0)
+            }
             Self::WireGuard {
                 private_key,
                 peer_public_key,
@@ -415,8 +673,39 @@ impl ProtocolOptions {
 #[serde(rename_all = "snake_case")]
 pub enum Transport {
     Tcp,
-    Websocket { path: String, host: Option<String> },
-    Grpc { service_name: String },
+    Websocket {
+        path: String,
+        host: Option<String>,
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        max_early_data: Option<u32>,
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        early_data_header_name: Option<String>,
+    },
+    Grpc {
+        service_name: String,
+    },
+}
+
+impl Transport {
+    /// 保存和配置生成共用提前数据校验，避免握手参数在边界间丢失。
+    pub(crate) fn has_valid_early_data(&self) -> bool {
+        let Self::Websocket {
+            max_early_data,
+            early_data_header_name,
+            ..
+        } = self
+        else {
+            return true;
+        };
+        max_early_data.is_none_or(|value| value > 0)
+            && early_data_header_name.as_ref().is_none_or(|name| {
+                max_early_data.is_some_and(|value| value > 0)
+                    && !name.is_empty()
+                    && name.bytes().all(|byte| {
+                        byte.is_ascii_alphanumeric() || b"!#$%&'*+-.^_`|~".contains(&byte)
+                    })
+            })
+    }
 }
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
@@ -425,6 +714,36 @@ pub struct TlsOptions {
     pub allow_insecure: bool,
     pub reality_public_key: Option<String>,
     pub reality_short_id: Option<String>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub alpn: Vec<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub utls_fingerprint: Option<String>,
+}
+
+impl TlsOptions {
+    pub(crate) fn is_valid(&self) -> bool {
+        self.alpn.len() <= 16
+            && self.alpn.iter().all(|protocol| {
+                (1..=255).contains(&protocol.chars().count())
+                    && protocol.bytes().all(|byte| (0x21..=0x7e).contains(&byte))
+            })
+            && self.alpn.iter().collect::<HashSet<_>>().len() == self.alpn.len()
+            && self.utls_fingerprint.as_deref().is_none_or(|fingerprint| {
+                matches!(
+                    fingerprint,
+                    "chrome"
+                        | "firefox"
+                        | "edge"
+                        | "safari"
+                        | "360"
+                        | "qq"
+                        | "ios"
+                        | "android"
+                        | "random"
+                        | "randomized"
+                )
+            })
+    }
 }
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
@@ -596,6 +915,7 @@ pub enum StateValidationError {
     InvalidSelection,
     InvalidRoute,
     InvalidProtocolOptions,
+    InvalidSubscription,
     EmptyPoolMembership,
     InactivePoolTarget,
     UnsupportedSchemaVersion,
@@ -614,6 +934,7 @@ impl fmt::Display for StateValidationError {
             Self::InvalidSelection => "pool contains an invalid selection policy",
             Self::InvalidRoute => "route contains an invalid matcher",
             Self::InvalidProtocolOptions => "node options do not match the selected protocol",
+            Self::InvalidSubscription => "subscription metadata is invalid",
             Self::EmptyPoolMembership => "enabled pool resolves to no nodes",
             Self::InactivePoolTarget => "enabled route references an inactive pool",
             Self::UnsupportedSchemaVersion => "state schema version is unsupported",
@@ -684,14 +1005,29 @@ mod tests {
         value.to_owned()
     }
 
+    fn manual_subscription(subscription_id: &str, name: &str) -> Subscription {
+        Subscription {
+            id: SubscriptionId(id(subscription_id)),
+            name: id(name),
+            description: String::new(),
+            source: SubscriptionSource::Manual,
+            last_success_at_ms: None,
+            last_attempt_at_ms: None,
+            http_metadata: None,
+            remote_request: None,
+            update_policy: SubscriptionUpdatePolicy::manual(),
+            skipped_unsupported_nodes: 0,
+            document: None,
+        }
+    }
+
     fn valid_state() -> AppState {
         AppState {
             schema_version: CURRENT_SCHEMA_VERSION,
             default_target: RouteTarget::Unconfigured,
-            subscriptions: vec![Subscription {
-                id: SubscriptionId(id("subscription-a")),
-                name: id("A"),
-            }],
+            active_subscription_id: None,
+            active_configuration_generation: 0,
+            subscriptions: vec![manual_subscription("subscription-a", "A")],
             providers: vec![Provider {
                 id: ProviderId(id("provider-a")),
                 subscription_id: SubscriptionId(id("subscription-a")),
@@ -711,6 +1047,8 @@ mod tests {
                 transport: Some(Transport::Websocket {
                     path: id("/ws"),
                     host: None,
+                    max_early_data: None,
+                    early_data_header_name: None,
                 }),
                 tls: None,
             }],
@@ -720,12 +1058,47 @@ mod tests {
     }
 
     #[test]
+    fn subscription_document_debug_redacts_content_and_validates_source_boundary() {
+        let mut subscription = manual_subscription("subscription-a", "A");
+        subscription.document = Some(SubscriptionDocument {
+            format: SubscriptionDocumentFormat::Yaml,
+            content: "password: fixture-secret".to_owned(),
+            local_override: false,
+        });
+        let rendered = format!("{subscription:?}");
+        assert!(rendered.contains("[redacted]"));
+        assert!(!rendered.contains("fixture-secret"));
+        assert_eq!(subscription.validate(), Ok(()));
+
+        subscription
+            .document
+            .as_mut()
+            .expect("document")
+            .local_override = true;
+        assert_eq!(
+            subscription.validate(),
+            Err(StateValidationError::InvalidSubscription)
+        );
+
+        subscription
+            .document
+            .as_mut()
+            .expect("document")
+            .local_override = false;
+        subscription.document.as_mut().expect("document").content =
+            "x".repeat(MAX_SUBSCRIPTION_DOCUMENT_BYTES + 1);
+        assert_eq!(
+            subscription.validate(),
+            Err(StateValidationError::InvalidSubscription)
+        );
+    }
+
+    #[test]
     fn validates_a_multi_subscription_state() {
         let mut state = valid_state();
-        state.subscriptions.push(Subscription {
-            id: SubscriptionId(id("subscription-b")),
-            name: id("B"),
-        });
+        state
+            .subscriptions
+            .push(manual_subscription("subscription-b", "B"));
         state.providers.push(Provider {
             id: ProviderId(id("provider-b")),
             subscription_id: SubscriptionId(id("subscription-b")),
@@ -760,6 +1133,155 @@ mod tests {
             password: id("secret-not-in-errors"),
         };
 
+        assert_eq!(
+            state.validate(),
+            Err(StateValidationError::InvalidProtocolOptions)
+        );
+    }
+
+    #[test]
+    fn v5_absent_compatibility_fields_use_defaults_without_rewriting_them() {
+        let mut state = valid_state();
+        state.nodes[0].tls = Some(TlsOptions {
+            server_name: Some(id("example.invalid")),
+            allow_insecure: false,
+            reality_public_key: None,
+            reality_short_id: None,
+            alpn: Vec::new(),
+            utls_fingerprint: None,
+        });
+        let encoded = serde_json::to_value(&state).expect("serialize V5 state");
+        assert!(
+            encoded["subscriptions"][0]
+                .get("skipped_unsupported_nodes")
+                .is_none()
+        );
+        assert!(encoded["nodes"][0]["tls"].get("alpn").is_none());
+        assert!(encoded["nodes"][0]["tls"].get("utls_fingerprint").is_none());
+
+        let decoded: AppState = serde_json::from_value(encoded.clone()).expect("read older V5");
+        assert_eq!(decoded.subscriptions[0].skipped_unsupported_nodes, 0);
+        assert!(decoded.nodes[0].tls.as_ref().expect("TLS").alpn.is_empty());
+        assert!(
+            decoded.nodes[0]
+                .tls
+                .as_ref()
+                .expect("TLS")
+                .utls_fingerprint
+                .is_none()
+        );
+        assert_eq!(
+            serde_json::to_value(decoded).expect("serialize defaults"),
+            encoded
+        );
+    }
+
+    #[test]
+    fn websocket_early_data_preserves_legacy_state_and_rejects_invalid_parameters() {
+        let legacy = serde_json::to_value(valid_state()).unwrap();
+        assert!(
+            legacy["nodes"][0]["transport"]["websocket"]
+                .get("max_early_data")
+                .is_none()
+        );
+        let restored: AppState = serde_json::from_value(legacy.clone()).unwrap();
+        assert_eq!(serde_json::to_value(restored).unwrap(), legacy);
+        let mut modern = legacy;
+        modern["nodes"][0]["transport"]["websocket"]["max_early_data"] = serde_json::json!(2048);
+        modern["nodes"][0]["transport"]["websocket"]["early_data_header_name"] =
+            serde_json::json!("Sec-WebSocket-Protocol");
+        let restored: AppState = serde_json::from_value(modern.clone()).unwrap();
+        assert_eq!(restored.validate(), Ok(()));
+        assert_eq!(serde_json::to_value(restored).unwrap(), modern);
+        for (field, value) in [
+            ("max_early_data", serde_json::json!(0)),
+            ("early_data_header_name", serde_json::json!("bad header")),
+            ("early_data_header_name", serde_json::json!("")),
+        ] {
+            let mut invalid = modern.clone();
+            invalid["nodes"][0]["transport"]["websocket"][field] = value;
+            let restored: AppState = serde_json::from_value(invalid).unwrap();
+            assert_eq!(
+                restored.validate(),
+                Err(StateValidationError::InvalidProtocolOptions)
+            );
+        }
+    }
+
+    #[test]
+    fn compatibility_options_and_skipped_count_roundtrip() {
+        let mut state = valid_state();
+        state.subscriptions[0].skipped_unsupported_nodes = 1;
+        state.nodes[0].protocol = ProxyProtocol::Hysteria2;
+        state.nodes[0].options = ProtocolOptions::Hysteria2 {
+            password: id("synthetic-password"),
+            obfs: Some(id("synthetic-obfs")),
+            up_mbps: Some(25),
+            down_mbps: Some(100),
+            disable_path_mtu_discovery: Some(true),
+        };
+        state.nodes[0].transport = None;
+        state.nodes[0].tls = Some(TlsOptions {
+            server_name: Some(id("example.invalid")),
+            allow_insecure: false,
+            reality_public_key: None,
+            reality_short_id: None,
+            alpn: vec![id("h3"), id("h2")],
+            utls_fingerprint: Some(id("chrome")),
+        });
+
+        assert_eq!(state.validate(), Ok(()));
+        let encoded = serde_json::to_vec(&state).expect("serialize compatibility state");
+        let decoded: AppState = serde_json::from_slice(&encoded).expect("read compatibility state");
+        assert_eq!(decoded, state);
+        assert_eq!(decoded.validate(), Ok(()));
+    }
+
+    #[test]
+    fn rejects_invalid_alpn_fingerprint_and_hysteria2_rates() {
+        let mut state = valid_state();
+        state.nodes[0].tls = Some(TlsOptions {
+            server_name: None,
+            allow_insecure: false,
+            reality_public_key: None,
+            reality_short_id: None,
+            alpn: vec![id("h2"), id("h2")],
+            utls_fingerprint: None,
+        });
+        assert_eq!(
+            state.validate(),
+            Err(StateValidationError::InvalidProtocolOptions)
+        );
+
+        for invalid_alpn in [
+            vec![String::new()],
+            vec![id("h2"); 17],
+            vec!["a".repeat(256)],
+            vec![id("非ASCII")],
+        ] {
+            state.nodes[0].tls.as_mut().expect("TLS").alpn = invalid_alpn;
+            assert_eq!(
+                state.validate(),
+                Err(StateValidationError::InvalidProtocolOptions)
+            );
+        }
+
+        state.nodes[0].tls.as_mut().expect("TLS").alpn = vec![id("h2")];
+        state.nodes[0].tls.as_mut().expect("TLS").utls_fingerprint = Some(id("unknown"));
+        assert_eq!(
+            state.validate(),
+            Err(StateValidationError::InvalidProtocolOptions)
+        );
+
+        state.nodes[0].tls = None;
+        state.nodes[0].protocol = ProxyProtocol::Hysteria2;
+        state.nodes[0].options = ProtocolOptions::Hysteria2 {
+            password: id("synthetic-password"),
+            obfs: None,
+            up_mbps: Some(0),
+            down_mbps: Some(1),
+            disable_path_mtu_discovery: None,
+        };
         assert_eq!(
             state.validate(),
             Err(StateValidationError::InvalidProtocolOptions)
@@ -832,10 +1354,9 @@ mod tests {
     #[test]
     fn resolves_a_filtered_pool_across_multiple_providers_by_stable_node_id() {
         let mut state = valid_state();
-        state.subscriptions.push(Subscription {
-            id: SubscriptionId(id("subscription-b")),
-            name: id("B"),
-        });
+        state
+            .subscriptions
+            .push(manual_subscription("subscription-b", "B"));
         state.providers.push(Provider {
             id: ProviderId(id("provider-b")),
             subscription_id: SubscriptionId(id("subscription-b")),
@@ -885,10 +1406,9 @@ mod tests {
     #[test]
     fn rejects_a_pool_filter_that_selects_another_providers_node() {
         let mut state = valid_state();
-        state.subscriptions.push(Subscription {
-            id: SubscriptionId(id("subscription-b")),
-            name: id("B"),
-        });
+        state
+            .subscriptions
+            .push(manual_subscription("subscription-b", "B"));
         state.providers.push(Provider {
             id: ProviderId(id("provider-b")),
             subscription_id: SubscriptionId(id("subscription-b")),
@@ -988,6 +1508,25 @@ mod tests {
         assert_eq!(
             state.validate(),
             Err(StateValidationError::InvalidSelection)
+        );
+    }
+
+    #[test]
+    fn rejects_subscription_numeric_values_that_cannot_cross_the_ipc_contract() {
+        let mut state = valid_state();
+        state.subscriptions[0].source = SubscriptionSource::Remote {
+            url: "https://example.invalid/sub".to_owned(),
+        };
+        state.subscriptions[0].http_metadata = Some(SubscriptionHttpMetadata {
+            subscription_userinfo: Some(SubscriptionTraffic {
+                total: Some(9_007_199_254_740_992),
+                ..SubscriptionTraffic::default()
+            }),
+            ..SubscriptionHttpMetadata::default()
+        });
+        assert_eq!(
+            state.validate(),
+            Err(StateValidationError::InvalidSubscription)
         );
     }
 }

@@ -240,8 +240,17 @@ mod task009_controlled_network {
         assert_eq!(parsed.nodes.len(), 1);
         let mut state = AppState::empty();
         state.subscriptions.push(Subscription {
+            document: None,
+            skipped_unsupported_nodes: 0,
             id: SubscriptionId("controlled-subscription".into()),
             name: "controlled".into(),
+            description: String::new(),
+            source: crate::domain::SubscriptionSource::Manual,
+            last_success_at_ms: None,
+            last_attempt_at_ms: None,
+            http_metadata: None,
+            remote_request: None,
+            update_policy: crate::domain::SubscriptionUpdatePolicy::manual(),
         });
         state.providers.push(Provider {
             id: ProviderId("controlled-provider".into()),

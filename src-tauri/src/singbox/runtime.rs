@@ -58,6 +58,14 @@ pub(crate) trait RuntimeObservationSidecarPort {
         &mut self,
         instance: &ManagedSidecar,
     ) -> Result<ClashRuntimeObservation, SidecarPortError>;
+
+    /// 从同一个已拥有 child 的句柄读取工作集；失败只令本次内存值不可用。
+    fn read_owned_core_memory_bytes(
+        &mut self,
+        _instance: &ManagedSidecar,
+    ) -> Result<u64, SidecarPortError> {
+        Err(SidecarPortError)
+    }
 }
 
 /// 不暴露配置原文的运行时快照。
@@ -158,8 +166,27 @@ where
             .flatten()
     }
 
+    /// 只在 Ready 且 active slot 存在时借出实际应用的最终配置字节。
+    pub(crate) fn with_active_config<T>(
+        &self,
+        read: impl FnOnce(&GeneratedConfig) -> T,
+    ) -> Option<T> {
+        (self.snapshot().lifecycle == SidecarLifecycle::Ready)
+            .then(|| self.configs.active.as_ref().map(read))
+            .flatten()
+    }
+
     /// 检查成功后才停止旧实例；启动失败仅清理候选，不重新启动旧配置。
     pub(crate) fn start_or_replace(
+        &mut self,
+        candidate: GeneratedConfig,
+    ) -> Result<(), SidecarError> {
+        self.prepare_replacement(candidate)?;
+        self.commit_prepared()
+    }
+
+    /// 检查与准备候选期间保留旧实例，供应用在停止旧实例前原子保存选择。
+    pub(crate) fn prepare_replacement(
         &mut self,
         candidate: GeneratedConfig,
     ) -> Result<(), SidecarError> {
@@ -176,6 +203,14 @@ where
             return Err(SidecarError::CandidatePrepare);
         }
         self.configs.candidate = Some(candidate);
+        Ok(())
+    }
+
+    /// 只消费已经检查的候选；失败遵守既有停止/清理语义，不启动旧配置。
+    pub(crate) fn commit_prepared(&mut self) -> Result<(), SidecarError> {
+        if self.configs.candidate.is_none() {
+            return Err(SidecarError::CandidatePrepare);
+        }
         if let Some(child) = self.child.as_ref() {
             if self.port.stop(child).is_err() {
                 self.recovery_required = true;
@@ -210,6 +245,16 @@ where
         self.child = Some(candidate_child);
         self.configs.active = self.configs.candidate.take();
         self.recovery_required = false;
+        Ok(())
+    }
+
+    /// 保存失败或用户退出时取消尚未运行的候选，保留旧 child 的所有权。
+    pub(crate) fn cancel_prepared(&mut self) -> Result<(), SidecarError> {
+        self.configs.candidate = None;
+        if self.port.cancel_pending().is_err() {
+            self.recovery_required = true;
+            return Err(SidecarError::CandidateStop);
+        }
         Ok(())
     }
 
@@ -760,5 +805,20 @@ mod tests {
             Ok(None::<u64>)
         );
         assert!(!runtime.snapshot().has_active_config);
+    }
+
+    #[test]
+    fn active_config_view_returns_exact_ready_bytes_and_clears_on_stop() {
+        let expected = config();
+        let expected_bytes = expected.as_bytes().to_vec();
+        let mut runtime = SidecarRuntime::new_observation_only(MockPort::default());
+        assert!(runtime.with_active_config(|_| ()).is_none());
+        runtime.start_or_replace(expected).expect("ready");
+        assert_eq!(
+            runtime.with_active_config(|config| config.as_bytes().to_vec()),
+            Some(expected_bytes)
+        );
+        runtime.stop().expect("stop");
+        assert!(runtime.with_active_config(|_| ()).is_none());
     }
 }

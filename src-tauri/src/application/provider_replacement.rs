@@ -39,31 +39,48 @@ impl<S: StateStore> ProviderReplacementService<S> {
         provider_id: ProviderId,
         parsed: ParseResult,
     ) -> Result<(), ProviderReplacementError> {
-        if parsed.nodes.is_empty() || !parsed.skipped.is_empty() {
-            return Err(ProviderReplacementError::RejectedBatch);
-        }
-        let replacement = normalize_nodes(provider_id.clone(), parsed.nodes)?;
         let mut state = self
             .state
             .lock()
             .expect("provider state mutex is not poisoned");
-        if !state
-            .providers
-            .iter()
-            .any(|provider| provider.id == provider_id)
-        {
-            return Err(ProviderReplacementError::MissingProvider);
-        }
         let mut candidate = state.clone();
-        candidate
-            .nodes
-            .retain(|node| node.provider_id != provider_id);
-        candidate.nodes.extend(replacement);
-        candidate.validate()?;
+        apply_provider_replacement(&mut candidate, provider_id, parsed)?;
         self.store.save(&candidate)?;
         *state = candidate;
         Ok(())
     }
+}
+
+/// 在调用方拥有的完整候选状态中应用节点替换；持久化仍由外层事务统一完成。
+pub(crate) fn apply_provider_replacement(
+    candidate: &mut AppState,
+    provider_id: ProviderId,
+    parsed: ParseResult,
+) -> Result<bool, ProviderReplacementError> {
+    if parsed.nodes.is_empty() || !parsed.skipped.is_empty() {
+        return Err(ProviderReplacementError::RejectedBatch);
+    }
+    if !candidate
+        .providers
+        .iter()
+        .any(|provider| provider.id == provider_id)
+    {
+        return Err(ProviderReplacementError::MissingProvider);
+    }
+    let replacement = normalize_nodes(provider_id.clone(), parsed.nodes)?;
+    let previous = candidate
+        .nodes
+        .iter()
+        .filter(|node| node.provider_id == provider_id)
+        .cloned()
+        .collect::<Vec<_>>();
+    let changed = previous != replacement;
+    candidate
+        .nodes
+        .retain(|node| node.provider_id != provider_id);
+    candidate.nodes.extend(replacement);
+    candidate.validate()?;
+    Ok(changed)
 }
 
 #[derive(Debug)]
@@ -170,9 +187,20 @@ mod tests {
         AppState {
             schema_version: crate::domain::CURRENT_SCHEMA_VERSION,
             default_target: crate::domain::RouteTarget::Unconfigured,
+            active_subscription_id: None,
+            active_configuration_generation: 0,
             subscriptions: vec![Subscription {
+                document: None,
+                skipped_unsupported_nodes: 0,
                 id: SubscriptionId("subscription".to_owned()),
                 name: "Subscription".to_owned(),
+                description: String::new(),
+                source: crate::domain::SubscriptionSource::Manual,
+                last_success_at_ms: None,
+                last_attempt_at_ms: None,
+                http_metadata: None,
+                remote_request: None,
+                update_policy: crate::domain::SubscriptionUpdatePolicy::manual(),
             }],
             providers: vec![Provider {
                 id: ProviderId("provider".to_owned()),

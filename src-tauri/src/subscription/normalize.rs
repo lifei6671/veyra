@@ -117,4 +117,53 @@ mod tests {
 
         assert_eq!(first[0].id, renamed[0].id);
     }
+
+    #[test]
+    fn websocket_defaults_keep_identity_material_and_new_handshakes_are_distinct() {
+        let legacy = serde_json::json!({"websocket":{"path":"/ws","host":"cdn.example.invalid"}});
+        let mut first = draft("legacy");
+        first.transport = Some(serde_json::from_value(legacy.clone()).unwrap());
+        assert_eq!(
+            serde_json::to_value(first.transport.as_ref().unwrap()).unwrap(),
+            legacy
+        );
+        // 身份算法直接序列化 transport，旧字段的字节顺序也必须保留。
+        assert_eq!(
+            serde_json::to_string(first.transport.as_ref().unwrap()).unwrap(),
+            r#"{"websocket":{"path":"/ws","host":"cdn.example.invalid"}}"#
+        );
+        let mut enabled = first.clone();
+        enabled.transport = Some(Transport::Websocket {
+            path: "/ws".to_owned(),
+            host: Some("cdn.example.invalid".to_owned()),
+            max_early_data: Some(2048),
+            early_data_header_name: Some("Sec-WebSocket-Protocol".to_owned()),
+        });
+        let mut other = enabled.clone();
+        if let Some(Transport::Websocket { max_early_data, .. }) = &mut other.transport {
+            *max_early_data = Some(4096);
+        }
+        let mut other_header = enabled.clone();
+        if let Some(Transport::Websocket {
+            early_data_header_name,
+            ..
+        }) = &mut other_header.transport
+        {
+            *early_data_header_name = Some("X-Early-Data".to_owned());
+        }
+        let nodes = normalize_nodes(
+            ProviderId("provider".to_owned()),
+            vec![first, enabled, other, other_header],
+        )
+        .unwrap();
+        assert_eq!(nodes[0].id.0, "node-f18f03da50e11f85");
+        assert_eq!(
+            nodes
+                .iter()
+                .map(|node| &node.id)
+                .collect::<HashSet<_>>()
+                .len(),
+            4
+        );
+    }
 }

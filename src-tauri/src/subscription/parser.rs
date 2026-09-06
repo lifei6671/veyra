@@ -27,6 +27,7 @@ pub struct ParseResult {
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum SkippedNode {
     UnsupportedProtocol,
+    UnsupportedOption,
     InvalidNode,
 }
 
@@ -54,11 +55,12 @@ pub fn parse_subscription(body: &str) -> Result<ParseResult, ParseError> {
 }
 
 fn parse_with_depth(body: &str, base64_depth: usize) -> Result<ParseResult, ParseError> {
+    let body = body.trim().trim_start_matches('\u{feff}').trim_start();
     if body.is_empty() {
         return Err(ParseError::EmptyInput);
     }
     if body.starts_with('{') {
-        return parse_json(body);
+        return parse_json(body).or_else(|_| parse_clash_yaml(body));
     }
     if looks_like_yaml(body)
         && let Ok(result) = parse_clash_yaml(body)
@@ -79,12 +81,18 @@ fn parse_with_depth(body: &str, base64_depth: usize) -> Result<ParseResult, Pars
 
 fn parse_json(body: &str) -> Result<ParseResult, ParseError> {
     let document: Value = serde_json::from_str(body).map_err(|_| ParseError::UnsupportedInput)?;
-    let candidates = document
-        .get("proxies")
-        .or_else(|| document.get("outbounds"))
-        .and_then(Value::as_array)
-        .ok_or(ParseError::UnsupportedInput)?;
-    let (nodes, skipped) = parse_json_candidates(candidates);
+    let (candidates, context) = if let Some(candidates) = document.get("proxies") {
+        (candidates, JsonCandidateContext::Proxies)
+    } else {
+        (
+            document
+                .get("outbounds")
+                .ok_or(ParseError::UnsupportedInput)?,
+            JsonCandidateContext::Outbounds,
+        )
+    };
+    let candidates = candidates.as_array().ok_or(ParseError::UnsupportedInput)?;
+    let (nodes, skipped) = parse_json_candidates(candidates, context);
     Ok(ParseResult {
         format: SubscriptionFormat::Json,
         nodes,
@@ -92,15 +100,69 @@ fn parse_json(body: &str) -> Result<ParseResult, ParseError> {
     })
 }
 
-fn parse_json_candidates(candidates: &[Value]) -> (Vec<ProxyNodeDraft>, Vec<SkippedNode>) {
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+enum JsonCandidateContext {
+    Proxies,
+    Outbounds,
+}
+
+fn parse_json_candidates(
+    candidates: &[Value],
+    context: JsonCandidateContext,
+) -> (Vec<ProxyNodeDraft>, Vec<SkippedNode>) {
     let mut nodes = Vec::new();
     let mut skipped = Vec::new();
-    for candidate in candidates {
-        if has_unknown_json_fields(candidate) {
+    'candidates: for candidate in candidates {
+        if context == JsonCandidateContext::Outbounds
+            && candidate
+                .get("type")
+                .and_then(Value::as_str)
+                .is_some_and(|kind| {
+                    matches!(kind, "direct" | "block" | "dns" | "selector" | "urltest")
+                })
+        {
+            continue;
+        }
+        let mut candidate = candidate.clone();
+        if let Some(object) = candidate.as_object_mut() {
+            let protocol = object.get("type").and_then(Value::as_str);
+            let vmess = protocol == Some("vmess");
+            let hysteria2 = matches!(protocol, Some("hysteria2" | "hy2"));
+            // Clash 的拼写别名必须保留原值；冲突或非法类型不能静默丢弃。
+            for (alias, canonical, valid) in [
+                (
+                    "servername",
+                    "sni",
+                    valid_nonempty_string as fn(&Value) -> bool,
+                ),
+                ("alterId", "alter_id", valid_u32),
+                ("cipher", "security", valid_nonempty_string),
+            ] {
+                if alias != "servername" && !vmess {
+                    continue;
+                }
+                if !move_alias(object, alias, canonical, valid) {
+                    skipped.push(SkippedNode::InvalidNode);
+                    continue 'candidates;
+                }
+            }
+            if hysteria2
+                && (!move_alias(object, "auth", "password", valid_nonempty_string)
+                    || !move_alias(object, "insecure", "skip-cert-verify", valid_bool))
+            {
+                skipped.push(SkippedNode::InvalidNode);
+                continue 'candidates;
+            }
+            if !normalize_websocket_aliases(object) {
+                skipped.push(SkippedNode::InvalidNode);
+                continue 'candidates;
+            }
+        }
+        if has_unknown_json_fields(&candidate) {
             skipped.push(SkippedNode::InvalidNode);
             continue;
         }
-        let fields = JsonFields::from(candidate);
+        let fields = JsonFields::from(&candidate);
         if has_illegal_protocol_fields(&fields) {
             skipped.push(SkippedNode::InvalidNode);
             continue;
@@ -111,6 +173,60 @@ fn parse_json_candidates(candidates: &[Value]) -> (Vec<ProxyNodeDraft>, Vec<Skip
         }
     }
     (nodes, skipped)
+}
+
+fn move_alias(
+    object: &mut serde_json::Map<String, Value>,
+    alias: &str,
+    canonical: &str,
+    valid: fn(&Value) -> bool,
+) -> bool {
+    let Some(value) = object.remove(alias) else {
+        return true;
+    };
+    if !valid(&value)
+        || object
+            .get(canonical)
+            .is_some_and(|existing| existing != &value)
+    {
+        return false;
+    }
+    object.insert(canonical.to_owned(), value);
+    true
+}
+
+fn valid_nonempty_string(value: &Value) -> bool {
+    value.as_str().is_some_and(|value| !value.trim().is_empty())
+}
+
+fn valid_string(value: &Value) -> bool {
+    value.is_string()
+}
+
+fn valid_u32(value: &Value) -> bool {
+    value
+        .as_u64()
+        .is_some_and(|value| u32::try_from(value).is_ok())
+}
+
+fn valid_bool(value: &Value) -> bool {
+    value.is_boolean()
+}
+
+fn normalize_websocket_aliases(object: &mut serde_json::Map<String, Value>) -> bool {
+    let Some(options) = object.get_mut("ws-opts") else {
+        return true;
+    };
+    let Some(options) = options.as_object_mut() else {
+        return true;
+    };
+    move_alias(options, "max-early-data", "max_early_data", valid_u32)
+        && move_alias(
+            options,
+            "early-data-header-name",
+            "early_data_header_name",
+            valid_string,
+        )
 }
 
 fn has_unknown_json_fields(candidate: &Value) -> bool {
@@ -134,7 +250,12 @@ fn has_unknown_json_fields(candidate: &Value) -> bool {
         "net",
         "tls",
         "sni",
+        "servername",
         "skip-cert-verify",
+        "insecure",
+        "alpn",
+        "client-fingerprint",
+        "reality-opts",
         "ws-opts",
         "grpc-opts",
         "transport",
@@ -143,6 +264,7 @@ fn has_unknown_json_fields(candidate: &Value) -> bool {
         "alter_id",
         "security",
         "flow",
+        "packet_encoding",
         "private_key",
         "private-key",
         "peer_public_key",
@@ -161,8 +283,19 @@ fn has_unknown_json_fields(candidate: &Value) -> bool {
         "obfs",
         "up_mbps",
         "up-mbps",
+        "up",
+        "up-speed",
         "down_mbps",
         "down-mbps",
+        "down",
+        "down-speed",
+        "protocol",
+        "disable_mtu_discovery",
+        "disable_path_mtu_discovery",
+        "udp",
+        "benchmark-url",
+        "benchmark-timeout",
+        "smux",
         "congestion_control",
         "congestion-control",
         "udp_relay_mode",
@@ -183,9 +316,16 @@ fn has_unknown_json_fields(candidate: &Value) -> bool {
 }
 
 fn has_unknown_nested_fields(candidate: &Value) -> bool {
-    const WEBSOCKET: &[&str] = &["path", "headers"];
+    const WEBSOCKET: &[&str] = &[
+        "path",
+        "headers",
+        "max_early_data",
+        "early_data_header_name",
+    ];
     const GRPC: &[&str] = &["grpc-service-name"];
-    const HEADERS: &[&str] = &["Host"];
+    const REALITY_OPTIONS: &[&str] = &["public-key", "short-id"];
+    const SMUX: &[&str] = &["enabled", "protocol", "only-tcp", "padding", "brutal-opts"];
+    const BRUTAL: &[&str] = &["enabled", "up", "down"];
 
     let contains_unknown = |value: &Value, allowed: &[&str]| {
         value
@@ -197,25 +337,60 @@ fn has_unknown_nested_fields(candidate: &Value) -> bool {
             .get(key)
             .is_some_and(|value| contains_unknown(value, allowed))
     };
-    let headers_have_unknown = |value: &Value| {
-        value
-            .get("headers")
-            .is_some_and(|headers| contains_unknown(headers, HEADERS))
-    };
-
     candidate.get("tls").is_some_and(invalid_tls_value)
         || candidate
             .get("transport")
             .is_some_and(invalid_transport_value)
-        || candidate.get("transport").is_some_and(headers_have_unknown)
+        || candidate
+            .get("transport")
+            .is_some_and(invalid_websocket_headers)
         || nested_has_unknown("ws-opts", WEBSOCKET)
-        || candidate.get("ws-opts").is_some_and(headers_have_unknown)
+        || candidate
+            .get("ws-opts")
+            .is_some_and(invalid_websocket_headers)
         || nested_has_unknown("grpc-opts", GRPC)
+        || nested_has_unknown("reality-opts", REALITY_OPTIONS)
+        || nested_has_unknown("smux", SMUX)
+        || candidate
+            .get("smux")
+            .and_then(|smux| smux.get("brutal-opts"))
+            .is_some_and(|brutal| contains_unknown(brutal, BRUTAL))
+        || has_invalid_clash_compatibility_fields(candidate)
+}
+
+fn invalid_websocket_headers(value: &Value) -> bool {
+    let Some(headers) = value.get("headers") else {
+        return false;
+    };
+    let Some(headers) = headers.as_object() else {
+        return true;
+    };
+    if headers.keys().any(|key| key != "Host") {
+        return true;
+    }
+    headers.get("Host").is_some_and(|host| match host {
+        Value::String(host) => host.trim().is_empty(),
+        Value::Array(hosts) => {
+            hosts.len() != 1
+                || !hosts[0]
+                    .as_str()
+                    .is_some_and(|host| !host.trim().is_empty())
+        }
+        _ => true,
+    })
 }
 
 fn invalid_tls_value(tls: &Value) -> bool {
-    const TLS: &[&str] = &["enabled", "server_name", "insecure", "reality"];
+    const TLS: &[&str] = &[
+        "enabled",
+        "server_name",
+        "insecure",
+        "reality",
+        "alpn",
+        "utls",
+    ];
     const REALITY: &[&str] = &["enabled", "public_key", "short_id"];
+    const UTLS: &[&str] = &["enabled", "fingerprint"];
     match tls {
         Value::Bool(_) => false,
         Value::String(value) => value != "tls",
@@ -238,7 +413,25 @@ fn invalid_tls_value(tls: &Value) -> bool {
                 || object
                     .get("insecure")
                     .is_some_and(|value| !value.is_boolean())
+                || object.get("alpn").is_some_and(|value| !valid_alpn(value))
             {
+                return true;
+            }
+            if object.get("utls").is_some_and(|utls| {
+                let Some(utls) = utls.as_object() else {
+                    return true;
+                };
+                utls.keys().any(|key| !UTLS.contains(&key.as_str()))
+                    || !utls.get("enabled").is_some_and(Value::is_boolean)
+                    || (!utls
+                        .get("enabled")
+                        .and_then(Value::as_bool)
+                        .unwrap_or(false)
+                        && utls.len() != 1)
+                    || utls
+                        .get("fingerprint")
+                        .is_some_and(|value| !valid_fingerprint(value))
+            }) {
                 return true;
             }
             object.get("reality").is_some_and(|reality| {
@@ -269,8 +462,141 @@ fn invalid_tls_value(tls: &Value) -> bool {
     }
 }
 
+fn has_invalid_clash_compatibility_fields(candidate: &Value) -> bool {
+    candidate
+        .get("alpn")
+        .is_some_and(|value| !valid_alpn(value))
+        || candidate
+            .get("client-fingerprint")
+            .is_some_and(|value| !valid_fingerprint(value))
+        || candidate
+            .get("insecure")
+            .is_some_and(|value| !value.is_boolean())
+        || candidate
+            .get("udp")
+            .is_some_and(|value| !value.is_boolean())
+        || candidate
+            .get("protocol")
+            .is_some_and(|value| value.as_str().is_none())
+        || candidate
+            .get("benchmark-url")
+            .is_some_and(|value| !valid_nonempty_string(value))
+        || candidate
+            .get("benchmark-timeout")
+            .is_some_and(|value| !valid_positive_u32(value))
+        || candidate
+            .get("reality-opts")
+            .is_some_and(invalid_reality_options)
+        || candidate.get("smux").is_some_and(invalid_smux)
+        || ["up", "up-speed", "down", "down-speed"].iter().any(|key| {
+            candidate
+                .get(*key)
+                .is_some_and(|value| !valid_positive_u32(value))
+        })
+        || candidate
+            .get("disable_mtu_discovery")
+            .is_some_and(|value| !value.is_boolean())
+        || candidate
+            .get("disable_path_mtu_discovery")
+            .is_some_and(|value| !value.is_boolean())
+}
+
+fn valid_alpn(value: &Value) -> bool {
+    let Some(values) = value.as_array() else {
+        return false;
+    };
+    if values.is_empty() || values.len() > 16 {
+        return false;
+    }
+    let mut seen = std::collections::BTreeSet::new();
+    values.iter().all(|value| {
+        let Some(value) = value.as_str() else {
+            return false;
+        };
+        (1..=255).contains(&value.chars().count())
+            && value.bytes().all(|byte| (0x21..=0x7e).contains(&byte))
+            && seen.insert(value)
+    })
+}
+
+fn valid_fingerprint(value: &Value) -> bool {
+    value.as_str().is_some_and(|value| {
+        matches!(
+            value,
+            "chrome"
+                | "firefox"
+                | "edge"
+                | "safari"
+                | "360"
+                | "qq"
+                | "ios"
+                | "android"
+                | "random"
+                | "randomized"
+        )
+    })
+}
+
+fn valid_positive_u32(value: &Value) -> bool {
+    value
+        .as_u64()
+        .and_then(|value| u32::try_from(value).ok())
+        .is_some_and(|value| value > 0)
+}
+
+fn invalid_reality_options(value: &Value) -> bool {
+    let Some(object) = value.as_object() else {
+        return true;
+    };
+    ["public-key", "short-id"].iter().any(|key| {
+        object
+            .get(*key)
+            .is_none_or(|value| !valid_nonempty_string(value))
+    })
+}
+
+fn invalid_smux(value: &Value) -> bool {
+    let Some(object) = value.as_object() else {
+        return true;
+    };
+    if !object.get("enabled").is_some_and(Value::is_boolean)
+        || object
+            .get("protocol")
+            .is_some_and(|value| value.as_str() != Some("h2mux"))
+        || object
+            .get("only-tcp")
+            .is_some_and(|value| !value.is_boolean())
+        || object
+            .get("padding")
+            .is_some_and(|value| !value.is_boolean())
+    {
+        return true;
+    }
+    object.get("brutal-opts").is_some_and(|value| {
+        let Some(brutal) = value.as_object() else {
+            return true;
+        };
+        !brutal.get("enabled").is_some_and(Value::is_boolean)
+            || brutal
+                .get("up")
+                .is_some_and(|value| !valid_positive_u32(value))
+            || brutal
+                .get("down")
+                .is_some_and(|value| !valid_positive_u32(value))
+            || (brutal.get("enabled").and_then(Value::as_bool) == Some(true)
+                && (!brutal.contains_key("up") || !brutal.contains_key("down")))
+    })
+}
+
 fn invalid_transport_value(transport: &Value) -> bool {
-    const TRANSPORT: &[&str] = &["type", "path", "headers", "service_name"];
+    const TRANSPORT: &[&str] = &[
+        "type",
+        "path",
+        "headers",
+        "service_name",
+        "max_early_data",
+        "early_data_header_name",
+    ];
     let Some(object) = transport.as_object() else {
         return true;
     };
@@ -284,6 +610,12 @@ fn invalid_transport_value(transport: &Value) -> bool {
         Some("grpc") => {
             object.get("path").is_some_and(|value| !value.is_null())
                 || object.get("headers").is_some_and(|value| !value.is_null())
+                || object
+                    .get("max_early_data")
+                    .is_some_and(|value| !value.is_null())
+                || object
+                    .get("early_data_header_name")
+                    .is_some_and(|value| !value.is_null())
         }
         _ => true,
     }
@@ -304,6 +636,9 @@ fn has_illegal_protocol_fields(fields: &JsonFields) -> bool {
         "tls",
         "sni",
         "skip-cert-verify",
+        "alpn",
+        "client-fingerprint",
+        "reality-opts",
         "ws-opts",
         "grpc-opts",
         "transport",
@@ -318,7 +653,7 @@ fn has_illegal_protocol_fields(fields: &JsonFields) -> bool {
         ProxyProtocol::Http => &["username", "password"][..],
         ProxyProtocol::Shadowsocks => &["method", "cipher", "password"][..],
         ProxyProtocol::Vmess => &["uuid", "id", "alter_id", "security"][..],
-        ProxyProtocol::Vless => &["uuid", "id", "flow"][..],
+        ProxyProtocol::Vless => &["uuid", "id", "flow", "packet_encoding", "udp", "smux"][..],
         ProxyProtocol::Trojan => &["password"][..],
         ProxyProtocol::WireGuard => &[
             "private_key",
@@ -344,7 +679,25 @@ fn has_illegal_protocol_fields(fields: &JsonFields) -> bool {
             "down_mbps",
             "down-mbps",
         ][..],
-        ProxyProtocol::Hysteria2 => &["password", "obfs"][..],
+        ProxyProtocol::Hysteria2 => &[
+            "password",
+            "obfs",
+            "alpn",
+            "up_mbps",
+            "up-mbps",
+            "up",
+            "up-speed",
+            "down_mbps",
+            "down-mbps",
+            "down",
+            "down-speed",
+            "protocol",
+            "disable_mtu_discovery",
+            "disable_path_mtu_discovery",
+            "benchmark-url",
+            "benchmark-timeout",
+            "udp",
+        ][..],
         ProxyProtocol::Tuic => &[
             "uuid",
             "id",
@@ -379,8 +732,11 @@ fn has_illegal_protocol_fields(fields: &JsonFields) -> bool {
 }
 
 fn looks_like_yaml(body: &str) -> bool {
-    body.lines()
-        .any(|line| line.trim_start().starts_with("proxies:"))
+    body.lines().any(|line| {
+        ["proxies:", "\"proxies\":", "'proxies':"]
+            .iter()
+            .any(|key| line.trim_start().starts_with(key))
+    })
 }
 
 fn parse_clash_yaml(body: &str) -> Result<ParseResult, ParseError> {
@@ -390,7 +746,7 @@ fn parse_clash_yaml(body: &str) -> Result<ParseResult, ParseError> {
         .get("proxies")
         .and_then(Value::as_array)
         .ok_or(ParseError::UnsupportedInput)?;
-    let (nodes, skipped) = parse_json_candidates(candidates);
+    let (nodes, skipped) = parse_json_candidates(candidates, JsonCandidateContext::Proxies);
     Ok(ParseResult {
         format: SubscriptionFormat::ClashYaml,
         nodes,
@@ -615,12 +971,16 @@ fn parse_uri_tls(
             allow_insecure,
             reality_public_key: None,
             reality_short_id: None,
+            alpn: Vec::new(),
+            utls_fingerprint: None,
         })),
         Some("reality") => Ok(Some(TlsOptions {
             server_name,
             allow_insecure,
             reality_public_key: Some(required_query_string(query, &["pbk"])?),
             reality_short_id: Some(required_query_string(query, &["sid"])?),
+            alpn: Vec::new(),
+            utls_fingerprint: None,
         })),
         Some("none") if !allow_insecure && server_name.is_none() => Ok(None),
         Some(_) => Err(SkippedNode::InvalidNode),
@@ -638,6 +998,8 @@ fn parse_uri_tls(
                 allow_insecure,
                 reality_public_key: None,
                 reality_short_id: None,
+                alpn: Vec::new(),
+                utls_fingerprint: None,
             }))
         }
         None if allow_insecure || server_name.is_some() => Err(SkippedNode::InvalidNode),
@@ -674,6 +1036,8 @@ fn parse_uri_transport(
             Ok(Some(Transport::Websocket {
                 path: query.get("path").cloned().unwrap_or_else(|| "/".to_owned()),
                 host: query.get("host").cloned(),
+                max_early_data: None,
+                early_data_header_name: None,
             }))
         }
         Some("grpc") => {
@@ -753,6 +1117,9 @@ fn parse_uri_options(
             password_option(raw).map(|password| ProtocolOptions::Hysteria2 {
                 password,
                 obfs: query.get("obfs-password").cloned(),
+                up_mbps: None,
+                down_mbps: None,
+                disable_path_mtu_discovery: None,
             })
         }
         ProxyProtocol::AnyTls => {
@@ -1070,14 +1437,18 @@ struct JsonFields {
     cipher: Option<String>,
     network: Option<String>,
     tls: Option<bool>,
-    sni: Option<String>,
-    skip_cert_verify: Option<bool>,
-    reality_public_key: Option<String>,
-    reality_short_id: Option<String>,
     websocket_path: Option<String>,
     websocket_host: Option<String>,
     grpc_service_name: Option<String>,
     raw: BTreeMap<String, Value>,
+}
+
+fn normalized_websocket_host(value: &Value) -> Option<String> {
+    match value.get("headers")?.get("Host")? {
+        Value::String(host) => Some(host.clone()),
+        Value::Array(hosts) => hosts.first()?.as_str().map(str::to_owned),
+        _ => None,
+    }
 }
 
 impl From<&Value> for JsonFields {
@@ -1126,34 +1497,6 @@ impl From<&Value> for JsonFields {
                         .and_then(Value::as_bool)
                 })
                 .or_else(|| get_string("tls").map(|value| value == "tls")),
-            sni: get_string("sni").or_else(|| {
-                value
-                    .get("tls")
-                    .and_then(|item| item.get("server_name"))
-                    .and_then(Value::as_str)
-                    .map(str::to_owned)
-            }),
-            skip_cert_verify: value
-                .get("skip-cert-verify")
-                .and_then(Value::as_bool)
-                .or_else(|| {
-                    value
-                        .get("tls")
-                        .and_then(|item| item.get("insecure"))
-                        .and_then(Value::as_bool)
-                }),
-            reality_public_key: value
-                .get("tls")
-                .and_then(|item| item.get("reality"))
-                .and_then(|item| item.get("public_key"))
-                .and_then(Value::as_str)
-                .map(str::to_owned),
-            reality_short_id: value
-                .get("tls")
-                .and_then(|item| item.get("reality"))
-                .and_then(|item| item.get("short_id"))
-                .and_then(Value::as_str)
-                .map(str::to_owned),
             websocket_path: value
                 .get("ws-opts")
                 .and_then(|item| item.get("path"))
@@ -1168,17 +1511,8 @@ impl From<&Value> for JsonFields {
                 .or_else(|| get_string("path")),
             websocket_host: value
                 .get("ws-opts")
-                .and_then(|item| item.get("headers"))
-                .and_then(|item| item.get("Host"))
-                .and_then(Value::as_str)
-                .map(str::to_owned)
-                .or_else(|| {
-                    transport
-                        .and_then(|item| item.get("headers"))
-                        .and_then(|item| item.get("Host"))
-                        .and_then(Value::as_str)
-                        .map(str::to_owned)
-                })
+                .and_then(normalized_websocket_host)
+                .or_else(|| transport.and_then(normalized_websocket_host))
                 .or_else(|| get_string("host")),
             grpc_service_name: value
                 .get("grpc-opts")
@@ -1222,6 +1556,15 @@ fn optional_raw_string(fields: &JsonFields, key: &str) -> Result<Option<String>,
     }
 }
 
+fn optional_vless_flow(fields: &JsonFields) -> Result<Option<String>, SkippedNode> {
+    match fields.raw.get("flow") {
+        None | Some(Value::Null) => Ok(None),
+        Some(Value::String(value)) if value.is_empty() => Ok(None),
+        Some(Value::String(value)) if value == "xtls-rprx-vision" => Ok(Some(value.clone())),
+        _ => Err(SkippedNode::InvalidNode),
+    }
+}
+
 fn optional_raw_u32(fields: &JsonFields, key: &str) -> Result<Option<u32>, SkippedNode> {
     match raw_value(fields, key)? {
         None | Some(Value::Null) => Ok(None),
@@ -1242,10 +1585,285 @@ fn optional_raw_u8(fields: &JsonFields, key: &str) -> Result<Option<u8>, Skipped
     })
 }
 
+fn optional_raw_u8_or_string(fields: &JsonFields, key: &str) -> Result<Option<u8>, SkippedNode> {
+    match raw_value(fields, key)? {
+        None | Some(Value::Null) => Ok(None),
+        Some(Value::Number(value)) => value
+            .as_u64()
+            .and_then(|value| u8::try_from(value).ok())
+            .map(Some)
+            .ok_or(SkippedNode::InvalidNode),
+        Some(Value::String(value)) => value
+            .parse::<u8>()
+            .map(Some)
+            .map_err(|_| SkippedNode::InvalidNode),
+        _ => Err(SkippedNode::InvalidNode),
+    }
+}
+
 fn optional_raw_bool(fields: &JsonFields, key: &str) -> Result<Option<bool>, SkippedNode> {
     match raw_value(fields, key)? {
         None | Some(Value::Null) => Ok(None),
         Some(Value::Bool(value)) => Ok(Some(*value)),
+        _ => Err(SkippedNode::InvalidNode),
+    }
+}
+
+fn websocket_early_data(
+    fields: &JsonFields,
+) -> Result<(Option<u32>, Option<String>, bool), SkippedNode> {
+    let websocket = fields.raw.get("ws-opts");
+    let transport = fields.raw.get("transport");
+    let max_values = [
+        websocket.and_then(|value| value.get("max_early_data")),
+        transport.and_then(|value| value.get("max_early_data")),
+    ];
+    let header_values = [
+        websocket.and_then(|value| value.get("early_data_header_name")),
+        transport.and_then(|value| value.get("early_data_header_name")),
+    ];
+    let specified = max_values.iter().any(|value| value.is_some())
+        || header_values.iter().any(|value| value.is_some());
+
+    let mut max_early_data = None;
+    let mut max_resolved = false;
+    for value in max_values.into_iter().flatten() {
+        let value = match value {
+            Value::Null => None,
+            Value::Number(value) => Some(
+                value
+                    .as_u64()
+                    .and_then(|value| u32::try_from(value).ok())
+                    .ok_or(SkippedNode::InvalidNode)?,
+            ),
+            _ => return Err(SkippedNode::InvalidNode),
+        }
+        .filter(|value| *value > 0);
+        if max_resolved && max_early_data != value {
+            return Err(SkippedNode::InvalidNode);
+        }
+        max_early_data = value;
+        max_resolved = true;
+    }
+
+    let mut early_data_header_name = None;
+    let mut header_resolved = false;
+    for value in header_values.into_iter().flatten() {
+        let value = match value {
+            Value::Null => None,
+            Value::String(value) if value.is_empty() => None,
+            Value::String(value) => Some(value.clone()),
+            _ => return Err(SkippedNode::InvalidNode),
+        };
+        if header_resolved && early_data_header_name != value {
+            return Err(SkippedNode::InvalidNode);
+        }
+        early_data_header_name = value;
+        header_resolved = true;
+    }
+
+    Ok((max_early_data, early_data_header_name, specified))
+}
+
+fn optional_positive_u32_aliases(
+    fields: &JsonFields,
+    keys: &[&str],
+) -> Result<Option<u32>, SkippedNode> {
+    let mut resolved = None;
+    for key in keys {
+        let Some(value) = fields.raw.get(*key) else {
+            continue;
+        };
+        let value = value
+            .as_u64()
+            .and_then(|value| u32::try_from(value).ok())
+            .filter(|value| *value > 0)
+            .ok_or(SkippedNode::InvalidNode)?;
+        if resolved.is_some_and(|existing| existing != value) {
+            return Err(SkippedNode::InvalidNode);
+        }
+        resolved = Some(value);
+    }
+    Ok(resolved)
+}
+
+fn optional_bool_aliases(fields: &JsonFields, keys: &[&str]) -> Result<Option<bool>, SkippedNode> {
+    let mut resolved = None;
+    for key in keys {
+        let Some(value) = fields.raw.get(*key) else {
+            continue;
+        };
+        let value = value.as_bool().ok_or(SkippedNode::InvalidNode)?;
+        if resolved.is_some_and(|existing| existing != value) {
+            return Err(SkippedNode::InvalidNode);
+        }
+        resolved = Some(value);
+    }
+    Ok(resolved)
+}
+
+fn resolve_optional_string(
+    first: Option<&Value>,
+    second: Option<&Value>,
+) -> Result<Option<String>, SkippedNode> {
+    let parse = |value: &Value| {
+        value
+            .as_str()
+            .filter(|value| !value.trim().is_empty())
+            .map(str::to_owned)
+            .ok_or(SkippedNode::InvalidNode)
+    };
+    match (first, second) {
+        (None, None) => Ok(None),
+        (Some(value), None) | (None, Some(value)) => parse(value).map(Some),
+        (Some(first), Some(second)) => {
+            let first = parse(first)?;
+            let second = parse(second)?;
+            (first == second)
+                .then_some(Some(first))
+                .ok_or(SkippedNode::InvalidNode)
+        }
+    }
+}
+
+fn tls_server_name(fields: &JsonFields) -> Result<Option<String>, SkippedNode> {
+    resolve_optional_string(
+        fields.raw.get("sni"),
+        fields.raw.get("tls").and_then(|tls| tls.get("server_name")),
+    )
+}
+
+fn tls_allow_insecure(fields: &JsonFields) -> Result<bool, SkippedNode> {
+    let top = fields.raw.get("skip-cert-verify");
+    let nested = fields.raw.get("tls").and_then(|tls| tls.get("insecure"));
+    match (top, nested) {
+        (None, None) => Ok(false),
+        (Some(value), None) | (None, Some(value)) => {
+            value.as_bool().ok_or(SkippedNode::InvalidNode)
+        }
+        (Some(first), Some(second)) => {
+            let first = first.as_bool().ok_or(SkippedNode::InvalidNode)?;
+            let second = second.as_bool().ok_or(SkippedNode::InvalidNode)?;
+            (first == second)
+                .then_some(first)
+                .ok_or(SkippedNode::InvalidNode)
+        }
+    }
+}
+
+fn tls_alpn(fields: &JsonFields) -> Result<Vec<String>, SkippedNode> {
+    let top = fields.raw.get("alpn");
+    let nested = fields.raw.get("tls").and_then(|tls| tls.get("alpn"));
+    let parse = |value: &Value| {
+        valid_alpn(value)
+            .then(|| {
+                value
+                    .as_array()
+                    .expect("validated ALPN array")
+                    .iter()
+                    .map(|value| value.as_str().expect("validated ALPN string").to_owned())
+                    .collect::<Vec<_>>()
+            })
+            .ok_or(SkippedNode::InvalidNode)
+    };
+    match (top, nested) {
+        (None, None) => Ok(Vec::new()),
+        (Some(value), None) | (None, Some(value)) => parse(value),
+        (Some(first), Some(second)) => {
+            let first = parse(first)?;
+            let second = parse(second)?;
+            (first == second)
+                .then_some(first)
+                .ok_or(SkippedNode::InvalidNode)
+        }
+    }
+}
+
+fn tls_fingerprint(fields: &JsonFields) -> Result<Option<String>, SkippedNode> {
+    let top = fields.raw.get("client-fingerprint");
+    let utls = fields.raw.get("tls").and_then(|tls| tls.get("utls"));
+    let nested = utls.and_then(|utls| utls.get("fingerprint"));
+    let enabled = utls
+        .and_then(|utls| utls.get("enabled"))
+        .and_then(Value::as_bool);
+    let value = resolve_optional_string(top, nested)?;
+    if enabled == Some(false) && value.is_some() || enabled == Some(true) && value.is_none() {
+        return Err(SkippedNode::InvalidNode);
+    }
+    value
+        .as_ref()
+        .is_none_or(|value| valid_fingerprint(&Value::String(value.clone())))
+        .then_some(value)
+        .ok_or(SkippedNode::InvalidNode)
+}
+
+fn tls_reality_fields(
+    fields: &JsonFields,
+) -> Result<(Option<String>, Option<String>), SkippedNode> {
+    let clash = fields.raw.get("reality-opts");
+    let sing_box = fields.raw.get("tls").and_then(|tls| tls.get("reality"));
+    let public_key = resolve_optional_string(
+        clash.and_then(|value| value.get("public-key")),
+        sing_box.and_then(|value| value.get("public_key")),
+    )?;
+    let short_id = resolve_optional_string(
+        clash.and_then(|value| value.get("short-id")),
+        sing_box.and_then(|value| value.get("short_id")),
+    )?;
+    match (&public_key, &short_id) {
+        (None, None) | (Some(_), Some(_)) => Ok((public_key, short_id)),
+        _ => Err(SkippedNode::InvalidNode),
+    }
+}
+
+fn validate_clash_protocol_metadata(
+    fields: &JsonFields,
+    protocol: ProxyProtocol,
+) -> Result<(), SkippedNode> {
+    if let Some(value) = fields.raw.get("udp")
+        && (!matches!(protocol, ProxyProtocol::Vless | ProxyProtocol::Hysteria2)
+            || value.as_bool() != Some(true))
+    {
+        return Err(SkippedNode::InvalidNode);
+    }
+    if let Some(value) = fields.raw.get("packet_encoding")
+        && (protocol != ProxyProtocol::Vless || value.as_str() != Some("xudp"))
+    {
+        return Err(SkippedNode::InvalidNode);
+    }
+    if let Some(value) = fields.raw.get("protocol")
+        && (protocol != ProxyProtocol::Hysteria2 || value.as_str() != Some("udp"))
+    {
+        return Err(SkippedNode::InvalidNode);
+    }
+    if (fields.raw.contains_key("benchmark-url") || fields.raw.contains_key("benchmark-timeout"))
+        && protocol != ProxyProtocol::Hysteria2
+    {
+        return Err(SkippedNode::InvalidNode);
+    }
+    Ok(())
+}
+
+fn validate_smux(fields: &JsonFields, protocol: ProxyProtocol) -> Result<bool, SkippedNode> {
+    let Some(smux) = fields.raw.get("smux") else {
+        return Ok(false);
+    };
+    if protocol != ProxyProtocol::Vless || invalid_smux(smux) {
+        return Err(SkippedNode::InvalidNode);
+    }
+    let smux = smux.as_object().ok_or(SkippedNode::InvalidNode)?;
+    let enabled = smux
+        .get("enabled")
+        .and_then(Value::as_bool)
+        .ok_or(SkippedNode::InvalidNode)?;
+    if !enabled {
+        return Ok(false);
+    }
+    if smux.get("protocol").and_then(Value::as_str) != Some("h2mux") {
+        return Err(SkippedNode::InvalidNode);
+    }
+    match smux.get("only-tcp").and_then(Value::as_bool) {
+        Some(true) => Ok(true),
         _ => Err(SkippedNode::InvalidNode),
     }
 }
@@ -1315,6 +1933,8 @@ fn draft_from_fields(fields: &JsonFields) -> Result<ProxyNodeDraft, SkippedNode>
         .port
         .filter(|port| *port > 0)
         .ok_or(SkippedNode::InvalidNode)?;
+    validate_clash_protocol_metadata(fields, protocol)?;
+    let unsupported_smux = validate_smux(fields, protocol)?;
     let options = match protocol {
         ProxyProtocol::Vmess => ProtocolOptions::Vmess {
             uuid: fields
@@ -1331,7 +1951,7 @@ fn draft_from_fields(fields: &JsonFields) -> Result<ProxyNodeDraft, SkippedNode>
                 .clone()
                 .filter(|value| !value.is_empty())
                 .ok_or(SkippedNode::InvalidNode)?,
-            flow: optional_raw_string(fields, "flow")?,
+            flow: optional_vless_flow(fields)?,
         },
         ProxyProtocol::Shadowsocks => ProtocolOptions::Shadowsocks {
             method: fields
@@ -1346,7 +1966,7 @@ fn draft_from_fields(fields: &JsonFields) -> Result<ProxyNodeDraft, SkippedNode>
                 .ok_or(SkippedNode::InvalidNode)?,
         },
         ProxyProtocol::Socks => ProtocolOptions::Socks {
-            version: optional_raw_u8(fields, "version")?.unwrap_or(5),
+            version: optional_raw_u8_or_string(fields, "version")?.unwrap_or(5),
             username: fields.username.clone(),
             password: fields.password.clone(),
         },
@@ -1373,6 +1993,18 @@ fn draft_from_fields(fields: &JsonFields) -> Result<ProxyNodeDraft, SkippedNode>
                 .filter(|value| !value.is_empty())
                 .ok_or(SkippedNode::InvalidNode)?,
             obfs: optional_raw_string(fields, "obfs")?,
+            up_mbps: optional_positive_u32_aliases(
+                fields,
+                &["up_mbps", "up-mbps", "up", "up-speed"],
+            )?,
+            down_mbps: optional_positive_u32_aliases(
+                fields,
+                &["down_mbps", "down-mbps", "down", "down-speed"],
+            )?,
+            disable_path_mtu_discovery: optional_bool_aliases(
+                fields,
+                &["disable_path_mtu_discovery", "disable_mtu_discovery"],
+            )?,
         },
         ProxyProtocol::WireGuard => ProtocolOptions::WireGuard {
             private_key: required_raw_string(fields, "private_key")?,
@@ -1453,25 +2085,61 @@ fn draft_from_fields(fields: &JsonFields) -> Result<ProxyNodeDraft, SkippedNode>
     if !options.is_compatible_with(protocol) {
         return Err(SkippedNode::InvalidNode);
     }
+    let (max_early_data, early_data_header_name, early_data_specified) =
+        websocket_early_data(fields)?;
     let transport = match fields.network.as_deref() {
-        Some("ws") => Some(Transport::Websocket {
-            path: fields
-                .websocket_path
-                .clone()
-                .unwrap_or_else(|| "/".to_owned()),
-            host: fields.websocket_host.clone(),
-        }),
+        Some("ws") => {
+            let transport = Transport::Websocket {
+                path: fields
+                    .websocket_path
+                    .clone()
+                    .unwrap_or_else(|| "/".to_owned()),
+                host: fields.websocket_host.clone(),
+                max_early_data,
+                early_data_header_name,
+            };
+            if !transport.has_valid_early_data() {
+                return Err(SkippedNode::InvalidNode);
+            }
+            Some(transport)
+        }
         Some("grpc") => Some(Transport::Grpc {
             service_name: fields.grpc_service_name.clone().unwrap_or_default(),
         }),
+        _ if early_data_specified => return Err(SkippedNode::InvalidNode),
         _ => Some(Transport::Tcp),
     };
-    let tls = fields.tls.filter(|enabled| *enabled).map(|_| TlsOptions {
-        server_name: fields.sni.clone(),
-        allow_insecure: fields.skip_cert_verify.unwrap_or(false),
-        reality_public_key: fields.reality_public_key.clone(),
-        reality_short_id: fields.reality_short_id.clone(),
+    if protocol == ProxyProtocol::Hysteria2 && fields.tls == Some(false) {
+        return Err(SkippedNode::InvalidNode);
+    }
+    let server_name = tls_server_name(fields)?;
+    let allow_insecure = tls_allow_insecure(fields)?;
+    let alpn = tls_alpn(fields)?;
+    let utls_fingerprint = tls_fingerprint(fields)?;
+    let (reality_public_key, reality_short_id) = tls_reality_fields(fields)?;
+    if reality_public_key.is_some() && protocol != ProxyProtocol::Vless {
+        return Err(SkippedNode::InvalidNode);
+    }
+    let tls_enabled = fields.tls == Some(true) || protocol == ProxyProtocol::Hysteria2;
+    let has_tls_details = server_name.is_some()
+        || allow_insecure
+        || !alpn.is_empty()
+        || utls_fingerprint.is_some()
+        || reality_public_key.is_some();
+    if !tls_enabled && has_tls_details {
+        return Err(SkippedNode::InvalidNode);
+    }
+    let tls = tls_enabled.then_some(TlsOptions {
+        server_name,
+        allow_insecure,
+        reality_public_key,
+        reality_short_id,
+        alpn,
+        utls_fingerprint,
     });
+    if unsupported_smux {
+        return Err(SkippedNode::UnsupportedOption);
+    }
     Ok(ProxyNodeDraft {
         name,
         protocol,
@@ -1488,6 +2156,498 @@ mod tests {
     use super::*;
     use crate::domain::ProviderId;
     use crate::subscription::normalize_nodes;
+
+    #[test]
+    fn compatibility_015_imports_ten_and_skips_only_tcp_multiplex() {
+        let parsed = parse_subscription(include_str!(
+            "../../tests/fixtures/subscriptions/clash-compatible.yaml"
+        ))
+        .expect("sanitized Clash document");
+
+        assert_eq!(parsed.format, SubscriptionFormat::ClashYaml);
+        assert_eq!(parsed.nodes.len(), 10);
+        assert_eq!(parsed.skipped, vec![SkippedNode::UnsupportedOption]);
+        assert_eq!(
+            parsed
+                .nodes
+                .iter()
+                .filter(|node| node.protocol == ProxyProtocol::Hysteria2)
+                .count(),
+            5
+        );
+        assert_eq!(
+            parsed
+                .nodes
+                .iter()
+                .filter(|node| node.protocol == ProxyProtocol::Vless)
+                .count(),
+            5
+        );
+
+        let hysteria2 = parsed
+            .nodes
+            .iter()
+            .find(|node| node.protocol == ProxyProtocol::Hysteria2)
+            .expect("Hysteria2 node");
+        assert!(matches!(
+            &hysteria2.options,
+            ProtocolOptions::Hysteria2 {
+                password,
+                up_mbps: Some(2048),
+                down_mbps: Some(2048),
+                disable_path_mtu_discovery: Some(true),
+                ..
+            } if password == "fixture-password"
+        ));
+        let tls = hysteria2.tls.as_ref().expect("intrinsic Hysteria2 TLS");
+        assert_eq!(tls.server_name.as_deref(), Some("fixture.example.invalid"));
+        assert!(tls.allow_insecure);
+        assert_eq!(tls.alpn, vec!["h3"]);
+
+        let vless = parsed
+            .nodes
+            .iter()
+            .find(|node| node.protocol == ProxyProtocol::Vless)
+            .expect("VLESS node");
+        let tls = vless.tls.as_ref().expect("VLESS TLS");
+        assert_eq!(tls.utls_fingerprint.as_deref(), Some("chrome"));
+        assert_eq!(
+            tls.reality_public_key.as_deref(),
+            Some("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+        );
+        assert_eq!(tls.reality_short_id.as_deref(), Some("0123456789abcdef"));
+    }
+
+    #[test]
+    fn compatibility_015_parses_equivalent_sing_box_json_fields() {
+        let parsed = parse_subscription(
+            r#"{"outbounds":[
+                {"tag":"hy2","type":"hysteria2","server":"fixture.example.invalid","server_port":443,"password":"fixture-password","up_mbps":2048,"down_mbps":2048,"disable_path_mtu_discovery":true,"tls":{"enabled":true,"server_name":"fixture.example.invalid","insecure":true,"alpn":["h3"]}},
+                {"tag":"vless","type":"vless","server":"fixture.example.invalid","server_port":443,"uuid":"00000000-0000-4000-8000-000000000001","flow":"xtls-rprx-vision","tls":{"enabled":true,"server_name":"fixture.example.invalid","reality":{"enabled":true,"public_key":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA","short_id":"0123456789abcdef"},"utls":{"enabled":true,"fingerprint":"chrome"}}}
+            ]}"#,
+        )
+        .expect("sing-box JSON");
+
+        assert_eq!(parsed.nodes.len(), 2);
+        assert!(parsed.skipped.is_empty());
+        assert!(matches!(
+            parsed.nodes[0].options,
+            ProtocolOptions::Hysteria2 {
+                up_mbps: Some(2048),
+                down_mbps: Some(2048),
+                disable_path_mtu_discovery: Some(true),
+                ..
+            }
+        ));
+        assert_eq!(
+            parsed.nodes[1]
+                .tls
+                .as_ref()
+                .and_then(|tls| tls.utls_fingerprint.as_deref()),
+            Some("chrome")
+        );
+    }
+
+    #[test]
+    fn compatibility_015_rejects_alias_conflicts_and_bad_types() {
+        let base = "proxies:\n- name: invalid\n  type: hysteria2\n  server: fixture.example.invalid\n  port: 443\n  password: fixture-password\n  auth: fixture-password\n  up: 2048\n  up-speed: 2048\n  down: 2048\n  down-speed: 2048\n  disable_mtu_discovery: true\n  protocol: udp\n  alpn: [h3]\n  client-fingerprint: chrome\n  benchmark-timeout: 5\n  tls: true\n";
+        let mut cases = [
+            ("auth: fixture-password", "auth: other"),
+            ("up-speed: 2048", "up-speed: 1024"),
+            ("down: 2048", "down: 0"),
+            ("alpn: [h3]", "alpn: h3"),
+            ("alpn: [h3]", "alpn: [h3, h3]"),
+            ("client-fingerprint: chrome", "client-fingerprint: unknown"),
+            ("protocol: udp", "protocol: tcp"),
+            ("benchmark-timeout: 5", "benchmark-timeout: five"),
+            ("tls: true", "tls: false"),
+        ]
+        .into_iter()
+        .map(|(needle, replacement)| base.replace(needle, replacement))
+        .collect::<Vec<_>>();
+        cases.push(format!("{base}  disable_path_mtu_discovery: false\n"));
+        for body in cases {
+            let parsed = parse_subscription(&body).expect("recognized Clash YAML");
+            assert!(parsed.nodes.is_empty(), "unexpected node for {body}");
+            assert_eq!(
+                parsed.skipped,
+                vec![SkippedNode::InvalidNode],
+                "wrong rejection for {body}"
+            );
+        }
+    }
+
+    #[test]
+    fn compatibility_015_does_not_misclassify_malformed_only_tcp_nodes() {
+        let cases = [
+            "uuid: ''\n  smux: {enabled: true, protocol: h2mux, only-tcp: true}",
+            "uuid: 00000000-0000-4000-8000-000000000001\n  smux: {enabled: true, protocol: h2mux, only-tcp: yes}",
+            "uuid: 00000000-0000-4000-8000-000000000001\n  smux: {enabled: true, protocol: unknown, only-tcp: true}",
+            "uuid: 00000000-0000-4000-8000-000000000001\n  smux: {enabled: true, protocol: h2mux, only-tcp: true, unknown: true}",
+        ];
+        for extra in cases {
+            let body = format!(
+                "proxies:\n- name: invalid\n  type: vless\n  server: fixture.example.invalid\n  port: 443\n  network: tcp\n  udp: true\n  tls: true\n  {extra}\n"
+            );
+            let parsed = parse_subscription(&body).expect("recognized Clash YAML");
+            assert!(parsed.nodes.is_empty());
+            assert_eq!(parsed.skipped, vec![SkippedNode::InvalidNode]);
+        }
+    }
+
+    #[test]
+    fn compatibility_015_reports_all_valid_only_tcp_nodes_as_unsupported() {
+        let body = r#"proxies:
+- name: first
+  type: vless
+  server: fixture.example.invalid
+  port: 443
+  uuid: 00000000-0000-4000-8000-000000000001
+  network: tcp
+  udp: true
+  tls: true
+  smux: {enabled: true, protocol: h2mux, only-tcp: true, padding: true, brutal-opts: {enabled: true, up: 1000, down: 1000}}
+- name: second
+  type: vless
+  server: fixture.example.invalid
+  port: 443
+  uuid: 00000000-0000-4000-8000-000000000002
+  network: tcp
+  udp: true
+  tls: true
+  smux: {enabled: true, protocol: h2mux, only-tcp: true}
+"#;
+        let parsed = parse_subscription(body).expect("recognized Clash YAML");
+        assert!(parsed.nodes.is_empty());
+        assert_eq!(
+            parsed.skipped,
+            vec![
+                SkippedNode::UnsupportedOption,
+                SkippedNode::UnsupportedOption
+            ]
+        );
+    }
+
+    #[test]
+    fn compatibility_021_parses_the_anonymized_sing_box_response_shape() {
+        let parsed = parse_subscription(include_str!(
+            "../../tests/fixtures/subscriptions/singbox-response-shape-021.json"
+        ))
+        .expect("synthetic sing-box response");
+
+        assert_eq!(parsed.format, SubscriptionFormat::Json);
+        assert!(parsed.skipped.is_empty());
+        assert_eq!(parsed.nodes.len(), 41);
+        assert_eq!(
+            parsed
+                .nodes
+                .iter()
+                .filter(|node| node.protocol == ProxyProtocol::Hysteria2)
+                .count(),
+            22
+        );
+        let vless = parsed
+            .nodes
+            .iter()
+            .filter_map(|node| match &node.options {
+                ProtocolOptions::Vless { flow, .. } => Some(flow.as_deref()),
+                _ => None,
+            })
+            .collect::<Vec<_>>();
+        assert_eq!(vless.len(), 19);
+        assert_eq!(vless.iter().filter(|flow| flow.is_none()).count(), 10);
+        assert_eq!(
+            vless
+                .iter()
+                .filter(|flow| **flow == Some("xtls-rprx-vision"))
+                .count(),
+            9
+        );
+        let websocket = parsed
+            .nodes
+            .iter()
+            .filter_map(|node| match &node.transport {
+                Some(Transport::Websocket {
+                    host,
+                    max_early_data,
+                    early_data_header_name,
+                    ..
+                }) => Some((host, max_early_data, early_data_header_name)),
+                _ => None,
+            })
+            .collect::<Vec<_>>();
+        assert_eq!(websocket.len(), 10);
+        assert!(websocket.iter().all(|(host, max, header)| {
+            host.as_deref() == Some("edge.example.invalid")
+                && **max == Some(2048)
+                && header.as_deref() == Some("Sec-WebSocket-Protocol")
+        }));
+    }
+
+    #[test]
+    fn compatibility_027_preserves_sing_box_and_clash_websocket_early_data() {
+        let sing_box = parse_subscription(
+            r#"{"outbounds":[{"tag":"node","type":"vless","server":"example.invalid","server_port":443,"uuid":"00000000-0000-4000-8000-000000000001","tls":{"enabled":true},"transport":{"type":"ws","path":"/ws","headers":{"Host":["edge.example.invalid"]},"max_early_data":2048,"early_data_header_name":"Sec-WebSocket-Protocol"}}]}"#,
+        )
+        .expect("recognized sing-box JSON");
+        assert!(sing_box.skipped.is_empty());
+        assert_eq!(sing_box.nodes.len(), 1);
+        assert_eq!(
+            sing_box.nodes[0].transport,
+            Some(Transport::Websocket {
+                path: "/ws".to_owned(),
+                host: Some("edge.example.invalid".to_owned()),
+                max_early_data: Some(2048),
+                early_data_header_name: Some("Sec-WebSocket-Protocol".to_owned()),
+            })
+        );
+
+        let clash = parse_subscription(
+            "proxies:\n  - name: node\n    type: vless\n    server: example.invalid\n    port: 443\n    uuid: 00000000-0000-4000-8000-000000000001\n    network: ws\n    tls: true\n    ws-opts:\n      path: /ws\n      headers:\n        Host: edge.example.invalid\n      max_early_data: 2048\n      max-early-data: 2048\n      early_data_header_name: Sec-WebSocket-Protocol\n      early-data-header-name: Sec-WebSocket-Protocol\n",
+        )
+        .expect("recognized Clash YAML");
+        assert!(clash.skipped.is_empty());
+        assert_eq!(clash.nodes[0].transport, sing_box.nodes[0].transport);
+    }
+
+    #[test]
+    fn compatibility_027_rejects_websocket_host_values_that_cannot_be_preserved() {
+        for host in [
+            "[]",
+            r#"["first.example.invalid","second.example.invalid"]"#,
+            "[42]",
+            "null",
+            r#""""#,
+        ] {
+            let body = format!(
+                r#"{{"outbounds":[{{"tag":"node","type":"vless","server":"example.invalid","server_port":443,"uuid":"00000000-0000-4000-8000-000000000001","tls":{{"enabled":true}},"transport":{{"type":"ws","path":"/ws","headers":{{"Host":{host}}},"max_early_data":2048}}}}]}}"#
+            );
+            let parsed = parse_subscription(&body).expect("recognized JSON");
+            assert!(parsed.nodes.is_empty(), "unexpected node for Host={host}");
+            assert_eq!(parsed.skipped, vec![SkippedNode::InvalidNode]);
+        }
+
+        let extra_header = parse_subscription(
+            r#"{"outbounds":[{"tag":"node","type":"vless","server":"example.invalid","server_port":443,"uuid":"00000000-0000-4000-8000-000000000001","tls":{"enabled":true},"transport":{"type":"ws","path":"/ws","headers":{"Host":["edge.example.invalid"],"Origin":"https://origin.example.invalid"},"max_early_data":2048}}]}"#,
+        )
+        .expect("recognized JSON");
+        assert!(extra_header.nodes.is_empty());
+        assert_eq!(extra_header.skipped, vec![SkippedNode::InvalidNode]);
+    }
+
+    #[test]
+    fn compatibility_027_rejects_invalid_or_conflicting_early_data() {
+        for options in [
+            r#""max_early_data":-1"#,
+            r#""max_early_data":1.5"#,
+            r#""max_early_data":"2048""#,
+            r#""max_early_data":4294967296"#,
+            r#""max_early_data":true"#,
+            r#""early_data_header_name":"Sec-WebSocket-Protocol""#,
+            r#""max_early_data":2048,"early_data_header_name":"bad header""#,
+        ] {
+            let body = format!(
+                r#"{{"outbounds":[{{"tag":"node","type":"vless","server":"example.invalid","server_port":443,"uuid":"00000000-0000-4000-8000-000000000001","tls":{{"enabled":true}},"transport":{{"type":"ws","path":"/ws",{options}}}}}]}}"#
+            );
+            let parsed = parse_subscription(&body).expect("recognized JSON");
+            assert!(parsed.nodes.is_empty(), "unexpected node for {options}");
+            assert_eq!(parsed.skipped, vec![SkippedNode::InvalidNode]);
+        }
+
+        for options in [
+            "max_early_data: 2048\n      max-early-data: 1024",
+            "max_early_data: 2048\n      early_data_header_name: Sec-WebSocket-Protocol\n      early-data-header-name: Other",
+        ] {
+            let body = format!(
+                "proxies:\n  - name: node\n    type: vless\n    server: example.invalid\n    port: 443\n    uuid: 00000000-0000-4000-8000-000000000001\n    network: ws\n    tls: true\n    ws-opts:\n      path: /ws\n      {options}\n"
+            );
+            let parsed = parse_subscription(&body).expect("recognized Clash YAML");
+            assert!(parsed.nodes.is_empty(), "unexpected node for {options}");
+            assert_eq!(parsed.skipped, vec![SkippedNode::InvalidNode]);
+        }
+
+        let disabled = parse_subscription(
+            r#"{"outbounds":[{"tag":"node","type":"vless","server":"example.invalid","server_port":443,"uuid":"00000000-0000-4000-8000-000000000001","tls":{"enabled":true},"transport":{"type":"ws","path":"/ws","max_early_data":0,"early_data_header_name":""}}]}"#,
+        )
+        .expect("recognized JSON");
+        assert!(disabled.skipped.is_empty());
+        assert!(matches!(
+            disabled.nodes[0].transport,
+            Some(Transport::Websocket {
+                max_early_data: None,
+                early_data_header_name: None,
+                ..
+            })
+        ));
+
+        let wrong_transport = parse_subscription(
+            "proxies:\n  - name: node\n    type: vless\n    server: example.invalid\n    port: 443\n    uuid: 00000000-0000-4000-8000-000000000001\n    network: tcp\n    tls: true\n    ws-opts:\n      max-early-data: 2048\n",
+        )
+        .expect("recognized Clash YAML");
+        assert!(wrong_transport.nodes.is_empty());
+        assert_eq!(wrong_transport.skipped, vec![SkippedNode::InvalidNode]);
+    }
+
+    #[test]
+    fn compatibility_021_parses_the_anonymized_clash_empty_flow_shape() {
+        let parsed = parse_subscription(include_str!(
+            "../../tests/fixtures/subscriptions/clash-empty-flow-shape-021.yaml"
+        ))
+        .expect("synthetic Clash response");
+
+        assert_eq!(parsed.format, SubscriptionFormat::ClashYaml);
+        assert_eq!(parsed.nodes.len(), 10);
+        assert!(parsed.skipped.is_empty());
+        assert!(parsed.nodes.iter().all(|node| {
+            matches!(&node.options, ProtocolOptions::Vless { flow: None, .. })
+                && matches!(node.transport, Some(Transport::Websocket { .. }))
+        }));
+    }
+
+    #[test]
+    fn compatibility_021_accepts_only_default_equivalent_vless_options() {
+        for (flow, expected) in [("", None), ("xtls-rprx-vision", Some("xtls-rprx-vision"))] {
+            let body = format!(
+                r#"{{"outbounds":[{{"tag":"node","type":"vless","server":"example.invalid","server_port":443,"uuid":"00000000-0000-4000-8000-000000000001","flow":"{flow}","packet_encoding":"xudp","tls":{{"enabled":true}}}}]}}"#
+            );
+            let parsed = parse_subscription(&body).expect("recognized JSON");
+            assert!(parsed.skipped.is_empty());
+            assert!(matches!(
+                &parsed.nodes[0].options,
+                ProtocolOptions::Vless { flow, .. } if flow.as_deref() == expected
+            ));
+        }
+
+        for (field, value) in [
+            ("flow", r#""unknown""#),
+            ("flow", r#"" ""#),
+            ("flow", "42"),
+            ("packet_encoding", r#""""#),
+            ("packet_encoding", r#""packetaddr""#),
+            ("packet_encoding", "null"),
+        ] {
+            let body = format!(
+                r#"{{"outbounds":[{{"tag":"node","type":"vless","server":"example.invalid","server_port":443,"uuid":"00000000-0000-4000-8000-000000000001","{field}":{value},"tls":{{"enabled":true}}}}]}}"#
+            );
+            let parsed = parse_subscription(&body).expect("recognized JSON");
+            assert!(
+                parsed.nodes.is_empty(),
+                "unexpected node for {field}={value}"
+            );
+            assert_eq!(parsed.skipped, vec![SkippedNode::InvalidNode]);
+        }
+
+        let cross_protocol = parse_subscription(
+            r#"{"outbounds":[{"tag":"node","type":"hysteria2","server":"example.invalid","server_port":443,"password":"fixture","packet_encoding":"xudp","tls":{"enabled":true}}]}"#,
+        )
+        .expect("recognized JSON");
+        assert!(cross_protocol.nodes.is_empty());
+        assert_eq!(cross_protocol.skipped, vec![SkippedNode::InvalidNode]);
+    }
+
+    #[test]
+    fn compatibility_021_filters_metadata_only_in_sing_box_outbounds() {
+        let parsed = parse_subscription(
+            r#"{"outbounds":[
+                {"tag":"direct","type":"direct"},
+                {"tag":"block","type":"block"},
+                {"tag":"dns","type":"dns"},
+                {"tag":"selector","type":"selector","outbounds":["node"]},
+                {"tag":"urltest","type":"urltest","outbounds":["node"],"url":"https://probe.example.invalid"},
+                {"tag":"node","type":"socks","server":"example.invalid","server_port":1080}
+            ]}"#,
+        )
+        .expect("sing-box outbounds");
+        assert_eq!(parsed.nodes.len(), 1);
+        assert!(parsed.skipped.is_empty());
+
+        let only_metadata = parse_subscription(
+            r#"{"outbounds":[{"tag":"direct","type":"direct"},{"tag":"selector","type":"selector","outbounds":[]}]}"#,
+        )
+        .expect("sing-box metadata outbounds");
+        assert!(only_metadata.nodes.is_empty());
+        assert!(only_metadata.skipped.is_empty());
+
+        let clash = parse_subscription(
+            "proxies:\n- {name: direct, type: direct}\n- {name: selector, type: selector, outbounds: []}\n",
+        )
+        .expect("Clash proxies");
+        assert!(clash.nodes.is_empty());
+        assert_eq!(clash.skipped.len(), 2);
+        assert!(clash.skipped.contains(&SkippedNode::UnsupportedProtocol));
+    }
+
+    #[test]
+    fn compatibility_021_accepts_only_true_hysteria2_udp_marker() {
+        for (udp, accepted) in [("true", true), ("false", false), (r#""true""#, false)] {
+            let body = format!(
+                r#"{{"outbounds":[{{"tag":"hy2","type":"hysteria2","server":"example.invalid","server_port":443,"password":"fixture","udp":{udp},"tls":{{"enabled":true}}}}]}}"#
+            );
+            let parsed = parse_subscription(&body).expect("recognized JSON");
+            assert_eq!(parsed.nodes.len(), accepted as usize);
+            assert_eq!(parsed.skipped.is_empty(), accepted);
+            if !accepted {
+                assert_eq!(parsed.skipped, vec![SkippedNode::InvalidNode]);
+            }
+        }
+    }
+
+    #[test]
+    fn compatibility_005_clash_vmess_aliases_preserve_options() {
+        let body = "\u{feff}mixed-port: 7890\nproxies:\n  - {name: Clash VMess, type: vmess, server: example.invalid, port: 443, uuid: test-uuid, alterId: 0, cipher: auto, tls: true, servername: tls.example.invalid}\nproxy-groups: []\nrules: [MATCH,DIRECT]\n";
+        let parsed = parse_subscription(body).expect("Clash document");
+        assert!(parsed.skipped.is_empty());
+        assert_eq!(parsed.nodes.len(), 1);
+        assert_eq!(
+            parsed.nodes[0].options,
+            ProtocolOptions::Vmess {
+                uuid: "test-uuid".to_owned(),
+                alter_id: Some(0),
+                security: Some("auto".to_owned()),
+            }
+        );
+        assert_eq!(
+            parsed.nodes[0]
+                .tls
+                .as_ref()
+                .and_then(|tls| tls.server_name.as_deref()),
+            Some("tls.example.invalid")
+        );
+    }
+
+    #[test]
+    fn compatibility_005_clash_yaml_representations_and_conflicts() {
+        for body in [
+            "'proxies': [{name: n, type: socks5, server: example.invalid, port: 1080}]",
+            "{proxies: [{name: n, type: socks5, server: example.invalid, port: 1080}]}",
+        ] {
+            let parsed = parse_subscription(body).expect("valid YAML representation");
+            assert_eq!(parsed.nodes.len(), 1);
+            assert!(parsed.skipped.is_empty());
+        }
+        for extra in [
+            "alterId: 0, alter_id: 1",
+            "alterId: wrong",
+            "servername: 42",
+            "cipher: auto, security: none",
+            "unrecognized: true",
+        ] {
+            let body = format!(
+                "proxies: [{{name: n, type: vmess, server: example.invalid, port: 443, uuid: test-uuid, {extra}}}]"
+            );
+            let parsed = parse_subscription(&body).expect("YAML document");
+            assert!(parsed.nodes.is_empty());
+            assert_eq!(parsed.skipped, vec![SkippedNode::InvalidNode]);
+        }
+        let parsed = parse_subscription("proxies: [{name: n, type: ss, server: example.invalid, port: 443, cipher: aes-128-gcm, password: fixture}]").expect("SS document");
+        assert_eq!(
+            parsed.nodes[0].options,
+            ProtocolOptions::Shadowsocks {
+                method: "aes-128-gcm".to_owned(),
+                password: "fixture".to_owned()
+            }
+        );
+    }
 
     #[test]
     fn detects_json_and_extracts_supported_proxy_nodes() {
@@ -1679,6 +2839,8 @@ mod tests {
             Some(Transport::Websocket {
                 path: "/ws".to_owned(),
                 host: Some("edge.example.invalid".to_owned()),
+                max_early_data: None,
+                early_data_header_name: None,
             })
         );
         assert_eq!(
@@ -1688,6 +2850,8 @@ mod tests {
                 allow_insecure: true,
                 reality_public_key: Some("public".to_owned()),
                 reality_short_id: Some("short".to_owned()),
+                alpn: Vec::new(),
+                utls_fingerprint: None,
             })
         );
     }
@@ -1764,8 +2928,17 @@ mod tests {
         ];
         let subscriptions = (0..inputs.len())
             .map(|index| crate::domain::Subscription {
+                document: None,
                 id: crate::domain::SubscriptionId(format!("subscription-{index}")),
                 name: format!("Subscription {index}"),
+                description: String::new(),
+                source: crate::domain::SubscriptionSource::Manual,
+                last_success_at_ms: None,
+                last_attempt_at_ms: None,
+                http_metadata: None,
+                remote_request: None,
+                update_policy: crate::domain::SubscriptionUpdatePolicy::manual(),
+                skipped_unsupported_nodes: 0,
             })
             .collect::<Vec<_>>();
         let providers = (0..inputs.len())
@@ -1789,6 +2962,8 @@ mod tests {
         let state = crate::domain::AppState {
             schema_version: crate::domain::CURRENT_SCHEMA_VERSION,
             default_target: crate::domain::RouteTarget::Unconfigured,
+            active_subscription_id: None,
+            active_configuration_generation: 0,
             subscriptions,
             providers,
             nodes,

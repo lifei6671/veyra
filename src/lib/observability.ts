@@ -19,6 +19,17 @@ export type RuntimeObservation = {
   downloadTotalBytes: number;
   connectionCount: number;
   logSummary: ReadonlyArray<LogSummary>;
+  appliedSubscriptionId: string | null;
+  appliedConfigurationGeneration: number | null;
+  subscriptionSwitch: SubscriptionSwitch | null;
+  managedProxyAvailable: boolean;
+  coreMemoryBytes: number | null;
+};
+
+export type SubscriptionSwitch = {
+  operationId: string;
+  status: "queued" | "checking" | "prepared" | "persisted" | "applying" | "ready" | "cancelled" | "failed";
+  errorCode: "cancelled" | "busy" | "stateUnavailable" | "configurationFailed" | "saveFailed" | "stopFailed" | "startFailed" | "recoveryRequired" | "operationTimedOut" | null;
 };
 
 export type LogSummary = {
@@ -39,6 +50,7 @@ export type ManagedRuntimeStartResult =
   | "stateUnavailable"
   | "configurationFailed"
   | "startFailed"
+  | "subscriptionSelectionRequired"
   | "busy";
 
 export type ManagedRuntimeStopResult = "stopped" | "alreadyStopped" | "stopFailed" | "busy";
@@ -89,7 +101,15 @@ function parseRuntimeObservation(value: unknown): RuntimeObservation {
     !isNonNegativeInteger(value.uploadTotalBytes) ||
     !isNonNegativeInteger(value.downloadTotalBytes) ||
     !isNonNegativeInteger(value.connectionCount) ||
-    !Array.isArray(value.logSummary)
+    !Array.isArray(value.logSummary) ||
+    !(value.appliedSubscriptionId === null || (typeof value.appliedSubscriptionId === "string" && value.appliedSubscriptionId.length > 0)) ||
+    !isNullableNonNegativeInteger(value.appliedConfigurationGeneration) ||
+    (value.appliedSubscriptionId === null) !== (value.appliedConfigurationGeneration === null) ||
+    !(value.subscriptionSwitch === null || isSubscriptionSwitch(value.subscriptionSwitch)) ||
+    typeof value.managedProxyAvailable !== "boolean" ||
+    !isNullableNonNegativeInteger(value.coreMemoryBytes) ||
+    (isRecord(value.subscriptionSwitch) && value.subscriptionSwitch.status === "ready" &&
+      (value.sidecarLifecycle !== "ready" || value.appliedSubscriptionId === null || value.appliedConfigurationGeneration === null))
   ) {
     throw new Error("invalid runtime observation payload");
   }
@@ -119,6 +139,11 @@ function parseRuntimeObservation(value: unknown): RuntimeObservation {
     downloadTotalBytes: value.downloadTotalBytes,
     connectionCount: value.connectionCount,
     logSummary: value.logSummary.map(parseLogSummary),
+    appliedSubscriptionId: value.appliedSubscriptionId,
+    appliedConfigurationGeneration: value.appliedConfigurationGeneration,
+    subscriptionSwitch: value.subscriptionSwitch as SubscriptionSwitch | null,
+    managedProxyAvailable: value.managedProxyAvailable,
+    coreMemoryBytes: value.coreMemoryBytes,
   };
 }
 
@@ -129,6 +154,7 @@ function parseManagedRuntimeStartResult(value: unknown): ManagedRuntimeStartResu
     value === "stateUnavailable" ||
     value === "configurationFailed" ||
     value === "startFailed" ||
+    value === "subscriptionSelectionRequired" ||
     value === "busy"
   ) {
     return value;
@@ -174,6 +200,11 @@ const observationKeys = [
   "downloadTotalBytes",
   "connectionCount",
   "logSummary",
+  "appliedSubscriptionId",
+  "appliedConfigurationGeneration",
+  "subscriptionSwitch",
+  "managedProxyAvailable",
+  "coreMemoryBytes",
 ] as const;
 const logSummaryKeys = ["category", "level", "occurrences"] as const;
 const trafficSampleKeys = ["sampledAtMs", "uploadRateBps", "downloadRateBps"] as const;
@@ -192,6 +223,29 @@ function hasExactKeys(
 
 function isNonNegativeInteger(value: unknown): value is number {
   return typeof value === "number" && Number.isSafeInteger(value) && value >= 0;
+}
+
+function isNullableNonNegativeInteger(value: unknown): value is number | null {
+  return value === null || isNonNegativeInteger(value);
+}
+
+function isSubscriptionSwitch(value: unknown): value is SubscriptionSwitch {
+  if (!isRecord(value) || !hasExactKeys(value, ["operationId", "status", "errorCode"]) ||
+    typeof value.operationId !== "string" || !value.operationId || !isSwitchStatus(value.status)) return false;
+  if (value.status === "failed") return isSwitchError(value.errorCode) && value.errorCode !== "cancelled";
+  if (value.status === "cancelled") return value.errorCode === "cancelled";
+  return value.errorCode === null;
+}
+
+function isSwitchStatus(value: unknown): value is SubscriptionSwitch["status"] {
+  return value === "queued" || value === "checking" || value === "prepared" || value === "persisted" ||
+    value === "applying" || value === "ready" || value === "cancelled" || value === "failed";
+}
+
+function isSwitchError(value: unknown): value is NonNullable<SubscriptionSwitch["errorCode"]> {
+  return value === "cancelled" || value === "busy" || value === "stateUnavailable" ||
+    value === "configurationFailed" || value === "saveFailed" || value === "stopFailed" ||
+    value === "startFailed" || value === "recoveryRequired" || value === "operationTimedOut";
 }
 
 function isNonNegativeNumber(value: unknown): value is number {

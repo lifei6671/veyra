@@ -281,6 +281,32 @@ impl ManagedSidecar {
             .map_err(|_| ManagedSidecarError::Stop)
     }
 
+    /// 从本对象拥有的同一进程句柄读取工作集，不接受 PID，也不打开其它进程。
+    #[cfg(windows)]
+    pub(crate) fn working_set_bytes(&self) -> Result<u64, ManagedSidecarError> {
+        use std::{mem::size_of, os::windows::io::AsRawHandle};
+        use windows::Win32::{
+            Foundation::HANDLE,
+            System::ProcessStatus::{K32GetProcessMemoryInfo, PROCESS_MEMORY_COUNTERS},
+        };
+
+        let mut counters = PROCESS_MEMORY_COUNTERS {
+            cb: size_of::<PROCESS_MEMORY_COUNTERS>() as u32,
+            ..Default::default()
+        };
+        let queried = unsafe {
+            K32GetProcessMemoryInfo(
+                HANDLE(self.child.as_raw_handle()),
+                &mut counters,
+                counters.cb,
+            )
+        };
+        if !queried.as_bool() {
+            return Err(ManagedSidecarError::Stop);
+        }
+        u64::try_from(counters.WorkingSetSize).map_err(|_| ManagedSidecarError::Stop)
+    }
+
     /// 只终止这个结构体拥有的 child；调用方无需也不能提供 PID。
     pub(crate) fn stop(&mut self) -> Result<(), ManagedSidecarError> {
         let stopped = match self
@@ -1257,6 +1283,27 @@ mod tests {
         assert!(command.get_current_dir().is_none());
         // 普通启动器不附加测试参数；产品run/check仍由各自原调用点组装。
         assert!(managed_command(executable).get_args().next().is_none());
+    }
+
+    #[cfg(windows)]
+    #[test]
+    fn working_set_reads_only_the_owned_child_handle() {
+        let child = managed_command(Path::new("powershell.exe"))
+            .args([
+                "-NoLogo",
+                "-NoProfile",
+                "-NonInteractive",
+                "-Command",
+                "Start-Sleep -Seconds 5",
+            ])
+            .spawn()
+            .expect("start harmless owned child");
+        let mut owned = ManagedSidecar {
+            child,
+            dns_probe: None,
+        };
+        assert!(owned.working_set_bytes().expect("owned working set") > 0);
+        owned.stop().expect("stop owned child");
     }
 
     #[test]
