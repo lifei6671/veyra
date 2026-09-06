@@ -155,9 +155,41 @@ window:
       不直接编辑 sing-box/Mihomo JSON，不复制参考项目 API，也不改变既有领域和 Compiler 契约。
   - id: TASK-013
     milestone_ref: M7
-    objective: 参考 Clash Verge Rev 的连接、日志和设置页面，交付现有安全 DTO 的桌面 UI。
-    dependencies: [TASK-012]
+    objective: 在现有 AppState 与 StateStore 上交付版本化应用偏好、显式迁移和安全读写事务。
+    dependencies: [TASK-011]
     risk: HIGH
     acceptance_summary: >-
-      连接与日志仅展示当前实例的脱敏数据，设置只暴露已批准的应用能力；覆盖加载、空、错误、实例切换
-      和大列表响应，不泄露原始目标、凭证或 API secret，不新增系统捕获、任意核心参数或权限入口。
+      AppSettings 只包含 ThemePreference、AutoStart、SilentStart 和 LogLevel；V6 到 V7 使用显式迁移并
+      保留既有状态、升级前备份与损坏恢复语义，不通过 serde default 绕过迁移，不实现 UI、桌面或运行时副作用。
+  - id: TASK-014
+    milestone_ref: M7
+    objective: 交付主题偏好与首个由真实 Owner 驱动的 Settings 聚合页面。
+    dependencies: [TASK-013]
+    risk: MEDIUM
+    acceptance_summary: >-
+      ThemePreference 支持 System、Light、Dark 且默认 System；持久化确认后即时应用 WebView 主题，失败恢复
+      最后确认值；Settings 复用既有视觉组件，只展示真实能力，不修改 AppShell、Sidebar、Router 或运行时。
+  - id: TASK-015
+    milestone_ref: M7
+    objective: 交付 Windows 启动注册与静默启动两项独立应用偏好。
+    dependencies: [TASK-013, TASK-014]
+    risk: HIGH
+    acceptance_summary: >-
+      AutoStart 仅由 Tauri Desktop AutoStart API/plugin 承接，平台操作确认后才持久化；SilentStart 在
+      Backend 与 Tray Ready 后保持主窗口隐藏且可由托盘恢复；两项默认 false、互不替代，不迁入 Windows PlatformAdapter。
+  - id: TASK-016
+    milestone_ref: M7
+    objective: 交付当前受管实例的脱敏连接列表桌面 UI。
+    dependencies: [TASK-006, TASK-010]
+    risk: MEDIUM
+    acceptance_summary: >-
+      仅消费现有当前实例连接 DTO，覆盖加载、空、错误、实例切换与大列表响应；不暴露原始凭据、API secret，
+      不修改 Settings、CaptureMode、Compiler 或连接状态所有权。
+  - id: TASK-017
+    milestone_ref: M7
+    objective: 交付当前受管实例的脱敏日志桌面 UI。
+    dependencies: [TASK-006, TASK-010]
+    risk: MEDIUM
+    acceptance_summary: >-
+      仅消费现有当前实例日志 DTO，覆盖加载、空、错误、实例切换与大列表响应；不等同于 LogLevel 设置，
+      不暴露原始敏感日志，不修改 Settings、RuntimePreferences 或日志状态所有权。

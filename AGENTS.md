@@ -21,15 +21,17 @@
 
 ## 任务恢复与变更
 
-- 从 `.sdlc/state.yaml`、当前 Task 和 `docs/veyra.md` 恢复；2026-09-05 用户确认的职责边界见需求 §1.2、§143.1 与 `docs/decisions/DCR-017-ui-integration-boundary.md`。
+- 恢复 SDLC 实现时读取 `.sdlc/state.yaml` 和当前 Task；`docs/veyra.md` 只读当前工作所需小节，源身份变化时追踪受影响内容。已加载且未变化的上下文直接复用；只读审计和局部文档修正不触发完整 SDLC 恢复。用户确认的职责边界见需求 §1.2、§143.1 与 `docs/decisions/DCR-017-ui-integration-boundary.md`。
 - 旧设计中要求重复内核能力验证的完成条件由 DCR-017 替代；不得据此恢复 DCR-016 或阻塞 UI 开发。历史测试、失败、审批和证据保留，不把移出范围写成 PASS 或根因修复。
 - 已存在的测试不自动删除/禁用。代码改动影响到的 Veyra 自有逻辑仍做定向回归，避免仅因历史庞大测试设施存在就扩建它。
 - 当前 Task 验收与后续 Task 保持独立；修改验收范围不等于实现完成或用户验收通过。
-- 保留无关工作区变更；未经明确要求不 commit/push、发布或修改依赖、主机网络、权限与生产环境。
+- 保留无关工作区变更；未经明确授权不 commit/push 或发布。当前请求或已批准 Task/Design 已覆盖的依赖、主机网络、权限与环境操作无需重复确认；超出已有授权的实质变更须先取得用户决定。
+- 在已批准的当前 Task 内持续完成实现、必要验证、失败修复和独立 Review，再提交人工验收；内部路由或首次实现完成不是停止点。当前 Task 人工验收通过后才推进下一 Task。
 
 ## 验证命令
 
 - 前端按改动需要运行 `pnpm lint`、`pnpm test`、`pnpm build`。
-- Rust 使用当前 Task 指定的测试名/target，及 `cargo clippy --manifest-path src-tauri/Cargo.toml --lib -- -D warnings`、`cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`。
+- Rust 改动按当前 Task 指定的测试名/target 验证，并运行 `cargo clippy --manifest-path src-tauri/Cargo.toml --lib -- -D warnings`、`cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`；不因无关文档或前端改动重复运行 Rust 检查。
 - 先确认测试会否启动真实 child 或外部资源；不能把全量库测试当成纯单测，也不能把过滤后零测试记为通过。
 - 长命令必须有合理外层超时；使用仓库已有脚本/约定，不凭空推断命令。文档规划变更只校验引用、身份、结构和 `git diff --check`，不启动内核或网络。
+- 在已授权的环境中修复本次改动引起的失败并重跑受影响验证，无需逐步确认。适用验证通过且没有新改动、失败或未解决的明确疑点后停止扩大验证；必要的独立 Review 和人工验收继续按 Delivery Gate 执行。
