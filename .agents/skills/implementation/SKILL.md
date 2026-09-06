@@ -1,6 +1,6 @@
 ---
 name: implementation
-description: "Implement, remediate, re-verify, or run an approved RD show case for one SDLC Task within its explicit scope and frozen design, producing honest evidence. Use when the Task is READY/IN_PROGRESS, or when an IMPLEMENTED/VERIFYING Task needs bounded remediation, missing verification, or Show Case evidence; do not use for unapproved scope, architecture redesign, standalone review, QA sign-off, or release."
+description: "Implement, fix, or verify the current approved SDLC task within its frozen scope and design."
 ---
 
 # Implementation
@@ -12,7 +12,7 @@ Implementation Producer；它可以报告实现完成，但不能把 Task、Gate
 
 ### Required Context
 
-- `.sdlc/state.yaml`、`.sdlc/memory/HANDOFF.md`、`.sdlc/tasks.yaml`；
+- `.sdlc/state.yaml`、`.sdlc/tasks.yaml`；
 - 从 `.sdlc/tasks.yaml.task_ref` 解析的当前 `.sdlc/tasks/TASK-xxx.md` 完整正文，包括本次需求、
   Scope、各子功能 Acceptance/Verification、Task 独立验收、Dependencies、Risk、批准引用以及
   适用的 Design version；
@@ -21,10 +21,16 @@ Implementation Producer；它可以报告实现完成，但不能把 Task、Gate
 若为恢复中的 Task，还必须恢复原始 Delivery Unit 的起始身份、inventory/provenance、已冻结
 分区、验证结果和未解决 Finding，不能把当前会话或 Skill 首次介入时的工作树当成新基线。
 
+### Conditional Required Context
+
+- 当前 Task 或受影响 concern 引用的 Foundation、Frozen Design 小节、ADR/DCR；只读取当前工作需要的部分。
+- show-case/evidence-only 模式需要的已批准 Show Case 步骤。
+
 ### Optional Context
 
+- 存在且新鲜的 `.sdlc/memory/HANDOFF.md`；缺失或过期时从权威工件恢复，交由 Orchestrator 重建摘要，不能仅因摘要缺失阻塞。
+
 - 当前 Story 的相关 Acceptance；
-- Task 引用的 Design 小节、ADR/DCR；
 - Scope 内相关源码、测试、仓库约定和验证配置。
 
 ### Forbidden Default Context
@@ -62,7 +68,7 @@ show-case/evidence-only 模式用于 Delivery Review 通过但 RD Show Case Evid
 1. Task 开始时记录起始 HEAD/快照、完整工作树状态和可用宿主编辑记录；恢复时沿用原始
    baseline。按 [Delivery Unit 协议](../code-delivery-review/references/delivery-unit.md) 持续维护
    path/hunk provenance、exclusion、ambiguity 和 review partition。
-2. 每次修改前对账 Anchor、Task Scope、Acceptance、适用的 Frozen Design/ADR 和授权边界。
+2. 进入 Task 或收到新要求、边界变化、上下文失效时，对账 Anchor、Task Scope、Acceptance、适用的 Frozen Design/ADR 和授权边界；同一已核验范围内复用上下文，不逐次编辑重读。
 3. 只修改 `scope.allow` 内的实现、测试和必要文档；`scope.deny` 永远禁止。
 4. 选择最小实现，不为假想需求增加抽象、Fallback、Feature Flag、重试、配置或兼容层。
    自主安全加固仅在以下条件同时成立时允许：它关闭已有控制之后仍存在的可信触发路径；保持在
@@ -78,7 +84,7 @@ show-case/evidence-only 模式用于 Delivery Review 通过但 RD Show Case Evid
    Dependency、公共 API/协议、持久数据语义/Migration、生产配置契约、权限安全、架构或 Frozen
    Design 变化同样进入 Change Control。标准库、仓库已存在且已批准的依赖可正常使用。
 6. 按仓库权威命令执行格式化、构建、测试、Lint/Scan；真实记录 PASS、FAIL、NOT_RUN
-   或 UNAVAILABLE，不把自述当 Evidence。
+   或 UNAVAILABLE，不把自述当 Evidence。持续修复本次变更引起的失败并重跑受影响验证；必要验证通过且没有新变更、失败或明确疑点时，冻结目标交给独立 Review，不重复扩大验证。
 7. 完成逻辑分区或高风险边界时可以记录稳定 checkpoint identity 和定向验证，供后续独立
    Reviewer 复用；checkpoint 不迁移 Task/Gate，也不替代最终完整 Review。
 8. 对账 staged、unstaged、untracked、deleted、task-time commits、generated、

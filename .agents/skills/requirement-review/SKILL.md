@@ -1,6 +1,6 @@
 ---
 name: requirement-review
-description: "Turn a new product idea into an executable requirement baseline, or independently review a requirement when the user explicitly requests review. Use for author-mode requirement work and material product ambiguity; do not use to re-review an existing requirement the user already asked to implement, nor for architecture design, implementation, QA execution, or release approval."
+description: "Refine an SDLC requirement baseline, or independently review it when explicitly requested."
 ---
 
 # Requirement Review
@@ -16,13 +16,15 @@ formal-review。每次执行必须在 `refinement` Producer 与 `formal-review` 
 ### Required Context
 
 - `.sdlc/state.yaml` 中当前 mode、phase、focus 与 profile；
-- `.sdlc/memory/HANDOFF.md` 和 `.sdlc/tasks.yaml`；
+- `.sdlc/tasks.yaml`；
 - `mode` 与 Project Constraints；`ingest` 需要 Anchor/Requirement Source，`author` 需要用户输入
   或当前 Baseline 草稿；
 - 当前 Baseline 或用户明确指定的需求目标；首次 `author` 可由用户输入形成。
 - `formal-review` 还必须有冻结的 reviewed target identity、审查标准和 Producer 身份。
 
 ### Optional Context
+
+- 存在且新鲜的 `.sdlc/memory/HANDOFF.md`；缺失或过期时从权威工件恢复，交由 Orchestrator 重建摘要，不能仅因摘要缺失阻塞。
 
 - 与当前需求直接相关的仓库能力、竞品事实或现有接口；
 - 相关历史决策、用户研究和指标基线；

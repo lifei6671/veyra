@@ -1,6 +1,6 @@
 ---
 name: sdlc-codex-setup
-description: "Install, update, or disable the optional project-scoped Codex model routing for SDLC only when the user explicitly requests setup. Ordinary SDLC use or copying the skill collection does not activate this skill or install host configuration."
+description: "Install, update, or disable project-local SDLC Codex routing only on explicit request."
 ---
 
 # SDLC Codex Setup

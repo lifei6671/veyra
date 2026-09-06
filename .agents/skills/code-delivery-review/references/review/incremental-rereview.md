@@ -2,7 +2,8 @@
 
 仅在 Producer 修复后重新审查时加载；首次审查不读取本参考。Reviewer 首轮只读。Producer 获得授权后
 执行最小修复；每轮是：Finding -> repair -> affected verification -> new target identity -> re-review。
-默认最多三轮。修复需要扩大 Scope 或改变公共/持久化/运行/运维契约、重要运行依赖、权限安全或架构时，
+连续三轮修复仍未闭合时，Orchestrator 重新检查根因、已尝试策略、剩余失败与验证进展。已有新证据或可验证的新方案且仍在授权范围内时继续；同一确定性失败不机械重试。无法自主解除的实质阻塞才请求必要输入，轮数本身不是批准或停止条件。项目或用户明确设置的硬上限仍遵守。
+修复需要扩大 Scope 或改变公共/持久化/运行/运维契约、重要运行依赖、权限安全或架构时，
 立即交回 Change Control。
 
 Planner 使用 Previous Findings、修复 Diff、新 target identity 和受影响 Verification 调度增量复审。

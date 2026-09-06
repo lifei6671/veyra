@@ -12,7 +12,8 @@ Context is a budget。每次加载都必须服务于一个具体决策、实现�
 - `.sdlc/state.yaml`
 - `.sdlc/memory/HANDOFF.md`
 
-用于回答当前 Focus、Blocker 与 Next。HANDOFF 目标 300–800 tokens，只保存 Current、
+用于回答当前 Focus、Blocker 与 Next。HANDOFF 存在且新鲜时复用；缺失或过期时从 State、Task 和当前 Evidence 恢复，由 Orchestrator 重建，不能仅因摘要缺失阻塞。真正缺失的批准、基线或证据仍按对应契约处理。
+HANDOFF 目标 300–800 tokens，只保存 Current、
 Completed、Remaining、Blocker、Next 和少量 canonical 引用，不保存工作日志或完整聊天。仅在 ingest
 因 Material clarification 被阻塞时，允许一个临时 source-bound derived Intake Snapshot：Requirement
 Source/identity、Readiness、已解析 Goal/Scope/Non-goals/Constraints/Acceptance refs 摘要和 open
@@ -21,7 +22,7 @@ canonical Requirement，Anchor 建立后立即删除。
 未解决 Finding 少时，从当前 Review Result/Evidence 派生保存
 `finding_id/fingerprint/severity/status/target_identity/evidence_ref`；超过预算时只保存 compact
 review Evidence 引用。写入前必须确认引用跨会话可解析；否则先持久化 compact review Evidence。
-HANDOFF 不得成为 Finding 的独立事实源。
+HANDOFF 不得成为 Finding 的独立事实源。旧 checkpoint 和被取代状态只保留必要证据引用，不不断追加“优先于历史”的正文；历史证据保留在原工件。
 
 ### L1 — Current Working Set（目标不超过 4K tokens）
 
@@ -50,7 +51,7 @@ HANDOFF 不得成为 Finding 的独立事实源。
 
 ## Specialist Context Contract
 
-每次路由只加载一个 Specialist 的契约。`Required` 缺失时返回 Blocker；`Conditional Required`
+每次路由只加载一个 Specialist 的契约。已加载且相关输入未变化的内容直接复用；内部路由不要求重新读取同一文件。`Required` 缺失时返回 Blocker；`Conditional Required`
 只在 concern 已声明适用时成为必需项；`Optional` 只在有具体问题时加载；`Forbidden Default`
 不是永久禁止，但必须先说明上钻理由。
 
@@ -61,7 +62,7 @@ HANDOFF 不得成为 Finding 的独立事实源。
 | technical-design | selected mode, Anchor, Requirement Source, constraints | foundation: full Requirement + repository snapshot; task-boundary/remediation: current Task + relevant architecture | existing Story, Design Index, relevant ADR/DCR, focused research | unrelated QA/history, all Tasks, all Evidence |
 | technical-design-review | frozen affected Design target, Requirement/Acceptance trace, affected concerns | ADR/DCR if the concern has one | focused repository facts, risk-specific evidence, Design Index when multi-file | entire repo, unrelated concerns/Story, producer chat |
 | task-breakdown | Anchor, Requirement Source, tasks.yaml | existing window Task Markdown; applicable Foundation and applicable Design/ADR/DCR | risk facts, existing test commands | unrelated Epics/Stories, full Evidence history |
-| implementation | State, HANDOFF, tasks.yaml, resolved focus Task Markdown, selected execution mode | referenced Foundation/Design/ADR and approved Show Case steps when applicable | relevant code/tests, existing Story acceptance | all Epic/Story/Task/ADR/Evidence |
+| implementation | State, tasks.yaml, resolved focus Task Markdown, selected execution mode | referenced Foundation/Design/ADR and approved Show Case steps when applicable | fresh HANDOFF, relevant code/tests, existing Story acceptance | all Epic/Story/Task/ADR/Evidence |
 | code-delivery-review | Task and Acceptance, Delivery Unit baseline/inventory/provenance, frozen identity, coverage manifest, delivery-owned content, actual Evidence | relevant Design/ADR/DCR when present | related Requirement/Story acceptance, risk-specific source/tests, material neighboring context, fresh checkpoints | entire repo, full PRD, arbitrary Git targets, unrelated changes/history |
 | qa-review | selected mode, current acceptance target, Task, applicable risk | mode-specific Cases/identity/Evidence | existing Story, focused Design/ADR, failure diagnostics | unrelated business background, all source/history |
 | release-planning | release target/scope, affected operational concerns | current QA status, ADR/DCR, capacity facts, runbook conventions when applicable | none | production credentials, unrelated source code, unrelated Stories/history |

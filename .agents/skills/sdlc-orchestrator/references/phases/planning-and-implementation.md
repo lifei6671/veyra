@@ -52,7 +52,7 @@ inventory/provenance；恢复任务时不得重置。详细字段遵循
 
 ## 实现循环
 
-每次修改前检查：
+进入 Task 或收到新要求、边界变化、上下文失效时检查；同一已核验范围内复用结论，不逐次编辑重读：
 
 ```text
 Is this required by the current Task?
@@ -96,10 +96,10 @@ Delivery Gate 通过。Delivery Review 通过仍不等于 Task 已独立验收�
 子功能 Acceptance Evidence，并执行 Task Markdown 声明的 Task 级整体/集成验收。Producer 不能以
 `SELF_REVIEW` 替代独立验收。修复 Finding 后由
 Orchestrator 路由 `implementation(remediation)`，重新运行受影响验证、生成新身份并复审；
-默认最多三轮自动修复，不循环扩大 Scope。
+修复连续三轮仍未闭合时，按 [增量复审](../../../code-delivery-review/references/review/incremental-rereview.md) 重新诊断进展和策略，不以轮数代替完成条件或扩大 Scope。
 
 ## Context 契约
 
-默认只读 State、`memory/HANDOFF.md`、`tasks.yaml` 和解析后的 focus Task Markdown。按需加载 Task 引用的
+默认只读 State、存在且新鲜的 `memory/HANDOFF.md`、`tasks.yaml` 和解析后的 focus Task Markdown。按需加载 Task 引用的
 Requirement/Story Acceptance、Design/ADR、相关源码与测试。禁止默认读取全部 Epic、Story、
 Task、Design、ADR 或历史 Evidence。

@@ -1,6 +1,6 @@
 ---
 name: technical-design-review
-description: "Independently review a frozen technical-design candidate for traceability, decision completeness, feasibility, risk coverage, and unauthorized changes. Use when a design needs a pre-freeze or re-freeze gate review; do not use to author the design or implement fixes on the first review pass."
+description: "Independently review an SDLC design candidate before freezing or refreezing it."
 ---
 
 # Technical Design Review

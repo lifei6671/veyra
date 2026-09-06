@@ -103,7 +103,7 @@ task.scope.allow / task.scope.deny
 
 ## 用户变更请求
 
-用户当前明确指令权威最高，但仍需把它转换成可追踪变更：
+用户当前明确指令权威最高，但仍需把它转换成可追踪变更。当前请求或已批准 Task/Design 已覆盖的具体动作无需重复确认；记录原授权并完成适用影响分析，只有超出该授权的变化才请求新决定：
 
 - 不改变 Requirement、Acceptance 或 Verification Contract 的小型同范围实现细节：在当前 Task
   Scope 内继续并记录必要 Assumption，不伪装成需求变化。

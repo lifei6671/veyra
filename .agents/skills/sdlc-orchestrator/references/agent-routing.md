@@ -66,7 +66,7 @@ Acceptance/Verification、预期结果。必须携带 Specialist 的 Required/Co
 - Requirement、Scope 或 Frozen Design 冲突：走现有澄清/Change Control，不能换模型继续越界。
 - Reviewer 的有效负面结论：修复 Finding 后按原协议复审，不能更换 Reviewer 寻求通过。
 
-升级只影响执行能力，不清空已有 Findings，不重置交付单元，也不重置既有修复次数上限。
+升级只影响执行能力，不清空已有 Findings，不重置交付单元，也不绕过既有修复策略检查点或项目明确的次数上限。
 整合、验证与 Review 保持必要覆盖；主 Agent 依据实际 Diff 和 Evidence 核验交付，避免重做已完成
 且可追溯的整段探索。作者不能充当独立 Reviewer；更强模型不能代替人工验收或直接写 `DONE`。
 
