@@ -1,0 +1,15 @@
+{
+  "status": "CANDIDATE",
+  "task": "TASK-012",
+  "authority": "USER:lifei 2026-09-06 accepted design-review REWORK and froze Manual selector, Save-Apply, and cross-subscription Custom Pool amendment semantics",
+  "manifest": [
+    {
+      "path": ".sdlc/design/TASK-012-proxy-routing.md",
+      "sha256": "df66ec9a3afd1707ba24a0c7750e6a0099ab20ee56a64a81da05506852235f05"
+    },
+    {
+      "path": "docs/decisions/DCR-019-task012-custom-pool-projection-amendment.md",
+      "sha256": "31d7b1cac7b7a6f4f3803ee445f5c30c263ffb755155300f3f2dea8093047c12"
+    }
+  ]
+}

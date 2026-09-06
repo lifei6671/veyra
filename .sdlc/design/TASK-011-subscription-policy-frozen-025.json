@@ -1,0 +1,8 @@
+{
+  "approval": "../evidence/TASK-011/subscription-policy-approval-025.json",
+  "review_sha256": "ed97946ec6dd152547c60ec7a2685090f972bd598e03132957b39845b72ed1ae",
+  "review": "../evidence/TASK-011/subscription-policy-design-review-025.json",
+  "sha256": "8a67b971579b7b348ac4fd04921b9f90a5d1e606088be086ec8b9d6544a186fe",
+  "design": "TASK-011-subscription-policy-025.md",
+  "status": "FROZEN"
+}

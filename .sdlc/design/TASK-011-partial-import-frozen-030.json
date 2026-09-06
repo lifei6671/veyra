@@ -1,0 +1,7 @@
+{
+  "review": ".sdlc/evidence/TASK-011/partial-import-design-review-030.json",
+  "review_sha256": "88aed2c9687ac7c338944a03177cf3e7755c9387a296b20d2bd2e31250c4bffd",
+  "candidate": ".sdlc/design/TASK-011-partial-import-030.md",
+  "candidate_sha256": "b927e94acd69c4c626e99ac3ab406d15bc1c0cda6f82af33195796b66dfbcdc9",
+  "status": "FROZEN"
+}

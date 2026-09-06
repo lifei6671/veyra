@@ -1,0 +1,8 @@
+{
+  "authority": ".sdlc/tasks/TASK-011.md#Necessary-WebSocket-compatibility-remediation-027",
+  "candidate_sha256": "82ed23c76f6bc969c7e62de246968564054e469d95a38f2ee4acb10f94b8c35b",
+  "candidate": ".sdlc/design/TASK-011-websocket-early-data-027.md",
+  "review_sha256": "c92eb373eb5f9997680e966ce231c3052c2e65af272f169af4c529ef877babba",
+  "review": ".sdlc/evidence/TASK-011/websocket-design-review-027.json",
+  "status": "FROZEN"
+}

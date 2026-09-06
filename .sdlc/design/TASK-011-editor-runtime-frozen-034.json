@@ -1,0 +1,15 @@
+{
+  "status": "FROZEN",
+  "task": "TASK-011",
+  "authority": "USER explicit editor/runtime/memory request and Monaco approval; Task amendment034",
+  "manifest": [
+    {
+      "path": ".sdlc/design/TASK-011-editor-runtime-034.md",
+      "sha256": "a74f7d8638d19bec8923e2b142f669607f5a5a97e58d3c371c16af0f2f58c339"
+    },
+    {
+      "path": ".sdlc/evidence/TASK-011/editor-runtime-design-review-035.json",
+      "sha256": "30ee41a3ee6f8c2edfa0ccae3403144a926d1ff660aad14f9f76c882145478a8"
+    }
+  ]
+}

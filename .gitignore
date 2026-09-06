@@ -33,5 +33,4 @@ src-tauri/target/
 src-tauri/binaries/
 .playwright-cli/
 .sdlc/evidence/
-.sdlc/design/
 /output/
