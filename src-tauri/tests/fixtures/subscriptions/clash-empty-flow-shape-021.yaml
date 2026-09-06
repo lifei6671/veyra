@@ -1,0 +1,161 @@
+proxies:
+- name: clash-vless-1
+  type: vless
+  server: clash-vless-1.example.invalid
+  port: 443
+  uuid: 00000000-0000-4000-8000-000000000101
+  flow: ''
+  network: ws
+  udp: true
+  tls: true
+  servername: edge.example.invalid
+  skip-cert-verify: true
+  client-fingerprint: chrome
+  ws-opts:
+    path: /synthetic
+    headers:
+      Host: edge.example.invalid
+- name: clash-vless-2
+  type: vless
+  server: clash-vless-2.example.invalid
+  port: 443
+  uuid: 00000000-0000-4000-8000-000000000102
+  flow: ''
+  network: ws
+  udp: true
+  tls: true
+  servername: edge.example.invalid
+  skip-cert-verify: true
+  client-fingerprint: chrome
+  ws-opts:
+    path: /synthetic
+    headers:
+      Host: edge.example.invalid
+- name: clash-vless-3
+  type: vless
+  server: clash-vless-3.example.invalid
+  port: 443
+  uuid: 00000000-0000-4000-8000-000000000103
+  flow: ''
+  network: ws
+  udp: true
+  tls: true
+  servername: edge.example.invalid
+  skip-cert-verify: true
+  client-fingerprint: chrome
+  ws-opts:
+    path: /synthetic
+    headers:
+      Host: edge.example.invalid
+- name: clash-vless-4
+  type: vless
+  server: clash-vless-4.example.invalid
+  port: 443
+  uuid: 00000000-0000-4000-8000-000000000104
+  flow: ''
+  network: ws
+  udp: true
+  tls: true
+  servername: edge.example.invalid
+  skip-cert-verify: true
+  client-fingerprint: chrome
+  ws-opts:
+    path: /synthetic
+    headers:
+      Host: edge.example.invalid
+- name: clash-vless-5
+  type: vless
+  server: clash-vless-5.example.invalid
+  port: 443
+  uuid: 00000000-0000-4000-8000-000000000105
+  flow: ''
+  network: ws
+  udp: true
+  tls: true
+  servername: edge.example.invalid
+  skip-cert-verify: true
+  client-fingerprint: chrome
+  ws-opts:
+    path: /synthetic
+    headers:
+      Host: edge.example.invalid
+- name: clash-vless-6
+  type: vless
+  server: clash-vless-6.example.invalid
+  port: 443
+  uuid: 00000000-0000-4000-8000-000000000106
+  flow: ''
+  network: ws
+  udp: true
+  tls: true
+  servername: edge.example.invalid
+  skip-cert-verify: true
+  client-fingerprint: chrome
+  ws-opts:
+    path: /synthetic
+    headers:
+      Host: edge.example.invalid
+- name: clash-vless-7
+  type: vless
+  server: clash-vless-7.example.invalid
+  port: 443
+  uuid: 00000000-0000-4000-8000-000000000107
+  flow: ''
+  network: ws
+  udp: true
+  tls: true
+  servername: edge.example.invalid
+  skip-cert-verify: true
+  client-fingerprint: chrome
+  ws-opts:
+    path: /synthetic
+    headers:
+      Host: edge.example.invalid
+- name: clash-vless-8
+  type: vless
+  server: clash-vless-8.example.invalid
+  port: 443
+  uuid: 00000000-0000-4000-8000-000000000108
+  flow: ''
+  network: ws
+  udp: true
+  tls: true
+  servername: edge.example.invalid
+  skip-cert-verify: true
+  client-fingerprint: chrome
+  ws-opts:
+    path: /synthetic
+    headers:
+      Host: edge.example.invalid
+- name: clash-vless-9
+  type: vless
+  server: clash-vless-9.example.invalid
+  port: 443
+  uuid: 00000000-0000-4000-8000-000000000109
+  flow: ''
+  network: ws
+  udp: true
+  tls: true
+  servername: edge.example.invalid
+  skip-cert-verify: true
+  client-fingerprint: chrome
+  ws-opts:
+    path: /synthetic
+    headers:
+      Host: edge.example.invalid
+- name: clash-vless-10
+  type: vless
+  server: clash-vless-10.example.invalid
+  port: 443
+  uuid: 00000000-0000-4000-8000-000000000110
+  flow: ''
+  network: ws
+  udp: true
+  tls: true
+  servername: edge.example.invalid
+  skip-cert-verify: true
+  client-fingerprint: chrome
+  ws-opts:
+    path: /synthetic
+    headers:
+      Host: edge.example.invalid

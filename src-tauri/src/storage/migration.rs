@@ -14,6 +14,9 @@ pub(crate) fn migrate_to_current(mut document: Value) -> Result<(Value, bool), S
         match version {
             1 => migrate_v1_to_v2(&mut document),
             2 => migrate_v2_to_v3(&mut document),
+            3 => migrate_v3_to_v4(&mut document),
+            4 => migrate_v4_to_v5(&mut document),
+            5 => migrate_v5_to_v6(&mut document),
             _ => return Err(StateStoreError::UnsupportedSchemaVersion),
         }
         .map_err(|_| StateStoreError::MigrationFailed)?;
@@ -26,6 +29,89 @@ pub(crate) fn migrate_to_current(mut document: Value) -> Result<(Value, bool), S
     } else {
         Err(StateStoreError::UnsupportedSchemaVersion)
     }
+}
+
+fn migrate_v5_to_v6(document: &mut Value) -> Result<(), StateStoreError> {
+    let object = document
+        .as_object_mut()
+        .ok_or(StateStoreError::InvalidStoredState)?;
+    let subscriptions = object
+        .get_mut("subscriptions")
+        .and_then(Value::as_array_mut)
+        .ok_or(StateStoreError::InvalidStoredState)?;
+    for subscription in subscriptions {
+        subscription
+            .as_object_mut()
+            .ok_or(StateStoreError::InvalidStoredState)?
+            .insert("document".to_owned(), Value::Null);
+    }
+    object.insert("schema_version".to_owned(), json!(6));
+    Ok(())
+}
+
+fn migrate_v4_to_v5(document: &mut Value) -> Result<(), StateStoreError> {
+    let object = document
+        .as_object_mut()
+        .ok_or(StateStoreError::InvalidStoredState)?;
+    let subscriptions = object
+        .get_mut("subscriptions")
+        .and_then(Value::as_array_mut)
+        .ok_or(StateStoreError::InvalidStoredState)?;
+    for subscription in subscriptions {
+        let subscription = subscription
+            .as_object_mut()
+            .ok_or(StateStoreError::InvalidStoredState)?;
+        let source_kind = subscription
+            .get("source")
+            .and_then(Value::as_object)
+            .and_then(|source| source.get("kind"))
+            .and_then(Value::as_str)
+            .ok_or(StateStoreError::InvalidStoredState)?;
+        let (remote_request, update_policy) = match source_kind {
+            "remote" => (
+                json!({
+                    "user_agent": null,
+                    "timeout_seconds": 30,
+                    "proxy_mode": "direct",
+                    "verify_tls": true
+                }),
+                json!({"allow_auto_update": true, "interval_minutes": null}),
+            ),
+            "manual" => (
+                Value::Null,
+                json!({"allow_auto_update": false, "interval_minutes": null}),
+            ),
+            _ => return Err(StateStoreError::InvalidStoredState),
+        };
+        subscription.insert("description".to_owned(), Value::String(String::new()));
+        subscription.insert("last_attempt_at_ms".to_owned(), Value::Null);
+        subscription.insert("remote_request".to_owned(), remote_request);
+        subscription.insert("update_policy".to_owned(), update_policy);
+    }
+    object.insert("active_subscription_id".to_owned(), Value::Null);
+    object.insert("active_configuration_generation".to_owned(), json!(0));
+    object.insert("schema_version".to_owned(), json!(5));
+    Ok(())
+}
+
+fn migrate_v3_to_v4(document: &mut Value) -> Result<(), StateStoreError> {
+    let object = document
+        .as_object_mut()
+        .ok_or(StateStoreError::InvalidStoredState)?;
+    let subscriptions = object
+        .get_mut("subscriptions")
+        .and_then(Value::as_array_mut)
+        .ok_or(StateStoreError::InvalidStoredState)?;
+    for subscription in subscriptions {
+        let subscription = subscription
+            .as_object_mut()
+            .ok_or(StateStoreError::InvalidStoredState)?;
+        subscription.insert("source".to_owned(), json!({ "kind": "manual" }));
+        subscription.insert("last_success_at_ms".to_owned(), Value::Null);
+        subscription.insert("http_metadata".to_owned(), Value::Null);
+    }
+    object.insert("schema_version".to_owned(), json!(4));
+    Ok(())
 }
 
 fn migrate_v1_to_v2(document: &mut Value) -> Result<(), StateStoreError> {

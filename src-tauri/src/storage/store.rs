@@ -42,7 +42,7 @@ impl JsonStateStore {
         let document =
             serde_json::from_slice(contents).map_err(|_| StateStoreError::InvalidJson)?;
         let (migrated, was_migrated) = migrate_to_current(document)?;
-        let stored = serde_json::from_value::<StoredStateV3>(migrated)
+        let stored = serde_json::from_value::<StoredStateV6>(migrated)
             .map_err(|_| StateStoreError::InvalidStoredState)?;
         let state = validate_state(AppState::try_from(stored)?)?;
         Ok((state, was_migrated))
@@ -55,14 +55,42 @@ impl JsonStateStore {
 
     fn write_current_without_backup(&self, state: &AppState) -> Result<(), StateStoreError> {
         validate_state(state.clone())?;
-        let contents = serde_json::to_vec_pretty(&StoredStateV3::from(state))
+        let contents = serde_json::to_vec_pretty(&StoredStateV6::from(state))
             .map_err(|_| StateStoreError::SerializationFailed)?;
         atomic_replace(&self.state_file, &contents)
+    }
+
+    pub(crate) fn has_snapshot_or_backup(&self) -> Result<bool, StateStoreError> {
+        let current = self
+            .state_file
+            .try_exists()
+            .map_err(|_| StateStoreError::ReadFailed)?;
+        let backup = backup_path(&self.state_file)
+            .try_exists()
+            .map_err(|_| StateStoreError::ReadFailed)?;
+        Ok(current || backup)
     }
 }
 
 impl StateStore for JsonStateStore {
     fn load(&self) -> Result<AppState, StateStoreError> {
+        if !self
+            .state_file
+            .try_exists()
+            .map_err(|_| StateStoreError::ReadFailed)?
+        {
+            if !backup_path(&self.state_file)
+                .try_exists()
+                .map_err(|_| StateStoreError::ReadFailed)?
+            {
+                return Err(StateStoreError::ReadFailed);
+            }
+            let recovered = self
+                .load_backup()
+                .map_err(|_| StateStoreError::NoValidBackup)?;
+            self.write_current_without_backup(&recovered)?;
+            return Ok(recovered);
+        }
         let contents = read_snapshot(&self.state_file)?;
         match self.decode(&contents) {
             Ok((state, false)) => Ok(state),
@@ -88,7 +116,7 @@ impl StateStore for JsonStateStore {
 
     fn save(&self, state: &AppState) -> Result<(), StateStoreError> {
         validate_state(state.clone())?;
-        let stored = StoredStateV3::from(state);
+        let stored = StoredStateV6::from(state);
         let contents =
             serde_json::to_vec_pretty(&stored).map_err(|_| StateStoreError::SerializationFailed)?;
 
@@ -100,9 +128,11 @@ impl StateStore for JsonStateStore {
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
-struct StoredStateV3 {
+struct StoredStateV6 {
     schema_version: u32,
     default_target: crate::domain::RouteTarget,
+    active_subscription_id: Option<crate::domain::SubscriptionId>,
+    active_configuration_generation: u64,
     subscriptions: Vec<Subscription>,
     providers: Vec<Provider>,
     nodes: Vec<ProxyNode>,
@@ -110,11 +140,13 @@ struct StoredStateV3 {
     routes: Vec<RoutePolicy>,
 }
 
-impl From<&AppState> for StoredStateV3 {
+impl From<&AppState> for StoredStateV6 {
     fn from(state: &AppState) -> Self {
         Self {
             schema_version: CURRENT_SCHEMA_VERSION,
             default_target: state.default_target.clone(),
+            active_subscription_id: state.active_subscription_id.clone(),
+            active_configuration_generation: state.active_configuration_generation,
             subscriptions: state.subscriptions.clone(),
             providers: state.providers.clone(),
             nodes: state.nodes.clone(),
@@ -124,16 +156,18 @@ impl From<&AppState> for StoredStateV3 {
     }
 }
 
-impl TryFrom<StoredStateV3> for AppState {
+impl TryFrom<StoredStateV6> for AppState {
     type Error = StateStoreError;
 
-    fn try_from(stored: StoredStateV3) -> Result<Self, Self::Error> {
+    fn try_from(stored: StoredStateV6) -> Result<Self, Self::Error> {
         if stored.schema_version != CURRENT_SCHEMA_VERSION {
             return Err(StateStoreError::UnsupportedSchemaVersion);
         }
         Ok(Self {
             schema_version: stored.schema_version,
             default_target: stored.default_target,
+            active_subscription_id: stored.active_subscription_id,
+            active_configuration_generation: stored.active_configuration_generation,
             subscriptions: stored.subscriptions,
             providers: stored.providers,
             nodes: stored.nodes,
@@ -221,9 +255,20 @@ mod tests {
         AppState {
             schema_version: CURRENT_SCHEMA_VERSION,
             default_target: RouteTarget::Unconfigured,
+            active_subscription_id: None,
+            active_configuration_generation: 0,
             subscriptions: vec![Subscription {
+                skipped_unsupported_nodes: 0,
                 id: SubscriptionId("subscription".to_owned()),
                 name: "Test".to_owned(),
+                description: String::new(),
+                source: crate::domain::SubscriptionSource::Manual,
+                last_success_at_ms: None,
+                last_attempt_at_ms: None,
+                http_metadata: None,
+                remote_request: None,
+                update_policy: crate::domain::SubscriptionUpdatePolicy::manual(),
+                document: None,
             }],
             providers: vec![Provider {
                 id: ProviderId("provider".to_owned()),
@@ -387,6 +432,162 @@ mod tests {
     }
 
     #[test]
+    fn migrates_v3_subscription_fields_without_changing_existing_identity() {
+        let store = unique_test_store();
+        let mut v3 = serde_json::to_value(StoredStateV6::from(&valid_state_with_pool_and_route()))
+            .expect("encode current fixture");
+        v3["schema_version"] = serde_json::json!(3);
+        let object = v3.as_object_mut().expect("state object");
+        object.remove("active_subscription_id");
+        object.remove("active_configuration_generation");
+        let subscription = v3["subscriptions"][0]
+            .as_object_mut()
+            .expect("subscription object");
+        subscription.remove("source");
+        subscription.remove("last_success_at_ms");
+        subscription.remove("http_metadata");
+        subscription.remove("description");
+        subscription.remove("last_attempt_at_ms");
+        subscription.remove("remote_request");
+        subscription.remove("update_policy");
+        atomic_replace(
+            store.state_file(),
+            &serde_json::to_vec(&v3).expect("encode v3 fixture"),
+        )
+        .expect("write v3 fixture");
+
+        let state = store.load().expect("migrate v3");
+
+        assert_eq!(state.schema_version, 6);
+        assert_eq!(state.subscriptions[0].id.0, "subscription");
+        assert_eq!(state.providers[0].id.0, "provider");
+        assert_eq!(state.nodes[0].id.0, "node");
+        assert!(matches!(
+            state.subscriptions[0].source,
+            crate::domain::SubscriptionSource::Manual
+        ));
+        assert_eq!(state.subscriptions[0].last_success_at_ms, None);
+        assert_eq!(state.subscriptions[0].http_metadata, None);
+        assert_eq!(state.subscriptions[0].description, "");
+        assert_eq!(state.subscriptions[0].last_attempt_at_ms, None);
+        assert_eq!(state.subscriptions[0].remote_request, None);
+        assert_eq!(
+            state.subscriptions[0].update_policy,
+            crate::domain::SubscriptionUpdatePolicy::manual()
+        );
+        assert_eq!(state.active_subscription_id, None);
+        assert_eq!(state.active_configuration_generation, 0);
+        assert!(pre_migration_backup_path(store.state_file()).exists());
+        remove_test_files(&store);
+    }
+
+    #[test]
+    fn migrates_v4_remote_subscription_to_current_without_changing_identity_or_references() {
+        let store = unique_test_store();
+        let mut v4 = serde_json::to_value(StoredStateV6::from(&valid_state_with_pool_and_route()))
+            .expect("encode current fixture");
+        v4["schema_version"] = serde_json::json!(4);
+        let object = v4.as_object_mut().expect("state object");
+        object.remove("active_subscription_id");
+        object.remove("active_configuration_generation");
+        let subscription = v4["subscriptions"][0]
+            .as_object_mut()
+            .expect("subscription object");
+        subscription.insert(
+            "source".to_owned(),
+            serde_json::json!({"kind":"remote","url":"https://example.invalid/sub"}),
+        );
+        subscription.remove("description");
+        subscription.remove("last_attempt_at_ms");
+        subscription.remove("remote_request");
+        subscription.remove("update_policy");
+        atomic_replace(
+            store.state_file(),
+            &serde_json::to_vec(&v4).expect("encode v4 fixture"),
+        )
+        .expect("write v4 fixture");
+
+        let state = store.load().expect("migrate v4");
+
+        assert_eq!(state.schema_version, 6);
+        assert_eq!(state.subscriptions[0].id.0, "subscription");
+        assert_eq!(state.providers[0].subscription_id.0, "subscription");
+        assert_eq!(state.nodes[0].provider_id.0, "provider");
+        assert_eq!(state.pools[0].sources[0].provider_id.0, "provider");
+        assert_eq!(state.active_subscription_id, None);
+        assert_eq!(state.active_configuration_generation, 0);
+        assert_eq!(
+            state.subscriptions[0].remote_request,
+            Some(crate::domain::RemoteRequestOptions::default_remote())
+        );
+        assert_eq!(
+            state.subscriptions[0].update_policy,
+            crate::domain::SubscriptionUpdatePolicy::default_remote()
+        );
+        assert!(pre_migration_backup_path(store.state_file()).exists());
+        let migrated = fs::read(store.state_file()).expect("read migrated state");
+        assert_eq!(store.load().expect("reload migrated state"), state);
+        assert_eq!(
+            fs::read(store.state_file()).expect("read stable state"),
+            migrated
+        );
+        remove_test_files(&store);
+    }
+
+    #[test]
+    fn v6_round_trips_exact_subscription_document_without_debug_disclosure() {
+        let store = unique_test_store();
+        let mut state = valid_state();
+        state.subscriptions[0].document = Some(crate::domain::SubscriptionDocument {
+            format: crate::domain::SubscriptionDocumentFormat::Yaml,
+            content: "# retained\nproxies: []\nsecret: fixture-only".to_owned(),
+            local_override: false,
+        });
+
+        store.save(&state).expect("save v6 document");
+        assert_eq!(store.load().expect("reload v6 document"), state);
+        let rendered = format!("{:?}", store.load().expect("load for debug"));
+        assert!(rendered.contains("[redacted]"));
+        assert!(!rendered.contains("fixture-only"));
+        remove_test_files(&store);
+    }
+
+    #[test]
+    fn migrates_v5_to_v6_with_unavailable_document_and_preserved_identity() {
+        let store = unique_test_store();
+        let mut original = valid_state_with_pool_and_route();
+        original.active_subscription_id = Some(original.subscriptions[0].id.clone());
+        original.active_configuration_generation = 7;
+        let mut v5 =
+            serde_json::to_value(StoredStateV6::from(&original)).expect("encode current fixture");
+        v5["schema_version"] = serde_json::json!(5);
+        v5["subscriptions"][0]
+            .as_object_mut()
+            .expect("subscription object")
+            .remove("document");
+        let bytes = serde_json::to_vec(&v5).expect("encode v5 fixture");
+        atomic_replace(store.state_file(), &bytes).expect("write v5 fixture");
+
+        let migrated = store.load().expect("migrate v5");
+
+        assert_eq!(migrated.schema_version, 6);
+        assert_eq!(migrated.subscriptions[0].id, original.subscriptions[0].id);
+        assert_eq!(migrated.providers, original.providers);
+        assert_eq!(migrated.nodes, original.nodes);
+        assert_eq!(migrated.pools, original.pools);
+        assert_eq!(migrated.routes, original.routes);
+        assert_eq!(
+            migrated.active_subscription_id,
+            original.active_subscription_id
+        );
+        assert_eq!(migrated.active_configuration_generation, 7);
+        assert_eq!(migrated.subscriptions[0].document, None);
+        assert!(pre_migration_backup_path(store.state_file()).exists());
+        assert_eq!(store.load().expect("reload v6"), migrated);
+        remove_test_files(&store);
+    }
+
+    #[test]
     fn rejects_an_invalid_v1_migration_candidate_without_writing_it() {
         let store = unique_test_store();
         let state = valid_state();
@@ -445,7 +646,7 @@ mod tests {
         let state = valid_state();
         store.save(&state).expect("save current state");
         let before = fs::read(store.state_file()).expect("read current state");
-        let mut candidate = serde_json::to_value(StoredStateV3::from(&state))
+        let mut candidate = serde_json::to_value(StoredStateV6::from(&state))
             .expect("serialize unsupported candidate");
         candidate["schema_version"] = serde_json::json!(0);
 
@@ -481,6 +682,18 @@ mod tests {
     }
 
     #[test]
+    fn recovers_a_valid_backup_when_the_current_snapshot_is_missing() {
+        let store = unique_test_store();
+        let state = valid_state();
+        store.save(&state).expect("save state");
+        fs::rename(store.state_file(), backup_path(store.state_file())).expect("leave only backup");
+
+        assert_eq!(store.load().expect("recover missing current"), state);
+        assert!(store.state_file().exists());
+        remove_test_files(&store);
+    }
+
+    #[test]
     fn rejects_corrupt_state_when_no_valid_backup_exists() {
         let store = unique_test_store();
         atomic_replace(store.state_file(), b"not json").expect("write corrupt state");
@@ -509,7 +722,7 @@ mod tests {
     #[test]
     fn rejects_an_unsupported_schema_without_replacing_the_snapshot() {
         let store = unique_test_store();
-        let mut document = serde_json::to_value(StoredStateV3::from(&valid_state()))
+        let mut document = serde_json::to_value(StoredStateV6::from(&valid_state()))
             .expect("serialize future schema");
         document["schema_version"] = serde_json::json!(99);
         let bytes = serde_json::to_vec(&document).expect("encode future schema");

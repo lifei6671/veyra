@@ -1,121 +1,46 @@
 # Project Handoff
 
-Project: PROJECT-001 | Mode: ingest | Phase: EXECUTING
-Focus: TASK-009 / IN_PROGRESS / SF-003
-Requirement: docs/veyra.md
-Requirement identity: sha256:4a2cd1e2b9698087bcbc4ac892d7b052a5e2c06554e372479fe31c81cbea9d45
+Phase: EXECUTING | Focus: TASK-011 IN_PROGRESS
+订阅编辑/输入040（2026-09-06，优先于历史）：URL可编辑，仅变更刷新；本地文本/文件互斥，样式化文件按钮、禁textarea拖动与全局原生contextmenu，保留卡片菜单。039审阅同文件重试P2已修，040独立review PASS，无新Finding。frontend97/browser26/backend34+1/lint/fmt/clippy/native040 sourceStable PASS。完整receipt见 .sdlc/evidence/TASK-011/link-input-receipt-040.json；原生GUI/Human待验收，Task IN_PROGRESS，无commit/push。
+编辑/运行配置038候选（2026-09-06，优先于下方历史）：Monaco本地lazy编辑JSON/YAML+复制/格式化/全屏、V6原文/CAS/严格Save不远端刷新、selected立即应用/已保存应用失败可同buffer重试、header批量删除/远端全刷/actual active config/force、固定上限300px单调卡片、无等待速率+owned WorkingSet内存。target038 SHA45d57e73261330a892858593a89dff874162e03b50294f7ccad8bb4e0114aad5；前端97/lint/build、light15/dark16/grid14/memory10 browser PASS，final Save4/observation21定向PASS。native038 sourceStable exit0、exe38505e2a04cc129d0b205ba5bf415d059515b6997bd5fb5704317646b39ad93e，隔离build未宣称GUI。两次review P2已修，最终独立editor-delivery-review-038 PASS/无新Finding，SHA327f03aaa9215bb0eebafde615eb4be7050382ad373f40864ac34740181a6319，39源19证据FRESH；额外广模块4real-worker FAIL保留，污染原因只是推断，不标全套PASS。原生GUI/Human待验收，Task IN_PROGRESS；无commit/push/release。详情当前Task末尾checkpoint及evidence038。
+侧栏/卡片033（2026-09-05，优先于历史）：USER要求参考Clash Verge侧栏统计并修复卡片闪动。新增独立SidebarTraffic canvas30点/约15fps有限动画、采样signature防无关delta中断、浅橙上传蓝下载/灰箭头/16px数值12px单位，缺口断开且停止不假造速率；无memory字段未展示内存行。移除卡片全部runtime徽章和trafficdivider，日期expiry优先否则lastSuccess，无到期前缀，二者皆无则留空。参考profiles.tsx本身为auto-fill260px1fr无防抖；本次按用户稳定性诉求用120ms observer settle仅调整卡片网格，拖动时DOM/宽高稳定，停顿后铺满。旧compact代码/CSS删除，首页10min语义不变。冻结sidebar-cards-target-033.json SHA9daaf52c61ac2a084d690056860c95f377688e658c5aa48658406b414131f3fa，6源15证据匹配；85 tests/lint、cards26+sidebar21 browser检查、native033 sourceStable build PASS。独立sidebar-cards-review-033.json PASS/No findings SHA6ec00e17907e04f93deedb5c9523e051fa3c56394101afa9c6b0314d0ac54010。隔离native033已启动PID62192/title Veyra侧栏与卡片优化版，exe5ae87a83874c9623ef68f2b5de9143b3ce792a93dead061fd793c7ffabde88e6。原生OS拖拽/隐藏恢复与Human验收仍PENDING；源码cleanup/re-measure已审。无Rust/IPC/dependency/permission修改、无用户节点运行/commit/push/release/TaskDONE。
+过滤/卡片032（2026-09-05，优先于下方历史）：USER新要求仅过滤不支持的Clash/sing-box节点，覆盖025整份pin报错。partial-import030设计独立PASS冻结；manager保留所有parser支持节点，所有拒绝项整节点过滤计数，不删TLS/transport字段；全部过滤/文档错误仍失败保留既有订阅内容；dedup保首项不计过滤，304保留count。移除旧UnsupportedCertificatePin/DTO/TS消息，失败提示兼顾无可导入节点。29manager+10commands+4provider、82frontend tests/lint及fmt/clippy--lib PASS。UI031卡128px：used / total+expiry同行/细进度条，去来源类型和时间标签，description可选占位，空metadata无separator，主题/字号栈不变；browser03128检查PASS。font-reference030确认SF-Pro.ttf资产存在但参考源码无引用，默认_theme15与use-custom-theme173使用系统字体栈，本机无font_family覆盖；Veyra栈相同。target032冻结6源/10证据 SHA51d5f2503d9ee2a4ef9ff5a156e83ee39abefb645bc44a0a951434370d3eea09；独立delivery复审PASS/No findings，partial-import-code-review030 SHA79383a3f8b47e75d56febe570d4fc67967a166229d125803320a82c85ab8edb7，6源/10证据零漂移。真实内存诊断031：Clash19accepted/22filtered/4duplicate/15unique，sing-box41accepted/0filtered/10duplicate/31unique，unchanged parser/normalize/compiler计划PASS。native030 sourceStable PASS，exee15a9a1fa8e4da0cf136cd8b0991344fe4bb07154e6c73467dda12d643c659b6，隔离title Veyra订阅精简版/PID75944，旧PID76216保留且旧exe改名veyra-before-compact-030.exe；无真实state复制/节点启动。原生WebView导入仍PENDING_USER，Task IN_PROGRESS，无commit/push/release。
+订阅/UI修复029（2026-09-05，优先于下方历史）：用户选择完整连接去重保首项、Clash证书指纹仍报错、sing-box UA导入。policy025及WS027均独立design PASS冻结。UI021/022：184px等高稳定卡片/152px菜单、去除skip/周期/active徽章、缺失元数据留空、节点时间同行、QR背景/Escape关闭无按钮、outlined label、Toast无关闭按钮。真实诊断发现10WS earlydata缺失后，补Transport可选参数/strict单Host数组/compiler往返；V5旧None序列化与旧ID不变，无迁移/依赖/权限变化。target029冻结12源 SHA b77ff7df1c309b8e41de0a54d1a3a34c6cc9a8c94df6d442be7f089d50c59d27，当前86定向Rust+未变commands10/provider4 PASS；前端82/lint/build、UI mockIPC 32+19 PASS；fmt/clippy --lib PASS。all-targets额外旧测试lint7项未标绿。response-diagnostic029真实内存读：sing-box41 accepted/0skipped/10duplicates/31unique，normalize和ConfigCompiler plan PASS；Clash22pin按策略整份拒绝。diagnostic028 compilefalse系harness漏必需manual pool，029已纠正，源码未动。native028构建sourceStable PASS，exe0e44bf7ae2290779d4e88f398233fc64b663b8bea4cdac95fa6de888933b44e1；隔离debug窗口PID76216/title Veyra订阅界面修复版，未复制真实state/导入或启动core。独立delivery复审028已PASS，review hash c29a32c654aaaa76a659631dbcf3c157c75688c7a6dcf8181d03e6cf83c336ef，12源/8证据零漂移，REMED025-001=FIXED；真实原生导入PENDING_USER。TASK011 IN_PROGRESS，基线001/HEAD506553d2不变，无commit/push/release。
+UA019（2026-09-05，优先于下方历史）：USER明确授权使用新提供的订阅调试不同UA，默认导入Clash，新增UA下拉。ua-authorization019与Task amendment019记录范围。fetch默认clash-verge/v2.5；新建提供Clash默认/sing-box1.14.0/Clash.Meta/自定义；编辑有私有UA时默认保持原值，选Clash走已有clear语义。仅fetch.rs/SubscriptionPage.tsx两个生产文件，ua-target019 SHA8874092be46492cac0520583523a08d5f904e21e47972140207d0a52f3f2fb78；无模型/IPC/权限/依赖/解析器修改。Rust37、frontend81、browser19/fmt/clippy/lint/build通过，独立ua-code-review019 PASS/No findings，SHA8554cbcdb59cf0380955e130bbb1f8744126f1f735856de45ade17417406b336，2/2源与12/12验证工件hash一致。真实新链接UA探测：Clash/Meta返回YAML，sing-box返回JSON；正文仅内存处理、Token/URL未入文件。当前parser：Clash accepted9/Invalid32，9项内unique7/duplicate2；sing-box accepted22/Invalid21/Unsupported1，22项内unique16/duplicate6。因此仅格式协商PASS，整份新订阅导入仍FAIL，用户已获说明；不得把旧链接10/1结果移用到此链接，或静默忽略新Invalid节点/弱化去重。后续兼容需独立诊断和明确政策。native-build019遇用户运行core资源锁失败，未停进程；native020仅隔离no-bundle配置resources=[]，复用逐文件hash相等的现有资源，成功sourceStable=true，exe6c287ec14fc1944f2f3456584ff1c9c7094f3ab7712330f9eceb899a8281d539；产品tauri.conf未改。native-session020 PID48796/title Veyra UA选择调试版/新identifier，无旧状态复制，原窗口及core PID54088保持。真实原生UI验收PENDING_USER，TASK011 IN_PROGRESS，无提交推送发布。
 
-## 当前结果（2026-09-04，checkpoint025）
+兼容修复017（优先于下方历史）：USER“帮我修复”已授权模型/Compiler补全，并明确“导入其余10个节点，明确提示跳过该节点”。设计015独立审查PASS并冻结，不重复请求旧批准。实现TLS ALPN/uTLS指纹、HY2带宽/MTU与Clash别名；仅合法VLESS smux.only-tcp启用节点允许跳过，其余错误仍事务拒绝。V5新增默认字段和skippedNodeCount，卡片/成功提示显示数量，失败更新保持旧状态，304保持计数。canonical fixture修正脱敏后的重复endpoint为11个唯一安全域名，未弱化normalize。compatibility-target017冻结15源码路径；135项相关Rust测试分组PASS（015 normalize/domain、016 compiler、017其余）、frontend81/lint/build、browser8 mockIPC检查、fmt/clippy PASS。真实用户URL以默认UA只读回查HTTP200/13703bytes、accepted10/rejected1，原文TEMP已删，未启动节点。fixed core仅check生成配置PASS，无协议运行矩阵。native-build015 sourceStable PASS，exe1864223dcc7aab104ee586bf7506de414fb6752cfc7f45f9bb8d86604d3c478e，native-session015新隔离identifier/GUI PID69872/title Veyra订阅兼容修复版；旧PID64636保持运行，旧exe已在同target/debug更名为veyra-before-compatibility-015.exe，避免覆盖锁定进程。真实原生导入仍PENDING_USER；代码独立review018已PASS（三项记录/注释问题已关闭）。TASK011 IN_PROGRESS/Human PENDING，无commit/push/release。
 
-CHANGE013 用户“允许”的 DCR015 两个 WG 域名用例已实现并独立有界审阅 PASS；
-源码身份 787deafa226ed2674e7e7a0f78927ee83df380df73e1e664351471d99431c664。
-61份源码、93份验证工件、2份补充diff输出和5个验证工具hash独立核对一致。
-HTTP 新child DNS七记录、原Host、204完整TCP ACK成立；TLS独立child七记录和SNI成立，
-HTTPS成功明确为false。旧DNS、TCP/ICMP、UDP、三阶段四格拒绝、Hold55/150及四代理回归
-各有当前成功记录。50项去重Rust本地测试、Go test/race各40PASS+1预期SKIP、vet/fmt/
-modverify/build、产品Clippy、Rust fmt和diff通过。五类主机快照前后一致。
+源码对照014：USER要求参考satelite-proxy，实际路径E:/wx_lifeilin/github.com/satelite-proxy。CodeGraph对照parse入口、Clash/SB协议、TlsConfig、builder输出；报告satelite-parser-reference014.md/json含7源码hash。参考明确支持ALPN/指纹/Reality/HY2带宽，按键读取而非严格未知字段整节点拒绝；但已审节点链未处理smux/disable_mtu_discovery，不能声称无损。参考也允许nodes+skipped，不能未经批准把Veyra零skipped事务改为部分导入。未改生产代码，未把本轮参考请求当作013新增模型/Compiler或有损转换授权。
 
-all-attempt aggregate仍FAIL：HTTP025首次DnsError和reject025首次5秒socket查询超时
-均保留，之后各一次独立确认运行PASS，原因未闭合，不宣称稳定性或根因修复。
-024准备失败/旧DNS失败、早期混合filter误跑两个网络测试缺before快照等历史均保留。
-TEMP布局修复后可启动child，但不能追认未采到的Win32返回码。CR008清理/业务判据
-混淆已独立确认FIXED，资源关闭与业务失败分别记录，取消及迟到失败仍不能业务PASS。
-verification025误将diff cwd统一写src-tauri，原包保留；diff-exact025追加repo cwd勘误，
-完整61路径argv重新执行PASS。历史tests-Clippy7项诊断未消除；产品Clippy为独立结果。
+用户真实Clash导入失败013（2026-09-05，优先于历史）：用户授权检查其链接，HTTP200/text-yaml/13703bytes，11节点（5HY2/6VLESS），链接不写evidence。当前final011 rlib只读harness对真实输入和脱敏fixture均得到ClashYaml accepted0/rejected11，见user-clash-failure013.json与clash-compatible-shape013.yaml。严格未知字段拒绝造成parseFailed；HY2 ALPN/带宽及VLESS fingerprint/Reality/smux等未完整映射。原文TEMP已删除，未启动节点/修改真实状态/改生产源码。原review011证明代码与冻结设计一致，不证明此真实形态已兼容；用户验收仍未通过。需准备compatibility-proposal013跨节点持久模型/Compiler边界批准，不能删有效参数静默降级或重复请求旧009已授权部分。
 
-Task仍IN_PROGRESS，Task acceptance PENDING，Delivery Gate PENDING；wholeTask审阅
-BLOCKED/REWORK源于SF003剩余必需验收和Human Gate。下一步由Orchestrator选择节点
-hostname、完整DNS拒绝、受控非宿主转发、IPv6业务等剩余有界工作，同时保留两项未闭合
-失败。验证阶段无commit/push、Cloudflare/TUN/系统ACL变更。用户无需现在调整DNS。
-用户随后明确要求“先把代码提交一次”，授权当前相关代码与已跟踪任务记录的本地checkpoint；
-该提交不改变Task/Gate验收状态，不包含独立.gitignore改动或被其忽略的新证据文件。
+最终011检查点（2026-09-05 18:02本机时间，优先于历史）：backend-expansion011 SHA165e58c7ff68b8f1e1ecbc5602925363bdfc73b5c5af818bac8e952b4053b8c6，root-expansion011 SHA60f6cb68a7973dc2239bb841dd7d381f157dfa221cc0a871fd268c9b1ba67d66；backend100+root60定向tests/fmt/clippy PASS，frontend010 76unit/59browser/lint/build及独立frontend-review010 PASS。backend-root-review012 SHA1c5bbb930b819102c53147d6a5049892438c8af216adbc59b3a467d39d19f024 PASS，四项BR010修复闭环，36源码路径hash回读一致。native-build011 sourceStable PASS，exe a312077b82c0c4b09f3750be6a06ade2a322e403a0b747748cad19e34df2fc1a；native-session011 GUI PID64636，HTTP PID57536端口9752，18:02启动/fixture30分钟期限。独立identifier沿009（无state时启动），009HTTP已核对自有进程并停止，旧native004不动。native-acceptance011.md已备完整步骤。ComputerUse两次activation失败，停止本turn输入；真实WebView链UNAVAILABLE/PENDING_USER，未伪称通过。TASK011 IN_PROGRESS/Human PENDING，未提交推送发布。下一步接收用户原生验收反馈并核对fixture/隔离状态；不能把已批准009再次送审或把原生未做记PASS。
 
-主要记录：implementation-025.yaml、code-review-checkpoint-025.yaml、verification-025.yaml、
-wg-domain-result-025.json、diff-exact-025.json。原starting_head保持9f6cb9fd...，当前snapshot
-HEAD b8c705f...未重新归属本轮；.gitignore等用户改动保持。下文为旧阶段历史。
+最新实现011检查点（2026-09-05，优先于下方历史）：USER“确定”的expansion-approval009已实施；frontend010 manifest 8169fcbd4143acbf9edce5bac7b951708af2114b0c1cc0b66830a31d9e131e09，独立frontend-review010 PASS e454e0a46d69280b6f6439cf5c42f80efe96a5d244dbc4f9b115922c7c3ecf55，76unit/59browser/lint/build。backend009+root010已实现并各自验证，root59定向raw见root-tests010；独立backend-root-review010 REWORK 9b268d9e3eecb9159d4087a4e0da4735397f481563736e16ff7c80c02c5c9567指出4项：失败attempt保存失败缺进程deadline、profile-update-interval未采用、scheduler无退出cancel/join/commit屏障、跨源最终validator下次回送初始源。原backend producer正修011，Root已接拟定SubscriptionScheduler::start/request_stop/shutdown三API并让Tray Quit spawn_blocking后有界确认退出（未最终编译复核）。不重新审批这些已冻结需求的遗漏修复。native-build009 sourceStable PASS exe4ddedc7d64d6712a2b36d1a7eedc18c8df0a577421a4029a5dd27f82e230373a，但旧后端对修复后STALE。新隔离identifier com.lifei6671.veyra.task011.dd8a76ecd9804ac2b5e4fbe618ad2d24；native-session009原GUI PID70496已核对EXE且无core/state后关闭。HTTP fixture PID17136端口8900仍可能运行，30min期限。ComputerUse可读取初始home/订阅空态，先bounds/userinput变化，重新选择后连续两次failed to activate captured window，按skill已停止输入，native-preliminary009如实PARTIAL/最终UNAVAILABLE。没有成功写UI、没有state.json，不再反复尝试输入；待最终修复review/build完成提供可人工验收的隔离版。TASK011保持IN_PROGRESS/Human PENDING；无commit/push/release，未跑sing-box内部协议矩阵。旧native004目录及状态未触碰。
 
-## 上一阶段设计结果（DCR015）
+最新009优先：USER:lifei“确定”已批准expansion-approval-candidate008完整清单，见expansion-approval009。technicalGate PASSED、blocked=null；frozen009 manifest绑定008→007→006→proposal005不可变候选，历史CANDIDATE文本不覆写。V5/DTO、5个main命令、runtime切换/观测/应用内调度、qrcode.react^4.2.0及工具生成锁文件均已明确授权，不再重复问。先重建当前Task完整范围，再按不冲突文件分区实施。原baseline001及所有预存改动保留，无提交/推送/发布。
 
-用户“继续下一步”后完成WG IPv4域名HTTP Host/TLS SNI候选设计与独立审阅。
-`.sdlc/design/DCR-015-test-wg-domain-host-sni.md`当前身份
-00b0455ffe4f997f58856f6112bea4c02b735387c96361a2b6264638d0fbde79。
-新模式只在peer内存栈增加198.20.0.255/32别名，两个串行用例分别验证HTTP204/ACK和
-TLS ClientHello SNI；复用私有有界DNS采集，把新child解析链与实际连接目的交叉核验。
-TLS只证明SNI，不证明HTTPS成功；IPv6、节点hostname、DNS拒绝、非宿主转发等仍必需。
+最新 006：用户对“使用立即切换到所选订阅”回答“是”，U2 已确认，不重复询问。use-decision-006.json、Requirement §1.3、DCR-018记录该产品决定；source hash更新为93b60509f5ff04b07dcab093aa82f26ff17cf6feb446b82c82dd6615fc2dbad4。技术Gate对新增切换/表单菜单范围PENDING，旧approved004只证明原范围。subscription_planner负责增量设计006，root负责变更控制和独立审阅接线。新增精确权限与qrcode依赖尚未获批，不安装、不改capability；本轮尚无新生产代码。旧Start Ready→AlreadyRunning不能用于替换；候选先check、后stop/start，失败遵守DCR004。baseline001不变。
 
-独立Reviewer `/root/wg_domain_design_reviewer` 初审022 REWORK：stopped固定连接数
-不适用于取消、TLS回调哨兵可能掩盖底层alert写失败。候选已删除stopped计数并区分业务/
-清理结果；有界TLS连接锁存底层失败且最终成功检查期限。023复审PASS，两Finding仅设计层FIXED。
-审阅结果由独立Reviewer返回，因其runtime禁止写文件由root记录，未冒称Reviewer写入。
-022历史记录顶层result枚举误用REWORK，在023追加勘误为FAIL；旧字节保留。
+最新检查点（2026-09-05 compatibility005，优先于下方历史叙述）：用户要求补齐新建选项/右键菜单、Clash 链接导入与 UA，确认失败方式是订阅链接导入，但未提供具体错误或响应原文。Root 对现有 fetch/parser 修复默认 UA、Clash VMess/TLS 拼写映射、BOM 与 quoted/flow YAML 识别；compatibility-implementation-005.json 记录目标 hash，3 个 RED→GREEN 用例、23 parser/10 fetch 测试、fmt/clippy/diff-check 通过，独立 review 待收口。没有改 IPC/schema/权限/依赖，没有测试 sing-box 协议。完整新建/菜单扩展候选为 subscription-expansion-proposal-005.md，仍 PROPOSED，需明确运行语义与具体契约/依赖批准后再冻结，不得把兼容修复视为全量功能完成。
 
-当前technical_design Gate PENDING、reviewed_by已绑定023、approved_by:null；blocked为
-Owner资源/Scope批准，next=sdlc-orchestrator。原因是已批准DCR009只服务旧内存地址、
-DCR013仅丢包预检；新增内存业务服务和日志资格超出该批准。必须对上面具体候选获得批准，
-才同步Task Scope/approval/readiness并开始实现。当前Task和58份checkpoint021源均未改，
-本轮无构建、DUT/DNS查询、业务网络或主机配置动作；没有commit/push。
-新工件为DCR015及wg-domain-design-preflight/review-022/023，现有改动归属保持。
+前端最新为 frontend-implementation-004.json（62 单测/67 浏览器断言，独立最终复审待做）；后端 backend-implementation-002.json 已获 backend-review-002.json PASS，但 compatibility005 对 parser/fetch 修改使这两路径旧审阅失效。TASK 状态与原始 baseline001 不变。此前原生空态检查被用户 Escape 中断；本轮已核对自有 PID/EXE 且无 core，执行 native-empty-004.ps1 -Action restore，3 个 synthetic state 文件原样恢复并关闭自有 GUI，hold 目录为空。native-build004 对当前修复已 stale，最终原生事务联调尚未完成；真实用户数据与订阅未访问。
 
-## 已完成的实现结果（checkpoint021）
+USER:lifei 在已展示边界及UI修订后明确“继续实现吧”，approval-004.json记录，三IPC/main权限、V4迁移/共享短state门控获准实施；无新Clipboard插件、依赖/锁或额外权限授权。设计FROZEN hash6d43016b2d381a13102397311f2d4365292a540e8845824aa9552c966ae87024（与审阅候选仅status字段不同）。baseline-001.json保存原始HEAD、完整源hash和预存App/styles/capability内容，不能重置。
 
-CHANGE011/012 有界 DNS 结果预检已完成并独立审阅 PASS，CR007 FIXED。
-checkpoint021 源身份：95d90d9614a5b05b583d3c2d20cd0d122d3876080b6fb676a0bbd797eb89e083。
-58份完整源、原始交付patch、020相对增量、19份新运行/验证工件已核验无漂移。
-原 starting_head 9f6cb9fd0484d4be89d37a498658052d6d8a03b9 保持；snapshot_head
-b8c705f60606dff74823a90b5e1fadc1407d3672 不重新归属本轮。没有commit/push。
-Task当前身份：681d94863c9f7bcc62451447e6cd7073ec139d02bd42ba04332235f0dcdcb790。
+后端 /root/subscription_planner 负责Rust应用/Domain/Store/HTTP/三个command接线及定向测试；前端 /root/homepage_implementer 负责App/styles/订阅组件/客户端与浏览器验证；root只负责native-004隔离fixture/原生联调和治理。max_parallel=2，Reviewer后续独立。预存dirty文件均保留，领域新增字段所需旧测试构造器仅机械默认值适配，不改断言。
 
-用户明确批准DCR013的私有禁色日志、固定域名与本机WG预检；CHANGE011保留该授权。
-首次checkpoint020在CandidateCheck失败：disable_color不是固定核心可接受JSON字段。
-DCR014通过独立技术审阅后，CHANGE012按同Scope equivalent Verification条款采纳修正：
-JSON仅disabled:false/level:debug/output:stderr，唯一合格DNS测试run带固定--disable-color。
-无新可变argv入口，产品run/check/null、权限、拓扑、采集界限与证明语义不变。
-这次修正复用原能力授权，不能冒称用户再次批准了DCR014；旧设计/失败/审阅字节均保留。
-DCR014身份a015549fa13f65bd51d8019e3b3c213408cd9099405e5e89288eecd04d7b9986。
+UI按ui-reference-003：顶部URL快捷导入、新建远程/本地下拉、卡片刷新和右键更新；已验收字体主题、200px左栏/520最小继续保持。运行中的core不因订阅操作切换；失败旧节点/时间/缓存不变。
 
-## 真实 DNS 证据
+当前实现检查点：frontend-implementation-003.json（hash1f58267a99898628578b5da55a08098b91d43bb994545c4a9d40421194e0c21b）记录62单测/61浏览器断言/lint/build通过，但独立frontend第三轮复审仍在收口pending焦点边界，不能当最终PASS。backend-implementation-001.json（hashf0417b397f7b6e1a90186dbda160feb70bdf9bf0ad6cd64e7e84dd363c3ad8ce）记录43精确Rust测试/fmt/clippy通过；backend-review-001.json（hash1cc2fff75b3a9955257be1d256a8b031b54c9d5762722cfac7f82985428bf2e5）REWORK，BE001历史名称迁移兼容、BE002超时/跨origin条件头/首次创建/list与迁移gate验证待修，已派同一后端producer修复002。
 
-域名veyra.disign.me。固定child实际返回A=198.20.0.255、AAAA=fc00::fe，TTL1。
-7条typed摘要形成Lookup→Exchanged NOERROR→A/AAAA→LookupSucceeded完整链，约170ms。
-DUT PID78244，创建FILETIME134329994842505067；config hash
- e64aac80b8b87c9a33e095c3c854e9366b724998319e4362c485d551c594b067。
-helper hash fe29162a9ecee8f3982c6d8d290623a7e88b4f01bd40effcd5beb168c4b6591b。
-收到12499日志字节，只持久化白名单摘要，无原始日志。先DUT停止、reader EOF/join，
-再peer shutdown/stopped/exit0；peer丢弃1包60字节，私有config0、owned端点消失。
-单项15.37秒PASS；前后接口、地址、路由、DNS、代理五类快照相同。
+Clipboard原生已证实可用：native-clipboard-004.json。用户手动允许WebView隐私提示后，无凭据本机链接成功回填；无需新插件/Tauri权限。该初步运行绑定frontend003与backend001，EXE c57278786573910f505cf43ca1ede1bc5c1fb4d2962e49f5656ddfc9eb05ae37，只证明Clipboard及普通V3迁移读回，不是最终事务联调。初步GUI已由root核验身份且无core后关闭，数据目录保留；native-session-clipboard-004.json/native-build-clipboard-004.json保留身份。后续最终源冻结后重新native-build-004.ps1（前后源hash一致），再native-resume-004.ps1继续同一隔离目录；不要重复首次launch脚本，也不要使用生产数据目录。受控HTTP服务尚未启动。最终完整native导入/更新/重启、整合review与用户验收仍PENDING。
 
-只证明这个固定child的local DNS exchange与返回地址；不证明权威Cloudflare记录、
-DNS服务器网包目的、答案用于成功业务、目标可达、WG Host/SNI或完整SF003。
-用户报告Cloudflare A203.88.124.39、AAAA2607:f130:0:14d::7162:ad8f，并明确本机TUN
-返回虚假地址；实际结果符合该说明，但没有独立核验TUN映射或权威记录。未改DNS/TUN。
-原9090曾被XTunnel占用，后来复核已空闲；没有停止XTunnel或访问它的API，用户无需再操作。
+TASK010 DONE，M7 FOLLOWUP-TASK010-NATIVE-012 OPEN/NOT_RUN发布前补验不变。无commit/push/发布或真实用户订阅访问，不重复sing-box内部协议矩阵。
 
-## 验证与审阅
+compatibility005 收口：compatibility-review-005.json PASS/No findings；追加 Manager 12/12，加上 parser23/fetch10共45定向测试，fmt/clippy通过。compatibility-completion-005.json绑定最终源和证据。proposal005已修订参考真实 auto-update=true/interval=None、填写周期最小1440；旧审阅对方案的周期建议已由新proposal修订处理。用户async待选‘使用’立即切换或多订阅启停；未收到选择前不修改运行语义/冻结设计。菜单/完整表单尚未实施。无commit/push。
 
-021新跑45项unique Rust本地测试+1项真实DNS、fmt、产品Clippy、diff检查均PASS。
-020的Go全量/race/vet/gofmt/modverify/build、HTTP/SOCKS四项与WG TCP/ICMP、UDP真实回归
-PASS；021按Go/Port/mod逐hash一致及普通分支不变明确继承，不冒称重跑。
-扩展--lib --tests Clippy曾FAIL8；修复本轮single_match后FAIL7均为既有诊断，原始输出
-和owned_sockets有界try_wait/kill路径分析保留dns-clippy-020.md，没有抑制lint。
-完整Rust、GUI/Tray、CI、剩余SF003验收NOT_RUN，Human Task acceptance仍PENDING。
+006审阅检查点：前端FE002/FE005已在frontend-implementation-006.json修复，源SubscriptionPage.tsx hash4ccaf8dc27451e6f2e559ec890e0d25daed1a27364ee14882e2844bbd53047af；frontend-review-006.json PASS hash00b11789551de70c52ed1d7beb2cf5c2318ea22216a0a314c9bcfef5005da813，73 browser/62 unit/lint/build通过，原生整合仍NOT_RUN。切换设计006 hash34efae0995185f8117c1cea289813ba3cb54e29dddaaab608e6ed5f8158c1d59的独立review006 REWORK，两个P1：RuntimeIntent不包含default_target须显式成对投影、Activate/Start/operation响应枚举尚需封闭定义；作者正定向生成007。旧006不可覆盖，review路径expansion-design-review-006.json。
 
-独立审阅code-review-checkpoint-021.yaml hash
- a4ea1709fb5313020d999ce67c69ab74184711dfe548000d319824d6cb6f7ce2：
-本有界增量PASS/CR007 FIXED；整体Task仍BLOCKED/REWORK，Delivery Gate保持PENDING。
-DCR014当时技术Gate PASSED，其授权仍由CHANGE012保留；当前Gate已转为上面的DCR015待批准。
-
-## 下一步与保留边界
-
-下一步等待DCR015具体候选批准，随后核定实施前提并执行受控WG域名/Host/SNI验证；保留完整
-DNS拒绝、受控非宿主转发、IPv6业务和系统DNS等必需证据。只有具体需要改记录时再通知用户。
-不修改现有TUN/Cloudflare，不借“继续”进入Task010、扩大运行资源或提交推送。
-代码修改范围、授权和对照均见当前Task、CHANGE011/012及DCR013/014。
-用户并发.gitignore改动、忽略的.playwright-cli保持排除归属。
-
-## 历史定位
-
-DCR012/checkpoint015的四格宿主/虚拟地址三阶段阳性-保护-阳性比较PASS，旧CR005/006已修；
-相应69.02秒原始证据、Hold55/150模拟和旧失败均保留，不用DNS增量追溯改写。
-checkpoint020首次DNS CandidateCheck FAIL以及preflight020/021审阅按原身份保留。
-恢复优先读取state、Task、delivery-checkpoint021、verification021、dns-result021、
-implementation021与code-review-checkpoint021；再按需读历史，勿重复旧已完成工作。
+最终008：expansion-design008源hash6736cc73cea6e3e92db0c9db0443e2c4f4cb1caff4f86b6eac3387d9edf603e7；expansion-design-review008 PASS hash28e96656489f5e27366fd5041cf4fc2befa4ce861682ec67cfcc7097936c0f41，两个P1均FIXED。候选按008→007→006→proposal005引用链组合，旧候选不得覆盖。state技术Gate仍PENDING待用户对expansion-approval-candidate-008.json一次批准：V5/DTO、五main命令、runtime切换/观测/应用内调度、qrcode.react^4.2.0与工具生成lockfile；产品Use即时切换已批准，不重复问。新生产切换代码未实施。前端006焦点修复已代码review PASS，73browser/62unit/lint/build PASS，但native构建仍旧004对当前源STALE。批准后冻结组合设计、task-breakdown修订完整Task再派实现；不commit/push/release。
+017审查修正018：审阅未发现功能阻断，修正历史review文件引用并补当前fmt原始日志；compiler仅更正文档注释。新冻结compatibility-target018 SHA ed089836bab15efbf82c08af5ba20cf20752fa2088ece0a1ea976968323ba4c5，native-build018 sourceStable PASS，最终exe03bf8f8ffb214b114ce0459d9631acb246b29229f473d140688ce078125ee88f。当前打开PID69872仍为015功能版本（与018仅注释不同），其exe在同目录改名veyra-compatibility-015.exe以避免构建覆盖锁定文件，未打断用户窗口；再次启动请使用最终veyra.exe，但同identifier不并发启动。真实URL内存parse+normalize也10/1见user-clash-normalize017。独立review018 PASS，SHA18a9699ea6a57665b41f6c6557faf7f430f4625f0f47080255af4ab18287e342，15/15源hash匹配，原生用户验收仍pending。

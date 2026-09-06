@@ -1,0 +1,785 @@
+{
+  "outbounds": [
+    {
+      "tag": "direct",
+      "type": "direct"
+    },
+    {
+      "tag": "hy2-1",
+      "type": "hysteria2",
+      "server": "hy2-1.example.invalid",
+      "server_port": 20001,
+      "password": "synthetic-password-1",
+      "tls": {
+        "enabled": true,
+        "insecure": false,
+        "server_name": "hy2-1.example.invalid"
+      }
+    },
+    {
+      "tag": "hy2-2",
+      "type": "hysteria2",
+      "server": "hy2-2.example.invalid",
+      "server_port": 20002,
+      "password": "synthetic-password-2",
+      "tls": {
+        "enabled": true,
+        "insecure": false,
+        "server_name": "hy2-2.example.invalid"
+      }
+    },
+    {
+      "tag": "hy2-3",
+      "type": "hysteria2",
+      "server": "hy2-3.example.invalid",
+      "server_port": 20003,
+      "password": "synthetic-password-3",
+      "tls": {
+        "enabled": true,
+        "insecure": false,
+        "server_name": "hy2-3.example.invalid"
+      }
+    },
+    {
+      "tag": "hy2-4",
+      "type": "hysteria2",
+      "server": "hy2-4.example.invalid",
+      "server_port": 20004,
+      "password": "synthetic-password-4",
+      "tls": {
+        "enabled": true,
+        "insecure": false,
+        "server_name": "hy2-4.example.invalid"
+      }
+    },
+    {
+      "tag": "hy2-5",
+      "type": "hysteria2",
+      "server": "hy2-5.example.invalid",
+      "server_port": 20005,
+      "password": "synthetic-password-5",
+      "tls": {
+        "enabled": true,
+        "insecure": false,
+        "server_name": "hy2-5.example.invalid"
+      }
+    },
+    {
+      "tag": "hy2-6",
+      "type": "hysteria2",
+      "server": "hy2-6.example.invalid",
+      "server_port": 20006,
+      "password": "synthetic-password-6",
+      "tls": {
+        "enabled": true,
+        "insecure": false,
+        "server_name": "hy2-6.example.invalid"
+      }
+    },
+    {
+      "tag": "hy2-7",
+      "type": "hysteria2",
+      "server": "hy2-7.example.invalid",
+      "server_port": 20007,
+      "password": "synthetic-password-7",
+      "tls": {
+        "enabled": true,
+        "insecure": false,
+        "server_name": "hy2-7.example.invalid"
+      }
+    },
+    {
+      "tag": "hy2-8",
+      "type": "hysteria2",
+      "server": "hy2-8.example.invalid",
+      "server_port": 20008,
+      "password": "synthetic-password-8",
+      "tls": {
+        "enabled": true,
+        "insecure": false,
+        "server_name": "hy2-8.example.invalid"
+      }
+    },
+    {
+      "tag": "hy2-9",
+      "type": "hysteria2",
+      "server": "hy2-9.example.invalid",
+      "server_port": 20009,
+      "password": "synthetic-password-9",
+      "tls": {
+        "enabled": true,
+        "insecure": false,
+        "server_name": "hy2-9.example.invalid"
+      }
+    },
+    {
+      "tag": "hy2-10",
+      "type": "hysteria2",
+      "server": "hy2-10.example.invalid",
+      "server_port": 20010,
+      "password": "synthetic-password-10",
+      "tls": {
+        "enabled": true,
+        "insecure": false,
+        "server_name": "hy2-10.example.invalid"
+      }
+    },
+    {
+      "tag": "hy2-11",
+      "type": "hysteria2",
+      "server": "hy2-11.example.invalid",
+      "server_port": 20011,
+      "password": "synthetic-password-11",
+      "tls": {
+        "enabled": true,
+        "insecure": false,
+        "server_name": "hy2-11.example.invalid"
+      }
+    },
+    {
+      "tag": "hy2-12",
+      "type": "hysteria2",
+      "server": "hy2-12.example.invalid",
+      "server_port": 20012,
+      "password": "synthetic-password-12",
+      "tls": {
+        "enabled": true,
+        "insecure": false,
+        "server_name": "hy2-12.example.invalid"
+      }
+    },
+    {
+      "tag": "hy2-13",
+      "type": "hysteria2",
+      "server": "hy2-13.example.invalid",
+      "server_port": 20013,
+      "password": "synthetic-password-13",
+      "tls": {
+        "enabled": true,
+        "insecure": false,
+        "server_name": "hy2-13.example.invalid"
+      }
+    },
+    {
+      "tag": "hy2-14",
+      "type": "hysteria2",
+      "server": "hy2-14.example.invalid",
+      "server_port": 20014,
+      "password": "synthetic-password-14",
+      "tls": {
+        "enabled": true,
+        "insecure": false,
+        "server_name": "hy2-14.example.invalid"
+      }
+    },
+    {
+      "tag": "hy2-15",
+      "type": "hysteria2",
+      "server": "hy2-15.example.invalid",
+      "server_port": 20015,
+      "password": "synthetic-password-15",
+      "tls": {
+        "enabled": true,
+        "insecure": false,
+        "server_name": "hy2-15.example.invalid"
+      }
+    },
+    {
+      "tag": "hy2-16",
+      "type": "hysteria2",
+      "server": "hy2-16.example.invalid",
+      "server_port": 20016,
+      "password": "synthetic-password-16",
+      "tls": {
+        "enabled": true,
+        "insecure": false,
+        "server_name": "hy2-16.example.invalid"
+      }
+    },
+    {
+      "tag": "hy2-17",
+      "type": "hysteria2",
+      "server": "hy2-17.example.invalid",
+      "server_port": 20017,
+      "password": "synthetic-password-17",
+      "tls": {
+        "enabled": true,
+        "insecure": false,
+        "server_name": "hy2-17.example.invalid"
+      }
+    },
+    {
+      "tag": "hy2-18",
+      "type": "hysteria2",
+      "server": "hy2-18.example.invalid",
+      "server_port": 20018,
+      "password": "synthetic-password-18",
+      "tls": {
+        "enabled": true,
+        "insecure": false,
+        "server_name": "hy2-18.example.invalid"
+      }
+    },
+    {
+      "tag": "hy2-19",
+      "type": "hysteria2",
+      "server": "hy2-19.example.invalid",
+      "server_port": 20019,
+      "password": "synthetic-password-19",
+      "tls": {
+        "enabled": true,
+        "insecure": false,
+        "server_name": "hy2-19.example.invalid"
+      }
+    },
+    {
+      "tag": "hy2-20",
+      "type": "hysteria2",
+      "server": "hy2-20.example.invalid",
+      "server_port": 20020,
+      "password": "synthetic-password-20",
+      "tls": {
+        "enabled": true,
+        "insecure": false,
+        "server_name": "hy2-20.example.invalid"
+      }
+    },
+    {
+      "tag": "hy2-21",
+      "type": "hysteria2",
+      "server": "hy2-21.example.invalid",
+      "server_port": 20021,
+      "password": "synthetic-password-21",
+      "tls": {
+        "enabled": true,
+        "insecure": false,
+        "server_name": "hy2-21.example.invalid"
+      }
+    },
+    {
+      "tag": "hy2-22",
+      "type": "hysteria2",
+      "server": "hy2-22.example.invalid",
+      "server_port": 20022,
+      "password": "synthetic-password-22",
+      "tls": {
+        "enabled": true,
+        "insecure": false,
+        "server_name": "hy2-22.example.invalid"
+      }
+    },
+    {
+      "tag": "selector",
+      "type": "selector",
+      "outbounds": [
+        "hy2-1"
+      ]
+    },
+    {
+      "tag": "urltest",
+      "type": "urltest",
+      "outbounds": [
+        "hy2-1"
+      ],
+      "url": "https://probe.example.invalid",
+      "interval": "5m"
+    },
+    {
+      "tag": "vless-ws-1",
+      "type": "vless",
+      "server": "vless-ws-1.example.invalid",
+      "server_port": 443,
+      "uuid": "00000000-0000-4000-8000-000000000001",
+      "flow": "",
+      "packet_encoding": "xudp",
+      "tls": {
+        "enabled": true,
+        "insecure": false,
+        "server_name": "edge.example.invalid",
+        "utls": {
+          "enabled": true,
+          "fingerprint": "chrome"
+        }
+      },
+      "transport": {
+        "type": "ws",
+        "path": "/synthetic",
+        "headers": {
+          "Host": [
+            "edge.example.invalid"
+          ]
+        },
+        "max_early_data": 2048,
+        "early_data_header_name": "Sec-WebSocket-Protocol"
+      }
+    },
+    {
+      "tag": "vless-ws-2",
+      "type": "vless",
+      "server": "vless-ws-2.example.invalid",
+      "server_port": 443,
+      "uuid": "00000000-0000-4000-8000-000000000002",
+      "flow": "",
+      "packet_encoding": "xudp",
+      "tls": {
+        "enabled": true,
+        "insecure": false,
+        "server_name": "edge.example.invalid",
+        "utls": {
+          "enabled": true,
+          "fingerprint": "chrome"
+        }
+      },
+      "transport": {
+        "type": "ws",
+        "path": "/synthetic",
+        "headers": {
+          "Host": [
+            "edge.example.invalid"
+          ]
+        },
+        "max_early_data": 2048,
+        "early_data_header_name": "Sec-WebSocket-Protocol"
+      }
+    },
+    {
+      "tag": "vless-ws-3",
+      "type": "vless",
+      "server": "vless-ws-3.example.invalid",
+      "server_port": 443,
+      "uuid": "00000000-0000-4000-8000-000000000003",
+      "flow": "",
+      "packet_encoding": "xudp",
+      "tls": {
+        "enabled": true,
+        "insecure": false,
+        "server_name": "edge.example.invalid",
+        "utls": {
+          "enabled": true,
+          "fingerprint": "chrome"
+        }
+      },
+      "transport": {
+        "type": "ws",
+        "path": "/synthetic",
+        "headers": {
+          "Host": [
+            "edge.example.invalid"
+          ]
+        },
+        "max_early_data": 2048,
+        "early_data_header_name": "Sec-WebSocket-Protocol"
+      }
+    },
+    {
+      "tag": "vless-ws-4",
+      "type": "vless",
+      "server": "vless-ws-4.example.invalid",
+      "server_port": 443,
+      "uuid": "00000000-0000-4000-8000-000000000004",
+      "flow": "",
+      "packet_encoding": "xudp",
+      "tls": {
+        "enabled": true,
+        "insecure": false,
+        "server_name": "edge.example.invalid",
+        "utls": {
+          "enabled": true,
+          "fingerprint": "chrome"
+        }
+      },
+      "transport": {
+        "type": "ws",
+        "path": "/synthetic",
+        "headers": {
+          "Host": [
+            "edge.example.invalid"
+          ]
+        },
+        "max_early_data": 2048,
+        "early_data_header_name": "Sec-WebSocket-Protocol"
+      }
+    },
+    {
+      "tag": "vless-ws-5",
+      "type": "vless",
+      "server": "vless-ws-5.example.invalid",
+      "server_port": 443,
+      "uuid": "00000000-0000-4000-8000-000000000005",
+      "flow": "",
+      "packet_encoding": "xudp",
+      "tls": {
+        "enabled": true,
+        "insecure": false,
+        "server_name": "edge.example.invalid",
+        "utls": {
+          "enabled": true,
+          "fingerprint": "chrome"
+        }
+      },
+      "transport": {
+        "type": "ws",
+        "path": "/synthetic",
+        "headers": {
+          "Host": [
+            "edge.example.invalid"
+          ]
+        },
+        "max_early_data": 2048,
+        "early_data_header_name": "Sec-WebSocket-Protocol"
+      }
+    },
+    {
+      "tag": "vless-ws-6",
+      "type": "vless",
+      "server": "vless-ws-6.example.invalid",
+      "server_port": 443,
+      "uuid": "00000000-0000-4000-8000-000000000006",
+      "flow": "",
+      "packet_encoding": "xudp",
+      "tls": {
+        "enabled": true,
+        "insecure": false,
+        "server_name": "edge.example.invalid",
+        "utls": {
+          "enabled": true,
+          "fingerprint": "chrome"
+        }
+      },
+      "transport": {
+        "type": "ws",
+        "path": "/synthetic",
+        "headers": {
+          "Host": [
+            "edge.example.invalid"
+          ]
+        },
+        "max_early_data": 2048,
+        "early_data_header_name": "Sec-WebSocket-Protocol"
+      }
+    },
+    {
+      "tag": "vless-ws-7",
+      "type": "vless",
+      "server": "vless-ws-7.example.invalid",
+      "server_port": 443,
+      "uuid": "00000000-0000-4000-8000-000000000007",
+      "flow": "",
+      "packet_encoding": "xudp",
+      "tls": {
+        "enabled": true,
+        "insecure": false,
+        "server_name": "edge.example.invalid",
+        "utls": {
+          "enabled": true,
+          "fingerprint": "chrome"
+        }
+      },
+      "transport": {
+        "type": "ws",
+        "path": "/synthetic",
+        "headers": {
+          "Host": [
+            "edge.example.invalid"
+          ]
+        },
+        "max_early_data": 2048,
+        "early_data_header_name": "Sec-WebSocket-Protocol"
+      }
+    },
+    {
+      "tag": "vless-ws-8",
+      "type": "vless",
+      "server": "vless-ws-8.example.invalid",
+      "server_port": 443,
+      "uuid": "00000000-0000-4000-8000-000000000008",
+      "flow": "",
+      "packet_encoding": "xudp",
+      "tls": {
+        "enabled": true,
+        "insecure": false,
+        "server_name": "edge.example.invalid",
+        "utls": {
+          "enabled": true,
+          "fingerprint": "chrome"
+        }
+      },
+      "transport": {
+        "type": "ws",
+        "path": "/synthetic",
+        "headers": {
+          "Host": [
+            "edge.example.invalid"
+          ]
+        },
+        "max_early_data": 2048,
+        "early_data_header_name": "Sec-WebSocket-Protocol"
+      }
+    },
+    {
+      "tag": "vless-ws-9",
+      "type": "vless",
+      "server": "vless-ws-9.example.invalid",
+      "server_port": 443,
+      "uuid": "00000000-0000-4000-8000-000000000009",
+      "flow": "",
+      "packet_encoding": "xudp",
+      "tls": {
+        "enabled": true,
+        "insecure": false,
+        "server_name": "edge.example.invalid",
+        "utls": {
+          "enabled": true,
+          "fingerprint": "chrome"
+        }
+      },
+      "transport": {
+        "type": "ws",
+        "path": "/synthetic",
+        "headers": {
+          "Host": [
+            "edge.example.invalid"
+          ]
+        },
+        "max_early_data": 2048,
+        "early_data_header_name": "Sec-WebSocket-Protocol"
+      }
+    },
+    {
+      "tag": "vless-ws-10",
+      "type": "vless",
+      "server": "vless-ws-10.example.invalid",
+      "server_port": 443,
+      "uuid": "00000000-0000-4000-8000-000000000010",
+      "flow": "",
+      "packet_encoding": "xudp",
+      "tls": {
+        "enabled": true,
+        "insecure": false,
+        "server_name": "edge.example.invalid",
+        "utls": {
+          "enabled": true,
+          "fingerprint": "chrome"
+        }
+      },
+      "transport": {
+        "type": "ws",
+        "path": "/synthetic",
+        "headers": {
+          "Host": [
+            "edge.example.invalid"
+          ]
+        },
+        "max_early_data": 2048,
+        "early_data_header_name": "Sec-WebSocket-Protocol"
+      }
+    },
+    {
+      "tag": "vless-reality-11",
+      "type": "vless",
+      "server": "vless-reality-11.example.invalid",
+      "server_port": 443,
+      "uuid": "00000000-0000-4000-8000-000000000011",
+      "flow": "xtls-rprx-vision",
+      "packet_encoding": "xudp",
+      "tls": {
+        "enabled": true,
+        "insecure": false,
+        "server_name": "reality.example.invalid",
+        "reality": {
+          "enabled": true,
+          "public_key": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+          "short_id": "0123456789abcdef"
+        },
+        "utls": {
+          "enabled": true,
+          "fingerprint": "chrome"
+        }
+      }
+    },
+    {
+      "tag": "vless-reality-12",
+      "type": "vless",
+      "server": "vless-reality-12.example.invalid",
+      "server_port": 443,
+      "uuid": "00000000-0000-4000-8000-000000000012",
+      "flow": "xtls-rprx-vision",
+      "packet_encoding": "xudp",
+      "tls": {
+        "enabled": true,
+        "insecure": false,
+        "server_name": "reality.example.invalid",
+        "reality": {
+          "enabled": true,
+          "public_key": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+          "short_id": "0123456789abcdef"
+        },
+        "utls": {
+          "enabled": true,
+          "fingerprint": "chrome"
+        }
+      }
+    },
+    {
+      "tag": "vless-reality-13",
+      "type": "vless",
+      "server": "vless-reality-13.example.invalid",
+      "server_port": 443,
+      "uuid": "00000000-0000-4000-8000-000000000013",
+      "flow": "xtls-rprx-vision",
+      "packet_encoding": "xudp",
+      "tls": {
+        "enabled": true,
+        "insecure": false,
+        "server_name": "reality.example.invalid",
+        "reality": {
+          "enabled": true,
+          "public_key": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+          "short_id": "0123456789abcdef"
+        },
+        "utls": {
+          "enabled": true,
+          "fingerprint": "chrome"
+        }
+      }
+    },
+    {
+      "tag": "vless-reality-14",
+      "type": "vless",
+      "server": "vless-reality-14.example.invalid",
+      "server_port": 443,
+      "uuid": "00000000-0000-4000-8000-000000000014",
+      "flow": "xtls-rprx-vision",
+      "packet_encoding": "xudp",
+      "tls": {
+        "enabled": true,
+        "insecure": false,
+        "server_name": "reality.example.invalid",
+        "reality": {
+          "enabled": true,
+          "public_key": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+          "short_id": "0123456789abcdef"
+        },
+        "utls": {
+          "enabled": true,
+          "fingerprint": "chrome"
+        }
+      }
+    },
+    {
+      "tag": "vless-reality-15",
+      "type": "vless",
+      "server": "vless-reality-15.example.invalid",
+      "server_port": 443,
+      "uuid": "00000000-0000-4000-8000-000000000015",
+      "flow": "xtls-rprx-vision",
+      "packet_encoding": "xudp",
+      "tls": {
+        "enabled": true,
+        "insecure": false,
+        "server_name": "reality.example.invalid",
+        "reality": {
+          "enabled": true,
+          "public_key": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+          "short_id": "0123456789abcdef"
+        },
+        "utls": {
+          "enabled": true,
+          "fingerprint": "chrome"
+        }
+      }
+    },
+    {
+      "tag": "vless-reality-16",
+      "type": "vless",
+      "server": "vless-reality-16.example.invalid",
+      "server_port": 443,
+      "uuid": "00000000-0000-4000-8000-000000000016",
+      "flow": "xtls-rprx-vision",
+      "packet_encoding": "xudp",
+      "tls": {
+        "enabled": true,
+        "insecure": false,
+        "server_name": "reality.example.invalid",
+        "reality": {
+          "enabled": true,
+          "public_key": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+          "short_id": "0123456789abcdef"
+        },
+        "utls": {
+          "enabled": true,
+          "fingerprint": "chrome"
+        }
+      }
+    },
+    {
+      "tag": "vless-reality-17",
+      "type": "vless",
+      "server": "vless-reality-17.example.invalid",
+      "server_port": 443,
+      "uuid": "00000000-0000-4000-8000-000000000017",
+      "flow": "xtls-rprx-vision",
+      "packet_encoding": "xudp",
+      "tls": {
+        "enabled": true,
+        "insecure": false,
+        "server_name": "reality.example.invalid",
+        "reality": {
+          "enabled": true,
+          "public_key": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+          "short_id": "0123456789abcdef"
+        },
+        "utls": {
+          "enabled": true,
+          "fingerprint": "chrome"
+        }
+      }
+    },
+    {
+      "tag": "vless-reality-18",
+      "type": "vless",
+      "server": "vless-reality-18.example.invalid",
+      "server_port": 443,
+      "uuid": "00000000-0000-4000-8000-000000000018",
+      "flow": "xtls-rprx-vision",
+      "packet_encoding": "xudp",
+      "tls": {
+        "enabled": true,
+        "insecure": false,
+        "server_name": "reality.example.invalid",
+        "reality": {
+          "enabled": true,
+          "public_key": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+          "short_id": "0123456789abcdef"
+        },
+        "utls": {
+          "enabled": true,
+          "fingerprint": "chrome"
+        }
+      }
+    },
+    {
+      "tag": "vless-reality-19",
+      "type": "vless",
+      "server": "vless-reality-19.example.invalid",
+      "server_port": 443,
+      "uuid": "00000000-0000-4000-8000-000000000019",
+      "flow": "xtls-rprx-vision",
+      "packet_encoding": "xudp",
+      "tls": {
+        "enabled": true,
+        "insecure": false,
+        "server_name": "reality.example.invalid",
+        "reality": {
+          "enabled": true,
+          "public_key": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+          "short_id": "0123456789abcdef"
+        },
+        "utls": {
+          "enabled": true,
+          "fingerprint": "chrome"
+        }
+      }
+    }
+  ]
+}

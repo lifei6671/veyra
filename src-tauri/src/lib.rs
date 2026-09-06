@@ -19,7 +19,8 @@ use tauri::{
 
 use application::{
     managed_observation_runtime::ManagedObservationRuntimeController,
-    observability::InMemoryRuntimeObservations,
+    observability::InMemoryRuntimeObservations, state_access::StateAccessGate,
+    subscription_management::SubscriptionManager,
 };
 
 const MAIN_WINDOW_LABEL: &str = "main";
@@ -61,11 +62,36 @@ pub fn run() {
             let resource_root = app.path().resource_dir()?;
             let app_local_data_root = app.path().app_local_data_dir()?;
             let observations = (*app.state::<InMemoryRuntimeObservations>()).clone();
-            app.manage(ManagedObservationRuntimeController::new(
+            let state_gate = StateAccessGate::default();
+            let subscriptions = Arc::new(SubscriptionManager::new(
+                app_local_data_root.join("state.json"),
+                state_gate.clone(),
+            )?);
+            let scheduler = Arc::new(
+                application::subscription_scheduler::SubscriptionScheduler::start(Arc::clone(
+                    &subscriptions,
+                )),
+            );
+            let runtime = Arc::new(ManagedObservationRuntimeController::new(
                 resource_root,
                 app_local_data_root,
                 observations,
+                state_gate,
+                Arc::clone(&subscriptions),
+                Some(scheduler),
             ));
+            subscriptions.set_managed_proxy_port(runtime.managed_proxy_port());
+            let subscription_events = app.handle().clone();
+            subscriptions.install_change_sink(Arc::new(move |event| {
+                if subscription_events
+                    .emit_to(MAIN_WINDOW_LABEL, "subscription-state-changed", event)
+                    .is_err()
+                {
+                    tracing::warn!("subscription state notification unavailable");
+                }
+            }));
+            app.manage(subscriptions);
+            app.manage(runtime);
             configure_tray(app)
         })
         .on_window_event(|window, event| {
@@ -83,7 +109,19 @@ pub fn run() {
             commands::runtime_observation_snapshot,
             commands::start_managed_observation_runtime,
             commands::stop_managed_observation_runtime,
-            commands::show_main_window
+            commands::show_main_window,
+            commands::list_subscriptions,
+            commands::import_subscription,
+            commands::update_subscription,
+            commands::get_subscription_settings,
+            commands::edit_subscription,
+            commands::activate_subscription,
+            commands::get_subscription_share_url,
+            commands::delete_subscription,
+            commands::get_subscription_document,
+            commands::format_subscription_document,
+            commands::save_subscription_document,
+            commands::get_running_configuration
         ])
         .run(tauri::generate_context!())
         .expect("failed to run Veyra");
@@ -114,12 +152,18 @@ fn configure_tray(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>
                 let observations = app.state::<InMemoryRuntimeObservations>();
                 let _ = commands::restore_main_window(app, &observations);
             }
-            TRAY_QUIT_ID
-                if app
-                    .state::<ManagedObservationRuntimeController>()
-                    .shutdown() =>
-            {
-                app.exit(0);
+            TRAY_QUIT_ID => {
+                let runtime = Arc::clone(
+                    app.state::<Arc<ManagedObservationRuntimeController>>()
+                        .inner(),
+                );
+                let handle = app.clone();
+                // 取消与有界 join 不阻塞主窗口消息循环；只有后台确认收尾成功才退出。
+                tauri::async_runtime::spawn_blocking(move || {
+                    if runtime.shutdown() {
+                        handle.exit(0);
+                    }
+                });
             }
             _ => {}
         });

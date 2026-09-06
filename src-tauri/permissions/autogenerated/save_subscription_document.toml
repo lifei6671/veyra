@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-save-subscription-document"
+description = "Enables the save_subscription_document command without any pre-configured scope."
+commands.allow = ["save_subscription_document"]
+
+[[permission]]
+identifier = "deny-save-subscription-document"
+description = "Denies the save_subscription_document command without any pre-configured scope."
+commands.deny = ["save_subscription_document"]

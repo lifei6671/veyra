@@ -28,6 +28,11 @@ const observation: RuntimeObservation = {
   downloadTotalBytes: 0,
   connectionCount: 0,
   logSummary: [{ category: "runtime", level: "info", occurrences: 1 }],
+  appliedSubscriptionId: null,
+  appliedConfigurationGeneration: null,
+  subscriptionSwitch: null,
+  managedProxyAvailable: false,
+  coreMemoryBytes: null,
 };
 
 describe("runtimeObservationSnapshot", () => {
@@ -70,6 +75,47 @@ describe("runtimeObservationSnapshot", () => {
     vi.mocked(invoke).mockResolvedValue(stoppedObservation);
 
     await expect(runtimeObservationSnapshot()).resolves.toEqual(stoppedObservation);
+  });
+
+  it("接受所选与实际运行分离的安全观测及切换闭集", async () => {
+    const switching: RuntimeObservation = {
+      ...observation,
+      source: "runtime",
+      sidecarLifecycle: "ready",
+      appliedSubscriptionId: "subscription-a",
+      appliedConfigurationGeneration: 4,
+      subscriptionSwitch: { operationId: "operation-1", status: "applying", errorCode: null },
+      managedProxyAvailable: true,
+      coreMemoryBytes: 52428800,
+    };
+    vi.mocked(invoke).mockResolvedValue(switching);
+    await expect(runtimeObservationSnapshot()).resolves.toEqual(switching);
+  });
+
+  it("应用超时保留旧服务运行状态，不误报启动失败", async () => {
+    const timedOut: RuntimeObservation = {
+      ...observation, source: "runtime", sidecarLifecycle: "ready",
+      appliedSubscriptionId: "subscription-a", appliedConfigurationGeneration: 4,
+      subscriptionSwitch: { operationId: "save-timeout", status: "failed", errorCode: "operationTimedOut" },
+    };
+    vi.mocked(invoke).mockResolvedValue(timedOut);
+    await expect(runtimeObservationSnapshot()).resolves.toEqual(timedOut);
+  });
+
+  it.each([
+    { appliedSubscriptionId: "subscription-a", appliedConfigurationGeneration: null },
+    { subscriptionSwitch: { operationId: "operation-1", status: "ready", errorCode: "startFailed" } },
+    { subscriptionSwitch: { operationId: "operation-1", status: "failed", errorCode: null } },
+    { subscriptionSwitch: { operationId: "operation-1", status: "failed", errorCode: "cancelled" } },
+    { sidecarLifecycle: "stopped", subscriptionSwitch: { operationId: "operation-1", status: "ready", errorCode: null } },
+    { appliedSubscriptionId: null, appliedConfigurationGeneration: null, subscriptionSwitch: { operationId: "operation-1", status: "ready", errorCode: null } },
+    { managedProxyAvailable: "yes" },
+    { coreMemoryBytes: -1 },
+    { coreMemoryBytes: 0.5 },
+    { coreMemoryBytes: Number.MAX_SAFE_INTEGER + 1 },
+  ])("拒绝非法选择/切换状态组合 %j", async (change) => {
+    vi.mocked(invoke).mockResolvedValue({ ...observation, ...change });
+    await expect(runtimeObservationSnapshot()).rejects.toThrow("invalid runtime observation payload");
   });
 
   it("只接受 revision 更大的观测", () => {
@@ -118,7 +164,7 @@ describe("runtimeObservationSnapshot", () => {
     await expect(runtimeObservationSnapshot()).rejects.toThrow("invalid runtime observation payload");
   });
 
-  it.each(["observedAtMs", "trafficHistory"])("拒绝缺少 %s 的旧 DTO", async (field) => {
+  it.each(["observedAtMs", "trafficHistory", "coreMemoryBytes"])("拒绝缺少 %s 的旧 DTO", async (field) => {
     const payload: Record<string, unknown> = { ...observation };
     delete payload[field];
     vi.mocked(invoke).mockResolvedValue(payload);
@@ -144,7 +190,7 @@ describe("runtimeObservationSnapshot", () => {
   });
 
   it.each([
-    "started", "alreadyRunning", "stateUnavailable", "configurationFailed", "startFailed", "busy",
+    "started", "alreadyRunning", "stateUnavailable", "configurationFailed", "startFailed", "subscriptionSelectionRequired", "busy",
   ])("接受封闭的启动结果 %s", async (result) => {
     vi.mocked(invoke).mockResolvedValue(result);
     await expect(startManagedObservationRuntime()).resolves.toBe(result);

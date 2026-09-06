@@ -8,6 +8,8 @@ use std::fmt;
 use std::num::NonZeroU16;
 use std::sync::Mutex;
 
+use reqwest::Url;
+
 use super::recovery::{ProxyRecoveryRecord, ProxyRecoveryStore};
 
 #[cfg(windows)]
@@ -602,6 +604,74 @@ fn normalized_bypass(value: &Option<String>) -> Vec<String> {
     parts
 }
 
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub(crate) enum SubscriptionSystemProxyError {
+    Unavailable,
+    Unsupported,
+}
+
+/// 只读当前用户默认 WinINet snapshot，并返回受限的无凭据显式 HTTP 代理 URL。
+#[cfg(windows)]
+pub(crate) fn read_subscription_proxy_url() -> Result<String, SubscriptionSystemProxyError> {
+    let snapshot = WinInetSystemProxyPort::new()
+        .read_default_connection()
+        .map_err(|_| SubscriptionSystemProxyError::Unavailable)?;
+    resolve_subscription_proxy(&snapshot)
+}
+
+#[cfg(not(windows))]
+pub(crate) fn read_subscription_proxy_url() -> Result<String, SubscriptionSystemProxyError> {
+    Err(SubscriptionSystemProxyError::Unavailable)
+}
+
+pub(crate) fn resolve_subscription_proxy(
+    snapshot: &ProxySnapshot,
+) -> Result<String, SubscriptionSystemProxyError> {
+    if snapshot.auto_detect
+        || snapshot.auto_config_enabled
+        || snapshot.auto_config_url.is_some()
+        || !snapshot.proxy_enabled
+    {
+        return Err(SubscriptionSystemProxyError::Unsupported);
+    }
+    let value = snapshot
+        .proxy_server
+        .as_deref()
+        .map(str::trim)
+        .filter(|value| !value.is_empty() && !value.contains(';'))
+        .ok_or(SubscriptionSystemProxyError::Unsupported)?;
+    let authority = if let Some((scheme, authority)) = value.split_once('=') {
+        if !matches!(
+            scheme.trim().to_ascii_lowercase().as_str(),
+            "http" | "https"
+        ) {
+            return Err(SubscriptionSystemProxyError::Unsupported);
+        }
+        authority.trim()
+    } else {
+        value
+    };
+    if authority.is_empty()
+        || authority.contains('/')
+        || authority.contains('@')
+        || authority.chars().any(char::is_whitespace)
+    {
+        return Err(SubscriptionSystemProxyError::Unsupported);
+    }
+    let url = Url::parse(&format!("http://{authority}"))
+        .map_err(|_| SubscriptionSystemProxyError::Unsupported)?;
+    if url.host_str().is_none()
+        || url.port().is_none()
+        || !url.username().is_empty()
+        || url.password().is_some()
+        || url.query().is_some()
+        || url.fragment().is_some()
+    {
+        return Err(SubscriptionSystemProxyError::Unsupported);
+    }
+    Ok(format!("http://{authority}"))
+}
+
 #[cfg(test)]
 mod tests {
     use std::collections::VecDeque;
@@ -765,6 +835,53 @@ mod tests {
 
     fn port() -> NonZeroU16 {
         NonZeroU16::new(2080).expect("non-zero loopback port")
+    }
+
+    #[test]
+    fn subscription_proxy_accepts_one_explicit_credential_free_authority() {
+        let mut snapshot = original();
+        snapshot.proxy_enabled = true;
+        snapshot.proxy_server = Some("http=proxy.example.invalid:8080".to_owned());
+        snapshot.auto_config_url = None;
+        snapshot.auto_config_enabled = false;
+        snapshot.auto_detect = false;
+
+        assert_eq!(
+            resolve_subscription_proxy(&snapshot),
+            Ok("http://proxy.example.invalid:8080".to_owned())
+        );
+        snapshot.proxy_server = Some("127.0.0.1:3128".to_owned());
+        assert_eq!(
+            resolve_subscription_proxy(&snapshot),
+            Ok("http://127.0.0.1:3128".to_owned())
+        );
+    }
+
+    #[test]
+    fn subscription_proxy_rejects_pac_wpad_credentials_and_ambiguous_maps() {
+        assert_eq!(
+            resolve_subscription_proxy(&original()),
+            Err(SubscriptionSystemProxyError::Unsupported)
+        );
+        let mut snapshot = original();
+        snapshot.proxy_enabled = true;
+        snapshot.auto_config_url = None;
+        snapshot.auto_config_enabled = false;
+        snapshot.auto_detect = false;
+        for unsupported in [
+            "http=user:secret@proxy.invalid:8080",
+            "http=proxy.invalid:8080;https=proxy.invalid:8443",
+            "socks=proxy.invalid:1080",
+            "proxy.invalid",
+            "proxy.invalid:8080/path",
+        ] {
+            snapshot.proxy_server = Some(unsupported.to_owned());
+            assert_eq!(
+                resolve_subscription_proxy(&snapshot),
+                Err(SubscriptionSystemProxyError::Unsupported),
+                "unexpected accepted proxy value: {unsupported}"
+            );
+        }
     }
 
     #[test]

@@ -517,7 +517,7 @@ node_options!(Vmess { uuid: String } [alter_id: u32, security: String]);
 node_options!(Vless { uuid: String } [flow: String]);
 node_options!(Trojan { password: String } []);
 node_options!(Hysteria { auth_str: String, up_mbps: u32, down_mbps: u32 } [obfs: String]);
-node_options!(Hysteria2 { password: String } [obfs: Obfuscation]);
+node_options!(Hysteria2 { password: String } [obfs: Obfuscation, up_mbps: u32, down_mbps: u32, disable_path_mtu_discovery: bool]);
 node_options!(Tuic { uuid: String, password: String, zero_rtt_handshake: bool } [congestion_control: String, udp_relay_mode: String]);
 node_options!(ShadowTls { version: u8, password: String } []);
 node_options!(Ssh { user: String } [password: String, private_key: String, private_key_passphrase: String, host_key: String]);
@@ -588,17 +588,21 @@ struct CoreTls {
     insecure: bool,
     #[serde(skip_serializing_if = "Option::is_none")]
     server_name: Option<String>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    alpn: Vec<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     reality: Option<Reality>,
     #[serde(skip_serializing_if = "Option::is_none")]
     utls: Option<CoreUtls>,
 }
 
-/// Reality 固定启用 uTLS，指纹由固定核心采用原生默认值，不接受额外输入。
+/// 显式指纹按已验证的订阅值输出；Reality 未指定指纹时保留核心默认值。
 #[derive(Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 struct CoreUtls {
     enabled: bool,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    fingerprint: Option<String>,
 }
 
 #[derive(Clone, Serialize, Deserialize)]
@@ -617,6 +621,10 @@ enum CoreTransport {
         path: String,
         #[serde(skip_serializing_if = "Option::is_none")]
         headers: Option<WebsocketHeaders>,
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        max_early_data: Option<u32>,
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        early_data_header_name: Option<String>,
     },
     #[serde(rename = "grpc")]
     Grpc { service_name: String },
@@ -756,9 +764,21 @@ fn node_outbound(node: &ProxyNode) -> Result<CoreOutbound, CompileError> {
         } => CoreOutbound::Hysteria(
             make_node!(Hysteria, node, auth_str: auth.clone(), obfs: obfs.clone(), up_mbps: up_mbps.ok_or(CompileError::InvalidNodeConfiguration)?, down_mbps: down_mbps.ok_or(CompileError::InvalidNodeConfiguration)?),
         ),
-        ProtocolOptions::Hysteria2 { password, obfs } => CoreOutbound::Hysteria2(
-            make_node!(Hysteria2, node, password: password.clone(), obfs: obfs.as_ref().map(|password| Obfuscation { kind: "salamander".to_owned(), password: password.clone() })),
-        ),
+        ProtocolOptions::Hysteria2 {
+            password,
+            obfs,
+            up_mbps,
+            down_mbps,
+            disable_path_mtu_discovery,
+        } => CoreOutbound::Hysteria2(make_node!(
+            Hysteria2,
+            node,
+            password: password.clone(),
+            obfs: obfs.as_ref().map(|password| Obfuscation { kind: "salamander".to_owned(), password: password.clone() }),
+            up_mbps: *up_mbps,
+            down_mbps: *down_mbps,
+            disable_path_mtu_discovery: *disable_path_mtu_discovery
+        )),
         ProtocolOptions::Tuic {
             uuid,
             password,
@@ -830,6 +850,7 @@ fn core_tls(node: &ProxyNode) -> Option<CoreTls> {
             enabled: true,
             insecure: tls.allow_insecure,
             server_name: tls.server_name.clone(),
+            alpn: tls.alpn.clone(),
             reality: tls
                 .reality_public_key
                 .as_ref()
@@ -839,16 +860,19 @@ fn core_tls(node: &ProxyNode) -> Option<CoreTls> {
                     public_key: key.clone(),
                     short_id: id.clone(),
                 }),
-            utls: tls
-                .reality_public_key
-                .as_ref()
-                .map(|_| CoreUtls { enabled: true }),
+            utls: (tls.reality_public_key.is_some() || tls.utls_fingerprint.is_some()).then(|| {
+                CoreUtls {
+                    enabled: true,
+                    fingerprint: tls.utls_fingerprint.clone(),
+                }
+            }),
         })
         .or_else(|| {
             matches!(node.options, ProtocolOptions::Http { tls: true, .. }).then_some(CoreTls {
                 enabled: true,
                 insecure: false,
                 server_name: None,
+                alpn: Vec::new(),
                 reality: None,
                 utls: None,
             })
@@ -858,11 +882,18 @@ fn core_tls(node: &ProxyNode) -> Option<CoreTls> {
 fn core_transport(transport: Option<&Transport>) -> Option<CoreTransport> {
     match transport {
         None | Some(Transport::Tcp) => None,
-        Some(Transport::Websocket { path, host }) => Some(CoreTransport::Websocket {
+        Some(Transport::Websocket {
+            path,
+            host,
+            max_early_data,
+            early_data_header_name,
+        }) => Some(CoreTransport::Websocket {
             path: path.clone(),
             headers: host
                 .as_ref()
                 .map(|host| WebsocketHeaders { host: host.clone() }),
+            max_early_data: *max_early_data,
+            early_data_header_name: early_data_header_name.clone(),
         }),
         Some(Transport::Grpc { service_name }) => Some(CoreTransport::Grpc {
             service_name: service_name.clone(),
@@ -896,6 +927,7 @@ impl CoreTls {
     fn domain(&self) -> Result<TlsOptions, CompileError> {
         let valid_reality_utls = match (&self.reality, &self.utls) {
             (None, None) => true,
+            (None, Some(utls)) => utls.enabled && utls.fingerprint.is_some(),
             (Some(reality), Some(utls)) => reality.enabled && utls.enabled,
             _ => false,
         };
@@ -905,6 +937,8 @@ impl CoreTls {
         Ok(TlsOptions {
             server_name: self.server_name.clone(),
             allow_insecure: self.insecure,
+            alpn: self.alpn.clone(),
+            utls_fingerprint: self.utls.as_ref().and_then(|utls| utls.fingerprint.clone()),
             reality_public_key: self
                 .reality
                 .as_ref()
@@ -920,9 +954,16 @@ impl CoreTls {
 impl CoreTransport {
     fn domain(&self) -> Transport {
         match self {
-            Self::Websocket { path, headers } => Transport::Websocket {
+            Self::Websocket {
+                path,
+                headers,
+                max_early_data,
+                early_data_header_name,
+            } => Transport::Websocket {
                 path: path.clone(),
                 host: headers.as_ref().map(|headers| headers.host.clone()),
+                max_early_data: *max_early_data,
+                early_data_header_name: early_data_header_name.clone(),
             },
             Self::Grpc { service_name } => Transport::Grpc {
                 service_name: service_name.clone(),
@@ -1053,7 +1094,10 @@ impl CoreOutbound {
                     Hysteria2,
                     ProtocolOptions::Hysteria2 {
                         password: node.password.clone(),
-                        obfs: node.obfs.as_ref().map(|obfs| obfs.password.clone())
+                        obfs: node.obfs.as_ref().map(|obfs| obfs.password.clone()),
+                        up_mbps: node.up_mbps,
+                        down_mbps: node.down_mbps,
+                        disable_path_mtu_discovery: node.disable_path_mtu_discovery
                     }
                 )
             }
@@ -1599,10 +1643,11 @@ fn validate_node(node: &ProxyNode) -> Result<(), CompileError> {
         return Err(invalid);
     }
     if let Some(tls) = &node.tls {
-        if tls
-            .server_name
-            .as_ref()
-            .is_some_and(|name| !valid_server(name))
+        if !tls.is_valid()
+            || tls
+                .server_name
+                .as_ref()
+                .is_some_and(|name| !valid_server(name))
         {
             return Err(invalid);
         }
@@ -1621,11 +1666,12 @@ fn validate_node(node: &ProxyNode) -> Result<(), CompileError> {
     if let Some(transport) = &node.transport {
         match transport {
             Transport::Tcp => {}
-            Transport::Websocket { path, host }
+            Transport::Websocket { path, host, .. }
                 if matches!(
                     node.protocol,
                     ProxyProtocol::Vmess | ProxyProtocol::Vless | ProxyProtocol::Trojan
-                ) && path.starts_with('/')
+                ) && transport.has_valid_early_data()
+                    && path.starts_with('/')
                     && !path.chars().any(char::is_control)
                     && host.as_ref().is_none_or(|host| {
                         present(host) && !host.chars().any(char::is_control)
@@ -1699,8 +1745,17 @@ fn validate_node(node: &ProxyNode) -> Result<(), CompileError> {
                 && up_mbps.is_some_and(|value| value > 0)
                 && down_mbps.is_some_and(|value| value > 0)
         }
-        ProtocolOptions::Hysteria2 { password, obfs } => {
-            present(password) && obfs.as_ref().is_none_or(|value| present(value))
+        ProtocolOptions::Hysteria2 {
+            password,
+            obfs,
+            up_mbps,
+            down_mbps,
+            ..
+        } => {
+            present(password)
+                && obfs.as_ref().is_none_or(|value| present(value))
+                && up_mbps.is_none_or(|value| value > 0)
+                && down_mbps.is_none_or(|value| value > 0)
         }
         ProtocolOptions::Tuic {
             uuid,
@@ -1875,6 +1930,8 @@ mod tests {
             allow_insecure: false,
             reality_public_key: None,
             reality_short_id: None,
+            alpn: Vec::new(),
+            utls_fingerprint: None,
         }
     }
     fn node(protocol: ProxyProtocol, options: ProtocolOptions, with_tls: bool) -> ProxyNode {
@@ -1969,6 +2026,9 @@ mod tests {
                 ProtocolOptions::Hysteria2 {
                     password: PASSWORD.to_owned(),
                     obfs: Some("fixture-obfs".to_owned()),
+                    up_mbps: None,
+                    down_mbps: None,
+                    disable_path_mtu_discovery: None,
                 },
                 true,
             ),
@@ -3258,6 +3318,8 @@ mod tests {
         intent.nodes[0].transport = Some(Transport::Websocket {
             path: "/ws".to_owned(),
             host: Some("cdn.example.invalid".to_owned()),
+            max_early_data: None,
+            early_data_header_name: None,
         });
         let ws = document(&intent);
         assert_eq!(
@@ -3285,6 +3347,194 @@ mod tests {
     }
 
     #[test]
+    fn websocket_early_data_roundtrips_and_invalid_final_parameters_fail() {
+        let mut intent = intent();
+        intent.nodes[0].transport = Some(Transport::Websocket {
+            path: "/ws".to_owned(),
+            host: Some("cdn.example.invalid".to_owned()),
+            max_early_data: Some(2048),
+            early_data_header_name: Some("Sec-WebSocket-Protocol".to_owned()),
+        });
+        let plan = compile(&intent).unwrap();
+        let config = plan.finalize(&test_api_secret()).unwrap();
+        assert_eq!(config.validate_final(), Ok(()));
+        let doc: Value = serde_json::from_slice(config.as_bytes()).unwrap();
+        assert_eq!(
+            user_node(&doc)["transport"],
+            json!({
+                "type":"ws", "path":"/ws", "headers":{"Host":"cdn.example.invalid"},
+                "max_early_data":2048, "early_data_header_name":"Sec-WebSocket-Protocol"
+            })
+        );
+        let transport: CoreTransport =
+            serde_json::from_value(user_node(&doc)["transport"].clone()).unwrap();
+        assert_eq!(Some(transport.domain()), intent.nodes[0].transport);
+        for (field, value) in [
+            ("max_early_data", json!(0)),
+            ("max_early_data", json!(-1)),
+            ("max_early_data", json!(4294967296_u64)),
+            ("early_data_header_name", json!("bad header")),
+            ("early_data_header_name", json!("")),
+        ] {
+            let mut invalid = doc.clone();
+            invalid["outbounds"][0]["transport"][field] = value;
+            rejects(invalid);
+        }
+        let mut without_max = doc;
+        without_max["outbounds"][0]["transport"]
+            .as_object_mut()
+            .unwrap()
+            .remove("max_early_data");
+        rejects(without_max);
+    }
+
+    #[test]
+    fn compiles_tls_fingerprint_alpn_and_hysteria2_options_with_tamper_rejection() {
+        let mut tls_intent = intent();
+        tls_intent.nodes[0].tls = Some(TlsOptions {
+            alpn: vec!["h2".to_owned(), "http/1.1".to_owned()],
+            utls_fingerprint: Some("chrome".to_owned()),
+            ..tls()
+        });
+        let tls_document = document(&tls_intent);
+        assert_eq!(
+            user_node(&tls_document)["tls"]["alpn"],
+            json!(["h2", "http/1.1"])
+        );
+        assert_eq!(
+            user_node(&tls_document)["tls"]["utls"],
+            json!({"enabled":true,"fingerprint":"chrome"})
+        );
+        let mut invalid_alpn = tls_document.clone();
+        invalid_alpn["outbounds"][0]["tls"]["alpn"] = json!(["h2", "h2"]);
+        rejects(invalid_alpn);
+        let mut invalid_fingerprint = tls_document;
+        invalid_fingerprint["outbounds"][0]["tls"]["utls"]["fingerprint"] = json!("unknown");
+        rejects(invalid_fingerprint);
+
+        let mut hysteria2 = protocol_nodes().remove(8);
+        hysteria2.options = ProtocolOptions::Hysteria2 {
+            password: PASSWORD.to_owned(),
+            obfs: Some("fixture-obfs".to_owned()),
+            up_mbps: Some(25),
+            down_mbps: Some(100),
+            disable_path_mtu_discovery: Some(true),
+        };
+        hysteria2.tls.as_mut().expect("Hysteria2 TLS").alpn = vec!["h3".to_owned()];
+        let hysteria2_intent = fixture(hysteria2);
+        let hysteria2_plan = compile(&hysteria2_intent).expect("Hysteria2 plan");
+        let hysteria2_config = hysteria2_plan
+            .finalize(&test_api_secret())
+            .expect("Hysteria2 final config");
+        assert_eq!(hysteria2_config.validate_final(), Ok(()));
+        let hysteria2_document: Value =
+            serde_json::from_slice(hysteria2_config.as_bytes()).expect("Hysteria2 JSON");
+        assert_eq!(user_node(&hysteria2_document)["up_mbps"], 25);
+        assert_eq!(user_node(&hysteria2_document)["down_mbps"], 100);
+        assert_eq!(
+            user_node(&hysteria2_document)["disable_path_mtu_discovery"],
+            true
+        );
+        assert_eq!(user_node(&hysteria2_document)["tls"]["alpn"], json!(["h3"]));
+        assert!(!format!("{hysteria2_plan:?}").contains(PASSWORD));
+
+        let mut invalid_rate = hysteria2_document.clone();
+        invalid_rate["outbounds"][0]["up_mbps"] = json!(0);
+        rejects(invalid_rate);
+        let mut invalid_mtu_flag = hysteria2_document;
+        invalid_mtu_flag["outbounds"][0]["disable_path_mtu_discovery"] = json!("true");
+        rejects(invalid_mtu_flag);
+    }
+
+    #[test]
+    fn compatibility_ten_node_fixture_compiles_and_optionally_exports_fixed_core_config() {
+        let public_key = WG_PUBLIC
+            .trim_end_matches('=')
+            .replace('+', "-")
+            .replace('/', "_");
+        let templates = protocol_nodes();
+        let mut nodes = Vec::new();
+        for index in 0..5 {
+            let mut node = templates[4].clone();
+            node.id = NodeId(format!("compat-vless-{index}"));
+            node.tls = Some(TlsOptions {
+                server_name: Some("example.invalid".to_owned()),
+                allow_insecure: false,
+                reality_public_key: Some(public_key.clone()),
+                reality_short_id: Some(format!("abcdef{index:02x}")),
+                alpn: vec!["h2".to_owned(), "http/1.1".to_owned()],
+                utls_fingerprint: Some("chrome".to_owned()),
+            });
+            nodes.push(node);
+        }
+        for index in 0..5 {
+            let mut node = templates[8].clone();
+            node.id = NodeId(format!("compat-hysteria2-{index}"));
+            node.options = ProtocolOptions::Hysteria2 {
+                password: PASSWORD.to_owned(),
+                obfs: Some("fixture-obfs".to_owned()),
+                up_mbps: Some(25 + index),
+                down_mbps: Some(100 + index),
+                disable_path_mtu_discovery: Some(index % 2 == 0),
+            };
+            node.tls.as_mut().expect("Hysteria2 TLS").alpn = vec!["h3".to_owned()];
+            node.tls.as_mut().expect("Hysteria2 TLS").utls_fingerprint = Some("chrome".to_owned());
+            nodes.push(node);
+        }
+        let members = nodes.iter().map(|node| node.id.clone()).collect::<Vec<_>>();
+        let mut compatibility = fixture(nodes[0].clone());
+        compatibility.nodes = nodes;
+        for pool in &mut compatibility.pools {
+            pool.members = members.clone();
+        }
+        compatibility.pools[0].selection = SelectionPolicy::Manual {
+            selected_node_id: Some(members[0].clone()),
+        };
+
+        let config = final_config(&compatibility);
+        assert_eq!(config.validate_final(), Ok(()));
+        let document: Value =
+            serde_json::from_slice(config.as_bytes()).expect("compatibility JSON");
+        let generated_nodes = document["outbounds"]
+            .as_array()
+            .expect("outbounds")
+            .iter()
+            .filter(|outbound| {
+                outbound["tag"]
+                    .as_str()
+                    .is_some_and(|tag| tag.starts_with("node-compat-"))
+            })
+            .collect::<Vec<_>>();
+        assert_eq!(generated_nodes.len(), 10);
+        assert_eq!(
+            generated_nodes
+                .iter()
+                .filter(|node| node["type"] == "vless"
+                    && node["tls"]["alpn"] == json!(["h2", "http/1.1"])
+                    && node["tls"]["utls"] == json!({"enabled":true,"fingerprint":"chrome"})
+                    && node["tls"]["reality"]["enabled"] == true)
+                .count(),
+            5
+        );
+        assert_eq!(
+            generated_nodes
+                .iter()
+                .filter(|node| node["type"] == "hysteria2"
+                    && node["tls"]["alpn"] == json!(["h3"])
+                    && node["up_mbps"].as_u64().is_some_and(|value| value >= 25)
+                    && node["down_mbps"].as_u64().is_some_and(|value| value >= 100)
+                    && node["disable_path_mtu_discovery"].is_boolean())
+                .count(),
+            5
+        );
+        assert!(!format!("{config:?}").contains(PASSWORD));
+
+        if let Some(path) = std::env::var_os("VEYRA_COMPATIBILITY_CONFIG_OUTPUT") {
+            std::fs::write(path, config.as_bytes()).expect("write requested compatibility config");
+        }
+    }
+
+    #[test]
     fn reality_requires_fixed_utls_and_preserves_final_bytes_and_redaction() {
         let mut intent = intent();
         let public_key = WG_PUBLIC
@@ -3302,6 +3552,8 @@ mod tests {
             Transport::Websocket {
                 path: "/ws".to_owned(),
                 host: None,
+                max_early_data: None,
+                early_data_header_name: None,
             },
         ] {
             intent.nodes[0].transport = Some(transport);
@@ -3338,7 +3590,7 @@ mod tests {
                 Value::Null,
                 json!({}),
                 json!({"enabled":false}),
-                json!({"enabled":true,"fingerprint":"chrome"}),
+                json!({"enabled":true,"fingerprint":"unknown"}),
                 json!({"enabled":true,"unexpected":true}),
             ] {
                 let mut invalid = original.clone();
@@ -3589,6 +3841,8 @@ mod tests {
         with_transport.nodes[0].transport = Some(Transport::Websocket {
             path: "/ws".to_owned(),
             host: Some("cdn.example.invalid".to_owned()),
+            max_early_data: None,
+            early_data_header_name: None,
         });
         let mut mutated = document(&with_transport);
         mutated["outbounds"][0]["transport"]["headers"]["Authorization"] = json!("synthetic");
@@ -3733,7 +3987,27 @@ mod tests {
     fn dns_policy_does_not_add_persisted_state_fields() {
         let state = serde_json::to_value(AppState::empty()).expect("state JSON");
         assert!(state.get("dns").is_none());
-        assert_eq!(state.as_object().expect("state").len(), 7);
+        let fields = state
+            .as_object()
+            .expect("state")
+            .keys()
+            .map(String::as_str)
+            .collect::<BTreeSet<_>>();
+        assert_eq!(
+            fields,
+            BTreeSet::from([
+                "active_configuration_generation",
+                "active_subscription_id",
+                "default_target",
+                "nodes",
+                "pools",
+                "providers",
+                "routes",
+                "schema_version",
+                "subscriptions",
+            ])
+        );
+        assert_eq!(fields.len(), 9);
         assert_eq!(DnsPolicy::System, DnsPolicy::System);
     }
 }

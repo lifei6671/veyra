@@ -99,6 +99,41 @@ pub(crate) enum ManagedRuntimeFailure {
     Worker,
 }
 
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub(crate) enum SubscriptionSwitchStatus {
+    Queued,
+    Checking,
+    Prepared,
+    Persisted,
+    Applying,
+    Ready,
+    Cancelled,
+    Failed,
+}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub(crate) enum SubscriptionSwitchErrorCode {
+    Cancelled,
+    Busy,
+    StateUnavailable,
+    ConfigurationFailed,
+    SaveFailed,
+    StopFailed,
+    StartFailed,
+    RecoveryRequired,
+    OperationTimedOut,
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct SubscriptionSwitch {
+    pub operation_id: String,
+    pub status: SubscriptionSwitchStatus,
+    pub error_code: Option<SubscriptionSwitchErrorCode>,
+}
+
 /// 日志只保留分类、级别和白名单摘要；绝不保留原始 detail。
 #[derive(Clone, Debug, Eq, PartialEq, Serialize)]
 pub(crate) struct ObservationLogSummary {
@@ -110,6 +145,11 @@ pub(crate) struct ObservationLogSummary {
 /// 提供给固定 IPC Snapshot 的完整、仅内存运行观测。
 #[derive(Clone, Debug, Eq, PartialEq, Serialize)]
 pub(crate) struct RuntimeObservationSnapshot {
+    pub(crate) applied_subscription_id: Option<String>,
+    pub(crate) applied_configuration_generation: Option<u64>,
+    pub(crate) subscription_switch: Option<SubscriptionSwitch>,
+    pub(crate) managed_proxy_available: bool,
+    pub(crate) core_memory_bytes: Option<u64>,
     pub(crate) revision: u64,
     pub(crate) observed_at_ms: u64,
     pub(crate) traffic_history: Vec<TrafficHistoryPoint>,
@@ -124,6 +164,11 @@ pub(crate) struct RuntimeObservationSnapshot {
 /// 为固定事件接线保留的最新增量。它含完整安全读侧，而非任意事件载荷。
 #[derive(Clone, Debug, Eq, PartialEq, Serialize)]
 pub(crate) struct RuntimeObservationDelta {
+    pub(crate) applied_subscription_id: Option<String>,
+    pub(crate) applied_configuration_generation: Option<u64>,
+    pub(crate) subscription_switch: Option<SubscriptionSwitch>,
+    pub(crate) managed_proxy_available: bool,
+    pub(crate) core_memory_bytes: Option<u64>,
     pub(crate) revision: u64,
     pub(crate) observed_at_ms: u64,
     pub(crate) traffic_history: Vec<TrafficHistoryPoint>,
@@ -138,6 +183,11 @@ pub(crate) struct RuntimeObservationDelta {
 impl From<&RuntimeObservationSnapshot> for RuntimeObservationDelta {
     fn from(snapshot: &RuntimeObservationSnapshot) -> Self {
         Self {
+            applied_subscription_id: snapshot.applied_subscription_id.clone(),
+            applied_configuration_generation: snapshot.applied_configuration_generation,
+            subscription_switch: snapshot.subscription_switch.clone(),
+            managed_proxy_available: snapshot.managed_proxy_available,
+            core_memory_bytes: snapshot.core_memory_bytes,
             revision: snapshot.revision,
             observed_at_ms: snapshot.observed_at_ms,
             traffic_history: snapshot.traffic_history.clone(),
@@ -243,6 +293,11 @@ impl InMemoryRuntimeObservations {
                 #[cfg(test)]
                 observed_time_override: None,
                 snapshot: RuntimeObservationSnapshot {
+                    applied_subscription_id: None,
+                    applied_configuration_generation: None,
+                    subscription_switch: None,
+                    managed_proxy_available: false,
+                    core_memory_bytes: None,
                     revision: 0,
                     observed_at_ms: 0,
                     traffic_history: Vec::new(),
@@ -327,43 +382,29 @@ impl InMemoryRuntimeObservations {
     /// 将已由固定后端 bridge 脱敏的单次采样写入内存 DTO；不接受原始 API 响应或网络参数。
     pub(crate) fn record_managed_observation(&self, observation: ClashRuntimeObservation) {
         self.update(|snapshot| {
-            snapshot.source = ObservationSource::ManagedSidecar;
-            snapshot.sidecar_lifecycle = ObservedSidecarLifecycle::Ready;
-            snapshot.connections.active = observation.connections.connection_count;
-            if let Some(traffic) = observation.traffic {
-                snapshot.traffic = TrafficObservation {
-                    upload_bytes_per_second: traffic.upload_bytes_per_second,
-                    download_bytes_per_second: traffic.download_bytes_per_second,
-                    upload_total_bytes: traffic.upload_total_bytes,
-                    download_total_bytes: traffic.download_total_bytes,
-                };
-                let point = TrafficHistoryPoint {
-                    sampled_at_ms: snapshot.observed_at_ms,
-                    upload_rate_bps: traffic.upload_bytes_per_second,
-                    download_rate_bps: traffic.download_bytes_per_second,
-                };
-                // 同毫秒发布只覆盖末点，保证读侧时间严格递增。
-                if let Some(last) = snapshot.traffic_history.last_mut()
-                    && last.sampled_at_ms == point.sampled_at_ms
-                {
-                    *last = point;
-                } else {
-                    snapshot.traffic_history.push(point);
-                }
-            }
-            if let Some(log) = observation.latest_log {
-                snapshot.latest_log = Some(ObservationLogSummary {
-                    level: map_managed_log_level(log.level),
-                    category: map_managed_log_category(log.category),
-                    message: log.message.to_owned(),
-                });
-            }
+            apply_managed_observation(snapshot, observation);
+        });
+    }
+
+    pub(crate) fn record_managed_sample(
+        &self,
+        observation: ClashRuntimeObservation,
+        core_memory_bytes: Option<u64>,
+    ) {
+        self.update(|snapshot| {
+            apply_managed_observation(snapshot, observation);
+            snapshot.core_memory_bytes = core_memory_bytes;
         });
     }
 
     /// 只由受管运行时 owner 在 Ready 后写入；不触发网络，也不声明任何捕获模式变更。
     pub(crate) fn record_managed_ready(&self) {
         self.update(|snapshot| {
+            snapshot.applied_subscription_id = None;
+            snapshot.applied_configuration_generation = None;
+            snapshot.managed_proxy_available = false;
+            snapshot.core_memory_bytes = None;
+            snapshot.subscription_switch = None;
             snapshot.source = ObservationSource::ManagedSidecar;
             snapshot.capture_mode = ObservedCaptureMode::Off;
             snapshot.sidecar_lifecycle = ObservedSidecarLifecycle::Ready;
@@ -377,6 +418,11 @@ impl InMemoryRuntimeObservations {
     /// 停止后不保留旧 child 的流量、连接或日志摘要。
     pub(crate) fn record_managed_stopped(&self) {
         self.update(|snapshot| {
+            snapshot.applied_subscription_id = None;
+            snapshot.applied_configuration_generation = None;
+            snapshot.managed_proxy_available = false;
+            snapshot.core_memory_bytes = None;
+            snapshot.subscription_switch = None;
             snapshot.source = ObservationSource::ManagedSidecar;
             snapshot.capture_mode = ObservedCaptureMode::Off;
             snapshot.sidecar_lifecycle = ObservedSidecarLifecycle::Stopped;
@@ -390,6 +436,15 @@ impl InMemoryRuntimeObservations {
     /// 固定 API/流失败只能更新为封闭恢复状态，不保存底层错误或网络细节。
     pub(crate) fn record_managed_recovery(&self) {
         self.update(|snapshot| {
+            snapshot.managed_proxy_available = false;
+            snapshot.core_memory_bytes = None;
+            if snapshot
+                .subscription_switch
+                .as_ref()
+                .is_some_and(|change| change.status == SubscriptionSwitchStatus::Ready)
+            {
+                snapshot.subscription_switch = None;
+            }
             snapshot.source = ObservationSource::ManagedSidecar;
             snapshot.sidecar_lifecycle = ObservedSidecarLifecycle::RecoveryRequired;
             snapshot.traffic = TrafficObservation::default();
@@ -411,6 +466,17 @@ impl InMemoryRuntimeObservations {
                 snapshot.capture_mode = ObservedCaptureMode::Off;
                 snapshot.sidecar_lifecycle = lifecycle;
                 if lifecycle != ObservedSidecarLifecycle::Ready {
+                    snapshot.managed_proxy_available = false;
+                    snapshot.core_memory_bytes = None;
+                    if snapshot
+                        .subscription_switch
+                        .as_ref()
+                        .is_some_and(|change| change.status == SubscriptionSwitchStatus::Ready)
+                    {
+                        snapshot.subscription_switch = None;
+                    }
+                    snapshot.applied_subscription_id = None;
+                    snapshot.applied_configuration_generation = None;
                     snapshot.traffic = TrafficObservation::default();
                     snapshot.traffic_history.clear();
                     snapshot.connections = ConnectionObservation::default();
@@ -430,6 +496,47 @@ impl InMemoryRuntimeObservations {
                 }
                 .to_owned(),
             });
+        });
+    }
+
+    pub(crate) fn record_subscription_switch(&self, change: SubscriptionSwitch) {
+        self.update(|snapshot| {
+            if change.status == SubscriptionSwitchStatus::Queued
+                || snapshot
+                    .subscription_switch
+                    .as_ref()
+                    .is_some_and(|current| current.operation_id == change.operation_id)
+            {
+                snapshot.subscription_switch = Some(change);
+            }
+        });
+    }
+
+    /// 由唯一 worker 将真实 Ready 与已应用订阅身份一次发布。
+    pub(crate) fn record_subscription_ready(
+        &self,
+        id: String,
+        generation: u64,
+        operation_id: Option<String>,
+        managed_proxy_available: bool,
+    ) {
+        self.update(|snapshot| {
+            snapshot.source = ObservationSource::ManagedSidecar;
+            snapshot.capture_mode = ObservedCaptureMode::Off;
+            snapshot.sidecar_lifecycle = ObservedSidecarLifecycle::Ready;
+            snapshot.applied_subscription_id = Some(id);
+            snapshot.applied_configuration_generation = Some(generation);
+            snapshot.managed_proxy_available = managed_proxy_available;
+            snapshot.core_memory_bytes = None;
+            snapshot.subscription_switch = operation_id.map(|operation_id| SubscriptionSwitch {
+                operation_id,
+                status: SubscriptionSwitchStatus::Ready,
+                error_code: None,
+            });
+            snapshot.traffic = TrafficObservation::default();
+            snapshot.traffic_history.clear();
+            snapshot.connections = ConnectionObservation::default();
+            snapshot.latest_log = None;
         });
     }
 
@@ -466,6 +573,42 @@ impl InMemoryRuntimeObservations {
     }
 }
 
+fn apply_managed_observation(
+    snapshot: &mut RuntimeObservationSnapshot,
+    observation: ClashRuntimeObservation,
+) {
+    snapshot.source = ObservationSource::ManagedSidecar;
+    snapshot.sidecar_lifecycle = ObservedSidecarLifecycle::Ready;
+    snapshot.connections.active = observation.connections.connection_count;
+    if let Some(traffic) = observation.traffic {
+        snapshot.traffic = TrafficObservation {
+            upload_bytes_per_second: traffic.upload_bytes_per_second,
+            download_bytes_per_second: traffic.download_bytes_per_second,
+            upload_total_bytes: traffic.upload_total_bytes,
+            download_total_bytes: traffic.download_total_bytes,
+        };
+        let point = TrafficHistoryPoint {
+            sampled_at_ms: snapshot.observed_at_ms,
+            upload_rate_bps: traffic.upload_bytes_per_second,
+            download_rate_bps: traffic.download_bytes_per_second,
+        };
+        if let Some(last) = snapshot.traffic_history.last_mut()
+            && last.sampled_at_ms == point.sampled_at_ms
+        {
+            *last = point;
+        } else {
+            snapshot.traffic_history.push(point);
+        }
+    }
+    if let Some(log) = observation.latest_log {
+        snapshot.latest_log = Some(ObservationLogSummary {
+            level: map_managed_log_level(log.level),
+            category: map_managed_log_category(log.category),
+            message: log.message.to_owned(),
+        });
+    }
+}
+
 fn map_managed_log_level(level: ClashLogLevel) -> ObservationLogLevel {
     match level {
         ClashLogLevel::Info => ObservationLogLevel::Info,
@@ -491,6 +634,11 @@ impl RuntimeObservationPort for InMemoryRuntimeObservations {
                 state.snapshot.clone()
             })
             .unwrap_or_else(|_| RuntimeObservationSnapshot {
+                applied_subscription_id: None,
+                applied_configuration_generation: None,
+                subscription_switch: None,
+                managed_proxy_available: false,
+                core_memory_bytes: None,
                 revision: 0,
                 observed_at_ms: 0,
                 traffic_history: Vec::new(),
@@ -589,6 +737,11 @@ mod tests {
         assert_eq!(
             observations.snapshot(),
             RuntimeObservationSnapshot {
+                applied_subscription_id: None,
+                applied_configuration_generation: None,
+                subscription_switch: None,
+                managed_proxy_available: false,
+                core_memory_bytes: None,
                 revision: 0,
                 observed_at_ms: 0,
                 traffic_history: Vec::new(),
@@ -600,6 +753,24 @@ mod tests {
                 latest_log: None,
             }
         );
+    }
+
+    #[test]
+    fn core_memory_is_latest_only_and_clears_with_lifecycle() {
+        let observations = InMemoryRuntimeObservations::new_mock();
+        observations.record_managed_ready();
+        observations.record_managed_sample(managed_sample(1, 2), Some(12_345));
+        assert_eq!(observations.snapshot().core_memory_bytes, Some(12_345));
+        observations.record_managed_sample(managed_sample(1, 2), None);
+        assert_eq!(observations.snapshot().core_memory_bytes, None);
+        assert_eq!(observations.snapshot().traffic.upload_bytes_per_second, 1);
+        assert_eq!(observations.snapshot().traffic.download_bytes_per_second, 2);
+        observations.record_managed_sample(managed_sample(1, 2), Some(54_321));
+        observations.record_subscription_ready("replacement".into(), 2, None, false);
+        assert_eq!(observations.snapshot().core_memory_bytes, None);
+        observations.record_managed_sample(managed_sample(1, 2), Some(54_321));
+        observations.record_managed_stopped();
+        assert_eq!(observations.snapshot().core_memory_bytes, None);
     }
 
     #[test]
@@ -997,7 +1168,7 @@ mod tests {
             ObservedSidecarLifecycle::RecoveryRequired,
         ] {
             let observations = InMemoryRuntimeObservations::new_mock();
-            observations.record_managed_ready();
+            observations.record_subscription_ready("sub".into(), 3, None, false);
             observations.record_traffic(2, 4, 10, 20);
             observations.record_connection_count(3);
             let subscription = observations.subscribe();
@@ -1007,6 +1178,8 @@ mod tests {
             assert_eq!(after.sidecar_lifecycle, lifecycle);
             assert_eq!(after.traffic, TrafficObservation::default());
             assert_eq!(after.connections.active, 0);
+            assert!(after.applied_subscription_id.is_none());
+            assert!(after.applied_configuration_generation.is_none());
             assert_eq!(
                 after.latest_log.as_ref().expect("failure log").message,
                 "Core startup failed"
@@ -1016,5 +1189,45 @@ mod tests {
             assert_eq!(delta.traffic, after.traffic);
             assert_eq!(delta.latest_log, after.latest_log);
         }
+    }
+    #[test]
+    fn switch_identity_rejects_late_old_results_and_ready_tracks_actual_lifecycle() {
+        let observations = InMemoryRuntimeObservations::new_mock();
+        for id in ["old", "new"] {
+            observations.record_subscription_switch(SubscriptionSwitch {
+                operation_id: id.into(),
+                status: SubscriptionSwitchStatus::Queued,
+                error_code: None,
+            });
+        }
+        observations.record_subscription_switch(SubscriptionSwitch {
+            operation_id: "old".into(),
+            status: SubscriptionSwitchStatus::Failed,
+            error_code: Some(SubscriptionSwitchErrorCode::Busy),
+        });
+        assert_eq!(
+            observations
+                .snapshot()
+                .subscription_switch
+                .expect("new operation")
+                .operation_id,
+            "new"
+        );
+        observations.record_subscription_ready("sub".into(), 4, Some("new".into()), false);
+        let snapshot = observations.snapshot();
+        assert_eq!(snapshot.applied_subscription_id.as_deref(), Some("sub"));
+        assert_eq!(snapshot.applied_configuration_generation, Some(4));
+        observations.record_managed_failure(
+            Some(ObservedSidecarLifecycle::Stopped),
+            ManagedRuntimeFailure::Observation,
+        );
+        let stopped = observations.snapshot();
+        assert!(stopped.applied_subscription_id.is_none());
+        assert!(stopped.applied_configuration_generation.is_none());
+        assert!(
+            stopped.subscription_switch.is_none(),
+            "terminal Ready cannot survive a later actual failure"
+        );
+        assert!(!stopped.managed_proxy_available);
     }
 }

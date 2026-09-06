@@ -104,29 +104,60 @@ milestones:
           - .sdlc/evidence/TASK-008/implementation.yaml#EVIDENCE-TASK-008-002
           - .sdlc/evidence/TASK-008/code-delivery-review.yaml#EVIDENCE-TASK-008-REVIEW-002
           - .sdlc/evidence/TASK-008/acceptance.yaml#EVIDENCE-TASK-008-ACCEPTANCE-001
+      - id: TASK-009
+        result: >-
+          Managed configuration lifecycle, existing homepage observation and traffic UI, and the
+          minimal real sing-box application chain were delivered and accepted by USER:lifei.
+        target_identity: sha256:43f29eef134da2f2266c41167d8650d2e0a36edca10417cc2dccead587e12892
+        decision_refs:
+          - USER:lifei 2026-09-05 TASK-009 Human Task acceptance
+        evidence_refs:
+          - .sdlc/evidence/TASK-009/delivery-checkpoint-034.json
+          - .sdlc/evidence/TASK-009/logo-delivery-review-034.json
+          - .sdlc/evidence/TASK-009/acceptance-001.json#EVIDENCE-TASK-009-ACCEPTANCE-001
   - id: M7
     title: Windows 桌面联合验收
     objective: 以完整受管配置完成 GUI、Tray 与可观测性的 Windows E2E 验收。
-    status: PLANNED
+    status: IN_PROGRESS
+    completed:
+      - id: TASK-010
+        result: Navigation, reference UI typography/layout, native minimum sizing and observed Tray lifecycle accepted with explicit release follow-up.
+        target_identity: sha256:d7082fb55932a8a25591ee6ceff7e43fadb1286bd37a13350e00f089e957b3f8
+        decision_refs:
+          - USER:lifei closure-012 acceptance and native observation deferral
+        evidence_refs:
+          - .sdlc/evidence/TASK-010/delivery-checkpoint-011.json
+          - .sdlc/evidence/TASK-010/closure-012-review.json
+          - .sdlc/evidence/TASK-010/closure-012-acceptance.json
+    follow_ups:
+      - id: FOLLOWUP-TASK010-NATIVE-012
+        status: OPEN
+        accepted_by: USER:lifei
+        accepted_at: 2026-09-05
+        evidence_ref: .sdlc/evidence/TASK-010/closure-012-acceptance.json
+        finding_ref: .sdlc/evidence/TASK-010/proposed-closure-012.json
+        verification_status: NOT_RUN
+        objective: >-
+          发布前补验隐藏期采样修订、Delta抑制和无积压、原生IPC/订阅计数、同窗口与React根身份、
+          恢复单次安全Snapshot、controller shutdown先于退出、真实WebView封闭错误和Toast，
+          并取得完整同进程时序。TASK010按已验证用户行为验收不代表这些观测通过或发布通过。
 
 window:
-  - id: TASK-009
-    task_ref: .sdlc/tasks/TASK-009.md
-  - id: TASK-010
-    milestone_ref: M7
-    objective: 验收真实受管 sidecar 的 GUI Start/Stop、脱敏观测、窗口隐藏与 Tray 恢复联合路径。
-    dependencies: [TASK-009]
-    risk: HIGH
-    acceptance_summary: >-
-      Windows GUI E2E 证明完整配置、同一受管 child、固定 loopback API、脱敏 UI 和 Tray hide/restore
-      正确协作，且无控制台、System Proxy、TUN、UAC、WFP、Service 或额外 listener 变化。
   - id: TASK-011
-    milestone_ref: M6
-    objective: 交付订阅手动更新入口、失败日志与toast，以及最后成功更新时间展示。
-    dependencies: [TASK-010]
+    task_ref: .sdlc/tasks/TASK-011.md
+  - id: TASK-012
+    milestone_ref: M7
+    objective: 参考 Clash Verge Rev 的代理与规则页面，交付 Veyra 出口组选择和分流编辑 UI。
+    dependencies: [TASK-011]
     risk: HIGH
     acceptance_summary: >-
-      订阅获取、解析、归一化或保存失败只记录脱敏日志并显示toast，不自动重试、不替换旧节点或
-      停止已有core；最后成功更新时间保持不变，用户可手动重试。只有整批成功提交后才更新该时间。
-      有效缓存的304完成有效更新流程后算成功检查，但不代表内容变化或运行配置已生效。
-      订阅生成sing-box配置失败同样仅日志与toast，明确新配置未生效，不额外启动、停止或回滚。
+      UI 映射现有 ProxyNode、NodePool、默认出口和 RoutePolicy，覆盖加载、空、忙碌、校验失败与保存反馈；
+      不直接编辑 sing-box/Mihomo JSON，不复制参考项目 API，也不改变既有领域和 Compiler 契约。
+  - id: TASK-013
+    milestone_ref: M7
+    objective: 参考 Clash Verge Rev 的连接、日志和设置页面，交付现有安全 DTO 的桌面 UI。
+    dependencies: [TASK-012]
+    risk: HIGH
+    acceptance_summary: >-
+      连接与日志仅展示当前实例的脱敏数据，设置只暴露已批准的应用能力；覆盖加载、空、错误、实例切换
+      和大列表响应，不泄露原始目标、凭证或 API secret，不新增系统捕获、任意核心参数或权限入口。

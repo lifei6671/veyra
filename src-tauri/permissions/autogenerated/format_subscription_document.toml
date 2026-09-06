@@ -1,0 +1,11 @@
+# Automatically generated - DO NOT EDIT!
+
+[[permission]]
+identifier = "allow-format-subscription-document"
+description = "Enables the format_subscription_document command without any pre-configured scope."
+commands.allow = ["format_subscription_document"]
+
+[[permission]]
+identifier = "deny-format-subscription-document"
+description = "Denies the format_subscription_document command without any pre-configured scope."
+commands.deny = ["format_subscription_document"]

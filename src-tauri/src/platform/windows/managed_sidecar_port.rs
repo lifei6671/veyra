@@ -420,6 +420,27 @@ impl RuntimeObservationSidecarPort for WindowsManagedSidecarPort {
     ) -> Result<ClashRuntimeObservation, SidecarPortError> {
         self.sample_runtime_observation(instance)
     }
+
+    fn read_owned_core_memory_bytes(
+        &mut self,
+        instance: &ManagedSidecar,
+    ) -> Result<u64, SidecarPortError> {
+        let running = self
+            .running
+            .get_mut(&instance.identity())
+            .ok_or(SidecarPortError)?;
+        running.ready.then_some(()).ok_or(SidecarPortError)?;
+        running
+            .child
+            .is_running()
+            .map_err(|_| SidecarPortError)?
+            .then_some(())
+            .ok_or(SidecarPortError)?;
+        running
+            .child
+            .working_set_bytes()
+            .map_err(|_| SidecarPortError)
+    }
 }
 
 // 私有文件在 check 前后必须与编译器最终字节相同；读回副本用后覆盖。
@@ -3191,8 +3212,17 @@ mod tests {
                     assert_eq!(parsed.nodes.len(), 1);
                     let mut state = AppState::empty();
                     state.subscriptions.push(Subscription {
+                        skipped_unsupported_nodes: 0,
                         id: SubscriptionId("local-reject".into()),
                         name: "local-reject".into(),
+                        source: crate::domain::SubscriptionSource::Manual,
+                        document: None,
+                        last_success_at_ms: None,
+                        http_metadata: None,
+                        description: String::new(),
+                        last_attempt_at_ms: None,
+                        remote_request: None,
+                        update_policy: crate::domain::SubscriptionUpdatePolicy::manual(),
                     });
                     state.providers.push(Provider {
                         id: ProviderId("local-reject".into()),
@@ -3613,8 +3643,17 @@ mod tests {
                 assert_eq!(parsed.nodes.len(), 1);
                 let mut state = AppState::empty();
                 state.subscriptions.push(Subscription {
+                    skipped_unsupported_nodes: 0,
                     id: SubscriptionId("wg-udp-test".into()),
                     name: "wg-udp-test".into(),
+                    source: crate::domain::SubscriptionSource::Manual,
+                    document: None,
+                    last_success_at_ms: None,
+                    http_metadata: None,
+                    description: String::new(),
+                    last_attempt_at_ms: None,
+                    remote_request: None,
+                    update_policy: crate::domain::SubscriptionUpdatePolicy::manual(),
                 });
                 state.providers.push(Provider {
                     id: ProviderId("wg-udp-test".into()),
@@ -4287,8 +4326,17 @@ mod tests {
                 assert_eq!(parsed.nodes.len(), 1);
                 let mut state = AppState::empty();
                 state.subscriptions.push(Subscription {
+                    skipped_unsupported_nodes: 0,
                     id: SubscriptionId("wg-test".into()),
                     name: "wg-test".into(),
+                    source: crate::domain::SubscriptionSource::Manual,
+                    document: None,
+                    last_success_at_ms: None,
+                    http_metadata: None,
+                    description: String::new(),
+                    last_attempt_at_ms: None,
+                    remote_request: None,
+                    update_policy: crate::domain::SubscriptionUpdatePolicy::manual(),
                 });
                 state.providers.push(Provider {
                     id: ProviderId("wg-test".into()),
@@ -4631,8 +4679,17 @@ mod tests {
                 assert_eq!(parsed.nodes.len(), 1);
                 let mut state = AppState::empty();
                 state.subscriptions.push(Subscription {
+                    skipped_unsupported_nodes: 0,
                     id: SubscriptionId("wg-test".into()),
                     name: "wg-test".into(),
+                    source: crate::domain::SubscriptionSource::Manual,
+                    document: None,
+                    last_success_at_ms: None,
+                    http_metadata: None,
+                    description: String::new(),
+                    last_attempt_at_ms: None,
+                    remote_request: None,
+                    update_policy: crate::domain::SubscriptionUpdatePolicy::manual(),
                 });
                 state.providers.push(Provider {
                     id: ProviderId("wg-test".into()),
@@ -4948,8 +5005,17 @@ mod tests {
                 assert_eq!(parsed.nodes.len(), 1);
                 let mut state = AppState::empty();
                 state.subscriptions.push(Subscription {
+                    skipped_unsupported_nodes: 0,
                     id: SubscriptionId("wg-test".into()),
                     name: "wg-test".into(),
+                    source: crate::domain::SubscriptionSource::Manual,
+                    document: None,
+                    last_success_at_ms: None,
+                    http_metadata: None,
+                    description: String::new(),
+                    last_attempt_at_ms: None,
+                    remote_request: None,
+                    update_policy: crate::domain::SubscriptionUpdatePolicy::manual(),
                 });
                 state.providers.push(Provider {
                     id: ProviderId("wg-test".into()),
@@ -5317,8 +5383,17 @@ mod tests {
         assert!(parsed.skipped.is_empty());
         let mut state = AppState::empty();
         state.subscriptions.push(Subscription {
+            skipped_unsupported_nodes: 0,
             id: SubscriptionId("metering".into()),
             name: "metering".into(),
+            source: crate::domain::SubscriptionSource::Manual,
+            document: None,
+            last_success_at_ms: None,
+            http_metadata: None,
+            description: String::new(),
+            last_attempt_at_ms: None,
+            remote_request: None,
+            update_policy: crate::domain::SubscriptionUpdatePolicy::manual(),
         });
         state.providers.push(Provider {
             id: ProviderId("metering".into()),
@@ -6173,8 +6248,17 @@ mod tests {
         assert_eq!(parsed.nodes.len(), 1);
         let mut state = AppState::empty();
         state.subscriptions.push(Subscription {
+            skipped_unsupported_nodes: 0,
             id: SubscriptionId("subscription".into()),
             name: "fixture".into(),
+            source: crate::domain::SubscriptionSource::Manual,
+            document: None,
+            last_success_at_ms: None,
+            http_metadata: None,
+            description: String::new(),
+            last_attempt_at_ms: None,
+            remote_request: None,
+            update_policy: crate::domain::SubscriptionUpdatePolicy::manual(),
         });
         state.providers.push(Provider {
             id: ProviderId("provider".into()),

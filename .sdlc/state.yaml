@@ -9,12 +9,12 @@ project:
 
 source:
   requirement: docs/veyra.md
-  identity: sha256:4a2cd1e2b9698087bcbc4ac892d7b052a5e2c06554e372479fe31c81cbea9d45
+  identity: sha256:93b60509f5ff04b07dcab093aa82f26ff17cf6feb446b82c82dd6615fc2dbad4
 
 anchor:
   goal: >-
-    构建基于 sing-box 的跨平台桌面网络分流客户端，以稳定且独立的领域模型提供订阅、出口组、
-    分流、代理模式与运行状态管理。
+    为 sing-box 提供易用、稳定的桌面 UI，页面组织、布局和交互参考本地 Clash Verge Rev；
+    订阅、出口组、分流、配置转换、运行管理和平台适配服务于用户可见功能。
   must_have:
     - Tauri 2、React、Rust 与独立 sing-box sidecar 的桌面应用架构。
     - 订阅归一化为独立 ProxyNode 领域模型，并保留订阅、Provider、节点与运行时的边界。
@@ -24,10 +24,13 @@ anchor:
     - 受限的原生 sing-box Profile 高级模式；托管模式的生成配置仅可预览和复制。
     - Windows 为 V0.1 桌面目标；macOS 平台实现进入 V0.2；Linux 作为 Beta。
   non_goals:
+    - 重复认证 sing-box 的协议、地址族、DNS/TLS/URLTest、报文校验和、重传或 ACK 实现；不为此扩建 peer 或用户态网络栈。
     - 完整兼容或迁移 Clash 配置、脚本、proxy-groups、rule-providers 与 DNS 配置。
     - Xray、Mihomo 或多内核支持。
     - 动态大流量识别、单连接中途迁移、复杂 QoS、MITM、内容解析、移动端、云同步与账号系统。
   constraints:
+    - UI 参考 E:/wx_lifeilin/github.com/clash-verge-rev；每个 UI Task 记录对应页面/组件与 Veyra 交互映射，不引入 Mihomo 配置/API 或参考项目全部功能。
+    - 验证 Veyra 自有逻辑与最小 config/check/run/API/stop 集成；保留配置安全策略、权限、脱敏和资源归属，按 DCR-017 停止上游协议矩阵前置。
     - V0.1 仅以 sing-box sidecar 作为运行内核，不将其静态链接为 Rust library。
     - UI 使用订阅、节点、出口组、分流等产品术语，不直接暴露 sing-box 配置模型。
     - 核心领域模型与 sing-box 专属实现隔离；订阅先归一化，再由语义编译器生成配置。
@@ -35,6 +38,7 @@ anchor:
     - Windows System Proxy、权限与恢复记录由 Platform Adapter 管理；sing-box 独占 Wintun、路由、DNS 与进程分流数据面。
     - macOS V0.2 采用 DMG 直发、普通 Tauri 桌面程序和 sing-box sidecar；System Proxy 与显式特权运行归 macOS Adapter，NetworkExtension/App Store 路线须作为后续 ADR 评审。
   critical_invariants:
+    - 订阅“使用”立即编译、检查并应用选中订阅；保留其它订阅数据，只有 Ready 才显示正在使用（DCR-018）。
     - 网速与累计量采用sing-box聚合统计（包含内核处理的Direct）；趋势仅存内存最近10分钟，首页显示10分钟、侧栏底部显示60秒，不持久化或混合不同内核实例。
     - UI 不直接写入 sing-box JSON；托管配置不能被原地编辑。
     - Domain 不以 serde_json::Value 或 sing-box outbound tag 作为主要配置模型。
@@ -45,6 +49,8 @@ anchor:
     - 只能清理由本应用拥有的 sing-box 进程，窗口恢复不得重新初始化应用。
     - V0.1 不引入 Windows Service、WFP 或全系统 TCP/UDP PID 扫描；用户手动改写的系统代理不得被无条件覆盖。
   acceptance_refs:
+    - docs/veyra.md sections 1.2 and 143.1（UI产品定位与应用/内核验证责任）
+    - docs/decisions/DCR-017-ui-integration-boundary.md
     - docs/veyra.md sections 2.5-2.6（整体状态图与配置/运行态边界）
     - docs/veyra.md 状态持久化、迁移、备份与恢复章节
     - docs/veyra.md sections 89-90（CaptureMode 互斥与切换）
@@ -58,36 +64,39 @@ assumptions: []
 phase: EXECUTING
 
 focus:
-  task: TASK-009
+  task: TASK-011
 
 gates:
   technical_design:
     status: PASSED
-    target_identity: sha256:00b0455ffe4f997f58856f6112bea4c02b735387c96361a2b6264638d0fbde79
+    target_identity: sha256:6736cc73cea6e3e92db0c9db0443e2c4f4cb1caff4f86b6eac3387d9edf603e7
     evidence:
-      - .sdlc/design/DCR-015-test-wg-domain-host-sni.md
-      - .sdlc/evidence/TASK-009/wg-domain-design-preflight-023.json
-      - .sdlc/evidence/TASK-009/wg-domain-design-review-023.yaml
-      - .sdlc/evidence/TASK-009/change-control.yaml#EVIDENCE-TASK-009-CHANGE-013
-    reviewed_by: CHILD_AGENT:/root/wg_domain_design_reviewer
-    approved_by: USER:lifei CHANGE013
-    evaluated_at: 2026-09-04T21:04:51.2812786+08:00
+      - .sdlc/design/TASK-011-subscription-ui.md
+      - .sdlc/evidence/TASK-011/proposed-boundary-001.json
+      - .sdlc/evidence/TASK-011/design-review-002.json
+      - .sdlc/evidence/TASK-011/ui-reference-003.json
+      - .sdlc/evidence/TASK-011/ui-alignment-review-003.json
+      - .sdlc/evidence/TASK-011/approval-004.json
+      - docs/decisions/DCR-018-subscription-use.md
+      - .sdlc/evidence/TASK-011/use-decision-006.json
+      - .sdlc/design/TASK-011-subscription-expansion-008.md
+      - .sdlc/evidence/TASK-011/expansion-design-review-008.json
+      - .sdlc/evidence/TASK-011/expansion-approval-candidate-008.json
+      - .sdlc/evidence/TASK-011/expansion-approval-009.json
+      - .sdlc/design/TASK-011-expansion-frozen-009.json
+    reviewed_by: CHILD_AGENT:/root/application_delivery_reviewer
+    approved_by: USER:lifei expansion-approval-009
+    evaluated_at: null
   delivery:
     status: PENDING
-    target_identity: sha256:787deafa226ed2674e7e7a0f78927ee83df380df73e1e664351471d99431c664
-    evidence:
-      - .sdlc/evidence/TASK-009/delivery-checkpoint-025.yaml
-      - .sdlc/evidence/TASK-009/verification-025.yaml
-      - .sdlc/evidence/TASK-009/wg-domain-result-025.json
-      - .sdlc/evidence/TASK-009/implementation-025.yaml
-      - .sdlc/evidence/TASK-009/code-review-checkpoint-025.yaml
-      - .sdlc/evidence/TASK-009/diff-exact-025.json
-    reviewed_by: CHILD_AGENT:/root/wg_domain_delivery_reviewer
+    target_identity: null
+    evidence: []
+    reviewed_by: null
     approved_by: null
-    evaluated_at: 2026-09-04T21:50:00.0217953+08:00
+    evaluated_at: null
 blocked: null
 
 next:
-  skill: sdlc-orchestrator
-  target: TASK-009
-  reason: CHANGE013 bounded WG domain Host and SNI implementation and required successful native evidence independently PASS at checkpoint025. Preserve first HTTP DNS error and reject query timeout as unresolved FAIL attempts. Select next remaining SF003 acceptance scope without closing Task or starting Task010.
+  skill: implementation
+  target: TASK-011
+  reason: Approved frozen design and current Task readiness verified; implement backend data/request, frontend and root-owned runtime integration partitions.
