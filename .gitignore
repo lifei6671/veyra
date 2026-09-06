@@ -33,4 +33,5 @@ src-tauri/target/
 src-tauri/binaries/
 .playwright-cli/
 .sdlc/evidence/
+.serena/
 /output/
