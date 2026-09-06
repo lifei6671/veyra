@@ -1,0 +1,25 @@
+{
+  "id": "TASK011-EXPANSION-FROZEN-009",
+  "status": "FROZEN",
+  "approval": ".sdlc/evidence/TASK-011/expansion-approval-009.json",
+  "precedence": "008 overrides 007 overrides 006 overrides proposal005; original TASK011 design holds for unchanged concerns",
+  "artifacts": [
+    {
+      "path": ".sdlc/design/TASK-011-subscription-expansion-008.md",
+      "sha256": "6736cc73cea6e3e92db0c9db0443e2c4f4cb1caff4f86b6eac3387d9edf603e7"
+    },
+    {
+      "path": ".sdlc/design/TASK-011-subscription-expansion-007.md",
+      "sha256": "187772921ebce7c7df6a0c9780bd0491421958287fa350a46747d534f376d5ba"
+    },
+    {
+      "path": ".sdlc/design/TASK-011-subscription-expansion-006.md",
+      "sha256": "34efae0995185f8117c1cea289813ba3cb54e29dddaaab608e6ed5f8158c1d59"
+    },
+    {
+      "path": ".sdlc/evidence/TASK-011/subscription-expansion-proposal-005.md",
+      "sha256": "15f7676dc4ab386ed232ae30ac42faa170d854af7770a135512363d8e97e2071"
+    }
+  ],
+  "note": "Preserve reviewed candidate bytes; this manifest records approved frozen status without rewriting historical candidate text."
+}
