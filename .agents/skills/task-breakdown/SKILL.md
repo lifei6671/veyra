@@ -1,6 +1,6 @@
 ---
 name: task-breakdown
-description: "Maintain a rolling Markdown Task plan with scoped subfeatures and separate Task acceptance. Use to plan the current task, or materialize an Orchestrator-selected future stub as the next current Task; do not use to change requirements or design, write implementation code, or approve the Planning Gate."
+description: "Plan the current SDLC task or materialize the orchestrator-selected future task."
 ---
 
 # Task Breakdown
@@ -13,7 +13,7 @@ Planning Producer，不是状态迁移器。
 
 ### Required Context
 
-- `.sdlc/state.yaml`、`.sdlc/memory/HANDOFF.md`、`.sdlc/tasks.yaml`；
+- `.sdlc/state.yaml`、`.sdlc/tasks.yaml`；
 - Anchor、当前 Requirement Source 与 Acceptance；
 - 项目验证命令、目录边界和并行工作约束。
 
@@ -27,6 +27,8 @@ Planning Producer，不是状态迁移器。
 也不得为了填满上下文而创建它们。
 
 ### Optional Context
+
+- 存在且新鲜的 `.sdlc/memory/HANDOFF.md`；缺失或过期时从权威工件恢复，交由 Orchestrator 重建摘要，不能仅因摘要缺失阻塞。
 
 - 相关源码结构、测试布局和现有模块依赖；
 - QA Strategy、Release/Migration 约束；
@@ -74,7 +76,7 @@ Planning Producer，不是状态迁移器。
 - `materialize-current` 只能写 selected stub 对应的 Task Markdown 和 `tasks.yaml` current 引用；它不写
   `focus.task`、Task 状态或任何 Gate。
 - 不改变 Requirement、Frozen Design 或 ADR；冲突时返回 DCR/需求变更提示。
-- 不实现代码、不安装依赖、不执行发布或迁移。若 Task 需要 Foundation/Material dependency，只记录
+- 不实现代码、不安装依赖、不执行发布或迁移。若 Task 需要 Foundation/Material dependency，已获有效批准时引用原批准；未确认时记录
   精确候选及影响并请求用户确认；低影响 dev/test dependency 只记录 Assumption 与验证，除非项目规则
   要求 `dependency_policy: confirm_all`。未确认的 Material dependency 不得改 manifest/lockfile 或运行安装命令。
 

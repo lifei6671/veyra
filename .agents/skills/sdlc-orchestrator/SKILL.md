@@ -1,6 +1,6 @@
 ---
 name: sdlc-orchestrator
-description: Govern long-running software delivery from a new idea or an existing requirement baseline, using a repository-owned intent anchor, rolling tasks, risk-based escalation, and evidence-backed delivery. Use when the user starts or resumes a multi-stage software project, explicitly adopts this workflow, works in a repository already containing .sdlc/state.yaml, or asks to coordinate sustained delivery. Do not use for one-off code fixes in an unadopted repository, standalone code review, read-only explanation, or prose-only planning with no request to govern delivery.
+description: "Coordinate an adopted SDLC project's current task and gates, or initialize SDLC when explicitly requested. Excludes standalone read-only work."
 ---
 
 # SDLC Orchestrator
@@ -18,7 +18,7 @@ Agent；不提供自研 CLI、后台 Runtime 或绝对强制能力。
    `.sdlc/tasks/TASK-xxx.md` 保存完整 Task 正文，future stub 只保存轻量规划信息；
    `memory/HANDOFF.md` 是可重建的恢复摘要。仅在 ingest 的 Material clarification Blocker 期间，
    它可保存 source-bound derived Intake Snapshot；该快照不是真实源，缺失时允许回读 Requirement。
-   聊天或 Specialist 输出都不能覆盖这些事实源。
+   会话摘要或 Specialist 自述不能覆盖这些事实源；用户当前明确指令按 Change Control 记录为可追踪授权，不要求用户重复批准。
 3. Orchestrator 独占状态迁移权。Specialist 只产出工件、Evidence、Blocker 和 `skill_result`，不能把 Task、Story、Gate 或 Phase 标为完成。
 4. **默认行动，不默认澄清**：L0 局部实现决策自主完成；L1 可逆工程决策按需求和仓库
    约定选择最小风险方案并记录假设；只有 L2 产品语义、公共契约、权限/安全、不可逆数据、
@@ -51,13 +51,9 @@ Agent；不提供自研 CLI、后台 Runtime 或绝对强制能力。
 - **用户显式调用 `$sdlc-orchestrator` 或明确采用/初始化**：该调用授权创建最小 `.sdlc/`
   工作集；若用户同时明确“按需求开始开发”，才授权当前 Scope 内必要的 L0/L1 工程动作。
   两者都不扩大为 Material Contract、权限安全、生产、破坏性或明显外部成本操作的授权。
-  - 从想法开始走 `author`：最多一轮集中澄清后可将 Candidate Requirement Baseline 暂存为
-    `.sdlc/REQUIREMENT.md`；只有用户确认后才把它绑定为 canonical Source 并建立 Anchor。
-  - 用户提供需求文档并要求按其开发走 `ingest`：首次必须完整读取该文档并完成轻量 Readiness
-    Pass；只集中询问会改变产品语义或验收的实质缺口，不默认重做 Formal Requirement Review。
-  - 判断工程上下文是 `greenfield` 还是 `established`：只有当前 Scope 可复用已有 stack、布局/模块、
-    build/test 约定和架构边界时才是 established。Greenfield 在 Task Breakdown 前形成唯一
-    `.sdlc/design/foundation.md` 并请求一次技术基线确认；Established 沿用可验证的现有架构。
+  - `author` 形成候选需求，`ingest` 采用用户给定需求；首次 ingest 完整读取源需求，恢复时按需读取。
+  - `greenfield` 在首次 Task 前冻结 Foundation；`established` 复用已有工程基线。
+  仅进入这些路径时读取下述采用协议，按其中的候选批准、Readiness 和 Foundation 规则执行。
 - **语义自动触发**：可以进入只读发现和采用预览，但不能跳过写入确认。
 - **未采用的一锤子任务**：不得静默创建 `.sdlc/` 或改变项目流程，按普通交付流程处理。
 - **一锤子修复或独立 Code Review**：不接管完整生命周期。使用项目已有的实现/审查流程。
@@ -68,13 +64,9 @@ Agent；不提供自研 CLI、后台 Runtime 或绝对强制能力。
 
 按以下顺序读取，足够完成当前决策就停止：
 
-1. L0：`.sdlc/state.yaml` 与 `.sdlc/memory/HANDOFF.md`。
-2. 在读取 L1 前重算并比较 Requirement Source identity；合法的 author pending-baseline 状态
-   （`PROJECT_INIT`、空 Accepted Source、Requirement Gate `PENDING`）跳过 Accepted Source
-   比较，但必须重算 `.sdlc/REQUIREMENT.md` 的 Candidate identity。Candidate 变化时清空该 Gate
-   Evidence、保持 `PENDING` 并以当前 identity 请求 Human approval；ingest clarification Blocker
-   则先比较 HANDOFF Intake Snapshot 的 source identity：匹配时复用并合并用户回答，缺失或不匹配时
-   允许重新完整读取 canonical Requirement Source；其他不匹配先进入 Change Control。
+1. L0：`.sdlc/state.yaml` 与存在且新鲜的 `.sdlc/memory/HANDOFF.md`；摘要缺失时从权威工件恢复并重建，不单独构成 Blocker。
+2. 在读取 L1 前重算并比较 Requirement Source identity；不匹配时按
+   [恢复协议](references/adoption-and-recovery.md) 区分未批准候选、ingest clarification 与已接受源变更；不得复用 stale Gate 或静默采用新需求。
 3. L1：`.sdlc/tasks.yaml` 与 current `task_ref` 指向的 focus Task Markdown；future stub 不上钻为
    完整 Task Context。
 4. L2：当前阶段允许的 Story 验收、Design 小节、ADR、QA/Release 工件。
@@ -88,7 +80,7 @@ HANDOFF，不得反向篡改事实源以迁就摘要。检测到 V0.1 或过渡�
 
 ## Orchestrator 循环
 
-每次只完成一个清晰的路由或状态决策：
+每次路由只处理一个清晰的动作或状态决策，但内部路由不是本轮工作的停止点。在已批准的当前 Task 内持续完成实现、必要验证、修复和独立 Review，直到达到用户定义的完成条件、尚待批准的 Human Gate 或无法自主解除的实质阻塞。不得因首次实现完成或 Specialist 返回而提前结束，也不得跨越当前 Task 人工验收。
 
 ```text
 Inspect state and minimal context

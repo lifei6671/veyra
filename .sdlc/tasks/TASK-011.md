@@ -3,7 +3,7 @@ id: TASK-011
 milestone_ref: M6
 dependencies: [TASK-010]
 risk: HIGH
-status: IN_PROGRESS
+status: DONE
 requirement_ref: docs/veyra.md
 requirement_identity: sha256:93b60509f5ff04b07dcab093aa82f26ff17cf6feb446b82c82dd6615fc2dbad4
 design_refs:
@@ -192,8 +192,8 @@ IME composing，右侧“导入/新建”。快捷 URL 不先询问名称；安�
 首次创建竞争、碰撞/熵源失败、save failure、无缓存 304、reload 失配和重启身份。真实 Windows WebView
 覆盖 URL、粘贴、文件各一次及浅/深、520/960 布局。
 
-**implementation_status：** PENDING
-**acceptance_status：** PENDING
+**implementation_status：** IMPLEMENTED
+**acceptance_status：** PASSED
 
 ## SF-002：V5 设置、新建/编辑与卡片菜单
 
@@ -219,8 +219,8 @@ exact visible-condition 测试；V5 完整迁移/重启、设置校验、URL 替
 删除和安全 DTO 精确键集合 Rust 测试。真实 WebView 使用无凭据 loopback URL 验证新建、编辑、二维码、
 删除和失败保留输入，不保存真实 token 截图。
 
-**implementation_status：** PENDING
-**acceptance_status：** PENDING
+**implementation_status：** IMPLEMENTED
+**acceptance_status：** PASSED
 
 ## SF-003：Clash 获取兼容、代理路径与应用内自动更新
 
@@ -246,8 +246,8 @@ ObservationOnly runtime 的 mixed port 为 unavailable 时，UI 禁用“使用 
 Veyra 的 ManagedCore 路由逻辑，并另测真实 unavailable 状态的 UI disabled/`proxyUnavailable`，不把 mock
 冒充现有 core 具备 mixed listener。可控时钟覆盖首次调度、完整周期、失败不重试、关闭取消与更新不 Apply。
 
-**implementation_status：** PENDING
-**acceptance_status：** PENDING
+**implementation_status：** IMPLEMENTED
+**acceptance_status：** PASSED
 
 ## SF-004：所选订阅投影与“使用”即时切换
 
@@ -282,8 +282,8 @@ generation、隐式/显式 Pool、Direct/Block/cross-reference 冲突、compile/
 并发/取消/退出和重启状态。命令与前端 decoder 穷举固定 union、operation ID 迟到终态和敏感值反向断言。
 真实 WebView 覆盖卡片/右键/键盘同一 Use、loading/focus、pending 收敛及 selected/applied 不一致文案。
 
-**implementation_status：** PENDING
-**acceptance_status：** PENDING
+**implementation_status：** IMPLEMENTED
+**acceptance_status：** PASSED
 
 ## Task 独立验收
 
@@ -320,7 +320,7 @@ cargo fmt --manifest-path src-tauri/Cargo.toml -- --check
 cargo clippy --manifest-path src-tauri/Cargo.toml --lib -- -D warnings
 ```
 
-**acceptance_status：** PENDING
+**acceptance_status：** PASSED
 
 ## 既有证据、Dependencies 与 Risk
 
@@ -407,3 +407,9 @@ LINK039-CODE-001 found a same-file retry issue and is FIXED by resetting the inp
 After later visual-foundation styling landed, independent incremental review found TASK011-DRIFT-001: the subscription grid had lost its frozen 300px cap and monotonic resize behavior, cards had fallen from 128px to 100px, and empty metadata placeholders were hidden. The bounded CSS remediation restores those three TASK-011 rules without changing React, state, IPC, runtime, Router, Settings, or future Tasks.
 
 Fresh evidence `ui-foundation-regression-041.json` records frontend99/lint, browser input26, bidirectional per-pixel geometry2962, four metadata variants, and the isolated Tauri debug build as PASS. Independent CHILD_AGENT rereview marks TASK011-DRIFT-001 FIXED with no new findings. Browser checks remain official Tauri mockIPC evidence; native WebView interaction is NOT_RUN and Human acceptance remains PENDING. No Delivery Gate, Task status, commit, push, release, or focus transition is made.
+
+## Delivery Gate closure 042 (2026-09-06)
+
+The final composite delivery target is `delivery-target-042.json`, SHA256 `79b7facad0a87defb4c83721824e71868e6150415b8a70ca370921e25994b652`. It composes the independently reviewed editor/runtime038 and link/input040 partitions with the current UI-foundation integration041 override, while excluding Settings planning and unrelated repository documentation. `delivery-gate-042.json` records PARTITIONED_PLUS_INTEGRATION review PASS, no open findings, and fresh applicable verification.
+
+USER:lifei explicitly accepted TASK-011 on 2026-09-06. `acceptance-042.json` records SF-001 through SF-004 and Task-level acceptance as PASSED. TASK-011 is therefore DONE. This closure does not authorize TASK-012 implementation, commit, push, release, or any TASK-013 through TASK-017 work.

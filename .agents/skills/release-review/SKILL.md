@@ -1,6 +1,6 @@
 ---
 name: release-review
-description: "Review release readiness, rollout, migration, rollback, dependency, observability, and QA evidence for a specific release target. Use before a release Human Gate or after a material release-plan change; do not deploy, migrate, roll back, or alter production on the first review pass."
+description: "Independently assess a specific SDLC release target's readiness before approval."
 ---
 
 # Release Review

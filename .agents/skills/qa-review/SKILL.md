@@ -1,6 +1,6 @@
 ---
 name: qa-review
-description: "Design QA cases, independently review a frozen case set, or verify an acceptance target against approved cases using mutually exclusive modes. Use for QA case design/review, QA entry assessment, regression, or experiment verification; do not use to silently fix product code or approve release."
+description: "Design SDLC QA cases, independently review cases, or verify an acceptance target against approved cases."
 ---
 
 # QA Review
@@ -18,7 +18,11 @@ description: "Design QA cases, independently review a frozen case set, or verify
   既有 Case 或 Show Case；
 - `case-review`：冻结 Test Case target identity、审查标准和 Producer 身份；
 - `verification`：已批准 Case、实现 target identity、delivery-owned Diff 摘要，以及
-  Build/Test/Delivery Review/Show Case Evidence。
+  当前级别适用的 Build/Test/Delivery Review Evidence。
+
+### Conditional Required Context
+
+- `verification`：仅当前 QA 深度或项目规则要求时，读取 RD Show Case Evidence 和独立 QA Case Review；不为 light/standard 补造未声明的前提。
 
 ### Optional Context
 
@@ -65,8 +69,8 @@ description: "Design QA cases, independently review a frozen case set, or verify
 - `case-design` 可生成 QA Case；Reviewer 模式只能在独立输出路径写 Review/Evidence/报告，
   不得修改被审 Case 或业务目标。
 - 不访问生产、不伪造无法运行的 Case；分别记录 `NOT_RUN` 或 `UNAVAILABLE`。
-- Test Case 变化会使 QA Case Review、受影响 QA Result 和 Release Readiness Evidence `STALE`，
-  必须重新审查再验证。
+- Test Case 变化会使已存在的 QA Case Review、受影响 QA Result 和 Release Readiness Evidence `STALE`。
+  仅当当前 QA 深度或项目规则要求独立 Case Review 时重新审查；其余重新执行适用验证，不额外创建 Case Review 前提。
 
 遵循 [Evidence 与 SkillResult 协议](../sdlc-orchestrator/references/evidence-and-results.md)。
 

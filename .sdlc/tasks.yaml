@@ -79,7 +79,7 @@ milestones:
   - id: M6
     title: 全协议订阅与完整配置
     objective: 交付全 sing-box 用户节点协议、受限订阅转换与可运行配置编译。
-    status: IN_PROGRESS
+    status: DONE
     completed:
       - id: TASK-007
         result: >-
@@ -115,6 +115,17 @@ milestones:
           - .sdlc/evidence/TASK-009/delivery-checkpoint-034.json
           - .sdlc/evidence/TASK-009/logo-delivery-review-034.json
           - .sdlc/evidence/TASK-009/acceptance-001.json#EVIDENCE-TASK-009-ACCEPTANCE-001
+      - id: TASK-011
+        result: >-
+          Subscription import, management, refresh scheduling, source editing, runtime switching,
+          and the reviewed subscription-page interaction set were delivered and accepted by USER:lifei.
+        target_identity: sha256:79b7facad0a87defb4c83721824e71868e6150415b8a70ca370921e25994b652
+        decision_refs:
+          - USER:lifei 2026-09-06 TASK-011 Human Task acceptance
+        evidence_refs:
+          - .sdlc/evidence/TASK-011/delivery-target-042.json
+          - .sdlc/evidence/TASK-011/delivery-gate-042.json
+          - .sdlc/evidence/TASK-011/acceptance-042.json#EVIDENCE-TASK-011-ACCEPTANCE-042
   - id: M7
     title: Windows 桌面联合验收
     objective: 以完整受管配置完成 GUI、Tray 与可观测性的 Windows E2E 验收。
@@ -143,8 +154,6 @@ milestones:
           并取得完整同进程时序。TASK010按已验证用户行为验收不代表这些观测通过或发布通过。
 
 window:
-  - id: TASK-011
-    task_ref: .sdlc/tasks/TASK-011.md
   - id: TASK-012
     milestone_ref: M7
     objective: 参考 Clash Verge Rev 的代理与规则页面，交付 Veyra 出口组选择和分流编辑 UI。

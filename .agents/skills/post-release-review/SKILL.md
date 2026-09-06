@@ -1,6 +1,6 @@
 ---
 name: post-release-review
-description: "Evaluate post-release technical health, business outcomes, and experiment results for a specific deployed identity and observation window. Use after rollout when deciding keep, iterate, rollback, or sunset; do not mutate production, close lifecycle state, or infer results without evidence."
+description: "Evaluate a deployed SDLC release after its defined observation window."
 ---
 
 # Post Release Review

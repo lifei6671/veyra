@@ -61,7 +61,7 @@ Dependency、公共契约或持久数据语义变化所需的独立授权。
 先读取 L0，并在加载 L1 前重算 Requirement Source identity：
 
 1. `.sdlc/state.yaml`
-2. `.sdlc/memory/HANDOFF.md`
+2. 存在且新鲜的 `.sdlc/memory/HANDOFF.md`；缺失时从 State、Task、Design 和当前 Evidence 恢复后重建。摘要缺失不单独构成 Blocker；真正的批准或交付基线缺失仍需解决。
 
 校验至少包括：
 
@@ -139,4 +139,4 @@ User current instruction
 恢复不等于扩大授权。用户的“继续”只允许执行 `next` 对应的已批准范围；只有本轮刚展示、identity
 未变化、独立 Review 当前且唯一 Human pending 的 Foundation 可被解释为该 Foundation 的批准。遇到其它 Human Gate、
 已接受需求变化、Foundation/Material dependency、Scope 扩张、公共/持久化/运行/运维契约变化、权限安全、
-批量重构、生产发布或破坏性操作时仍需即时确认；低影响可逆的内部选择不因对象类型而自动升级。
+批量重构、生产发布或破坏性操作时，先核对现有授权；只有尚无覆盖该动作的有效授权或超出已批准边界才请求确认。已批准动作引用原批准，不重复询问；未通过的 Human Gate、已变化的目标身份和未授权操作仍不能跳过。低影响可逆的内部选择不因对象类型而自动升级。

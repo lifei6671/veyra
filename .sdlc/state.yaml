@@ -61,42 +61,15 @@ anchor:
 
 assumptions: []
 
-phase: EXECUTING
+phase: PLAN
 
 focus:
-  task: TASK-011
+  task: TASK-012
 
-gates:
-  technical_design:
-    status: PASSED
-    target_identity: sha256:6736cc73cea6e3e92db0c9db0443e2c4f4cb1caff4f86b6eac3387d9edf603e7
-    evidence:
-      - .sdlc/design/TASK-011-subscription-ui.md
-      - .sdlc/evidence/TASK-011/proposed-boundary-001.json
-      - .sdlc/evidence/TASK-011/design-review-002.json
-      - .sdlc/evidence/TASK-011/ui-reference-003.json
-      - .sdlc/evidence/TASK-011/ui-alignment-review-003.json
-      - .sdlc/evidence/TASK-011/approval-004.json
-      - docs/decisions/DCR-018-subscription-use.md
-      - .sdlc/evidence/TASK-011/use-decision-006.json
-      - .sdlc/design/TASK-011-subscription-expansion-008.md
-      - .sdlc/evidence/TASK-011/expansion-design-review-008.json
-      - .sdlc/evidence/TASK-011/expansion-approval-candidate-008.json
-      - .sdlc/evidence/TASK-011/expansion-approval-009.json
-      - .sdlc/design/TASK-011-expansion-frozen-009.json
-    reviewed_by: CHILD_AGENT:/root/application_delivery_reviewer
-    approved_by: USER:lifei expansion-approval-009
-    evaluated_at: null
-  delivery:
-    status: PENDING
-    target_identity: null
-    evidence: []
-    reviewed_by: null
-    approved_by: null
-    evaluated_at: null
+gates: {}
 blocked: null
 
 next:
-  skill: implementation
-  target: TASK-011
-  reason: Approved frozen design and current Task readiness verified; implement backend data/request, frontend and root-owned runtime integration partitions.
+  skill: technical-design
+  target: TASK-012
+  reason: Enter the planning/design boundary for the high-risk proxy-group and routing UI stub; do not materialize or implement TASK-012 until its design boundary is reviewed and frozen.

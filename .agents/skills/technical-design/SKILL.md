@@ -1,6 +1,6 @@
 ---
 name: technical-design
-description: "Produce a greenfield foundation or remediate traceable designs for material engineering boundaries. Use before the first task in a greenfield project, or when a task changes architecture, public API, persistence, permissions, security, concurrency, deployment, or another material decision; do not use for design approval, code implementation, QA, or release authorization."
+description: "Design an SDLC foundation or resolve a task's material engineering decision before implementation."
 ---
 
 # Technical Design
@@ -14,7 +14,7 @@ description: "Produce a greenfield foundation or remediate traceable designs for
 ### Required Context
 
 - 当前 Anchor、Requirement Source、Acceptance 与约束；
-- `.sdlc/state.yaml`、`.sdlc/memory/HANDOFF.md`；
+- `.sdlc/state.yaml`；
 - 明确适用的兼容性、安全和运行约束。
 
 ### Conditional Required Context
@@ -25,6 +25,8 @@ description: "Produce a greenfield foundation or remediate traceable designs for
 - `remediation`：需修复的 Design Review Finding 或 Frozen Design/DCR 上下文。
 
 ### Optional Context
+
+- 存在且新鲜的 `.sdlc/memory/HANDOFF.md`；缺失或过期时从权威工件恢复，交由 Orchestrator 重建摘要，不能仅因摘要缺失阻塞。
 
 - 已存在的 Story、`.sdlc/design/INDEX.md`、Existing ADR/DCR 和相关源码符号；
 - 竞品或技术调研、POC Evidence、部署和容量事实；

@@ -1,6 +1,6 @@
 ---
 name: code-delivery-review
-description: "Independently review one frozen SDLC Task delivery unit against its acceptance, frozen design, complete delivery-owned inventory, verification evidence, coverage, and freshness. Use only after implementation freezes a candidate target; do not use to implement the task, control lifecycle state, or review arbitrary branches, commits, pull requests, or patches."
+description: "Independently review a frozen SDLC task delivery against acceptance and verification evidence."
 ---
 
 # Code Delivery Review
@@ -112,7 +112,7 @@ Code Delivery Reviewer 分离。
    [Incremental Re-review](references/review/incremental-rereview.md)。Planner 使用 Previous
    Findings 与修复 Diff 只调度受影响 Lane、分区和 Integration 边界；广泛修复、Contract/Scope
    变化、Coverage gap 或 material interaction 变化时扩大为必要的完整复审。
-5. Orchestrator 默认最多调度三轮自动修复闭环；Reviewer 只返回 Finding，不自行修复。
+5. Reviewer 只返回 Finding，不自行修复。连续三轮未闭合时，Orchestrator 按 [增量复审](references/review/incremental-rereview.md) 重新诊断进展和策略，不因轮数自动请求批准或停止有依据的修复。
    修复需要扩大 Scope、改变公共/持久化/运行/运维契约、重要运行依赖、权限安全或架构时
    立即停止并交回 Change Control，不得为了通过审查扩大范围。
 6. 覆盖每项子功能和 Task 级整体 Acceptance，但 Review Result 只提供独立审查 Evidence；
