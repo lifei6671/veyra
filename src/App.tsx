@@ -219,7 +219,7 @@ export default function App() {
       >
         <header className="home-header"><h1 id={`page-${item.id}-title`}>{item.label}</h1></header>
         <div className="page-scroll"><section className="placeholder-card" aria-label={`${item.label}页面状态`}>
-          <p>此功能暂未开放</p>
+          <p>{item.id === "settings" ? "真实设置能力尚未定义" : "此功能暂未开放"}</p>
         </section></div>
       </main>)}
       {failureToast !== null ? <div className="failure-toast" role="alert"><span>{failureToast.message}</span><button type="button" aria-label="关闭失败提示" onClick={() => setFailureToast(null)}>关闭</button></div> : null}

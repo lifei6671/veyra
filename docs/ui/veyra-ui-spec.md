@@ -204,7 +204,7 @@ Surface
 标准为 content-surface、1px divider、8px radius、16px padding、无 shadow；dense variant
 用 12px padding。领域 Card 继续持有自己的数据、选中和动作。
 
-### 5.4 Settings
+### 5.4 Settings（future gate）
 
 ```text
 SettingsPage
@@ -218,6 +218,7 @@ SettingsPage
                 └── Control | Chevron | InlineLoading
 ```
 
+- 上述 composition 仅描述真实 Settings Domain 获批后的映射目标，不授权创建字段。
 - 桌面两列，窄窗口单列。
 - SettingSection 采用 standard Surface；组间 gap 12px。
 - SettingRow 使用 label 14/20、description 13/18；控制器右对齐。
@@ -225,7 +226,9 @@ SettingsPage
   44px。该值是 Veyra Decision。
 - 即时布尔值用 Switch；多选/确认继续用 Checkbox。
 - 复杂配置进入 Dialog，主页面只保留扫描式 summary。
-- Settings 的字段、值、IPC 和保存模型必须来自 Veyra 自己的需求，不能复制参考项目。
+- Settings 的字段、值、IPC 和保存模型必须来自 Veyra 自己的已批准需求，不能复制参考项目。
+- 在此之前生产 Settings 保持简洁 placeholder；Runtime status、Observation、连接数、
+  config revision 和 runtime memory 不得作为 Settings 主体。
 
 ### 5.5 Dense lists
 
@@ -261,19 +264,19 @@ Reference Evidence：`docs/ui/clash-verge-ui-analysis.md:221-237,435-436`。
 | Input | toolbar raw input | KEEP |
 | Select / Dialog Input | raw select/input + `.outlined-field` | ADJUST height；KEEP composition |
 | Checkbox | raw checkbox | KEEP |
-| Switch | 无 | NEW，仅为 Settings 即时布尔设置；42×26 |
+| Switch | `Switch` | KEEP primitive；当前只在 development-only Visual Harness 验证，生产调用等待真实 Domain |
 | Dialog | Subscription inline Dialog | REFACTOR shell，保留 state/focus/API |
 | Specialized editor Dialog | `DocumentEditor` | ADJUST |
 | Context Menu | `SubscriptionMenu` | ADJUST |
 | Tooltip | native `title` | NEW minimal wrapper only when a real call site migrates |
 | Notice / Toast | `.failure-toast/.subscription-notice` | REFACTOR presentational layer；保留各自 state/timer |
 | Empty / Loading | `.subscription-state/.placeholder-card` | ADJUST shared visual tokens，不合并业务状态 |
-| SettingSection | 无 | NEW，Settings domain only |
-| SettingRow | 无 | NEW，Settings domain only |
+| SettingSection | `SettingSection` | KEEP primitive；当前只在 development-only Visual Harness 验证 |
+| SettingRow | `SettingRow` | KEEP primitive；当前只在 development-only Visual Harness 验证 |
 | Generic List | 无 | 不新增；使用领域列表 + shared dense tokens |
 
-这里没有 `REPLACE`。Settings/Switch 等是当前缺失模式，新增必须由真实页面需求触发；
-不能为了让目录看起来完整而预建。
+这里没有 `REPLACE`。SettingSection/SettingRow/Switch 可作为明确标识的开发期 visual
+fixture 存在，但进入生产 Settings 必须由真实页面需求触发；不能为了提高密度而创造字段。
 
 ## 7. Page-specific Target Rules
 
@@ -287,13 +290,15 @@ Reference Evidence：`docs/ui/clash-verge-ui-analysis.md:221-237,435-436`。
 
 ### 7.2 Proxies
 
-- 在 Settings 视觉语言冻结后实施。
+- 在 Subscriptions Golden Page 经人工视觉确认后另行实施。
 - 使用 full Page；header actions、mode control、loading/empty/error/render、GroupList 分层。
 - GroupHeader → optional tools → domain rows；selected 使用 3px primary edge。
 - expand/collapse、延迟、测试、节点字段全部由 Veyra/sing-box 模型决定。
 
 ### 7.3 Subscriptions
 
+- 第一张生产 Golden Page，用于冻结 Shell、Sidebar、PageHeader、toolbar、surface、
+  card/grid、controls 和反馈状态的视觉语言。
 - 保留现有 toolbar → states → grid → dialogs/menu/editor composition。
 - grid min column `260px`；Card radius 8、dense padding 12、常态低强度 divider。
 - active card 使用 3px primary edge 和 primary title，不通过外投影表达。
@@ -307,34 +312,41 @@ Reference Evidence：`docs/ui/clash-verge-ui-analysis.md:221-237,435-436`。
 
 ### 7.5 Settings
 
-- 第一阶段实施，用于验证完整基础视觉语言。
-- default Page → two-column SettingsGrid → SettingSection → SettingRow。
-- 必须覆盖 direct control、clickable row、inline loading、disabled、error 和 Dialog。
-- 复杂表单不展开成大 Card；主页面维持扫描密度。
+- 当前不是生产 Golden Page，保持简洁 placeholder。
+- 不使用 runtime/observation/connection/config revision/memory 填充页面。
+- 只有产品与技术方案先冻结 Settings field、state ownership、persistence、IPC、platform
+  behavior、error/loading semantics 后，才映射为 two-column SettingsGrid →
+  SettingSection → SettingRow。
+- 暂无真实调用场景的基础 primitive 只允许在 development-only Visual Harness 验证；
+  Harness 不进入 Sidebar、Router 或生产信息架构。
 
 ## 8. Migration Plan
 
 本计划是后续工作顺序，不授权本阶段改代码。每阶段应作为独立、可回滚、可验收的
 UI delivery unit，不一次性重写全部页面。
 
-### Phase 1 — AppShell + Sidebar + Settings
+### Phase 1 — AppShell + Sidebar + Subscriptions Golden Page
 
-目标：冻结整个应用的背景层级、Page geometry、surface、control、state 和 setting row
-语言。
+目标：用已有真实订阅行为冻结整个应用的背景层级、Page geometry、surface、toolbar、
+card/grid、control 和 feedback state 语言。
 
 顺序：
 
 1. 在现有 CSS variable 体系中补齐本规格 token；不引入新 Theme Framework。
 2. 仅抽离 AppShell/Sidebar/Page 的纯展示边界；保留 `activePage + hidden`、runtime 与 IPC。
 3. SidebarTraffic 直接 KEEP；SidebarItem 只做 token 收敛。
-4. 建立 Settings 的最小 SettingSection/SettingRow/Switch/Dialog composition。
-5. 统一 Notice/Toast 外观，但保留 App/Subscription 各自 state 与 timer。
-6. 验证 light/dark、窄窗口、键盘 focus、disabled/busy、Dialog 和反馈状态。
+4. 收敛 Subscriptions 的 Grid/Card/Button/Input/Dialog/Menu/Notice；保持其 state、IPC、
+   query、focus、keyboard 和 DocumentEditor 行为。
+5. 对无生产调用场景的 SettingSection/SettingRow/Switch 等 primitive，只建立
+   development-only Visual Harness，不创建设置字段。
+6. Settings 收敛为 truthful placeholder，等待真实 Domain gate。
+7. 验证 light/dark、键盘 focus、selected、disabled/busy、Dialog、Context Menu 和 Notice。
 
 停止条件：Shell、Sidebar、PageHeader、Page spacing、Surface、Button、IconButton、Input、
-Select、Switch、Dialog、Notice 的值均能追溯到本文，不再由页面实现者临时决定。
+Select、Switch、Dialog、Notice 的值均能追溯到本文，不再由页面实现者临时决定；
+Subscriptions 截图与逐项 parity review 可供人工验收。人工确认前不进入 Proxies。
 
-### Phase 2 — Proxies
+### Phase 2 — Proxies（需 Phase 1 人工确认）
 
 目标：用已冻结的视觉语言验证 full Page、dense group list、selected、expand/collapse 和
 内部 scroll。
@@ -343,13 +355,14 @@ Select、Switch、Dialog、Notice 的值均能追溯到本文，不再由页面�
 - 先做非虚拟领域列表；只有真实数据量证明需要时再加入 virtualization。
 - 不从 Clash Verge 复制 group/provider/rule model。
 
-### Phase 3 — Subscriptions normalization
+### Phase 3 — Settings Domain gate
 
-目标：保持已工作的订阅行为，只收敛 Card/Grid/Button/Input/Dialog/Menu/Notice。
+目标：先冻结真实 Settings 契约，再决定生产页面内容；这不是当前实现授权。
 
-- CSS/token 调整优先。
-- 只有出现实际跨页面复用时，才抽 Dialog/Notice 的 presentational component。
-- 回归所有 loading/error/empty/active/selected/busy、键盘和 focus 行为。
+- 冻结 Settings field、state ownership、persistence、IPC、platform behavior。
+- 冻结 error/loading/busy/rollback 语义。
+- 冻结后才把真实设置映射为 SettingSection → SettingRow → Control/Chevron。
+- 不反向为了使用 visual primitive 而创造业务设置。
 
 ### Phase 4 — Overview
 
