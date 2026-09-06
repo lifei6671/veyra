@@ -1,0 +1,23 @@
+{
+  "task": "TASK-012",
+  "recorded_at": "2026-09-06T11:53:40.8948930Z",
+  "target_identity": "sha256:d2fe1dad626080775628b8925b1a428514cadd6bb0dccbbcbb9d71af6b539f00",
+  "results": [
+    {"type":"test","command":"cargo test --manifest-path src-tauri/Cargo.toml singbox::compiler::tests --lib","result":"PASS","summary":"38 tests; exact Pool/Direct/Block final mapping and closed final validation included."},
+    {"type":"test","command":"cargo test --manifest-path src-tauri/Cargo.toml stored_default_target_is_carried_exactly_into_compilation --lib","result":"PASS","summary":"Persisted Direct/Block and Pool projection reach the exact Compiler final; invalid default states remain rejected."},
+    {"type":"test","command":"cargo test --manifest-path src-tauri/Cargo.toml application::proxy_routing::tests --lib","result":"PASS","summary":"16 authoritative snapshot, exact DTO, CAS, generation, transaction and canonical Apply tests."},
+    {"type":"test","command":"cargo test --manifest-path src-tauri/Cargo.toml routing_apply_ --lib","result":"PASS","summary":"3 operation/generation-bound Apply terminal tests."},
+    {"type":"test","command":"cargo test --manifest-path src-tauri/Cargo.toml selected_subscription --lib","result":"PASS","summary":"6 DCR-019 projection tests."},
+    {"type":"test","command":"cargo test --manifest-path src-tauri/Cargo.toml manual_selection --lib","result":"PASS","summary":"3 Manual selection eligibility/generation/read-back classification tests."},
+    {"type":"platform","command":"cargo test --manifest-path src-tauri/Cargo.toml selector_put_and_get_use_the_fixed_encoded_endpoint_and_authenticated_shape --lib","result":"PASS","summary":"The owned fixed 127.0.0.1:9090 fixture verified authenticated encoded selector PUT followed by authoritative GET read-back."},
+    {"type":"test","command":"pnpm test","result":"PASS","summary":"8 files, 112 tests, including draft filter membership/selection invalidation and symmetric probe URL boundaries."},
+    {"type":"lint","command":"pnpm lint","result":"PASS"},
+    {"type":"build","command":"pnpm build","result":"PASS","summary":"Production frontend build passed; existing chunk-size warning only."},
+    {"type":"lint","command":"cargo clippy --manifest-path src-tauri/Cargo.toml --lib -- -D warnings","result":"PASS"},
+    {"type":"format","command":"cargo fmt --manifest-path src-tauri/Cargo.toml -- --check","result":"PASS"},
+    {"type":"diff","command":"git diff --check","result":"PASS","summary":"No whitespace errors; line-ending conversion notices only."},
+    {"type":"native_build","command":"pnpm tauri build --debug --no-bundle --config .sdlc/evidence/TASK-012/native-config-001.json","result":"PASS","artifact_sha256":"87d1a252934290f3ef6448e4658550db1bf13826e22e1882917950705b730723"},
+    {"type":"native_integration","method":"Isolated Windows Tauri Save/Apply/selector/restart chain","result":"PASS","summary":"Pending structural configuration reached Ready/applied; Manual node-a to node-b persisted and was confirmed by same-owned-runtime Clash API read-back; structural generation remained 3; restart retained node-b."
+    }
+  ]
+}

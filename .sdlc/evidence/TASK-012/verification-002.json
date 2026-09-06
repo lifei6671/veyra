@@ -1,0 +1,104 @@
+{
+  "task": "TASK-012",
+  "recorded_at": "2026-09-06T11:23:49.3923106Z",
+  "target_identity": "sha256:119c63942b2de5e02a7f7230c7466e2a4bc53a392055bd74299db5326cb944ce",
+  "results": [
+    {
+      "type": "test",
+      "command": "cargo test --manifest-path src-tauri/Cargo.toml singbox::compiler::tests --lib",
+      "result": "PASS",
+      "summary": "38 Compiler tests passed, including exact Pool/Direct/Block final outbound and closed final read-back validation."
+    },
+    {
+      "type": "test",
+      "command": "cargo test --manifest-path src-tauri/Cargo.toml stored_default_target_is_carried_exactly_into_compilation --lib",
+      "result": "PASS",
+      "summary": "Persisted Pool, Unconfigured projection, Direct, and Block paths reached Compiler with the exact expected route.final."
+    },
+    {
+      "type": "test",
+      "command": "cargo test --manifest-path src-tauri/Cargo.toml application::proxy_routing::tests --lib",
+      "result": "PASS",
+      "summary": "16 authoritative snapshot, mutation, CAS, generation, validation, and canonical apply mapping tests passed."
+    },
+    {
+      "type": "test",
+      "command": "cargo test --manifest-path src-tauri/Cargo.toml routing_apply_ --lib",
+      "result": "PASS",
+      "summary": "3 operation- and generation-bound routing Apply terminal tests passed."
+    },
+    {
+      "type": "test",
+      "command": "cargo test --manifest-path src-tauri/Cargo.toml selected_subscription --lib",
+      "result": "PASS",
+      "summary": "6 active-subscription and DCR-019 projection tests passed."
+    },
+    {
+      "type": "test",
+      "command": "cargo test --manifest-path src-tauri/Cargo.toml manual_selection --lib",
+      "result": "PASS",
+      "summary": "3 manual selection generation, eligibility, and read-back classification tests passed."
+    },
+    {
+      "type": "test",
+      "command": "cargo test --manifest-path src-tauri/Cargo.toml selector_url_and_body --lib",
+      "result": "PASS",
+      "summary": "1 closed selector URL/body shape test passed."
+    },
+    {
+      "type": "test",
+      "command": "cargo test --manifest-path src-tauri/Cargo.toml proxy_routing_ipc_capability_is_main_only_and_names_exactly_two_commands --lib",
+      "result": "PASS",
+      "summary": "The main-only capability exposes exactly the two frozen routing IPC commands."
+    },
+    {
+      "type": "test",
+      "command": "pnpm test",
+      "result": "PASS",
+      "summary": "8 files and 110 frontend tests passed."
+    },
+    {
+      "type": "lint",
+      "command": "pnpm lint",
+      "result": "PASS",
+      "summary": "TypeScript noEmit check passed."
+    },
+    {
+      "type": "build",
+      "command": "pnpm build",
+      "result": "PASS",
+      "summary": "Frontend production build passed; Vite reported only its existing non-blocking chunk-size warning."
+    },
+    {
+      "type": "lint",
+      "command": "cargo clippy --manifest-path src-tauri/Cargo.toml --lib -- -D warnings",
+      "result": "PASS",
+      "summary": "Rust library clippy passed with warnings denied."
+    },
+    {
+      "type": "format",
+      "command": "cargo fmt --manifest-path src-tauri/Cargo.toml -- --check",
+      "result": "PASS",
+      "summary": "Rust formatting check passed."
+    },
+    {
+      "type": "diff",
+      "command": "git diff --check",
+      "result": "PASS",
+      "summary": "No whitespace errors; Git emitted line-ending conversion notices only."
+    },
+    {
+      "type": "native_build",
+      "command": "pnpm tauri build --debug --no-bundle --config .sdlc/evidence/TASK-012/native-config-001.json",
+      "result": "PASS",
+      "summary": "Current-source isolated Windows Tauri executable built successfully.",
+      "artifact_sha256": "84efecb8bf60de3f870ff25ee003e52f7fd30f960a295d697cb379ab04d347aa"
+    },
+    {
+      "type": "platform",
+      "method": "Fixed 127.0.0.1:9090 owned sing-box selector fixture",
+      "result": "UNAVAILABLE",
+      "summary": "The fixed controller address is occupied by an existing process outside this isolated verification run; it was not terminated or queried. Stopped-runtime selectorSavedOnly was verified separately and is not claimed as hot-switch proof."
+    }
+  ]
+}

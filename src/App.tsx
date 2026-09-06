@@ -4,6 +4,9 @@ import { bootstrapStatus, type BootstrapStatus } from "./lib/bootstrap";
 import { formatTraffic, trafficTrend } from "./lib/traffic-trend";
 import { SubscriptionPage } from "./components/subscriptions/SubscriptionPage";
 import { SidebarTraffic } from "./components/layout/SidebarTraffic";
+import { ProxiesPage } from "./components/proxies/ProxiesPage";
+import { RoutingPage } from "./components/routing/RoutingPage";
+import { ProxyRoutingProvider } from "./lib/proxy-routing";
 import {
   acceptNewerObservation,
   runtimeObservationSnapshot,
@@ -162,7 +165,7 @@ export default function App() {
           observation.sidecarLifecycle === "ready" ? "服务运行中" : "尚未连接运行内核";
 
   return (
-    <div className="app-shell">
+    <ProxyRoutingProvider><div className="app-shell">
       <aside className="sidebar" aria-label="主导航与即时网速">
         <div className="brand"><img className="brand-mark" src={appLogo} width={32} height={32} alt="" /><span>{status.application}</span></div>
         <nav aria-label="主导航">
@@ -210,7 +213,9 @@ export default function App() {
         </div>
       </main>
       <SubscriptionPage active={activePage === "subscriptions"} observation={observation} />
-      {navigationItems.filter((item) => item.id !== "home" && item.id !== "subscriptions").map((item) => <main
+      <ProxiesPage active={activePage === "outbounds"} />
+      <RoutingPage active={activePage === "routing"} />
+      {navigationItems.filter((item) => item.id !== "home" && item.id !== "subscriptions" && item.id !== "outbounds" && item.id !== "routing").map((item) => <main
         key={item.id}
         className="home-content page-placeholder"
         id={`page-${item.id}`}
@@ -223,7 +228,7 @@ export default function App() {
         </section></div>
       </main>)}
       {failureToast !== null ? <div className="failure-toast" role="alert"><span>{failureToast.message}</span><button type="button" aria-label="关闭失败提示" onClick={() => setFailureToast(null)}>关闭</button></div> : null}
-    </div>
+    </div></ProxyRoutingProvider>
   );
 }
 

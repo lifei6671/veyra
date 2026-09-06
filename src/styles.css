@@ -994,3 +994,148 @@ textarea { resize: none; }
 .local-file-picker button { display: inline-flex; align-items: center; gap: 8px; flex-shrink: 0; }
 .local-file-picker svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linejoin: round; }
 .local-file-picker > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--secondary-text); font-size: 13px; }
+
+/* TASK-012 dense Proxies/Routing pages. Shell and sidebar geometry remain owned above. */
+.proxy-routing-scroll {
+  display: block;
+  padding: var(--page-padding);
+  overflow-x: hidden;
+  scrollbar-gutter: stable;
+}
+
+.proxy-header-actions,
+.proxy-group-actions,
+.route-priority { display: flex; align-items: center; gap: var(--component-gap-compact); }
+
+.apply-badge,
+.selector-state {
+  padding: 2px 7px;
+  border-radius: 999px;
+  color: var(--secondary-text);
+  background: var(--selection);
+  font-size: var(--font-caption-size);
+  line-height: var(--font-caption-line-height);
+  white-space: nowrap;
+}
+.apply-savedPendingApply,
+.apply-savedApplyFailed,
+.apply-applyUnknown,
+.selector-savedOnly,
+.selector-notApplied,
+.selector-unknown { color: var(--warning); }
+.apply-applied,
+.selector-inSync { color: var(--success); }
+
+.proxy-groups,
+.route-list { display: grid; gap: var(--component-gap-compact); }
+
+.proxy-group,
+.all-nodes,
+.surface-row,
+.route-row {
+  min-width: 0;
+  border: 1px solid var(--divider);
+  border-radius: var(--surface-radius);
+  background: var(--surface-background);
+}
+
+.proxy-group { overflow: hidden; }
+.proxy-group > header { display: flex; min-height: 54px; align-items: center; justify-content: space-between; gap: var(--component-gap); padding: 8px var(--surface-padding-dense); }
+.proxy-expand { display: flex; min-width: 0; flex: 1; align-items: center; gap: 10px; padding: 0; border: 0; color: var(--primary-text); background: transparent; text-align: left; cursor: pointer; }
+.proxy-expand > span:last-child,
+.proxy-node-row > span:first-child,
+.route-copy { display: grid; min-width: 0; }
+.proxy-expand strong,
+.proxy-node-row strong,
+.all-node strong,
+.route-copy strong { overflow: hidden; font-size: var(--font-body-size); line-height: var(--font-body-line-height); text-overflow: ellipsis; white-space: nowrap; }
+.proxy-expand small,
+.proxy-node-row small,
+.route-copy small { overflow: hidden; color: var(--secondary-text); font-size: var(--font-caption-size); line-height: var(--font-caption-line-height); text-overflow: ellipsis; white-space: nowrap; }
+.chevron { width: 18px; flex: 0 0 18px; color: var(--secondary-text); font-size: 21px; text-align: center; }
+.icon-button { display: grid; width: var(--icon-button-size); height: var(--icon-button-size); flex: 0 0 var(--icon-button-size); padding: 0; border: 0; border-radius: 4px; place-content: center; color: var(--primary-text); background: transparent; cursor: pointer; }
+.icon-button:hover:not(:disabled) { background: var(--selection); }
+.icon-button:disabled { opacity: var(--disabled-opacity); cursor: default; }
+.danger-icon { color: var(--error); }
+.is-disabled { opacity: var(--disabled-opacity); }
+
+.proxy-node-list { border-top: 1px solid var(--divider); }
+.proxy-node-row { display: flex; width: 100%; min-height: 46px; align-items: center; justify-content: space-between; gap: var(--component-gap); padding: 7px var(--surface-padding-dense) 7px 38px; border: 0; border-top: 1px solid var(--divider); color: var(--primary-text); background: transparent; text-align: left; cursor: pointer; }
+.proxy-node-row:first-child { border-top: 0; }
+.proxy-node-row:hover:not(:disabled) { background: var(--selection); }
+.proxy-node-row.is-selected { box-shadow: inset 3px 0 0 var(--primary); color: var(--primary); background: var(--primary-alpha); }
+.proxy-node-row.is-pending { background: var(--selection); }
+.proxy-node-row:disabled { cursor: default; }
+.selected-mark,
+.secondary-copy,
+.inline-pending { flex-shrink: 0; color: var(--secondary-text); font-size: var(--font-caption-size); }
+.selected-mark { color: var(--primary); }
+.inline-pending { color: var(--primary); }
+.dense-empty { padding: var(--surface-padding-dense); color: var(--secondary-text); font-size: var(--font-supporting-size); }
+
+.all-nodes { margin-top: var(--section-gap); overflow: hidden; }
+.all-nodes > header { display: flex; align-items: center; justify-content: space-between; padding: var(--surface-padding-dense); border-bottom: 1px solid var(--divider); }
+.all-nodes h2 { font-size: var(--font-section-title-size); line-height: var(--font-section-title-line-height); }
+.all-nodes header span { color: var(--secondary-text); font-size: var(--font-caption-size); }
+.all-node-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); }
+.all-node { display: grid; min-width: 0; padding: 9px var(--surface-padding-dense); border-right: 1px solid var(--divider); border-bottom: 1px solid var(--divider); }
+.all-node span { color: var(--secondary-text); font-size: var(--font-caption-size); }
+
+.proxy-routing-state { display: grid; min-height: 220px; gap: var(--component-gap); place-content: center; color: var(--secondary-text); text-align: center; }
+.proxy-routing-state button { justify-self: center; }
+.surface-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(150px, 240px); align-items: center; gap: var(--component-gap-large); margin-bottom: var(--section-gap); padding: var(--surface-padding); }
+.surface-row > div { display: grid; }
+.surface-row strong { font-size: var(--font-body-size); line-height: var(--font-body-line-height); }
+.surface-row small { color: var(--secondary-text); font-size: var(--font-supporting-size); line-height: var(--font-supporting-line-height); }
+.surface-row select,
+.proxy-routing-dialog input,
+.proxy-routing-dialog select,
+.proxy-routing-dialog textarea { width: 100%; border: 1px solid var(--divider); border-radius: var(--control-radius); color: var(--primary-text); background: var(--control-background); font-size: var(--font-body-size); }
+.surface-row select,
+.proxy-routing-dialog input,
+.proxy-routing-dialog select { height: var(--control-height); padding: 0 10px; }
+.proxy-routing-dialog textarea { padding: 10px; }
+
+.route-row { display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto auto; align-items: center; gap: var(--component-gap); min-height: 56px; padding: 7px var(--surface-padding-dense); }
+.route-priority { gap: 2px; }
+.route-priority .icon-button { width: 26px; height: 26px; flex-basis: 26px; }
+.route-enabled { color: var(--secondary-text); font-size: var(--font-caption-size); }
+
+.proxy-routing-notice { position: fixed; right: var(--notice-edge); bottom: var(--notice-edge); z-index: 40; display: flex; max-width: min(var(--notice-max-width), calc(100% - 2 * var(--notice-edge))); align-items: center; gap: var(--notice-gap); padding: 11px 14px; border: 1px solid var(--divider); border-left-width: 4px; border-radius: var(--popup-radius); background: var(--popup-background); font-size: var(--font-supporting-size); }
+.proxy-routing-notice button { border: 0; color: var(--primary); background: transparent; cursor: pointer; }
+.proxy-routing-notice.notice-success { border-left-color: var(--success); }
+.proxy-routing-notice.notice-warning { border-left-color: var(--warning); }
+.proxy-routing-notice.notice-error { border-left-color: var(--error); }
+
+.proxy-context-menu { position: fixed; z-index: 35; width: 140px; padding: 4px; border: 1px solid var(--divider); border-radius: var(--popup-radius); background: var(--popup-background); }
+.proxy-context-menu button { width: 100%; padding: 7px 10px; border: 0; border-radius: 6px; color: var(--primary-text); background: transparent; text-align: left; }
+.proxy-context-menu button:hover:not(:disabled) { background: var(--selection); }
+.proxy-context-menu .danger-item { color: var(--error); }
+
+.proxy-routing-dialog { width: min(560px, calc(100vw - 24px)); max-height: 86dvh; overflow: auto; border: 1px solid var(--divider); border-radius: var(--popup-radius); color: var(--primary-text); background: var(--popup-background); }
+.proxy-routing-dialog form { display: grid; }
+.proxy-routing-dialog header,
+.proxy-routing-dialog footer { padding: var(--surface-padding); }
+.proxy-routing-dialog header { border-bottom: 1px solid var(--divider); }
+.proxy-routing-dialog footer { display: flex; justify-content: flex-end; gap: var(--component-gap-compact); border-top: 1px solid var(--divider); }
+.proxy-routing-dialog h2 { font-size: var(--font-section-title-size); line-height: var(--font-section-title-line-height); }
+.dialog-fields { display: grid; gap: var(--component-gap-large); padding: var(--surface-padding); }
+.dialog-fields > label,
+.dialog-grid > label { display: grid; gap: 5px; color: var(--secondary-text); font-size: var(--font-supporting-size); }
+.dialog-fields fieldset { display: flex; flex-wrap: wrap; gap: var(--component-gap); margin: 0; padding: var(--surface-padding-dense); border: 1px solid var(--divider); border-radius: var(--control-radius); }
+.dialog-fields legend { color: var(--secondary-text); font-size: var(--font-caption-size); }
+.dialog-fields .checkbox-line { display: flex; align-items: center; gap: var(--component-gap-compact); color: var(--primary-text); }
+.dialog-fields .checkbox-line input { width: 16px; height: 16px; margin: 0; padding: 0; accent-color: var(--primary); }
+.dialog-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--component-gap); }
+.dialog-grid select[multiple] { height: 92px; padding: 4px; }
+.dialog-error { color: var(--error); font-size: var(--font-supporting-size); }
+
+@media (max-width: 680px) {
+  .proxy-header-actions .apply-badge { display: none; }
+  .proxy-routing-scroll { padding: var(--page-padding-narrow); }
+  .surface-row { grid-template-columns: 1fr; gap: var(--component-gap-compact); padding: var(--surface-padding-dense); }
+  .route-row { grid-template-columns: auto minmax(0, 1fr) auto auto; }
+  .route-enabled { display: none; }
+  .dialog-grid { grid-template-columns: 1fr; }
+  .all-node-grid { grid-template-columns: 1fr; }
+}

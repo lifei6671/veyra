@@ -1,7 +1,7 @@
 use std::collections::HashSet;
 
 use crate::domain::{
-    AppState, NodeId, PoolId, RouteTarget, RuntimeIntent, RuntimePool, SelectionPolicy,
+    AppState, NodeId, PoolId, PoolKind, RouteTarget, RuntimeIntent, RuntimePool, SelectionPolicy,
     StateValidationError, SubscriptionId,
 };
 
@@ -60,7 +60,7 @@ pub(crate) fn project_selected_runtime(
         return Err(SelectionProjectionError::ConfigurationFailed);
     }
     nodes.sort_by(|left, right| left.id.cmp(&right.id));
-    let selected_node_ids = nodes
+    let mut selected_node_ids = nodes
         .iter()
         .map(|node| node.id.clone())
         .collect::<HashSet<_>>();
@@ -82,16 +82,18 @@ pub(crate) fn project_selected_runtime(
 
     for pool in state.pools.iter().filter(|pool| pool.enabled) {
         let mut filtered = pool.clone();
-        filtered
-            .sources
-            .retain(|source| selected_provider_ids.contains(&source.provider_id));
+        if pool.kind == PoolKind::ImplicitProvider {
+            filtered
+                .sources
+                .retain(|source| selected_provider_ids.contains(&source.provider_id));
+        }
         if filtered.sources.is_empty() {
             continue;
         }
         let members = state
             .resolve_pool_members(&filtered)
             .into_iter()
-            .filter(|node_id| selected_node_ids.contains(node_id))
+            .filter(|node_id| pool.kind == PoolKind::Custom || selected_node_ids.contains(node_id))
             .collect::<Vec<_>>();
         if members.is_empty()
             || matches!(
@@ -103,12 +105,22 @@ pub(crate) fn project_selected_runtime(
         {
             return Err(SelectionProjectionError::SelectionConflict);
         }
+        if pool.kind == PoolKind::Custom {
+            selected_node_ids.extend(members.iter().cloned());
+        }
         pools.push(RuntimePool {
             id: filtered.id,
             members,
             selection: filtered.selection,
         });
     }
+    nodes = state
+        .nodes
+        .iter()
+        .filter(|node| selected_node_ids.contains(&node.id))
+        .cloned()
+        .collect();
+    nodes.sort_by(|left, right| left.id.cmp(&right.id));
     pools.sort_by(|left, right| left.id.cmp(&right.id));
     let pool_ids = pools
         .iter()
@@ -133,17 +145,15 @@ pub(crate) fn project_selected_runtime(
         RouteTarget::Pool(pool_id) if pool_ids.contains(pool_id) => {
             RouteTarget::Pool(pool_id.clone())
         }
-        RouteTarget::Pool(_) | RouteTarget::Direct | RouteTarget::Block => {
-            return Err(SelectionProjectionError::SelectionConflict);
-        }
+        RouteTarget::Direct => RouteTarget::Direct,
+        RouteTarget::Block => RouteTarget::Block,
+        RouteTarget::Pool(_) => return Err(SelectionProjectionError::SelectionConflict),
     };
-    let RouteTarget::Pool(default_pool_id) = &projected_default_target else {
-        return Err(SelectionProjectionError::ConfigurationFailed);
-    };
-    if pools
-        .iter()
-        .find(|pool| &pool.id == default_pool_id)
-        .is_none_or(|pool| pool.members.is_empty())
+    if let RouteTarget::Pool(default_pool_id) = &projected_default_target
+        && pools
+            .iter()
+            .find(|pool| &pool.id == default_pool_id)
+            .is_none_or(|pool| pool.members.is_empty())
     {
         return Err(SelectionProjectionError::ConfigurationFailed);
     }
@@ -249,7 +259,7 @@ mod tests {
     }
 
     #[test]
-    fn filters_mixed_pool_sources_but_keeps_a_valid_selected_subset() {
+    fn enabled_custom_pool_adds_only_its_exact_cross_subscription_members() {
         let mut state = state();
         state.pools.push(NodePool {
             id: PoolId("mixed".to_owned()),
@@ -282,21 +292,35 @@ mod tests {
                 .find(|pool| pool.id.0 == "mixed")
                 .expect("mixed pool")
                 .members,
-            vec![NodeId("node-b".to_owned())]
+            vec![NodeId("node-a".to_owned()), NodeId("node-b".to_owned())]
+        );
+        assert_eq!(
+            projection
+                .runtime_intent
+                .nodes
+                .iter()
+                .map(|node| node.id.0.as_str())
+                .collect::<Vec<_>>(),
+            vec!["node-a", "node-b"]
         );
     }
 
     #[test]
-    fn rejects_unsupported_or_cross_subscription_targets() {
+    fn direct_and_block_remain_valid_default_targets() {
         for target in [RouteTarget::Direct, RouteTarget::Block] {
             let mut state = state();
-            state.default_target = target;
+            state.default_target = target.clone();
             assert_eq!(
-                project_selected_runtime(&state),
-                Err(SelectionProjectionError::SelectionConflict)
+                project_selected_runtime(&state)
+                    .expect("direct and block are structural targets")
+                    .projected_default_target,
+                target
             );
         }
+    }
 
+    #[test]
+    fn route_can_target_an_enabled_cross_subscription_custom_pool() {
         let mut state = state();
         state.pools.push(NodePool {
             id: PoolId("a-only".to_owned()),
@@ -319,9 +343,78 @@ mod tests {
             matcher: TrafficMatcher::Domain(vec!["example.com".to_owned()]),
             target: RouteTarget::Pool(PoolId("a-only".to_owned())),
         });
-        assert_eq!(
-            project_selected_runtime(&state),
-            Err(SelectionProjectionError::SelectionConflict)
+        let projection = project_selected_runtime(&state).expect("explicit custom pool closure");
+        assert_eq!(projection.runtime_intent.routes.len(), 1);
+        assert_eq!(projection.runtime_intent.nodes.len(), 2);
+    }
+
+    #[test]
+    fn disabled_custom_pool_does_not_expand_the_active_projection() {
+        let mut state = state();
+        state.pools.push(NodePool {
+            id: PoolId("disabled".to_owned()),
+            name: "disabled".to_owned(),
+            kind: PoolKind::Custom,
+            sources: vec![PoolSource {
+                provider_id: ProviderId("provider-a".to_owned()),
+                filter: NodeFilter::default(),
+            }],
+            selection: SelectionPolicy::Manual {
+                selected_node_id: Some(NodeId("node-a".to_owned())),
+            },
+            enabled: false,
+        });
+
+        let projection = project_selected_runtime(&state).expect("active-only projection");
+        assert_eq!(projection.runtime_intent.nodes.len(), 1);
+        assert_eq!(projection.runtime_intent.nodes[0].id.0, "node-b");
+        assert!(
+            projection
+                .runtime_intent
+                .pools
+                .iter()
+                .all(|pool| pool.id.0 != "disabled")
+        );
+    }
+
+    #[test]
+    fn custom_filter_does_not_import_unmatched_siblings() {
+        let mut state = state();
+        let mut sibling = state.nodes[0].clone();
+        sibling.id = NodeId("node-a-sibling".to_owned());
+        sibling.name = "sibling".to_owned();
+        state.nodes.push(sibling);
+        state.pools.push(NodePool {
+            id: PoolId("filtered".to_owned()),
+            name: "filtered".to_owned(),
+            kind: PoolKind::Custom,
+            sources: vec![PoolSource {
+                provider_id: ProviderId("provider-a".to_owned()),
+                filter: NodeFilter {
+                    include_node_ids: vec![NodeId("node-a".to_owned())],
+                    ..NodeFilter::default()
+                },
+            }],
+            selection: SelectionPolicy::Manual {
+                selected_node_id: Some(NodeId("node-a".to_owned())),
+            },
+            enabled: true,
+        });
+
+        let projection = project_selected_runtime(&state).expect("filtered custom closure");
+        assert!(
+            projection
+                .runtime_intent
+                .nodes
+                .iter()
+                .any(|node| node.id.0 == "node-a")
+        );
+        assert!(
+            projection
+                .runtime_intent
+                .nodes
+                .iter()
+                .all(|node| node.id.0 != "node-a-sibling")
         );
     }
 }

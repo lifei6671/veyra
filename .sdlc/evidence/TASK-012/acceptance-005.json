@@ -1,0 +1,23 @@
+{
+  "id": "EVIDENCE-TASK-012-ACCEPTANCE-005",
+  "type": "human_task_acceptance",
+  "target": "TASK-012",
+  "target_identity": "sha256:c5b325d3de2d5c91a9d09fb44a075dc3e76be63be104ee940b3d0e0df4628762",
+  "produced_by_phase": "DELIVERY",
+  "command_or_method": "Explicit user acceptance in the current Codex task",
+  "result": "PASS",
+  "timestamp": "2026-09-06T21:22:51.9253061+08:00",
+  "summary": "USER:lifei accepted TASK-012 after Delivery Gate 005 passed for frozen Target 005.",
+  "observer": "CODEX:/root",
+  "accepted_by": "USER:lifei",
+  "accepted_at": "2026-09-06T21:22:51.9253061+08:00",
+  "user_response": "通过，把所有代码提交",
+  "subfeatures": {
+    "SF-001": "PASSED",
+    "SF-002": "PASSED",
+    "SF-003": "PASSED"
+  },
+  "task_acceptance": "PASSED",
+  "delivery_gate_ref": ".sdlc/evidence/TASK-012/delivery-gate-005.json",
+  "boundary": "This acceptance closes TASK-012 and authorizes committing the completed repository changes. It does not authorize TASK-013 implementation, push, release, or deployment."
+}

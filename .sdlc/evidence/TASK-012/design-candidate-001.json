@@ -1,0 +1,13 @@
+{
+  "id": "EVIDENCE-TASK-012-DESIGN-001",
+  "type": "technical-design-candidate",
+  "target": "TASK-012",
+  "target_identity": "sha256:fd633968285f579a91e31444ef31f434b049c3f14cb00e38a79ca403804dd6aa",
+  "produced_by_phase": "PLAN",
+  "command_or_method": "technical-design task-boundary against current requirement, UI specification, domain, storage, runtime projection, IPC and capability sources",
+  "result": "PASS",
+  "timestamp": "2026-09-06T06:18:37Z",
+  "summary": "Created the first TASK-012 candidate covering typed proxy/routing UI composition, shared state transaction and optimistic revision, bounded IPC, manual selector switching, explicit custom-pool runtime projection, verification, and rollback. No production code or Task Markdown was created.",
+  "observer": "Codex technical-design producer",
+  "artifact": ".sdlc/design/TASK-012-proxy-routing.md"
+}

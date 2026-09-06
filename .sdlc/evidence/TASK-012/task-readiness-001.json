@@ -1,0 +1,11 @@
+{
+  "id": "EVIDENCE-TASK-012-READINESS-001",
+  "type": "task-readiness",
+  "target": "TASK-012",
+  "target_identity": "sha256:0c7bae1bbdd83416c98aacc3f68de97d196d86f24a49f6b89c144c3e57bfd003",
+  "result": "PASS",
+  "timestamp": "2026-09-06T07:43:44.3524808Z",
+  "command_or_method": "Read back tasks.yaml and TASK-012.md; validated current task reference, front matter, milestone, completed TASK-011 dependency, requirement identity, approved Candidate-004 identity, allow/deny scope, three subfeatures with acceptance and verification, task-level acceptance, risk, and absence of placeholders.",
+  "summary": "TASK-012 materialization is complete and implementation-ready. The tasks.yaml completed summary plus TASK-011.md status DONE satisfy the sole dependency.",
+  "observer": "Codex SDLC orchestrator"
+}

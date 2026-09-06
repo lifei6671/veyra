@@ -1,0 +1,30 @@
+{
+  "task": "TASK-012",
+  "recorded_at": "2026-09-06T11:53:40.8948930Z",
+  "target_identity": "sha256:d2fe1dad626080775628b8925b1a428514cadd6bb0dccbbcbb9d71af6b539f00",
+  "platform": "Windows Tauri WebView2",
+  "display_scale": "150%",
+  "isolated_identifier": "com.lifei6671.veyra.task012",
+  "fixture": ".sdlc/evidence/TASK-012/native-state-fixture-001.json",
+  "observations": [
+    "The final executable rendered Proxies at 960x640 and 520x520 CSS pixels in light theme, and at 960x640 in dark theme.",
+    "Pool and Route dialogs rendered from the final executable with initial focus and controls visible.",
+    "Stopped runtime Manual mutation returned saved-only and persisted the desired selection without changing structural generation.",
+    "Explicit Apply reached Ready/applied; a subsequent node-a to node-b Manual mutation returned selectorApplied after Clash API read-back and displayed Running.",
+    "The persisted state read-back contained selected_node_id=node-b and active_configuration_generation=3; restart retained node-b.",
+    "The isolated state was reset after verification; the temporary system theme values were restored to AppsUseLightTheme=1 and SystemUsesLightTheme=1."
+  ],
+  "screenshots": [
+    {"path":"docs/ui/reference/veyra/windows-light/task012-final-proxies-light-960.png","sha256":"8d3860079bddbcdabf49e17657ba391a982a771e1692f6162abd6a0467660ba0"},
+    {"path":"docs/ui/reference/veyra/windows-light/task012-final-proxies-light-520.png","sha256":"db477601435f0287415c0f147f66b84f205d4b1aaf64aa09bcdc60a4a4342955"},
+    {"path":"docs/ui/reference/veyra/windows-dark/task012-final-proxies-dark-960.png","sha256":"428fc16104a3c99cc05c956accb22a45d836a79f52f8771a90af1e7d10c45073"},
+    {"path":"docs/ui/reference/veyra/windows-light/task012-final-pool-dialog-light-960.png","sha256":"409e4bdffe409e5c2cca910aa66d23cedd81d85e3fd146cfda9c5ed91022a2bb"},
+    {"path":"docs/ui/reference/veyra/windows-light/task012-final-routing-light-960.png","sha256":"2be0163a5cd8a053c2e7462e72e6e9605e68169bf1417f568b31ca152391f61f"},
+    {"path":"docs/ui/reference/veyra/windows-light/task012-final-routing-dialog-light-960.png","sha256":"1a46146f063b072e9369a2b6044ce71cedfac1d8ff4e27bb53074126d5099775"},
+    {"path":"docs/ui/reference/veyra/windows-light/task012-final-selector-saved-only-light-960.png","sha256":"bd56813721264dab4ace38f954913b23f9bf0792749511f10af081edd767b13f"},
+    {"path":"docs/ui/reference/veyra/windows-light/task012-final-apply-ready-light-960.png","sha256":"8d44c5d0816b4377c1adc21783423da0910ba5273621260aebacfd61c8f79b86"},
+    {"path":"docs/ui/reference/veyra/windows-light/task012-final-selector-applied-light-960.png","sha256":"76a4c88524d6cfd001fd37cff5ef18bd7797f0c9d9f83ca31230696191c31a1c"},
+    {"path":"docs/ui/reference/veyra/windows-light/task012-final-restart-persistence-light-960.png","sha256":"5c81faf9ec47691164bda0e9c422135e1bbd8f7f24244449ca48fc5ba1789ac9"}
+  ],
+  "data_boundary": "Repository-owned isolated fixture only; no screenshot or Evidence contains subscription URLs, credentials, API secrets, runtime tags or generated core configuration."
+}

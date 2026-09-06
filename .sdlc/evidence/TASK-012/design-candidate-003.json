@@ -1,0 +1,14 @@
+{
+  "id": "EVIDENCE-TASK-012-DESIGN-003",
+  "type": "technical-design-remediation-candidate",
+  "target": "TASK-012",
+  "target_identity": "sha256:2989c6949657da7dcb02eb715232dc2df2df94b7ff9bdf29a03c13ffc802dbdc",
+  "produced_by_phase": "REMEDIATION",
+  "command_or_method": "technical-design remediation limited to T012-DESIGN-007 and T012-DESIGN-008 under user-frozen semantics",
+  "result": "PASS",
+  "timestamp": "2026-09-06T07:13:39.7454263Z",
+  "summary": "Separated structural configuration generation from persistent hot-swappable Manual selection, added process-only AppliedRoutingIndex eligibility, froze selector read-back outcomes and required state matrix, and completed exact response DTO/unions for both IPC commands. DCR-019 and the previously fixed closure/request/rollback/CAS boundaries were not changed. No production code was modified.",
+  "observer": "Codex technical-design producer",
+  "artifact": ".sdlc/design/TASK-012-proxy-routing-candidate-003.json",
+  "supersedes_target_identity": "sha256:4a39f41dc82deb1c979157798423375c02e852c31c7b6424bed1ef170233169b"
+}

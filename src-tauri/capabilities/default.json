@@ -23,6 +23,8 @@
     "allow-format-subscription-document",
     "allow-save-subscription-document",
     "allow-get-running-configuration",
+    "allow-get-proxy-routing-snapshot",
+    "allow-mutate-proxy-routing",
     "core:event:allow-listen",
     "core:event:allow-unlisten"
   ]

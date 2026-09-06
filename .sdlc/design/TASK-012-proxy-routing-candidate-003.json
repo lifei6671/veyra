@@ -1,0 +1,15 @@
+{
+  "status": "CANDIDATE",
+  "task": "TASK-012",
+  "authority": "USER:lifei 2026-09-06 accepted design-review-002 REWORK and froze DESIGN-007/008 semantics",
+  "manifest": [
+    {
+      "path": ".sdlc/design/TASK-012-proxy-routing.md",
+      "sha256": "90e1286f7d9bc3e909d7ef201bd29fba84c243374b05b0065918455d66f21684"
+    },
+    {
+      "path": "docs/decisions/DCR-019-task012-custom-pool-projection-amendment.md",
+      "sha256": "31d7b1cac7b7a6f4f3803ee445f5c30c263ffb755155300f3f2dea8093047c12"
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "id": "EVIDENCE-TASK-012-DELIVERY-GATE-005",
+  "type": "delivery_review",
+  "target": "TASK-012",
+  "target_identity": "sha256:c5b325d3de2d5c91a9d09fb44a075dc3e76be63be104ee940b3d0e0df4628762",
+  "target_ref": ".sdlc/evidence/TASK-012/delivery-target-005.json",
+  "evaluated_at": "2026-09-06T21:12:51.4388122+08:00",
+  "result": "PASS",
+  "review_result": "PASS",
+  "review_mode": "CHILD_AGENT",
+  "reviewed_by": ["CHILD_AGENT:/root/task012_delivery_review_003"],
+  "coverage": {
+    "strategy": "FROZEN_TARGET_INDEPENDENT_REVIEW",
+    "status": "COMPLETE",
+    "target_manifest": "PASS: 35/35",
+    "backend_state_runtime": "PASS",
+    "ipc_security": "PASS",
+    "frontend_state_ui": "PASS",
+    "cross_module_integration": "PASS",
+    "freshness": "FRESH"
+  },
+  "resolved_findings": [
+    "T012-DELIVERY-001", "T012-DELIVERY-002", "T012-DELIVERY-003", "T012-DELIVERY-004",
+    "T012-DELIVERY-005", "T012-DELIVERY-006", "T012-DELIVERY-007", "T012-DELIVERY-008",
+    "T012-DELIVERY-009", "T012-DELIVERY-010"
+  ],
+  "open_findings": [],
+  "human_acceptance": "PENDING",
+  "decision": "Delivery Gate PASSED for frozen Target 005; Human Task acceptance remains a separate pending gate."
+}

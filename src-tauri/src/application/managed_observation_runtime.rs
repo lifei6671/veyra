@@ -4,9 +4,10 @@
 //! 唯一 worker 串行拥有 child，避免 IPC、Tray 与采样之间出现旧 identity 的结果交错。
 
 use std::{
+    collections::BTreeMap,
     path::{Path, PathBuf},
     sync::{
-        Arc,
+        Arc, Mutex,
         atomic::{AtomicBool, Ordering},
         mpsc::{self, Receiver, SyncSender, TrySendError},
     },
@@ -33,11 +34,12 @@ use crate::{
         },
         subscription_scheduler::SubscriptionScheduler,
     },
-    domain::{AppState, DnsPolicy, SubscriptionId},
+    domain::{AppState, DnsPolicy, NodeId, PoolId, SubscriptionId},
     platform::windows::managed_sidecar_port::WindowsManagedSidecarPort,
     singbox::{
         ConfigCompiler, GeneratedConfig, RuntimeProfile, SingBoxCompiler,
-        managed_sidecar::generate_api_secret,
+        clash_api::ClashApiClient,
+        managed_sidecar::{api_secret_from_config, generate_api_secret},
         runtime::{
             RuntimeObservationSidecarPort, SidecarError, SidecarLifecycle, SidecarPort,
             SidecarRuntime,
@@ -53,6 +55,72 @@ const START_RESPONSE_TIMEOUT: Duration = Duration::from_secs(15);
 const STOP_RESPONSE_TIMEOUT: Duration = Duration::from_secs(3);
 const RUNNING_CONFIGURATION_MAX_BYTES: usize = 4 * 1024 * 1024;
 const DOCUMENT_SAVE_DEADLINE: Duration = Duration::from_secs(30);
+const SELECTOR_RESPONSE_TIMEOUT: Duration = Duration::from_secs(6);
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub(crate) enum ManualSelectionSavedOnlyReason {
+    RuntimeStopped,
+    RuntimeNotReady,
+    NotInAppliedArtifact,
+    DispatchUnavailable,
+}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub(crate) enum ManualSelectionUnknownReason {
+    ReadBackUnavailable,
+    UnknownRuntimeNode,
+    InstanceChanged,
+}
+
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub(crate) enum ManualSelectionRuntimeResult {
+    Applied,
+    NotApplied { runtime_node_id: NodeId },
+    SavedOnly(ManualSelectionSavedOnlyReason),
+    ApplyUnknown(ManualSelectionUnknownReason),
+}
+
+#[derive(Clone, Debug, Eq, PartialEq)]
+struct RuntimeTags {
+    pool: String,
+    node: String,
+}
+
+#[derive(Clone, Debug, Eq, PartialEq)]
+struct AppliedRoutingIndex {
+    configuration_generation: u64,
+    pool_members: BTreeMap<PoolId, BTreeMap<NodeId, RuntimeTags>>,
+}
+
+impl AppliedRoutingIndex {
+    fn from_projection(projection: &SelectedRuntimeProjection) -> Self {
+        let pool_members = projection
+            .runtime_intent
+            .pools
+            .iter()
+            .map(|pool| {
+                let members = pool
+                    .members
+                    .iter()
+                    .map(|node_id| {
+                        (
+                            node_id.clone(),
+                            RuntimeTags {
+                                pool: format!("pool-{}", pool.id.0),
+                                node: format!("node-{}", node_id.0),
+                            },
+                        )
+                    })
+                    .collect();
+                (pool.id.clone(), members)
+            })
+            .collect();
+        Self {
+            configuration_generation: projection.selected_generation,
+            pool_members,
+        }
+    }
+}
 
 /// UI 只能收到封闭生命周期结果，绝不收到路径、PID、secret 或底层错误。
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Serialize)]
@@ -98,6 +166,23 @@ pub(crate) enum ActivationError {
     StopFailed,
     StartFailed,
     RecoveryRequired,
+    StateChanged,
+}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub(crate) enum RoutingApplyTerminalFailure {
+    ConfigurationFailed,
+    StateChanged,
+}
+
+/// 仅进程内保存 routing Apply 的确定失败；generation/active subscription 绑定失败归属，
+/// 避免后续结构保存把旧 operation 的失败误认为当前 desired configuration 的终态。
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub(crate) struct RoutingApplyTerminal {
+    pub(crate) operation_id: String,
+    pub(crate) active_subscription_id: Option<String>,
+    pub(crate) desired_generation: u64,
+    pub(crate) failure: RoutingApplyTerminalFailure,
 }
 
 #[derive(Debug)]
@@ -150,6 +235,13 @@ struct ActivationRequest {
     response: SyncSender<ActivationResult>,
 }
 
+struct ManualSelectionRequest {
+    pool_id: PoolId,
+    node_id: NodeId,
+    response: SyncSender<ManualSelectionRuntimeResult>,
+    _guards: RequestGuards,
+}
+
 enum WorkerRequest {
     Start {
         intent: ObservationCompilationInput,
@@ -161,6 +253,7 @@ enum WorkerRequest {
         _guards: RequestGuards,
     },
     Activate(Box<ActivationRequest>),
+    ReconcileManualSelection(ManualSelectionRequest),
     ReadRunningConfiguration {
         response: SyncSender<RunningConfigurationResult>,
         _guards: RequestGuards,
@@ -185,6 +278,7 @@ struct WorkerContext {
     subscriptions: Arc<SubscriptionManager>,
     shutdown_requested: Arc<AtomicBool>,
     shutdown_complete: Arc<AtomicBool>,
+    selector_runtime_nodes: Arc<Mutex<BTreeMap<PoolId, NodeId>>>,
 }
 
 /// App setup 时创建；生命周期和订阅切换共享唯一 worker。
@@ -199,6 +293,8 @@ pub(crate) struct ManagedObservationRuntimeController {
     shutdown_complete: Arc<AtomicBool>,
     scheduler: Option<Arc<SubscriptionScheduler>>,
     shutdown_waiting: Arc<AtomicBool>,
+    selector_runtime_nodes: Arc<Mutex<BTreeMap<PoolId, NodeId>>>,
+    routing_apply_terminal: Arc<Mutex<Option<RoutingApplyTerminal>>>,
 }
 
 impl ManagedObservationRuntimeController {
@@ -220,6 +316,8 @@ impl ManagedObservationRuntimeController {
         let shutdown_complete = Arc::new(AtomicBool::new(false));
         let worker_shutdown = Arc::clone(&shutdown_requested);
         let worker_complete = Arc::clone(&shutdown_complete);
+        let selector_runtime_nodes = Arc::new(Mutex::new(BTreeMap::new()));
+        let worker_selector_runtime_nodes = Arc::clone(&selector_runtime_nodes);
         thread::spawn(move || {
             worker_loop(
                 receiver,
@@ -231,6 +329,7 @@ impl ManagedObservationRuntimeController {
                     subscriptions: worker_subscriptions,
                     shutdown_requested: worker_shutdown,
                     shutdown_complete: worker_complete,
+                    selector_runtime_nodes: worker_selector_runtime_nodes,
                 },
             )
         });
@@ -245,6 +344,8 @@ impl ManagedObservationRuntimeController {
             busy: Arc::new(AtomicBool::new(false)),
             shutdown_requested,
             shutdown_complete,
+            selector_runtime_nodes,
+            routing_apply_terminal: Arc::new(Mutex::new(None)),
         }
     }
 
@@ -465,6 +566,29 @@ impl ManagedObservationRuntimeController {
     }
 
     pub(crate) fn activate(&self, id: String, force: bool) -> ActivationResult {
+        self.activate_with_expected_generation(id, force, None)
+    }
+
+    /// Routing 的显式 Apply 在状态门释放后仍以冻结 structural tuple 做最后预检。
+    /// 普通订阅 activate 不使用此入口，既有立即切换语义保持不变。
+    pub(crate) fn apply_proxy_routing(
+        &self,
+        active_subscription_id: String,
+        expected_desired_generation: u64,
+    ) -> ActivationResult {
+        self.activate_with_expected_generation(
+            active_subscription_id,
+            true,
+            Some(expected_desired_generation),
+        )
+    }
+
+    fn activate_with_expected_generation(
+        &self,
+        id: String,
+        force: bool,
+        expected_desired_generation: Option<u64>,
+    ) -> ActivationResult {
         let mut entropy = [0u8; 16];
         if getrandom::fill(&mut entropy).is_err() {
             return ActivationResult::Error {
@@ -476,6 +600,8 @@ impl ManagedObservationRuntimeController {
             .iter()
             .map(|value| format!("{value:02x}"))
             .collect::<String>();
+        let mut observed_routing_tuple = None;
+        let mut routing_observation_started = false;
         let prepared = (|| {
             if self.is_shutting_down() {
                 return Err(ActivationError::Busy);
@@ -493,6 +619,34 @@ impl ManagedObservationRuntimeController {
                     .and_then(|store| store.load())
                     .map_err(|_| ActivationError::StateUnavailable)?
             };
+            if expected_desired_generation.is_some() {
+                observed_routing_tuple = Some((
+                    expected
+                        .active_subscription_id
+                        .as_ref()
+                        .map(|active| active.0.clone()),
+                    expected.active_configuration_generation,
+                ));
+            }
+            if expected_desired_generation.is_some_and(|generation| {
+                expected.active_configuration_generation != generation
+                    || expected
+                        .active_subscription_id
+                        .as_ref()
+                        .is_none_or(|active| active.0 != id)
+            }) {
+                return Err(ActivationError::StateChanged);
+            }
+            if expected_desired_generation.is_some() {
+                self.clear_routing_apply_terminal();
+                switch_phase(
+                    &self.observations,
+                    &operation_id,
+                    SubscriptionSwitchStatus::Queued,
+                    None,
+                );
+                routing_observation_started = true;
+            }
             if !expected.subscriptions.iter().any(|item| item.id.0 == id) {
                 return Err(ActivationError::NotFound);
             }
@@ -556,7 +710,47 @@ impl ManagedObservationRuntimeController {
             Ok((Some((receiver, cancel)), None))
         })();
         match prepared {
-            Err(error) => activation_error(&operation_id, error),
+            Err(error) => {
+                if expected_desired_generation.is_some()
+                    && let Some(failure) =
+                        routing_apply_terminal_failure(error, routing_observation_started)
+                {
+                    let (active_subscription_id, desired_generation) = observed_routing_tuple
+                        .unwrap_or_else(|| {
+                            (
+                                Some(id.clone()),
+                                expected_desired_generation
+                                    .expect("routing Apply always supplies a generation"),
+                            )
+                        });
+                    self.record_routing_apply_terminal(RoutingApplyTerminal {
+                        operation_id: operation_id.clone(),
+                        active_subscription_id,
+                        desired_generation,
+                        failure,
+                    });
+                    let (status, error_code) = match failure {
+                        RoutingApplyTerminalFailure::ConfigurationFailed => (
+                            SubscriptionSwitchStatus::Failed,
+                            Some(SubscriptionSwitchErrorCode::ConfigurationFailed),
+                        ),
+                        RoutingApplyTerminalFailure::StateChanged => (
+                            SubscriptionSwitchStatus::Cancelled,
+                            Some(SubscriptionSwitchErrorCode::Cancelled),
+                        ),
+                    };
+                    // StateChanged can be detected before the normal queued phase. Seed the same
+                    // operation first so the observation port accepts its terminal transition.
+                    switch_phase(
+                        &self.observations,
+                        &operation_id,
+                        SubscriptionSwitchStatus::Queued,
+                        None,
+                    );
+                    switch_phase(&self.observations, &operation_id, status, error_code);
+                }
+                activation_error(&operation_id, error)
+            }
             Ok((_, Some(result))) => result,
             Ok((Some((receiver, cancel)), None)) => {
                 match receiver.recv_timeout(START_RESPONSE_TIMEOUT) {
@@ -571,6 +765,81 @@ impl ManagedObservationRuntimeController {
                 }
             }
             _ => unreachable!("activation preflight returns a response or a receiver"),
+        }
+    }
+
+    pub(crate) fn runtime_observation_snapshot(
+        &self,
+    ) -> crate::application::observability::RuntimeObservationSnapshot {
+        self.observations.snapshot()
+    }
+
+    pub(crate) fn routing_apply_terminal(&self) -> Option<RoutingApplyTerminal> {
+        self.routing_apply_terminal
+            .lock()
+            .map(|terminal| terminal.clone())
+            .unwrap_or_default()
+    }
+
+    fn clear_routing_apply_terminal(&self) {
+        if let Ok(mut terminal) = self.routing_apply_terminal.lock() {
+            *terminal = None;
+        }
+    }
+
+    fn record_routing_apply_terminal(&self, value: RoutingApplyTerminal) {
+        if let Ok(mut terminal) = self.routing_apply_terminal.lock() {
+            *terminal = Some(value);
+        }
+    }
+
+    pub(crate) fn selector_runtime_nodes(&self) -> BTreeMap<PoolId, NodeId> {
+        self.selector_runtime_nodes
+            .lock()
+            .map(|values| values.clone())
+            .unwrap_or_default()
+    }
+
+    /// 持久 desired selection 已由调用方提交；本入口只协调当前 owned runtime。
+    pub(crate) fn reconcile_manual_selection(
+        &self,
+        pool_id: PoolId,
+        node_id: NodeId,
+    ) -> ManualSelectionRuntimeResult {
+        if self.is_shutting_down() {
+            return ManualSelectionRuntimeResult::SavedOnly(
+                ManualSelectionSavedOnlyReason::DispatchUnavailable,
+            );
+        }
+        let guards = match self.acquire_guards(false) {
+            Ok(guards) => guards,
+            Err(_) => {
+                return ManualSelectionRuntimeResult::SavedOnly(
+                    ManualSelectionSavedOnlyReason::DispatchUnavailable,
+                );
+            }
+        };
+        let (response, receiver) = mpsc::sync_channel(RESPONSE_QUEUE_CAPACITY);
+        let request = ManualSelectionRequest {
+            pool_id,
+            node_id,
+            response,
+            _guards: guards,
+        };
+        if self
+            .requests
+            .try_send(WorkerRequest::ReconcileManualSelection(request))
+            .is_err()
+        {
+            return ManualSelectionRuntimeResult::SavedOnly(
+                ManualSelectionSavedOnlyReason::DispatchUnavailable,
+            );
+        }
+        match receiver.recv_timeout(SELECTOR_RESPONSE_TIMEOUT) {
+            Ok(result) => result,
+            Err(_) => ManualSelectionRuntimeResult::ApplyUnknown(
+                ManualSelectionUnknownReason::ReadBackUnavailable,
+            ),
         }
     }
 }
@@ -628,6 +897,7 @@ fn load_runtime_intent(
 fn worker_loop(requests: Receiver<WorkerRequest>, context: WorkerContext) {
     let observations = &context.observations;
     let mut runtime: Option<SidecarRuntime<WindowsManagedSidecarPort>> = None;
+    let mut applied_routing_index: Option<AppliedRoutingIndex> = None;
     loop {
         match requests.recv_timeout(SAMPLE_INTERVAL) {
             Ok(WorkerRequest::Start {
@@ -646,17 +916,34 @@ fn worker_loop(requests: Receiver<WorkerRequest>, context: WorkerContext) {
                         observations,
                     )
                 };
+                if result == ManagedRuntimeStartResult::Started {
+                    install_applied_routing_index(
+                        &mut applied_routing_index,
+                        &context.selector_runtime_nodes,
+                        &intent,
+                    );
+                }
                 if response.send(result).is_err() {
                     observations.record_managed_failure(None, ManagedRuntimeFailure::Worker);
                 }
             }
             Ok(WorkerRequest::Stop { response, _guards }) => {
                 let result = stop_runtime(&mut runtime, observations);
+                if matches!(
+                    result,
+                    ManagedRuntimeStopResult::Stopped | ManagedRuntimeStopResult::AlreadyStopped
+                ) {
+                    clear_applied_routing_index(
+                        &mut applied_routing_index,
+                        &context.selector_runtime_nodes,
+                    );
+                }
                 if response.send(result).is_err() {
                     observations.record_managed_failure(None, ManagedRuntimeFailure::Worker);
                 }
             }
             Ok(WorkerRequest::Activate(request)) => {
+                let projection = request.projection.clone();
                 switch_phase(
                     observations,
                     &request.operation_id,
@@ -690,8 +977,36 @@ fn worker_loop(requests: Receiver<WorkerRequest>, context: WorkerContext) {
                     *request,
                     &context,
                 );
+                if matches!(
+                    result,
+                    ActivationResult::Activated { .. } | ActivationResult::Reactivated { .. }
+                ) {
+                    install_applied_routing_index(
+                        &mut applied_routing_index,
+                        &context.selector_runtime_nodes,
+                        &projection,
+                    );
+                } else if runtime.as_ref().is_some_and(|runtime| {
+                    runtime.snapshot().lifecycle == SidecarLifecycle::Stopped
+                }) {
+                    clear_applied_routing_index(
+                        &mut applied_routing_index,
+                        &context.selector_runtime_nodes,
+                    );
+                }
                 // 丢失等待者不回滚已经 Ready 的实例；权威观测仍保留最终结果。
                 let _ = response.send(result);
+            }
+            Ok(WorkerRequest::ReconcileManualSelection(request)) => {
+                let result = reconcile_manual_selection(
+                    runtime.as_mut(),
+                    applied_routing_index.as_ref(),
+                    &context.observations,
+                    &context.selector_runtime_nodes,
+                    &request.pool_id,
+                    &request.node_id,
+                );
+                let _ = request.response.send(result);
             }
             Ok(WorkerRequest::ReadRunningConfiguration { response, _guards }) => {
                 let snapshot = observations.snapshot();
@@ -721,6 +1036,31 @@ fn worker_loop(requests: Receiver<WorkerRequest>, context: WorkerContext) {
                     },
                     || {},
                 );
+                if matches!(
+                    &result,
+                    DocumentSaveResult::Ok {
+                        apply: DocumentApplyResult::Ready { .. },
+                        ..
+                    }
+                ) {
+                    if let Ok(projection) = load_runtime_intent(
+                        &context.app_local_data_root.join("state.json"),
+                        &context.state_gate,
+                    ) {
+                        install_applied_routing_index(
+                            &mut applied_routing_index,
+                            &context.selector_runtime_nodes,
+                            &projection,
+                        );
+                    }
+                } else if runtime.as_ref().is_some_and(|runtime| {
+                    runtime.snapshot().lifecycle == SidecarLifecycle::Stopped
+                }) {
+                    clear_applied_routing_index(
+                        &mut applied_routing_index,
+                        &context.selector_runtime_nodes,
+                    );
+                }
                 // 接收端消失不取消已开始的保存；worker仍持有guard直至确定终态。
                 let _ = response.send(result);
             }
@@ -732,6 +1072,12 @@ fn worker_loop(requests: Receiver<WorkerRequest>, context: WorkerContext) {
                         ShutdownResult::ShutdownFailed
                     }
                 };
+                if result == ShutdownResult::ShutdownComplete {
+                    clear_applied_routing_index(
+                        &mut applied_routing_index,
+                        &context.selector_runtime_nodes,
+                    );
+                }
                 let complete = result == ShutdownResult::ShutdownComplete;
                 context.shutdown_complete.store(complete, Ordering::Release);
                 let _ = response.send(result);
@@ -797,6 +1143,171 @@ fn read_running_configuration<P: SidecarPort>(
     }
 }
 
+fn install_applied_routing_index(
+    index: &mut Option<AppliedRoutingIndex>,
+    selector_runtime_nodes: &Mutex<BTreeMap<PoolId, NodeId>>,
+    projection: &SelectedRuntimeProjection,
+) {
+    *index = Some(AppliedRoutingIndex::from_projection(projection));
+    if let Ok(mut nodes) = selector_runtime_nodes.lock() {
+        nodes.clear();
+    }
+}
+
+fn clear_applied_routing_index(
+    index: &mut Option<AppliedRoutingIndex>,
+    selector_runtime_nodes: &Mutex<BTreeMap<PoolId, NodeId>>,
+) {
+    *index = None;
+    if let Ok(mut nodes) = selector_runtime_nodes.lock() {
+        nodes.clear();
+    }
+}
+
+fn reconcile_manual_selection<P: SidecarPort>(
+    runtime: Option<&mut SidecarRuntime<P>>,
+    index: Option<&AppliedRoutingIndex>,
+    observations: &InMemoryRuntimeObservations,
+    selector_runtime_nodes: &Mutex<BTreeMap<PoolId, NodeId>>,
+    pool_id: &PoolId,
+    node_id: &NodeId,
+) -> ManualSelectionRuntimeResult {
+    let Some(runtime) = runtime else {
+        return ManualSelectionRuntimeResult::SavedOnly(
+            ManualSelectionSavedOnlyReason::RuntimeStopped,
+        );
+    };
+    match runtime.snapshot().lifecycle {
+        SidecarLifecycle::Stopped => {
+            return ManualSelectionRuntimeResult::SavedOnly(
+                ManualSelectionSavedOnlyReason::RuntimeStopped,
+            );
+        }
+        SidecarLifecycle::RecoveryRequired => {
+            return ManualSelectionRuntimeResult::SavedOnly(
+                ManualSelectionSavedOnlyReason::RuntimeNotReady,
+            );
+        }
+        SidecarLifecycle::Ready => {}
+    }
+    let observed = observations.snapshot();
+    if observed.sidecar_lifecycle != ObservedSidecarLifecycle::Ready {
+        return ManualSelectionRuntimeResult::SavedOnly(
+            ManualSelectionSavedOnlyReason::RuntimeNotReady,
+        );
+    }
+    let Some(index) = index.filter(|index| {
+        observed.applied_configuration_generation == Some(index.configuration_generation)
+    }) else {
+        return ManualSelectionRuntimeResult::SavedOnly(
+            ManualSelectionSavedOnlyReason::NotInAppliedArtifact,
+        );
+    };
+    let Some(tags) = index
+        .pool_members
+        .get(pool_id)
+        .and_then(|members| members.get(node_id))
+        .cloned()
+    else {
+        return ManualSelectionRuntimeResult::SavedOnly(
+            ManualSelectionSavedOnlyReason::NotInAppliedArtifact,
+        );
+    };
+    let Some(instance_identity) = runtime
+        .with_active_port(|_, child| Ok(child.identity()))
+        .ok()
+        .flatten()
+    else {
+        return ManualSelectionRuntimeResult::SavedOnly(
+            ManualSelectionSavedOnlyReason::RuntimeNotReady,
+        );
+    };
+    let Some(secret) = runtime
+        .with_active_config(api_secret_from_config)
+        .and_then(Result::ok)
+    else {
+        return ManualSelectionRuntimeResult::SavedOnly(
+            ManualSelectionSavedOnlyReason::RuntimeNotReady,
+        );
+    };
+    let client = match ClashApiClient::new(&secret) {
+        Ok(client) => client,
+        Err(_) => {
+            return ManualSelectionRuntimeResult::SavedOnly(
+                ManualSelectionSavedOnlyReason::DispatchUnavailable,
+            );
+        }
+    };
+    let runtime_tag = tauri::async_runtime::block_on(async {
+        // PUT 的 transport/response 不是终态；同一 owned worker 总是继续 GET。
+        let _ = client.write_selector(&tags.pool, &tags.node).await;
+        client.read_selector(&tags.pool).await
+    });
+    let identity_after = runtime
+        .with_active_port(|_, child| Ok(child.identity()))
+        .ok()
+        .flatten();
+    if identity_after != Some(instance_identity)
+        || observations.snapshot().applied_configuration_generation
+            != Some(index.configuration_generation)
+    {
+        if let Ok(mut values) = selector_runtime_nodes.lock() {
+            values.remove(pool_id);
+        }
+        return ManualSelectionRuntimeResult::ApplyUnknown(
+            ManualSelectionUnknownReason::InstanceChanged,
+        );
+    }
+    let runtime_tag = match runtime_tag {
+        Ok(tag) => tag,
+        Err(_) => {
+            if let Ok(mut values) = selector_runtime_nodes.lock() {
+                values.remove(pool_id);
+            }
+            return ManualSelectionRuntimeResult::ApplyUnknown(
+                ManualSelectionUnknownReason::ReadBackUnavailable,
+            );
+        }
+    };
+    classify_selector_read_back(
+        index,
+        selector_runtime_nodes,
+        pool_id,
+        node_id,
+        &runtime_tag,
+    )
+}
+
+fn classify_selector_read_back(
+    index: &AppliedRoutingIndex,
+    selector_runtime_nodes: &Mutex<BTreeMap<PoolId, NodeId>>,
+    pool_id: &PoolId,
+    desired_node_id: &NodeId,
+    runtime_tag: &str,
+) -> ManualSelectionRuntimeResult {
+    let runtime_node_id = index.pool_members.get(pool_id).and_then(|members| {
+        members
+            .iter()
+            .find_map(|(node_id, tags)| (tags.node == runtime_tag).then(|| node_id.clone()))
+    });
+    let Some(runtime_node_id) = runtime_node_id else {
+        if let Ok(mut values) = selector_runtime_nodes.lock() {
+            values.remove(pool_id);
+        }
+        return ManualSelectionRuntimeResult::ApplyUnknown(
+            ManualSelectionUnknownReason::UnknownRuntimeNode,
+        );
+    };
+    if let Ok(mut values) = selector_runtime_nodes.lock() {
+        values.insert(pool_id.clone(), runtime_node_id.clone());
+    }
+    if runtime_node_id == *desired_node_id {
+        ManualSelectionRuntimeResult::Applied
+    } else {
+        ManualSelectionRuntimeResult::NotApplied { runtime_node_id }
+    }
+}
+
 fn start_runtime(
     runtime: &mut Option<SidecarRuntime<WindowsManagedSidecarPort>>,
     resource_root: &Path,
@@ -858,6 +1369,24 @@ fn activation_error(operation_id: &str, error: ActivationError) -> ActivationRes
     ActivationResult::Error {
         operation_id: Some(operation_id.to_owned()),
         error,
+    }
+}
+
+fn routing_apply_terminal_failure(
+    error: ActivationError,
+    observation_started: bool,
+) -> Option<RoutingApplyTerminalFailure> {
+    match error {
+        ActivationError::NotFound
+        | ActivationError::SelectionConflict
+        | ActivationError::ConfigurationFailed => {
+            Some(RoutingApplyTerminalFailure::ConfigurationFailed)
+        }
+        ActivationError::StateChanged => Some(RoutingApplyTerminalFailure::StateChanged),
+        ActivationError::Busy if observation_started => {
+            Some(RoutingApplyTerminalFailure::StateChanged)
+        }
+        _ => None,
     }
 }
 
@@ -1640,6 +2169,294 @@ mod tests {
     }
 
     #[test]
+    fn routing_apply_rejects_a_changed_structural_tuple_before_worker_dispatch() {
+        let root = isolated_test_root();
+        std::fs::create_dir_all(&root).expect("create isolated state root");
+        let state_file = root.join("state.json");
+        JsonStateStore::new(state_file.clone())
+            .expect("store")
+            .save(&valid_selected_state())
+            .expect("state");
+        let (requests, receiver) = mpsc::sync_channel(REQUEST_QUEUE_CAPACITY);
+        let mut controller = test_controller(requests, InMemoryRuntimeObservations::new_mock());
+        controller.state_file = state_file.clone();
+        controller.subscriptions = test_manager(state_file.clone());
+
+        let first_operation_id = match controller.apply_proxy_routing("sub".into(), 2) {
+            ActivationResult::Error {
+                operation_id: Some(operation_id),
+                error: ActivationError::StateChanged,
+            } => operation_id,
+            result => panic!("unexpected first Apply result: {result:?}"),
+        };
+        let first_terminal = controller.routing_apply_terminal().expect("first terminal");
+        assert_eq!(first_terminal.operation_id, first_operation_id);
+        assert_eq!(
+            first_terminal.active_subscription_id.as_deref(),
+            Some("sub")
+        );
+        assert_eq!(first_terminal.desired_generation, 1);
+        assert_eq!(
+            first_terminal.failure,
+            RoutingApplyTerminalFailure::StateChanged
+        );
+
+        let mut next_state = valid_selected_state();
+        next_state.active_configuration_generation = 3;
+        JsonStateStore::new(state_file.clone())
+            .expect("store")
+            .save(&next_state)
+            .expect("newer state");
+        let second_operation_id = match controller.apply_proxy_routing("sub".into(), 2) {
+            ActivationResult::Error {
+                operation_id: Some(operation_id),
+                error: ActivationError::StateChanged,
+            } => operation_id,
+            result => panic!("unexpected second Apply result: {result:?}"),
+        };
+        let second_terminal = controller
+            .routing_apply_terminal()
+            .expect("latest terminal");
+        assert_ne!(second_terminal.operation_id, first_operation_id);
+        assert_eq!(second_terminal.operation_id, second_operation_id);
+        assert_eq!(second_terminal.desired_generation, 3);
+        assert_eq!(
+            controller
+                .runtime_observation_snapshot()
+                .subscription_switch
+                .expect("authoritative terminal observation")
+                .operation_id,
+            second_operation_id
+        );
+        assert!(
+            matches!(receiver.try_recv(), Err(mpsc::TryRecvError::Empty)),
+            "tuple mismatch cannot enqueue runtime work"
+        );
+
+        drop(controller);
+        std::fs::remove_dir_all(root).expect("remove isolated state root");
+    }
+
+    #[test]
+    fn routing_apply_projects_pre_worker_configuration_failure_into_same_operation_terminal() {
+        let root = isolated_test_root();
+        std::fs::create_dir_all(&root).expect("create isolated state root");
+        let state_file = root.join("state.json");
+        let mut state = valid_selected_state();
+        state.pools[0].id = PoolId("runtime-active-sub".into());
+        state.default_target = RouteTarget::Pool(PoolId("runtime-active-sub".into()));
+        JsonStateStore::new(state_file.clone())
+            .expect("store")
+            .save(&state)
+            .expect("state");
+        let (requests, receiver) = mpsc::sync_channel(REQUEST_QUEUE_CAPACITY);
+        let mut controller = test_controller(requests, InMemoryRuntimeObservations::new_mock());
+        controller.state_file = state_file.clone();
+        controller.subscriptions = test_manager(state_file);
+
+        let operation_id = match controller.apply_proxy_routing("sub".into(), 1) {
+            ActivationResult::Error {
+                operation_id: Some(operation_id),
+                error: ActivationError::SelectionConflict,
+            } => operation_id,
+            result => panic!("unexpected Apply result: {result:?}"),
+        };
+        assert_eq!(
+            controller.routing_apply_terminal(),
+            Some(RoutingApplyTerminal {
+                operation_id: operation_id.clone(),
+                active_subscription_id: Some("sub".into()),
+                desired_generation: 1,
+                failure: RoutingApplyTerminalFailure::ConfigurationFailed,
+            })
+        );
+        let observed = controller.runtime_observation_snapshot();
+        assert_eq!(
+            observed.subscription_switch,
+            Some(SubscriptionSwitch {
+                operation_id,
+                status: SubscriptionSwitchStatus::Failed,
+                error_code: Some(SubscriptionSwitchErrorCode::ConfigurationFailed),
+            })
+        );
+        assert!(matches!(
+            receiver.try_recv(),
+            Err(mpsc::TryRecvError::Empty)
+        ));
+
+        drop(controller);
+        std::fs::remove_dir_all(root).expect("remove isolated state root");
+    }
+
+    #[test]
+    fn routing_apply_dispatch_failure_replaces_queued_phase_with_state_changed_terminal() {
+        let root = isolated_test_root();
+        std::fs::create_dir_all(&root).expect("create isolated state root");
+        let state_file = root.join("state.json");
+        JsonStateStore::new(state_file.clone())
+            .expect("store")
+            .save(&valid_selected_state())
+            .expect("state");
+        let (requests, receiver) = mpsc::sync_channel(REQUEST_QUEUE_CAPACITY);
+        let (stop_response, _) = mpsc::sync_channel(RESPONSE_QUEUE_CAPACITY);
+        requests
+            .try_send(WorkerRequest::Stop {
+                response: stop_response,
+                _guards: test_guards(),
+            })
+            .expect("occupy worker queue");
+        let mut controller = test_controller(requests, InMemoryRuntimeObservations::new_mock());
+        controller.state_file = state_file.clone();
+        controller.subscriptions = test_manager(state_file);
+
+        let operation_id = match controller.apply_proxy_routing("sub".into(), 1) {
+            ActivationResult::Error {
+                operation_id: Some(operation_id),
+                error: ActivationError::Busy,
+            } => operation_id,
+            result => panic!("unexpected Apply result: {result:?}"),
+        };
+        assert_eq!(
+            controller.routing_apply_terminal(),
+            Some(RoutingApplyTerminal {
+                operation_id: operation_id.clone(),
+                active_subscription_id: Some("sub".into()),
+                desired_generation: 1,
+                failure: RoutingApplyTerminalFailure::StateChanged,
+            })
+        );
+        assert_eq!(
+            controller
+                .runtime_observation_snapshot()
+                .subscription_switch
+                .expect("dispatch terminal"),
+            SubscriptionSwitch {
+                operation_id,
+                status: SubscriptionSwitchStatus::Cancelled,
+                error_code: Some(SubscriptionSwitchErrorCode::Cancelled),
+            }
+        );
+        assert!(matches!(
+            receiver.try_recv(),
+            Ok(WorkerRequest::Stop { .. })
+        ));
+
+        drop(controller);
+        std::fs::remove_dir_all(root).expect("remove isolated state root");
+    }
+
+    #[test]
+    fn applied_routing_index_contains_only_generation_and_stable_runtime_tag_mapping() {
+        let projection = valid_compilation_input();
+        let index = AppliedRoutingIndex::from_projection(&projection);
+        let pool = index
+            .pool_members
+            .get(&PoolId("default".into()))
+            .expect("applied custom pool");
+        let node_id = projection.runtime_intent.pools[0].members[0].clone();
+        let tags = pool.get(&node_id).expect("applied member");
+
+        assert_eq!(index.configuration_generation, 1);
+        assert_eq!(tags.pool, "pool-default");
+        assert_eq!(tags.node, format!("node-{}", node_id.0));
+    }
+
+    #[test]
+    fn manual_selection_does_no_io_when_stopped_or_missing_from_applied_index() {
+        let observations = InMemoryRuntimeObservations::new_mock();
+        let selected = Mutex::new(BTreeMap::new());
+        assert_eq!(
+            reconcile_manual_selection::<FailingPort>(
+                None,
+                None,
+                &observations,
+                &selected,
+                &PoolId("pool".into()),
+                &NodeId("node".into()),
+            ),
+            ManualSelectionRuntimeResult::SavedOnly(ManualSelectionSavedOnlyReason::RuntimeStopped)
+        );
+
+        let (context, mut runtime, _) = activation_fixture("");
+        context
+            .observations
+            .record_subscription_ready("sub".into(), 1, None, false);
+        assert_eq!(
+            reconcile_manual_selection(
+                Some(&mut runtime),
+                None,
+                &context.observations,
+                &selected,
+                &PoolId("default".into()),
+                &NodeId("node".into()),
+            ),
+            ManualSelectionRuntimeResult::SavedOnly(
+                ManualSelectionSavedOnlyReason::NotInAppliedArtifact
+            )
+        );
+        assert_eq!(
+            runtime.into_port().events,
+            vec!["check", "prepare", "run", "ready"],
+            "no selector transport dispatch"
+        );
+    }
+
+    #[test]
+    fn manual_selection_classifies_only_applied_index_read_back_tags() {
+        let mut state = valid_selected_state();
+        let mut sibling = state.nodes[0].clone();
+        sibling.id = NodeId("runtime-old".into());
+        state.nodes.push(sibling);
+        let projection = project_selected_runtime(&state).expect("projection");
+        let index = AppliedRoutingIndex::from_projection(&projection);
+        let pool_id = PoolId("default".into());
+        let members = &projection
+            .runtime_intent
+            .pools
+            .iter()
+            .find(|pool| pool.id == pool_id)
+            .expect("custom pool")
+            .members;
+        let desired = members[0].clone();
+        let old = members[1].clone();
+
+        assert_eq!(
+            classify_selector_read_back(
+                &index,
+                &Mutex::new(BTreeMap::new()),
+                &pool_id,
+                &desired,
+                &format!("node-{}", desired.0),
+            ),
+            ManualSelectionRuntimeResult::Applied
+        );
+        assert_eq!(
+            classify_selector_read_back(
+                &index,
+                &Mutex::new(BTreeMap::new()),
+                &pool_id,
+                &desired,
+                &format!("node-{}", old.0),
+            ),
+            ManualSelectionRuntimeResult::NotApplied {
+                runtime_node_id: old
+            }
+        );
+        assert_eq!(
+            classify_selector_read_back(
+                &index,
+                &Mutex::new(BTreeMap::new()),
+                &pool_id,
+                &desired,
+                "node-not-in-applied-artifact",
+            ),
+            ManualSelectionRuntimeResult::ApplyUnknown(
+                ManualSelectionUnknownReason::UnknownRuntimeNode
+            )
+        );
+    }
+
+    #[test]
     fn running_configuration_reads_exact_active_slot_with_applied_pair() {
         let (context, runtime, _request) = activation_fixture("");
         context
@@ -1809,6 +2626,7 @@ mod tests {
             state_gate: StateAccessGate::default(),
             shutdown_requested: Arc::new(AtomicBool::new(false)),
             shutdown_complete: Arc::new(AtomicBool::new(false)),
+            selector_runtime_nodes: Arc::new(Mutex::new(BTreeMap::new())),
         }
     }
 
@@ -1827,6 +2645,8 @@ mod tests {
             busy: Arc::new(AtomicBool::new(false)),
             shutdown_requested: Arc::new(AtomicBool::new(false)),
             shutdown_complete: Arc::new(AtomicBool::new(false)),
+            selector_runtime_nodes: Arc::new(Mutex::new(BTreeMap::new())),
+            routing_apply_terminal: Arc::new(Mutex::new(None)),
         }
     }
 
@@ -3665,19 +4485,8 @@ mod tests {
             state.default_target = target.clone();
             store.save(&state).expect("save exact target");
             let loaded = load_runtime_intent(&root.join("state.json"), &StateAccessGate::default());
-            if matches!(target, RouteTarget::Direct | RouteTarget::Block) {
-                assert!(
-                    matches!(loaded, Err(LoadRuntimeIntentError::Configuration)),
-                    "unsupported explicit default fails before compiler"
-                );
-                assert_eq!(
-                    store.load().expect("preserved state").default_target,
-                    target
-                );
-                continue;
-            }
             let loaded = loaded.expect("paired selected projection");
-            if matches!(target, RouteTarget::Pool(_)) {
+            if !matches!(target, RouteTarget::Unconfigured) {
                 assert_eq!(loaded.projected_default_target, target);
             } else {
                 assert!(
@@ -3687,9 +4496,13 @@ mod tests {
             }
             let config = compile_projection(&loaded).expect("paired compile");
             let value: serde_json::Value = serde_json::from_slice(config.as_bytes()).expect("JSON");
-            if matches!(target, RouteTarget::Pool(_)) {
-                assert_eq!(value["route"]["final"], "pool-first");
-            }
+            let expected_final = match target {
+                RouteTarget::Pool(_) => "pool-first",
+                RouteTarget::Unconfigured => "pool-runtime-active-sub",
+                RouteTarget::Direct => "direct",
+                RouteTarget::Block => "block",
+            };
+            assert_eq!(value["route"]["final"], expected_final);
             assert_eq!(
                 store
                     .load()

@@ -1,0 +1,19 @@
+{
+  "task": "TASK-012",
+  "review_mode": "CHILD_AGENT",
+  "reviewed_by": "CHILD_AGENT:/root/task012_delivery_review_002",
+  "reviewed_at": "2026-09-06T11:30:00Z",
+  "reviewed_target_identity": "sha256:119c63942b2de5e02a7f7230c7466e2a4bc53a392055bd74299db5326cb944ce",
+  "review_result": "REWORK",
+  "findings": [
+    {"id":"T012-DELIVERY-001","severity":"P1","status":"FIXED","summary":"Approved Change Control implemented the exact Pool/Direct/Block Compiler mapping."},
+    {"id":"T012-DELIVERY-002","severity":"P1","status":"FIXED","summary":"Apply terminal state is generation- and operation-bound."},
+    {"id":"T012-DELIVERY-003","severity":"P1","status":"FIXED","summary":"Shared Provider invalidation, polling and response ordering are present."},
+    {"id":"T012-DELIVERY-004","severity":"P1","status":"FIXED","summary":"Dialog dismissal observes the current busy state."},
+    {"id":"T012-DELIVERY-005","severity":"P1","status":"FIXED","summary":"Runtime mutation work is dispatched outside the synchronous command path."},
+    {"id":"T012-DELIVERY-006","severity":"P1","status":"UNFIXED","summary":"The reviewed target lacked a reproducible path/hash manifest, the fixed 127.0.0.1:9090 selector fixture was unavailable, and the complete acceptance evidence matrix was not yet closed."},
+    {"id":"T012-DELIVERY-007","severity":"P1","status":"OPEN","summary":"The Custom Pool Dialog offered Manual initial nodes by provider only, without applying the draft NodeFilter or clearing a selection excluded by a later filter change."},
+    {"id":"T012-DELIVERY-008","severity":"P1","status":"OPEN","summary":"Frontend probe URL validation accepted localhost and rejected the backend-supported bracketed IPv6 loopback host."}
+  ],
+  "next_action": "Fix findings 007/008 within frozen scope, close the missing selector/native evidence, freeze a reproducible new target, and request independent rereview."
+}

@@ -1,0 +1,36 @@
+{
+  "task": "TASK-012",
+  "recorded_at": "2026-09-06T08:41:52.8020474Z",
+  "candidate_identity": "sha256:8ac5a0074fd36f0867e4acaaaf44536079fadfc558cd056a7e5e4925de03a8e1",
+  "design_identity": "sha256:c0d90aba66e5dbe20e2187b83138288f57c119b162f4fab933c16205aa9138a6",
+  "status": "BLOCKED_ON_MATERIAL_CHANGE",
+  "completed_within_frozen_scope": [
+    "authoritative routingRevision CAS and exact two-command IPC",
+    "DCR-019 explicit enabled Custom Pool projection",
+    "structural Save-to-Apply generation semantics and backend canonical mapping",
+    "AppliedRoutingIndex and Manual selector PUT-to-GET read-back classification",
+    "shared Proxies and Routing snapshot Provider and page composition",
+    "async spawn_blocking mutation command",
+    "generation- and operation-bound pre-worker Apply terminal memory",
+    "Provider event invalidation, continuing Apply polling and response ordering",
+    "busy-safe Dialog Escape behavior"
+  ],
+  "verification": {
+    "frontend_tests": "PASS: 8 files, 110 tests",
+    "frontend_lint": "PASS: tsc --noEmit",
+    "rust_proxy_routing": "PASS: 17 tests",
+    "rust_routing_apply": "PASS: 3 tests",
+    "rust_selected_subscription": "PASS: 6 tests",
+    "rust_manual_selection": "PASS: 3 filtered tests",
+    "rust_selector_shape": "PASS: 1 test",
+    "clippy": "PASS: --lib -- -D warnings",
+    "rustfmt": "PASS",
+    "diff_check": "PASS with line-ending warnings only",
+    "known_regression": "FAIL: stored_default_target_is_carried_exactly_into_compilation confirms Direct/Block projection reaches an unchanged Pool-only compiler",
+    "native_build": "STALE: a pre-remediation isolated-identifier debug build passed; current-source rebuild is required after Change Control",
+    "native_ui": "STALE: pre-remediation isolated Windows WebView light-theme screenshots and Manual saved-only persistence read-back exist but are not final target evidence",
+    "dark_ui": "PARTIAL: Chromium official mockIPC screenshot only; not native WebView proof",
+    "real_selector_fixture": "UNAVAILABLE: fixed 127.0.0.1:9090 was occupied by an existing user-owned sing-box process and was not disturbed"
+  },
+  "scope_integrity": "No schema version, migration, dependency, lockfile, Compiler, Settings, later Task or platform capability expansion was made."
+}

@@ -1,0 +1,39 @@
+{
+  "task": "TASK-012",
+  "review_mode": "CHILD_AGENT",
+  "reviewed_by": "CHILD_AGENT:/root/task012_delivery_review_003",
+  "reviewed_at": "2026-09-06T12:05:00Z",
+  "reviewed_target_identity": "sha256:d2fe1dad626080775628b8925b1a428514cadd6bb0dccbbcbb9d71af6b539f00",
+  "freshness": "FRESH",
+  "review_result": "REWORK",
+  "target_verification": {
+    "manifest": "28/28 file hashes matched",
+    "identity": "recomputed identity matched",
+    "git_head": "matched",
+    "native_executable": "present and hash matched"
+  },
+  "findings": [
+    {"id":"T012-DELIVERY-001","severity":"P1","status":"FIXED","summary":"The approved Compiler amendment is exact and closed to Pool, Direct and Block."},
+    {"id":"T012-DELIVERY-002","severity":"P1","status":"FIXED","summary":"Apply terminal state is bound to generation and operation."},
+    {"id":"T012-DELIVERY-003","severity":"P1","status":"FIXED","summary":"Subscription invalidation, Apply polling and response ordering are present."},
+    {"id":"T012-DELIVERY-004","severity":"P1","status":"FIXED","summary":"Dialog dismissal observes the current busy state."},
+    {"id":"T012-DELIVERY-005","severity":"P1","status":"FIXED","summary":"Mutation runtime work is dispatched outside the synchronous command path."},
+    {"id":"T012-DELIVERY-006","severity":"P1","status":"UNFIXED","summary":"Page-level tests, recoverable Apply-failure evidence, complete visible-state evidence, a parity table and independently readable native state observations were not all present in target-003."},
+    {"id":"T012-DELIVERY-007","severity":"P1","status":"FIXED","summary":"Draft NodeFilter controls Manual member availability and clears an invalid draft selection."},
+    {"id":"T012-DELIVERY-008","severity":"P1","status":"FIXED","summary":"Frontend probe URL validation matches the frozen loopback boundary."},
+    {"id":"T012-DELIVERY-009","severity":"P1","status":"NEW","summary":"Runtime lifecycle changes did not invalidate a terminal shared routing snapshot."},
+    {"id":"T012-DELIVERY-010","severity":"P1","status":"NEW","summary":"Manual selector exposed only global pending and did not identify the pending target inline."}
+  ],
+  "independent_validation": [
+    "Compiler tests: 38 PASS",
+    "selected_subscription tests: 6 PASS",
+    "proxy_routing tests: 16 PASS",
+    "fixed 127.0.0.1:9090 selector fixture: 1 PASS",
+    "pnpm test: 8 files / 112 PASS",
+    "pnpm lint: PASS",
+    "pnpm build: PASS with existing chunk-size warning",
+    "cargo fmt --check: PASS",
+    "cargo clippy --lib -- -D warnings: PASS"
+  ],
+  "next_action": "Remediate findings 006, 009 and 010 within frozen TASK-012 scope, complete native and UI acceptance evidence, freeze a new immutable target, then request independent rereview."
+}

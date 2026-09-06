@@ -122,7 +122,7 @@ query / mutation
   → RoutingRevision.observe(CasMaterial)
   → compare expectedRevision
   → apply one closed typed mutation
-  → advance desired generation
+  → advance desired generation only for structural mutation
   → AppState::validate
   → JsonStateStore.save (backup + atomic replace)
   → RoutingRevision.commit(candidate material)
@@ -132,11 +132,15 @@ query / mutation
 ### 3.1 desired / applied identity
 
 - 复用持久 `active_configuration_generation` 作为 **desired configuration generation**。所有实际改变
-  Pool、Route、default 或 Manual desired selection 的成功保存都检查安全整数上限后加一；保存失败
-  不推进。没有 active subscription 时仍推进全局 desired generation，后续首次 Use/Start 使用当前值。
+  Pool topology、Pool source/filter/strategy/enabled、Route 或 default 的成功结构保存都检查安全整数上限
+  后加一；保存失败不推进。没有 active subscription 时仍推进全局 desired generation，后续首次
+  Use/Start 使用当前值。
+- Manual Pool 的 `selected_node_id` 是可持久化 hot-swappable selection，不属于需要完整 compile/apply 的
+  结构版本。单纯 `setManualSelection` 保存不得推进 `active_configuration_generation`；但它属于持久
+  mutation，成功保存仍推进 `routingRevision`。
 - 复用 worker 已拥有的 `applied_subscription_id / applied_configuration_generation` 作为当前 child 的
-  **applied runtime identity**。结构保存不改 applied；完整 Apply Ready 或 Manual selector read-back
-  确认成功时，才把 applied generation 对齐该次 desired generation。
+  **applied structural runtime identity**。结构保存和 selector PUT/GET 都不改 applied generation；只有
+  完整 configuration Apply 达到 Ready，才把 applied generation 对齐该次 desired generation。
 - `desired != applied`（或 subscription ID 不同）且存在 Ready/Recovery runtime 时表示“有未应用更改”。
   Stopped 时显示“已保存，将在下次启动时生效”，不伪造当前 applied identity。App/WebView 重载后仍由
   persisted desired 与 worker observation applied 重新计算，不依赖一次性 Toast。
@@ -155,7 +159,8 @@ query / mutation
   revision 达到 JS safe integer 上限时 fail closed 为 `stateUnavailable`，不回绕。
 - mutation 在同一 state gate 内先 `observe(latest)`，再比较 `expectedRevision`；不等返回 `conflict`。
   有状态变化的成功保存必须把 revision 加一并返回新 snapshot；完全相同的 Manual selection 进入第 4.3
-  节 reconcile-only 路径，不写文件、不推进 desired/revision。
+  节 reconcile-only 路径，不写文件、不推进 generation/revision。Manual selection 的真实保存只推进
+  revision，不推进 generation。
 - App 根部只挂载一个轻量 `ProxyRoutingProvider`，是同一 WebView 内唯一 query/snapshot owner；Proxies 与
   Routing 两个保持 `hidden` 的页面消费同一 snapshot。成功 mutation 原子替换 provider snapshot，两个页面
   同次 render 收敛；既有 `subscription-state-changed` 只作为 provider 重新 query 的触发器，不承载 Pool/
@@ -206,29 +211,59 @@ query / mutation
 
 ### 4.3 Manual Pool：persist → switch → read-back
 
-- Manual 节点选择是即时用户操作。desired Node 不同时，先按第 3 节保存并推进 desired generation；
-  随后由唯一 runtime worker 绑定 `(owned instance identity, applied subscription ID, applied generation,
-  pool tag, node tag)`。Stopped、非 Ready 或 Pool 不在该实例投影时不发请求，返回 `savedOnly`。
+- Manual 节点选择是即时用户操作。desired Node 不同时，先按第 3 节保存 selection，只推进
+  `routingRevision`；随后由唯一 runtime worker 绑定 `(owned instance identity, applied subscription ID,
+  applied structural generation, pool tag, node tag)`。Stopped 或非 Ready 时不发请求，返回
+  `selectorSavedOnly`。
+- 每次完整 Apply Ready 时，worker 从**当次已应用的 projection/artifact**建立最小
+  `AppliedRoutingIndex { configuration_generation, pool_members }`。`pool_members` 只保存
+  `PoolId → NodeId → (pool runtime tag, node runtime tag)` 的映射，不含名称、凭据或配置内容；它不进入
+  AppState、state.json 或 IPC。新 child Ready 时原子替换，确认 Stopped 时清空；RecoveryRequired 且仍
+  拥有旧 child 时与旧 applied artifact 一起保留。
+- 只有目标 Pool/Node 都存在于当前 owned instance 的 `AppliedRoutingIndex` 时才允许 hot switch；映射
+  必须来自该 index，禁止从已经修改的 AppState/projected state 重算 tag。不存在时只保留 desired
+  selection，返回 `selectorSavedOnly`。已有 structural dirty 不阻止对旧 artifact 中仍存在的 Pool/Node
+  hot switch，但该操作绝不清除 dirty 或改变 applied structural generation。
 - 对匹配的 owned Ready instance，`ClashApiClient` 使用 backend 生成的固定 selector URL/header/tag 发 PUT，
   无论 PUT 返回成功、明确拒绝还是 transport/response-loss，都在 instance identity 未变化时对同一 selector
   执行固定 GET read-back。前端不能传 URL、secret、header、runtime tag 或 response schema。
-- GET 前后都复核 owned instance identity 与 applied subscription；发生实例漂移不向新实例发送旧操作，
-  结果为 `savedApplyUnknown`。read-back 结果只允许映射到当前投影内稳定 NodeId。
+- GET 前后都复核 owned instance identity、applied subscription、applied structural generation 与 index
+  identity；发生实例漂移不向新实例发送旧操作，结果为 `selectorApplyUnknown`。read-back 只能通过
+  同一 index 映射回稳定 NodeId。read-back 完成后重新取得最新 authoritative snapshot；若该 Pool 的
+  persisted desired 已被后续 mutation 改写，本操作返回 `selectorApplyUnknown(reason:"superseded")`，
+  不把旧操作结果冒充当前 desired 已应用。
 
 互斥结果：
 
-| effect | 判据 | desired/applied | UI |
+| outcome | 判据 | structural / selector 状态 | UI |
 | --- | --- | --- | --- |
-| `savedApplied` | 同一 owned instance read-back == desired Node | desired 已保存；applied generation 对齐 desired | `已切换` |
-| `savedNotApplied` | 同一 instance read-back 明确为其它当前投影 Node | desired 已保存；applied generation 保持旧值 | `选择已保存，当前节点未切换` + 重试 |
-| `savedApplyUnknown` | read-back transport/parse failure、未知 Node 或 instance 漂移 | desired 已保存；applied generation 保持旧值 | `选择已保存，当前节点状态未知` + 重新应用/重试 |
-| `savedOnly` | Stopped、非 Ready 或 Pool 不在实际投影 | desired 已保存；无 live identity 变化 | `已保存，将在下次应用时生效` |
+| `selectorApplied` | 同一 owned instance read-back == 本次 persisted desired，且未被后续 mutation supersede | structural generation 永不改变；selector runtime 与 persisted desired 一致 | `已切换`；structural dirty 原样保留 |
+| `selectorNotApplied` | 同一 instance read-back 明确为 applied index 内其它 Node | selection 已保存；applied generation 不变；runtime Node 使用 read-back 值 | `选择已保存，当前节点未切换` + 重试 |
+| `selectorSavedOnly` | Stopped/非 Ready、Pool/Node 不在 applied index，或保存后可证明 PUT 尚未 dispatch 而 worker dispatch 不可用 | selection 已保存；不发 API；applied generation 不变 | `已保存，将在下次完整应用时生效` |
+| `selectorApplyUnknown` | read-back 失败、未知 tag、instance/index 漂移或 desired 被 supersede | selection 已保存；applied generation 不变；selector runtime 不能对当前 desired 作肯定结论 | `选择已保存，当前节点状态未知` + Apply/重试 |
 
 transport error 绝不直接等同 apply failed。持久 desired 不做补偿回滚：Core 写是否发生可能未知，而再次
-写旧值也可能失败并制造第二个不确定结果。用户重试同一 desired selection 时走 reconcile-only：不再次
-保存、不推进 generation/revision，只在当前 owned instance 上重复 PUT + GET；完整 Apply 仍可作为确定性
-恢复路径。Selector GET/PUT 的 sing-box 1.14.0 实际 shape 必须先以固定 core fixture 验证，未匹配即 fail
-closed，不把任意 JSON 透传 UI。
+写旧值也可能失败并制造第二个不确定结果。read-back 为旧 Node 是 authoritative 的“未应用”，必须返回
+`selectorNotApplied`，不把它误报为 unknown 或 transport failure。用户重试同一 desired selection 时走 reconcile-only：不再次保存、不推进
+generation/revision，只在当前 owned instance/index 上重复 PUT + GET；完整 Apply 仍可作为确定性恢复路径。
+Selector GET/PUT 的 sing-box 1.14.0 实际 shape 必须先以固定 core fixture 验证，未匹配即 fail closed，
+不把任意 JSON 透传 UI。
+
+强制状态序列：
+
+| 场景 | API 行为 | 结果 |
+| --- | --- | --- |
+| CAS/校验/`JsonStateStore::save` 失败 | 不发送 PUT/GET | error + 当前 revision；desired selection、generation、revision、runtime 均不变 |
+| Runtime stopped/非 Ready | 不发送 PUT/GET | `selectorSavedOnly(runtimeStopped/runtimeNotReady)` |
+| Pool 或 Node 不在 AppliedRoutingIndex | 不发送 PUT/GET | `selectorSavedOnly(notInAppliedArtifact)` |
+| selection 已保存，但 worker dispatch/queue 在 PUT 前失败且可证明 PUT 尚未 dispatch | 不发送 PUT/GET | `selectorSavedOnly(dispatchUnavailable)`；最新 snapshot 反映 persisted desired，applied structural generation 不变 |
+| PUT 明确成功 | 必须继续同 instance GET，不能以 PUT 响应判定 | 只由下列 read-back 行决定 |
+| PUT timeout/response loss/明确拒绝 | 只要同 instance 仍成立就必须 GET | 只由下列 read-back 行决定，transport 本身不产出终态 |
+| GET == desired Node | 无补偿写 | `selectorApplied`；applied structural generation 不变 |
+| GET == index 内旧 Node | 无补偿写 | `selectorNotApplied`，携带 runtimeNodeId |
+| GET transport/parse 失败或未知 tag | 无补偿写 | `selectorApplyUnknown(readBackUnavailable/unknownRuntimeNode)` |
+| GET 前后 instance/index 漂移 | 不向新 instance 重发 | `selectorApplyUnknown(instanceChanged)` |
+| read-back 后 persisted desired 已变化 | 保留 read-back observation，但不声称当前 desired 已应用 | `selectorApplyUnknown(superseded)` + 最新 snapshot |
 
 本 Task 仍不承诺 UrlTest 延迟展示；禁止模拟数据。
 
@@ -260,6 +295,7 @@ createRoute = { type, name, enabled, matcher, target, insertAt }
 updateRoute = { type, id, name, enabled, matcher, target }
 deleteRoute = { type, id }
 reorderRoutes = { type, routeIds }
+applyConfiguration = { type }
 ```
 
 - `expectedRevision` 为 1..JS safe integer；`insertAt` 为 0..当前 route 数，创建成功由 backend 生成
@@ -315,17 +351,128 @@ RouteTargetDto =
 
 ### 5.4 Response
 
-`SnapshotResult` 为 `{status:"ok", snapshot}` 或 `{status:"error", error}`。snapshot exact keys：
-`routingRevision, activeSubscriptionId, desiredConfigurationGeneration, appliedSubscriptionId,
-appliedConfigurationGeneration, runtimeState, applyState, providers, nodes, pools, defaultTarget, routes`。
-safe DTO 只含 Provider `id/subscriptionId/name`、Node `id/providerId/name/protocol`、类型化 Pool/Route 与
-resolved member IDs；不含 URL、server/port、credentials、options、secret、PID、路径或生成配置。
+所有 response struct/enum 同样使用 `rename_all = "camelCase"` 与 `deny_unknown_fields`；每个 union 都用
+`type` discriminant。除明确标为 nullable 的字段外不允许 null/omitted。
 
-`MutationResult` 成功为 `{status:"ok", snapshot, effect}`，effect 只允许
-`savedOnly | savedApplied | savedNotApplied | savedApplyUnknown`；错误为 `{status:"error", error}`，error
-只允许 `invalidInput | busy | conflict | notFound | referenceConflict | validationFailed | saveFailed |
-stateUnavailable | runtimeUnavailable`。前端对所有响应 exact-shape parse。日志只记录 mutation type、封闭
-结果和不敏感稳定 ID，不记录 matcher values、Node 名称或 core body。
+```text
+SnapshotResult =
+  { status: "ok", snapshot: ProxyRoutingSnapshot }
+  | { status: "error", error: QueryError }
+
+QueryError = "busy" | "stateUnavailable" | "runtimeUnavailable"
+
+ProxyRoutingSnapshot = {
+  revision,
+  desiredGeneration,
+  appliedGeneration,
+  runtimeState,
+  applyState,
+  activeSubscriptionId,
+  appliedSubscriptionId,
+  providers,
+  nodes,
+  defaultTarget,
+  pools,
+  routes,
+  selectors
+}
+```
+
+- `revision`、`desiredGeneration` 为 JS safe integer；`appliedGeneration`、`activeSubscriptionId`、
+  `appliedSubscriptionId` 可 null，且其余 snapshot keys 均必填。
+- `runtimeState` 是 string 闭集：`stopped | ready | transitioning | recoveryRequired`。
+- `QueryError` 是上述 string 闭集。Stopped 与 RecoveryRequired 必须返回成功 snapshot，并分别由
+  `runtimeState:"stopped"` / `runtimeState:"recoveryRequired"` 表达，不得编码为 QueryError。
+- `applyState` 是 exact union：
+  - `{type:"applied"}`：Ready 且 active/applied ID 与 desired/applied generation 均相等；
+  - `{type:"savedPendingApply"}`：没有在途 Apply，desired/applied tuple 不等且没有更新的失败终态；
+  - `{type:"applying", operationId}`：匹配当前 worker operation 的 queued/checking/prepared/persisted/applying；
+  - `{type:"savedApplyFailed", operationId, error}`：error 闭集为
+    `configurationFailed | stateChanged | stopFailed | startFailed | recoveryRequired`；
+  - `{type:"applyUnknown", operationId}`：调用端超时/响应丢失且 worker 尚无可观察终态。
+- App/worker 重启后没有内存 operation failure 记录：若 desired 未由 Ready applied identity 证明，统一
+  `savedPendingApply`；不得从日志猜 `savedApplyFailed`。Stopped 不等于 applied。
+
+DCR-004 到 Snapshot 的 canonical mapping 由 backend 单独拥有；前端只能渲染返回值，不得根据 generation、
+runtime observation、operation 或错误自行重新推导：
+
+| 后端事实 | 唯一 `runtimeState` | 唯一 `applyState` |
+| --- | --- | --- |
+| Ready，desired/applied structural identity 完全一致 | `ready` | `{type:"applied"}` |
+| Ready，desired/applied structural identity 不一致 | `ready` | `{type:"savedPendingApply"}` |
+| Stopped，desired 已保存 | `stopped` | `{type:"savedPendingApply"}` |
+| queued/checking/prepared/stop/spawn/ready in progress | `transitioning` | `{type:"applying",operationId}` |
+| compile/finalize/check/prepare 失败，旧 runtime 仍 Ready | `ready` | `{type:"savedApplyFailed",operationId,error:"configurationFailed"}` |
+| Apply 前 state conflict/cancel | 实际确定的 `runtimeState` | `{type:"savedApplyFailed",operationId,error:"stateChanged"}` |
+| 旧 child stop 未确认 | `recoveryRequired` | `{type:"savedApplyFailed",operationId,error:"stopFailed"}` |
+| 旧 child 已停止，candidate spawn/Ready 失败且清理确定 | `stopped` | `{type:"savedApplyFailed",operationId,error:"startFailed"}` |
+| candidate spawn/Ready 失败且清理不确定 | `recoveryRequired` | `{type:"savedApplyFailed",operationId,error:"recoveryRequired"}` |
+| caller timeout/response loss，operation 仍在途且没有确定终态 | `transitioning` | `{type:"applyUnknown",operationId}` |
+| process restart 后没有旧 operation failure memory，且 desired/applied structural identity 不一致 | 当前实际 `runtimeState` | `{type:"savedPendingApply"}` |
+
+表中的“实际 `runtimeState`”只能来自 backend 当前 owned-runtime observation；失败终态一旦确定便不再返回
+`transitioning/applyUnknown`。`operationId` 是产生该次 Apply 状态的同一 operation，前端不得合成。
+
+Snapshot collection element exact keys：
+
+```text
+ProviderSnapshot = { id, subscriptionId, name }
+NodeSnapshot = { id, providerId, name, protocol }
+PoolSnapshot = { id, name, kind, enabled, sources, selection, resolvedNodeIds }
+RouteSnapshot = { id, name, enabled, priority, matcher, target }
+SelectorSnapshot = { poolId, desiredNodeId, runtimeNodeId, state }
+```
+
+- Pool 的 `sources/selection`、Route 的 `matcher/target` 使用第 5.2 节同一 exact DTO；`kind` 闭集为
+  `implicitProvider | custom`；`protocol` 闭集为当前 15 个 `ProxyProtocol` camelCase 值。
+- `desiredNodeId`、`runtimeNodeId` 可 null；selector `state` 闭集为
+  `inSync | savedOnly | notApplied | unknown`。runtime Node 只从当前 AppliedRoutingIndex read-back 得出；
+  从未 read-back 或已 Stopped 时为 null，不从 desired 推断。
+- safe DTO 不含 URL、server/port、credentials、options、secret、PID、路径、runtime tag 或生成配置。
+
+```text
+MutationResult =
+  { status: "ok", outcome: MutationOutcome, snapshot: ProxyRoutingSnapshot }
+  | { status: "error", error: MutationError, revision: number | null }
+
+MutationOutcome =
+  { type: "saved" }
+  | { type: "selectorApplied", poolId, nodeId }
+  | { type: "selectorNotApplied", poolId, nodeId, runtimeNodeId }
+  | { type: "selectorSavedOnly", poolId, nodeId, reason }
+  | { type: "selectorApplyUnknown", poolId, nodeId, reason }
+  | { type: "applyStarted", operationId }
+  | { type: "applyCompleted", operationId }
+```
+
+- `selectorNotApplied.runtimeNodeId` 是同一 applied index 中 read-back 的旧 NodeId，必填；
+  `selectorSavedOnly.reason` 闭集为
+  `runtimeStopped | runtimeNotReady | notInAppliedArtifact | dispatchUnavailable`；
+  `selectorApplyUnknown.reason` 闭集为
+  `readBackUnavailable | unknownRuntimeNode | instanceChanged | superseded`。
+- 结构 mutation（create/update/delete Custom Pool、default、Route CRUD/reorder）成功只返回 `{type:"saved"}`。
+  `setManualSelection` 按第 4.3 状态表返回 selector 四类之一；`applyConfiguration` 用当前 snapshot CAS，
+  同步 Ready 返回 `applyCompleted`，进入 existing pending worker 返回 `applyStarted`。
+- `MutationError` 闭集为 `invalidInput | busy | conflict | notFound | referenceConflict | validationFailed |
+  saveFailed | stateUnavailable | runtimeUnavailable | configurationFailed | stateChanged | stopFailed |
+  startFailed | recoveryRequired`。`revision` 是错误发生时已知的 authoritative revision；只有在首次 state
+  query/observe 前即 `stateUnavailable` 时允许 null。
+- Manual selection **保存前**的 invalid/CAS/save failure 返回 error，revision 为当前值；一旦保存成功，
+  后续 worker busy/dispatch/PUT/transport/read-back/instance 问题必须返回 `ok + authoritative snapshot` 和
+  `selectorSavedOnly/selectorApplyUnknown`，不得退化为 error 或掩盖已保存事实。
+- 保存后若 worker dispatch/queue 失败且 backend 能证明 PUT 尚未 dispatch，不发送 PUT/GET，返回
+  `ok + selectorSavedOnly(reason:"dispatchUnavailable") + authoritative snapshot`；snapshot 必须反映新的
+  persisted desired selection，且 applied structural generation 不变。`selectorApplyUnknown` 只允许用于
+  PUT 可能已经发生，或 read-back 无法证明 runtime 结果的场景。
+- `runtimeUnavailable` 只用于 `applyConfiguration` 尚未开始且没有任何本次持久提交的入口失败，或 query
+  无法取得 runtime observation；不能用于 Manual post-save 阶段。
+- `applyConfiguration` 的 compile/check/stop/spawn/Ready 等明确失败返回 error + revision；随后前端必须
+  重新 query，snapshot 按上述唯一 `applyState` 映射保存结果和 runtime 事实。pending 只返回
+  `applyStarted`，以 operationId 的 observation/query 收敛。
+
+前端不得 patch Domain state；每个 ok 都用返回 snapshot 整体替换共享 Provider，error 则只比较 revision：
+不同或 null 时重新 query。日志只记录 mutation type、封闭结果和不敏感稳定 ID，不记录 matcher values、
+Node 名称或 core body。
 
 预计接线仍限于 `application/proxy_routing.rs`、`commands.rs`、`lib.rs`、`singbox/clash_api.rs`、
 `application/selected_subscription.rs`、`src/lib/proxy-routing.ts`、两个页面与局部组件、两个 command/
@@ -338,20 +485,31 @@ permission。无新依赖、lockfile、UI framework、任意网络/文件权限�
 - Rust 枚举所有 mutation 与嵌套 union 的 round-trip/unknown tag/unknown field/missing/null/额外 key、非法
   create ID、重复/遗漏 reorder、边界±1、过大集合；证明无 Value/flatten/AppState request。
 - 状态测试覆盖 CAS conflict、订阅刷新导致 observe bump、save failure 不推进 generation/revision、成功
-  保存两者各推进一次、reconcile-only 不推进、双页面消费同一 provider snapshot。
+  structural 保存推进 generation/revision、Manual 保存只推进 revision、reconcile-only 两者都不推进、
+  双页面消费同一 provider snapshot。
 - DCR-019 矩阵覆盖 active-only 基础、多个 enabled Custom source/filter 精确闭包、未引用 sibling 排除、
   disabled/empty/manual drift/default/route conflict。
-- TypeScript 覆盖 exact parser/encoder、共享 provider invalidation、切页/reload dirty 重建、Dialog 保留及
-  四种 Manual effect 文案。
+- Rust/TypeScript 对 SnapshotResult、QueryError 三个闭集值、runtimeState、applyState、全部 collection DTO、MutationResult/
+  MutationOutcome 和 error response 做 exact serialization/parser 正反 fixture；覆盖 unknown/missing/null/
+  extra keys 与每个闭集非法值。
+- 表驱动测试逐项覆盖第 5.4 节 DCR-004 canonical mapping，断言 backend 返回唯一的 runtime/apply 组合且
+  frontend parser/Provider 不重新推导；覆盖 restart 丢失 failure memory 后回到 `savedPendingApply`。
+- TypeScript 覆盖共享 provider invalidation、切页/reload dirty 重建、Dialog 保留及四种 selector outcome、
+  `selectorNotApplied` 与 Apply outcome 文案；任何 ok 都整体替换 snapshot，不 locally patch。
 
 ### 6.2 Integration / Runtime
 
 - 隔离 state.json 证明 mutation/restart 往返、备份/原子替换；与订阅写竞争只有 busy/conflict，不丢对象。
 - Mock worker 覆盖第 4.2 全状态表，并证明旧 runtime 使用 applied artifact/identity，绝不从新 AppState
   重算旧投影或自动恢复。
+- Mock worker 覆盖 Manual 保存成功后 dispatch 前 queue failure，证明没有 PUT/GET、返回
+  `selectorSavedOnly(dispatchUnavailable)`、snapshot 含新 desired 且 applied generation 不变；另以“PUT 可能
+  已发生”正例证明只能进入 read-back/`selectorApplyUnknown` 路径。
 - 固定 sing-box 1.14.0 最小测试先锁定 selector PUT/GET shape，再验证 PUT success、明确拒绝、response loss、
-  GET other/desired/unknown、instance drift、Stopped；断言同 child 切换、四种 effect、generation 对齐和
-  无 secret/core body 泄露。只验证 Veyra 接线，不重跑协议/DNS/IPv6/包级矩阵。
+  GET other/desired/unknown、instance drift、Stopped；断言同 child 切换、selector 不改变 structural
+  generation、existing dirty 不被清除，以及无 secret/core body 泄露。覆盖“先结构 Save 再 Manual”、
+  “dirty 下 reconcile-only”和“Manual 期间并发结构 Save”。只验证 Veyra 接线，不重跑协议/DNS/IPv6/
+  包级矩阵。
 
 ### 6.3 UI / Visual
 
@@ -387,6 +545,10 @@ permission。无新依赖、lockfile、UI framework、任意网络/文件权限�
 - `T012-DESIGN-004`：第 5 节冻结所有 variant exact keys、嵌套 union、边界和 deny_unknown_fields。
 - `T012-DESIGN-005`：第 7 节与 DCR-019 冻结 roll-forward/default 及有界回滚前数据收敛。
 - `T012-DESIGN-006`：第 3.2 节冻结进程内 routingRevision、CasMaterial 与单一 Provider 同步。
+- `T012-DESIGN-007`：第 3.1、4.3 节把 structural generation 与 hot-swappable selection 正交化，新增
+  AppliedRoutingIndex，并冻结 dirty/并发时 selector 不改变 applied generation。
+- `T012-DESIGN-008`：第 5.4 节冻结完整 response exact union、snapshot DTO、Apply/selector outcome、
+  error revision 与 post-save 结果映射。
 
 用户已接受本轮三项产品语义和 DCR-019 amendment；其余工程细节仍须以新身份通过独立 Technical
 Design Review。Review PASS 前不得物化 Task 或开始实现。

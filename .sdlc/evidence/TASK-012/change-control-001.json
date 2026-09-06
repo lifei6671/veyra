@@ -1,0 +1,40 @@
+{
+  "task": "TASK-012",
+  "finding": "T012-DELIVERY-001",
+  "raised_at": "2026-09-06T08:41:52.8020474Z",
+  "status": "APPROVED",
+  "approved_by": "USER:lifei",
+  "approved_at": "2026-09-06T10:59:24.3328723Z",
+  "frozen_design": "sha256:c0d90aba66e5dbe20e2187b83138288f57c119b162f4fab933c16205aa9138a6",
+  "conflict": {
+    "accepted_surface": "DefaultTargetDto and Routing UI include followActiveSubscription, Pool, Direct and Block.",
+    "accepted_deny_scope": "TASK-012 must not modify SingBoxCompiler.",
+    "current_authority": "SingBoxCompiler::compile rejects every non-Pool default target before emitting final_outbound.",
+    "executable_sequence": "Save default Direct or Block succeeds and advances desired generation; Apply projects the exact target; compile rejects it; the user can never apply the saved choice."
+  },
+  "recommended_amendment": {
+    "decision": "Allow the smallest Compiler change required to map default Pool to pool tag, Direct to direct, Block to block, while Unconfigured remains rejected before compilation.",
+    "limits": [
+      "No new wire variant, schema, dependency, runtime mode or general Compiler refactor.",
+      "Route compilation and all existing security validation remain unchanged.",
+      "Add exact positive tests for Direct and Block final_outbound plus rejection of Unconfigured and missing Pool."
+    ]
+  },
+  "approved_scope_override": {
+    "authority": "USER:lifei",
+    "scope": [
+      "Map default Pool(existing) to its pool-* runtime tag.",
+      "Map default Direct to direct.",
+      "Map default Block to block.",
+      "Keep Unconfigured rejected.",
+      "Keep a missing Pool rejected.",
+      "Adjust final outbound validation only to accept a valid Pool tag, direct, or block."
+    ],
+    "limits": [
+      "Do not accept arbitrary node or outbound tags as route.final.",
+      "Do not modify RuntimeIntent, RouteTarget, StoredState/schema, wire contract, tag rules, runtime mode, dependencies, or Compiler structure.",
+      "Cover exact Pool, Direct, and Block route.final values; Unconfigured and missing Pool rejection; and the persisted Direct/Block projection-to-Compiler path."
+    ]
+  },
+  "alternative": "Amend the frozen DefaultTarget contract and UI to remove Direct and Block from default selection; this narrows an already approved product capability and is not recommended."
+}

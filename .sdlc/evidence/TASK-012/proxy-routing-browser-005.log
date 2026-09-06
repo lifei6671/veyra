@@ -1,0 +1,44 @@
+PASS 31 checks
+
+query error exposes retry
+authoritative dirty state rendered
+failed create preserves dialog input
+Escape closes idle dialog
+dialog restores trigger focus
+UrlTest pool create mutation exact
+Pool edit and delete use authoritative snapshots
+selector target exposes aria-busy
+pending does not patch authoritative selected member
+selector terminal snapshot owns selected member
+context menu focuses first action
+context menu arrow navigation
+context menu Escape restores trigger focus
+default target mutation exact
+route reorder mutation exact
+route delete applies authoritative snapshot
+Apply pending disables conflicting controls
+Apply terminal clears dirty action
+runtime event refreshes shared Provider for Proxies
+Routing consumes the same authoritative event-refreshed snapshot
+mutation matrix includes createCustomPool
+mutation matrix includes updateCustomPool
+mutation matrix includes deleteCustomPool
+mutation matrix includes setManualSelection
+mutation matrix includes setDefaultTarget
+mutation matrix includes createRoute
+mutation matrix includes updateRoute
+mutation matrix includes deleteRoute
+mutation matrix includes reorderRoutes
+mutation matrix includes applyConfiguration
+browser page has no errors
+
+Mutations observed in order:
+createCustomPool, createCustomPool, updateCustomPool, deleteCustomPool,
+setManualSelection, setDefaultTarget, createRoute, updateRoute,
+reorderRoutes, deleteRoute, applyConfiguration
+
+Provider queries: 6 before runtime-event invalidation; 9 after event delivery and page switching.
+
+Boundary: Chromium with official Tauri mockIPC and synthetic Veyra domain fixtures.
+This proves React/Provider/IPC-shape/user-interaction behavior; it does not prove
+native backend persistence, owned runtime, or sing-box behavior.

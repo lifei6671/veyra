@@ -140,6 +140,19 @@ milestones:
           - .sdlc/evidence/TASK-010/delivery-checkpoint-011.json
           - .sdlc/evidence/TASK-010/closure-012-review.json
           - .sdlc/evidence/TASK-010/closure-012-acceptance.json
+      - id: TASK-012
+        result: >-
+          Authoritative proxy/routing snapshot, custom pools, manual selector read-back, structural
+          Save-to-Apply workflow, default target and route editing were delivered and accepted by USER:lifei.
+        target_identity: sha256:c5b325d3de2d5c91a9d09fb44a075dc3e76be63be104ee940b3d0e0df4628762
+        decision_refs:
+          - docs/decisions/DCR-019-task012-custom-pool-projection-amendment.md
+          - .sdlc/evidence/TASK-012/change-control-001.json
+          - USER:lifei 2026-09-06 TASK-012 Human Task acceptance
+        evidence_refs:
+          - .sdlc/evidence/TASK-012/delivery-target-005.json
+          - .sdlc/evidence/TASK-012/delivery-gate-005.json
+          - .sdlc/evidence/TASK-012/acceptance-005.json#EVIDENCE-TASK-012-ACCEPTANCE-005
     follow_ups:
       - id: FOLLOWUP-TASK010-NATIVE-012
         status: OPEN
@@ -154,14 +167,6 @@ milestones:
           并取得完整同进程时序。TASK010按已验证用户行为验收不代表这些观测通过或发布通过。
 
 window:
-  - id: TASK-012
-    milestone_ref: M7
-    objective: 参考 Clash Verge Rev 的代理与规则页面，交付 Veyra 出口组选择和分流编辑 UI。
-    dependencies: [TASK-011]
-    risk: HIGH
-    acceptance_summary: >-
-      UI 映射现有 ProxyNode、NodePool、默认出口和 RoutePolicy，覆盖加载、空、忙碌、校验失败与保存反馈；
-      不直接编辑 sing-box/Mihomo JSON，不复制参考项目 API，也不改变既有领域和 Compiler 契约。
   - id: TASK-013
     milestone_ref: M7
     objective: 在现有 AppState 与 StateStore 上交付版本化应用偏好、显式迁移和安全读写事务。

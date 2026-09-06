@@ -1,0 +1,102 @@
+{
+  "id": "EVIDENCE-TASK-012-DESIGN-REVIEW-004",
+  "type": "technical-design-review",
+  "target": "TASK-012",
+  "target_identity": "sha256:c0d90aba66e5dbe20e2187b83138288f57c119b162f4fab933c16205aa9138a6",
+  "produced_by_phase": "PLAN",
+  "result": "PASS",
+  "timestamp": "2026-09-06T07:35:00.5175919Z",
+  "review_mode": "CHILD_AGENT",
+  "reviewed_target_identity": "sha256:c0d90aba66e5dbe20e2187b83138288f57c119b162f4fab933c16205aa9138a6",
+  "reviewer": "Codex child agent /root/task012_candidate004_reviewer",
+  "reviewer_independence": "The reviewer did not produce candidate-004 and changed only this review evidence record. The reviewer did not modify the candidate design, DCR-019, production code, tests, Task, or SDLC state.",
+  "review_result": "PASS",
+  "review_strategy": "Targeted independent convergence review limited to the three remaining T012-DESIGN-008 response-closure issues and regression of T012-DESIGN-001 through 007. New blocking analysis was restricted to candidate-introduced state inconsistency, explicit frozen Contract or DCR contradiction, or a concrete executable sequence producing incorrect persistence, runtime fact, or user feedback.",
+  "coverage": {
+    "strategy": "TARGETED_DESIGN_REVIEW",
+    "target": ".sdlc/design/TASK-012-proxy-routing-candidate-004.json",
+    "manifest": [
+      {
+        "path": ".sdlc/design/TASK-012-proxy-routing.md",
+        "expected_sha256": "4d187d63d0adefa6146d139e122eb6dcd11cc1d055b199323fc4c40d4acb6842",
+        "actual_sha256": "4d187d63d0adefa6146d139e122eb6dcd11cc1d055b199323fc4c40d4acb6842",
+        "result": "PASS"
+      },
+      {
+        "path": "docs/decisions/DCR-019-task012-custom-pool-projection-amendment.md",
+        "expected_sha256": "31d7b1cac7b7a6f4f3803ee445f5c30c263ffb755155300f3f2dea8093047c12",
+        "actual_sha256": "31d7b1cac7b7a6f4f3803ee445f5c30c263ffb755155300f3f2dea8093047c12",
+        "result": "PASS"
+      }
+    ],
+    "candidate_manifest_sha256": "c0d90aba66e5dbe20e2187b83138288f57c119b162f4fab933c16205aa9138a6",
+    "requirement_identity": "sha256:93b60509f5ff04b07dcab093aa82f26ff17cf6feb446b82c82dd6615fc2dbad4",
+    "included": [
+      "T012-DESIGN-008 QueryError exact closed set and successful Snapshot representation of stopped and recoveryRequired runtime states",
+      "T012-DESIGN-008 backend-owned canonical DCR-004 to runtimeState and applyState mapping for every user-frozen sequence",
+      "T012-DESIGN-008 persisted Manual selection followed by provable pre-PUT dispatch failure",
+      "T012-DESIGN-001 through 007 semantic regression against design-review-003 coverage and the current candidate",
+      "manifest identity, unchanged DCR-019 identity, response exactness, frontend authority boundary, and targeted test closure"
+    ],
+    "findings": {
+      "T012-DESIGN-001": "FIXED_NO_REGRESSION",
+      "T012-DESIGN-002": "FIXED_NO_REGRESSION",
+      "T012-DESIGN-003": "FIXED_NO_REGRESSION",
+      "T012-DESIGN-004": "FIXED_NO_REGRESSION",
+      "T012-DESIGN-005": "FIXED_NO_REGRESSION",
+      "T012-DESIGN-006": "FIXED_NO_REGRESSION",
+      "T012-DESIGN-007": "FIXED_NO_REGRESSION",
+      "T012-DESIGN-008": "FIXED"
+    },
+    "design_008_validation": {
+      "query_error_closed_set": "PASS: QueryError is exactly busy, stateUnavailable, or runtimeUnavailable; stopped and recoveryRequired are successful Snapshot runtimeState values.",
+      "canonical_runtime_mapping": "PASS: the backend-owned table uniquely maps every frozen DCR-004 fact sequence to runtimeState plus applyState and forbids frontend derivation.",
+      "manual_dispatch_failure": "PASS: a saved selection with provable pre-PUT dispatch failure sends no PUT or GET, returns ok plus selectorSavedOnly(dispatchUnavailable), returns the authoritative persisted desired snapshot, and leaves applied structural generation unchanged.",
+      "unknown_selector_boundary": "PASS: selectorApplyUnknown is restricted to cases where PUT may have occurred or read-back cannot prove the runtime result.",
+      "contract_tests": "PASS: the design requires exact Rust and TypeScript closed-union fixtures, table-driven canonical mapping tests, and a mock pre-PUT dispatch-failure sequence. Runtime execution remains implementation-stage evidence."
+    },
+    "required_validation": {
+      "target_identity": "PASS",
+      "reviewer_independence": "PASS",
+      "query_error_closure": "PASS",
+      "dcr004_snapshot_canonical_mapping": "PASS",
+      "manual_post_save_pre_put_dispatch_mapping": "PASS",
+      "frontend_authority_boundary": "PASS",
+      "t012_design_001_007_regression": "PASS",
+      "scope_convergence": "PASS",
+      "implementation_or_runtime_tests": "NOT_RUN"
+    },
+    "freshness": "FRESH"
+  },
+  "remaining_risks": [
+    "The frozen sing-box 1.14.0 selector PUT and GET wire shape still requires implementation-stage fixture evidence; the candidate already requires fail-closed parsing and same-owned-instance read-back.",
+    "The canonical DCR-004 mapping, exact Rust and TypeScript unions, pre-PUT dispatch branch, DCR-019 projection, and UI feedback remain unimplemented and therefore have no runtime or visual verification in this design review.",
+    "DCR-019 rollback remains roll-forward-first and requires the documented data convergence plus successful Apply before old projection code can be considered safe."
+  ],
+  "skill_result": {
+    "skill": "technical-design-review",
+    "target": "TASK-012",
+    "outcome": "PASS",
+    "next_action_hint": "human-technical-design-gate",
+    "review_mode": "CHILD_AGENT",
+    "reviewed_target_identity": "sha256:c0d90aba66e5dbe20e2187b83138288f57c119b162f4fab933c16205aa9138a6",
+    "coverage": {
+      "findings": {
+        "T012-DESIGN-001": "FIXED_NO_REGRESSION",
+        "T012-DESIGN-002": "FIXED_NO_REGRESSION",
+        "T012-DESIGN-003": "FIXED_NO_REGRESSION",
+        "T012-DESIGN-004": "FIXED_NO_REGRESSION",
+        "T012-DESIGN-005": "FIXED_NO_REGRESSION",
+        "T012-DESIGN-006": "FIXED_NO_REGRESSION",
+        "T012-DESIGN-007": "FIXED_NO_REGRESSION",
+        "T012-DESIGN-008": "FIXED"
+      },
+      "freshness": "FRESH"
+    },
+    "remaining_risks": [
+      "selector and Apply wire behavior requires implementation evidence",
+      "DCR-019 and user-visible runtime states remain unimplemented"
+    ],
+    "review_result": "PASS"
+  }
+}

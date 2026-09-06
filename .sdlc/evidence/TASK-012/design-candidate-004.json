@@ -1,0 +1,14 @@
+{
+  "id": "EVIDENCE-TASK-012-DESIGN-004",
+  "type": "technical-design-remediation-candidate",
+  "target": "TASK-012",
+  "target_identity": "sha256:c0d90aba66e5dbe20e2187b83138288f57c119b162f4fab933c16205aa9138a6",
+  "produced_by_phase": "REMEDIATION",
+  "command_or_method": "technical-design remediation limited to the three remaining T012-DESIGN-008 response-closure findings under user-frozen semantics",
+  "result": "PASS",
+  "timestamp": "2026-09-06T07:32:55.2435422Z",
+  "summary": "Closed QueryError to three scalar values, froze the backend-owned DCR-004 canonical snapshot mapping, and added selectorSavedOnly(dispatchUnavailable) for proven pre-PUT dispatch failure. DCR-019 and T012-DESIGN-001 through 007 were not changed. No production code was modified.",
+  "observer": "Codex technical-design producer",
+  "artifact": ".sdlc/design/TASK-012-proxy-routing-candidate-004.json",
+  "supersedes_target_identity": "sha256:2989c6949657da7dcb02eb715232dc2df2df94b7ff9bdf29a03c13ffc802dbdc"
+}
