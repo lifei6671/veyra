@@ -1,12 +1,15 @@
 import { useState } from "react";
 import {
-  ArrowPathIcon,
-  ArrowsRightLeftIcon,
-  Cog6ToothIcon,
-  DocumentTextIcon,
-  FunnelIcon,
-  GlobeAltIcon,
+  CpuChipIcon,
+  DevicePhoneMobileIcon,
   HomeIcon,
+  LinkIcon,
+  MapIcon,
+  PlusIcon,
+  RectangleStackIcon,
+  RssIcon,
+  ServerStackIcon,
+  ShareIcon,
 } from "@heroicons/react/24/outline";
 import type { StorageResponse } from "../api/types";
 import { PanelSettings } from "./settings/PanelSettings";
@@ -17,19 +20,19 @@ import { StructuredSettings } from "./settings/StructuredSettings";
 import { DnsSettings } from "./settings/DnsSettings";
 import { BackendSettings } from "./settings/BackendSettings";
 
-const sections = [
+export const settingsSections = [
   { id: "panel", label: "面板设置", icon: HomeIcon },
-  { id: "subscriptions", label: "订阅管理", icon: ArrowPathIcon },
-  { id: "groups", label: "出站节点", icon: GlobeAltIcon },
-  { id: "routing", label: "目标分流", icon: FunnelIcon },
-  { id: "clients", label: "终端分流", icon: DocumentTextIcon },
-  { id: "chain", label: "链式代理", icon: ArrowsRightLeftIcon },
-  { id: "share", label: "共享网络", icon: ArrowsRightLeftIcon },
-  { id: "dns", label: "DNS 设置", icon: GlobeAltIcon },
-  { id: "backend", label: "后端设置", icon: Cog6ToothIcon },
+  { id: "subscriptions", label: "订阅管理", icon: RssIcon },
+  { id: "groups", label: "出站节点", icon: RectangleStackIcon },
+  { id: "routing", label: "目标分流", icon: MapIcon },
+  { id: "clients", label: "终端分流", icon: DevicePhoneMobileIcon },
+  { id: "chain", label: "链式代理", icon: LinkIcon },
+  { id: "share", label: "共享网络", icon: ShareIcon },
+  { id: "dns", label: "DNS 设置", icon: ServerStackIcon },
+  { id: "backend", label: "后端设置", icon: CpuChipIcon },
 ] as const;
 
-type SectionId = typeof sections[number]["id"];
+type SectionId = typeof settingsSections[number]["id"];
 
 export function SettingsPage({ storage, theme, setTheme, onToast }: {
   storage: StorageResponse;
@@ -37,11 +40,16 @@ export function SettingsPage({ storage, theme, setTheme, onToast }: {
   setTheme: (theme: "light" | "dark") => void;
   onToast: (message: string) => void;
 }) {
-  const [section, setSection] = useState<SectionId>("panel");
+  const [section, setSection] = useState<SectionId>(() => {
+    const saved = sessionStorage.getItem("openbox:settings-section");
+    sessionStorage.removeItem("openbox:settings-section");
+    return settingsSections.some(item => item.id === saved) ? saved as SectionId : "panel";
+  });
+  const [subscriptionAddToken, setSubscriptionAddToken] = useState(0);
   return <main className="page settings-page">
-    <nav className="settings-top-nav" aria-label="设置分类">{sections.map(item => { const Icon = item.icon; return <button type="button" key={item.id} className={section === item.id ? "active" : ""} onClick={() => setSection(item.id)}><Icon />{item.label}</button>; })}</nav>
+    <nav className="settings-top-nav" aria-label="设置分类">{settingsSections.map(item => { const Icon = item.icon; return <button type="button" key={item.id} className={section === item.id ? "active" : ""} onClick={() => setSection(item.id)}><Icon />{item.label}</button>; })}{section === "subscriptions" && <button type="button" className="settings-nav-add" aria-label="添加订阅或节点" onClick={() => setSubscriptionAddToken(value => value + 1)}><PlusIcon /></button>}</nav>
     {section === "panel" && <PanelSettings storage={storage} theme={theme} setTheme={setTheme} onSaved={onToast} />}
-    {section === "subscriptions" && <SubscriptionSettings onToast={onToast} />}
+    {section === "subscriptions" && <SubscriptionSettings onToast={onToast} addToken={subscriptionAddToken} />}
     {section === "groups" && <GroupSettings onToast={onToast} />}
     {section === "routing" && <RoutingSettings onToast={onToast} />}
     {section === "clients" && <StructuredSettings section="clients" onToast={onToast} />}

@@ -8,6 +8,7 @@ import type {
   OpenBoxGroup,
   OpenBoxProfile,
   ProxiesResponse,
+  ProxyLatencyHistoryResponse,
   RulesResponse,
   ServiceStatus,
   SiteLatencyHistory,
@@ -16,6 +17,8 @@ import type {
   SubscriptionShare,
   TestSite,
   TrafficDay,
+  TrafficDimension,
+  TrafficDrill,
   TrafficMonth,
   UpdateStatus,
 } from "./types";
@@ -46,14 +49,29 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
 
   const response = await fetch(apiUrl(path), { credentials: configuredBase ? "include" : "same-origin", ...init, headers });
   const contentType = response.headers.get("content-type") ?? "";
-  const body = contentType.includes("application/json") ? await response.json().catch(() => null) : await response.text().catch(() => "");
+  const rawBody = await response.text().catch(() => "");
+  const body = parseResponseBody(rawBody, contentType);
   if (!response.ok) {
-    const code = body && typeof body === "object" ? String(body.code ?? body.error ?? "") : undefined;
-    const message = body && typeof body === "object" ? String(body.message ?? body.error ?? "") : String(body || "");
+    const errorBody = body && typeof body === "object" ? body as Record<string, unknown> : null;
+    const code = errorBody ? String(errorBody.code ?? errorBody.error ?? "") : undefined;
+    const message = errorBody ? String(errorBody.message ?? errorBody.error ?? "") : String(body || "");
     if (response.status === 401) window.dispatchEvent(new CustomEvent("openbox:unauthorized"));
     throw new ApiError(message || `请求失败 (${response.status})`, response.status, code);
   }
   return body as T;
+}
+
+export function parseResponseBody(rawBody: string, contentType: string) {
+  const trimmed = rawBody.trim();
+  if (!trimmed) return null;
+  if (contentType.includes("application/json") || trimmed.startsWith("{") || trimmed.startsWith("[")) {
+    try {
+      return JSON.parse(trimmed) as unknown;
+    } catch {
+      return rawBody;
+    }
+  }
+  return rawBody;
 }
 
 const json = (value: unknown): RequestInit => ({ body: JSON.stringify(value) });
@@ -82,7 +100,9 @@ export const api = {
   updateStatus: () => request<UpdateStatus>("/api/openbox/update/status"),
 
   proxies: () => request<ProxiesResponse>("/api/controller/proxies"),
+  proxyLatencyHistory: () => request<ProxyLatencyHistoryResponse>("/api/openbox/latency-history"),
   selectProxy: (group: string, name: string) => request<void>(`/api/controller/proxies/${encodeURIComponent(group)}`, { method: "PUT", ...json({ name }) }),
+  testProxy: (name: string, url: string, timeout: number) => request<{ delay: number }>(`/api/controller/proxies/${encodeURIComponent(name)}/delay?url=${encodeURIComponent(url)}&timeout=${timeout}`),
   testProxyGroup: (group: string, url: string, timeout: number) => request<Record<string, number>>(`/api/controller/group/${encodeURIComponent(group)}/delay?url=${encodeURIComponent(url)}&timeout=${timeout}`),
   rules: () => request<RulesResponse>("/api/controller/rules"),
   closeConnection: (id: string) => request<void>(`/api/controller/connections/${encodeURIComponent(id)}`, { method: "DELETE" }),
@@ -90,8 +110,9 @@ export const api = {
 
   siteLatencyHistory: () => request<SiteLatencyHistory>("/api/openbox/site-latency/history"),
   testSites: (sites: TestSite[]) => request<{ results?: Record<string, number> }>("/api/openbox/site-latency", { method: "POST", signal: AbortSignal.timeout(30_000), ...json({ sites }) }),
-  trafficMonth: (month: string) => request<TrafficMonth>(`/api/openbox/traffic/month?month=${encodeURIComponent(month)}`),
-  trafficDay: (day: string) => request<TrafficDay>(`/api/openbox/traffic/day?day=${encodeURIComponent(day)}&limit=500`),
+  trafficMonth: (month: string, countDirect = true) => request<TrafficMonth>(`/api/openbox/traffic/month?month=${encodeURIComponent(month)}${countDirect ? "" : "&direct=0"}`),
+  trafficDay: (day: string, hour?: number | null, countDirect = true) => request<TrafficDay>(`/api/openbox/traffic/day?day=${encodeURIComponent(day)}&limit=500${hour == null ? "" : `&hour=${hour}`}${countDirect ? "" : "&direct=0"}`),
+  trafficDrill: (day: string, kind: TrafficDimension, key: string, by: TrafficDimension, hour?: number | null, countDirect = true) => request<TrafficDrill>(`/api/openbox/traffic/drill?day=${encodeURIComponent(day)}&kind=${kind}&key=${encodeURIComponent(key)}&by=${by}&limit=200${hour == null ? "" : `&hour=${hour}`}${countDirect ? "" : "&direct=0"}`),
 
   groups: () => request<GroupsResponse>("/api/openbox/groups"),
   saveGroups: (groups: OpenBoxGroup[]) => request<GroupsResponse>("/api/openbox/groups", { method: "PUT", ...json({ groups }) }),

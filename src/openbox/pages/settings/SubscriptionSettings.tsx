@@ -7,7 +7,7 @@ import { EmptyState, ErrorState, IconButton, Modal } from "../../components/shar
 
 type FormValue = { id?: string; name: string; url: string };
 
-export function SubscriptionSettings({ onToast }: { onToast: (message: string) => void }) {
+export function SubscriptionSettings({ onToast, addToken = 0 }: { onToast: (message: string) => void; addToken?: number }) {
   const [items, setItems] = useState<Subscription[]>([]);
   const [shares, setShares] = useState<SubscriptionShare[]>([]);
   const [form, setForm] = useState<FormValue | null>(null);
@@ -23,6 +23,7 @@ export function SubscriptionSettings({ onToast }: { onToast: (message: string) =
     } catch (reason) { setError(reason); }
   };
   useEffect(() => { void load(); }, []);
+  useEffect(() => { if (addToken > 0) setForm({ name: "", url: "" }); }, [addToken]);
 
   const save = async () => {
     if (!form?.name.trim() || !form.url.trim()) return;

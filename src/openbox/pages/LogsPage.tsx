@@ -1,60 +1,133 @@
 import { useMemo, useRef, useState } from "react";
-import { ArrowDownTrayIcon, ClipboardDocumentIcon, PauseIcon, PlayIcon, TrashIcon } from "@heroicons/react/24/outline";
+import { ArrowDownTrayIcon, PauseIcon, PlayIcon, SparklesIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import type { ControllerLogFrame } from "../api/types";
 import { useControllerSocket } from "../hooks/useControllerSocket";
-import { matchesQuery } from "../lib/format";
 import { SearchInputGroup, SelectControl } from "../ui/controls";
-import { EmptyState, IconButton, PageToolbar } from "../components/shared";
+import { IconButton } from "../components/shared";
 
 type LiveLog = ControllerLogFrame & { id: number; time: string; category: string };
+
+const logLevels = ["trace", "debug", "info", "warning", "error", "fatal", "panic", "silent"];
 
 export function LogsPage({ onToast }: { onToast: (message: string) => void }) {
   const [items, setItems] = useState<LiveLog[]>([]);
   const [level, setLevel] = useState("info");
-  const [category, setCategory] = useState("all");
+  const [filter, setFilter] = useState("all");
   const [query, setQuery] = useState("");
   const [paused, setPaused] = useState(false);
   const pausedRef = useRef(paused);
   pausedRef.current = paused;
   const counter = useRef(0);
 
-  const socket = useControllerSocket<ControllerLogFrame>("logs", {
+  useControllerSocket<ControllerLogFrame>("logs", {
     query: { level },
     onMessage: value => {
+      const id = ++counter.current;
       if (pausedRef.current) return;
-      const item: LiveLog = { ...value, id: ++counter.current, time: new Date().toLocaleTimeString("zh-CN", { hour12: false }), category: logCategory(value.payload) };
+      const item: LiveLog = {
+        ...value,
+        id,
+        time: new Date().toLocaleTimeString("zh-CN", { hour12: false }),
+        category: getLogCategory(value.payload),
+      };
       setItems(current => [item, ...current].slice(0, 1000));
     },
   });
 
-  const categories = useMemo(() => ["all", ...new Set(items.map(item => item.category))], [items]);
-  const visible = items.filter(item => (category === "all" || item.category === category) && matchesQuery([item.type, item.category, item.payload], query));
+  const filters = useMemo(() => {
+    const presentLevels = new Set(items.map(item => item.type));
+    const presentCategories = new Set(items.map(item => item.category).filter(Boolean));
+    return [
+      { value: "all", label: "全部" },
+      ...logLevels.filter(value => presentLevels.has(value)).map(value => ({ value: `level:${value}`, label: value })),
+      ...[...presentCategories].sort().map(value => ({ value: `type:${value}`, label: value })),
+    ];
+  }, [items]);
+
+  const search = useMemo(() => {
+    if (!query) return { regex: null, invalid: false };
+    try {
+      return { regex: new RegExp(query, "i"), invalid: false };
+    } catch {
+      return { regex: null, invalid: true };
+    }
+  }, [query]);
+
+  const visible = items.filter(item => {
+    if (search.invalid) return false;
+    const matchesFilter = filter === "all"
+      || (filter.startsWith("level:") && item.type === filter.slice(6))
+      || (filter.startsWith("type:") && item.payload.includes(filter.slice(5)));
+    const matchesSearch = !search.regex || [item.payload, item.time, item.type].some(value => search.regex?.test(value));
+    return matchesFilter && matchesSearch;
+  });
+
   const changeLevel = (value: string) => {
     setLevel(value);
-    setCategory("all");
+    setFilter("all");
     setItems([]);
+    counter.current = 0;
   };
 
   const exportLogs = () => {
-    const text = [...visible].reverse().map(item => `${item.time} [${item.type}] [${item.category}] ${item.payload}`).join("\n");
+    const text = visible.map(item => `${String(item.id).padEnd(5, " ")}\t${item.time}\t${item.type.padEnd(7, " ")}\t${item.payload}`).join("\n");
     const url = URL.createObjectURL(new Blob([text], { type: "text/plain;charset=utf-8" }));
     const link = document.createElement("a");
     link.href = url;
-    link.download = `openbox-${Date.now()}.log`;
+    link.download = `${new Date().toISOString().slice(0, 19).replace(/[T:]/g, "-")}.log`;
     link.click();
     URL.revokeObjectURL(url);
     onToast("当前日志已导出");
   };
 
   return <main className="page logs-page">
-    <PageToolbar title="日志" subtitle={`实时日志 WebSocket：${socket.state === "open" ? "已连接" : socket.state === "connecting" ? "连接中" : "已断开"}`} />
-    <div className="route-controls log-controls"><SelectControl label="日志级别" value={level} onValueChange={changeLevel} className="log-level-select" options={["debug", "info", "warning", "error"].map(value => ({ value, label: value }))} /><SelectControl label="日志分类" value={category} onValueChange={setCategory} className="log-category-select" options={categories.map(value => ({ value, label: value === "all" ? "全部" : value }))} /><SearchInputGroup label="搜索日志" value={query} onChange={setQuery} onClear={() => setQuery("")} placeholder="搜索日志" /><div className="route-tools"><IconButton label="下载日志" disabled={!visible.length} onClick={exportLogs}><ArrowDownTrayIcon /></IconButton><IconButton label={paused ? "继续接收" : "暂停接收"} active={paused} onClick={() => setPaused(value => !value)}>{paused ? <PlayIcon /> : <PauseIcon />}</IconButton><IconButton label="清空当前日志" disabled={!items.length} onClick={() => setItems([])}><TrashIcon /></IconButton></div></div>
-    <section className="log-list" aria-live={paused ? "off" : "polite"}>{visible.map(item => <article className="log-row" key={item.id}><span className="log-number">{item.id}.</span><time>{item.time}</time><span className={`level level-${item.type}`}>{item.type}</span><span className="log-category">{item.category}</span><p>{item.payload}</p><button type="button" aria-label="复制日志" onClick={() => void navigator.clipboard.writeText(item.payload).then(() => onToast("日志内容已复制"))}><ClipboardDocumentIcon /></button></article>)}</section>
-    {!visible.length && <EmptyState icon="≡" title={items.length ? "没有匹配的日志" : "等待实时日志"} text={items.length ? "调整筛选条件。" : "后端产生新日志时会立即显示在这里。"} />}
+    <div className="route-controls log-controls">
+      <SelectControl label="日志级别" value={level} onValueChange={changeLevel} className="log-level-select" options={logLevels.map(value => ({ value, label: value }))} />
+      <div className="log-filter-cluster">
+        <SelectControl label="日志类型" value={filter} onValueChange={setFilter} className="log-category-select" options={filters} />
+        <SearchInputGroup label="搜索日志" value={query} onChange={setQuery} onClear={() => setQuery("")} placeholder="搜索 | Regex" className={search.invalid ? "search-invalid" : ""} />
+        <IconButton label="格式化域名或 URL" onClick={() => setQuery(normalizeLogQuery(query))}><SparklesIcon /></IconButton>
+      </div>
+      <div className="route-tools">
+        <IconButton label="下载日志" disabled={!visible.length} onClick={exportLogs}><ArrowDownTrayIcon /></IconButton>
+        <IconButton label={paused ? "继续接收" : "暂停接收"} active={paused} onClick={() => setPaused(value => !value)}>{paused ? <PlayIcon /> : <PauseIcon />}</IconButton>
+        <IconButton label="清空当前日志" disabled={!items.length} onClick={() => setItems([])}><XMarkIcon /></IconButton>
+      </div>
+    </div>
+    <section className="log-list" aria-live={paused ? "off" : "polite"}>
+      {visible.map(item => (
+        <article className="log-row" key={item.id}>
+          <span className="log-number">{String(item.id).padStart(2, "0")}.</span>
+          <time>{item.time}</time>
+          <span className={`level level-${item.type}`}>{item.type}</span>
+          <p>{item.payload}</p>
+        </article>
+      ))}
+      {!visible.length && <div className="surface log-empty">{search.invalid ? "正则表达式格式不正确" : items.length ? "没有匹配的日志" : "暂无日志"}</div>}
+    </section>
   </main>;
 }
 
-function logCategory(payload: string) {
-  const match = payload.match(/\b(inbound|outbound|dns|route|router|transport|service|subscription|latency)\b/i);
-  return match?.[1]?.toLocaleLowerCase() ?? "system";
+export function getLogCategory(payload: string) {
+  if (payload.startsWith("[")) {
+    const contentStart = payload.indexOf("]") + 2;
+    const colon = payload.indexOf(":", contentStart);
+    return colon >= contentStart ? payload.slice(contentStart, colon + 1) : "";
+  }
+  const space = payload.indexOf(" ");
+  return space === -1 ? payload : payload.slice(0, space);
+}
+
+export function normalizeLogQuery(value: string) {
+  const trimmed = value.trim();
+  if (!trimmed) return "";
+  const candidate = /^[a-z][a-z0-9+.-]*:\/\//i.test(trimmed)
+    ? trimmed
+    : trimmed.startsWith("//") ? `http:${trimmed}` : `http://${trimmed}`;
+  try {
+    const url = new URL(candidate);
+    return url.hostname.toLocaleLowerCase();
+  } catch {
+    return trimmed.replace(/:\d+$/, "");
+  }
 }

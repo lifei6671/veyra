@@ -36,9 +36,9 @@ export function ErrorState({ title = "加载失败", error, onRetry }: { title?:
   return <section className="surface error-state" role="alert"><ExclamationTriangleIcon aria-hidden="true" /><div><h2>{title}</h2><p>{message}</p></div>{onRetry && <button type="button" className="primary-button" onClick={onRetry}>重新加载</button>}</section>;
 }
 
-export function Modal({ title, children, onClose, footer }: { title: string; children: ReactNode; onClose: () => void; footer?: ReactNode }) {
+export function Modal({ title, children, onClose, footer, className = "" }: { title: string; children: ReactNode; onClose: () => void; footer?: ReactNode; className?: string }) {
   return <div className="ob-modal-backdrop" role="presentation" onMouseDown={event => { if (event.target === event.currentTarget) onClose(); }}>
-    <section className="ob-modal" role="dialog" aria-modal="true" aria-labelledby="ob-modal-title">
+    <section className={`ob-modal${className ? ` ${className}` : ""}`} role="dialog" aria-modal="true" aria-labelledby="ob-modal-title">
       <header><h2 id="ob-modal-title">{title}</h2><button type="button" aria-label="关闭" onClick={onClose}>×</button></header>
       <div className="ob-modal-body">{children}</div>
       {footer && <footer>{footer}</footer>}
@@ -60,7 +60,11 @@ export function ConfirmButton({ children, confirmText, onConfirm, className = ""
 }
 
 export function PromoBar() {
-  return <div className="promo-bar">优惠购买AI接口、机场、VPS、住宅IP，请访问：<a href="https://blog.angeworld.cc/market" target="_blank" rel="noreferrer">安格超市</a><span>AI 中转站：</span><a href="https://ai.superdoor.top/" target="_blank" rel="noreferrer">SUPERDOOR 订阅服务</a><i>|</i><a href="https://ai.opendoor.sbs/" target="_blank" rel="noreferrer">OPENDOOR 按需付费</a></div>;
+  return <div className="promo-bar">
+    <span>优惠购买AI接口、机场、VPS、住宅IP，请访问：</span>
+    <a href="https://blog.angeworld.cc/market" target="_blank" rel="noreferrer">安格超市</a>
+    <span className="promo-right"><span>AI 中转站：</span><a href="https://ai.superdoor.top/" target="_blank" rel="noreferrer">SUPERDOOR <small>订阅服务</small></a><i>|</i><a href="https://ai.opendoor.sbs/" target="_blank" rel="noreferrer">OPENDOOR <small>按需付费</small></a></span>
+  </div>;
 }
 
 export function SettingRow({ label, note, children }: { label: string; note?: string; children: ReactNode }) {
