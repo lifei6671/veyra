@@ -1,0 +1,129 @@
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { api } from "./api/client";
+import type { AuthStatus, RouteKey, ServiceStatus, StorageResponse } from "./api/types";
+import { AppShell, type ShellStats } from "./components/AppShell";
+import { AuthScreen } from "./components/AuthScreen";
+import { ErrorState, LoadingView } from "./components/shared";
+import { useLiveMetrics } from "./hooks/useLiveMetrics";
+import { OverviewPage } from "./pages/OverviewPage";
+import { ProxiesPage } from "./pages/ProxiesPage";
+import { ConnectionsPage } from "./pages/ConnectionsPage";
+import { LogsPage } from "./pages/LogsPage";
+import { RulesPage } from "./pages/RulesPage";
+import { SettingsPage } from "./pages/SettingsPage";
+
+const routeKeys: RouteKey[] = ["overview", "proxies", "connections", "logs", "rules", "settings"];
+
+function routeFromHash(): RouteKey {
+  const candidate = window.location.hash.replace(/^#\/?/, "").split("/")[0] as RouteKey;
+  return routeKeys.includes(candidate) ? candidate : "overview";
+}
+
+export function OpenBoxApp() {
+  const [auth, setAuth] = useState<AuthStatus | null>(null);
+  const [route, setRoute] = useState<RouteKey>(routeFromHash);
+  const [storage, setStorage] = useState<StorageResponse | null>(null);
+  const [service, setService] = useState<ServiceStatus | null>(null);
+  const [theme, setTheme] = useState<"light" | "dark">("light");
+  const [collapsed, setCollapsed] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [toast, setToast] = useState("");
+  const [authError, setAuthError] = useState<unknown>(null);
+
+  const authenticated = Boolean(auth && (!auth.enabled || auth.authenticated));
+  const live = useLiveMetrics(authenticated);
+
+  const showToast = useCallback((message: string) => {
+    setToast(message);
+    window.setTimeout(() => setToast(current => current === message ? "" : current), 2600);
+  }, []);
+
+  const loadStorage = useCallback(async () => {
+    const value = await api.storage();
+    setStorage(value);
+    setTheme(value.entries["config/theme-mode"] === "dark" ? "dark" : "light");
+    setCollapsed(value.entries["config/is-sidebar-collapsed"] === "true");
+  }, []);
+
+  const loadService = useCallback(async () => setService(await api.serviceStatus()), []);
+
+  const loadAuth = useCallback(async () => {
+    setAuthError(null);
+    try {
+      setAuth(await api.authStatus());
+    } catch (reason) {
+      setAuthError(reason);
+    }
+  }, []);
+
+  useEffect(() => {
+    void loadAuth();
+    const unauthorized = () => setAuth(current => ({ enabled: true, authenticated: false, passwordSet: current?.passwordSet ?? true }));
+    window.addEventListener("openbox:unauthorized", unauthorized);
+    return () => window.removeEventListener("openbox:unauthorized", unauthorized);
+  }, [loadAuth]);
+
+  useEffect(() => {
+    const hashChange = () => setRoute(routeFromHash());
+    window.addEventListener("hashchange", hashChange);
+    if (!window.location.hash) window.location.hash = "#/overview";
+    return () => window.removeEventListener("hashchange", hashChange);
+  }, []);
+
+  useEffect(() => {
+    if (!authenticated) return;
+    void Promise.all([loadStorage(), loadService()]).catch(reason => showToast(reason instanceof Error ? reason.message : "后端初始化失败"));
+    const timer = window.setInterval(() => void loadService().catch(() => undefined), 15_000);
+    return () => window.clearInterval(timer);
+  }, [authenticated, loadService, loadStorage, showToast]);
+
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme;
+    document.body.dataset.theme = theme;
+    document.body.classList.toggle("theme-dark", theme === "dark");
+  }, [theme]);
+
+  const navigate = (next: RouteKey) => { window.location.hash = `#/${next}`; };
+  const toggleCollapse = () => {
+    const next = !collapsed;
+    setCollapsed(next);
+    void api.patchStorage({ "config/is-sidebar-collapsed": String(next) }).catch(reason => showToast(reason instanceof Error ? reason.message : "侧栏设置保存失败"));
+  };
+  const refresh = async () => {
+    setBusy(true);
+    try { await Promise.all([loadStorage(), loadService()]); showToast("数据已刷新"); }
+    catch (reason) { showToast(reason instanceof Error ? reason.message : "刷新失败"); }
+    finally { setBusy(false); }
+  };
+  const serviceAction = async (action: "start" | "stop") => {
+    if (action === "stop" && !window.confirm("确定停止 Open-Box 内核吗？现有连接会中断。")) return;
+    setBusy(true);
+    try { await api.serviceAction(action); await loadService(); showToast(action === "start" ? "内核启动命令已执行" : "内核已停止"); }
+    catch (reason) { showToast(reason instanceof Error ? reason.message : "内核操作失败"); }
+    finally { setBusy(false); }
+  };
+
+  const stats = useMemo<ShellStats>(() => ({
+    connections: live.connections.connections.length,
+    memory: live.memory,
+    inbound: live.traffic.down,
+    inboundRate: live.traffic.downRate,
+    outbound: live.traffic.up,
+    outboundRate: live.traffic.upRate,
+  }), [live]);
+
+  if (authError) return <main className="auth-page"><ErrorState title="无法连接 Open-Box 后端" error={authError} onRetry={() => void loadAuth()} /></main>;
+  if (!auth) return <LoadingView label="正在检查后端登录状态" />;
+  if (!authenticated) return <AuthScreen status={auth} onAuthenticated={setAuth} />;
+  if (!storage) return <LoadingView />;
+
+  return <AppShell route={route} onNavigate={navigate} service={service} stats={stats} collapsed={collapsed} onCollapse={toggleCollapse} onServiceAction={serviceAction} onRefresh={() => void refresh()} busy={busy}>
+    {route === "overview" && <OverviewPage stats={stats} storage={storage} onToast={showToast} />}
+    {route === "proxies" && <ProxiesPage storage={storage} onToast={showToast} />}
+    {route === "connections" && <ConnectionsPage frame={live.connections} onToast={showToast} />}
+    {route === "logs" && <LogsPage onToast={showToast} />}
+    {route === "rules" && <RulesPage />}
+    {route === "settings" && <SettingsPage storage={storage} theme={theme} setTheme={setTheme} onToast={message => { showToast(message); void loadStorage().catch(() => undefined); }} />}
+    {toast && <div className="toast" role="status">{toast}</div>}
+  </AppShell>;
+}

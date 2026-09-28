@@ -1,10 +1,33 @@
 import { defineConfig } from "vitest/config";
 import react from "@vitejs/plugin-react";
 
+const openBoxProxy = {
+  "/api": {
+    target: "http://192.168.1.10:3036",
+    changeOrigin: true,
+    ws: true,
+  },
+};
+
 export default defineConfig({
   plugins: [react()],
+  resolve: {
+    dedupe: ["react", "react-dom"],
+  },
+  build: {
+    rollupOptions: {
+      input: {
+        main: "index.html",
+        openbox: "openbox.html",
+      },
+    },
+  },
   server: {
     watch: { ignored: ["**/src-tauri/target/**", "**/.sdlc/evidence/**"] },
+    proxy: openBoxProxy,
+  },
+  preview: {
+    proxy: openBoxProxy,
   },
   test: {
     environment: "node",

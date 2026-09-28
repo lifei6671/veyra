@@ -1,0 +1,231 @@
+export type RouteKey = "overview" | "proxies" | "connections" | "logs" | "rules" | "settings";
+
+export type AuthStatus = {
+  enabled: boolean;
+  authenticated: boolean;
+  passwordSet: boolean;
+};
+
+export type ServiceStatus = {
+  core: { running: boolean; autostart: boolean; uptimeSeconds: number; raw?: string };
+  panel: { running: boolean; raw?: string };
+  conflicts: string[];
+  platform: string;
+};
+
+export type ControllerConfig = {
+  mode: string;
+  "mode-list"?: string[];
+  "log-level": string;
+  ipv6: boolean;
+  [key: string]: unknown;
+};
+
+export type ProxyHistory = { time: string; delay: number };
+
+export type ControllerProxy = {
+  name: string;
+  type: string;
+  udp?: boolean;
+  now?: string;
+  all?: string[];
+  history?: ProxyHistory[];
+};
+
+export type ProxiesResponse = { proxies: Record<string, ControllerProxy> };
+
+export type ControllerRule = { type: string; payload: string; proxy: string };
+export type RulesResponse = { rules: ControllerRule[] };
+
+export type ConnectionMetadata = {
+  destinationIP: string;
+  destinationPort: string;
+  dnsMode?: string;
+  host: string;
+  network: string;
+  processPath?: string;
+  sourceIP: string;
+  sourcePort: string;
+  type: string;
+};
+
+export type ControllerConnection = {
+  id: string;
+  chains: string[];
+  download: number;
+  upload: number;
+  metadata: ConnectionMetadata;
+  rule: string;
+  rulePayload: string;
+  start: string;
+  downloadSpeed?: number;
+  uploadSpeed?: number;
+};
+
+export type ConnectionsFrame = {
+  connections: ControllerConnection[];
+  downloadTotal?: number;
+  uploadTotal?: number;
+};
+
+export type TrafficFrame = { up: number; down: number };
+export type MemoryFrame = { inuse: number; oslimit?: number };
+export type ControllerLogFrame = { type: string; payload: string };
+
+export type SiteLatencyPoint = { time: string; delay: number; node?: string };
+export type SiteLatencyHistory = {
+  history: Record<string, SiteLatencyPoint[]>;
+  timeoutMs: number;
+};
+
+export type TestSite = { id: string; icon: string; name: string; url: string };
+
+export type TrafficSummary = { up: number; down: number; conns: number };
+export type TrafficMonthDay = TrafficSummary & { day: string };
+export type TrafficMonth = {
+  month: string;
+  today: string;
+  days: TrafficMonthDay[];
+  total: TrafficSummary;
+  avg: { up: number; down: number };
+  avgDays: number;
+  direct: { excluded: boolean; tag: string };
+};
+
+export type TrafficRow = TrafficSummary & {
+  key: string;
+  name?: string;
+  self?: { iface: string; kind: string };
+};
+
+export type TrafficHour = TrafficSummary & { hour: number };
+export type TrafficDay = {
+  day: string;
+  hour: number | null;
+  today: string;
+  total: TrafficSummary;
+  nodes: TrafficRow[];
+  hosts: TrafficRow[];
+  clients: TrafficRow[];
+  hours: TrafficHour[];
+  nowHour: number;
+  direct: { excluded: boolean; tag: string };
+};
+
+export type OpenBoxGroup = {
+  id: string;
+  name: string;
+  type: "urltest" | "selector" | "failover" | string;
+  mode: "static" | "dynamic" | string;
+  enabled: boolean;
+  icon: string;
+  iconScale: number;
+  keywords: string[];
+  members: string[];
+  kind?: string;
+  testUrl?: string;
+  interval?: string;
+  tolerance?: number;
+  idleTimeout?: string;
+};
+
+export type GroupsResponse = {
+  groups: OpenBoxGroup[];
+  types: string[];
+  availableNodes: Array<{ name: string; subscription: string }>;
+  availableGroups: string[];
+};
+
+export type Subscription = {
+  id: string;
+  name: string;
+  url?: string;
+  urls?: string[];
+  format: string;
+  nodeCount: number;
+  renameOptions?: Record<string, unknown>;
+  autoUpdate?: string | boolean;
+  createdAt: string;
+  updatedAt: string;
+  kernelStale: boolean;
+};
+
+export type SubscriptionShare = {
+  id: string;
+  name: string;
+  enabled?: boolean;
+  url?: string;
+  [key: string]: unknown;
+};
+
+export type RoutingPolicy = {
+  name?: string;
+  enabled?: boolean;
+  icon?: string;
+  outbound?: string;
+  target?: string;
+  [key: string]: unknown;
+};
+
+export type OpenBoxProfile = {
+  ipv6: boolean;
+  ipv6Proxy: string;
+  directForNodes: boolean;
+  rejectQuic: boolean;
+  directBypass: boolean;
+  bypassPorts: string;
+  bypassPortsMode: string;
+  tun: { autoRedirect: boolean; stack: string; mtu: number; tcpMss: number };
+  chainProxies: Array<Record<string, unknown>>;
+  servers: Array<Record<string, unknown>>;
+  clientRoutes: Array<Record<string, unknown>>;
+  dns: {
+    split: boolean;
+    mode: string;
+    fakeIpForProxy: boolean;
+    direct: string;
+    directProtocol: string;
+    directPort: number;
+    directExtras: string[];
+    proxy: string;
+    proxyProtocol: string;
+    proxyPort: number;
+    proxyExtras: string[];
+    rewrite?: Record<string, unknown>;
+  };
+  traffic: { keepMonths: number };
+  testUrl: string;
+  directTestUrl: string;
+  updates: {
+    openbox: { auto: boolean; hour: number; channel: string; checkChannel: string; days: number };
+  };
+  routing: {
+    policies: RoutingPolicy[];
+    fallbackDefault: string;
+    fallbackName: string;
+    fallbackIcon: string;
+  };
+  [key: string]: unknown;
+};
+
+export type StorageResponse = { entries: Record<string, string> };
+
+export type UpdateStatus = {
+  version: string;
+  singboxVersion: string;
+  builtAt: string;
+  geoVersion: string;
+  geoDate: string;
+  geoCounts: { geosite: number; geoip: number };
+  channel: { mode: string; prefix: string };
+  status: { stage: string; running: boolean };
+  logTail: string;
+};
+
+export type ClientDevice = { id?: string; name: string; [key: string]: unknown };
+export type ClientsResponse = { clients?: Array<Record<string, unknown>>; devices?: ClientDevice[] };
+
+export type DnsFilterConfig = {
+  enabled?: boolean;
+  [key: string]: unknown;
+};
