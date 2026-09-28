@@ -1,4 +1,4 @@
-import { useEffect, useId, useMemo, useState } from "react";
+import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { ArrowPathIcon, Bars3Icon, BoltIcon, ChevronDownIcon, ChevronUpIcon, MapPinIcon, PencilSquareIcon, WrenchScrewdriverIcon } from "@heroicons/react/24/outline";
 import { toast } from "sonner";
@@ -64,6 +64,9 @@ export function ProxiesPage({ storage, onToast }: { storage: StorageResponse | n
   const [penetrationExpanded, setPenetrationExpanded] = useState<Record<string, boolean>>({});
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [draggedItem, setDraggedItem] = useState<string | null>(null);
+  const [dragOrder, setDragOrder] = useState<string[] | null>(null);
+  const orderItemRefs = useRef(new Map<string, HTMLDivElement>());
+  const orderItemRects = useRef<Map<string, DOMRect> | null>(null);
   const [viewSettings, setViewSettings] = useState<ProxyViewSettings>(() => proxyViewSettings(typeof window === "undefined" ? null : window.localStorage.getItem(PROXY_VIEW_SETTINGS_KEY)));
 
   const load = async () => {
@@ -81,9 +84,6 @@ export function ProxiesPage({ storage, onToast }: { storage: StorageResponse | n
 
   const entries = useMemo(() => Object.values(data?.proxies ?? {}), [data]);
   const { customGroups, nodeGroups } = useMemo(() => getProxyViewGroups(data), [data]);
-  const filteredGroups = useMemo(() => customGroups.filter(group => groupMatches(group, data, query)), [customGroups, data, query]);
-  const filteredNodeGroups = useMemo(() => nodeGroups.filter(group => groupMatches(group, data, query)), [nodeGroups, data, query]);
-  const filteredSubscriptions = useMemo(() => subscriptions.filter(item => matchesQuery([item.name, item.format], query)), [subscriptions, query]);
   const timeout = Number(storage?.entries["config/speedtest-timeout"] ?? 5000);
   const testUrl = storage?.entries["config/speedtest-url"] ?? "http://www.gstatic.com/generate_204";
   const columns = Math.min(3, Math.max(1, Number(storage?.entries["config/proxy-group-columns"] ?? 1)));
@@ -95,9 +95,9 @@ export function ProxiesPage({ storage, onToast }: { storage: StorageResponse | n
   const listStyle = { gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` };
   const pageStyle = { "--proxy-node-card-min-width": `${viewSettings.nodeCardMinWidth}px` } as React.CSSProperties;
   const testingGroup = busy.startsWith("test:") ? busy.slice(5) : "";
-  const visibleGroups = useMemo(() => sortProxyViewItems(filteredGroups, { mode: "custom", order: viewSettings.strategyOrder }, group => group.name, group => group.name, group => selectedProxyDelay(group, data)), [data, filteredGroups, viewSettings.strategyOrder]);
-  const visibleNodeGroups = filteredNodeGroups;
-  const visibleSubscriptions = filteredSubscriptions;
+  const visibleGroups = useMemo(() => sortProxyViewItems(customGroups, { mode: "custom", order: viewSettings.strategyOrder }, group => group.name, group => group.name, group => selectedProxyDelay(group, data)), [customGroups, data, viewSettings.strategyOrder]);
+  const visibleNodeGroups = nodeGroups;
+  const visibleSubscriptions = subscriptions;
   const allSubscriptionNodes = useMemo(() => uniqueSubscriptionNodes(subscriptions, entries), [entries, subscriptions]);
   const changeTab = (value: string) => {
     const next = proxyViewTab(value);
@@ -231,14 +231,34 @@ export function ProxiesPage({ storage, onToast }: { storage: StorageResponse | n
       : subscriptions.map(subscription => ({ id: subscription.id, label: subscription.name }));
   const strategyItems = customGroups.map(group => ({ id: group.name, label: group.name, icon: groupIcon(group.name) }));
   const strategyOrder = completeProxyViewOrder(viewSettings.strategyOrder, strategyItems.map(item => item.id));
-  const collapseAll = () => setCollapsed(current => ({
-    ...current,
-    ...Object.fromEntries(currentItems.map(item => [proxyCardKey(tab, item.id), true])),
-  }));
-  const moveItem = (source: string, target: string) => {
-    if (source === target) return;
-    updateOrder(reorderProxyViewIds(strategyOrder, source, target));
+  const displayedStrategyOrder = dragOrder ?? strategyOrder;
+  const allCurrentCardsCollapsed = currentItems.length > 0 && currentItems.every(item => collapsed[proxyCardKey(tab, item.id)]);
+  const toggleAllCards = () => setCollapsed(current => toggleProxyCardsCollapsed(current, tab, currentItems.map(item => item.id)));
+  const captureOrderRects = () => {
+    orderItemRects.current = new Map(Array.from(orderItemRefs.current, ([id, element]) => [id, element.getBoundingClientRect()]));
   };
+  const previewItemMove = (source: string, target: string) => {
+    if (source === target) return;
+    const current = dragOrder ?? strategyOrder;
+    const next = reorderProxyViewIds(current, source, target);
+    if (next === current) return;
+    captureOrderRects();
+    setDragOrder(next);
+  };
+  useLayoutEffect(() => {
+    const previousRects = orderItemRects.current;
+    orderItemRects.current = null;
+    if (!previousRects || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    for (const [id, element] of orderItemRefs.current) {
+      const previous = previousRects.get(id);
+      if (!previous) continue;
+      const offset = previous.top - element.getBoundingClientRect().top;
+      if (offset) element.animate(
+        [{ transform: `translateY(${offset}px)` }, { transform: "translateY(0)" }],
+        { duration: 180, easing: "cubic-bezier(.2, .8, .2, 1)" },
+      );
+    }
+  }, [dragOrder]);
 
   return <>
   <main className="page proxies-page" style={pageStyle}>
@@ -251,7 +271,7 @@ export function ProxiesPage({ storage, onToast }: { storage: StorageResponse | n
       <SearchInputGroup label="搜索代理" value={query} onChange={setQuery} onClear={() => setQuery("")} placeholder="搜索 | 多个关键词用空格分隔" />
       <div className="proxy-tools">
         <ProxyTool label="策略设置" onClick={() => setSettingsOpen(true)}><WrenchScrewdriverIcon /></ProxyTool>
-        <ProxyTool label="收起全部卡片" disabled={!currentItems.length} onClick={collapseAll}><ChevronUpIcon /></ProxyTool>
+        <ProxyTool label={allCurrentCardsCollapsed ? "展开全部卡片" : "收起全部卡片"} disabled={!currentItems.length} onClick={toggleAllCards}>{allCurrentCardsCollapsed ? <ChevronDownIcon /> : <ChevronUpIcon />}</ProxyTool>
         <ProxyTool label="全部测速" disabled={Boolean(busy) || !allSubscriptionNodes.length} onClick={() => void testAll()}><BoltIcon className={busy === "test:all" ? "testing-bolt" : undefined} /></ProxyTool>
         {tab === "subscriptions" && <ProxyTool label="刷新所有订阅" disabled={Boolean(busy) || !subscriptions.length} onClick={() => void refreshAllSubscriptions()}><ArrowPathIcon /></ProxyTool>}
       </div>
@@ -276,6 +296,7 @@ export function ProxiesPage({ storage, onToast }: { storage: StorageResponse | n
       history={latencyHistory[group.name] ?? group.history ?? []}
       latencyHistory={latencyHistory}
       testingGroup={testingGroup}
+      query={query}
       nodeSort={viewSettings.nodeSort}
       groupByProvider={viewSettings.groupByProvider}
     />)}</div>}
@@ -296,12 +317,14 @@ export function ProxiesPage({ storage, onToast }: { storage: StorageResponse | n
       history={latencyHistory[group.name] ?? group.history ?? []}
       latencyHistory={latencyHistory}
       testingGroup={testingGroup}
+      query={query}
       nodeSort={viewSettings.nodeSort}
       groupByProvider={viewSettings.groupByProvider}
     />)}</div>}
 
     {tab === "subscriptions" && <div className="policy-list">{visibleSubscriptions.map(subscription => {
-      const options = sortProxyNodes(subscriptionNodes(subscription, entries).filter(option => isVisibleProxy(option, hideUnavailable)), viewSettings.nodeSort);
+      const allOptions = sortProxyNodes(subscriptionNodes(subscription, entries).filter(option => isVisibleProxy(option, hideUnavailable)), viewSettings.nodeSort);
+      const options = allOptions.filter(option => proxyMatchesQuery(option, query));
       const tested = options.filter(option => latestLatency(option.history)).length;
       const cardKey = proxyCardKey("subscriptions", subscription.id);
       const isCollapsed = Boolean(collapsed[cardKey]);
@@ -316,26 +339,30 @@ export function ProxiesPage({ storage, onToast }: { storage: StorageResponse | n
             onClick={() => setCollapsed(value => ({ ...value, [cardKey]: !value[cardKey] }))}
           >
             <div>
-              <h2>{subscription.name}</h2><span>({tested}/{options.length || subscription.nodeCount})</span>
+              <h2>{subscription.name}</h2><span>({tested}/{allOptions.length || subscription.nodeCount})</span>
               <small>更新于 {relativeTime(subscription.updatedAt)}</small>
-              {isCollapsed && <NodeHealthDots options={options} thresholds={thresholds} />}
+              <div className={`node-health-summary${isCollapsed ? " visible" : ""}`} aria-hidden={!isCollapsed}>
+                <div className="node-health-summary-inner"><NodeHealthDots options={allOptions} thresholds={thresholds} /></div>
+              </div>
             </div>
           </button>
           <div className="provider-actions">
-            <IconButton label={`测试 ${subscription.name} 节点延迟`} disabled={Boolean(busy) || !options.length} onClick={() => void testSubscription(subscription, options)}><BoltIcon className={isTesting ? "testing-bolt" : undefined} /></IconButton>
-            <IconButton label={`刷新 ${subscription.name}`} disabled={Boolean(busy)} onClick={() => void refreshSubscription(subscription)}><ArrowPathIcon /></IconButton>
-            <IconButton label={`修改 ${subscription.name}`} onClick={() => { sessionStorage.setItem("openbox:settings-section", "subscriptions"); window.location.hash = "#/settings"; }}><PencilSquareIcon /></IconButton>
+            <ProxyTool label="测试这条订阅的节点延迟" disabled={Boolean(busy) || !allOptions.length} onClick={() => void testSubscription(subscription, allOptions)}><BoltIcon className={isTesting ? "testing-bolt" : undefined} /></ProxyTool>
+            <ProxyTool label="刷新" disabled={Boolean(busy)} onClick={() => void refreshSubscription(subscription)}><ArrowPathIcon /></ProxyTool>
+            <ProxyTool label="修改订阅" onClick={() => { sessionStorage.setItem("openbox:settings-section", "subscriptions"); window.location.hash = "#/settings"; }}><PencilSquareIcon /></ProxyTool>
           </div>
         </header>
-        {!isCollapsed && <div className="policy-options provider-options">{options.map(option => <ProxyOption
-          key={option.name}
-          option={option}
-          active={false}
-          disabled={Boolean(busy)}
-          thresholds={thresholds}
-          testing={isTesting || busy === `node:${option.name}`}
-          onTest={() => void testNode(option.name)}
-        />)}</div>}
+        <section className={`subscription-provider-collapse${isCollapsed ? " collapsed" : ""}`} aria-hidden={isCollapsed} inert={isCollapsed || undefined}>
+          <div className="subscription-provider-collapse-inner"><div className="policy-options provider-options">{options.map(option => <ProxyOption
+            key={option.name}
+            option={option}
+            active={false}
+            disabled={Boolean(busy)}
+            thresholds={thresholds}
+            testing={isTesting || busy === `node:${option.name}`}
+            onTest={() => void testNode(option.name)}
+          />)}</div></div>
+        </section>
       </article>;
     })}</div>}
   </main>;
@@ -354,17 +381,19 @@ export function ProxiesPage({ storage, onToast }: { storage: StorageResponse | n
       <div className="proxy-settings-columns">
         <section className="proxy-settings-column">
           <h3>显示排序</h3>
-          <div className="proxy-order-list">{strategyOrder.map(id => {
+          <div className="proxy-order-list">{displayedStrategyOrder.map(id => {
             const item = strategyItems.find(candidate => candidate.id === id);
             if (!item) return null;
             return <div
               className={`proxy-order-item${draggedItem === id ? " dragging" : ""}`}
+              ref={element => { if (element) orderItemRefs.current.set(id, element); else orderItemRefs.current.delete(id); }}
               draggable
               key={id}
-              onDragStart={event => { setDraggedItem(id); event.dataTransfer.effectAllowed = "move"; event.dataTransfer.setData("text/plain", id); }}
-              onDragEnd={() => setDraggedItem(null)}
+              onDragStart={event => { setDraggedItem(id); setDragOrder(strategyOrder); event.dataTransfer.effectAllowed = "move"; event.dataTransfer.setData("text/plain", id); }}
+              onDragEnd={() => { captureOrderRects(); setDraggedItem(null); setDragOrder(null); }}
+              onDragEnter={() => { if (draggedItem) previewItemMove(draggedItem, id); }}
               onDragOver={event => { event.preventDefault(); event.dataTransfer.dropEffect = "move"; }}
-              onDrop={event => { event.preventDefault(); moveItem(event.dataTransfer.getData("text/plain") || draggedItem || "", id); setDraggedItem(null); }}
+              onDrop={event => { event.preventDefault(); updateOrder(dragOrder ?? strategyOrder); setDraggedItem(null); setDragOrder(null); }}
             >
               <span className="proxy-order-handle" aria-hidden="true"><Bars3Icon /></span>
               {item.icon && <img src={item.icon} alt="" />}
@@ -387,7 +416,7 @@ export function ProxiesPage({ storage, onToast }: { storage: StorageResponse | n
   </>;
 }
 
-export function ProxyGroupCard({ group, data, collapsed, busy, onToggle, onSelect, onTest, onTestNode, variant, hideUnavailable, thresholds, history, latencyHistory, testingGroup, nodeSort = "latencyAsc", groupByProvider = true, penetrationExpanded = false, onTogglePenetration }: {
+export function ProxyGroupCard({ group, data, collapsed, busy, onToggle, onSelect, onTest, onTestNode, variant, hideUnavailable, thresholds, history, latencyHistory, testingGroup, query = "", nodeSort = "latencyAsc", groupByProvider = true, penetrationExpanded = false, onTogglePenetration }: {
   group: ControllerProxy;
   data: ProxiesResponse | null;
   collapsed: boolean;
@@ -402,6 +431,7 @@ export function ProxyGroupCard({ group, data, collapsed, busy, onToggle, onSelec
   history: ProxyHistory[];
   latencyHistory: Record<string, ProxyHistory[]>;
   testingGroup: string;
+  query?: string;
   nodeSort?: ProxyNodeSortMode;
   groupByProvider?: boolean;
   penetrationExpanded?: boolean;
@@ -409,8 +439,9 @@ export function ProxyGroupCard({ group, data, collapsed, busy, onToggle, onSelec
 }) {
   const visibleOptions = ((group.all ?? []).map(name => data?.proxies[name]).filter(Boolean) as ControllerProxy[])
     .filter(option => isVisibleProxy(option, hideUnavailable));
-  const options = sortProxyNodes(visibleOptions, nodeSort);
-  const tested = options.filter(option => latestLatency(option.history)).length;
+  const allOptions = sortProxyNodes(visibleOptions, nodeSort);
+  const options = allOptions.filter(option => proxyMatchesQuery(option, query));
+  const tested = allOptions.filter(option => latestLatency(option.history)).length;
   const current = group.now ? data?.proxies[group.now] : undefined;
   const penetration = variant === "policy" ? getPenetrationGroup(group, data) : undefined;
   const penetrationOpen = Boolean(penetration && penetrationExpanded);
@@ -422,7 +453,7 @@ export function ProxyGroupCard({ group, data, collapsed, busy, onToggle, onSelec
   const headerContent = <>
     <img className="policy-icon" src={groupIcon(group.name)} alt="" />
     <div className="policy-summary">
-      <div><h2>{group.name}</h2>{variant === "policy" && <span>域名穿透</span>}<small>{group.type} ({tested}/{options.length})</small></div>
+      <div><h2>{group.name}</h2>{variant === "policy" && <span>域名穿透</span>}<small>{group.type} ({tested}/{allOptions.length})</small></div>
       <p>{variant === "policy" && <img src={optionIcons[group.now ?? ""] ?? otherGroupIcon} alt="" />}{group.now ?? "未选择"}{current?.now && <><b>›</b>{current.now}</>}</p>
     </div>
   </>;
@@ -432,17 +463,38 @@ export function ProxyGroupCard({ group, data, collapsed, busy, onToggle, onSelec
       <PolicyLatency groupName={group.name} history={history.length ? history : current?.history ?? []} delay={selectedDelay} thresholds={thresholds} busy={busy} testing={testing} onTest={onTest} />
       {variant === "nodes" && group.name === "所有-自动" && <small className="group-meta">检测间隔 300 秒 · 容差 100 毫秒</small>}
     </div>
-    {variant === "nodes" && <div className={`node-health-summary${nodesCollapsed ? " visible" : ""}`} aria-hidden={!nodesCollapsed}>
-      <div className="node-health-summary-inner"><NodeHealthDots options={options} selectedName={group.now} thresholds={thresholds} /></div>
-    </div>}
-    {variant === "policy" && !collapsed && <div className="policy-options">{options.map(option => <ProxyOption
-      key={option.name}
-      option={option}
-      active={option.name === group.now}
-      disabled={busy}
-      thresholds={thresholds}
-      onClick={() => void onSelect(group.name, option.name)}
-    />)}</div>}
+    <div className={`node-health-summary${collapsed ? " visible" : ""}`} aria-hidden={!collapsed}>
+      <div className="node-health-summary-inner"><NodeHealthDots options={allOptions} selectedName={group.now} thresholds={thresholds} /></div>
+    </div>
+    {variant === "policy" && <section className={`policy-card-collapse${collapsed ? " collapsed" : ""}`} aria-hidden={collapsed} inert={collapsed || undefined}>
+      <div className="policy-card-collapse-inner">
+        <div className="policy-options">{options.map(option => <ProxyOption
+          key={option.name}
+          option={option}
+          active={option.name === group.now}
+          disabled={busy}
+          thresholds={thresholds}
+          onClick={() => void onSelect(group.name, option.name)}
+        />)}</div>
+        {penetration && <>
+          <button type="button" className={`policy-footer${penetrationOpen ? " open" : ""}`} aria-expanded={penetrationOpen} onClick={onTogglePenetration}>{penetrationOpen ? "收起穿透" : "策略穿透"}{penetrationOpen ? <ChevronUpIcon /> : <ChevronDownIcon />}</button>
+          {penetrationOpen && <PenetrationGroup
+            group={penetration}
+            data={data}
+            busy={busy}
+            onSelect={onSelect}
+            onTest={onTest}
+            onTestNode={onTestNode}
+            hideUnavailable={hideUnavailable}
+            thresholds={thresholds}
+            history={latencyHistory[penetration.name] ?? penetration.history ?? []}
+            testing={testingGroup === "all" || testingGroup === penetration.name}
+            query={query}
+            nodeSort={nodeSort}
+          />}
+        </>}
+      </div>
+    </section>}
     {variant === "nodes" && <section className={`node-provider-collapse${nodesCollapsed ? " collapsed" : ""}`} aria-hidden={nodesCollapsed} inert={nodesCollapsed || undefined}>
       <div className="node-provider-section">
         {groupByProvider && <div className="node-provider-head">
@@ -461,22 +513,6 @@ export function ProxyGroupCard({ group, data, collapsed, busy, onToggle, onSelec
           />)}</div>
       </div>
     </section>}
-    {variant === "policy" && !collapsed && penetration && <>
-      <button type="button" className={`policy-footer${penetrationOpen ? " open" : ""}`} aria-expanded={penetrationOpen} onClick={onTogglePenetration}>{penetrationOpen ? "收起穿透" : "策略穿透"}{penetrationOpen ? <ChevronUpIcon /> : <ChevronDownIcon />}</button>
-      {penetrationOpen && <PenetrationGroup
-        group={penetration}
-        data={data}
-        busy={busy}
-        onSelect={onSelect}
-        onTest={onTest}
-        onTestNode={onTestNode}
-        hideUnavailable={hideUnavailable}
-        thresholds={thresholds}
-        history={latencyHistory[penetration.name] ?? penetration.history ?? []}
-        testing={testingGroup === "all" || testingGroup === penetration.name}
-        nodeSort={nodeSort}
-      />}
-    </>}
   </article>;
 }
 
@@ -491,7 +527,7 @@ export function NodeHealthDots({ options, selectedName, thresholds }: { options:
   </div>;
 }
 
-export function PenetrationGroup({ group, data, busy, onSelect, onTest, onTestNode, hideUnavailable, thresholds, history, testing, nodeSort = "latencyAsc" }: {
+export function PenetrationGroup({ group, data, busy, onSelect, onTest, onTestNode, hideUnavailable, thresholds, history, testing, query = "", nodeSort = "latencyAsc" }: {
   group: ControllerProxy;
   data: ProxiesResponse | null;
   busy: boolean;
@@ -502,17 +538,19 @@ export function PenetrationGroup({ group, data, busy, onSelect, onTest, onTestNo
   thresholds: LatencyThresholds;
   history: ProxyHistory[];
   testing: boolean;
+  query?: string;
   nodeSort?: ProxyNodeSortMode;
 }) {
-  const options = sortProxyNodes(((group.all ?? []).map(name => data?.proxies[name]).filter(Boolean) as ControllerProxy[])
+  const allOptions = sortProxyNodes(((group.all ?? []).map(name => data?.proxies[name]).filter(Boolean) as ControllerProxy[])
     .filter(option => isVisibleProxy(option, hideUnavailable)), nodeSort);
-  const tested = options.filter(option => latestLatency(option.history)).length;
+  const options = allOptions.filter(option => proxyMatchesQuery(option, query));
+  const tested = allOptions.filter(option => latestLatency(option.history)).length;
   const selectedDelay = selectedProxyDelay(group, data);
   return <section className="policy-penetration" aria-label={`${group.name} 节点列表`}>
     <div className="penetration-head">
       <img className="penetration-icon" src={groupIcon(group.name)} alt="" />
       <div className="penetration-summary">
-        <div><h3>{group.name}</h3><small>{group.type} ({tested}/{options.length})</small></div>
+        <div><h3>{group.name}</h3><small>{group.type} ({tested}/{allOptions.length})</small></div>
         <p>{group.now ?? "未选择"}</p>
       </div>
       <PolicyLatency groupName={group.name} history={history} delay={selectedDelay} thresholds={thresholds} busy={busy} testing={testing} onTest={onTest} />
@@ -618,10 +656,8 @@ export function ProxyOption({ option, active, disabled, thresholds, showIcon = t
   </button>;
 }
 
-function groupMatches(group: ControllerProxy, data: ProxiesResponse | null, query: string) {
-  if (!query.trim()) return true;
-  const options = (group.all ?? []).map(name => data?.proxies[name]).filter(Boolean) as ControllerProxy[];
-  return matchesQuery([group.name, group.type, group.now, ...options.flatMap(option => [option.name, option.type])], query);
+export function proxyMatchesQuery(option: ControllerProxy, query: string) {
+  return matchesQuery([option.name, option.type, proxyType(option.type), option.udp ? "udp" : undefined], query);
 }
 
 function subscriptionNodes(subscription: Subscription, entries: ControllerProxy[]) {
@@ -770,6 +806,15 @@ function proxyViewLabel(tab: ViewTab) {
 
 function proxyCardKey(tab: ViewTab, id: string) {
   return `${tab}:${id}`;
+}
+
+export function toggleProxyCardsCollapsed(current: Record<string, boolean>, tab: ViewTab, ids: string[]) {
+  if (!ids.length) return current;
+  const shouldCollapse = !ids.every(id => current[proxyCardKey(tab, id)]);
+  return {
+    ...current,
+    ...Object.fromEntries(ids.map(id => [proxyCardKey(tab, id), shouldCollapse])),
+  };
 }
 
 function subscriptionLatency(subscription: Subscription, entries: ControllerProxy[]) {
