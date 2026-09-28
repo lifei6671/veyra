@@ -2,7 +2,7 @@ import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import type { ControllerProxy, ProxiesResponse, Subscription } from "../api/types";
-import { clampNodeCardWidth, completeProxyViewOrder, formatLatencyTime, getPenetrationGroup, getProxyViewGroups, isVisibleProxy, latencyClass, moveProxyViewId, NodeHealthDots, PenetrationGroup, PolicyLatency, ProxyGroupCard, ProxyOption, proxyOptionAction, proxyViewSettings, proxyViewTab, recentLatencyHistory, reorderProxyViewIds, selectedProxyDelay, sortPenetrationOptions, sortProxyNodes, sortProxyViewItems, summarizeGroupLatencyTest, uniqueSubscriptionNodes } from "./ProxiesPage";
+import { clampNodeCardWidth, completeProxyViewOrder, formatLatencyTime, getPenetrationGroup, getProxyViewGroups, isVisibleProxy, latencyClass, moveProxyViewId, NodeHealthDots, PenetrationGroup, PolicyLatency, ProxyGroupCard, ProxyOption, proxyMatchesQuery, proxyOptionAction, proxyViewSettings, proxyViewTab, recentLatencyHistory, reorderProxyViewIds, selectedProxyDelay, sortPenetrationOptions, sortProxyNodes, sortProxyViewItems, summarizeGroupLatencyTest, toggleProxyCardsCollapsed, uniqueSubscriptionNodes } from "./ProxiesPage";
 
 describe("proxy view grouping", () => {
   it("restores a valid proxy view tab and falls back to strategy groups", () => {
@@ -40,6 +40,14 @@ describe("proxy view grouping", () => {
       .toEqual(["b", "a", "c"]);
     expect(reorderProxyViewIds(["a", "b", "c"], "c", "a")).toEqual(["c", "a", "b"]);
     expect(moveProxyViewId(["a", "b", "c"], 0, 1)).toEqual(["b", "a", "c"]);
+  });
+
+  it("toggles every card in only the active proxy tab", () => {
+    const collapsed = { "nodes:auto": true, "subscriptions:main": true };
+    const closed = toggleProxyCardsCollapsed(collapsed, "groups", ["Speed", "AI"]);
+    expect(closed).toEqual({ ...collapsed, "groups:Speed": true, "groups:AI": true });
+    expect(toggleProxyCardsCollapsed(closed, "groups", ["Speed", "AI"]))
+      .toEqual({ ...collapsed, "groups:Speed": false, "groups:AI": false });
   });
 
   it("keeps the live UI contract of 13 strategy groups and 2 node groups", () => {
@@ -130,6 +138,13 @@ describe("proxy view grouping", () => {
     expect(latencyClass(80, thresholds)).toBe("success");
     expect(latencyClass(150, thresholds)).toBe("warning");
     expect(latencyClass(250, thresholds)).toBe("danger");
+  });
+
+  it("matches every space-separated search term against node display fields", () => {
+    const node = { name: "订阅 | 美国-03", type: "Hysteria2", udp: true } satisfies ControllerProxy;
+    expect(proxyMatchesQuery(node, "美国-03 hy2")).toBe(true);
+    expect(proxyMatchesQuery(node, "美国 udp")).toBe(true);
+    expect(proxyMatchesQuery(node, "美国 vless")).toBe(false);
   });
 
   it("shows the newest ten latency history records first and keeps timeout records", () => {
@@ -292,6 +307,59 @@ describe("proxy view grouping", () => {
     expect(cardClosed).toContain('class="success selected"');
     expect(cardClosed).toContain('class="node-provider-collapse collapsed" aria-hidden="true" inert=""');
     expect(cardClosed).toContain('class="node-health-summary visible" aria-hidden="false"');
+  });
+
+  it("keeps strategy content mounted for animation and shows latency dots while collapsed", () => {
+    const fast = { name: "直连", type: "Direct", history: [{ time: "now", delay: 80 }] } satisfies ControllerProxy;
+    const group = { name: "Speed", type: "Selector", now: fast.name, all: [fast.name] } satisfies ControllerProxy;
+    const data = { proxies: { [group.name]: group, [fast.name]: fast } } satisfies ProxiesResponse;
+    const markup = renderToStaticMarkup(createElement(ProxyGroupCard, {
+      group,
+      data,
+      collapsed: true,
+      busy: false,
+      onToggle: () => undefined,
+      onSelect: async () => undefined,
+      onTest: async () => undefined,
+      onTestNode: async () => undefined,
+      variant: "policy",
+      hideUnavailable: false,
+      thresholds: { low: 100, medium: 200 },
+      history: [],
+      latencyHistory: {},
+      testingGroup: "",
+    }));
+    expect(markup).toContain('class="node-health-summary visible" aria-hidden="false"');
+    expect(markup).toContain('class="policy-card-collapse collapsed" aria-hidden="true" inert=""');
+    expect(markup).toContain("节点状态：1 已测速，0 未测速");
+    expect(markup).toContain("直连");
+  });
+
+  it("filters child node cards without hiding the parent group or changing its total", () => {
+    const fast = { name: "订阅 | 美国-01", type: "VLESS", history: [{ time: "now", delay: 80 }] } satisfies ControllerProxy;
+    const other = { name: "订阅 | 日本-01", type: "Hysteria2" } satisfies ControllerProxy;
+    const group = { name: "所有-自动", type: "URLTest", now: fast.name, all: [fast.name, other.name] } satisfies ControllerProxy;
+    const data = { proxies: { [group.name]: group, [fast.name]: fast, [other.name]: other } } satisfies ProxiesResponse;
+    const markup = renderToStaticMarkup(createElement(ProxyGroupCard, {
+      group,
+      data,
+      collapsed: false,
+      busy: false,
+      onToggle: () => undefined,
+      onSelect: async () => undefined,
+      onTest: async () => undefined,
+      onTestNode: async () => undefined,
+      variant: "nodes",
+      hideUnavailable: false,
+      thresholds: { low: 100, medium: 200 },
+      history: [],
+      latencyHistory: {},
+      testingGroup: "",
+      query: "美国 vless",
+    }));
+    expect(markup).toContain("URLTest (1/2)");
+    expect(markup).toContain(fast.name);
+    expect(markup).not.toContain(other.name);
   });
 
   it("renders node status dots with latency colors and an untested state", () => {
