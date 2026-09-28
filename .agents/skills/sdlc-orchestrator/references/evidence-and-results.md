@@ -207,3 +207,7 @@ Next:
 `Risk:`。`target_identity`、完整 Evidence、命令、Gate transition 默认不展示；仅在用户要求、
 发生失败/阻塞，或当前是高风险 Gate 时展示最小必要部分。内部字段不得机械泄露成每次对话的
 CI 报告。
+
+## Veyra UI Contract enforcement
+
+本项目 UI-impacting Task 必须按 [Veyra UI Gate](veyra-ui-gate.md) 执行 design/readiness/checkpoint/delivery 检查。Design Gate、READY、Delivery PASSED 和 Task DONE 写回前回读实际检查结果；缺 compliance 或 human approval 不得关闭交付。非 UI 与未重新进入 Gate 的历史 Task 沿用原流程。

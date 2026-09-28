@@ -1,0 +1,1003 @@
+{
+  "kind": "static-impact-analysis",
+  "target": "UI Contract 0.2 Shared Foundation Alignment",
+  "proposed_task_id": "TASK-018",
+  "contract": "docs/ui/veyra-ui-spec.md",
+  "contract_version": "0.2",
+  "scope": "穷尽范围是Subscriptions所消费的shared foundation明确Final值与直接token/geometry消费者。不是全部页面审计；同一文件中的Settings、Proxies/Routing专用规则只登记共享token影响，不审计其局部composition。只读静态匹配不构成computed/native/Certification PASS。",
+  "certification": false,
+  "findings": [
+    {
+      "id": "SF-V02-001",
+      "classification": "CONFIRMED_STATIC_MISMATCH",
+      "contract_section": "§4.1/6.2",
+      "role": "Sidebar width",
+      "expected": "188px",
+      "actual": "200px",
+      "source_location": {
+        "path": "src/styles.css",
+        "line": 30
+      },
+      "consumers": ".app-shell grid / Sidebar",
+      "affected_shared_pages": [
+        "Overview",
+        "Subscriptions",
+        "Proxies",
+        "Routing",
+        "Settings/Connections/Logs placeholders (shared shell only)"
+      ],
+      "proposed_remediation_path": "--sidebar-width →188px; 同步旧200px说明",
+      "purely_presentation": true,
+      "preserves_legacy_finding": "SUBS-V02-001"
+    },
+    {
+      "id": "SF-V02-002",
+      "classification": "CONFIRMED_STATIC_MISMATCH",
+      "contract_section": "§4.2",
+      "role": "text-primary light/dark",
+      "expected": "#20242A / #F3F4F6",
+      "actual": "#000000 / #ffffff",
+      "source_location": {
+        "path": "src/styles.css",
+        "line": 20
+      },
+      "consumers": "body、Sidebar、输入、Dialog、Menu、Notice",
+      "affected_shared_pages": [
+        "Overview",
+        "Subscriptions",
+        "Proxies",
+        "Routing",
+        "Settings/Connections/Logs placeholders (shared shell only)"
+      ],
+      "proposed_remediation_path": "同步 --primary-text 与 :root color 两主题",
+      "purely_presentation": true,
+      "preserves_legacy_finding": "SUBS-V02-002"
+    },
+    {
+      "id": "SF-V02-003",
+      "classification": "CONFIRMED_STATIC_MISMATCH",
+      "contract_section": "§4.2",
+      "role": "window light/dark",
+      "expected": "#F1F2F4 / #252731",
+      "actual": "#ececec / #2e303d",
+      "source_location": {
+        "path": "src/styles.css",
+        "line": 12
+      },
+      "consumers": "body / window",
+      "affected_shared_pages": [
+        "Overview",
+        "Subscriptions",
+        "Proxies",
+        "Routing",
+        "Settings/Connections/Logs placeholders (shared shell only)"
+      ],
+      "proposed_remediation_path": "同步 --window-background 与 :root background",
+      "purely_presentation": true
+    },
+    {
+      "id": "SF-V02-004",
+      "classification": "CONFIRMED_STATIC_MISMATCH",
+      "contract_section": "§4.2",
+      "role": "shell light/dark",
+      "expected": "#F7F8FA / #2A2C36",
+      "actual": "#f5f5f5 / #2e303d",
+      "source_location": {
+        "path": "src/styles.css",
+        "line": 13
+      },
+      "consumers": "Sidebar / PageHeader",
+      "affected_shared_pages": [
+        "Overview",
+        "Subscriptions",
+        "Proxies",
+        "Routing",
+        "Settings/Connections/Logs placeholders (shared shell only)"
+      ],
+      "proposed_remediation_path": "--shell-background",
+      "purely_presentation": true
+    },
+    {
+      "id": "SF-V02-005",
+      "classification": "CONFIRMED_STATIC_MISMATCH",
+      "contract_section": "§4.2",
+      "role": "page-canvas light/dark",
+      "expected": "#F1F2F4 / #1F2129",
+      "actual": "#ececec / #1e1f27",
+      "source_location": {
+        "path": "src/styles.css",
+        "line": 14
+      },
+      "consumers": "page-scroll",
+      "affected_shared_pages": [
+        "Overview",
+        "Subscriptions",
+        "Proxies",
+        "Routing",
+        "Settings/Connections/Logs placeholders (shared shell only)"
+      ],
+      "proposed_remediation_path": "--page-background",
+      "purely_presentation": true
+    },
+    {
+      "id": "SF-V02-006",
+      "classification": "CONFIRMED_STATIC_MISMATCH",
+      "contract_section": "§4.2",
+      "role": "content/control/popup dark",
+      "expected": "#292B35 (三种角色)",
+      "actual": "#282a36 (三种角色)",
+      "source_location": {
+        "path": "src/styles.css",
+        "line": 76
+      },
+      "consumers": "Surface / Input / Dialog / Menu / Toast",
+      "affected_shared_pages": [
+        "Overview",
+        "Subscriptions",
+        "Proxies",
+        "Routing",
+        "Settings/Connections/Logs placeholders (shared shell only)"
+      ],
+      "proposed_remediation_path": "三个现有背景token dark override；light #fff 已匹配",
+      "purely_presentation": true
+    },
+    {
+      "id": "SF-V02-007",
+      "classification": "CONFIRMED_STATIC_MISMATCH",
+      "contract_section": "§4.2",
+      "role": "primary light/dark",
+      "expected": "#1677FF / #4096FF",
+      "actual": "#007aff / #0a84ff",
+      "source_location": {
+        "path": "src/styles.css",
+        "line": 18
+      },
+      "consumers": "primary action / focus / selected glyph",
+      "affected_shared_pages": [
+        "Overview",
+        "Subscriptions",
+        "Proxies",
+        "Routing",
+        "Settings/Connections/Logs placeholders (shared shell only)"
+      ],
+      "proposed_remediation_path": "--primary；不把 --secondary 流量色当成通用primary",
+      "purely_presentation": true
+    },
+    {
+      "id": "SF-V02-008",
+      "classification": "CONFIRMED_STATIC_MISMATCH",
+      "contract_section": "§4.2",
+      "role": "text-secondary light/dark",
+      "expected": "#667085 / #A7ADBA",
+      "actual": "#3c3c4399 / #ebebf599",
+      "source_location": {
+        "path": "src/styles.css",
+        "line": 21
+      },
+      "consumers": "supporting copy / metadata / Sidebar",
+      "affected_shared_pages": [
+        "Overview",
+        "Subscriptions",
+        "Proxies",
+        "Routing",
+        "Settings/Connections/Logs placeholders (shared shell only)"
+      ],
+      "proposed_remediation_path": "--secondary-text",
+      "purely_presentation": true
+    },
+    {
+      "id": "SF-V02-009",
+      "classification": "CONFIRMED_STATIC_MISMATCH",
+      "contract_section": "§4.2",
+      "role": "error light/dark",
+      "expected": "#D92D20 / #F97066",
+      "actual": "#ff3b30 / #ff453a",
+      "source_location": {
+        "path": "src/styles.css",
+        "line": 26
+      },
+      "consumers": "danger / error Notice",
+      "affected_shared_pages": [
+        "Overview",
+        "Subscriptions",
+        "Proxies",
+        "Routing",
+        "Settings/Connections/Logs placeholders (shared shell only)"
+      ],
+      "proposed_remediation_path": "--error",
+      "purely_presentation": true
+    },
+    {
+      "id": "SF-V02-010",
+      "classification": "CONFIRMED_STATIC_MISMATCH",
+      "contract_section": "§4.2",
+      "role": "warning light/dark",
+      "expected": "#B26A00 / #F5A524",
+      "actual": "#ff9500 / #ff9f0a",
+      "source_location": {
+        "path": "src/styles.css",
+        "line": 27
+      },
+      "consumers": "共享 warning token 的消费者",
+      "affected_shared_pages": [
+        "Overview",
+        "Subscriptions",
+        "Proxies",
+        "Routing",
+        "Settings/Connections/Logs placeholders (shared shell only)"
+      ],
+      "proposed_remediation_path": "--warning",
+      "purely_presentation": true
+    },
+    {
+      "id": "SF-V02-011",
+      "classification": "CONFIRMED_STATIC_MISMATCH",
+      "contract_section": "§4.2",
+      "role": "success light/dark",
+      "expected": "#27864B / #45B26B",
+      "actual": "#06943d / #30d158",
+      "source_location": {
+        "path": "src/styles.css",
+        "line": 28
+      },
+      "consumers": "success Notice / shared success",
+      "affected_shared_pages": [
+        "Overview",
+        "Subscriptions",
+        "Proxies",
+        "Routing",
+        "Settings/Connections/Logs placeholders (shared shell only)"
+      ],
+      "proposed_remediation_path": "--success",
+      "purely_presentation": true
+    },
+    {
+      "id": "SF-V02-012",
+      "classification": "CONFIRMED_STATIC_MISMATCH",
+      "contract_section": "§4.2",
+      "role": "divider light/dark",
+      "expected": "rgba(16,24,40,.08) / rgba(255,255,255,.08)",
+      "actual": "rgba(0,0,0,.06) / rgba(255,255,255,.06)",
+      "source_location": {
+        "path": "src/styles.css",
+        "line": 22
+      },
+      "consumers": "结构 border / SidebarTraffic grid",
+      "affected_shared_pages": [
+        "Overview",
+        "Subscriptions",
+        "Proxies",
+        "Routing",
+        "Settings/Connections/Logs placeholders (shared shell only)"
+      ],
+      "proposed_remediation_path": "--divider",
+      "purely_presentation": true
+    },
+    {
+      "id": "SF-V02-013",
+      "classification": "CONFIRMED_STATIC_MISMATCH",
+      "contract_section": "§4.2/5",
+      "role": "hover light/dark",
+      "expected": "rgba(16,24,40,.045) / rgba(255,255,255,.06)",
+      "actual": "--selection rgba(0,0,0,.05) / rgba(255,255,255,.08)；SubscriptionCard :hover仅改border，没有hover背景（styles.css:563-566）",
+      "source_location": {
+        "path": "src/styles.css",
+        "line": 23
+      },
+      "consumers": "nav / refresh / menu / document tools hover；非selected SubscriptionCard:hover（563-566）",
+      "affected_shared_pages": [
+        "Overview",
+        "Subscriptions",
+        "Proxies",
+        "Routing",
+        "Settings/Connections/Logs placeholders (shared shell only)"
+      ],
+      "proposed_remediation_path": "现有 --selection 对应hover角色；调整两主题及错误使用selected背景的非selected hover；非active/非selected且非disabled SubscriptionCard:hover使用hover背景，selected背景保持独立，focus语义不改变",
+      "purely_presentation": true
+    },
+    {
+      "id": "SF-V02-014",
+      "classification": "CONFIRMED_STATIC_MISMATCH",
+      "contract_section": "§4.2/5",
+      "role": "selected light/dark",
+      "expected": "rgba(22,119,255,.10) / rgba(64,150,255,.18)",
+      "actual": "--primary-alpha rgba(0,122,255,.15) / rgba(10,132,255,.35)",
+      "source_location": {
+        "path": "src/styles.css",
+        "line": 24
+      },
+      "consumers": "Sidebar selected / shared selected consumers",
+      "affected_shared_pages": [
+        "Overview",
+        "Subscriptions",
+        "Proxies",
+        "Routing",
+        "Settings/Connections/Logs placeholders (shared shell only)"
+      ],
+      "proposed_remediation_path": "现有 --primary-alpha 对应selected角色；保留primary-text高对比，不新创颜色",
+      "purely_presentation": true
+    },
+    {
+      "id": "SF-V02-015",
+      "classification": "CONFIRMED_STATIC_MISMATCH",
+      "contract_section": "§4.1/6.2",
+      "role": "Logo area height",
+      "expected": "52px",
+      "actual": "flex-basis --page-header-height=58px",
+      "source_location": {
+        "path": "src/styles.css",
+        "line": 138
+      },
+      "consumers": ".brand",
+      "affected_shared_pages": [
+        "Overview",
+        "Subscriptions",
+        "Proxies",
+        "Routing",
+        "Settings/Connections/Logs placeholders (shared shell only)"
+      ],
+      "proposed_remediation_path": "只分离brand高度52；PageHeader仍58",
+      "purely_presentation": true
+    },
+    {
+      "id": "SF-V02-016",
+      "classification": "CONFIRMED_STATIC_MISMATCH",
+      "contract_section": "§4.1/9",
+      "role": "Navigation item geometry",
+      "expected": "固定36px；水平margin8px/padding10px",
+      "actual": "min-height44px；margin水平10px；padding水平12px；width calc(100%-20px)",
+      "source_location": {
+        "path": "src/styles.css",
+        "line": 169
+      },
+      "consumers": ".sidebar nav button",
+      "affected_shared_pages": [
+        "Overview",
+        "Subscriptions",
+        "Proxies",
+        "Routing",
+        "Settings/Connections/Logs placeholders (shared shell only)"
+      ],
+      "proposed_remediation_path": "height36、水平8/10、宽度配套；不改导航行为",
+      "purely_presentation": true
+    },
+    {
+      "id": "SF-V02-017",
+      "classification": "CONFIRMED_STATIC_MISMATCH",
+      "contract_section": "§4.4",
+      "role": "Sidebar label",
+      "expected": "14/500/20",
+      "actual": "16/400/24",
+      "source_location": {
+        "path": "src/styles.css",
+        "line": 179
+      },
+      "consumers": ".sidebar nav button / .nav-label",
+      "affected_shared_pages": [
+        "Overview",
+        "Subscriptions",
+        "Proxies",
+        "Routing",
+        "Settings/Connections/Logs placeholders (shared shell only)"
+      ],
+      "proposed_remediation_path": "字号/字重/行高准确映射；既有绝对定位需适配新glyph但不重新布局导航",
+      "purely_presentation": true
+    },
+    {
+      "id": "SF-V02-018",
+      "classification": "CONFIRMED_STATIC_MISMATCH",
+      "contract_section": "§4.5/5",
+      "role": "Navigation glyph & selected glyph",
+      "expected": "18px线性体系；selected primary glyph",
+      "actual": "24px；App内path fill=currentColor stroke=none；选中仍继承普通文字色",
+      "source_location": {
+        "path": "src/styles.css",
+        "line": 201
+      },
+      "consumers": "App.tsx:178 svg / nav current",
+      "affected_shared_pages": [
+        "Overview",
+        "Subscriptions",
+        "Proxies",
+        "Routing",
+        "Settings/Connections/Logs placeholders (shared shell only)"
+      ],
+      "proposed_remediation_path": "仅导航SVG presentation path/属性和CSS18px/selected glyph颜色；保留id/viewBox可视裁切检查和handlers",
+      "purely_presentation": true
+    },
+    {
+      "id": "SF-V02-019",
+      "classification": "CONFIRMED_STATIC_MISMATCH",
+      "contract_section": "§4.1",
+      "role": "Section gap",
+      "expected": "10px",
+      "actual": "12px",
+      "source_location": {
+        "path": "src/styles.css",
+        "line": 36
+      },
+      "consumers": ".page-scroll",
+      "affected_shared_pages": [
+        "Overview",
+        "Subscriptions",
+        "Proxies",
+        "Routing",
+        "Settings/Connections/Logs placeholders (shared shell only)"
+      ],
+      "proposed_remediation_path": "--section-gap",
+      "purely_presentation": true
+    },
+    {
+      "id": "SF-V02-020",
+      "classification": "CONFIRMED_STATIC_MISMATCH",
+      "contract_section": "§4.1",
+      "role": "Component gap compact/standard/form",
+      "expected": "6 / 10 / 14px",
+      "actual": "8 / 12 / 16px",
+      "source_location": {
+        "path": "src/styles.css",
+        "line": 37
+      },
+      "consumers": "header/control/表单容器；消费者见SF-021",
+      "affected_shared_pages": [
+        "Overview",
+        "Subscriptions",
+        "Proxies",
+        "Routing",
+        "Settings/Connections/Logs placeholders (shared shell only)"
+      ],
+      "proposed_remediation_path": "三个现有component gap token",
+      "purely_presentation": true
+    },
+    {
+      "id": "SF-V02-021",
+      "classification": "CONFIRMED_STATIC_MISMATCH",
+      "contract_section": "§4.1/9",
+      "role": "消费者硬编码常规gap",
+      "expected": "compact6 / standard10 / form14；Dialog footer专用8",
+      "actual": "8/12/16/20px直接常规gap",
+      "source_location": {
+        "path": "src/styles.css",
+        "line": 450
+      },
+      "consumers": "nav button168=12; subscription toolbar453=8; batch-actions575=12; card header588=12; meta627=12; traffic children652=8; dialog form683=16; options726=12; qr-panel740=12; manual modes989=20; mode labels991=8; file-picker993=12/button994=8; DocumentEditor.css header3=16/footer7=12/tools8=8; SidebarTraffic.css:37 margin-right8; subscription-state:533 gap12",
+      "affected_shared_pages": [
+        "Overview",
+        "Subscriptions",
+        "Proxies",
+        "Routing",
+        "Settings/Connections/Logs placeholders (shared shell only)"
+      ],
+      "proposed_remediation_path": "compact6: nav gap、meta、traffic行、file-picker按钮、document工具、SidebarTraffic glyph间距；standard10: toolbar、batch-actions、card header、state、file-picker容器；form14: dialog form、options、QR、manual modes、document header；mode label6；DocumentEditor footer12→专用8。已是footer8、QR quiet zone、form label6、微间距不改",
+      "purely_presentation": true
+    },
+    {
+      "id": "SF-V02-022",
+      "classification": "CONFIRMED_STATIC_MISMATCH",
+      "contract_section": "§4.1/6.4",
+      "role": "Surface padding standard/dense",
+      "expected": "14 / 10px",
+      "actual": "16 / 12px",
+      "source_location": {
+        "path": "src/styles.css",
+        "line": 40
+      },
+      "consumers": "shared surface tokens；subscription-card padding12",
+      "affected_shared_pages": [
+        "Overview",
+        "Subscriptions",
+        "Proxies",
+        "Routing",
+        "Settings/Connections/Logs placeholders (shared shell only)"
+      ],
+      "proposed_remediation_path": "现有token14/10；普通订阅Surface消费者padding14，保留对象构图",
+      "purely_presentation": true
+    },
+    {
+      "id": "SF-V02-023",
+      "classification": "CONFIRMED_STATIC_MISMATCH",
+      "contract_section": "§4.3",
+      "role": "Control radius",
+      "expected": "6px",
+      "actual": "8px",
+      "source_location": {
+        "path": "src/styles.css",
+        "line": 43
+      },
+      "consumers": "Button/Input/Select",
+      "affected_shared_pages": [
+        "Overview",
+        "Subscriptions",
+        "Proxies",
+        "Routing",
+        "Settings/Connections/Logs placeholders (shared shell only)"
+      ],
+      "proposed_remediation_path": "--control-radius",
+      "purely_presentation": true
+    },
+    {
+      "id": "SF-V02-024",
+      "classification": "CONFIRMED_STATIC_MISMATCH",
+      "contract_section": "§4.3",
+      "role": "非圆形IconButton radius",
+      "expected": "5px",
+      "actual": "subscription header=control8；document-tools=4px",
+      "source_location": {
+        "path": "src/styles.css",
+        "line": 570
+      },
+      "consumers": "subscription-header-actions:570；DocumentEditor.css:9",
+      "affected_shared_pages": [
+        "Overview",
+        "Subscriptions",
+        "Proxies",
+        "Routing",
+        "Settings/Connections/Logs placeholders (shared shell only)"
+      ],
+      "proposed_remediation_path": "各标准icon按钮5px；refresh明确circular50%保留",
+      "purely_presentation": true
+    },
+    {
+      "id": "SF-V02-025",
+      "classification": "CONFIRMED_STATIC_MISMATCH",
+      "contract_section": "§4.4",
+      "role": "Page title",
+      "expected": "20/600/26",
+      "actual": "20/700/24",
+      "source_location": {
+        "path": "src/styles.css",
+        "line": 54
+      },
+      "consumers": ".home-header h1:238",
+      "affected_shared_pages": [
+        "Overview",
+        "Subscriptions",
+        "Proxies",
+        "Routing",
+        "Settings/Connections/Logs placeholders (shared shell only)"
+      ],
+      "proposed_remediation_path": "title line token26，h1 weight600",
+      "purely_presentation": true
+    },
+    {
+      "id": "SF-V02-026",
+      "classification": "CONFIRMED_STATIC_MISMATCH",
+      "contract_section": "§4.4",
+      "role": "Section title token",
+      "expected": "14/600/20",
+      "actual": "size16/line22；Subscription dialog h2硬编码18",
+      "source_location": {
+        "path": "src/styles.css",
+        "line": 56
+      },
+      "consumers": "dialog标题/共享section角色",
+      "affected_shared_pages": [
+        "Overview",
+        "Subscriptions",
+        "Proxies",
+        "Routing",
+        "Settings/Connections/Logs placeholders (shared shell only)"
+      ],
+      "proposed_remediation_path": "section token14/20；实际section标题600；不修改隐藏Settings专用结构",
+      "purely_presentation": true
+    },
+    {
+      "id": "SF-V02-027",
+      "classification": "CONFIRMED_STATIC_MISMATCH",
+      "contract_section": "§4.4",
+      "role": "Body role",
+      "expected": "13/400/20",
+      "actual": "token14/20；body未显式绑定字体大小/行高；text button/input14",
+      "source_location": {
+        "path": "src/styles.css",
+        "line": 58
+      },
+      "consumers": "body、text buttons、quick input、form inputs",
+      "affected_shared_pages": [
+        "Overview",
+        "Subscriptions",
+        "Proxies",
+        "Routing",
+        "Settings/Connections/Logs placeholders (shared shell only)"
+      ],
+      "proposed_remediation_path": "body及明确body消费者绑定13/400/20",
+      "purely_presentation": true
+    },
+    {
+      "id": "SF-V02-028",
+      "classification": "CONFIRMED_STATIC_MISMATCH",
+      "contract_section": "§4.4",
+      "role": "Supporting role",
+      "expected": "12/400/18",
+      "actual": "token13/18；description13/16",
+      "source_location": {
+        "path": "src/styles.css",
+        "line": 60
+      },
+      "consumers": "home-status / subscription-description / file-picker说明",
+      "affected_shared_pages": [
+        "Overview",
+        "Subscriptions",
+        "Proxies",
+        "Routing",
+        "Settings/Connections/Logs placeholders (shared shell only)"
+      ],
+      "proposed_remediation_path": "supporting token12/18；直接角色覆盖同步",
+      "purely_presentation": true
+    },
+    {
+      "id": "SF-V02-029",
+      "classification": "CONFIRMED_STATIC_MISMATCH",
+      "contract_section": "§4.4",
+      "role": "Caption/metadata",
+      "expected": "11/400/16",
+      "actual": "token12/16；subscription-meta13/18；traffic12/14；field-label12/14",
+      "source_location": {
+        "path": "src/styles.css",
+        "line": 62
+      },
+      "consumers": "subscription-meta/traffic、浮动label、document header supporting label",
+      "affected_shared_pages": [
+        "Overview",
+        "Subscriptions",
+        "Proxies",
+        "Routing",
+        "Settings/Connections/Logs placeholders (shared shell only)"
+      ],
+      "proposed_remediation_path": "caption token11/16；floating label是supporting12/18，不误降为metadata",
+      "purely_presentation": true
+    },
+    {
+      "id": "SF-V02-030",
+      "classification": "CONFIRMED_STATIC_MISMATCH",
+      "contract_section": "§4.4",
+      "role": "Subscription item title",
+      "expected": "14/500/20",
+      "actual": "18/600/26",
+      "source_location": {
+        "path": "src/styles.css",
+        "line": 595
+      },
+      "consumers": ".subscription-card h2",
+      "affected_shared_pages": [
+        "Overview",
+        "Subscriptions",
+        "Proxies",
+        "Routing",
+        "Settings/Connections/Logs placeholders (shared shell only)"
+      ],
+      "proposed_remediation_path": "item title角色直接映射，不变Card内容",
+      "purely_presentation": true
+    },
+    {
+      "id": "SF-V02-031",
+      "classification": "CONFIRMED_STATIC_MISMATCH",
+      "contract_section": "§4.5",
+      "role": "Standard/compact control height",
+      "expected": "34 / 30px",
+      "actual": "standard36；inline text controls仍继承standard",
+      "source_location": {
+        "path": "src/styles.css",
+        "line": 48
+      },
+      "consumers": "primary/secondary/danger button、Input/Select、Dialog footer、document inline action",
+      "affected_shared_pages": [
+        "Overview",
+        "Subscriptions",
+        "Proxies",
+        "Routing",
+        "Settings/Connections/Logs placeholders (shared shell only)"
+      ],
+      "proposed_remediation_path": "standard34；实际header/card inline30；多行textarea不强制34",
+      "purely_presentation": true
+    },
+    {
+      "id": "SF-V02-032",
+      "classification": "CONFIRMED_STATIC_MISMATCH",
+      "contract_section": "§4.5",
+      "role": "Text button horizontal padding",
+      "expected": "12px",
+      "actual": "14px",
+      "source_location": {
+        "path": "src/styles.css",
+        "line": 509
+      },
+      "consumers": ".primary-button/.secondary-button/.danger-button",
+      "affected_shared_pages": [
+        "Overview",
+        "Subscriptions",
+        "Proxies",
+        "Routing",
+        "Settings/Connections/Logs placeholders (shared shell only)"
+      ],
+      "proposed_remediation_path": "现有button padding-inline12",
+      "purely_presentation": true
+    },
+    {
+      "id": "SF-V02-033",
+      "classification": "CONFIRMED_STATIC_MISMATCH",
+      "contract_section": "§4.5",
+      "role": "IconButton geometry",
+      "expected": "30×30",
+      "actual": "shared token32；DocumentEditor tools32",
+      "source_location": {
+        "path": "src/styles.css",
+        "line": 49
+      },
+      "consumers": "refresh/header actions/document tools；field-action已30",
+      "affected_shared_pages": [
+        "Overview",
+        "Subscriptions",
+        "Proxies",
+        "Routing",
+        "Settings/Connections/Logs placeholders (shared shell only)"
+      ],
+      "proposed_remediation_path": "token及硬编码消费者30；field-action top3与34高配套居中",
+      "purely_presentation": true
+    },
+    {
+      "id": "SF-V02-034",
+      "classification": "CONFIRMED_STATIC_MISMATCH",
+      "contract_section": "§4.5",
+      "role": "Action glyph size",
+      "expected": "16px",
+      "actual": "field/refresh18；header20；file-picker18；document-tools22",
+      "source_location": {
+        "path": "src/styles.css",
+        "line": 494
+      },
+      "consumers": "对应现有svg",
+      "affected_shared_pages": [
+        "Overview",
+        "Subscriptions",
+        "Proxies",
+        "Routing",
+        "Settings/Connections/Logs placeholders (shared shell only)"
+      ],
+      "proposed_remediation_path": "统一16，不增加图标库；App导航另为18",
+      "purely_presentation": true
+    },
+    {
+      "id": "SF-V02-035",
+      "classification": "CONFIRMED_STATIC_MISMATCH",
+      "contract_section": "§4.5",
+      "role": "Inline/status glyph",
+      "expected": "14px",
+      "actual": "SidebarTraffic .sidebar-rate svg16px",
+      "source_location": {
+        "path": "src/components/layout/SidebarTraffic.css",
+        "line": 35
+      },
+      "consumers": "侧栏速率/内存glyph",
+      "affected_shared_pages": [
+        "Overview",
+        "Subscriptions",
+        "Proxies",
+        "Routing",
+        "Settings/Connections/Logs placeholders (shared shell only)"
+      ],
+      "proposed_remediation_path": "只调整14px与已有间距，不变采样/绘图算法",
+      "purely_presentation": true
+    },
+    {
+      "id": "SF-V02-036",
+      "classification": "CONFIRMED_STATIC_MISMATCH",
+      "contract_section": "§5",
+      "role": "Disabled opacity/hover",
+      "expected": "0.50；disabled hover不变化",
+      "actual": "token.55；header action.4/menu.45；header disabled仍匹配:hover",
+      "source_location": {
+        "path": "src/styles.css",
+        "line": 29
+      },
+      "consumers": "buttons/input/select；subscription header/menu",
+      "affected_shared_pages": [
+        "Overview",
+        "Subscriptions",
+        "Proxies",
+        "Routing",
+        "Settings/Connections/Logs placeholders (shared shell only)"
+      ],
+      "proposed_remediation_path": "统一已声明disabled消费者为.50/default cursor及hover guard；原生input/select未显式opacity的最终值归N03验证，不改业务guard",
+      "purely_presentation": true
+    },
+    {
+      "id": "SF-V02-037",
+      "classification": "CONFIRMED_STATIC_MISMATCH",
+      "contract_section": "§5/6.7",
+      "role": "Toast max width / success border",
+      "expected": "success300px/error340px；无粗绿色边条",
+      "actual": "共用360px；success border-left4px",
+      "source_location": {
+        "path": "src/styles.css",
+        "line": 47
+      },
+      "consumers": "failure-toast/subscription-notice；success规则430附近",
+      "affected_shared_pages": [
+        "Overview",
+        "Subscriptions",
+        "Proxies",
+        "Routing",
+        "Settings/Connections/Logs placeholders (shared shell only)"
+      ],
+      "proposed_remediation_path": "按现有success/error class限定300/340；success恢复1px divider边界；不碰定时handler",
+      "purely_presentation": true
+    },
+    {
+      "id": "SF-V02-038",
+      "classification": "CONFIRMED_STATIC_MISMATCH",
+      "contract_section": "§4.3/5",
+      "role": "Surface selected composition",
+      "expected": "无shadow；selected背景+单一indicator",
+      "actual": "subscription-card-active inset3px shadow + 蓝h2，无selected背景",
+      "source_location": {
+        "path": "src/styles.css",
+        "line": 565
+      },
+      "consumers": ".subscription-card-active",
+      "affected_shared_pages": [
+        "Overview",
+        "Subscriptions",
+        "Proxies",
+        "Routing",
+        "Settings/Connections/Logs placeholders (shared shell only)"
+      ],
+      "proposed_remediation_path": "用既有selected背景+一个非布局性indicator，标题正常色；CSS限定，不改变active state",
+      "purely_presentation": true
+    }
+  ],
+  "requires_native_or_state_validation": [
+    {
+      "id": "N-01",
+      "item": "Windows两主题/五组窗口-DPI矩阵、overflow、文字裁切、Dialog/Toast遮挡与导航比例",
+      "reason": "必须真实Windows Tauri；本轮NOT_RUN"
+    },
+    {
+      "id": "N-02",
+      "item": "loading/empty/error/render互斥、busy只锁冲突动作、focus trap/return/Esc、menu keyboard、tooltip可聚焦",
+      "reason": "源码handler不修改；实际状态序列需原生交互验证"
+    },
+    {
+      "id": "N-03",
+      "item": "颜色/字号的最终computed role、CSS cascade和原生控件/Monaco跨主题结果",
+      "reason": "静态值完整盘点，但不能由它证明所有实际显示状态"
+    },
+    {
+      "id": "N-04",
+      "item": "pressed轻微变深、selected单一强调效果、密度舒适度/成熟度",
+      "reason": "Contract未给brightness唯一数值；人工视觉判断不能由Agent替代"
+    },
+    {
+      "id": "N-05",
+      "item": "SidebarTraffic数值/品牌字体角色",
+      "reason": "Contract未单独给brand或telemetry number的Final字号，不能武断以Body替代16/18px；实际层级需后续视觉审阅"
+    },
+    {
+      "id": "N-06",
+      "item": "text-muted角色消费映射",
+      "reason": "Contract颜色明确#98A2B3/#7F8796，当前没有该token也没有显式muted角色；需确认哪些copy属于muted，不能仅因缺变量名判不一致或任意换色"
+    }
+  ],
+  "not_applicable_or_unknown": [
+    {
+      "id": "C-01",
+      "item": "Collapsed Sidebar",
+      "classification": "UNKNOWN",
+      "reason": "Contract UNKNOWN，不实现collapse"
+    },
+    {
+      "id": "C-02",
+      "item": "Settings columns/breakpoint/Switch",
+      "classification": "NOT_APPLICABLE",
+      "reason": "虽token42×26/thumb22与未来40×24/thumb20不同，但Subscriptions未消费Switch，禁止纳入当前修复"
+    },
+    {
+      "id": "C-03",
+      "item": "full page/dense inner padding/Pool header/NodeRow/AllNodes/expand动画",
+      "classification": "NOT_APPLICABLE",
+      "reason": "Subscriptions为default Page；属于后续TASK012 dense stage"
+    },
+    {
+      "id": "C-04",
+      "item": "品牌Logo尺寸、流量图几何/专用upload颜色、QR quiet zone、z-index/backdrop opacity/menu offset",
+      "classification": "UNKNOWN",
+      "reason": "Contract无相应Final值；不移植参考值或顺手修改"
+    },
+    {
+      "id": "C-05",
+      "item": "Checkbox",
+      "classification": "NOT_APPLICABLE",
+      "reason": "Contract为platform/native size，无统一px；现有原生checkbox16不能无环境证据当作固定值违规"
+    },
+    {
+      "id": "C-06",
+      "item": "Subscriptions Grid300 vs §8.2 min260、普通Dialog映射375/520 vs §6.6普通440–480、DocumentEditor大尺寸/全屏",
+      "classification": "NOT_APPLICABLE",
+      "reason": "页面专用composition不属shared foundation修复；明确保留后续页面级认证检查，不能隐含为PASS或在本设计修复"
+    },
+    {
+      "id": "C-07",
+      "item": "Success Notice timeout6000ms（SubscriptionPage.tsx:112） vs §5 2500–3000ms",
+      "classification": "NOT_APPLICABLE",
+      "reason": "这是可静态确定的页面专用反馈行为差异，不属于token/geometry；明确记录而非假装native未知。本轮禁止handler改动，后续认证仍可能FAIL"
+    },
+    {
+      "id": "C-08",
+      "item": "--page-padding-narrow8px override",
+      "classification": "UNKNOWN",
+      "reason": "Contract规定default10px与header narrow14px，但未给page narrow独立Final值；不擅自创设/删除适配，应在后续窗口验证与角色评审确认"
+    }
+  ],
+  "static_matches": [
+    {
+      "rule": "PageHeader height",
+      "actual": "58px",
+      "result": "STATIC_MATCH_ONLY"
+    },
+    {
+      "rule": "Header padding default/narrow",
+      "actual": "20/14px",
+      "result": "STATIC_MATCH_ONLY"
+    },
+    {
+      "rule": "Default Page padding",
+      "actual": "10px",
+      "result": "STATIC_MATCH_ONLY"
+    },
+    {
+      "rule": "Light content/control/popup",
+      "actual": "全部#FFFFFF",
+      "result": "STATIC_MATCH_ONLY"
+    },
+    {
+      "rule": "Surface/Popup radius",
+      "actual": "8px",
+      "result": "STATIC_MATCH_ONLY"
+    },
+    {
+      "rule": "Structural border",
+      "actual": "shared Sidebar/Header/Dialog/Menu 1px solid divider；颜色偏差见SF012",
+      "result": "STATIC_MATCH_ONLY"
+    },
+    {
+      "rule": "Popup shadow",
+      "actual": "Toast/Dialog/Menu none",
+      "result": "STATIC_MATCH_ONLY"
+    },
+    {
+      "rule": "Font",
+      "actual": "系统栈+打包Twemoji、表单font-family inherit",
+      "result": "STATIC_MATCH_ONLY"
+    },
+    {
+      "rule": "Menu text",
+      "actual": "13/400/20，半径6，popup8",
+      "result": "STATIC_MATCH_ONLY"
+    },
+    {
+      "rule": "Dialog padding/footer",
+      "actual": "20px / 8px",
+      "result": "STATIC_MATCH_ONLY"
+    },
+    {
+      "rule": "Field action / circular refresh",
+      "actual": "field-action30；refresh显式circular50%",
+      "result": "STATIC_MATCH_ONLY"
+    },
+    {
+      "rule": "Focus",
+      "actual": "primary outline；具体效果N-02",
+      "result": "STATIC_MATCH_ONLY"
+    },
+    {
+      "rule": "Static hover motion",
+      "actual": "共享hover无translate/scale/装饰shadow；card selected例外SF038",
+      "result": "STATIC_MATCH_ONLY"
+    },
+    {
+      "rule": "PageHeader primary count",
+      "actual": "Subscriptions header icon actions；无多个primary text actions",
+      "result": "STATIC_MATCH_ONLY"
+    }
+  ]
+}

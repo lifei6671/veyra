@@ -1,6 +1,7 @@
 import { StrictMode, type ReactNode } from "react";
 import { createRoot } from "react-dom/client";
 import App from "./App";
+import { ToastProvider } from "./components/ToastHost";
 import "./styles.css";
 
 // 只取消 WebView 默认菜单，继续传递事件以保留应用自定义菜单。
@@ -12,5 +13,5 @@ const render = (content: ReactNode) => root.render(<StrictMode>{content}</Strict
 if (import.meta.env.DEV && new URLSearchParams(window.location.search).get("visual-harness") === "settings") {
   void import("./dev/SettingsVisualHarness").then(({ SettingsVisualHarness }) => render(<SettingsVisualHarness />));
 } else {
-  render(<App />);
+  render(<ToastProvider><App /></ToastProvider>);
 }

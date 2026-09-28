@@ -114,3 +114,7 @@ show-case/evidence-only 模式用于 Delivery Review 通过但 RD Show Case Evid
 provenance/exclusions/ambiguities、checkpoint、候选 target identity 和 verification summary，
 由 Orchestrator 校验后写入既有 Context/HANDOFF/Evidence。`next_action_hint` 非权威，通常
 指向 `code-delivery-review`；实现成功不等于 Delivery Gate 通过。
+
+## Veyra UI Contract enforcement
+
+开始 UI 实现及每个 checkpoint 执行 checkpoint 检查；交付时收集 compliance/截图/前端验证。禁止写入 APPROVED 人工视觉 Evidence。遵循 [Veyra UI Gate](../sdlc-orchestrator/references/veyra-ui-gate.md)，保存实际检查结果；本规则仅适用于 UI-impacting Task。

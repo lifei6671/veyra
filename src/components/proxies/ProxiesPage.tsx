@@ -13,7 +13,7 @@ const filterFromDraft = (draft: FilterDraft): NodeFilter => ({ regions: split(dr
 const sourcesFromDraft = (draft: PoolDraft): PoolSource[] => draft.providerIds.map((providerId) => ({ providerId, filter: filterFromDraft(draft.sourceFilters[providerId] ?? blankFilter()) }));
 
 export function ProxiesPage({ active }: Props) {
-  const { snapshot, loading, error, pending, notice, refresh, mutate, dismissNotice } = useProxyRouting();
+  const { snapshot, loading, error, pending, refresh, mutate } = useProxyRouting();
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const [dialogPool, setDialogPool] = useState<PoolSnapshot | "new" | null>(null);
   const [draft, setDraft] = useState(blankDraft);
@@ -41,14 +41,14 @@ export function ProxiesPage({ active }: Props) {
   }
   function closeDialog() { if (pending) return; setDialogPool(null); queueMicrotask(() => triggerRef.current?.focus()); }
   async function submitPool(event: FormEvent) {
-    event.preventDefault(); if (!snapshot || pending) return;
+    event.preventDefault(); if (!snapshot || pending) return; setFormError(null);
     const name = draft.name.trim(); if (!name || !safeText(name, 80)) { setFormError("名称需要 1–80 个无控制字符的文本"); return; }
     if (draft.providerIds.length === 0 || draft.providerIds.length > 100) { setFormError("需要选择 1–100 个订阅来源"); return; }
     for (const providerId of draft.providerIds) { const source = draft.sourceFilters[providerId] ?? blankFilter(); const groups = [split(source.regions), split(source.includeKeywords), split(source.excludeKeywords)]; if (groups.some((values) => values.length > 64 || !unique(values) || values.some((value) => !safeText(value, 255))) || source.includeNodeIds.some((id) => source.excludeNodeIds.includes(id))) { setFormError("来源筛选包含重复、过长或互相冲突的值"); return; } }
     const sources = draft.providerIds.map((providerId) => { const source = draft.sourceFilters[providerId] ?? blankFilter(); const filter: NodeFilter = { regions: split(source.regions), protocols: source.protocols, includeKeywords: split(source.includeKeywords), excludeKeywords: split(source.excludeKeywords), includeNodeIds: source.includeNodeIds, excludeNodeIds: source.excludeNodeIds }; return { providerId, filter }; });
     const selection: Selection = draft.mode === "manual" ? { type: "manual", selectedNodeId: draft.selectedNodeId || null } : { type: "urlTest", probeUrl: draft.probeUrl.trim(), intervalSeconds: Number(draft.intervalSeconds), toleranceMs: Number(draft.toleranceMs) };
     if (selection.type === "urlTest" && (!validProbeUrl(selection.probeUrl) || !Number.isInteger(selection.intervalSeconds) || selection.intervalSeconds < 1 || selection.intervalSeconds > 86400 || !Number.isInteger(selection.toleranceMs) || selection.toleranceMs < 0 || selection.toleranceMs > 60000)) { setFormError("自动测试 URL、间隔或容差不符合允许范围"); return; }
-    const result = await mutate(dialogPool === "new" ? { type: "createCustomPool", name, enabled: draft.enabled, sources, selection } : { type: "updateCustomPool", id: dialogPool!.id, name, enabled: draft.enabled, sources, selection });
+    const result = await mutate(dialogPool === "new" ? { type: "createCustomPool", name, enabled: draft.enabled, sources, selection } : { type: "updateCustomPool", id: dialogPool!.id, name, enabled: draft.enabled, sources, selection }, { onPresentationError: setFormError });
     if (result?.status === "ok") closeDialog();
   }
   async function chooseNode(poolId: string, nodeId: string) {
@@ -72,7 +72,6 @@ export function ProxiesPage({ active }: Props) {
         <section className="all-nodes" aria-label="全部节点"><header><h2>全部节点</h2><span>{snapshot.nodes.length}</span></header>{snapshot.nodes.length === 0 ? <p className="dense-empty">当前没有可用节点</p> : <div className="all-node-grid">{snapshot.nodes.map((node) => <div key={node.id} className="all-node"><strong>{node.name}</strong><span>{node.protocol}</span></div>)}</div>}</section>
       </>}
     </div>
-    {notice ? <div className={`proxy-routing-notice notice-${notice.kind}`} role={notice.kind === "error" ? "alert" : "status"}><span>{notice.message}</span><button type="button" onClick={dismissNotice}>关闭</button></div> : null}
     {menu ? <div className="proxy-context-menu" ref={menuRef} role="menu" style={{ left: menu.x, top: menu.y }} onKeyDown={(event) => { if (event.key !== "ArrowDown" && event.key !== "ArrowUp") return; event.preventDefault(); const items = Array.from(event.currentTarget.querySelectorAll<HTMLButtonElement>("button:not(:disabled)")); const index = items.indexOf(document.activeElement as HTMLButtonElement); items[(index + (event.key === "ArrowDown" ? 1 : -1) + items.length) % items.length]?.focus(); }}><button role="menuitem" type="button" onClick={() => openDialog(menu.pool, triggerRef.current)}>编辑</button><button role="menuitem" className="danger-item" type="button" disabled={operationBusy} onClick={() => void mutate({ type: "deleteCustomPool", id: menu.pool.id })}>删除</button></div> : null}
     {dialogPool ? <PoolDialog draft={draft} setDraft={setDraft} providers={snapshot?.providers ?? []} nodes={snapshot?.nodes ?? []} error={formError} busy={operationBusy} title={dialogPool === "new" ? "新建自定义出口组" : "编辑自定义出口组"} onClose={closeDialog} onSubmit={submitPool} /> : null}
   </main>;

@@ -1,0 +1,371 @@
+{
+  "status": "CANDIDATE",
+  "task_id": "TASK-019",
+  "title": "Proxies / Routing Desktop UX Redesign — Requirement and Material Design",
+  "produced_by": [
+    "Codex /root",
+    "Codex /root/task019_apply_design"
+  ],
+  "authority": "USER accepted ten product decisions and authorized design only; exact composite Human Design Approval pending",
+  "manifest": [
+    {
+      "path": ".sdlc/design/TASK-019-requirements-001.md",
+      "sha256": "sha256:47a989cea79cc65383a8ef4a529d5a94d65dc3c78c514322ac20ef7c47ca2d33"
+    },
+    {
+      "path": ".sdlc/design/TASK-019-desktop-ui-design-001.md",
+      "sha256": "sha256:c7085e82afc1b01149456d03dee1bca830aa92dc5a47586c3433e19858899fcc"
+    },
+    {
+      "path": ".sdlc/design/TASK-019-auto-apply-design-001.md",
+      "sha256": "sha256:f5b5584fdfb535201e7e1ed2e2af5d6bae3550492344afaa332c5368b3736b50"
+    },
+    {
+      "path": ".sdlc/design/TASK-019-technical-design-001.md",
+      "sha256": "sha256:20a43450c7ec418328ae7366c9cba2bfe49bf3a72d88291d3e402626912fec8d"
+    },
+    {
+      "path": ".sdlc/design/TASK-019-ui-contract-0.4-candidate-001.md",
+      "sha256": "sha256:7b7fee4c2c10e492a6f7d924888d7e1b129785628b63e8d9fa8c32e81b0170ee"
+    },
+    {
+      "path": ".sdlc/design/TASK-019-ui-contract-delta-001.diff",
+      "sha256": "sha256:a9e3eda9fb0665fd4ad0d1f8c7bc683f202f0d073d1efcaf502ffa7224ce4d81"
+    },
+    {
+      "path": "docs/decisions/DCR-026-proxy-routing-ux-and-rule-set-revision-003.md",
+      "sha256": "sha256:bc8d2fc1e9454fa1a396c75380a62d1d1035e0015e981dc71e4ca9a48a338767"
+    },
+    {
+      "path": ".sdlc/evidence/TASK-019/subscriptions-prerequisite-check-001.json",
+      "sha256": "sha256:3b0a2a5654cee93812f8ed0105383d453ba6af36c3861a94b6bfc1aabb97f634"
+    },
+    {
+      "path": ".sdlc/evidence/TASK-019/source-context-001.json",
+      "sha256": "sha256:f1aace08f884a3a4ad4d607fe45f226c8da2736f13eb7f92f43511d7f195a1da"
+    }
+  ],
+  "identity_method": "sha256(JSON.stringify(candidate_without_target_identity), UTF-8 compact JSON in stored key order)",
+  "ui_impact": {
+    "required": true,
+    "reason": "Proxies and Routing dense page composition, node presentation, drag reorder, automatic apply feedback and Toast recovery behavior"
+  },
+  "ui_contract": {
+    "document": "docs/ui/veyra-ui-spec.md",
+    "version": "0.3",
+    "required": true
+  },
+  "ui_scope": {
+    "pages": [
+      "Proxies",
+      "Routing"
+    ],
+    "components": [
+      "Page",
+      "PageHeader",
+      "Toolbar",
+      "Surface",
+      "Button",
+      "IconButton",
+      "Dialog",
+      "Toast",
+      "ProxyRoutingProvider",
+      "ProxiesPage",
+      "PoolSection",
+      "NodeGrid",
+      "NodeCard",
+      "AllNodes",
+      "RoutingPage",
+      "RouteList",
+      "RouteRow",
+      "DragHandle",
+      "InsertionIndicator",
+      "RecoveryAction"
+    ],
+    "states": [
+      "normal",
+      "hover",
+      "pressed",
+      "selected",
+      "disabled",
+      "loading",
+      "empty",
+      "error",
+      "warning",
+      "busy",
+      "focus",
+      "success",
+      "dirty",
+      "applied",
+      "apply-failed",
+      "apply-unknown",
+      "drift",
+      "expanded",
+      "collapsed",
+      "all-nodes",
+      "drag-idle",
+      "drag-lifted",
+      "drag-insertion",
+      "drag-cancelled",
+      "route-create",
+      "route-edit",
+      "route-delete",
+      "route-reorder",
+      "toast-expired",
+      "toast-persistent",
+      "recovery"
+    ],
+    "rules": [
+      "§3 核心视觉原则",
+      "§4.1 Layout Geometry",
+      "§4.2 Background Hierarchy and Color",
+      "§4.3 Border, Radius and Shadow",
+      "§4.4 Typography",
+      "§4.5 Controls and Icons",
+      "§5 Interaction State Spec",
+      "§6.7 Feedback",
+      "§7.2 Golden Page B — Proxies",
+      "§8.3 Proxies",
+      "§8.4 Routing",
+      "§9 Visual Density Guardrails",
+      "§10 Windows DPI / Window Size Verification",
+      "§11 UI Delivery Gate",
+      "§12 Implementation Boundary",
+      "§13 Migration / Rollout Plan",
+      "§14 TASK-012 Visual Remediation Acceptance"
+    ],
+    "source_paths": [
+      "src/styles.css",
+      "src/App.tsx",
+      "src/lib/proxy-routing.ts",
+      "src/components/ToastHost.tsx",
+      "src/components/proxies/ProxiesPage.tsx",
+      "src/components/routing/RoutingPage.tsx"
+    ],
+    "golden_pages": [
+      {
+        "page": "Subscriptions",
+        "certification_ref": ".sdlc/evidence/golden-pages/Subscriptions/certification-0.2-001.json"
+      }
+    ]
+  },
+  "ui_stages": [
+    {
+      "id": "A",
+      "ui_scope": {
+        "pages": [
+          "Proxies"
+        ],
+        "components": [
+          "Page",
+          "PageHeader",
+          "Toolbar",
+          "Surface",
+          "Button",
+          "IconButton",
+          "Dialog",
+          "Toast",
+          "ProxyRoutingProvider",
+          "ProxiesPage",
+          "PoolSection",
+          "NodeGrid",
+          "NodeCard",
+          "AllNodes",
+          "RecoveryAction"
+        ],
+        "states": [
+          "normal",
+          "hover",
+          "pressed",
+          "selected",
+          "disabled",
+          "loading",
+          "empty",
+          "error",
+          "warning",
+          "busy",
+          "focus",
+          "success",
+          "dirty",
+          "applied",
+          "apply-failed",
+          "apply-unknown",
+          "drift",
+          "expanded",
+          "collapsed",
+          "all-nodes",
+          "toast-expired",
+          "toast-persistent",
+          "recovery"
+        ],
+        "rules": [
+          "§3 核心视觉原则",
+          "§4.1 Layout Geometry",
+          "§4.2 Background Hierarchy and Color",
+          "§4.3 Border, Radius and Shadow",
+          "§4.4 Typography",
+          "§4.5 Controls and Icons",
+          "§5 Interaction State Spec",
+          "§6.7 Feedback",
+          "§7.2 Golden Page B — Proxies",
+          "§8.3 Proxies",
+          "§9 Visual Density Guardrails",
+          "§10 Windows DPI / Window Size Verification",
+          "§11 UI Delivery Gate",
+          "§12 Implementation Boundary",
+          "§13 Migration / Rollout Plan",
+          "§14 TASK-012 Visual Remediation Acceptance"
+        ],
+        "source_paths": [
+          "src/styles.css",
+          "src/lib/proxy-routing.ts",
+          "src/components/ToastHost.tsx",
+          "src/components/proxies/ProxiesPage.tsx",
+          "src/App.tsx"
+        ]
+      },
+      "requires_golden_pages": [
+        "Subscriptions"
+      ],
+      "produces_golden_page": "Proxies",
+      "evidence_ref": ".sdlc/evidence/TASK-019/ui-stages/A/certification.json"
+    },
+    {
+      "id": "B",
+      "ui_scope": {
+        "pages": [
+          "Routing"
+        ],
+        "components": [
+          "Page",
+          "PageHeader",
+          "Toolbar",
+          "Surface",
+          "Button",
+          "IconButton",
+          "Dialog",
+          "Toast",
+          "ProxyRoutingProvider",
+          "RoutingPage",
+          "RouteList",
+          "RouteRow",
+          "DragHandle",
+          "InsertionIndicator",
+          "RecoveryAction"
+        ],
+        "states": [
+          "normal",
+          "hover",
+          "pressed",
+          "selected",
+          "disabled",
+          "loading",
+          "empty",
+          "error",
+          "warning",
+          "busy",
+          "focus",
+          "success",
+          "dirty",
+          "applied",
+          "apply-failed",
+          "apply-unknown",
+          "drift",
+          "drag-idle",
+          "drag-lifted",
+          "drag-insertion",
+          "drag-cancelled",
+          "route-create",
+          "route-edit",
+          "route-delete",
+          "route-reorder",
+          "toast-expired",
+          "toast-persistent",
+          "recovery"
+        ],
+        "rules": [
+          "§3 核心视觉原则",
+          "§4.1 Layout Geometry",
+          "§4.2 Background Hierarchy and Color",
+          "§4.3 Border, Radius and Shadow",
+          "§4.4 Typography",
+          "§4.5 Controls and Icons",
+          "§5 Interaction State Spec",
+          "§6.7 Feedback",
+          "§7.2 Golden Page B — Proxies",
+          "§8.4 Routing",
+          "§9 Visual Density Guardrails",
+          "§10 Windows DPI / Window Size Verification",
+          "§11 UI Delivery Gate",
+          "§12 Implementation Boundary",
+          "§13 Migration / Rollout Plan",
+          "§14 TASK-012 Visual Remediation Acceptance"
+        ],
+        "source_paths": [
+          "src/styles.css",
+          "src/lib/proxy-routing.ts",
+          "src/components/ToastHost.tsx",
+          "src/components/routing/RoutingPage.tsx",
+          "src/App.tsx"
+        ],
+        "state_exclusions": {
+          "expanded": "Routing does not own Pool expansion; this state is verified in Stage A.",
+          "collapsed": "Routing does not own Pool collapse; this state is verified in Stage A.",
+          "all-nodes": "Routing does not render the All Nodes view; this state is verified in Stage A."
+        }
+      },
+      "requires_golden_pages": [
+        "Proxies"
+      ],
+      "evidence_ref": ".sdlc/evidence/TASK-019/ui-stages/B/acceptance.json"
+    }
+  ],
+  "visual_gate": {
+    "required": true,
+    "human_approval": true
+  },
+  "scope": {
+    "allow": [
+      "src/components/proxies/ProxiesPage.tsx: compact sections/tabs/node grid only",
+      "src/components/routing/RoutingPage.tsx: compact rows/drag and recovery only",
+      "src/styles.css: Proxies/Routing/Toast scoped styles only",
+      "src/lib/proxy-routing.ts: structural receipt/autoApply feedback/strict parsing/retryCurrentDesired",
+      "src/components/ToastHost.tsx: success3000/noClose, typed actions, owner-scoped replace-clear",
+      "src/App.tsx: recovery navigation callback to existing setActivePage only",
+      "src-tauri/src/application/proxy_routing.rs: post-save disposition/retry union/attempt snapshot projection and inline tests",
+      "src-tauri/src/application/managed_observation_runtime.rs: Ready-only guard/volatile latest slot/coalesced marker/attempt identity and inline tests",
+      "src/lib/proxy-routing.test.ts",
+      "src/components/proxy-routing-pages.test.ts",
+      "src/components/ToastHost.test.ts"
+    ],
+    "deny": [
+      "No implementation during this turn",
+      "No Domain/AppState/schema/migration/Compiler/RuleSet/reorder backend semantic change",
+      "No new dependency/worker/durable queue/background retry",
+      "No changes to historical TASK018 Evidence/findings or TASK020 materialization",
+      "No Golden prerequisite deletion or fabricated certification"
+    ]
+  },
+  "requirement_source": {
+    "path": "docs/veyra.md",
+    "sha256": "sha256:93b60509f5ff04b07dcab093aa82f26ff17cf6feb446b82c82dd6615fc2dbad4"
+  },
+  "binding_contract": {
+    "path": "docs/ui/veyra-ui-spec.md",
+    "sha256": "sha256:bd598a07008e6fc4bf210a412289d6c60d9e5f5f5dd372e4cd47090b301c86c0"
+  },
+  "proposed_contract": {
+    "path": ".sdlc/design/TASK-019-ui-contract-0.4-candidate-001.md",
+    "sha256": "sha256:7b7fee4c2c10e492a6f7d924888d7e1b129785628b63e8d9fa8c32e81b0170ee",
+    "version": "0.4",
+    "status": "NOT_BINDING"
+  },
+  "prerequisite_check": {
+    "path": ".sdlc/evidence/TASK-019/subscriptions-prerequisite-check-001.json",
+    "sha256": "sha256:3b0a2a5654cee93812f8ed0105383d453ba6af36c3861a94b6bfc1aabb97f634"
+  },
+  "readiness": "NOT_READY; current Subscriptions Golden FAIL plus exact Design approval/Contract publication missing",
+  "implementation_authorized": false,
+  "human_design_approval": "PENDING",
+  "target_identity": "sha256:31377671a24def821540ec85260fb24bce9773214e639bf4a757b0d00ed56bea"
+}

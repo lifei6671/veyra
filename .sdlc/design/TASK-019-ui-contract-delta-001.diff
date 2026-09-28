@@ -1,0 +1,168 @@
+--- docs/ui/veyra-ui-spec.md
++++ .sdlc/design/TASK-019-ui-contract-0.4-candidate-001.md
+@@ -1,16 +1,18 @@
+ ---
+-Version: "0.3"
+-Status: APPROVED
+-Contract: BINDING
++Version: "0.4"
++Status: CANDIDATE
++Contract: NOT_BINDING
+ ---
+ 
+ # Veyra UI Spec
+ 
+-> 状态：APPROVED
++> 发布说明：以下规范正文只有在本候选被精确批准并发布到唯一有效路径后生效。本文现为NOT_BINDING；正文中的Binding/必须均表示拟发布后的约束。
++
++> 状态：CANDIDATE — 待 Human Design/Contract Approval
+ >
+-> 版本：0.3（2026-09-07）
++> 版本：0.4 候选（2026-09-08；有效版本仍为0.3）
+ >
+-> Contract：BINDING
++> Contract：NOT_BINDING — 只有批准后发布到唯一有效路径才生效
+ >
+ > 适用范围：Veyra Desktop 全部生产 UI，以及后续 TASK 的 UI 交付门禁
+ >
+@@ -285,7 +287,7 @@
+ | Hover | 非 selected item 使用 `hover` 背景；不得位移、scale 或增加 shadow | 不触发业务动作 |
+ | Pressed | Button foreground/background 轻微变深或 `opacity:.92` | 原 handler 不变 |
+ | Sidebar selected | `selected` 背景 + primary glyph；文字保持高对比 | `aria-current=page` 绑定真实 state |
+-| Row selected | `selected` 背景 + component-appropriate 单个 indicator | 不再默认使用 3px 左边框 + 蓝 title 的双重强调；SubscriptionCard active 适用下列专用规则，其他组件行为不因此改变 |
++| Row selected | `selected` 背景 + component-appropriate 单个 indicator | 不再默认使用 3px 左边框 + 蓝 title 的双重强调；SubscriptionCard active 适用下列专用规则；Proxies compact Node适用§8.3单一check+normal surface专用规则，其他组件行为不因此改变 |
+ | SubscriptionCard active | 唯一 active indicator 为 `2px solid primary` 强调边框；正常 content-surface 背景 | 无 selected/check glyph、Badge、primary title、shadow、左侧竖条；hover不得覆盖active边框；focus为独立focus state；避免布局跳动 |
+ | Disabled | `opacity:.50`; default cursor；hover 不改变视觉 | 原生 disabled + handler guard |
+ | Loading, local action | 原动作位置 inline spinner / busy label | 只锁定冲突动作 |
+@@ -294,7 +296,7 @@
+ | Dialog | backdrop + bordered popup；Esc、focus trap、return focus、busy close guard | 保留现有 focus/async 语义 |
+ | Dropdown / Context Menu | dense items、8px popup、1px border、无 shadow | position/keyboard/focus 不变 |
+ | Tooltip | 保持可聚焦触发；未有统一 primitive 时保留 `title/aria-label` | 不为视觉补全创造复杂框架 |
+-| Success Toast | max-width `300px`; 2.5~3s 自动消失；无显式关闭按钮 | 普通成功反馈 |
++| Success Toast | max-width `300px`; 3000ms 自动消失（从 enqueue 起计时）；无显式关闭按钮 | 普通成功反馈 |
+ | Error Toast | max-width `340px`; 可持久并提供 Recovery Action | 错误/需要决策 |
+ 
+ ---
+@@ -410,6 +412,10 @@
+ 不得增加长期“已保存” Badge、粗绿色边条或手动关闭按钮。
+ 
+ ---
++
++### TASK-019 feedback clarification
++
++所有ordinary success Toast精确3000ms，从enqueue起计时，waiting项不会因promotion重新计时，无关闭按钮。Warning/error需要用户处理时可persistent且有明确Recovery Action。Applyfailure必须“重试应用”，仅retry-current-Desired。持久消息清除/替换按owner与当前operation/generation匹配，不能被旧completion清除；保留FIFO、最多3条、固定safe positioning及向下stacking。旧6000ms ordinarysuccess行为在对应实现后正式由本条替换，不追溯改变历史验收。
+ 
+ ## 7. Golden Page Strategy
+ 
+@@ -468,79 +474,23 @@
+ 
+ ### 8.3 Proxies
+ 
+-Proxies 是高密度数据页，必须使用 `full Page`。
+-
+-页面层级：
+-
+-```text
+-PageHeader
+-↓
+-Pool Section(s)
+-↓
+-All Nodes Section
+-```
+-
+-#### Pool Section
+-
+-Pool MUST 表现为紧凑 Section，而不是大型展示 Card。
+-
+-Pool Header：
+-
+-```text
+-height: 48~52px
+-line 1: pool name
+-line 2: type · node count · selection policy
+-right: compact actions
+-```
+-
+-正常状态 MUST NOT 显示“已保存” Badge。
+-
+-只有 Dirty 状态显示弱 Warning：
+-
+-```text
+-● 有待应用更改
+-```
+-
+-#### Pool Node Row
+-
+-```text
+-height: 40~44px
+-```
+-
+-选中节点默认：
+-
+-```text
+-selected background
+-+
+-check glyph
+-```
+-
+-MUST NOT 同时使用 3px 左边框、蓝色节点名、蓝色“已选”文本。
+-
+-#### All Nodes
+-
+-All Nodes 采用 dense list 或 compact grid。
+-
+-若使用 grid：
+-
+-```text
+-grid-template-columns: repeat(auto-fill, minmax(220px, 1fr))
+-```
+-
+-单 Node Item 高度：
+-
+-```text
+-48~54px
+-```
+-
+-节点是数据对象，不得通过宽大白块人为拉高视觉体积。
++Proxies 是高密度数据页，使用 full Page。唯一页面结构：PageHeader → `[出口组] [全部节点]` 互斥视图 → 当前panel；默认出口组。不在出口组面板底部再渲染重复All Nodes大区块。
++
++Pool采用compact Section。Header48–52px仅名称、类型、当前节点与必要紧凑操作；node为主内容，自适应compact grid：`repeat(auto-fill,minmax(min(220px,100%),1fr))`，gap沿用8px，node48–54px。不使用大型Group Card、无意义白卡嵌套和留白。节点双行name/protocol沿用既有字体、主题surface/边框/hover/focus tokens。
++
++Node selected采用单一紧凑check glyph与正常surface，保持真实runtime选中语义；不以大面积行式蓝底、3px左竖条、primary title、多重Badge作为主要语言。该条仅改Proxies node，不改变SubscriptionCard2px active边框或Sidebar等选中规则。全部节点视图复用compact grid，按稳定NodeId唯一呈现，不创造无Pool上下文的全局节点选择业务。
++
++正常Header没有常驻“应用”按钮、成功保存Badge；只有apply failure / unresolved desired-applied drift / unknown显示有意义恢复入口。Desired/Applied仍内部独立，结构保存与运行态反馈按下节。
+ 
+ ### 8.4 Routing
+ 
+-- 使用 Golden Page B 的 full Page、toolbar、Section、Row、selected、状态语言。
+-- 具体字段、规则组合、filter、排序来自 Veyra 已批准业务模型。
+-- 不复制 Clash/Mihomo schema。
+-- 不为填满页面制造业务字段。
++复用Proxies Golden Page B的dense surface、控件、层次与focus。使用compact rules；每行常驻↑/↓删除。左侧预留drag handle空间，默认不显示，row hover/focus-within出现。Pointer与Keyboard Events完成拾取、移动、drop/cancel；拖动仅轻量lifted state和insertion indicator；drop调用现有reorderRoutes(routeIds)，排序后端语义不变。取消/无位移零提交、冲突回读、不自动重放CRUD。
++
++拖动行作为临时浮层可有极轻shadow；不新增常态Card shadow/颜色。所有键盘操作提供focus恢复、位置播报与Escape取消，保留modal焦点规则。不新增DnD runtime dependency。
++
++Structural mutations保存Desired成功后，仅Runtime Ready+有效active subscription自动Apply；stopped保存并提示“已保存，将在下次启动时应用”，不自动启动；无active提示“已保存，当前无可应用订阅”；recoveryRequired保存并persistent recovery。连续已成功保存版本由latest authoritative Desired/generation控制，旧operation completion不得覆盖新generation，不排队/重放CRUD。
++
++成功确认对应当前runtimegeneration后显示“规则已保存并应用”（出口设置使用对应名词）。Apply失败显示“规则已保存，但应用失败”，persistent Toast有“重试应用”；Retry只读取Apply当前authoritativeDesired，不重复mutation，不回滚已保存Desired。ApplyUnknown不冒充成功/失败；当前状态不允许Apply时retry明确说明恢复动作而不启动内核。正常Header没有常驻Apply；仅failure/drift/unknown出现恢复状态或入口。
+ 
+ ### 8.5 Connections / Logs
+ 
+@@ -835,7 +785,7 @@
+ 
+ ## 14. TASK-012 Visual Remediation Acceptance
+ 
+-TASK-012 当前 UI 收尾使用本文作为 Binding Contract。
++本节保留TASK-012视觉修订要求的来源；不追溯改写已完成TASK-012的历史验收。TASK-019后续页面交付按当前有效Contract重新独立验收。
+ 
+ 必须满足：
+ 
+@@ -857,7 +807,7 @@
+ Windows 100% / 125% / 150% DPI 验证
+ ```
+ 
+-Human Visual Approval APPROVED 后，TASK-012 才可完成 UI Gate。
++后续TASK-019只有其当前target的Human Visual Approval与全部Completion Predicate满足后才能完成UI Gate；历史TASK-012 Evidence不提升为其当前批准。
+ 
+ ---
+ 

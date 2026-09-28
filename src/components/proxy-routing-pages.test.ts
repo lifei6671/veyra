@@ -1,6 +1,8 @@
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import proxiesSource from "./proxies/ProxiesPage.tsx?raw";
+import routingSource from "./routing/RoutingPage.tsx?raw";
 import type { ProxyRoutingSnapshot } from "../lib/proxy-routing";
 
 const useProxyRoutingMock = vi.fn();
@@ -57,12 +59,12 @@ describe("proxy routing production pages", () => {
     expect(populated).toContain("selector-savedOnly");
   });
 
-  it("ProxiesPage renders authoritative error and Notice without patching the snapshot", () => {
+  it("ProxiesPage renders authoritative error without retaining a page-local global Notice", () => {
     useProxyRoutingMock.mockReturnValue(context({ error: "runtimeUnavailable", notice: { kind: "error", message: "运行状态不可用" } }));
     const html = renderToStaticMarkup(createElement(ProxiesPage, { active: true }));
     expect(html).toContain("出口配置不可用");
-    expect(html).toContain("运行状态不可用");
-    expect(html).toContain("role=\"alert\"");
+    expect(html).not.toContain("运行状态不可用");
+    expect(html).not.toContain("proxy-routing-notice");
   });
 
   it("RoutingPage renders default, disabled route and global pending controls", () => {
@@ -77,5 +79,28 @@ describe("proxy routing production pages", () => {
     const applying = renderToStaticMarkup(createElement(RoutingPage, { active: true }));
     expect(applying).toContain("应用中…");
     expect(applying).toContain("disabled=\"\"");
+  });
+
+  it.each([
+    ["ProxiesPage", proxiesSource, "submitPool", "closeDialog"],
+    ["RoutingPage", routingSource, "submit", "close"],
+  ])("%s keeps mutation failures in the current Dialog and preserves success close", (_name, source, submitName, closeName) => {
+    const submitStart = source.indexOf(`async function ${submitName}`);
+    const submitEnd = source.indexOf("\n  async function ", submitStart + 1);
+    const submit = source.slice(submitStart, submitEnd);
+
+    expect(submit).toContain("setFormError(null)");
+    expect(submit).toContain("{ onPresentationError: setFormError }");
+    expect(submit).toContain(`if (result?.status === \"ok\") ${closeName}()`);
+    expect(source).toContain('className="dialog-error" role="alert"');
+    expect(source).not.toContain("proxy-routing-notice");
+  });
+
+  it("keeps non-Dialog mutations on the shared provider presentation path", () => {
+    expect(proxiesSource).toContain('await mutate({ type: "setManualSelection", poolId, nodeId })');
+    expect(proxiesSource).toContain('void mutate({ type: "deleteCustomPool", id: menu.pool.id })');
+    expect(routingSource).toContain('void mutate({ type: "applyConfiguration" })');
+    expect(routingSource).toContain('void mutate({ type: "deleteRoute", id: route.id })');
+    expect(routingSource).not.toContain("onPresentationError: setFormError }); if (result?.status !== \"ok\")");
   });
 });

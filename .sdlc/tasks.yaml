@@ -153,6 +153,18 @@ milestones:
           - .sdlc/evidence/TASK-012/delivery-target-005.json
           - .sdlc/evidence/TASK-012/delivery-gate-005.json
           - .sdlc/evidence/TASK-012/acceptance-005.json#EVIDENCE-TASK-012-ACCEPTANCE-005
+      - id: TASK-018
+        result: >-
+          Bounded shared presentation, Subscription transition/emphasis, Toast positioning/stacking,
+          and closing preload error presentation accepted; HV038-001 through HV038-004 remain OPEN
+          under TASK-019 and HV038-005 remains OPEN under TASK-020.
+        target_identity: sha256:31b6b86656b14f81ea07ae9c22ddd8ed1f2b27fe2fbd30d64ad9db240e7d4162
+        decision_refs:
+          - docs/decisions/DCR-026-proxy-routing-ux-and-rule-set-revision-002.md
+          - .sdlc/evidence/TASK-018/acceptance-scope-binding-039.json
+        evidence_refs:
+          - .sdlc/evidence/TASK-018/task-acceptance-042.json
+          - .sdlc/evidence/TASK-018/delivery-completion-042.json
     follow_ups:
       - id: FOLLOWUP-TASK010-NATIVE-012
         status: OPEN
@@ -167,6 +179,8 @@ milestones:
           并取得完整同进程时序。TASK010按已验证用户行为验收不代表这些观测通过或发布通过。
 
 window:
+  - id: TASK-019
+    task_ref: .sdlc/tasks/TASK-019.md
   - id: TASK-013
     milestone_ref: M7
     objective: 在现有 AppState 与 StateStore 上交付版本化应用偏好、显式迁移和安全读写事务。
@@ -207,3 +221,13 @@ window:
     acceptance_summary: >-
       仅消费现有当前实例日志 DTO，覆盖加载、空、错误、实例切换与大列表响应；不等同于 LogLevel 设置，
       不暴露原始敏感日志，不修改 Settings、RuntimePreferences 或日志状态所有权。
+  - id: TASK-020
+    milestone_ref: M7
+    objective: sing-box Rule Set Support
+    dependencies: [TASK-019]
+    risk: HIGH
+    acceptance_summary: >-
+      Future planning only；依据 findings038、impact038 与 DCR-026 revision002 / acceptance-scope-binding-039.json，
+      先完成 Domain/AppState schema compatibility/IPC/Compiler 与 lifecycle Design，再实现 inline/local/remote Rule Set、
+      tag/format/path/URL/update interval、CRUD、Route 引用、validation、规则/规则集 UI 与 tests。
+      承接 OPEN HV038-005 的修复与验收；TASK-019 DONE 后物化，协调 TASK-013 schema 顺序，不预占版本；先澄清/设计批准。

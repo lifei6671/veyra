@@ -1,0 +1,127 @@
+diff --git a/docs/ui/veyra-ui-spec.md b/.sdlc/design/TASK-019-ui-contract-0.5-candidate-008.md
+index d0c628f..fd6d2fe 100644
+--- a/docs/ui/veyra-ui-spec.md
++++ b/.sdlc/design/TASK-019-ui-contract-0.5-candidate-008.md
+@@ -1,24 +1,13 @@
+ ---
+-Version: "0.4"
+-Status: APPROVED
+-Contract: BINDING
++Version: "0.5"
++Status: CANDIDATE
++Contract: NOT_BINDING
+ ---
+ 
+ # Veyra UI Spec
+ 
+-> 发布说明：本规范由已批准的 UI Contract 0.4 candidate002 发布到唯一有效路径；规范正文保持被批准的原始字节。
+->
+-> 状态：APPROVED — Human Design Approval003 批准精确 Contract intent；本次 USER 明确授权 publication。
+->
+-> 版本：0.4（2026-09-08 发布）
+->
+-> Contract：BINDING — docs/ui/veyra-ui-spec.md 为唯一有效 Contract
+->
+-> 批准来源：`.sdlc/evidence/TASK-019/human-design-approval-003.json`（sha256:70c8a0acf98cde10138300e8e20f21ef6049158a60ada654beddad8ea5698f22）；原 Candidate003 target `sha256:ff3df5f42aa22a49a0e35cb7b372bcdca7c85734de6b0db429d08f8ff043a74d`。
+->
+-> 适用范围：Veyra Desktop 全部生产 UI，以及后续 TASK 的 UI 交付门禁
+->
+-> 前置证据：`docs/ui/clash-verge-ui-analysis.md`、`docs/ui/veyra-current-ui-audit.md`
++> Contract0.5 candidate008: two-level TASK-019 verification schedule. Exact Human Design/Contract Approval and publication pending. Current binding Contract remains0.4 at docs/ui/veyra-ui-spec.md.
++> Visual tokens and product semantics are unchanged; normative scheduling delta is §10/§11/§13.
+ 
+ ## 1. 目的与约束
+ 
+@@ -88,7 +77,7 @@ Sidebar / Header / Shell
+ ```yaml
+ ui_contract:
+   document: docs/ui/veyra-ui-spec.md
+-  version: "0.4"
++  version: "0.5"
+   required: true
+ ```
+ 
+@@ -529,7 +518,7 @@ Structural mutations保存Desired成功后，仅Runtime Ready+有效active subsc
+ 
+ CSS 使用逻辑像素；不得为高 DPI 手工放大 token。
+ 
+-最低验证矩阵：
++最低完整验证矩阵（TASK-019 两级调度见 §11.5；最终不得减少）：
+ 
+ ```text
+ 1280 × 720 @ 100%
+@@ -563,7 +552,7 @@ UI TASK 必须在 Task 和 Technical Design 中声明：
+ ```yaml
+ ui_contract:
+   document: docs/ui/veyra-ui-spec.md
+-  version: "0.4"
++  version: "0.5"
+   required: true
+ 
+ visual_gate:
+@@ -620,7 +609,7 @@ Toast width/behavior
+ 
+ 生产 UI 变更必须提供真实 Tauri Windows Screenshot，不允许用 HTML mock / Storybook / 静态设计稿替代。
+ 
+-最低截图：
++最低截图（TASK-019 Stage Reference 与 Final Matrix 分别按 §11.5 执行；其他交付沿用本节）：
+ 
+ ```text
+ Light normal
+@@ -687,7 +676,7 @@ computed value
+ {
+   "task_id": "TASK-XXX",
+   "contract": "docs/ui/veyra-ui-spec.md",
+-  "contract_version": "0.4",
++  "contract_version": "0.5",
+   "target_identity": "sha256:<reviewed-delivery-target>",
+   "decision": "APPROVED",
+   "approved_by": "human",
+@@ -710,6 +699,38 @@ TASK != DONE/CLOSED
+ 
+ ---
+ 
++### 11.5 TASK-019 两级验收调度
++
++本节是 TASK-019 明确批准的验收模型 stage_reference_then_final_matrix。它只调整环境矩阵的执行时机，不减少状态、功能交互、focus/keyboard、error/recovery、Dialog、Native 证据或 Human Visual 验收。其他 Task、standalone certification 和 cross_cutting_shared 不自动采用本模型。
++
++**Stage Reference Validation**：S=Subscriptions、A=Proxies、B=Routing 各阶段均在 Windows Tauri + Light + 150% + 1280×720 logical viewport 验证该阶段所有真实 applicable states 和行为。所有提交的 reference certification 截图绑定本阶段当前 source identity、实际参考环境和文件 hash；normal、完整状态与行为覆盖、当前 Compliance、独立 Review 和真实 Human Visual Approval 缺一不可。无需该阶段重复 Light/Dark 与全部 window/DPI 矩阵。
++
++Stage S 仅从其 ui_scope.states 删除 toast-persistent；TASK-019 总体和 A/B 保留该 state 及 persistent feedback requirement。S 保留 Toast、RecoveryAction、§6.7 Feedback 和 shared typed action primitive 的自动化/source review。不得增加 Subscription persistent lifetime、Recovery Action、测试专用路径，或用 primitive test 替代 Native state。
++
++S/A 的 reference Golden 只用于同一 TASK-019 的 S→A→B 解锁；B 仍为 stage acceptance。它们必须标明 verification_level=stage_reference，保留现有 golden_page_certification/ui_stage_acceptance kind、源码 manifest、scope、递归 prerequisite hashes 与 Human approval。reference Golden 不等于完整环境 Golden，不能作为外部 Task/standalone certification 或 TASK-019 最终矩阵。Stage A/B 未取得当前上游 reference Human certification 前仍锁定。
++
++**TASK-019 Final Visual Matrix**：S/A/B 实现完成、共享源码稳定后，在 TASK-019 完成前，对 Subscriptions、Proxies、Routing 的最终 current source 各运行以下每个环境的 Light 和 Dark：
++
++| Logical viewport | Scale |
++| --- | --- |
++| 1280×720 | 100% |
++| 1280×720 | 125% |
++| 1280×720 | 150% |
++| 1440×900 | 100% |
++| 1440×900 | 125% |
++
++每页每个 theme/environment 至少有一张 normal Native layout 截图，即三个页面共30个必需覆盖单元。实际截图的逻辑 viewport、scale、theme、source identity、file hash 必须准确；截图 raster 尺寸不能冒充 logical viewport。最终 Review 还应检查现有 Acceptance 要求的具体布局/视觉回归。所有 §10 布局要求和视觉 token 继续适用。
++
++不要求每个 state×每个 theme×每个 DPI 的笛卡尔积。完整状态/行为由当前 Stage reference evidence 负责；Final matrix 负责最终跨 theme/window/DPI 布局回归。最终全 Task Compliance/Review 仍覆盖所有 states/behaviors，通过精确 stage_references 绑定当前 reference certificates；不能省略状态覆盖或用只在旧源码上的截图代替。
++
++Final compliance 使用 verification_level=task_final_matrix，绑定最终源码 union manifest 和 target identity、当前 S/A/B certificate hashes、全部最终截图及独立 Review。最终 Human Visual Approval 必须绑定该 final compliance hash 和完整最终 screenshot list；Stage Human Approval 不能代替 Final Human。最终无 stage 的 Compliance 路径必须可在最终 Human 之前执行；最终 Delivery 仍要求该真实 Human。
++
++源码新鲜度和 immutable provenance 不变：共享文件变化使受影响 reference certification stale，必须按新的参考环境重新验证、独立审阅、取得所需 Human approval 并采用新的不可变引用。它不要求重复完整环境矩阵。最终 matrix 必须在最终 source 稳定后执行；后续源变更使受影响 final evidence stale，不能继续使用旧 PASS。
++
++TASK-019 不得在完整 Final matrix、最终 Compliance、完整独立 Delivery Review、最终 Human Visual 及 Task Acceptance 缺失时 DONE/CLOSED；TASK-020 不得提前解锁。没有 N/A、waiver、bypass，也不允许 Mock/单测替代真实 Native。
++
++---
++
+ ## 12. Implementation Boundary
+ 
+ UI 调整默认只能修改：
+@@ -745,6 +766,8 @@ Runtime State Machine
+ 
+ ## 13. Migration / Rollout Plan
+ 
++TASK-019 的 S/A/B 依赖顺序不变，阶段认证按 §11.5 的 reference environment 执行；三阶段实现后执行 §11.5 Final Visual Matrix。reference certification 只在同 Task 内解锁，不产生外部完整 Golden。
++
+ ### Phase 1 — Visual Foundation + Subscriptions Golden Page A
+ 
+ 目标：冻结 Shell、Sidebar、PageHeader、Surface、Toolbar、Control、Dialog、Menu、Toast 的视觉语言。

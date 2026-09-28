@@ -107,3 +107,7 @@ Freeze 后 Implementation 的目标是实现已批准设计，不是边写边设
 `task-boundary/remediation` 默认加载 Current Task 和存在时的相关 Existing Architecture。按问题
 加载相关 Design、ADR/DCR；多文件设计存在时再读取 Design Index。不读取
 全部历史 Task、QA 或 Evidence。
+
+## Veyra UI Contract enforcement
+
+本项目 UI-impacting Task 必须按 [Veyra UI Gate](../veyra-ui-gate.md) 执行 design/readiness/checkpoint/delivery 检查。Design Gate、READY、Delivery PASSED 和 Task DONE 写回前回读实际检查结果；缺 compliance 或 human approval 不得关闭交付。非 UI 与未重新进入 Gate 的历史 Task 沿用原流程。

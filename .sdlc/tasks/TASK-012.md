@@ -3,7 +3,7 @@ id: TASK-012
 milestone_ref: M7
 dependencies: [TASK-011]
 risk: HIGH
-status: DONE
+status: VERIFYING
 requirement_ref: docs/veyra.md
 requirement_identity: sha256:93b60509f5ff04b07dcab093aa82f26ff17cf6feb446b82c82dd6615fc2dbad4
 design_refs:
@@ -15,7 +15,11 @@ design_refs:
   - docs/ui/veyra-ui-spec.md
   - .sdlc/design/TASK-012-proxy-routing.md
   - .sdlc/design/TASK-012-proxy-routing-candidate-004.json
+  - .sdlc/design/TASK-012-ui-contract-supplement-005.md
+  - .sdlc/design/TASK-012-proxy-routing-candidate-005.json
 approval_refs:
+  - .sdlc/evidence/TASK-012/design-review-005.json
+  - .sdlc/evidence/TASK-012/design-approval-005.json
   - .sdlc/evidence/TASK-012/design-review-004.json
   - .sdlc/evidence/TASK-012/design-approval-004.json
   - .sdlc/evidence/TASK-012/change-control-001.json
@@ -163,7 +167,7 @@ Task 验收还必须对账全部 SF Evidence、Candidate-004/DCR-019、delivery-
 真实 WebView 操作。独立 Delivery Review 必须覆盖 backend state/runtime、IPC/security、frontend/state/UI
 和跨模块 integration，且无 P0/P1 Finding。
 
-**acceptance_status：** PASSED
+**acceptance_status：** PENDING
 **evidence_refs：** `.sdlc/evidence/TASK-012/delivery-target-005.json`、`.sdlc/evidence/TASK-012/delivery-gate-005.json`、`.sdlc/evidence/TASK-012/acceptance-005.json`
 
 ## Risk
@@ -226,3 +230,347 @@ busy 和 context menu，并保留完整浅/深、520/960 状态截图清单。Ta
 USER:lifei 已明确验收通过 TASK-012。`.sdlc/evidence/TASK-012/acceptance-005.json` 将 SF-001～SF-003
 及 Task 级验收记录为 `PASSED`，本 Task 状态更新为 `DONE`。该验收不授权提前实施 TASK-013、push、
 release 或 deployment。
+
+## UI Delivery Metadata
+
+```json
+{
+  "task_id": "TASK-012",
+  "ui_impact": {
+    "required": true,
+    "reason": "Proxies/Routing presentation, shared Shell/Sidebar context, dense composition, Dialog/Menu/Toast and visual interaction states"
+  },
+  "ui_contract": {
+    "document": "docs/ui/veyra-ui-spec.md",
+    "version": "0.2",
+    "required": true
+  },
+  "ui_scope": {
+    "pages": [
+      "Proxies",
+      "Routing"
+    ],
+    "components": [
+      "AppShell",
+      "Sidebar",
+      "NavigationIcon",
+      "SidebarTraffic",
+      "Page",
+      "PageHeader",
+      "Toolbar",
+      "Surface",
+      "Button",
+      "IconButton",
+      "Input",
+      "Select",
+      "Checkbox",
+      "Dialog",
+      "Notice",
+      "Toast",
+      "ProxyRoutingProvider",
+      "ProxiesPage",
+      "PageState",
+      "PoolList",
+      "PoolSection",
+      "NodeRow",
+      "AllNodes",
+      "PoolDialog",
+      "ContextMenu",
+      "RoutingPage",
+      "RoutingState",
+      "DefaultTargetRow",
+      "RouteList",
+      "RouteRow",
+      "RouteDialog"
+    ],
+    "states": [
+      "normal",
+      "hover",
+      "pressed",
+      "selected",
+      "disabled",
+      "loading",
+      "empty",
+      "error",
+      "busy",
+      "focus",
+      "success",
+      "dirty",
+      "applied",
+      "dialog",
+      "validation-error",
+      "conflict",
+      "expanded",
+      "collapsed",
+      "all-nodes",
+      "context-menu",
+      "inline-pending",
+      "manual",
+      "url-test",
+      "default-target",
+      "route-create",
+      "route-edit",
+      "route-delete",
+      "route-reorder"
+    ],
+    "rules": [
+      "§3 核心视觉原则",
+      "§4.1 Layout Geometry",
+      "§4.2 Background Hierarchy and Color",
+      "§4.3 Border, Radius and Shadow",
+      "§4.4 Typography",
+      "§4.5 Controls and Icons",
+      "§5 Interaction State Spec",
+      "§6 Component Composition Spec",
+      "§7 Golden Page Strategy",
+      "§9 Visual Density Guardrails",
+      "§10 Windows DPI / Window Size Verification",
+      "§11 UI Delivery Gate",
+      "§12 Implementation Boundary",
+      "§13 Migration / Rollout Plan",
+      "§14 TASK-012 Visual Remediation Acceptance",
+      "§8.3 Proxies",
+      "§8.4 Routing"
+    ],
+    "source_paths": [
+      "src/App.tsx",
+      "src/styles.css",
+      "src/main.tsx",
+      "src/components/layout/SidebarTraffic.tsx",
+      "src/components/layout/SidebarTraffic.css",
+      "src/lib/proxy-routing.ts",
+      "src/lib/bootstrap.ts",
+      "src/lib/observability.ts",
+      "src/lib/traffic-trend.ts",
+      "src/lib/subscriptions.ts",
+      "src/assets/fonts/Twemoji.Mozilla.ttf",
+      "src-tauri/icons/128x128.png",
+      "src/components/proxies/ProxiesPage.tsx",
+      "src/components/routing/RoutingPage.tsx"
+    ],
+    "golden_pages": [
+      {
+        "page": "Subscriptions",
+        "certification_ref": ".sdlc/evidence/golden-pages/Subscriptions/certification-0.2-001.json"
+      }
+    ]
+  },
+  "visual_gate": {
+    "required": true,
+    "human_approval": true
+  },
+  "ui_stages": [
+    {
+      "id": "A",
+      "ui_scope": {
+        "pages": [
+          "Proxies"
+        ],
+        "components": [
+          "AppShell",
+          "Sidebar",
+          "NavigationIcon",
+          "SidebarTraffic",
+          "Page",
+          "PageHeader",
+          "Toolbar",
+          "Surface",
+          "Button",
+          "IconButton",
+          "Input",
+          "Select",
+          "Checkbox",
+          "Dialog",
+          "Notice",
+          "Toast",
+          "ProxyRoutingProvider",
+          "ProxiesPage",
+          "PageState",
+          "PoolList",
+          "PoolSection",
+          "NodeRow",
+          "AllNodes",
+          "PoolDialog",
+          "ContextMenu"
+        ],
+        "states": [
+          "normal",
+          "hover",
+          "pressed",
+          "selected",
+          "disabled",
+          "loading",
+          "empty",
+          "error",
+          "busy",
+          "focus",
+          "success",
+          "dirty",
+          "applied",
+          "dialog",
+          "validation-error",
+          "conflict",
+          "expanded",
+          "collapsed",
+          "all-nodes",
+          "context-menu",
+          "inline-pending",
+          "manual",
+          "url-test"
+        ],
+        "rules": [
+          "§3 核心视觉原则",
+          "§4.1 Layout Geometry",
+          "§4.2 Background Hierarchy and Color",
+          "§4.3 Border, Radius and Shadow",
+          "§4.4 Typography",
+          "§4.5 Controls and Icons",
+          "§5 Interaction State Spec",
+          "§6 Component Composition Spec",
+          "§7 Golden Page Strategy",
+          "§9 Visual Density Guardrails",
+          "§10 Windows DPI / Window Size Verification",
+          "§11 UI Delivery Gate",
+          "§12 Implementation Boundary",
+          "§13 Migration / Rollout Plan",
+          "§14 TASK-012 Visual Remediation Acceptance",
+          "§8.3 Proxies"
+        ],
+        "source_paths": [
+          "src/App.tsx",
+          "src/styles.css",
+          "src/main.tsx",
+          "src/components/layout/SidebarTraffic.tsx",
+          "src/components/layout/SidebarTraffic.css",
+          "src/lib/proxy-routing.ts",
+          "src/lib/bootstrap.ts",
+          "src/lib/observability.ts",
+          "src/lib/traffic-trend.ts",
+          "src/lib/subscriptions.ts",
+          "src/assets/fonts/Twemoji.Mozilla.ttf",
+          "src-tauri/icons/128x128.png",
+          "src/components/proxies/ProxiesPage.tsx"
+        ]
+      },
+      "requires_golden_pages": [
+        "Subscriptions"
+      ],
+      "produces_golden_page": "Proxies",
+      "evidence_ref": ".sdlc/evidence/TASK-012/ui-stages/A/certification.json"
+    },
+    {
+      "id": "B",
+      "ui_scope": {
+        "pages": [
+          "Routing"
+        ],
+        "components": [
+          "AppShell",
+          "Sidebar",
+          "NavigationIcon",
+          "SidebarTraffic",
+          "Page",
+          "PageHeader",
+          "Toolbar",
+          "Surface",
+          "Button",
+          "IconButton",
+          "Input",
+          "Select",
+          "Checkbox",
+          "Dialog",
+          "Notice",
+          "Toast",
+          "ProxyRoutingProvider",
+          "RoutingPage",
+          "RoutingState",
+          "DefaultTargetRow",
+          "RouteList",
+          "RouteRow",
+          "RouteDialog"
+        ],
+        "states": [
+          "normal",
+          "hover",
+          "pressed",
+          "selected",
+          "disabled",
+          "loading",
+          "empty",
+          "error",
+          "busy",
+          "focus",
+          "success",
+          "dirty",
+          "applied",
+          "dialog",
+          "validation-error",
+          "conflict",
+          "default-target",
+          "route-create",
+          "route-edit",
+          "route-delete",
+          "route-reorder"
+        ],
+        "rules": [
+          "§3 核心视觉原则",
+          "§4.1 Layout Geometry",
+          "§4.2 Background Hierarchy and Color",
+          "§4.3 Border, Radius and Shadow",
+          "§4.4 Typography",
+          "§4.5 Controls and Icons",
+          "§5 Interaction State Spec",
+          "§6 Component Composition Spec",
+          "§7 Golden Page Strategy",
+          "§9 Visual Density Guardrails",
+          "§10 Windows DPI / Window Size Verification",
+          "§11 UI Delivery Gate",
+          "§12 Implementation Boundary",
+          "§13 Migration / Rollout Plan",
+          "§14 TASK-012 Visual Remediation Acceptance",
+          "§8.4 Routing"
+        ],
+        "source_paths": [
+          "src/App.tsx",
+          "src/styles.css",
+          "src/main.tsx",
+          "src/components/layout/SidebarTraffic.tsx",
+          "src/components/layout/SidebarTraffic.css",
+          "src/lib/proxy-routing.ts",
+          "src/lib/bootstrap.ts",
+          "src/lib/observability.ts",
+          "src/lib/traffic-trend.ts",
+          "src/lib/subscriptions.ts",
+          "src/assets/fonts/Twemoji.Mozilla.ttf",
+          "src-tauri/icons/128x128.png",
+          "src/components/routing/RoutingPage.tsx"
+        ],
+        "state_exclusions": {
+          "expanded": "Routing 当前没有 Pool 展开 UI；仅 Stage A 适用，不新增业务。",
+          "collapsed": "Routing 当前没有 Pool 折叠 UI；仅 Stage A 适用。",
+          "all-nodes": "Routing 不展示全部节点；仅 Stage A 适用。"
+        }
+      },
+      "requires_golden_pages": [
+        "Proxies"
+      ],
+      "evidence_ref": ".sdlc/evidence/TASK-012/ui-stages/B/acceptance.json"
+    }
+  ]
+}
+```
+
+## Visual acceptance checkpoint (2026-09-07)
+
+功能实现和既有功能验收保留完成；上述 2026-09-06 DONE/批准记录是历史事实，不是 UI Spec V0.2 的最终 Human Visual Acceptance。当前 Task 为 VERIFYING，Task 整体验收 PENDING，Delivery PENDING。依据本轮用户明确指令重新进入视觉验收，见 `.sdlc/evidence/TASK-012/ui-acceptance-pending-001.json`。
+
+当前没有 V0.2 compliance PASS 和 human approval Evidence，不得 CLOSED/DONE，不物化 TASK-013。此 checkpoint 不追补或改写 Candidate-004/Design Approval，也不授权 UI 或业务修改。后续 UI remediation 须先满足同版 Design/readiness/Golden Page 前置；本轮仅调整 SDLC 约束。
+
+
+## Candidate-005 approved UI binding (2026-09-07)
+
+当前 UI 补充设计绑定 Candidate-005 `sha256:9801e0fe06445b9edb1fb03292481b07ea4d54b998ddcd3a3990cfb4b7f86337`，真实 USER:lifei Design Approval 见 `.sdlc/evidence/TASK-012/design-approval-005.json`。原 Candidate-004 继续作为业务设计基线；此前历史段落及批准保留原身份。
+
+本次物化将 Candidate-005 的 ui_contract/ui_scope/visual_gate/ui_stages 原样纳入本 Task。新补充仅限定表现层与视觉验收；source_paths 为完整取证清单，不等于全部写权限。AppShell/Sidebar 只纳入两页共享视觉覆盖与补充设计明确的 presentation 边界；原 Router、activePage + hidden、state/handler、业务/运行语义和重构禁令继续有效。共享 foundation 未通过 Subscriptions certification 时停止，不能以本 Task 绕过前置。
+
+状态仍为 VERIFYING；Task acceptance、Delivery PENDING。下一步仅执行 Subscriptions 只读 certification，发现不符合 Contract 即记录 FAIL 并停止。Design Approval 不是 Human Visual Approval；本轮不执行 Task readiness、Stage A/B 或最终 Delivery。

@@ -90,3 +90,7 @@ description: "Design an SDLC foundation or resolve a task's material engineering
 返回 artifacts、Evidence、issues、blockers、architecture/scope flags。`architecture_change` 只表示变更
 已接受/Frozen Architecture；首次 Foundation 或首份未冻结 Design 不是 change。`next_action_hint` 非权威，
 通常指向 `technical-design-review`。
+
+## Veyra UI Contract enforcement
+
+生成 UI Design Candidate 时必须执行本项目 UI Gate 的 design 检查，包含 UI Contract、scope 与视觉/人工验收要求。遵循 [Veyra UI Gate](../sdlc-orchestrator/references/veyra-ui-gate.md)，保存实际检查结果；本规则仅适用于 UI-impacting Task。

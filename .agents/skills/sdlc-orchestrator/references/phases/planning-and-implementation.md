@@ -103,3 +103,7 @@ Orchestrator 路由 `implementation(remediation)`，重新运行受影响验证�
 默认只读 State、存在且新鲜的 `memory/HANDOFF.md`、`tasks.yaml` 和解析后的 focus Task Markdown。按需加载 Task 引用的
 Requirement/Story Acceptance、Design/ADR、相关源码与测试。禁止默认读取全部 Epic、Story、
 Task、Design、ADR 或历史 Evidence。
+
+## Veyra UI Contract enforcement
+
+本项目 UI-impacting Task 必须按 [Veyra UI Gate](../veyra-ui-gate.md) 执行 design/readiness/checkpoint/delivery 检查。Design Gate、READY、Delivery PASSED 和 Task DONE 写回前回读实际检查结果；缺 compliance 或 human approval 不得关闭交付。非 UI 与未重新进入 Gate 的历史 Task 沿用原流程。

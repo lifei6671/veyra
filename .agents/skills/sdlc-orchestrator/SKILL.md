@@ -175,3 +175,7 @@ Next:
 读者解释无关的被弃方案，也不附加“已避免某项”之类自证声明。生成或更新标题、文件名、
 元数据、commit、PR、报告与 HANDOFF 时，遵循
 [Evidence 与 SkillResult 协议](references/evidence-and-results.md)的终稿表面规则。
+
+## Veyra UI Contract enforcement
+
+恢复当前 Task 及迁移 Design/Planning/Delivery Gate 前，读取 [Veyra UI Gate](references/veyra-ui-gate.md) 并执行对应机器检查。UI compliance PASS 且只缺人工批准时保持 VERIFYING / Delivery PENDING，等待真实人工 Evidence，不反复路由实现或自动生成 APPROVED。

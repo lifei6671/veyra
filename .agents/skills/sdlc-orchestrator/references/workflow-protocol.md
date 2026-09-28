@@ -299,3 +299,7 @@ Human Gate 已批准且失效副作用已记录。Specialist 的 `next_action_hi
 - `REMEDIATION`：记录 originating Gate、需修复 Artifact 和失效范围，完成后重过受影响 Gate。
 - 暂停、取消、拒绝或回滚等非常态动作只在实际发生时记录到 Task、Gate、Release Artifact 或
   HANDOFF；不要为它们预建空字段。
+
+## Veyra UI Contract enforcement
+
+本项目 UI-impacting Task 必须按 [Veyra UI Gate](veyra-ui-gate.md) 执行 design/readiness/checkpoint/delivery 检查。Design Gate、READY、Delivery PASSED 和 Task DONE 写回前回读实际检查结果；缺 compliance 或 human approval 不得关闭交付。非 UI 与未重新进入 Gate 的历史 Task 沿用原流程。

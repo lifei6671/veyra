@@ -142,3 +142,7 @@ Code Delivery Reviewer 分离。
 `review_mode` 使用 `NATIVE_ISOLATED`、`CHILD_AGENT`、`SELF_REVIEW` 或 `MIXED`。
 `review_result` 只使用 `PASS`、`PASS_WITH_CONDITIONS` 或 `REWORK`，环境/能力不可用时为
 `null`。`next_action_hint` 非权威，Orchestrator 独立判断修复、复审、豁免或 Gate 迁移。
+
+## Veyra UI Contract enforcement
+
+对 UI Task 执行 delivery 检查，并审查 relevant CSS/token/composition、状态、真实截图、前端 lint/test/build；compliance PASS 但缺 human approval 时仍返回 BLOCKED，不能 Review PASS。遵循 [Veyra UI Gate](../sdlc-orchestrator/references/veyra-ui-gate.md)，保存实际检查结果；本规则仅适用于 UI-impacting Task。
