@@ -79,3 +79,7 @@ description: "Independently review an SDLC design candidate before freezing or r
 `FAIL`、`BLOCKED` 或 `UNAVAILABLE`；`review_result` 使用 `PASS`、
 `PASS_WITH_CONDITIONS`、`REWORK`，环境不可用时为 `null`；`next_action_hint`
 非权威，不得声明状态迁移。
+
+## Veyra UI Contract enforcement
+
+UI Candidate 缺少/错误 Contract 或 scope 时必须返回 FAIL/REWORK；只有 design 机器检查和独立语义 Review 都通过才可建议冻结。遵循 [Veyra UI Gate](../sdlc-orchestrator/references/veyra-ui-gate.md)，保存实际检查结果；本规则仅适用于 UI-impacting Task。

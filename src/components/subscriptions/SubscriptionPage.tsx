@@ -1,4 +1,5 @@
-import { lazy, Suspense, useEffect, useRef, useState, type ChangeEvent, type FormEvent, type KeyboardEvent, type MouseEvent } from "react";
+import { lazy, Suspense, useEffect, useLayoutEffect, useRef, useState, type ChangeEvent, type FormEvent, type KeyboardEvent, type MouseEvent } from "react";
+import { useToastOwner } from "../ToastHost";
 import { QRCodeSVG } from "qrcode.react";
 import { formatTraffic } from "../../lib/traffic-trend";
 import type { RuntimeObservation } from "../../lib/observability";
@@ -18,6 +19,45 @@ const DocumentEditor = lazy(() => import("./DocumentEditor"));
 type Props = { active: boolean; observation: RuntimeObservation | null };
 type DialogMode = "create" | "edit" | "replace" | "qr" | "delete" | "batchDelete";
 type Notice = { message: string; kind: "error" | "success" };
+export type PendingActivation = { id: string } & (
+  | { completion: "operation"; operationId: string | null }
+  | { completion: "alreadyCurrent"; operationId: string; expectedGeneration: number }
+);
+
+export function isSubscriptionVisualActive(observation: RuntimeObservation | null, id: string): boolean {
+  return observation !== null && observation.sidecarLifecycle === "ready" &&
+    observation.appliedSubscriptionId === id && observation.appliedConfigurationGeneration !== null;
+}
+
+export function isSubscriptionCardActive(observation: RuntimeObservation | null, id: string, pending: PendingActivation | null): boolean {
+  return isSubscriptionVisualActive(observation, id) && (pending === null || pending.id === id);
+}
+
+export function activationCompletion(pending: PendingActivation | null, observation: RuntimeObservation | null): Notice | null {
+  if (pending === null || pending.operationId === null || observation === null) return null;
+  const current = observation.subscriptionSwitch;
+  const matching = current?.operationId === pending.operationId;
+  const applied = isSubscriptionVisualActive(observation, pending.id);
+  const mismatch: Notice = { kind: "error", message: "订阅切换结果与运行状态不一致，请刷新后重试" };
+  if (matching && (current.status === "cancelled" || current.status === "failed")) {
+    return { kind: "error", message: current.status === "cancelled" || current.errorCode === "cancelled"
+      ? "订阅切换已取消" : current.errorCode ? subscriptionErrorMessage(current.errorCode) : "订阅响应不可用，请重试" };
+  }
+  if (matching && current.status === "ready" && !applied) return mismatch;
+  if (pending.completion === "alreadyCurrent") {
+    if (applied && observation.appliedConfigurationGeneration === pending.expectedGeneration) {
+      return { kind: "success", message: "订阅已是当前运行配置" };
+    }
+    return matching && current.status === "ready" ? mismatch : null;
+  }
+  return matching && current.status === "ready" && applied
+    ? { kind: "success", message: "订阅已应用，服务正在使用最新配置" } : null;
+}
+export function presentSubscriptionNotice(notice: Notice | null, dialogOpen: boolean,
+  local: (notice: Notice | null) => void, global: (notice: Notice | null) => void) {
+  (dialogOpen ? local : global)(notice);
+}
+
 type MenuState = { subscription: SubscriptionSummary; x: number; y: number };
 type UserAgentMode = "clash" | "singBox" | "clashMeta" | "custom" | "preserve";
 type FormState = {
@@ -31,7 +71,7 @@ const defaultForm = (): FormState => ({
   userAgentMode: "clash", userAgent: "", timeoutSeconds: "30", proxyMode: "direct",
   verifyTls: true, allowAutoUpdate: true, intervalMinutes: "",
 });
-const pendingSwitchStatuses = new Set(["queued", "checking", "prepared", "persisted", "applying"]);
+
 const MAX_QR_SHARE_BYTES = 2048;
 
 export function SubscriptionPage({ active, observation }: Props) {
@@ -53,8 +93,9 @@ export function SubscriptionPage({ active, observation }: Props) {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [quickUrl, setQuickUrl] = useState("");
   const [pendingOperation, setPendingOperation] = useState<string | null>(null);
-  const [pendingActivation, setPendingActivation] = useState<{ id: string; operationId: string | null } | null>(null);
-  const [notice, setNotice] = useState<Notice | null>(null);
+  const [pendingActivation, setPendingActivation] = useState<PendingActivation | null>(null);
+  const [notice, setLocalNotice] = useState<Notice | null>(null);
+  const presentGlobalNotice = useToastOwner("subscription", 6000);
   const [dialogMode, setDialogMode] = useState<DialogMode | null>(null);
   const [dialogTarget, setDialogTarget] = useState<SubscriptionSummary | null>(null);
   const [settings, setSettings] = useState<SubscriptionSettings | null>(null);
@@ -90,26 +131,17 @@ export function SubscriptionPage({ active, observation }: Props) {
     }).then((stop) => { unlisten = stop; }).catch(() => undefined);
     return () => { mounted = false; unlisten?.(); };
   }, []);
-  useEffect(() => {
-    const current = observation?.subscriptionSwitch;
-    if (pendingActivation === null || current?.operationId !== pendingActivation.operationId) return;
-    if (pendingSwitchStatuses.has(current.status)) return;
+  useLayoutEffect(() => {
+    const completion = activationCompletion(pendingActivation, observation);
+    if (completion === null) return;
     setPendingActivation(null);
     setPendingOperation(null);
     void refreshList();
-    if (current.status === "ready" && observation?.sidecarLifecycle === "ready" &&
-      observation.appliedSubscriptionId === pendingActivation.id &&
-      observation.appliedConfigurationGeneration !== null) {
-      setNotice({ message: "订阅已应用，服务正在使用最新配置", kind: "success" });
-    } else if (current.status === "ready") {
-      setNotice({ message: "订阅切换结果与运行状态不一致，请刷新后重试", kind: "error" });
-    }
-    else if (current.status === "cancelled") setNotice({ message: "订阅切换已取消", kind: "error" });
-    else if (current.status === "failed" && current.errorCode) setNotice({ message: current.errorCode === "cancelled" ? "订阅切换已取消" : subscriptionErrorMessage(current.errorCode), kind: "error" });
+    setNotice(completion);
   }, [observation, pendingActivation]);
   useEffect(() => {
     if (notice === null) return;
-    const timer = window.setTimeout(dismissNotice, 6000);
+    const timer = window.setTimeout(() => setLocalNotice(current => current === notice ? null : current), 6000);
     return () => window.clearTimeout(timer);
   }, [dialogMode, notice]);
   useEffect(() => {
@@ -160,7 +192,9 @@ export function SubscriptionPage({ active, observation }: Props) {
   }
   function fail(error: Parameters<typeof subscriptionErrorMessage>[0]) { setNotice({ message: subscriptionErrorMessage(error), kind: "error" }); }
   function failResponse() { setNotice({ message: "订阅响应不可用，请重试", kind: "error" }); }
-  function dismissNotice() { setNotice(null); }
+  function setNotice(next: Notice | null) {
+    presentSubscriptionNotice(next, dialogIdentityRef.current !== null, setLocalNotice, presentGlobalNotice);
+  }
   function focusFirstDialogControl() {
     const next = dialogRef.current?.querySelector<HTMLElement>("select:not(:disabled), textarea:not(:disabled), input:not(:disabled), button:not(:disabled)");
     (next ?? dialogRef.current)?.focus();
@@ -168,11 +202,16 @@ export function SubscriptionPage({ active, observation }: Props) {
   function resetDialog() {
     dialogEpochRef.current += 1;
     dialogIdentityRef.current = null;
+    setLocalNotice(null);
     setDialogMode(null); setDialogTarget(null); setSettings(null); setSettingsLoading(false);
     originalUrlRef.current = ""; fileReadEpochRef.current += 1; setFileReading(false);
     setForm(defaultForm()); setSelectedFileName(null); setTlsConfirmation(false); setShareUrl(null); setShareUnavailable(false);
     setPendingOperation((current) => current?.startsWith("share-") ? null : current);
     if (fileInputRef.current) fileInputRef.current.value = "";
+  }
+  function closeDialogWithError(message: string) {
+    resetDialog();
+    presentGlobalNotice({ message, kind: "error" });
   }
   function beginDialog(mode: DialogMode, target: SubscriptionSummary | null, returnFocus?: HTMLElement | null): number {
     resetDialog();
@@ -194,13 +233,13 @@ export function SubscriptionPage({ active, observation }: Props) {
     try {
       const result = await getSubscriptionSettings(target.id);
       if (!isCurrentDialog(epoch, "edit", target.id)) return;
-      if (result.status === "error") { fail(result.error); resetDialog(); return; }
+      if (result.status === "error") { closeDialogWithError(subscriptionErrorMessage(result.error)); return; }
       const next = result.settings;
       let remoteUrl = "";
       if (next.sourceKind === "remote") {
         const source = await getSubscriptionShareUrl(target.id);
         if (!isCurrentDialog(epoch, "edit", target.id)) return;
-        if (source.status === "error") { fail(source.error); resetDialog(); return; }
+        if (source.status === "error") { closeDialogWithError(subscriptionErrorMessage(source.error)); return; }
         remoteUrl = source.url;
       }
       originalUrlRef.current = remoteUrl;
@@ -214,7 +253,7 @@ export function SubscriptionPage({ active, observation }: Props) {
         intervalMinutes: next.updatePolicy.intervalMinutes === null ? "" : String(next.updatePolicy.intervalMinutes),
       });
     } catch {
-      if (isCurrentDialog(epoch, "edit", target.id)) { failResponse(); resetDialog(); }
+      if (isCurrentDialog(epoch, "edit", target.id)) closeDialogWithError("订阅响应不可用，请重试");
     } finally {
       if (isCurrentDialog(epoch, "edit", target.id)) setSettingsLoading(false);
     }
@@ -228,7 +267,7 @@ export function SubscriptionPage({ active, observation }: Props) {
     try {
       const result = await getSubscriptionShareUrl(target.id);
       if (!isCurrentDialog(epoch, "qr", target.id)) return;
-      if (result.status === "error") { fail(result.error); resetDialog(); return; }
+      if (result.status === "error") { closeDialogWithError(subscriptionErrorMessage(result.error)); return; }
       if (utf8Length(result.url) > MAX_QR_SHARE_BYTES) {
         setShareUrl(null); setShareUnavailable(true);
         setNotice({ message: "订阅链接过长，无法生成二维码", kind: "error" });
@@ -236,7 +275,7 @@ export function SubscriptionPage({ active, observation }: Props) {
       }
       setShareUrl(result.url);
     } catch {
-      if (isCurrentDialog(epoch, "qr", target.id)) { failResponse(); resetDialog(); }
+      if (isCurrentDialog(epoch, "qr", target.id)) closeDialogWithError("订阅响应不可用，请重试");
     } finally {
       if (isCurrentDialog(epoch, "qr", target.id)) setPendingOperation(null);
     }
@@ -423,13 +462,15 @@ export function SubscriptionPage({ active, observation }: Props) {
   }
   async function activate(target: SubscriptionSummary, force = false) {
     handoffMenuFocus(); if (pendingOperation !== null) return;
-    setPendingOperation(`activate-${target.id}`); setPendingActivation({ id: target.id, operationId: null }); setNotice(null);
+    setPendingOperation(`activate-${target.id}`); setPendingActivation({ id: target.id, completion: "operation", operationId: null }); setNotice(null);
     try {
       const result = await activateSubscription(target.id, force);
       if (result.status === "error") { setPendingActivation(null); setPendingOperation(null); fail(result.error); return; }
-      if (result.status === "pending") { setPendingActivation({ id: target.id, operationId: result.operationId }); return; }
-      upsert(result.subscription); setPendingActivation(null); setPendingOperation(null);
-      success(result.outcome === "alreadyCurrent" ? "订阅已是当前运行配置" : "订阅已应用，服务正在使用最新配置");
+      if (result.status === "pending") { setPendingActivation({ id: target.id, completion: "operation", operationId: result.operationId }); return; }
+      upsert(result.subscription);
+      setPendingActivation(result.outcome === "alreadyCurrent"
+        ? { id: target.id, completion: "alreadyCurrent", operationId: result.operationId, expectedGeneration: result.activeConfigurationGeneration }
+        : { id: target.id, completion: "operation", operationId: result.operationId });
       void refreshList();
     } catch { setPendingActivation(null); setPendingOperation(null); failResponse(); }
   }
@@ -492,11 +533,12 @@ export function SubscriptionPage({ active, observation }: Props) {
       {loadState === "ready" && subscriptions.length === 0 && <section className="subscription-state"><p>暂无订阅，可通过上方链接导入或新建订阅。</p><button type="button" className="secondary-button" onClick={openCreateDialog}>新建订阅</button></section>}
       {hasSubscriptions && <section className="subscription-grid" aria-label="订阅列表">{subscriptions.map((subscription) =>
         <SubscriptionCard key={subscription.id} subscription={subscription}
+          visualActive={isSubscriptionCardActive(observation, subscription.id, pendingActivation)} activating={pendingActivation?.id === subscription.id}
           updating={pendingOperation === `update-${subscription.id}`} selectionMode={selectionMode} checked={selectedIds.has(subscription.id)}
           disabled={pendingOperation !== null} onUse={() => selectionMode ? toggleSelected(subscription.id) : void activate(subscription)} onUpdate={() => void updateOne(subscription)}
           onContextMenu={(event) => openContextMenu(event, subscription)} onMenuKeyDown={(event) => openKeyboardMenu(event, subscription)} />)}</section>}
     </div>
-    {dialogMode && <div className="dialog-backdrop" role="presentation" onClick={(event) => { if (event.target === event.currentTarget && (pendingOperation === null || dialogMode === "qr")) resetDialog(); }}><section ref={dialogRef} className={`subscription-dialog${dialogMode === "qr" ? "" : " subscription-dialog-expanded"}`} role="dialog" aria-modal="true" aria-labelledby="subscription-dialog-title" aria-busy={pendingOperation !== null || settingsLoading} tabIndex={-1} onKeyDown={handleDialogKeyDown}>
+    {dialogMode && <div className="dialog-backdrop" role="presentation" onClick={(event) => { if (event.target === event.currentTarget && (pendingOperation === null || dialogMode === "qr")) resetDialog(); }}><section ref={dialogRef} className={`subscription-dialog${dialogMode === "create" || dialogMode === "edit" ? " subscription-dialog-expanded" : ""}`} role="dialog" aria-modal="true" aria-labelledby="subscription-dialog-title" aria-busy={pendingOperation !== null || settingsLoading} tabIndex={-1} onKeyDown={handleDialogKeyDown}>
       {renderDialog()}
       {noticeElement}
     </section></div>}
@@ -505,7 +547,6 @@ export function SubscriptionPage({ active, observation }: Props) {
       onEditFile={() => void openDocument(contextMenu.subscription)} onEdit={() => void openSettingsDialog(contextMenu.subscription)} onReplace={() => openReplaceDialog(contextMenu.subscription)}
       onUpdate={() => void updateOne(contextMenu.subscription)} onManagedUpdate={() => void updateOne(contextMenu.subscription, true)}
       onDelete={() => openDeleteDialog(contextMenu.subscription)} />}
-    {!dialogMode && noticeElement}
     {documentSession && <Suspense fallback={<div className="dialog-backdrop" role="status">正在打开编辑器</div>}><DocumentEditor title={documentSession.kind === "runtime" ? "运行时配置" : "编辑文件"} content={documentSession.kind === "runtime" ? documentSession.content : documentSession.document.content} format={documentSession.kind === "runtime" ? "json" : documentSession.document.format} readOnly={documentSession.kind === "runtime"} onClose={closeDocument} onSave={saveDocument} onFormat={async content => { const result = await formatSubscriptionDocument(content, documentSession.kind === "runtime" ? "json" : documentSession.document.format); if (result.status === "error") throw new Error(documentErrorMessage(result)); return result.content; }} /></Suspense>}
   </main>;
 
@@ -577,8 +618,8 @@ function SubscriptionMenu({ menu, disabled, managedAvailable, firstRef, onUse, o
   </div>;
 }
 
-function SubscriptionCard({ subscription, updating, selectionMode, checked, disabled, onUse, onUpdate, onContextMenu, onMenuKeyDown }: {
-  subscription: SubscriptionSummary; updating: boolean; selectionMode: boolean; checked: boolean; disabled: boolean;
+export function SubscriptionCard({ subscription, visualActive, activating, updating, selectionMode, checked, disabled, onUse, onUpdate, onContextMenu, onMenuKeyDown }: {
+  subscription: SubscriptionSummary; visualActive: boolean; activating: boolean; updating: boolean; selectionMode: boolean; checked: boolean; disabled: boolean;
   onUse: () => void; onUpdate: () => void; onContextMenu: (event: MouseEvent) => void; onMenuKeyDown: (event: KeyboardEvent<HTMLElement>) => void;
 }) {
   const traffic = subscription.traffic;
@@ -588,13 +629,13 @@ function SubscriptionCard({ subscription, updating, selectionMode, checked, disa
   const exactTime = subscription.lastSuccessAtMs === null ? null : new Date(subscription.lastSuccessAtMs).toLocaleString();
   const dateMs = traffic?.expireAtMs ?? subscription.lastSuccessAtMs;
   const expireTime = dateMs === null ? null : new Date(dateMs).toLocaleDateString();
-  return <article className={`subscription-card${subscription.active ? " subscription-card-active" : ""}${selectionMode ? " subscription-card-selection" : ""}`} role="button" tabIndex={disabled ? -1 : 0} aria-label={`${selectionMode ? "选择" : "使用"} ${subscription.name}`} aria-disabled={disabled} onClick={() => { if (!disabled) onUse(); }} onKeyDown={(event) => {
+  return <article className={`subscription-card${visualActive ? " subscription-card-active" : ""}${activating ? " subscription-card-pending" : ""}${selectionMode ? " subscription-card-selection" : ""}`} role="button" tabIndex={disabled ? -1 : 0} aria-label={`${selectionMode ? "选择" : "使用"} ${subscription.name}`} aria-disabled={disabled} aria-busy={activating || undefined} onClick={() => { if (!disabled) onUse(); }} onKeyDown={(event) => {
     if (event.target !== event.currentTarget) return;
     onMenuKeyDown(event); if ((event.key === "Enter" || event.key === " ") && !disabled) { event.preventDefault(); onUse(); }
   }} onContextMenu={onContextMenu}>
     {selectionMode && <input className="subscription-card-checkbox" type="checkbox" aria-label={`选中 ${subscription.name}`} checked={checked} disabled={disabled} onClick={event => event.stopPropagation()} onChange={onUse} />}
     <header><div><h2 title={subscription.name}>{subscription.name}</h2></div><button type="button" className="refresh-button" disabled={disabled} aria-label={`更新 ${subscription.name}`} aria-haspopup="menu" onKeyDown={(e) => { e.stopPropagation(); onMenuKeyDown(e); }} onClick={(e) => { e.stopPropagation(); onUpdate(); }}><RefreshIcon spinning={updating} /></button></header>
-    <p className="subscription-description" title={subscription.description || undefined}>{subscription.description}</p>
+    <p className="subscription-description" title={subscription.description || undefined}>{activating ? <span className="subscription-pending-label"><RefreshIcon spinning />切换中…</span> : subscription.description}</p>
     <dl className="subscription-meta"><div><dt>节点</dt><dd>{subscription.nodeCount}</dd></div><div><dd aria-label={`更新时间 ${subscription.lastSuccessAtMs === null ? "尚未成功更新" : formatRelativeTime(subscription.lastSuccessAtMs)}`} title={exactTime ?? undefined}>{subscription.lastSuccessAtMs === null ? "尚未成功更新" : formatRelativeTime(subscription.lastSuccessAtMs)}</dd></div></dl>
     <div className="subscription-traffic">{hasTraffic ? <><div><span>{formatTraffic(used!)} / {formatTraffic(traffic.total!)}</span>{expireTime && <span>{expireTime}</span>}</div><progress max={100} value={progress!} aria-label={`${subscription.name} 流量使用进度`} /></> : expireTime ? <div className="subscription-expiry-only"><span>{expireTime}</span></div> : null}</div>
   </article>;

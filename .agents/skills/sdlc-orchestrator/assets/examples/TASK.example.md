@@ -58,3 +58,5 @@ approval_refs: []
 ### 验证
 
 - `replace-with-task-level-integration-command-or-objective-observation`
+
+UI-impacting Task 另按 [Veyra UI Gate](../../references/veyra-ui-gate.md) 添加可选 UI Delivery Metadata；物化时从批准 Design 保留 Contract version、scope、visual_gate，不给非 UI Task 添加 UI Evidence 要求。

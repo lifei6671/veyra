@@ -259,3 +259,7 @@ NEUTRAL 请求产品决策；INVALID 重新设计实验。任何生产关停/回
 - Decision 原因只在 ADR 保存一次。
 - Evidence 成功只保存摘要；失败保存有限诊断。
 - `memory/HANDOFF.md` 可以随时从事实源重建。
+
+## Veyra UI Contract enforcement
+
+本项目 UI-impacting Task 必须按 [Veyra UI Gate](veyra-ui-gate.md) 执行 design/readiness/checkpoint/delivery 检查。Design Gate、READY、Delivery PASSED 和 Task DONE 写回前回读实际检查结果；缺 compliance 或 human approval 不得关闭交付。非 UI 与未重新进入 Gate 的历史 Task 沿用原流程。

@@ -1,3 +1,4 @@
+import { useToastOwner } from "../components/ToastHost";
 import { invoke } from "@tauri-apps/api/core";
 import { createContext, createElement, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { subscribeRuntimeObservationDelta, type RuntimeObservation } from "./observability";
@@ -222,11 +223,18 @@ export class ProxyRoutingResponseOrder {
 }
 
 type Notice = { kind: "success" | "error" | "warning"; message: string };
-type ContextValue = { snapshot: ProxyRoutingSnapshot | null; loading: boolean; error: QueryError | "invalidResponse" | null; pending: boolean; notice: Notice | null; refresh(): Promise<void>; mutate(mutation: ProxyRoutingMutation): Promise<MutationResult | null>; dismissNotice(): void };
+export type PresentationOptions = { onPresentationError?: (message: string) => void };
+export function presentMutationError(message: string, global: (notice: Notice | null) => void, options?: PresentationOptions) {
+  if (options?.onPresentationError) options.onPresentationError(message);
+  else global({ kind: "error", message });
+}
+type ContextValue = { snapshot: ProxyRoutingSnapshot | null; loading: boolean; error: QueryError | "invalidResponse" | null; pending: boolean; notice: Notice | null; refresh(): Promise<void>; mutate(mutation: ProxyRoutingMutation, options?: PresentationOptions): Promise<MutationResult | null>; dismissNotice(): void };
 const ProxyRoutingContext = createContext<ContextValue | null>(null);
 const outcomeMessages: Record<MutationOutcome["type"], string> = { saved: "更改已保存，等待应用", selectorApplied: "节点已切换并经运行时确认", selectorNotApplied: "选择已保存，运行时仍使用原节点", selectorSavedOnly: "选择已保存，将在下次完整应用时生效", selectorApplyUnknown: "选择已保存，运行时结果暂时无法确认", applyStarted: "正在应用配置", applyCompleted: "配置已应用" };
 export function ProxyRoutingProvider({ children }: { children: ReactNode }) {
-  const [snapshot, setSnapshot] = useState<ProxyRoutingSnapshot | null>(null); const [loading, setLoading] = useState(true); const [error, setError] = useState<ContextValue["error"]>(null); const [pending, setPending] = useState(false); const pendingRef = useRef(false); const [notice, setNotice] = useState<Notice | null>(null); const snapshotRef = useRef(snapshot); snapshotRef.current = snapshot;
+  const [snapshot, setSnapshot] = useState<ProxyRoutingSnapshot | null>(null); const [loading, setLoading] = useState(true); const [error, setError] = useState<ContextValue["error"]>(null); const [pending, setPending] = useState(false); const pendingRef = useRef(false); const [notice, setNoticeState] = useState<Notice | null>(null); const snapshotRef = useRef(snapshot); snapshotRef.current = snapshot;
+  const presentNotice = useToastOwner("proxy-routing", null);
+  const setNotice = useCallback((next: Notice | null) => { setNoticeState(next); presentNotice(next); }, [presentNotice]);
   const mountedRef = useRef(true); const queryInFlightRef = useRef(false); const queryQueuedRef = useRef(false); const responseOrderRef = useRef(new ProxyRoutingResponseOrder());
   const refresh = useCallback(async () => {
     if (queryInFlightRef.current) { queryQueuedRef.current = true; responseOrderRef.current.invalidateQueries(); return; }
@@ -265,8 +273,8 @@ export function ProxyRoutingProvider({ children }: { children: ReactNode }) {
     timer = window.setTimeout(() => void poll(), 800);
     return () => { stopped = true; if (timer !== undefined) window.clearTimeout(timer); };
   }, [pollOperationId, refresh]);
-  const mutate = useCallback(async (mutation: ProxyRoutingMutation) => { const current = snapshotRef.current; if (!current || pendingRef.current) return null; pendingRef.current = true; setPending(true); setNotice(null); try { const result = await mutateProxyRouting(current.revision, mutation); if (result.status === "ok") { responseOrderRef.current.acceptMutation(result.snapshot); setSnapshot(result.snapshot); setError(null); setNotice({ kind: result.outcome.type === "selectorApplyUnknown" || result.outcome.type === "selectorNotApplied" ? "warning" : "success", message: outcomeMessages[result.outcome.type] }); } else { setNotice({ kind: "error", message: mutationErrorMessage(result.error) }); if (shouldRefreshAfterMutationError(mutation, current.revision, result.revision)) void refresh(); } return result; } catch { setNotice({ kind: "error", message: "响应格式不可用，请刷新后重试" }); void refresh(); return null; } finally { pendingRef.current = false; if (mountedRef.current) setPending(false); } }, [refresh]);
-  const value = useMemo<ContextValue>(() => ({ snapshot, loading, error, pending, notice, refresh, mutate, dismissNotice: () => setNotice(null) }), [snapshot, loading, error, pending, notice, refresh, mutate]);
+  const mutate = useCallback(async (mutation: ProxyRoutingMutation, options?: PresentationOptions) => { const current = snapshotRef.current; if (!current || pendingRef.current) return null; pendingRef.current = true; setPending(true); setNotice(null); try { const result = await mutateProxyRouting(current.revision, mutation); if (result.status === "ok") { responseOrderRef.current.acceptMutation(result.snapshot); setSnapshot(result.snapshot); setError(null); setNotice({ kind: result.outcome.type === "selectorApplyUnknown" || result.outcome.type === "selectorNotApplied" ? "warning" : "success", message: outcomeMessages[result.outcome.type] }); } else { presentMutationError(mutationErrorMessage(result.error), setNotice, options); if (shouldRefreshAfterMutationError(mutation, current.revision, result.revision)) void refresh(); } return result; } catch { presentMutationError("响应格式不可用，请刷新后重试", setNotice, options); void refresh(); return null; } finally { pendingRef.current = false; if (mountedRef.current) setPending(false); } }, [refresh, setNotice]);
+  const value = useMemo<ContextValue>(() => ({ snapshot, loading, error, pending, notice, refresh, mutate, dismissNotice: () => setNotice(null) }), [snapshot, loading, error, pending, notice, refresh, mutate, setNotice]);
   return createElement(ProxyRoutingContext.Provider, { value }, children);
 }
 export function useProxyRouting(): ContextValue { const value = useContext(ProxyRoutingContext); if (!value) throw new Error("ProxyRoutingProvider is required"); return value; }

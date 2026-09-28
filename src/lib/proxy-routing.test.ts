@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { invoke } from "@tauri-apps/api/core";
-import { encodeProxyRoutingMutation, filterPoolNodes, getProxyRoutingSnapshot, mutateProxyRouting, nodeMatchesFilter, parseMutationResult, parseProxyRoutingSnapshot, parseSnapshotResult, PROXY_PROTOCOLS, ProxyRoutingResponseOrder, retainAvailableNodeId, runtimeRoutingInvalidationKey, shouldDismissDialog, shouldPollProxyRouting, shouldRefreshAfterMutationError, shouldRefreshForRevision, validProbeUrl, wrappedDialogFocusIndex, type NodeFilter, type ProxyRoutingSnapshot } from "./proxy-routing";
+import { encodeProxyRoutingMutation, filterPoolNodes, getProxyRoutingSnapshot, mutateProxyRouting, nodeMatchesFilter, parseMutationResult, parseProxyRoutingSnapshot, parseSnapshotResult, presentMutationError, PROXY_PROTOCOLS, ProxyRoutingResponseOrder, retainAvailableNodeId, runtimeRoutingInvalidationKey, shouldDismissDialog, shouldPollProxyRouting, shouldRefreshAfterMutationError, shouldRefreshForRevision, validProbeUrl, wrappedDialogFocusIndex, type NodeFilter, type ProxyRoutingSnapshot } from "./proxy-routing";
 
 vi.mock("@tauri-apps/api/core", () => ({ invoke: vi.fn() }));
 
@@ -136,5 +136,109 @@ describe("proxy routing wire contract", () => {
     expect(runtimeRoutingInvalidationKey({ ...base, sidecarLifecycle: "stopped" })).not.toBe(runtimeRoutingInvalidationKey(base));
     expect(runtimeRoutingInvalidationKey({ ...base, appliedConfigurationGeneration: 4 })).not.toBe(runtimeRoutingInvalidationKey(base));
     expect(runtimeRoutingInvalidationKey({ ...base, subscriptionSwitch: { operationId: "op-a", status: "failed", errorCode: "startFailed" } })).not.toBe(runtimeRoutingInvalidationKey(base));
+  });
+});
+
+describe("proxy routing presentation adapter", () => {
+  it("routes each mutation error to exactly one local or global destination", () => {
+    const global = vi.fn();
+    const local = vi.fn();
+
+    presentMutationError("输入无效，请检查后重试", global, { onPresentationError: local });
+    expect(local).toHaveBeenCalledOnce();
+    expect(local).toHaveBeenCalledWith("输入无效，请检查后重试");
+    expect(global).not.toHaveBeenCalled();
+
+    presentMutationError("保存失败，原有配置未改变", global);
+    expect(global).toHaveBeenCalledOnce();
+    expect(global).toHaveBeenCalledWith({ kind: "error", message: "保存失败，原有配置未改变" });
+  });
+
+  async function providerHarness() {
+    type ProviderContext = { mutate: (...args: unknown[]) => Promise<unknown> };
+    vi.resetModules();
+    const global = vi.fn();
+    const stateSetters = Array.from({ length: 5 }, () => vi.fn());
+    const providerMarker = Symbol("ProxyRoutingContext.Provider");
+    let stateIndex = 0;
+    let contextValue: ProviderContext | null = null;
+
+    vi.doMock("react", async (importOriginal) => ({
+      ...await importOriginal<typeof import("react")>(),
+      createContext: () => ({ Provider: providerMarker }),
+      createElement: (type: unknown, props: { value?: typeof contextValue } | null) => {
+        if (type === providerMarker) contextValue = props?.value ?? null;
+        return null;
+      },
+      useCallback: <T,>(callback: T) => callback,
+      useContext: () => contextValue,
+      useEffect: () => undefined,
+      useMemo: <T,>(factory: () => T) => factory(),
+      useRef: <T,>(initial: T) => ({ current: initial }),
+      useState: () => {
+        const values = [snapshot, false, null, false, null] as const;
+        const index = stateIndex++;
+        return [values[index], stateSetters[index]];
+      },
+    }));
+    vi.doMock("../components/ToastHost", () => ({ useToastOwner: () => global }));
+
+    const module = await import("./proxy-routing");
+    const tauri = await import("@tauri-apps/api/core");
+    module.ProxyRoutingProvider({ children: null });
+    const captured = contextValue as unknown as ProviderContext | null;
+    if (captured === null) throw new Error("provider context was not captured");
+    return { context: captured, global, invoke: vi.mocked(tauri.invoke) };
+  }
+
+  it("keeps business and response failures invocation-local when a Dialog sink is supplied", async () => {
+    const business = await providerHarness();
+    const businessLocal = vi.fn();
+    business.invoke.mockResolvedValueOnce({ status: "error", error: "validationFailed", revision: 7 });
+    await business.context.mutate({ type: "deleteRoute", id: "route-a" }, { onPresentationError: businessLocal });
+    expect(businessLocal).toHaveBeenCalledExactlyOnceWith("更改未通过完整配置校验");
+    expect(business.global.mock.calls.filter(([notice]) => notice !== null)).toHaveLength(0);
+    expect(business.invoke).toHaveBeenCalledWith("mutate_proxy_routing", {
+      request: { expectedRevision: 7, mutation: { type: "deleteRoute", id: "route-a" } },
+    });
+
+    const invalid = await providerHarness();
+    const invalidLocal = vi.fn();
+    invalid.invoke.mockResolvedValueOnce({ status: "future" });
+    await invalid.context.mutate({ type: "deleteRoute", id: "route-a" }, { onPresentationError: invalidLocal });
+    expect(invalidLocal).toHaveBeenCalledExactlyOnceWith("响应格式不可用，请刷新后重试");
+    expect(invalid.global.mock.calls.filter(([notice]) => notice !== null)).toHaveLength(0);
+
+    const rejected = await providerHarness();
+    const rejectedLocal = vi.fn();
+    rejected.invoke.mockRejectedValue(new Error("invoke failed"));
+    await rejected.context.mutate({ type: "deleteRoute", id: "route-a" }, { onPresentationError: rejectedLocal });
+    expect(rejectedLocal).toHaveBeenCalledExactlyOnceWith("响应格式不可用，请刷新后重试");
+    expect(rejected.global.mock.calls.filter(([notice]) => notice !== null)).toHaveLength(0);
+  });
+
+  it("keeps non-Dialog errors and successful or warning outcomes global", async () => {
+    const failed = await providerHarness();
+    failed.invoke.mockResolvedValueOnce({ status: "error", error: "saveFailed", revision: 7 });
+    await failed.context.mutate({ type: "deleteRoute", id: "route-a" });
+    expect(failed.global.mock.calls.filter(([notice]) => notice !== null)).toEqual([
+      [{ kind: "error", message: "保存失败，原有配置未改变" }],
+    ]);
+
+    const succeeded = await providerHarness();
+    const successLocal = vi.fn();
+    succeeded.invoke.mockResolvedValueOnce({ status: "ok", outcome: { type: "saved" }, snapshot: { ...snapshot, revision: 8 } });
+    await succeeded.context.mutate({ type: "deleteRoute", id: "route-a" }, { onPresentationError: successLocal });
+    expect(successLocal).not.toHaveBeenCalled();
+    expect(succeeded.global.mock.calls.filter(([notice]) => notice !== null)).toEqual([
+      [{ kind: "success", message: "更改已保存，等待应用" }],
+    ]);
+
+    const warned = await providerHarness();
+    warned.invoke.mockResolvedValueOnce({ status: "ok", outcome: { type: "selectorNotApplied", poolId: "pool-a", nodeId: "node-a", runtimeNodeId: "node-b" }, snapshot: { ...snapshot, revision: 8 } });
+    await warned.context.mutate({ type: "setManualSelection", poolId: "pool-a", nodeId: "node-a" });
+    expect(warned.global.mock.calls.filter(([notice]) => notice !== null)).toEqual([
+      [{ kind: "warning", message: "选择已保存，运行时仍使用原节点" }],
+    ]);
   });
 });

@@ -49,6 +49,7 @@ anchor:
     - 只能清理由本应用拥有的 sing-box 进程，窗口恢复不得重新初始化应用。
     - V0.1 不引入 Windows Service、WFP 或全系统 TCP/UDP PID 扫描；用户手动改写的系统代理不得被无条件覆盖。
   acceptance_refs:
+    - docs/ui/veyra-ui-spec.md
     - docs/veyra.md sections 1.2 and 143.1（UI产品定位与应用/内核验证责任）
     - docs/decisions/DCR-017-ui-integration-boundary.md
     - docs/veyra.md sections 2.5-2.6（整体状态图与配置/运行态边界）
@@ -61,15 +62,44 @@ anchor:
 
 assumptions: []
 
-phase: PLAN
+phase: EXECUTING
 
 focus:
-  task: null
+  task: TASK-019
 
-gates: {}
-blocked: null
+gates:
+  technical_design:
+    status: PASSED
+    target_identity: sha256:2329d2fc14bbfb0b301da596f4d3f81c0b8e1e5aea7db7dd0fad5dacde202d74
+    evidence:
+      - .sdlc/evidence/TASK-019/policy-implementation-review-023.json
+      - .sdlc/evidence/TASK-019/post-publication-adoption-review-024.json
+      - .sdlc/evidence/TASK-019/post-publication-adoption-validation-024.json
+      - .sdlc/evidence/TASK-019/human-adoption-approval-025.json
+      - .sdlc/evidence/TASK-019/entry-gates-025.json
+      - .sdlc/evidence/TASK-019/canonical-lifecycle-reconciliation-026.json
+    reviewed_by: /root/task019_verification_review020
+    approved_by: USER:lifei
+    evaluated_at: 2026-09-09T03:49:45.796Z
+  planning:
+    status: PASSED
+    target_identity: sha256:1ce1e816bb425ad5cf947bd65b3761e13c6b230fd5cd319dcaa5bab831c38c0d
+    evidence:
+      - .sdlc/evidence/TASK-019/human-adoption-approval-025.json
+      - .sdlc/evidence/TASK-019/entry-gates-025.json
+      - .sdlc/evidence/TASK-019/canonical-lifecycle-reconciliation-026.json
+      - .sdlc/evidence/TASK-019/stage-s-verifying-transition-026.json
+    approved_by: USER:lifei
+    evaluated_at: 2026-09-09T03:49:45.796Z
+blocked:
+  origin_phase: EXECUTING
+  reason: Review036 reports P1 DocumentEditor keyboard navigation and context-menu return-focus contract gaps; repair exceeds the current frozen remediation scope.
+  owner: USER:lifei
+  scope: TASK-019 Stage S reference certification
+  unlock_condition: Authorized bounded Change Control for the focus finding, followed by applicable design/adoption gates, authorized implementation and fresh verification. No certification waiver.
+  next_check: .sdlc/evidence/TASK-019/stage-s-focus-diagnostic-review-036.json
 
 next:
-  skill: task-breakdown
-  target: TASK-013
-  reason: TASK-012 is DONE after independent Delivery Review and USER:lifei acceptance; stop at the TASK-013 materialization and planning entry without implementation.
+  skill: sdlc-orchestrator
+  target: TASK-019
+  reason: Stop certification advancement at Review036 P1 scope boundary. Report bounded focus Change Control; do not modify DocumentEditor or SubscriptionPage without adoption/implementation authority. Current target027 and historical evidence remain unchanged; Native incomplete and Stage A/B/TASK020 locked.

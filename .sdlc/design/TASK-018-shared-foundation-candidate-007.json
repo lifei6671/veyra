@@ -1,0 +1,294 @@
+{
+  "status": "CANDIDATE",
+  "task": "TASK-018",
+  "task_id": "TASK-018",
+  "title": "TASK-018 pending activation observation-confirmed completion",
+  "authority": "USER design authorization including local completion sequencing; exact Candidate007 approval pending",
+  "requirement_ref": "docs/ui/veyra-ui-spec.md",
+  "requirement_identity": "sha256:bd598a07008e6fc4bf210a412289d6c60d9e5f5f5dd372e4cd47090b301c86c0",
+  "ui_impact": {
+    "required": true,
+    "reason": "Subscriptions shared visual foundation tokens/geometry and direct presentation consumers"
+  },
+  "ui_contract": {
+    "document": "docs/ui/veyra-ui-spec.md",
+    "version": "0.3",
+    "required": true
+  },
+  "ui_scope": {
+    "pages": [
+      "Subscriptions"
+    ],
+    "components": [
+      "AppShell",
+      "Sidebar",
+      "NavigationIcon",
+      "SidebarTraffic",
+      "Page",
+      "PageHeader",
+      "Toolbar",
+      "Surface",
+      "Button",
+      "IconButton",
+      "Input",
+      "Select",
+      "Dialog",
+      "Menu",
+      "Notice",
+      "Toast",
+      "SubscriptionCard",
+      "DocumentEditor controls"
+    ],
+    "states": [
+      "normal",
+      "hover",
+      "pressed",
+      "selected",
+      "disabled",
+      "loading",
+      "empty",
+      "error",
+      "busy",
+      "focus",
+      "success",
+      "dialog",
+      "menu",
+      "pending activation"
+    ],
+    "rules": [
+      "§4.1 Layout Geometry",
+      "§4.2 Background Hierarchy and Color",
+      "§4.3 Border, Radius and Shadow",
+      "§4.4 Typography",
+      "§4.5 Controls and Icons",
+      "§5 Interaction State Spec",
+      "§6 Component Composition Spec",
+      "§7.1 Golden Page A — Subscriptions",
+      "§9 Visual Density Guardrails",
+      "§10 Windows DPI / Window Size Verification",
+      "§11 UI Delivery Gate",
+      "§12 Implementation Boundary",
+      "§13 Migration / Rollout Plan",
+      "§8.2 Subscriptions active state"
+    ],
+    "source_paths": [
+      "src/styles.css",
+      "src/App.tsx",
+      "src/main.tsx",
+      "src/components/layout/SidebarTraffic.tsx",
+      "src/components/layout/SidebarTraffic.css",
+      "src/components/subscriptions/SubscriptionPage.tsx",
+      "src/components/subscriptions/DocumentEditor.tsx",
+      "src/components/subscriptions/DocumentEditor.css",
+      "src/assets/fonts/Twemoji.Mozilla.ttf",
+      "src-tauri/icons/128x128.png",
+      "src/lib/bootstrap.ts",
+      "src/lib/observability.ts",
+      "src/lib/traffic-trend.ts",
+      "src/lib/subscriptions.ts"
+    ]
+  },
+  "visual_gate": {
+    "required": true,
+    "human_approval": true
+  },
+  "scope": {
+    "allow": [
+      "src/components/subscriptions/SubscriptionPage.tsx: Card runtime visualActive/pending presentation and existing pendingActivation local success completion sequencing/metadata per design007",
+      "src/styles.css: SubscriptionCard local pending/active/hover/focus precedence and existing geometry compensation only",
+      "src/components/subscriptions/SubscriptionPage.test.ts: USER-authorized verification-only file, existing Vitest, real production completion predicate/Card presentation, no new framework/dependency"
+    ],
+    "deny": [
+      "No other source writes; historical broad scope is provenance only",
+      "No persisted subscription.active ownership or generation comparison; no global replacement of business consumers",
+      "No business transaction/ownership/DTO/IPC/backend/persistence/Runtime/Domain/Compiler/Router/StateStore changes; only local presentation completion sequence expressly allowed",
+      "No App.tsx, observationError or observation transport failure handling",
+      "No Contract0.3 change, active2px/focus separation change, new token/dependency/framework, other38 finding cleanup",
+      "No TASK011/TASK012 or historical Candidate/Evidence changes; no Notice6000ms or C/N items",
+      "No Task materialization, implementation, screenshots, new implementation target or Human approval in design-only turn"
+    ]
+  },
+  "manifest": [
+    {
+      "path": ".sdlc/design/TASK-018-shared-foundation-audit-001.json",
+      "sha256": "63841168912ae543e502f3f2d4141f634969a01bfe233905ed95a2369a591020"
+    },
+    {
+      "path": ".sdlc/design/TASK-018-shared-foundation-audit-001.md",
+      "sha256": "6e2e10f96fc379455c9fbc6944306e85c6064b3958879747eed897c3f03f751f"
+    },
+    {
+      "path": ".sdlc/design/TASK-018-shared-foundation-alignment-001.md",
+      "sha256": "584b0d68db646ae45744804123fda2fe953350d5b804f4e7bcfcebb6284c8fa3"
+    },
+    {
+      "path": "docs/decisions/DCR-020-task018-sf036-scope-correction.md",
+      "sha256": "5eeb7136f4511397ad09f35ee2cf0932774f2a9222cff8c8ad4c1fb563019d65"
+    },
+    {
+      "path": ".sdlc/design/veyra-ui-spec-0.3-proposal-001.md",
+      "sha256": "2ed79ce3423ae7eb657f456dfe3f10f1c2772421eeadd3f6d752a8e2a1aba6a1"
+    },
+    {
+      "path": "docs/decisions/DCR-021-subscription-card-active-language.md",
+      "sha256": "a84245c556a1cc1ac549d5699bbc5c6a7c4b950fc1060de974eb8c5d79b64781"
+    },
+    {
+      "path": ".sdlc/design/TASK-018-active-card-design-003.md",
+      "sha256": "312e963c54e2debfabc0a906ddb6e24320986654ecf721f4b19a24bf0362cd2a"
+    },
+    {
+      "path": ".sdlc/evidence/TASK-018/human-visual-finding-001.json",
+      "sha256": "d1e12cf78f4c85d7209177d4ce191c49c9312b33f4370ba0434876cadea5a127"
+    },
+    {
+      "path": "docs/ui/veyra-ui-spec.md",
+      "sha256": "bd598a07008e6fc4bf210a412289d6c60d9e5f5f5dd372e4cd47090b301c86c0"
+    },
+    {
+      "path": ".sdlc/design/TASK-018-active-card-execution-004.md",
+      "sha256": "a99770ebcba9cb457ecb8615471bc049b61ea5da01964b92aa8fe855a3583ec1"
+    },
+    {
+      "path": ".sdlc/evidence/TASK-018/proposal-approval-003.json",
+      "sha256": "b08656d6f990d37fd3ad08a746c61efe3e0e3943402e9caa76309da14d6c1192"
+    },
+    {
+      "path": ".sdlc/evidence/TASK-018/contract-publication-0.3-001.json",
+      "sha256": "650b5b9091f1fdc5fb4ef8f67c2919f7876ce68d414a1a74d131fe64979e391f"
+    },
+    {
+      "path": "docs/decisions/DCR-022-task018-focus-visual-separation.md",
+      "sha256": "8501f7d27647f8a5ee0c9013145907c686b29fd32e3c76b3bca5b68563800ac1"
+    },
+    {
+      "path": ".sdlc/design/TASK-018-focus-separation-amendment-005.md",
+      "sha256": "1fe375f1a8fffdbaaa18405041d753cf5c0bc23fdb1673653392b76c8c6db15d"
+    },
+    {
+      "path": ".sdlc/evidence/TASK-018/native-preview-review-007.json",
+      "sha256": "18545c4e13a4ea7444b7faa63aa2826a864bab071213cec3958f6e4ed922b55e"
+    },
+    {
+      "path": ".sdlc/evidence/TASK-018/implementation-target-007.json",
+      "sha256": "05f5bea97b904e0d4737499541f30029e43b70757a9ed9b5215c2f55c0389f99"
+    },
+    {
+      "path": ".sdlc/evidence/TASK-018/pending-design-scope-authorization-006.json",
+      "sha256": "b0b21c628be67089d688782161a22cae42b601a51ad244b905c9411f43a02baf"
+    },
+    {
+      "path": "docs/decisions/DCR-023-task018-activation-pending-presentation.md",
+      "sha256": "217d7e3a14a42536fb050e81343360d198fa54ecb6596a0844d8c020c7294fc1"
+    },
+    {
+      "path": ".sdlc/design/TASK-018-activation-pending-design-006.md",
+      "sha256": "90eff8449be6cc25bbc735cc3af523a2c8203e80ddbb1ae6de38a3d8610a6cfb"
+    },
+    {
+      "path": ".sdlc/evidence/TASK-018/human-interaction-finding-002.json",
+      "sha256": "afd81fc497aa86fc637bf6f7572880fcce05661ab5f7f9324b89d9b2011fda03"
+    },
+    {
+      "path": ".sdlc/design/TASK-018-activation-pending-impact-006.md",
+      "sha256": "6be63a80e251d31cdedc1093f17e842b7ecde6fcaee7e8eb1f16d4f5b9cbd827"
+    },
+    {
+      "path": ".sdlc/evidence/TASK-018/pending-impact-review-006.json",
+      "sha256": "5364302af2f70ea8c262e5325f57f87913d82e12371fdc5714fa3e7e2acc48b6"
+    },
+    {
+      "path": ".sdlc/evidence/TASK-018/implementation-target-008.json",
+      "sha256": "6495924172599e2d1f2493c4fa3dfc558cefa6007a60156a7a304f07cc0329c1"
+    },
+    {
+      "path": ".sdlc/evidence/TASK-018/native-preview-review-008.json",
+      "sha256": "9c529fbaff765ab6d47aa814ce36c87bcaac839e4c30d3e12a55fce99ed84797"
+    },
+    {
+      "path": ".sdlc/evidence/TASK-018/pending-completion-scope-authorization-007.json",
+      "sha256": "e50c56dbd2fdce7181ed54cb8b209a88514ece8f948d0ac85b7026ed8d53e1a5"
+    },
+    {
+      "path": "docs/decisions/DCR-023-task018-activation-pending-presentation-revision-002.md",
+      "sha256": "26e35a49092bfa3a3b8c5b010646e51c0c3a0e76de0d031443a00bf87a3f4d77"
+    },
+    {
+      "path": ".sdlc/design/TASK-018-activation-pending-design-007.md",
+      "sha256": "a13fb5b4cb1294159fa84a144a14f81a991a3b758660dab797d25c110513698c"
+    },
+    {
+      "path": ".sdlc/evidence/TASK-018/design-review-006.json",
+      "sha256": "6447bf85ef607b8da69b1e019ae0c8e4c0dc3859f7ecfb5335ae794fb66969d4"
+    },
+    {
+      "path": ".sdlc/evidence/TASK-018/pending-test-scope-authorization-007.json",
+      "sha256": "c3265195102d5042b1be2050155f2ec33b79a092233be0cffbfb837e723854ed"
+    }
+  ],
+  "source_manifest": [
+    {
+      "path": "src/styles.css",
+      "sha256": "d4f55a54e24b57eea8c58ed51c42ee1c0c6f4da70b789c8214b2a85ea5bbd04a"
+    },
+    {
+      "path": "src/App.tsx",
+      "sha256": "63c914df4d63de2ded54150ae5b8935cf34ce5c117481d09194e9b513bd865ea"
+    },
+    {
+      "path": "src/main.tsx",
+      "sha256": "8a3b40772c63a42e660f42221c14c10bbdd228c7456b2c90f84eebced3f16c00"
+    },
+    {
+      "path": "src/components/layout/SidebarTraffic.tsx",
+      "sha256": "7aa16cbd1b25f9497ea82e1b52ce14d9fe538ffd514f8e14ab14764269ff5409"
+    },
+    {
+      "path": "src/components/layout/SidebarTraffic.css",
+      "sha256": "08d96cd1289f3981b14c0da1e39fbfbed922e813174345c395e4261d86ce2c6e"
+    },
+    {
+      "path": "src/components/subscriptions/SubscriptionPage.tsx",
+      "sha256": "35306360453c902641683d623d4a204260854cd5807788f9a831e339d0dce098"
+    },
+    {
+      "path": "src/components/subscriptions/DocumentEditor.tsx",
+      "sha256": "404b5dea5b233c2c7152b747519c1296fd303628703e348aab736f265e9a16f9"
+    },
+    {
+      "path": "src/components/subscriptions/DocumentEditor.css",
+      "sha256": "4cb304f715b20825d38413023d9572708cfbb79740bd4d1e79cf031d5bf00ef2"
+    },
+    {
+      "path": "src/assets/fonts/Twemoji.Mozilla.ttf",
+      "sha256": "61db6397b8b32b72c585d538ef698a84cf78cf2558a14046b3fa0ec4cc362540"
+    },
+    {
+      "path": "src-tauri/icons/128x128.png",
+      "sha256": "c1412dded899436049f6ee368addffc9d0ecdb9a0cbcbb4be7722ee0a6314f07"
+    },
+    {
+      "path": "src/lib/bootstrap.ts",
+      "sha256": "ef5021d406701b01547fbcef1a9084de2d44e019d2ec2e78967a4bbe0fb23709"
+    },
+    {
+      "path": "src/lib/observability.ts",
+      "sha256": "abd163a06bdd52e061c042f29af6ffab2c3878fbdd6eb2c0dc98f66195d6bcee"
+    },
+    {
+      "path": "src/lib/traffic-trend.ts",
+      "sha256": "038390b23864ce0beee7a3c0dc154b2f0ab151f0440d4d56f07eadb21ca73e1d"
+    },
+    {
+      "path": "src/lib/subscriptions.ts",
+      "sha256": "cf0be4a180cfdb38bf6f1cfbffc1d4cef51c7b0babd58253cb29aa9ff4b0e225"
+    }
+  ],
+  "material_change": true,
+  "dcr_required": true,
+  "supplements": {
+    "artifact": ".sdlc/design/TASK-018-shared-foundation-candidate-006.json",
+    "identity": "sha256:a93cd7411da6c2e3f696c29858d1de1521b40d8b0f0736cb85c3f77bb639cb02",
+    "relationship": "Revises TASK018-HV002-DESIGN-002 via DCR023 revision002; Candidate006 and review006 remain REWORK history; pending completion local metadata only"
+  }
+}

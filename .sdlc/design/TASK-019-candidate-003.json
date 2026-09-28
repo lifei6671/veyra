@@ -1,0 +1,527 @@
+{
+  "status": "CANDIDATE",
+  "task_id": "TASK-019",
+  "title": "Proxies / Routing Desktop UX Redesign — Requirement and Material Design",
+  "produced_by": [
+    "Codex /root",
+    "Codex /root/task019_apply_design"
+  ],
+  "authority": "USER accepted R01-R10 and explicitly authorized Stage S design revision; exact composite Human Design Approval pending; no implementation",
+  "manifest": [
+    {
+      "path": ".sdlc/design/TASK-019-requirements-002.md",
+      "sha256": "sha256:9ce12c45d9f3b13226bdd62161c2263d6230db196e0325c21547cb088cb25e84"
+    },
+    {
+      "path": ".sdlc/design/TASK-019-desktop-ui-design-003.md",
+      "sha256": "sha256:04b15574cae452cefb0f6dfe386f56498aa1b6432e0d788c1dc7846fdd4d6276"
+    },
+    {
+      "path": ".sdlc/design/TASK-019-auto-apply-design-002.md",
+      "sha256": "sha256:11a8ed4bbc2de420b1748d2e2b8151f0628b5774f5ef6389dfc17e253aea245d"
+    },
+    {
+      "path": ".sdlc/design/TASK-019-technical-design-003.md",
+      "sha256": "sha256:2ffd9b3d66c94cc03a1ed02d5a63fc5f69065e49bb71bcc4c942906f1fd502d9"
+    },
+    {
+      "path": ".sdlc/design/TASK-019-stage-plan-003.md",
+      "sha256": "sha256:cbcd8e83c89ae7e2c824a5f4a7683602cd75017fc2e1c26c26894ec066e7f828"
+    },
+    {
+      "path": ".sdlc/design/TASK-019-ui-contract-0.4-candidate-002.md",
+      "sha256": "sha256:aba77902825e1c231b73113d462a0b0d6bb6f0203b5b320be3894f749780e1f9"
+    },
+    {
+      "path": ".sdlc/design/TASK-019-ui-contract-delta-002.diff",
+      "sha256": "sha256:c696a7fb2933a6063664e80e64ba5abb56f90e393e2d279c8fd9c52a39c97fcb"
+    },
+    {
+      "path": "docs/decisions/DCR-026-proxy-routing-ux-and-rule-set-revision-005.md",
+      "sha256": "sha256:cb9d895df893b78d5010624a5cba6661392e3016580d01c9829e9bdf4e8379a0"
+    },
+    {
+      "path": ".sdlc/evidence/TASK-019/subscriptions-prerequisite-check-001.json",
+      "sha256": "sha256:3b0a2a5654cee93812f8ed0105383d453ba6af36c3861a94b6bfc1aabb97f634"
+    },
+    {
+      "path": ".sdlc/evidence/TASK-019/source-context-003.json",
+      "sha256": "sha256:ccd6b3ed95372a32830ead7c03780dc55001f429b9bddfa1f5fa69557fdde6f0"
+    },
+    {
+      "path": ".sdlc/evidence/TASK-019/stage-s-design-authorization-003.json",
+      "sha256": "sha256:7f6be2c765554bc20bf93d8a789246f0f268defd5c6441dd6c4c339c158f5a9f"
+    }
+  ],
+  "identity_method": "sha256(JSON.stringify(candidate_without_target_identity), UTF-8 compact JSON in stored key order)",
+  "ui_impact": {
+    "required": true,
+    "reason": "Shared ordinary success Toast affects Subscriptions full Golden; Proxies and Routing page composition, drag, structural apply and recovery"
+  },
+  "ui_contract": {
+    "document": "docs/ui/veyra-ui-spec.md",
+    "version": "0.3",
+    "required": true
+  },
+  "ui_scope": {
+    "pages": [
+      "Subscriptions",
+      "Proxies",
+      "Routing"
+    ],
+    "components": [
+      "AppShell",
+      "Sidebar",
+      "NavigationIcon",
+      "SidebarTraffic",
+      "Page",
+      "PageHeader",
+      "Toolbar",
+      "Surface",
+      "SubscriptionPage",
+      "Button",
+      "IconButton",
+      "Input",
+      "Select",
+      "Checkbox",
+      "Dialog",
+      "ContextMenu",
+      "Notice",
+      "Toast",
+      "DocumentEditor",
+      "SubscriptionCard",
+      "RecoveryAction",
+      "ProxyRoutingProvider",
+      "ProxiesPage",
+      "PoolSection",
+      "NodeGrid",
+      "NodeCard",
+      "AllNodes",
+      "RoutingPage",
+      "RouteList",
+      "RouteRow",
+      "DragHandle",
+      "InsertionIndicator"
+    ],
+    "states": [
+      "normal",
+      "hover",
+      "pressed",
+      "selected",
+      "disabled",
+      "loading",
+      "empty",
+      "error",
+      "busy",
+      "focus",
+      "success",
+      "dialog",
+      "context-menu",
+      "warning",
+      "activation-pending",
+      "activation-active",
+      "single-emphasis",
+      "preload-error",
+      "toast-expired",
+      "toast-persistent",
+      "toast-stacking",
+      "queue-promotion",
+      "dirty",
+      "applied",
+      "apply-failed",
+      "apply-unknown",
+      "drift",
+      "expanded",
+      "collapsed",
+      "all-nodes",
+      "recovery",
+      "drag-idle",
+      "drag-lifted",
+      "drag-insertion",
+      "drag-cancelled",
+      "route-create",
+      "route-edit",
+      "route-delete",
+      "route-reorder"
+    ],
+    "rules": [
+      "§3 核心视觉原则",
+      "§4.1 Layout Geometry",
+      "§4.2 Background Hierarchy and Color",
+      "§4.3 Border, Radius and Shadow",
+      "§4.4 Typography",
+      "§4.5 Controls and Icons",
+      "§5 Interaction State Spec",
+      "§6 Component Composition Spec",
+      "§6.7 Feedback",
+      "§7.1 Golden Page A — Subscriptions",
+      "§8.2 Subscriptions",
+      "§10 Windows DPI / Window Size Verification",
+      "§11 UI Delivery Gate",
+      "§12 Implementation Boundary",
+      "§13 Migration / Rollout Plan",
+      "§7.2 Golden Page B — Proxies",
+      "§8.3 Proxies",
+      "§9 Visual Density Guardrails",
+      "§14 TASK-012 Visual Remediation Acceptance",
+      "§8.4 Routing"
+    ],
+    "source_paths": [
+      "src/App.tsx",
+      "src/styles.css",
+      "src/main.tsx",
+      "src/components/layout/SidebarTraffic.tsx",
+      "src/components/layout/SidebarTraffic.css",
+      "src/lib/proxy-routing.ts",
+      "src/lib/bootstrap.ts",
+      "src/lib/observability.ts",
+      "src/lib/traffic-trend.ts",
+      "src/lib/subscriptions.ts",
+      "src/assets/fonts/Twemoji.Mozilla.ttf",
+      "src-tauri/icons/128x128.png",
+      "src/components/subscriptions/SubscriptionPage.tsx",
+      "src/components/subscriptions/DocumentEditor.tsx",
+      "src/components/subscriptions/DocumentEditor.css",
+      "src/components/ToastHost.tsx",
+      "src/components/proxies/ProxiesPage.tsx",
+      "src/components/routing/RoutingPage.tsx"
+    ]
+  },
+  "ui_stages": [
+    {
+      "id": "S",
+      "ui_scope": {
+        "pages": [
+          "Subscriptions"
+        ],
+        "components": [
+          "AppShell",
+          "Sidebar",
+          "NavigationIcon",
+          "SidebarTraffic",
+          "Page",
+          "PageHeader",
+          "Toolbar",
+          "Surface",
+          "SubscriptionPage",
+          "Button",
+          "IconButton",
+          "Input",
+          "Select",
+          "Checkbox",
+          "Dialog",
+          "ContextMenu",
+          "Notice",
+          "Toast",
+          "DocumentEditor",
+          "SubscriptionCard",
+          "RecoveryAction"
+        ],
+        "states": [
+          "normal",
+          "hover",
+          "pressed",
+          "selected",
+          "disabled",
+          "loading",
+          "empty",
+          "error",
+          "busy",
+          "focus",
+          "success",
+          "dialog",
+          "context-menu",
+          "warning",
+          "activation-pending",
+          "activation-active",
+          "single-emphasis",
+          "preload-error",
+          "toast-expired",
+          "toast-persistent",
+          "toast-stacking",
+          "queue-promotion"
+        ],
+        "rules": [
+          "§3 核心视觉原则",
+          "§4.1 Layout Geometry",
+          "§4.2 Background Hierarchy and Color",
+          "§4.3 Border, Radius and Shadow",
+          "§4.4 Typography",
+          "§4.5 Controls and Icons",
+          "§5 Interaction State Spec",
+          "§6 Component Composition Spec",
+          "§6.7 Feedback",
+          "§7.1 Golden Page A — Subscriptions",
+          "§8.2 Subscriptions",
+          "§10 Windows DPI / Window Size Verification",
+          "§11 UI Delivery Gate",
+          "§12 Implementation Boundary",
+          "§13 Migration / Rollout Plan"
+        ],
+        "source_paths": [
+          "src/App.tsx",
+          "src/styles.css",
+          "src/main.tsx",
+          "src/components/layout/SidebarTraffic.tsx",
+          "src/components/layout/SidebarTraffic.css",
+          "src/lib/proxy-routing.ts",
+          "src/lib/bootstrap.ts",
+          "src/lib/observability.ts",
+          "src/lib/traffic-trend.ts",
+          "src/lib/subscriptions.ts",
+          "src/assets/fonts/Twemoji.Mozilla.ttf",
+          "src-tauri/icons/128x128.png",
+          "src/components/subscriptions/SubscriptionPage.tsx",
+          "src/components/subscriptions/DocumentEditor.tsx",
+          "src/components/subscriptions/DocumentEditor.css",
+          "src/components/ToastHost.tsx"
+        ]
+      },
+      "requires_golden_pages": [],
+      "produces_golden_page": "Subscriptions",
+      "evidence_ref": ".sdlc/evidence/TASK-019/ui-stages/S/certification-001.json"
+    },
+    {
+      "id": "A",
+      "ui_scope": {
+        "pages": [
+          "Proxies"
+        ],
+        "components": [
+          "Page",
+          "PageHeader",
+          "Toolbar",
+          "Surface",
+          "Button",
+          "IconButton",
+          "Dialog",
+          "Toast",
+          "ProxyRoutingProvider",
+          "ProxiesPage",
+          "PoolSection",
+          "NodeGrid",
+          "NodeCard",
+          "AllNodes",
+          "RecoveryAction"
+        ],
+        "states": [
+          "normal",
+          "hover",
+          "pressed",
+          "selected",
+          "disabled",
+          "loading",
+          "empty",
+          "error",
+          "warning",
+          "busy",
+          "focus",
+          "success",
+          "dirty",
+          "applied",
+          "apply-failed",
+          "apply-unknown",
+          "drift",
+          "expanded",
+          "collapsed",
+          "all-nodes",
+          "toast-expired",
+          "toast-persistent",
+          "recovery"
+        ],
+        "rules": [
+          "§3 核心视觉原则",
+          "§4.1 Layout Geometry",
+          "§4.2 Background Hierarchy and Color",
+          "§4.3 Border, Radius and Shadow",
+          "§4.4 Typography",
+          "§4.5 Controls and Icons",
+          "§5 Interaction State Spec",
+          "§6.7 Feedback",
+          "§7.2 Golden Page B — Proxies",
+          "§8.3 Proxies",
+          "§9 Visual Density Guardrails",
+          "§10 Windows DPI / Window Size Verification",
+          "§11 UI Delivery Gate",
+          "§12 Implementation Boundary",
+          "§13 Migration / Rollout Plan",
+          "§14 TASK-012 Visual Remediation Acceptance"
+        ],
+        "source_paths": [
+          "src/styles.css",
+          "src/lib/proxy-routing.ts",
+          "src/components/ToastHost.tsx",
+          "src/components/proxies/ProxiesPage.tsx",
+          "src/App.tsx",
+          "src/components/subscriptions/SubscriptionPage.tsx",
+          "src/lib/subscriptions.ts"
+        ]
+      },
+      "requires_golden_pages": [
+        "Subscriptions"
+      ],
+      "produces_golden_page": "Proxies",
+      "evidence_ref": ".sdlc/evidence/TASK-019/ui-stages/A/certification-001.json"
+    },
+    {
+      "id": "B",
+      "ui_scope": {
+        "pages": [
+          "Routing"
+        ],
+        "components": [
+          "Page",
+          "PageHeader",
+          "Toolbar",
+          "Surface",
+          "Button",
+          "IconButton",
+          "Dialog",
+          "Toast",
+          "ProxyRoutingProvider",
+          "RoutingPage",
+          "RouteList",
+          "RouteRow",
+          "DragHandle",
+          "InsertionIndicator",
+          "RecoveryAction"
+        ],
+        "states": [
+          "normal",
+          "hover",
+          "pressed",
+          "selected",
+          "disabled",
+          "loading",
+          "empty",
+          "error",
+          "warning",
+          "busy",
+          "focus",
+          "success",
+          "dirty",
+          "applied",
+          "apply-failed",
+          "apply-unknown",
+          "drift",
+          "drag-idle",
+          "drag-lifted",
+          "drag-insertion",
+          "drag-cancelled",
+          "route-create",
+          "route-edit",
+          "route-delete",
+          "route-reorder",
+          "toast-expired",
+          "toast-persistent",
+          "recovery"
+        ],
+        "rules": [
+          "§3 核心视觉原则",
+          "§4.1 Layout Geometry",
+          "§4.2 Background Hierarchy and Color",
+          "§4.3 Border, Radius and Shadow",
+          "§4.4 Typography",
+          "§4.5 Controls and Icons",
+          "§5 Interaction State Spec",
+          "§6.7 Feedback",
+          "§7.2 Golden Page B — Proxies",
+          "§8.4 Routing",
+          "§9 Visual Density Guardrails",
+          "§10 Windows DPI / Window Size Verification",
+          "§11 UI Delivery Gate",
+          "§12 Implementation Boundary",
+          "§13 Migration / Rollout Plan",
+          "§14 TASK-012 Visual Remediation Acceptance"
+        ],
+        "source_paths": [
+          "src/styles.css",
+          "src/lib/proxy-routing.ts",
+          "src/components/ToastHost.tsx",
+          "src/components/routing/RoutingPage.tsx",
+          "src/App.tsx",
+          "src/components/subscriptions/SubscriptionPage.tsx",
+          "src/lib/subscriptions.ts"
+        ],
+        "state_exclusions": {
+          "expanded": "Routing does not own Pool expansion; this state is verified in Stage A.",
+          "collapsed": "Routing does not own Pool collapse; this state is verified in Stage A.",
+          "all-nodes": "Routing does not render the All Nodes view; this state is verified in Stage A."
+        }
+      },
+      "requires_golden_pages": [
+        "Proxies"
+      ],
+      "evidence_ref": ".sdlc/evidence/TASK-019/ui-stages/B/acceptance-001.json"
+    }
+  ],
+  "visual_gate": {
+    "required": true,
+    "human_approval": true
+  },
+  "scope": {
+    "allow": [
+      "src/components/proxies/ProxiesPage.tsx: compact sections/tabs/node grid only",
+      "src/components/routing/RoutingPage.tsx: compact rows/drag and recovery only",
+      "src/styles.css: Proxies/Routing/Toast scoped styles only",
+      "src/lib/proxy-routing.ts: structural receipt/autoApply feedback/strict parsing/retryCurrentDesired",
+      "src/components/ToastHost.tsx: success3000/noClose, typed actions, owner-scoped replace-clear",
+      "src/App.tsx: recovery navigation callback to existing setActivePage only",
+      "src-tauri/src/application/proxy_routing.rs: post-save disposition/retry union/attempt snapshot projection and inline tests",
+      "src-tauri/src/application/managed_observation_runtime.rs: Ready-only guard/volatile latest slot/coalesced marker/attempt identity and inline tests",
+      "src/lib/proxy-routing.test.ts",
+      "src/components/proxy-routing-pages.test.ts",
+      "src/components/ToastHost.test.ts",
+      "Stage S: global ordinarysuccess3000/noClose via ToastHost and Toast-scoped CSS; full Subscriptions Golden evidence and existing read-only consumer regressions. Subscription business/page/editor source remains read-only."
+    ],
+    "deny": [
+      "No implementation during this turn",
+      "No Domain/AppState/schema/migration/Compiler/RuleSet/reorder backend semantic change",
+      "No new dependency/worker/durable queue/background retry",
+      "No changes to historical TASK018 Evidence/findings or TASK020 materialization",
+      "No fabricated Golden, mutable certification alias or protocol change; old0.2 FAIL preserved as provenance; valid internal S must gate A"
+    ]
+  },
+  "requirement_source": {
+    "path": "docs/veyra.md",
+    "sha256": "sha256:93b60509f5ff04b07dcab093aa82f26ff17cf6feb446b82c82dd6615fc2dbad4"
+  },
+  "binding_contract": {
+    "path": "docs/ui/veyra-ui-spec.md",
+    "sha256": "sha256:bd598a07008e6fc4bf210a412289d6c60d9e5f5f5dd372e4cd47090b301c86c0"
+  },
+  "proposed_contract": {
+    "path": ".sdlc/design/TASK-019-ui-contract-0.4-candidate-002.md",
+    "sha256": "sha256:aba77902825e1c231b73113d462a0b0d6bb6f0203b5b320be3894f749780e1f9",
+    "version": "0.4",
+    "status": "NOT_BINDING"
+  },
+  "prerequisite_check": {
+    "path": ".sdlc/evidence/TASK-019/subscriptions-prerequisite-check-001.json",
+    "sha256": "sha256:3b0a2a5654cee93812f8ed0105383d453ba6af36c3861a94b6bfc1aabb97f634"
+  },
+  "readiness": "NOT_RUN / NOT_READY for implementation: exact Human Design and Contract adoption missing. S certification NOT_RUN; A blocked until genuine current S, B until genuine current A. Old0.2 FAIL remains history.",
+  "implementation_authorized": false,
+  "human_design_approval": "PENDING",
+  "supersedes": {
+    "path": ".sdlc/design/TASK-019-candidate-002.json",
+    "sha256": "sha256:2788105605b7b0b7f39cb09be34046bb3d4d815d3ccc3e951a6a73d87bb05c92"
+  },
+  "revision_reason": "USER-authorized S→A→B actual page/stage scope, full Subscriptions Golden, immutable historical0.2 FAIL. Shared writes explicitly require stopping old target and new versioned certification+Candidate/Task adoption/Review/Human approval; no frozen-ref mutation.",
+  "previous_review": {
+    "path": ".sdlc/evidence/TASK-019/design-review-002.json",
+    "sha256": "sha256:9c6194310adb05543a7189698ad8f57400c90917f9d60c42f03a298bdb5e2dc2"
+  },
+  "historical_prerequisite_provenance": {
+    "path": ".sdlc/evidence/golden-pages/Subscriptions/certification-0.2-001.json",
+    "sha256": "sha256:7929047960bb6d056eb23e1ed373f4bb7948813a52e0ae311cef22a4627774e6",
+    "result": "FAIL / never certified / stale",
+    "active_prerequisite": false,
+    "reason": "Explicit USER Stage S design authorization; no PASS promotion"
+  },
+  "stage_scope_authorization": {
+    "path": ".sdlc/evidence/TASK-019/stage-s-design-authorization-003.json",
+    "sha256": "sha256:7f6be2c765554bc20bf93d8a789246f0f268defd5c6441dd6c4c339c158f5a9f"
+  },
+  "target_identity": "sha256:ff3df5f42aa22a49a0e35cb7b372bcdca7c85734de6b0db429d08f8ff043a74d"
+}

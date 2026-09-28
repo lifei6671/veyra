@@ -1,0 +1,261 @@
+{
+  "status": "CANDIDATE",
+  "task": "TASK-018",
+  "task_id": "TASK-018",
+  "title": "TASK-018 cross-cutting shared Toast delivery and dialog-local mutation errors",
+  "authority": "USER authorized revision002 design scope; Candidate010 exact Human Change/Design Approval pending",
+  "requirement_ref": "docs/ui/veyra-ui-spec.md",
+  "requirement_identity": "sha256:bd598a07008e6fc4bf210a412289d6c60d9e5f5f5dd372e4cd47090b301c86c0",
+  "ui_impact": {
+    "required": true,
+    "reason": "Global Toast placement, bounded presentation queue and existing owner integration only"
+  },
+  "ui_contract": {
+    "document": "docs/ui/veyra-ui-spec.md",
+    "version": "0.3",
+    "required": true
+  },
+  "ui_scope": {
+    "pages": [
+      "Overview",
+      "Subscriptions",
+      "Proxies",
+      "Routing",
+      "Settings",
+      "Connections",
+      "Logs"
+    ],
+    "components": [
+      "ToastHost",
+      "GlobalToast",
+      "Dialog-local Notice"
+    ],
+    "states": [
+      "normal",
+      "hover",
+      "focus",
+      "success",
+      "error",
+      "warning",
+      "info",
+      "stacked",
+      "queued",
+      "dismissed",
+      "expired",
+      "modal-local-error"
+    ],
+    "rules": [
+      "§4.1 Layout Geometry — existing notice edge/gap",
+      "§4.2 Background Hierarchy and Color — existing Toast semantic colors",
+      "§5 Interaction State Spec — Toast and modal context",
+      "§6 Component Composition Spec — Toast",
+      "§10 Windows DPI / Window Size Verification — shared component contexts",
+      "§11 UI Delivery Gate",
+      "§12 Implementation Boundary"
+    ],
+    "source_paths": [
+      "src/styles.css",
+      "src/App.tsx",
+      "src/main.tsx",
+      "src/components/layout/SidebarTraffic.tsx",
+      "src/components/layout/SidebarTraffic.css",
+      "src/components/subscriptions/SubscriptionPage.tsx",
+      "src/components/subscriptions/DocumentEditor.tsx",
+      "src/components/subscriptions/DocumentEditor.css",
+      "src/assets/fonts/Twemoji.Mozilla.ttf",
+      "src-tauri/icons/128x128.png",
+      "src/lib/bootstrap.ts",
+      "src/lib/observability.ts",
+      "src/lib/traffic-trend.ts",
+      "src/lib/subscriptions.ts",
+      "src/components/ToastHost.tsx",
+      "src/lib/proxy-routing.ts",
+      "src/components/proxies/ProxiesPage.tsx",
+      "src/components/routing/RoutingPage.tsx"
+    ],
+    "delivery_mode": "cross_cutting_shared",
+    "shared_components": [
+      "ToastHost"
+    ],
+    "verification_pages": [
+      "Overview",
+      "Subscriptions",
+      "Proxies",
+      "Routing"
+    ],
+    "shared_review": ".sdlc/evidence/TASK-018/shared-scope-review-010.json",
+    "state_exclusions": {
+      "selected": "Toast has no selectable item; existing SubscriptionCard selection/arbitration is protected historical target014 and a regression constraint, not new write scope.",
+      "disabled": "Toast host and existing dismiss affordance introduce no disabled control; modal business disabled conditions remain unchanged.",
+      "loading": "Host receives completed presentation messages and does not own operation loading. Existing activation loading remains protected.",
+      "empty": "An empty queue renders no Toast overlay; deterministic zero-entry behavior is tested, not a page empty-state redesign.",
+      "busy": "Host does not derive busy or runtime state; existing modal/activation busy behavior remains unchanged and must regress unchanged."
+    }
+  },
+  "visual_gate": {
+    "required": true,
+    "human_approval": true
+  },
+  "scope": {
+    "allow": [
+      "src/components/ToastHost.tsx: NEW minimal presentation-only provider/host/queue per design010",
+      "src/main.tsx: production ToastProvider wrapping only",
+      "src/App.tsx: failureToast presentation adapter only",
+      "src/components/subscriptions/SubscriptionPage.tsx: global versus dialog-local Notice presentation adapter only",
+      "src/lib/proxy-routing.ts: shared Notice presentation sink and optional per-invocation onPresentationError callback only; no IPC or business changes",
+      "src/components/proxies/ProxiesPage.tsx: remove global Notice render; Dialog submit clears formError and passes existing setFormError as optional presentation error sink only",
+      "src/components/routing/RoutingPage.tsx: remove global Notice render; Dialog submit clears formError and passes existing setFormError as optional presentation error sink only",
+      "src/styles.css: host positioning/stack and scoped item positioning only",
+      "src/components/ToastHost.test.ts: NEW existing Vitest queue/lifetime/owner/SSR tests",
+      "src/components/subscriptions/SubscriptionPage.test.ts: local/global presentation tests only; preserve previous tests",
+      "src/components/proxy-routing-pages.test.ts: global/local modal presentation assertions only",
+      "src/lib/proxy-routing.test.ts: presentation adapter and optional local error sink regression only"
+    ],
+    "deny": [
+      "No business outcome/message classification or text change",
+      "No activationCompletion/PendingActivation/useLayoutEffect sequencing/invoke handling/runtimeActive/Card arbitration/CSS change",
+      "No Backend/IPC/Runtime/Domain/Compiler/persistence/StateStore/observation transport or ownership change",
+      "No DocumentEditor source writes or migration of any contextual Dialog errors to global host",
+      "No timer duration change, queued timer reset, new timeout/dedup/drop/retry policy",
+      "No Contract0.3, TASK011/TASK012, historical Evidence/Candidate/target changes",
+      "No third-party library/framework/dependency/config, generic notification service, cross-process mechanism",
+      "No production implementation, Task rebind, native capture or Human APPROVED Evidence in design turn",
+      "No scripts/sdlc-ui-contract.mjs, its tests, or UI Gate protocol writes in this product scope; independent infrastructure delivery only"
+    ]
+  },
+  "manifest": [
+    {
+      "path": ".sdlc/design/TASK-018-shared-foundation-candidate-008.json",
+      "sha256": "824c1ce81a4a6ea08d32537e6e2f33d4044e07d7369dc63d6034502acfd87b0f"
+    },
+    {
+      "path": ".sdlc/evidence/TASK-018/human-visual-finding-004.json",
+      "sha256": "2ea31dc59f2a72d364c00f3469e600ca4de4f0623f40ea3c579931862d55f3d5"
+    },
+    {
+      "path": ".sdlc/design/TASK-018-toast-position-impact-009.md",
+      "sha256": "9b3f157f77b12e411abf91a7e043529c0c8835d964caac61edfa507bf1f7df80"
+    },
+    {
+      "path": "docs/decisions/DCR-024-task018-toast-presentation.md",
+      "sha256": "76ce60d384d5165641c237ef64644ad81b55253f7a6d376a2ee9a667814e422e"
+    },
+    {
+      "path": ".sdlc/design/TASK-018-toast-design-009.md",
+      "sha256": "940389a93c2dd445e48c98337ddf03be515a6bff8932748095f5c976aa4cd6cf"
+    },
+    {
+      "path": ".sdlc/evidence/TASK-018/implementation-target-014.json",
+      "sha256": "2e868c6e4e4346953a2df17e33d211512cbd3a866d28bf5af9ac0ffeb3333139"
+    },
+    {
+      "path": ".sdlc/evidence/TASK-018/native-failure-review-014.json",
+      "sha256": "d0dea5c769b53527e835fef2a1bd853079454d328e24f94ac160f0095d316ac8"
+    },
+    {
+      "path": ".sdlc/evidence/TASK-018/single-emphasis-source-review-014.json",
+      "sha256": "e2202a6271c6e83eed22adede44ce8772cf4f992de61b38a06d8469734d2c433"
+    },
+    {
+      "path": ".sdlc/design/TASK-018-shared-foundation-candidate-009.json",
+      "sha256": "ffadcf5a8a10f031d8f07bf51f606fbf002d2c116ec10045e5a39b55a424331a"
+    },
+    {
+      "path": ".sdlc/evidence/TASK-018/design-review-009.json",
+      "sha256": "b8d7c16140b4e1efa43ffe48c852498923643eb8b2b6b3a9fee900ca34832400"
+    },
+    {
+      "path": "docs/decisions/DCR-024-task018-toast-presentation-revision-002.md",
+      "sha256": "caf4b9ab34d33334e32bc433970fa977f456a5c4227d541d7b4ea95ea7bcf94e"
+    },
+    {
+      "path": ".sdlc/design/TASK-018-toast-design-010.md",
+      "sha256": "5441c172061585d4fc53bbbe657b70c3847adbc7a24aafa17f69d818b035b397"
+    },
+    {
+      "path": ".sdlc/evidence/ui-gate-cross-cutting-001/target-002.json",
+      "sha256": "f024c241a87405d0564007c9d47660d4c9771655141e188d65119a926413bf68"
+    },
+    {
+      "path": ".sdlc/evidence/ui-gate-cross-cutting-001/review-002.json",
+      "sha256": "08944f6aa4ce249e9ef53eec1c8d6d9470062e8d3c9ca635e76920f701a7f8d5"
+    }
+  ],
+  "source_manifest": [
+    {
+      "path": "src/styles.css",
+      "sha256": "ca7f6686d83675422bde18e1f2b8aa8563d0da81b41da18c6a7342cd000d8844"
+    },
+    {
+      "path": "src/App.tsx",
+      "sha256": "63c914df4d63de2ded54150ae5b8935cf34ce5c117481d09194e9b513bd865ea"
+    },
+    {
+      "path": "src/main.tsx",
+      "sha256": "8a3b40772c63a42e660f42221c14c10bbdd228c7456b2c90f84eebced3f16c00"
+    },
+    {
+      "path": "src/components/layout/SidebarTraffic.tsx",
+      "sha256": "7aa16cbd1b25f9497ea82e1b52ce14d9fe538ffd514f8e14ab14764269ff5409"
+    },
+    {
+      "path": "src/components/layout/SidebarTraffic.css",
+      "sha256": "08d96cd1289f3981b14c0da1e39fbfbed922e813174345c395e4261d86ce2c6e"
+    },
+    {
+      "path": "src/components/subscriptions/SubscriptionPage.tsx",
+      "sha256": "bc2c6a47774cb6ad1a7f022dba93874bbe9256bf5b4f512035b86308a2525b61"
+    },
+    {
+      "path": "src/components/subscriptions/DocumentEditor.tsx",
+      "sha256": "404b5dea5b233c2c7152b747519c1296fd303628703e348aab736f265e9a16f9"
+    },
+    {
+      "path": "src/components/subscriptions/DocumentEditor.css",
+      "sha256": "4cb304f715b20825d38413023d9572708cfbb79740bd4d1e79cf031d5bf00ef2"
+    },
+    {
+      "path": "src/assets/fonts/Twemoji.Mozilla.ttf",
+      "sha256": "61db6397b8b32b72c585d538ef698a84cf78cf2558a14046b3fa0ec4cc362540"
+    },
+    {
+      "path": "src-tauri/icons/128x128.png",
+      "sha256": "c1412dded899436049f6ee368addffc9d0ecdb9a0cbcbb4be7722ee0a6314f07"
+    },
+    {
+      "path": "src/lib/bootstrap.ts",
+      "sha256": "ef5021d406701b01547fbcef1a9084de2d44e019d2ec2e78967a4bbe0fb23709"
+    },
+    {
+      "path": "src/lib/observability.ts",
+      "sha256": "abd163a06bdd52e061c042f29af6ffab2c3878fbdd6eb2c0dc98f66195d6bcee"
+    },
+    {
+      "path": "src/lib/traffic-trend.ts",
+      "sha256": "038390b23864ce0beee7a3c0dc154b2f0ab151f0440d4d56f07eadb21ca73e1d"
+    },
+    {
+      "path": "src/lib/subscriptions.ts",
+      "sha256": "cf0be4a180cfdb38bf6f1cfbffc1d4cef51c7b0babd58253cb29aa9ff4b0e225"
+    },
+    {
+      "path": "src/lib/proxy-routing.ts",
+      "sha256": "d0d1114a95b77b0a980d6601ad26de653bd344599a5bd3447f0ebcab945a4bfa"
+    },
+    {
+      "path": "src/components/proxies/ProxiesPage.tsx",
+      "sha256": "b00fb253244f43514d623f934c5e2627c6f32bb2ee85491fcbb2bb7448910fe6"
+    },
+    {
+      "path": "src/components/routing/RoutingPage.tsx",
+      "sha256": "701528744fc73869210f25efeeb77e5cda52cdea0caa36a16eccd39ac0c67aee"
+    }
+  ],
+  "material_change": true,
+  "dcr_required": true,
+  "supplements": {
+    "artifact": ".sdlc/design/TASK-018-shared-foundation-candidate-008.json",
+    "identity": "sha256:824c1ce81a4a6ea08d32537e6e2f33d4044e07d7369dc63d6034502acfd87b0f",
+    "relationship": "DCR024 revision002 replaces rejected Candidate009 proposal for current Toast delivery only; independent shared model adopted after infrastructure PASS. Candidate008/target014 Card and completion implementation preserved. Prior full38 foundation scope is historical provenance, not new migration or write authority."
+  }
+}

@@ -3,6 +3,7 @@
 ## 产品定位与 UI 参考
 
 - Veyra 为 sing-box 提供桌面 UI，以及实现 UI 所必需的订阅、状态持久化、配置转换、进程管理和平台适配。
+- `docs/ui/veyra-ui-spec.md` 是唯一当前有效的 UI Contract（Version 0.5 / APPROVED / BINDING）；其批准值优先于下述参考来源和历史审计中的不同值。UI Task 必须执行 `.agents/skills/sdlc-orchestrator/references/veyra-ui-gate.md` 的 Design/readiness/checkpoint/Delivery 检查，缺 Compliance 或真实 Human Visual Approval 不得 DONE/CLOSED；非 UI Task 和未重新进入 Gate 的历史 Task 沿用现有流程。
 - UI 的信息架构、页面布局和交互以本地 `E:/wx_lifeilin/github.com/clash-verge-rev` 为参考。每项 UI 工作先定位对应参考页面/组件，记录映射和必要差异，再实现和验证用户操作。
 - UI 视觉风格必须与 Clash Verge Rev 保持一致，包括浅色、深色主题；直接对应参考项目的主题颜色、背景层级、文字、边框、选中/悬停/错误状态和图表配色，不自行创造色系。主题值必须能追溯到参考源码；浅色和深色分别验证。后续组件、页面和主题设置均遵守此规则。
 - 字体沿用参考项目实际的网页加载方案：打包 `Twemoji.Mozilla.ttf` 并声明 `@font-face`，用于 Emoji/旗帜；普通文字保留参考主题的系统字体栈，表单控件继承。不得只写字体名而遗漏资产，也不把 Emoji 字体当作中文正文字体。保留字体来源与许可说明。

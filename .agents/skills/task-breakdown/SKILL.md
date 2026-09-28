@@ -90,3 +90,7 @@ Planning Producer，不是状态迁移器。
 返回 Sparse `skill_result`：始终包含 `skill`、`target`、`outcome`、`next_action_hint`；只在非默认时
 返回 artifacts、Evidence、issues、blockers、architecture/scope flags。`next_action_hint` 只是非权威路由建议；Planning Gate
 及 Task 状态均由 Orchestrator 决定。
+
+## Veyra UI Contract enforcement
+
+UI Task 物化时原样保留批准 Design 的 UI metadata，执行 readiness 检查；Golden Page 人工 Evidence 缺失不得 READY。遵循 [Veyra UI Gate](../sdlc-orchestrator/references/veyra-ui-gate.md)，保存实际检查结果；本规则仅适用于 UI-impacting Task。
