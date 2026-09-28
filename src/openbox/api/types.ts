@@ -21,11 +21,17 @@ export type ControllerConfig = {
   [key: string]: unknown;
 };
 
-export type ProxyHistory = { time: string; delay: number };
+export type ProxyHistory = { time: string; delay: number; node?: string };
+
+export type ProxyLatencyHistoryResponse = {
+  history: Record<string, ProxyHistory[]>;
+  updatedAt: number;
+};
 
 export type ControllerProxy = {
   name: string;
   type: string;
+  alive?: boolean;
   udp?: boolean;
   now?: string;
   all?: string[];
@@ -107,9 +113,26 @@ export type TrafficDay = {
   nodes: TrafficRow[];
   hosts: TrafficRow[];
   clients: TrafficRow[];
+  hostsCount?: number;
+  clientsCount?: number;
+  other?: { up: number; down: number };
   hours: TrafficHour[];
   nowHour: number;
+  hourDetailKeepDays?: number;
   direct: { excluded: boolean; tag: string };
+};
+
+export type TrafficDimension = "client" | "node" | "host";
+
+export type TrafficDrill = {
+  day: string;
+  hour: number | null;
+  kind: TrafficDimension;
+  key: string;
+  by: TrafficDimension;
+  count: number;
+  sum: { up: number; down: number };
+  rows: TrafficRow[];
 };
 
 export type OpenBoxGroup = {

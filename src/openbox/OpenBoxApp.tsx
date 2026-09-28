@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
 import { api } from "./api/client";
 import type { AuthStatus, RouteKey, ServiceStatus, StorageResponse } from "./api/types";
 import { AppShell, type ShellStats } from "./components/AppShell";
@@ -11,6 +12,7 @@ import { ConnectionsPage } from "./pages/ConnectionsPage";
 import { LogsPage } from "./pages/LogsPage";
 import { RulesPage } from "./pages/RulesPage";
 import { SettingsPage } from "./pages/SettingsPage";
+import { Toaster } from "./ui/sonner";
 
 const routeKeys: RouteKey[] = ["overview", "proxies", "connections", "logs", "rules", "settings"];
 
@@ -27,21 +29,21 @@ export function OpenBoxApp() {
   const [theme, setTheme] = useState<"light" | "dark">("light");
   const [collapsed, setCollapsed] = useState(false);
   const [busy, setBusy] = useState(false);
-  const [toast, setToast] = useState("");
   const [authError, setAuthError] = useState<unknown>(null);
 
   const authenticated = Boolean(auth && (!auth.enabled || auth.authenticated));
   const live = useLiveMetrics(authenticated);
 
   const showToast = useCallback((message: string) => {
-    setToast(message);
-    window.setTimeout(() => setToast(current => current === message ? "" : current), 2600);
+    toast(message);
   }, []);
 
   const loadStorage = useCallback(async () => {
     const value = await api.storage();
     setStorage(value);
-    setTheme(value.entries["config/theme-mode"] === "dark" ? "dark" : "light");
+    localStorage.setItem("config/language", "zh-CN");
+    const themeMode = value.entries["config/theme-mode"];
+    setTheme(themeMode === "dark" || (themeMode === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches) ? "dark" : "light");
     setCollapsed(value.entries["config/is-sidebar-collapsed"] === "true");
   }, []);
 
@@ -79,6 +81,7 @@ export function OpenBoxApp() {
 
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
+    document.documentElement.lang = "zh-CN";
     document.body.dataset.theme = theme;
     document.body.classList.toggle("theme-dark", theme === "dark");
   }, [theme]);
@@ -117,13 +120,15 @@ export function OpenBoxApp() {
   if (!authenticated) return <AuthScreen status={auth} onAuthenticated={setAuth} />;
   if (!storage) return <LoadingView />;
 
-  return <AppShell route={route} onNavigate={navigate} service={service} stats={stats} collapsed={collapsed} onCollapse={toggleCollapse} onServiceAction={serviceAction} onRefresh={() => void refresh()} busy={busy}>
-    {route === "overview" && <OverviewPage stats={stats} storage={storage} onToast={showToast} />}
-    {route === "proxies" && <ProxiesPage storage={storage} onToast={showToast} />}
-    {route === "connections" && <ConnectionsPage frame={live.connections} onToast={showToast} />}
-    {route === "logs" && <LogsPage onToast={showToast} />}
-    {route === "rules" && <RulesPage />}
-    {route === "settings" && <SettingsPage storage={storage} theme={theme} setTheme={setTheme} onToast={message => { showToast(message); void loadStorage().catch(() => undefined); }} />}
-    {toast && <div className="toast" role="status">{toast}</div>}
-  </AppShell>;
+  return <>
+    <AppShell route={route} onNavigate={navigate} service={service} stats={stats} collapsed={collapsed} onCollapse={toggleCollapse} onServiceAction={serviceAction} onRefresh={() => void refresh()} busy={busy} appearance={{ radius: Number(storage.entries["config/global-radius"] ?? 15.8), background: storage.entries["config/custom-background-image"] ?? "" }}>
+      {route === "overview" && <OverviewPage stats={stats} storage={storage} onToast={showToast} />}
+      {route === "proxies" && <ProxiesPage storage={storage} onToast={showToast} />}
+      {route === "connections" && <ConnectionsPage frame={live.connections} onToast={showToast} />}
+      {route === "logs" && <LogsPage onToast={showToast} />}
+      {route === "rules" && <RulesPage />}
+      {route === "settings" && <SettingsPage storage={storage} theme={theme} setTheme={setTheme} onToast={message => { showToast(message); void loadStorage().catch(() => undefined); }} />}
+    </AppShell>
+    <Toaster theme={theme} />
+  </>;
 }
