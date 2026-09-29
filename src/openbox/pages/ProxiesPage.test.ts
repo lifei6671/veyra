@@ -2,7 +2,7 @@ import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import type { ControllerProxy, ProxiesResponse, Subscription } from "../api/types";
-import { clampNodeCardWidth, completeProxyViewOrder, formatLatencyTime, getPenetrationGroup, getProxyViewGroups, isVisibleProxy, latencyClass, moveProxyViewId, NodeHealthDots, PenetrationGroup, PolicyLatency, ProxyGroupCard, ProxyOption, proxyMatchesQuery, proxyOptionAction, proxyViewSettings, proxyViewTab, recentLatencyHistory, reorderProxyViewIds, selectedProxyDelay, sortPenetrationOptions, sortProxyNodes, sortProxyViewItems, summarizeGroupLatencyTest, toggleProxyCardsCollapsed, uniqueSubscriptionNodes } from "./ProxiesPage";
+import { clampNodeCardWidth, completeProxyViewOrder, formatLatencyTime, getPenetrationGroup, getProxyViewGroups, isVisibleProxy, latencyClass, mergeProxyGroupLatencyResult, mergeProxyLatencies, mergeProxyLatency, moveProxyViewId, NodeHealthDots, PenetrationGroup, PolicyLatency, preserveProxyLatencies, ProxyGroupCard, ProxyOption, proxyMatchesQuery, proxyOptionAction, proxyViewSettings, proxyViewTab, recentLatencyHistory, reorderProxyViewIds, selectedProxyDelay, sortPenetrationOptions, sortProxyNodes, sortProxyViewItems, summarizeGroupLatencyTest, toggleProxyCardsCollapsed, uniqueSubscriptionNodes } from "./ProxiesPage";
 
 describe("proxy view grouping", () => {
   it("restores a valid proxy view tab and falls back to strategy groups", () => {
@@ -84,7 +84,7 @@ describe("proxy view grouping", () => {
       thresholds: { low: 100, medium: 200 },
       history: [],
       testing: false,
-      testingNode: node.name,
+      testingNodes: new Set([node.name]),
     }));
     expect(markup).not.toContain(`aria-label="选择 ${node.name}"`);
     expect(markup).toContain(`aria-label="测试 ${node.name} 延迟"`);
@@ -240,6 +240,57 @@ describe("proxy view grouping", () => {
       .toEqual({ success: 2, failed: 3 });
   });
 
+  it("merges concurrent node latency results without reverting a newer selection", () => {
+    const initial = {
+      Speed: { name: "Speed", type: "Selector", now: "node-a", all: ["node-a", "node-b"] },
+      "node-a": { name: "node-a", type: "VLESS" },
+      "node-b": { name: "node-b", type: "VLESS" },
+    } satisfies Record<string, ControllerProxy>;
+    const afterSelection = { ...initial, Speed: { ...initial.Speed, now: "node-b" } };
+    const afterNodeA = mergeProxyLatency(afterSelection, "node-a", 180, "2026-09-29T15:00:00Z");
+    const afterNodeB = mergeProxyLatency(afterNodeA, "node-b", 90, "2026-09-29T15:00:01Z");
+
+    expect(afterNodeB.Speed.now).toBe("node-b");
+    expect(afterNodeB["node-a"].history?.at(-1)?.delay).toBe(180);
+    expect(afterNodeB["node-b"].history?.at(-1)?.delay).toBe(90);
+  });
+
+  it("preserves node results that finish after a broad refresh starts", () => {
+    const snapshot = {
+      Speed: { name: "Speed", type: "Selector", now: "node-b", all: ["node-a", "node-b"] },
+      "node-a": { name: "node-a", type: "VLESS", history: [{ time: "old", delay: 400 }] },
+      "node-b": { name: "node-b", type: "VLESS", history: [{ time: "old", delay: 500 }] },
+    } satisfies Record<string, ControllerProxy>;
+    const current = mergeProxyLatencies(snapshot, { "node-a": 180, "node-b": 90 }, "2026-09-29T15:00:00Z");
+    const staleRefresh = {
+      ...snapshot,
+      Speed: { ...snapshot.Speed, now: "node-a" },
+    };
+
+    const merged = preserveProxyLatencies(staleRefresh, current, ["node-a", "node-b"]);
+
+    expect(merged.Speed.now).toBe("node-a");
+    expect(merged["node-a"].history?.at(-1)?.delay).toBe(180);
+    expect(merged["node-b"].history?.at(-1)?.delay).toBe(90);
+  });
+
+  it("adds group test samples to the group history tooltip source", () => {
+    const proxies = {
+      Speed: { name: "Speed", type: "Selector", now: "node-a", all: ["node-a", "node-b"], history: [{ time: "old", delay: 220, node: "node-a" }] },
+      "node-a": { name: "node-a", type: "VLESS" },
+      "node-b": { name: "node-b", type: "VLESS" },
+    } satisfies Record<string, ControllerProxy>;
+
+    const merged = mergeProxyGroupLatencyResult(proxies, "Speed", { "node-a": 180, "node-b": 0 }, "2026-09-29T15:00:00Z");
+
+    expect(merged.Speed.history?.slice(-2)).toEqual([
+      { time: "2026-09-29T15:00:00Z", delay: 180, node: "node-a" },
+      { time: "2026-09-29T15:00:00Z", delay: 0, node: "node-b" },
+    ]);
+    expect(merged["node-a"].history?.at(-1)?.delay).toBe(180);
+    expect(merged["node-b"].history?.at(-1)?.delay).toBe(0);
+  });
+
   it("renders the testing icon state without removing the history tooltip", () => {
     const markup = renderToStaticMarkup(createElement(PolicyLatency, {
       groupName: "所有-手动",
@@ -312,10 +363,11 @@ describe("proxy view grouping", () => {
     expect(cardClosed).toContain('class="node-health-summary visible" aria-hidden="false"');
   });
 
-  it("keeps strategy content mounted for animation and shows latency dots while collapsed", () => {
+  it("keeps strategy content mounted and only locks the child card being tested", () => {
     const fast = { name: "直连", type: "Direct", history: [{ time: "now", delay: 80 }] } satisfies ControllerProxy;
-    const group = { name: "Speed", type: "Selector", now: fast.name, all: [fast.name] } satisfies ControllerProxy;
-    const data = { proxies: { [group.name]: group, [fast.name]: fast } } satisfies ProxiesResponse;
+    const idle = { name: "拒绝", type: "Reject" } satisfies ControllerProxy;
+    const group = { name: "Speed", type: "Selector", now: fast.name, all: [fast.name, idle.name] } satisfies ControllerProxy;
+    const data = { proxies: { [group.name]: group, [fast.name]: fast, [idle.name]: idle } } satisfies ProxiesResponse;
     const markup = renderToStaticMarkup(createElement(ProxyGroupCard, {
       group,
       data,
@@ -330,16 +382,18 @@ describe("proxy view grouping", () => {
       thresholds: { low: 100, medium: 200 },
       history: [],
       latencyHistory: {},
-      testingGroup: fast.name,
+      testingGroup: "",
+      testingNodes: new Set([fast.name]),
     }));
     expect(markup).toContain('class="node-health-summary visible" aria-hidden="false"');
     expect(markup).toContain('class="policy-card-collapse collapsed" aria-hidden="true" inert=""');
-    expect(markup).toContain("节点状态：1 已测速，0 未测速");
+    expect(markup).toContain("节点状态：1 已测速，1 未测速");
     expect(markup).toContain("直连");
     expect(markup).toContain('aria-label="选择 直连"');
     expect(markup).toContain('aria-label="测试 直连 延迟"');
-    expect(markup).toContain('class="policy-option split-action active"');
-    expect(markup).not.toContain('class="policy-option split-action active disabled"');
+    expect(markup).toContain('class="policy-option split-action active disabled"');
+    expect(markup).toContain('aria-label="选择 拒绝"');
+    expect(markup.match(/ disabled=""/g)).toHaveLength(2);
     expect(markup).toContain('class="policy-option-latency success testing"');
     expect(markup).toContain('class="latency-testing-dots"');
   });

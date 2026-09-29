@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState } from "react";
-import { ArrowDownTrayIcon, PauseIcon, PlayIcon, SparklesIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import { ArrowDownTrayIcon, ChevronDownIcon, PauseIcon, PlayIcon, SparklesIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import type { ControllerLogFrame } from "../api/types";
 import { useControllerSocket } from "../hooks/useControllerSocket";
 import { SearchInputGroup, SelectControl } from "../ui/controls";
@@ -9,7 +9,7 @@ type LiveLog = ControllerLogFrame & { id: number; time: string; category: string
 
 const logLevels = ["trace", "debug", "info", "warning", "error", "fatal", "panic", "silent"];
 
-export function LogsPage({ onToast }: { onToast: (message: string) => void }) {
+export function LogsPage() {
   const [items, setItems] = useState<LiveLog[]>([]);
   const [level, setLevel] = useState("info");
   const [filter, setFilter] = useState("all");
@@ -37,21 +37,14 @@ export function LogsPage({ onToast }: { onToast: (message: string) => void }) {
   const filters = useMemo(() => {
     const presentLevels = new Set(items.map(item => item.type));
     const presentCategories = new Set(items.map(item => item.category).filter(Boolean));
-    return [
-      { value: "all", label: "全部" },
-      ...logLevels.filter(value => presentLevels.has(value)).map(value => ({ value: `level:${value}`, label: value })),
-      ...[...presentCategories].sort().map(value => ({ value: `type:${value}`, label: value })),
-    ];
+    return {
+      levels: logLevels.filter(value => presentLevels.has(value)),
+      categories: [...presentCategories].sort(),
+    };
   }, [items]);
 
-  const search = useMemo(() => {
-    if (!query) return { regex: null, invalid: false };
-    try {
-      return { regex: new RegExp(query, "i"), invalid: false };
-    } catch {
-      return { regex: null, invalid: true };
-    }
-  }, [query]);
+  const search = useMemo(() => compileLogSearch(query), [query]);
+  const selectedFilterLabel = filter === "all" ? "全部" : filter.slice(filter.indexOf(":") + 1);
 
   const visible = items.filter(item => {
     if (search.invalid) return false;
@@ -77,21 +70,32 @@ export function LogsPage({ onToast }: { onToast: (message: string) => void }) {
     link.download = `${new Date().toISOString().slice(0, 19).replace(/[T:]/g, "-")}.log`;
     link.click();
     URL.revokeObjectURL(url);
-    onToast("当前日志已导出");
   };
 
   return <main className="page logs-page">
     <div className="route-controls log-controls">
       <SelectControl label="日志级别" value={level} onValueChange={changeLevel} className="log-level-select" options={logLevels.map(value => ({ value, label: value }))} />
       <div className="log-filter-cluster">
-        <SelectControl label="日志类型" value={filter} onValueChange={setFilter} className="log-category-select" options={filters} />
+        <div className="log-category-select">
+          <select aria-label="日志类型" value={filter} onChange={event => setFilter(event.target.value)}>
+            <option value="all">全部</option>
+            {filters.levels.length > 0 && <optgroup label="日志等级">
+              {filters.levels.map(value => <option value={`level:${value}`} key={value}>{value}</option>)}
+            </optgroup>}
+            {filters.categories.length > 0 && <optgroup label="日志类型">
+              {filters.categories.map(value => <option value={`type:${value}`} key={value}>{value}</option>)}
+            </optgroup>}
+          </select>
+          <span className="log-category-value" aria-hidden="true">{selectedFilterLabel}</span>
+          <ChevronDownIcon aria-hidden="true" />
+        </div>
         <SearchInputGroup label="搜索日志" value={query} onChange={setQuery} onClear={() => setQuery("")} placeholder="搜索 | Regex" className={search.invalid ? "search-invalid" : ""} />
-        <IconButton label="格式化域名或 URL" onClick={() => setQuery(normalizeLogQuery(query))}><SparklesIcon /></IconButton>
+        <IconButton label="格式化查询" onClick={() => setQuery(normalizeLogQuery(query))}><SparklesIcon /></IconButton>
       </div>
       <div className="route-tools">
-        <IconButton label="下载日志" disabled={!visible.length} onClick={exportLogs}><ArrowDownTrayIcon /></IconButton>
-        <IconButton label={paused ? "继续接收" : "暂停接收"} active={paused} onClick={() => setPaused(value => !value)}>{paused ? <PlayIcon /> : <PauseIcon />}</IconButton>
-        <IconButton label="清空当前日志" disabled={!items.length} onClick={() => setItems([])}><XMarkIcon /></IconButton>
+        <IconButton label="下载日志" tooltip disabled={!visible.length} onClick={exportLogs}><ArrowDownTrayIcon /></IconButton>
+        <IconButton label={paused ? "继续接收" : "暂停接收"} tooltip active={paused} onClick={() => setPaused(value => !value)}>{paused ? <PlayIcon /> : <PauseIcon />}</IconButton>
+        <IconButton label="清空当前日志" tooltip disabled={!items.length} onClick={() => setItems([])}><XMarkIcon /></IconButton>
       </div>
     </div>
     <section className="log-list" aria-live={paused ? "off" : "polite"}>
@@ -116,6 +120,15 @@ export function getLogCategory(payload: string) {
   }
   const space = payload.indexOf(" ");
   return space === -1 ? payload : payload.slice(0, space);
+}
+
+export function compileLogSearch(query: string) {
+  if (!query) return { regex: null, invalid: false };
+  try {
+    return { regex: new RegExp(query, "i"), invalid: false };
+  } catch {
+    return { regex: null, invalid: true };
+  }
 }
 
 export function normalizeLogQuery(value: string) {

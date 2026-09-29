@@ -51,6 +51,84 @@ export type GeoIpInfo = {
 export type ControllerRule = { type: string; payload: string; proxy: string };
 export type RulesResponse = { rules: ControllerRule[] };
 
+export type RouteProbeMethod = "GET" | "HEAD" | "TCP" | "TLS";
+
+export type PenetrationEntry = {
+  type: string;
+  value: string;
+  source?: string;
+};
+
+export type PenetrationResult = {
+  matched?: {
+    index?: number;
+    outbound?: string;
+    entries?: PenetrationEntry[];
+    entriesTotal?: number;
+    rule?: Record<string, unknown>;
+  };
+  chain?: string[];
+  finalOutbound?: string;
+  resolved?: { addresses?: string[]; fakeIp?: boolean };
+  owner?: { kind?: string; name?: string };
+  firstLayer?: {
+    dnsMode?: string;
+    nativeBypass?: { enabled?: boolean; sets?: string[] };
+    entryMode?: { mode?: string; reason?: string };
+  };
+  dns?: RouteDiagnosticDns;
+};
+
+export type TerminalTestCapability = {
+  ok: boolean;
+  missing?: string[];
+  lan?: Record<string, unknown> | null;
+};
+
+export type RouteDiagnosticDns = {
+  ruleIndex?: number;
+  server?: { type?: string; tag?: string; server?: string; detour?: string };
+  viaProxy?: boolean;
+  fakeIpRule?: number;
+  runtimeChain?: string[];
+  runtimeLeaf?: string;
+};
+
+export type RouteDiagnosticResult = {
+  target?: string;
+  dns?: RouteDiagnosticDns;
+  resolve?: {
+    ok?: boolean;
+    status?: number;
+    answers?: string[];
+    ms?: number;
+    ttl?: number;
+    cached?: boolean;
+    error?: string;
+  };
+  exit?: {
+    url?: string;
+    connectTo?: string;
+    ok?: boolean;
+    status?: number;
+    ms?: number;
+    error?: string;
+    chains?: string[];
+    rule?: string;
+    rulePayload?: string;
+    destinationIP?: string;
+    viaProxy?: boolean;
+    owner?: { kind?: string; name?: string };
+  };
+  [key: string]: unknown;
+};
+
+export type TerminalTestResult = RouteDiagnosticResult & {
+  sourceIP?: string;
+  sourcePort?: number;
+  port?: number;
+};
+
 export type ConnectionMetadata = {
   destinationIP: string;
   destinationPort: string;

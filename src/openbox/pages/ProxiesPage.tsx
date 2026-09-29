@@ -1,53 +1,25 @@
-import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import { ArrowPathIcon, Bars3Icon, BoltIcon, ChevronDownIcon, ChevronUpIcon, MapPinIcon, PencilSquareIcon, WrenchScrewdriverIcon } from "@heroicons/react/24/outline";
 import { toast } from "sonner";
 import { api } from "../api/client";
 import type { ControllerProxy, ProxiesResponse, ProxyHistory, StorageResponse, Subscription } from "../api/types";
-import speedGroupIcon from "../assets/group-speed.svg";
-import aiGroupIcon from "../assets/group-ai.svg";
-import youtubeGroupIcon from "../assets/group-youtube.svg";
-import tiktokGroupIcon from "../assets/group-tiktok.svg";
-import netflixGroupIcon from "../assets/group-netflix.svg";
-import githubGroupIcon from "../assets/group-github.svg";
-import googleGroupIcon from "../assets/group-google.svg";
-import microsoftGroupIcon from "../assets/group-microsoft.svg";
-import appleGroupIcon from "../assets/group-apple.svg";
-import gamesGroupIcon from "../assets/group-games.svg";
-import globalGroupIcon from "../assets/group-global.svg";
-import chinaGroupIcon from "../assets/group-china.svg";
-import otherGroupIcon from "../assets/group-other.svg";
-import directOptionIcon from "../assets/option-direct.svg";
-import autoOptionIcon from "../assets/option-auto.svg";
-import manualOptionIcon from "../assets/option-manual.svg";
-import rejectOptionIcon from "../assets/option-reject.svg";
-import { latestLatency, matchesQuery } from "../lib/format";
+import { latestLatency } from "../lib/format";
 import { SearchInputGroup, SegmentedGroup, SegmentedItem } from "../ui/controls";
 import { ErrorState, IconButton, Modal } from "../components/shared";
-
-const groupIcons: Record<string, string> = {
-  Speed: speedGroupIcon, AI: aiGroupIcon, Youtube: youtubeGroupIcon, TikTok: tiktokGroupIcon,
-  Netflix: netflixGroupIcon, Github: githubGroupIcon, Google: googleGroupIcon, Microsoft: microsoftGroupIcon,
-  Apple: appleGroupIcon, Games: gamesGroupIcon, "国外": globalGroupIcon, "国内": chinaGroupIcon, "其他": otherGroupIcon,
-};
-
-const optionIcons: Record<string, string> = {
-  "直连": directOptionIcon,
-  "所有-自动": autoOptionIcon,
-  "所有-手动": manualOptionIcon,
-  "拒绝": rejectOptionIcon,
-};
+import { appendProxyGroupLatencyHistory, NodeHealthDots, ProxyGroupCard, ProxyOption, groupIcon, isVisibleProxy, mergeProxyGroupLatencyResult, mergeProxyLatencies, preserveProxyLatencies, proxyMatchesQuery, selectedProxyDelay, sortProxyNodes, summarizeGroupLatencyTest } from "../components/ProxyCards";
+import type { ProxyNodeSortMode } from "../components/ProxyCards";
+export { appendProxyGroupLatencyHistory, NodeHealthDots, PenetrationGroup, PolicyLatency, ProxyGroupCard, ProxyOption, formatLatencyTime, getPenetrationGroup, isVisibleProxy, latencyClass, mergeProxyGroupLatencyResult, mergeProxyLatencies, mergeProxyLatency, preserveProxyLatencies, proxyMatchesQuery, proxyOptionAction, recentLatencyHistory, selectedProxyDelay, sortPenetrationOptions, sortProxyNodes, summarizeGroupLatencyTest } from "../components/ProxyCards";
+export type { LatencyThresholds, ProxyNodeSortMode } from "../components/ProxyCards";
 
 type ViewTab = "groups" | "nodes" | "subscriptions";
 export type ProxySortMode = "default" | "latency" | "name" | "custom";
-export type ProxyNodeSortMode = "default" | "nameAsc" | "nameDesc" | "latencyAsc" | "latencyDesc";
 type ProxyViewSettings = {
   nodeSort: ProxyNodeSortMode;
   groupByProvider: boolean;
   nodeCardMinWidth: number;
   strategyOrder: string[];
 };
-export type LatencyThresholds = { low: number; medium: number };
 const PROXY_VIEW_TAB_KEY = "openbox:proxy-view-tab";
 export const PROXY_VIEW_SETTINGS_KEY = "openbox:proxy-view-settings";
 const defaultViewSettings = (): ProxyViewSettings => ({ nodeSort: "latencyAsc", groupByProvider: true, nodeCardMinWidth: 145, strategyOrder: [] });
@@ -60,6 +32,10 @@ export function ProxiesPage({ storage, onToast, onNodeCardMinWidthChange }: { st
   const [query, setQuery] = useState("");
   const [error, setError] = useState<unknown>(null);
   const [busy, setBusy] = useState("");
+  const [testingNodes, setTestingNodes] = useState<Set<string>>(() => new Set());
+  const testingNodesRef = useRef(new Set<string>());
+  const latencyRevisionRef = useRef(0);
+  const latencyRevisionByNodeRef = useRef(new Map<string, number>());
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
   const [penetrationExpanded, setPenetrationExpanded] = useState<Record<string, boolean>>({});
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -70,10 +46,17 @@ export function ProxiesPage({ storage, onToast, onNodeCardMinWidthChange }: { st
   const [viewSettings, setViewSettings] = useState<ProxyViewSettings>(() => proxyViewSettings(typeof window === "undefined" ? null : window.localStorage.getItem(PROXY_VIEW_SETTINGS_KEY)));
 
   const load = async () => {
+    const startedAtRevision = latencyRevisionRef.current;
     setError(null);
     try {
       const [proxies, subscriptionItems, latency] = await Promise.all([api.proxies(), api.subscriptions(), api.proxyLatencyHistory()]);
-      setData(proxies);
+      setData(current => {
+        if (!current || latencyRevisionRef.current === startedAtRevision) return proxies;
+        const newerNodes = Array.from(latencyRevisionByNodeRef.current)
+          .filter(([, revision]) => revision > startedAtRevision)
+          .map(([name]) => name);
+        return { proxies: preserveProxyLatencies(proxies.proxies, current.proxies, newerNodes) };
+      });
       setSubscriptions(subscriptionItems);
       setLatencyHistory(latency.history);
     } catch (reason) {
@@ -93,7 +76,7 @@ export function ProxiesPage({ storage, onToast, onNodeCardMinWidthChange }: { st
     medium: finiteSetting(storage?.entries["config/medium-latency"], 1000),
   };
   const listStyle = { gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` };
-  const testingGroup = busy.startsWith("test:") || busy.startsWith("node:") ? busy.slice(5) : "";
+  const testingGroup = busy.startsWith("test:") ? busy.slice(5) : "";
   const visibleGroups = useMemo(() => sortProxyViewItems(customGroups, { mode: "custom", order: viewSettings.strategyOrder }, group => group.name, group => group.name, group => selectedProxyDelay(group, data)), [customGroups, data, viewSettings.strategyOrder]);
   const visibleNodeGroups = nodeGroups;
   const visibleSubscriptions = subscriptions;
@@ -113,6 +96,23 @@ export function ProxiesPage({ storage, onToast, onNodeCardMinWidthChange }: { st
 
   const updateOrder = (order: string[]) => {
     saveViewSettings({ ...viewSettings, strategyOrder: order });
+  };
+
+  const applyLatencyResults = (results: Record<string, number>, groupName?: string) => {
+    const names = Object.keys(results);
+    if (!names.length) return;
+    const time = new Date().toISOString();
+    const revision = ++latencyRevisionRef.current;
+    for (const name of names) latencyRevisionByNodeRef.current.set(name, revision);
+    setData(current => current ? {
+      proxies: groupName
+        ? mergeProxyGroupLatencyResult(current.proxies, groupName, results, time)
+        : mergeProxyLatencies(current.proxies, results, time),
+    } : current);
+    if (groupName) setLatencyHistory(current => ({
+      ...current,
+      [groupName]: appendProxyGroupLatencyHistory(current[groupName] ?? [], results, time),
+    }));
   };
 
   const select = async (group: string, name: string) => {
@@ -138,7 +138,7 @@ export function ProxiesPage({ storage, onToast, onNodeCardMinWidthChange }: { st
     try {
       const result = await api.testProxyGroup(group, testUrl, timeout);
       const summary = summarizeGroupLatencyTest(result, total);
-      await load();
+      applyLatencyResults(result, group);
       const detail = `测试完成：${summary.success} 成功，${summary.failed} 失败${summary.failed ? `（超时 ${summary.failed}）` : ""}`;
       const present = summary.failed ? toast.warning : toast.success;
       present(group, { id: toastId, description: detail, duration: Infinity });
@@ -160,7 +160,7 @@ export function ProxiesPage({ storage, onToast, onNodeCardMinWidthChange }: { st
     setBusy("test:all");
     try {
       const results = await Promise.allSettled(allSubscriptionNodes.map(node => api.testProxy(node.name, testUrl, timeout)));
-      await load();
+      applyLatencyResults(successfulProxyDelays(allSubscriptionNodes, results));
       const failed = results.filter(result => result.status === "rejected").length;
       onToast(failed ? `延迟测试完成，${failed} 个节点失败` : "延迟测试完成");
     } catch (reason) {
@@ -171,15 +171,18 @@ export function ProxiesPage({ storage, onToast, onNodeCardMinWidthChange }: { st
   };
 
   const testNode = async (name: string) => {
-    setBusy(`node:${name}`);
+    if (testingNodesRef.current.has(name)) return;
+    testingNodesRef.current.add(name);
+    setTestingNodes(new Set(testingNodesRef.current));
     try {
-      await api.testProxy(name, testUrl, timeout);
-      await load();
+      const { delay } = await api.testProxy(name, testUrl, timeout);
+      applyLatencyResults({ [name]: delay });
       onToast(`${name} 延迟测试完成`);
     } catch (reason) {
       onToast(reason instanceof Error ? reason.message : "延迟测试失败");
     } finally {
-      setBusy("");
+      testingNodesRef.current.delete(name);
+      setTestingNodes(new Set(testingNodesRef.current));
     }
   };
 
@@ -188,7 +191,7 @@ export function ProxiesPage({ storage, onToast, onNodeCardMinWidthChange }: { st
     setBusy(`test-subscription:${subscription.id}`);
     try {
       const results = await Promise.allSettled(nodes.map(node => api.testProxy(node.name, testUrl, timeout)));
-      await load();
+      applyLatencyResults(successfulProxyDelays(nodes, results));
       const failed = results.filter(result => result.status === "rejected").length;
       onToast(failed ? `${subscription.name} 延迟测试完成，${failed} 个节点失败` : `${subscription.name} 延迟测试完成`);
     } catch (reason) {
@@ -296,6 +299,7 @@ export function ProxiesPage({ storage, onToast, onNodeCardMinWidthChange }: { st
       history={latencyHistory[group.name] ?? group.history ?? []}
       latencyHistory={latencyHistory}
       testingGroup={testingGroup}
+      testingNodes={testingNodes}
       query={query}
       nodeSort={viewSettings.nodeSort}
       groupByProvider={viewSettings.groupByProvider}
@@ -317,6 +321,7 @@ export function ProxiesPage({ storage, onToast, onNodeCardMinWidthChange }: { st
       history={latencyHistory[group.name] ?? group.history ?? []}
       latencyHistory={latencyHistory}
       testingGroup={testingGroup}
+      testingNodes={testingNodes}
       query={query}
       nodeSort={viewSettings.nodeSort}
       groupByProvider={viewSettings.groupByProvider}
@@ -357,9 +362,9 @@ export function ProxiesPage({ storage, onToast, onNodeCardMinWidthChange }: { st
             key={option.name}
             option={option}
             active={false}
-            disabled={Boolean(busy)}
+            disabled={Boolean(busy) || testingNodes.has(option.name)}
             thresholds={thresholds}
-            testing={isTesting || busy === `node:${option.name}`}
+            testing={isTesting || testingNodes.has(option.name)}
             onTest={() => void testNode(option.name)}
           />)}</div></div>
         </section>
@@ -416,167 +421,8 @@ export function ProxiesPage({ storage, onToast, onNodeCardMinWidthChange }: { st
   </>;
 }
 
-export function ProxyGroupCard({ group, data, collapsed, busy, onToggle, onSelect, onTest, onTestNode, variant, hideUnavailable, thresholds, history, latencyHistory, testingGroup, query = "", nodeSort = "latencyAsc", groupByProvider = true, penetrationExpanded = false, onTogglePenetration }: {
-  group: ControllerProxy;
-  data: ProxiesResponse | null;
-  collapsed: boolean;
-  busy: boolean;
-  onToggle: () => void;
-  onSelect: (group: string, name: string) => Promise<void>;
-  onTest: (group: string) => Promise<void>;
-  onTestNode: (name: string) => Promise<void>;
-  variant: "policy" | "nodes";
-  hideUnavailable: boolean;
-  thresholds: LatencyThresholds;
-  history: ProxyHistory[];
-  latencyHistory: Record<string, ProxyHistory[]>;
-  testingGroup: string;
-  query?: string;
-  nodeSort?: ProxyNodeSortMode;
-  groupByProvider?: boolean;
-  penetrationExpanded?: boolean;
-  onTogglePenetration?: () => void;
-}) {
-  const visibleOptions = ((group.all ?? []).map(name => data?.proxies[name]).filter(Boolean) as ControllerProxy[])
-    .filter(option => isVisibleProxy(option, hideUnavailable));
-  const allOptions = sortProxyNodes(visibleOptions, nodeSort);
-  const options = allOptions.filter(option => proxyMatchesQuery(option, query));
-  const tested = allOptions.filter(option => latestLatency(option.history)).length;
-  const current = group.now ? data?.proxies[group.now] : undefined;
-  const penetration = variant === "policy" ? getPenetrationGroup(group, data) : undefined;
-  const penetrationOpen = Boolean(penetration && penetrationExpanded);
-  const nodesCollapsed = variant === "nodes" && collapsed;
-  const nodeClass = variant === "nodes" ? " node-group-card" : "";
-  const collapsedClass = collapsed ? `${nodesCollapsed ? " node-group-collapsed" : ""} policy-card-collapsed` : "";
-  const selectedDelay = selectedProxyDelay(group, data);
-  const testing = testingGroup === "all" || testingGroup === group.name;
-  const headerContent = <>
-    <img className="policy-icon" src={groupIcon(group.name)} alt="" />
-    <div className="policy-summary">
-      <div><h2>{group.name}</h2>{variant === "policy" && <span>域名穿透</span>}<small>{group.type} ({tested}/{allOptions.length})</small></div>
-      <p>{variant === "policy" && <img src={optionIcons[group.now ?? ""] ?? otherGroupIcon} alt="" />}{group.now ?? "未选择"}{current?.now && <><b>›</b>{current.now}</>}</p>
-    </div>
-  </>;
-  return <article className={`surface policy-card${nodeClass}${collapsedClass}`}>
-    <div className="policy-head">
-      <button type="button" className="node-group-header-toggle" aria-label={`${collapsed ? "展开" : "收起"} ${group.name}`} aria-expanded={!collapsed} onClick={onToggle}>{headerContent}</button>
-      <PolicyLatency groupName={group.name} history={history.length ? history : current?.history ?? []} delay={selectedDelay} thresholds={thresholds} busy={busy} testing={testing} onTest={onTest} />
-      {variant === "nodes" && group.name === "所有-自动" && <small className="group-meta">检测间隔 300 秒 · 容差 100 毫秒</small>}
-    </div>
-    <div className={`node-health-summary${collapsed ? " visible" : ""}`} aria-hidden={!collapsed}>
-      <div className="node-health-summary-inner"><NodeHealthDots options={allOptions} selectedName={group.now} thresholds={thresholds} /></div>
-    </div>
-    {variant === "policy" && <section className={`policy-card-collapse${collapsed ? " collapsed" : ""}`} aria-hidden={collapsed} inert={collapsed || undefined}>
-      <div className="policy-card-collapse-inner">
-        <div className="policy-options">{options.map(option => <ProxyOption
-          key={option.name}
-          option={option}
-          active={option.name === group.now}
-          disabled={busy}
-          thresholds={thresholds}
-          onClick={() => void onSelect(group.name, option.name)}
-          onTest={() => void onTestNode(option.name)}
-          testing={testingGroup === "all" || testingGroup === option.name}
-        />)}</div>
-        {penetration && <>
-          <button type="button" className={`policy-footer${penetrationOpen ? " open" : ""}`} aria-expanded={penetrationOpen} onClick={onTogglePenetration}>{penetrationOpen ? "收起穿透" : "策略穿透"}{penetrationOpen ? <ChevronUpIcon /> : <ChevronDownIcon />}</button>
-          {penetrationOpen && <PenetrationGroup
-            group={penetration}
-            data={data}
-            busy={busy}
-            onSelect={onSelect}
-            onTest={onTest}
-            onTestNode={onTestNode}
-            hideUnavailable={hideUnavailable}
-            thresholds={thresholds}
-            history={latencyHistory[penetration.name] ?? penetration.history ?? []}
-            testing={testingGroup === "all" || testingGroup === penetration.name}
-            testingNode={testingGroup}
-            query={query}
-            nodeSort={nodeSort}
-          />}
-        </>}
-      </div>
-    </section>}
-    {variant === "nodes" && <section className={`node-provider-collapse${nodesCollapsed ? " collapsed" : ""}`} aria-hidden={nodesCollapsed} inert={nodesCollapsed || undefined}>
-      <div className="node-provider-section">
-        {groupByProvider && <div className="node-provider-head">
-          <h3 className="node-provider-title">订阅</h3>
-          <button type="button" className="penetration-test" aria-label={`测试 ${group.name} 全部节点`} aria-busy={testing || undefined} disabled={busy} onClick={() => void onTest(group.name)}><BoltIcon className={testing ? "testing-bolt" : undefined} /></button>
-        </div>}
-        <div className="policy-options node-provider-options">{options.map(option => <ProxyOption
-            key={option.name}
-            option={option}
-            active={option.name === group.now}
-            disabled={busy}
-            thresholds={thresholds}
-            showIcon={false}
-            onClick={proxyOptionAction(group.type) === "select" ? () => void onSelect(group.name, option.name) : undefined}
-            onTest={() => void onTestNode(option.name)}
-            testing={testingGroup === "all" || testingGroup === option.name}
-          />)}</div>
-      </div>
-    </section>}
-  </article>;
-}
 
-export function NodeHealthDots({ options, selectedName, thresholds }: { options: ControllerProxy[]; selectedName?: string; thresholds: LatencyThresholds }) {
-  const tested = options.filter(option => latestLatency(option.history) != null).length;
-  return <div className="node-health-dots" aria-label={`节点状态：${tested} 已测速，${options.length - tested} 未测速`}>
-    {options.map(option => {
-      const delay = latestLatency(option.history);
-      const selected = option.name === selectedName ? " selected" : "";
-      return <span className={`${delay == null ? "untested" : latencyClass(delay, thresholds)}${selected}`} aria-hidden="true" key={option.name} />;
-    })}
-  </div>;
-}
 
-export function PenetrationGroup({ group, data, busy, onSelect, onTest, onTestNode, hideUnavailable, thresholds, history, testing, testingNode = "", query = "", nodeSort = "latencyAsc" }: {
-  group: ControllerProxy;
-  data: ProxiesResponse | null;
-  busy: boolean;
-  onSelect: (group: string, name: string) => Promise<void>;
-  onTest: (group: string) => Promise<void>;
-  onTestNode: (name: string) => Promise<void>;
-  hideUnavailable: boolean;
-  thresholds: LatencyThresholds;
-  history: ProxyHistory[];
-  testing: boolean;
-  testingNode?: string;
-  query?: string;
-  nodeSort?: ProxyNodeSortMode;
-}) {
-  const allOptions = sortProxyNodes(((group.all ?? []).map(name => data?.proxies[name]).filter(Boolean) as ControllerProxy[])
-    .filter(option => isVisibleProxy(option, hideUnavailable)), nodeSort);
-  const options = allOptions.filter(option => proxyMatchesQuery(option, query));
-  const tested = allOptions.filter(option => latestLatency(option.history)).length;
-  const selectedDelay = selectedProxyDelay(group, data);
-  return <section className="policy-penetration" aria-label={`${group.name} 节点列表`}>
-    <div className="penetration-head">
-      <img className="penetration-icon" src={groupIcon(group.name)} alt="" />
-      <div className="penetration-summary">
-        <div><h3>{group.name}</h3><small>{group.type} ({tested}/{allOptions.length})</small></div>
-        <p>{group.now ?? "未选择"}</p>
-      </div>
-      <PolicyLatency groupName={group.name} history={history} delay={selectedDelay} thresholds={thresholds} busy={busy} testing={testing} onTest={onTest} />
-    </div>
-    <div className="penetration-provider-head">
-      <h4>订阅</h4>
-      <button type="button" className="penetration-test" aria-label={`测试 ${group.name} 全部节点`} aria-busy={testing || undefined} disabled={busy} onClick={() => void onTest(group.name)}><BoltIcon className={testing ? "testing-bolt" : undefined} /></button>
-    </div>
-    <div className="policy-options penetration-options">{options.map(option => <ProxyOption
-      key={option.name}
-      option={option}
-      active={option.name === group.now}
-      disabled={busy}
-      thresholds={thresholds}
-      showIcon={false}
-      onClick={proxyOptionAction(group.type) === "select" ? () => void onSelect(group.name, option.name) : undefined}
-      onTest={() => void onTestNode(option.name)}
-      testing={testingNode === "all" || testingNode === option.name}
-    />)}</div>
-  </section>;
-}
 
 function ProxyTool({ label, disabled, onClick, children }: {
   label: string;
@@ -590,81 +436,8 @@ function ProxyTool({ label, disabled, onClick, children }: {
   </span>;
 }
 
-export function PolicyLatency({ groupName, history, delay, thresholds, busy, testing = false, onTest }: {
-  groupName: string;
-  history: ProxyHistory[];
-  delay: number | null;
-  thresholds: LatencyThresholds;
-  busy: boolean;
-  testing?: boolean;
-  onTest: (group: string) => Promise<void>;
-}) {
-  const tooltipId = useId();
-  const points = recentLatencyHistory(history);
-  return <span className="policy-latency-wrap">
-    <button
-      type="button"
-      className={`policy-latency${delay == null ? "" : ` ${latencyClass(delay, thresholds)}`}`}
-      aria-label={`测试 ${groupName}`}
-      aria-describedby={points.length ? tooltipId : undefined}
-      aria-busy={testing || undefined}
-      disabled={busy}
-      onClick={event => { event.stopPropagation(); void onTest(groupName); }}
-    >{testing ? <BoltIcon className="testing-bolt" /> : delay ?? <BoltIcon />}</button>
-    {points.length > 0 && <span id={tooltipId} className="policy-history-tooltip" role="tooltip">
-      <span className="policy-history-list">
-        {points.map((point, index) => <span className="policy-history-item" key={`${point.time}-${point.node ?? groupName}-${index}`}>
-          <span className="policy-history-meta">
-            <small>{point.node ?? groupName}</small>
-            <time dateTime={point.time}>{formatLatencyTime(point.time)}</time>
-          </span>
-          <span className={`policy-history-track${point.delay > 0 ? " success" : ""}${index === 0 ? " first" : ""}`} aria-hidden="true"><i /></span>
-          <strong className={point.delay > 0 ? "success" : ""}>{point.delay > 0 ? `${point.delay}ms` : "超时"}</strong>
-        </span>)}
-      </span>
-    </span>}
-  </span>;
-}
 
-export function ProxyOption({ option, active, disabled, thresholds, showIcon = true, testing = false, onClick, onTest }: {
-  option: ControllerProxy;
-  active: boolean;
-  disabled: boolean;
-  thresholds: LatencyThresholds;
-  showIcon?: boolean;
-  testing?: boolean;
-  onClick?: () => void;
-  onTest?: () => void;
-}) {
-  const delay = latestLatency(option.history);
-  const content = <>
-    <span className="option-title">{showIcon && <img src={optionIcons[option.name] ?? groupIcons[option.name] ?? otherGroupIcon} alt="" />}<b>{option.name}</b></span>
-    <small>{proxyType(option.type)}{option.udp ? " / udp" : ""}</small>
-  </>;
-  if (onTest) return <div className={`policy-option split-action${active ? " active" : ""}${disabled ? " disabled" : ""}`}>
-    {onClick
-      ? <button type="button" className="policy-option-main" aria-label={`选择 ${option.name}`} disabled={disabled} onClick={onClick}>{content}</button>
-      : <div className="policy-option-main static" aria-disabled="true">{content}</div>}
-    <button
-      type="button"
-      className={`policy-option-latency${delay ? ` ${latencyClass(delay, thresholds)}` : ""}${testing ? " testing" : ""}`}
-      aria-label={`测试 ${option.name} 延迟`}
-      aria-busy={testing || undefined}
-      disabled={disabled}
-      onClick={onTest}
-    >{testing
-      ? <span className="latency-testing-dots" aria-hidden="true"><i /><i /><i /></span>
-      : delay ?? <BoltIcon />}</button>
-  </div>;
-  return <button type="button" className={`policy-option${active ? " active" : ""}`} disabled={disabled || !onClick} onClick={onClick}>
-    {content}
-    <strong className={delay ? latencyClass(delay, thresholds) : ""}>{delay ?? <BoltIcon />}</strong>
-  </button>;
-}
 
-export function proxyMatchesQuery(option: ControllerProxy, query: string) {
-  return matchesQuery([option.name, option.type, proxyType(option.type), option.udp ? "udp" : undefined], query);
-}
 
 function subscriptionNodes(subscription: Subscription, entries: ControllerProxy[]) {
   const prefix = `${subscription.name} |`;
@@ -677,41 +450,18 @@ export function uniqueSubscriptionNodes(subscriptions: Subscription[], entries: 
   return [...unique.values()];
 }
 
-function groupIcon(name: string) {
-  if (name === "所有-自动") return autoOptionIcon;
-  if (name === "所有-手动") return manualOptionIcon;
-  return groupIcons[name] ?? otherGroupIcon;
+function successfulProxyDelays(nodes: ControllerProxy[], results: PromiseSettledResult<{ delay: number }>[]) {
+  return Object.fromEntries(results.flatMap((result, index) => result.status === "fulfilled"
+    ? [[nodes[index].name, result.value.delay]]
+    : []));
 }
 
-function proxyType(value: string) {
-  const normalized = value.toLocaleLowerCase();
-  if (normalized === "hysteria2") return "hy2";
-  if (normalized === "urltest") return "urltest";
-  return normalized;
-}
 
-export function latencyClass(delay: number, thresholds: LatencyThresholds) {
-  return delay > thresholds.medium ? "danger" : delay > thresholds.low ? "warning" : "success";
-}
 
-export function isVisibleProxy(proxy: ControllerProxy, hideUnavailable: boolean) {
-  return !hideUnavailable || proxy.alive !== false;
-}
 
-export function proxyOptionAction(groupType: string) {
-  return groupType.toLocaleLowerCase() === "selector" ? "select" : "test";
-}
 
-export function recentLatencyHistory(history: ProxyHistory[], limit = 10) {
-  return history.slice(-limit).reverse();
-}
 
-export function formatLatencyTime(value: string) {
-  const date = new Date(value);
-  if (!Number.isFinite(date.getTime())) return value.replace("T", " ").replace(/\.\d{3}Z$/, "");
-  const part = (item: number) => String(item).padStart(2, "0");
-  return `${date.getFullYear()}-${part(date.getMonth() + 1)}-${part(date.getDate())} ${part(date.getHours())}:${part(date.getMinutes())}:${part(date.getSeconds())}`;
-}
+
 
 function finiteSetting(value: string | undefined, fallback: number) {
   const parsed = Number(value);
@@ -826,44 +576,4 @@ export function toggleProxyCardsCollapsed(current: Record<string, boolean>, tab:
 function subscriptionLatency(subscription: Subscription, entries: ControllerProxy[]) {
   const measured = subscriptionNodes(subscription, entries).map(node => latestLatency(node.history)).filter((delay): delay is number => delay != null);
   return measured.length ? Math.min(...measured) : null;
-}
-
-export function getPenetrationGroup(group: ControllerProxy, data: ProxiesResponse | null) {
-  const selected = group.now ? data?.proxies[group.now] : undefined;
-  return selected?.all?.length ? selected : undefined;
-}
-
-export function selectedProxyDelay(group: ControllerProxy, data: ProxiesResponse | null) {
-  const visited = new Set<string>();
-  let selected: ControllerProxy | undefined = group;
-  while (selected?.now) {
-    if (visited.has(selected.name)) return null;
-    visited.add(selected.name);
-    selected = data?.proxies[selected.now];
-    if (!selected) return null;
-  }
-  return selected === group ? null : latestLatency(selected.history);
-}
-
-export function sortPenetrationOptions(options: ControllerProxy[]) {
-  return sortProxyNodes(options, "latencyAsc");
-}
-
-export function sortProxyNodes(options: ControllerProxy[], mode: ProxyNodeSortMode) {
-  const indexed = options.map((option, index) => ({ option, index, delay: latestLatency(option.history) }));
-  if (mode === "default") return options;
-  if (mode === "nameAsc" || mode === "nameDesc") return indexed
-    .sort((left, right) => (mode === "nameAsc" ? 1 : -1) * left.option.name.localeCompare(right.option.name, "zh-CN") || left.index - right.index)
-    .map(item => item.option);
-  return indexed.sort((left, right) => {
-    if (left.delay == null && right.delay == null) return left.index - right.index;
-    if (left.delay == null) return 1;
-    if (right.delay == null) return -1;
-    return (mode === "latencyAsc" ? left.delay - right.delay : right.delay - left.delay) || left.index - right.index;
-  }).map(item => item.option);
-}
-
-export function summarizeGroupLatencyTest(result: Record<string, number>, total: number) {
-  const success = Object.values(result).filter(delay => Number.isFinite(delay) && delay > 0).length;
-  return { success, failed: Math.max(0, total - success) };
 }
