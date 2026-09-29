@@ -53,6 +53,29 @@ describe("parseResponseBody", () => {
     expect(fetchMock.mock.calls[1][0]).toBe("/api/controller/proxies/%E8%AE%A2%E9%98%85%20%7C%20%E7%BE%8E%E5%9B%BD-03/delay?url=http%3A%2F%2Fexample.com%2F204&timeout=5000");
   });
 
+  it("uses the original outbound-group load, save, and defaults endpoints", async () => {
+    const group = {
+      id: "all-auto", name: "所有-自动", type: "urltest", mode: "dynamic", enabled: true,
+      icon: "globe:earth-asia", iconScale: 0, keywords: [], members: [], interval: "300s", tolerance: 100,
+    };
+    const response = JSON.stringify({ groups: [group], types: ["urltest"], availableNodes: [], availableGroups: [] });
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce(new Response(response, { status: 200, headers: { "content-type": "application/json" } }))
+      .mockResolvedValueOnce(new Response(response, { status: 200, headers: { "content-type": "application/json" } }))
+      .mockResolvedValueOnce(new Response(JSON.stringify({ groups: [group] }), { status: 200, headers: { "content-type": "application/json" } }));
+    vi.stubGlobal("fetch", fetchMock);
+    vi.stubGlobal("localStorage", { getItem: () => null });
+    vi.stubGlobal("navigator", { language: "zh-CN" });
+
+    await expect(api.groups()).resolves.toMatchObject({ groups: [group] });
+    await expect(api.saveGroups([group])).resolves.toMatchObject({ groups: [group] });
+    await expect(api.defaultGroups()).resolves.toEqual([group]);
+
+    expect(fetchMock.mock.calls[0][0]).toBe("/api/openbox/groups");
+    expect(fetchMock.mock.calls[1]).toMatchObject(["/api/openbox/groups", { method: "PUT", body: JSON.stringify({ groups: [group] }) }]);
+    expect(fetchMock.mock.calls[2][0]).toBe("/api/openbox/defaults/groups");
+  });
+
   it("uses the original route lookup and diagnostic API contracts", async () => {
     const fetchMock = vi.fn().mockResolvedValue(new Response("{}", { status: 200, headers: { "content-type": "application/json" } }));
     vi.stubGlobal("fetch", fetchMock);

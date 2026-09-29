@@ -17,17 +17,17 @@ export function formatDuration(seconds = 0) {
   return hours ? `${hours}小时${minutes ? `${minutes}分钟` : ""}` : `${minutes}分钟`;
 }
 
-export function formatDateTime(value?: string) {
+export function formatDateTime(value?: string | number) {
   if (!value) return "—";
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return value;
   return new Intl.DateTimeFormat("zh-CN", { month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" }).format(date);
 }
 
-export function formatRelativeTime(value?: string, now = Date.now()) {
+export function formatRelativeTime(value?: string | number, now = Date.now()) {
   if (!value) return "—";
   const startedAt = new Date(value).getTime();
-  if (!Number.isFinite(startedAt)) return value;
+  if (!Number.isFinite(startedAt)) return String(value);
   const elapsed = Math.max(0, now - startedAt);
   if (elapsed < 60_000) return "几秒前";
   if (elapsed < 3_600_000) return `${Math.floor(elapsed / 60_000)} 分钟前`;

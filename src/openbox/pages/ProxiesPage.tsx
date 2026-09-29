@@ -468,9 +468,9 @@ function finiteSetting(value: string | undefined, fallback: number) {
   return Number.isFinite(parsed) && parsed >= 0 ? parsed : fallback;
 }
 
-function relativeTime(value: string) {
+function relativeTime(value: string | number) {
   const timestamp = new Date(value).getTime();
-  if (!Number.isFinite(timestamp)) return value;
+  if (!Number.isFinite(timestamp)) return String(value);
   const hours = Math.max(0, Math.floor((Date.now() - timestamp) / 3_600_000));
   return hours < 1 ? "刚刚" : `${hours} 小时前`;
 }

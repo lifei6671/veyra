@@ -25,6 +25,7 @@ export function OpenBoxApp() {
   const [auth, setAuth] = useState<AuthStatus | null>(null);
   const [route, setRoute] = useState<RouteKey>(routeFromHash);
   const [storage, setStorage] = useState<StorageResponse | null>(null);
+  const [backgroundImage, setBackgroundImage] = useState("");
   const [service, setService] = useState<ServiceStatus | null>(null);
   const [theme, setTheme] = useState<"light" | "dark">("light");
   const [collapsed, setCollapsed] = useState(false);
@@ -42,7 +43,15 @@ export function OpenBoxApp() {
   const loadStorage = useCallback(async () => {
     const value = await api.storage();
     setStorage(value);
-    localStorage.setItem("config/language", "zh-CN");
+    const language = value.entries["config/language"] ?? "zh-CN";
+    localStorage.setItem("config/language", language);
+    document.documentElement.lang = language;
+    const background = value.entries["config/custom-background-image"] ?? "";
+    if (background.startsWith("local-image-")) {
+      setBackgroundImage(await api.backgroundImage());
+    } else {
+      setBackgroundImage("");
+    }
     const themeMode = value.entries["config/theme-mode"];
     setTheme(themeMode === "dark" || (themeMode === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches) ? "dark" : "light");
     setCollapsed(value.entries["config/is-sidebar-collapsed"] === "true");
@@ -132,7 +141,7 @@ export function OpenBoxApp() {
   if (!storage) return <LoadingView />;
 
   return <>
-    <AppShell route={route} onNavigate={navigate} service={service} stats={stats} collapsed={collapsed} onCollapse={toggleCollapse} onServiceAction={serviceAction} onRefresh={() => void refresh()} busy={busy} appearance={{ radius: Number(storage.entries["config/global-radius"] ?? 15.8), background: storage.entries["config/custom-background-image"] ?? "", nodeCardMinWidth: proxyNodeCardMinWidth }}>
+    <AppShell route={route} onNavigate={navigate} service={service} stats={stats} collapsed={collapsed} onCollapse={toggleCollapse} onServiceAction={serviceAction} onRefresh={() => void refresh()} busy={busy} appearance={{ radius: Number(storage.entries["config/global-radius"] ?? 15.8), background: (storage.entries["config/custom-background-image"] ?? "").startsWith("local-image-") ? backgroundImage : storage.entries["config/custom-background-image"] ?? "", backgroundOpacity: Number(storage.entries["config/dashboard-transparent"] ?? 90), backgroundBlur: Number(storage.entries["config/blur-intensity"] ?? 10), nodeCardMinWidth: proxyNodeCardMinWidth }}>
       {route === "overview" && <OverviewPage stats={stats} storage={storage} onToast={showToast} />}
       {route === "proxies" && <ProxiesPage storage={storage} onToast={showToast} onNodeCardMinWidthChange={setProxyNodeCardMinWidth} />}
       {route === "connections" && <ConnectionsPage frame={live.connections} storage={storage} onPatchStorage={patchStorage} onToast={showToast} />}

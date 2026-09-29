@@ -1,5 +1,5 @@
 import type { ButtonHTMLAttributes, ReactNode } from "react";
-import { ExclamationTriangleIcon } from "@heroicons/react/24/outline";
+import { ExclamationTriangleIcon, XMarkIcon } from "@heroicons/react/24/outline";
 
 export function Glyph({ children }: { children: ReactNode }) {
   return <span className="glyph" aria-hidden="true">{children}</span>;
@@ -41,7 +41,7 @@ export function ErrorState({ title = "加载失败", error, onRetry }: { title?:
 export function Modal({ title, children, onClose, footer, className = "" }: { title: string; children: ReactNode; onClose: () => void; footer?: ReactNode; className?: string }) {
   return <div className="ob-modal-backdrop" role="presentation" onMouseDown={event => { if (event.target === event.currentTarget) onClose(); }}>
     <section className={`ob-modal${className ? ` ${className}` : ""}`} role="dialog" aria-modal="true" aria-labelledby="ob-modal-title">
-      <header><h2 id="ob-modal-title">{title}</h2><button type="button" aria-label="关闭" onClick={onClose}>×</button></header>
+      <header><h2 id="ob-modal-title">{title}</h2><button type="button" aria-label="关闭" data-tooltip="关闭" className="tooltip-trigger tooltip-align-right" onClick={onClose}><XMarkIcon aria-hidden="true" /></button></header>
       <div className="ob-modal-body">{children}</div>
       {footer && <footer>{footer}</footer>}
     </section>
