@@ -136,8 +136,8 @@ export function OpenBoxApp() {
       {route === "overview" && <OverviewPage stats={stats} storage={storage} onToast={showToast} />}
       {route === "proxies" && <ProxiesPage storage={storage} onToast={showToast} onNodeCardMinWidthChange={setProxyNodeCardMinWidth} />}
       {route === "connections" && <ConnectionsPage frame={live.connections} storage={storage} onPatchStorage={patchStorage} onToast={showToast} />}
-      {route === "logs" && <LogsPage onToast={showToast} />}
-      {route === "rules" && <RulesPage />}
+      {route === "logs" && <LogsPage />}
+      {route === "rules" && <RulesPage storage={storage} onToast={showToast} />}
       {route === "settings" && <SettingsPage storage={storage} theme={theme} setTheme={setTheme} onToast={message => { showToast(message); void loadStorage().catch(() => undefined); }} />}
     </AppShell>
     <Toaster theme={theme} />

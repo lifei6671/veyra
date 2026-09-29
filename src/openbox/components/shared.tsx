@@ -5,15 +5,17 @@ export function Glyph({ children }: { children: ReactNode }) {
   return <span className="glyph" aria-hidden="true">{children}</span>;
 }
 
-export function IconButton({ label, children, active, className = "", ...props }: ButtonHTMLAttributes<HTMLButtonElement> & {
+export function IconButton({ label, children, active, tooltip = false, className = "", ...props }: ButtonHTMLAttributes<HTMLButtonElement> & {
   label: string;
   children: ReactNode;
   active?: boolean;
+  tooltip?: boolean;
 }) {
   return <button
     type="button"
     aria-label={label}
-    title={label}
+    title={tooltip ? undefined : label}
+    data-tooltip={tooltip ? label : undefined}
     className={`icon-button${active ? " active" : ""}${className ? ` ${className}` : ""}`}
     {...props}
   >{children}</button>;

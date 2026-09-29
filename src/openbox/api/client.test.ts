@@ -53,6 +53,23 @@ describe("parseResponseBody", () => {
     expect(fetchMock.mock.calls[1][0]).toBe("/api/controller/proxies/%E8%AE%A2%E9%98%85%20%7C%20%E7%BE%8E%E5%9B%BD-03/delay?url=http%3A%2F%2Fexample.com%2F204&timeout=5000");
   });
 
+  it("uses the original route lookup and diagnostic API contracts", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(new Response("{}", { status: 200, headers: { "content-type": "application/json" } }));
+    vi.stubGlobal("fetch", fetchMock);
+    vi.stubGlobal("localStorage", { getItem: () => null });
+    vi.stubGlobal("navigator", { language: "zh-CN" });
+
+    await api.penetration("www.baidu.com");
+    await api.terminalTestCapability();
+    await api.terminalTest("www.baidu.com", 443, "TLS");
+    await api.routeTest("www.baidu.com", 443);
+
+    expect(fetchMock.mock.calls[0]).toMatchObject(["/api/openbox/penetration", { method: "POST", body: JSON.stringify({ target: "www.baidu.com" }) }]);
+    expect(fetchMock.mock.calls[1][0]).toBe("/api/openbox/terminal-test/capability");
+    expect(fetchMock.mock.calls[2]).toMatchObject(["/api/openbox/terminal-test", { method: "POST", body: JSON.stringify({ target: "www.baidu.com", port: 443, method: "TLS" }) }]);
+    expect(fetchMock.mock.calls[3]).toMatchObject(["/api/openbox/route-test", { method: "POST", body: JSON.stringify({ target: "www.baidu.com", port: 443 }) }]);
+  });
+
   it("keeps month, hour and drill filters on the real traffic endpoints", async () => {
     const fetchMock = vi.fn().mockResolvedValue(new Response("{}", { status: 200, headers: { "content-type": "application/json" } }));
     vi.stubGlobal("fetch", fetchMock);

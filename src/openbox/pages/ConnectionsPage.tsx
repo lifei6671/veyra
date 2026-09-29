@@ -29,7 +29,7 @@ import groupGlobalIcon from "../assets/group-global.svg";
 import groupOtherIcon from "../assets/group-other.svg";
 import optionAutoIcon from "../assets/option-auto.svg";
 import optionDirectIcon from "../assets/option-direct.svg";
-import { ProxyGroupCard, type LatencyThresholds } from "./ProxiesPage";
+import { mergeProxyGroupLatencyResult, mergeProxyLatency, ProxyGroupCard, type LatencyThresholds } from "./ProxiesPage";
 
 export type ConnectionColumn = "close" | "type" | "process" | "host" | "rule" | "chains" | "outbound" | "dlSpeed" | "ulSpeed" | "dl" | "ul" | "connectTime" | "sourceIP" | "sourcePort" | "sniffHost" | "destination" | "destinationType" | "remoteAddress" | "inboundUser";
 type SortType = Exclude<ConnectionColumn, "close">;
@@ -345,6 +345,8 @@ export function ConnectionsPage({ frame, storage, onPatchStorage, onToast }: {
   const [detailGeo, setDetailGeo] = useState<GeoIpInfo | null>(null);
   const [detailError, setDetailError] = useState("");
   const [detailBusy, setDetailBusy] = useState("");
+  const [detailTestingNodes, setDetailTestingNodes] = useState<Set<string>>(() => new Set());
+  const detailTestingNodesRef = useRef(new Set<string>());
   const [detailPolicyCollapsed, setDetailPolicyCollapsed] = useState(true);
   const [detailPenetrationExpanded, setDetailPenetrationExpanded] = useState(false);
 
@@ -477,8 +479,8 @@ export function ConnectionsPage({ frame, storage, onPatchStorage, onToast }: {
   const testDetailGroup = async (group: string) => {
     setDetailBusy(`test:${group}`);
     try {
-      await api.testProxyGroup(group, testUrl, testTimeout);
-      setDetailProxies(await api.proxies());
+      const result = await api.testProxyGroup(group, testUrl, testTimeout);
+      setDetailProxies(current => current ? { proxies: mergeProxyGroupLatencyResult(current.proxies, group, result) } : current);
       onToast(`${group} 延迟测试完成`);
     } catch (reason) {
       onToast(reason instanceof Error ? reason.message : "延迟测试失败");
@@ -488,14 +490,17 @@ export function ConnectionsPage({ frame, storage, onPatchStorage, onToast }: {
   };
 
   const testDetailNode = async (name: string) => {
-    setDetailBusy(`node:${name}`);
+    if (detailTestingNodesRef.current.has(name)) return;
+    detailTestingNodesRef.current.add(name);
+    setDetailTestingNodes(new Set(detailTestingNodesRef.current));
     try {
-      await api.testProxy(name, testUrl, testTimeout);
-      setDetailProxies(await api.proxies());
+      const { delay } = await api.testProxy(name, testUrl, testTimeout);
+      setDetailProxies(current => current ? { proxies: mergeProxyLatency(current.proxies, name, delay) } : current);
     } catch {
       // The card keeps its previous latency when a probe fails.
     } finally {
-      setDetailBusy("");
+      detailTestingNodesRef.current.delete(name);
+      setDetailTestingNodes(new Set(detailTestingNodesRef.current));
     }
   };
 
@@ -568,6 +573,7 @@ export function ConnectionsPage({ frame, storage, onPatchStorage, onToast }: {
       groupName={detailGroupName}
       error={detailError}
       busy={detailBusy}
+      testingNodes={detailTestingNodes}
       collapsed={detailPolicyCollapsed}
       penetrationExpanded={detailPenetrationExpanded}
       thresholds={detailThresholds}
@@ -582,13 +588,14 @@ export function ConnectionsPage({ frame, storage, onPatchStorage, onToast }: {
   </main>;
 }
 
-function ConnectionDetail({ connection, data, geo, groupName, error, busy, collapsed, penetrationExpanded, thresholds, hideUnavailable, onClose, onToggle, onTogglePenetration, onSelect, onTest, onTestNode }: {
+function ConnectionDetail({ connection, data, geo, groupName, error, busy, testingNodes, collapsed, penetrationExpanded, thresholds, hideUnavailable, onClose, onToggle, onTogglePenetration, onSelect, onTest, onTestNode }: {
   connection: ControllerConnection;
   data: ProxiesResponse | null;
   geo: GeoIpInfo | null;
   groupName: string;
   error: string;
   busy: string;
+  testingNodes: ReadonlySet<string>;
   collapsed: boolean;
   penetrationExpanded: boolean;
   thresholds: LatencyThresholds;
@@ -617,7 +624,7 @@ function ConnectionDetail({ connection, data, geo, groupName, error, busy, colla
           group={group}
           data={data}
           collapsed={collapsed}
-          busy={Boolean(busy) && !busy.startsWith("node:")}
+          busy={Boolean(busy)}
           onToggle={onToggle}
           onSelect={onSelect}
           onTest={onTest}
@@ -627,7 +634,8 @@ function ConnectionDetail({ connection, data, geo, groupName, error, busy, colla
           thresholds={thresholds}
           history={group.history ?? []}
           latencyHistory={{}}
-          testingGroup={busy.startsWith("test:") || busy.startsWith("node:") ? busy.slice(5) : ""}
+          testingGroup={busy.startsWith("test:") ? busy.slice(5) : ""}
+          testingNodes={testingNodes}
           penetrationExpanded={penetrationExpanded}
           onTogglePenetration={onTogglePenetration}
         />}
