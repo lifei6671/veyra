@@ -4,6 +4,7 @@ import type {
   ClientsResponse,
   ControllerConfig,
   DnsFilterConfig,
+  GeoIpInfo,
   GroupsResponse,
   OpenBoxGroup,
   OpenBoxProfile,
@@ -76,6 +77,42 @@ export function parseResponseBody(rawBody: string, contentType: string) {
 
 const json = (value: unknown): RequestInit => ({ body: JSON.stringify(value) });
 
+function objectValue(value: unknown): Record<string, unknown> {
+  return value && typeof value === "object" ? value as Record<string, unknown> : {};
+}
+
+export function normalizeGeoIpInfo(provider: string, value: unknown, fallbackIp: string): GeoIpInfo {
+  const body = objectValue(value);
+  const connection = objectValue(body.connection);
+  const location = objectValue(body.location);
+  const asn = objectValue(body.asn);
+  const numericAsn = Number(provider === "ipwho.is" ? connection.asn : provider === "ipapi.is" ? asn.asn : body.asn);
+  return {
+    ip: String(body.ip ?? fallbackIp),
+    asn: Number.isFinite(numericAsn) && numericAsn > 0 ? numericAsn : null,
+    countryCode: String(body.country_code ?? location.country_code ?? "").toUpperCase(),
+    country: String(body.country ?? location.country ?? ""),
+    organization: String(
+      provider === "ipwho.is"
+        ? connection.org ?? connection.isp ?? ""
+        : provider === "ipapi.is"
+          ? asn.org ?? asn.organization ?? ""
+          : body.organization ?? body.asn_organization ?? body.isp ?? "",
+    ),
+  };
+}
+
+async function geoIp(ip: string, provider: string): Promise<GeoIpInfo> {
+  const target = provider === "ipwho.is"
+    ? `https://ipwho.is/${encodeURIComponent(ip)}`
+    : provider === "ipapi.is"
+      ? `https://api.ipapi.is/?q=${encodeURIComponent(ip)}`
+      : `https://api.ip.sb/geoip/${encodeURIComponent(ip)}?t=${Date.now()}`;
+  const response = await fetch(target, { headers: { Accept: "application/json" } });
+  if (!response.ok) throw new ApiError(`IP 信息查询失败 (${response.status})`, response.status);
+  return normalizeGeoIpInfo(provider, await response.json(), ip);
+}
+
 export function controllerSocketUrl(channel: "connections" | "logs" | "memory" | "traffic", query?: Record<string, string>) {
   const origin = configuredBase ? new URL(configuredBase, window.location.origin).origin : window.location.origin;
   const url = new URL(`/api/controller-ws/${channel}`, origin);
@@ -91,7 +128,7 @@ export const api = {
   changePassword: (currentPassword: string, newPassword: string) => request<AuthStatus>("/api/auth/change-password", { method: "POST", ...json({ currentPassword, newPassword }) }),
 
   storage: () => request<StorageResponse>("/api/storage"),
-  patchStorage: (entries: Record<string, string>, removed: string[] = []) => request<StorageResponse>("/api/storage", { method: "PATCH", ...json({ entries, removed }) }),
+  patchStorage: (entries: Record<string, string>, removed: string[] = []) => request<unknown>("/api/storage", { method: "PATCH", ...json({ entries, removed }) }),
 
   serviceStatus: () => request<ServiceStatus>("/api/openbox/service/status"),
   serviceAction: (action: "start" | "stop" | "restart") => request<ServiceStatus>(`/api/openbox/service/core/${action}`, { method: "POST" }),
@@ -104,6 +141,7 @@ export const api = {
   selectProxy: (group: string, name: string) => request<void>(`/api/controller/proxies/${encodeURIComponent(group)}`, { method: "PUT", ...json({ name }) }),
   testProxy: (name: string, url: string, timeout: number) => request<{ delay: number }>(`/api/controller/proxies/${encodeURIComponent(name)}/delay?url=${encodeURIComponent(url)}&timeout=${timeout}`),
   testProxyGroup: (group: string, url: string, timeout: number) => request<Record<string, number>>(`/api/controller/group/${encodeURIComponent(group)}/delay?url=${encodeURIComponent(url)}&timeout=${timeout}`),
+  geoIp,
   rules: () => request<RulesResponse>("/api/controller/rules"),
   closeConnection: (id: string) => request<void>(`/api/controller/connections/${encodeURIComponent(id)}`, { method: "DELETE" }),
   closeAllConnections: () => request<void>("/api/controller/connections", { method: "DELETE" }),

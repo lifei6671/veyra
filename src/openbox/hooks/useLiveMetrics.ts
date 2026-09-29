@@ -3,7 +3,7 @@ import type { ConnectionsFrame, ControllerConnection, MemoryFrame, TrafficFrame 
 import { useControllerSocket } from "./useControllerSocket";
 
 export function useLiveMetrics(enabled: boolean) {
-  const [connections, setConnections] = useState<ConnectionsFrame>({ connections: [] });
+  const [connections, setConnections] = useState<ConnectionsFrame>({ connections: [], closedConnections: [] });
   const [traffic, setTraffic] = useState({ up: 0, down: 0, upRate: 0, downRate: 0 });
   const [memory, setMemory] = useState(0);
   const previousConnections = useRef<{ time: number; values: Map<string, ControllerConnection> } | null>(null);
@@ -23,8 +23,13 @@ export function useLiveMetrics(enabled: boolean) {
           uploadSpeed: before ? Math.max(0, (connection.upload - before.upload) / elapsed) : 0,
         };
       });
-      setConnections({ ...frame, connections: values });
-      previousConnections.current = { time: now, values: new Map(frame.connections.map(connection => [connection.id, connection])) };
+      const currentIds = new Set(values.map(connection => connection.id));
+      const disappeared = previous ? [...previous.values.values()].filter(connection => !currentIds.has(connection.id)) : [];
+      setConnections(current => {
+        const retained = (current.closedConnections ?? []).filter(connection => !currentIds.has(connection.id) && !disappeared.some(item => item.id === connection.id));
+        return { ...frame, connections: values, closedConnections: [...disappeared, ...retained].slice(0, 100) };
+      });
+      previousConnections.current = { time: now, values: new Map(values.map(connection => [connection.id, connection])) };
     },
   });
 

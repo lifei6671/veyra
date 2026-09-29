@@ -43,13 +43,13 @@ export function AppShell({ route, onNavigate, service, stats, collapsed, onColla
   onServiceAction: (action: "start" | "stop") => void;
   onRefresh: () => void;
   busy: boolean;
-  appearance: { radius: number; background: string };
+  appearance: { radius: number; background: string; nodeCardMinWidth: number };
   children: ReactNode;
 }) {
   const running = service?.core.running ?? false;
   const sidebarLabel = collapsed ? "展开侧边栏" : "收起侧边栏";
   const customBackground = /^(https?:|data:|blob:)/i.test(appearance.background) ? `url(${JSON.stringify(appearance.background)})` : undefined;
-  const style = { "--global-radius": `${appearance.radius}px`, ...(customBackground ? { "--panel-background-image": customBackground } : {}) } as CSSProperties;
+  const style = { "--global-radius": `${appearance.radius}px`, "--proxy-node-card-min-width": `${appearance.nodeCardMinWidth}px`, ...(customBackground ? { "--panel-background-image": customBackground } : {}) } as CSSProperties;
   return <div className={`openbox-app${collapsed ? " sidebar-collapsed" : ""}`} style={style}>
     <aside className="sidebar">
       <div className="sidebar-top"><span className="brand"><img src={openBoxLogo} alt="Open-Box" /></span><span className="sidebar-collapse-control"><IconButton label={sidebarLabel} title={undefined} onClick={onCollapse}><span className="sidebar-collapse-icon" aria-hidden="true" /></IconButton><span className="sidebar-collapse-tooltip" role="tooltip">{sidebarLabel}</span></span></div>

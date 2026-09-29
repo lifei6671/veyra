@@ -40,6 +40,14 @@ export type ControllerProxy = {
 
 export type ProxiesResponse = { proxies: Record<string, ControllerProxy> };
 
+export type GeoIpInfo = {
+  ip: string;
+  asn: number | null;
+  countryCode: string;
+  country: string;
+  organization: string;
+};
+
 export type ControllerRule = { type: string; payload: string; proxy: string };
 export type RulesResponse = { rules: ControllerRule[] };
 
@@ -48,8 +56,12 @@ export type ConnectionMetadata = {
   destinationPort: string;
   dnsMode?: string;
   host: string;
+  inboundName?: string;
+  inboundUser?: string;
   network: string;
+  process?: string;
   processPath?: string;
+  sniffHost?: string;
   sourceIP: string;
   sourcePort: string;
   type: string;
@@ -70,6 +82,7 @@ export type ControllerConnection = {
 
 export type ConnectionsFrame = {
   connections: ControllerConnection[];
+  closedConnections?: ControllerConnection[];
   downloadTotal?: number;
   uploadTotal?: number;
 };
