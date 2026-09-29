@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { api, parseResponseBody } from "./client";
+import { api, normalizeGeoIpInfo, parseResponseBody } from "./client";
 
 afterEach(() => vi.unstubAllGlobals());
 
@@ -12,6 +12,29 @@ describe("parseResponseBody", () => {
 
   it("keeps non-JSON text responses unchanged", () => {
     expect(parseResponseBody("service unavailable", "text/plain")).toBe("service unavailable");
+  });
+
+  it("normalizes the supported real IP information providers", () => {
+    expect(normalizeGeoIpInfo("ip.sb", { ip: "198.41.192.67", asn: 13335, country_code: "US", organization: "Cloudflare" }, "fallback")).toEqual({
+      ip: "198.41.192.67", asn: 13335, countryCode: "US", country: "", organization: "Cloudflare",
+    });
+    expect(normalizeGeoIpInfo("ipwho.is", { ip: "198.41.192.67", country: "United States", country_code: "US", connection: { asn: 13335, org: "Cloudflare, Inc." } }, "fallback")).toMatchObject({
+      asn: 13335, countryCode: "US", country: "United States", organization: "Cloudflare, Inc.",
+    });
+    expect(normalizeGeoIpInfo("ipapi.is", { ip: "198.41.192.67", location: { country: "United States", country_code: "US" }, asn: { asn: 13335, org: "Cloudflare, Inc." } }, "fallback")).toMatchObject({
+      asn: 13335, countryCode: "US", country: "United States", organization: "Cloudflare, Inc.",
+    });
+  });
+
+  it("queries the configured IP information API instead of returning mock data", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(new Response('{"ip":"198.41.192.67","asn":13335,"country_code":"US","organization":"Cloudflare"}', {
+      status: 200,
+      headers: { "content-type": "application/json" },
+    }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(api.geoIp("198.41.192.67", "ip.sb")).resolves.toMatchObject({ ip: "198.41.192.67", asn: 13335 });
+    expect(fetchMock.mock.calls[0][0]).toMatch(/^https:\/\/api\.ip\.sb\/geoip\/198\.41\.192\.67\?t=\d+$/);
   });
 
   it("wires proxy selection and single-node delay checks to controller endpoints", async () => {

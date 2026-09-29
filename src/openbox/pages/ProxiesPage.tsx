@@ -49,10 +49,10 @@ type ProxyViewSettings = {
 };
 export type LatencyThresholds = { low: number; medium: number };
 const PROXY_VIEW_TAB_KEY = "openbox:proxy-view-tab";
-const PROXY_VIEW_SETTINGS_KEY = "openbox:proxy-view-settings";
+export const PROXY_VIEW_SETTINGS_KEY = "openbox:proxy-view-settings";
 const defaultViewSettings = (): ProxyViewSettings => ({ nodeSort: "latencyAsc", groupByProvider: true, nodeCardMinWidth: 145, strategyOrder: [] });
 
-export function ProxiesPage({ storage, onToast }: { storage: StorageResponse | null; onToast: (message: string) => void }) {
+export function ProxiesPage({ storage, onToast, onNodeCardMinWidthChange }: { storage: StorageResponse | null; onToast: (message: string) => void; onNodeCardMinWidthChange: (width: number) => void }) {
   const [data, setData] = useState<ProxiesResponse | null>(null);
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
   const [latencyHistory, setLatencyHistory] = useState<Record<string, ProxyHistory[]>>({});
@@ -93,8 +93,7 @@ export function ProxiesPage({ storage, onToast }: { storage: StorageResponse | n
     medium: finiteSetting(storage?.entries["config/medium-latency"], 1000),
   };
   const listStyle = { gridTemplateColumns: `repeat(${columns}, minmax(0, 1fr))` };
-  const pageStyle = { "--proxy-node-card-min-width": `${viewSettings.nodeCardMinWidth}px` } as React.CSSProperties;
-  const testingGroup = busy.startsWith("test:") ? busy.slice(5) : "";
+  const testingGroup = busy.startsWith("test:") || busy.startsWith("node:") ? busy.slice(5) : "";
   const visibleGroups = useMemo(() => sortProxyViewItems(customGroups, { mode: "custom", order: viewSettings.strategyOrder }, group => group.name, group => group.name, group => selectedProxyDelay(group, data)), [customGroups, data, viewSettings.strategyOrder]);
   const visibleNodeGroups = nodeGroups;
   const visibleSubscriptions = subscriptions;
@@ -109,6 +108,7 @@ export function ProxiesPage({ storage, onToast }: { storage: StorageResponse | n
   const saveViewSettings = (next: ProxyViewSettings) => {
     setViewSettings(next);
     window.localStorage.setItem(PROXY_VIEW_SETTINGS_KEY, JSON.stringify(next));
+    onNodeCardMinWidthChange(next.nodeCardMinWidth);
   };
 
   const updateOrder = (order: string[]) => {
@@ -261,7 +261,7 @@ export function ProxiesPage({ storage, onToast }: { storage: StorageResponse | n
   }, [dragOrder]);
 
   return <>
-  <main className="page proxies-page" style={pageStyle}>
+  <main className="page proxies-page">
     <div className="proxy-controls">
       <SegmentedGroup className="proxy-tabs" value={tab} onValueChange={changeTab} aria-label="代理视图">
         <SegmentedItem value="groups">策略 <span>({customGroups.length})</span></SegmentedItem>
@@ -475,6 +475,8 @@ export function ProxyGroupCard({ group, data, collapsed, busy, onToggle, onSelec
           disabled={busy}
           thresholds={thresholds}
           onClick={() => void onSelect(group.name, option.name)}
+          onTest={() => void onTestNode(option.name)}
+          testing={testingGroup === "all" || testingGroup === option.name}
         />)}</div>
         {penetration && <>
           <button type="button" className={`policy-footer${penetrationOpen ? " open" : ""}`} aria-expanded={penetrationOpen} onClick={onTogglePenetration}>{penetrationOpen ? "收起穿透" : "策略穿透"}{penetrationOpen ? <ChevronUpIcon /> : <ChevronDownIcon />}</button>
@@ -489,6 +491,7 @@ export function ProxyGroupCard({ group, data, collapsed, busy, onToggle, onSelec
             thresholds={thresholds}
             history={latencyHistory[penetration.name] ?? penetration.history ?? []}
             testing={testingGroup === "all" || testingGroup === penetration.name}
+            testingNode={testingGroup}
             query={query}
             nodeSort={nodeSort}
           />}
@@ -510,6 +513,7 @@ export function ProxyGroupCard({ group, data, collapsed, busy, onToggle, onSelec
             showIcon={false}
             onClick={proxyOptionAction(group.type) === "select" ? () => void onSelect(group.name, option.name) : undefined}
             onTest={() => void onTestNode(option.name)}
+            testing={testingGroup === "all" || testingGroup === option.name}
           />)}</div>
       </div>
     </section>}
@@ -527,7 +531,7 @@ export function NodeHealthDots({ options, selectedName, thresholds }: { options:
   </div>;
 }
 
-export function PenetrationGroup({ group, data, busy, onSelect, onTest, onTestNode, hideUnavailable, thresholds, history, testing, query = "", nodeSort = "latencyAsc" }: {
+export function PenetrationGroup({ group, data, busy, onSelect, onTest, onTestNode, hideUnavailable, thresholds, history, testing, testingNode = "", query = "", nodeSort = "latencyAsc" }: {
   group: ControllerProxy;
   data: ProxiesResponse | null;
   busy: boolean;
@@ -538,6 +542,7 @@ export function PenetrationGroup({ group, data, busy, onSelect, onTest, onTestNo
   thresholds: LatencyThresholds;
   history: ProxyHistory[];
   testing: boolean;
+  testingNode?: string;
   query?: string;
   nodeSort?: ProxyNodeSortMode;
 }) {
@@ -568,6 +573,7 @@ export function PenetrationGroup({ group, data, busy, onSelect, onTest, onTestNo
       showIcon={false}
       onClick={proxyOptionAction(group.type) === "select" ? () => void onSelect(group.name, option.name) : undefined}
       onTest={() => void onTestNode(option.name)}
+      testing={testingNode === "all" || testingNode === option.name}
     />)}</div>
   </section>;
 }

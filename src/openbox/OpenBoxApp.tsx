@@ -7,7 +7,7 @@ import { AuthScreen } from "./components/AuthScreen";
 import { ErrorState, LoadingView } from "./components/shared";
 import { useLiveMetrics } from "./hooks/useLiveMetrics";
 import { OverviewPage } from "./pages/OverviewPage";
-import { ProxiesPage } from "./pages/ProxiesPage";
+import { PROXY_VIEW_SETTINGS_KEY, ProxiesPage, proxyViewSettings } from "./pages/ProxiesPage";
 import { ConnectionsPage } from "./pages/ConnectionsPage";
 import { LogsPage } from "./pages/LogsPage";
 import { RulesPage } from "./pages/RulesPage";
@@ -28,6 +28,7 @@ export function OpenBoxApp() {
   const [service, setService] = useState<ServiceStatus | null>(null);
   const [theme, setTheme] = useState<"light" | "dark">("light");
   const [collapsed, setCollapsed] = useState(false);
+  const [proxyNodeCardMinWidth, setProxyNodeCardMinWidth] = useState(() => proxyViewSettings(window.localStorage.getItem(PROXY_VIEW_SETTINGS_KEY)).nodeCardMinWidth);
   const [busy, setBusy] = useState(false);
   const [authError, setAuthError] = useState<unknown>(null);
 
@@ -45,6 +46,16 @@ export function OpenBoxApp() {
     const themeMode = value.entries["config/theme-mode"];
     setTheme(themeMode === "dark" || (themeMode === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches) ? "dark" : "light");
     setCollapsed(value.entries["config/is-sidebar-collapsed"] === "true");
+  }, []);
+
+  const patchStorage = useCallback(async (entries: Record<string, string>, removed: string[] = []) => {
+    await api.patchStorage(entries, removed);
+    setStorage(current => {
+      if (!current) return current;
+      const nextEntries = { ...current.entries, ...entries };
+      removed.forEach(key => delete nextEntries[key]);
+      return { entries: nextEntries };
+    });
   }, []);
 
   const loadService = useCallback(async () => setService(await api.serviceStatus()), []);
@@ -121,10 +132,10 @@ export function OpenBoxApp() {
   if (!storage) return <LoadingView />;
 
   return <>
-    <AppShell route={route} onNavigate={navigate} service={service} stats={stats} collapsed={collapsed} onCollapse={toggleCollapse} onServiceAction={serviceAction} onRefresh={() => void refresh()} busy={busy} appearance={{ radius: Number(storage.entries["config/global-radius"] ?? 15.8), background: storage.entries["config/custom-background-image"] ?? "" }}>
+    <AppShell route={route} onNavigate={navigate} service={service} stats={stats} collapsed={collapsed} onCollapse={toggleCollapse} onServiceAction={serviceAction} onRefresh={() => void refresh()} busy={busy} appearance={{ radius: Number(storage.entries["config/global-radius"] ?? 15.8), background: storage.entries["config/custom-background-image"] ?? "", nodeCardMinWidth: proxyNodeCardMinWidth }}>
       {route === "overview" && <OverviewPage stats={stats} storage={storage} onToast={showToast} />}
-      {route === "proxies" && <ProxiesPage storage={storage} onToast={showToast} />}
-      {route === "connections" && <ConnectionsPage frame={live.connections} onToast={showToast} />}
+      {route === "proxies" && <ProxiesPage storage={storage} onToast={showToast} onNodeCardMinWidthChange={setProxyNodeCardMinWidth} />}
+      {route === "connections" && <ConnectionsPage frame={live.connections} storage={storage} onPatchStorage={patchStorage} onToast={showToast} />}
       {route === "logs" && <LogsPage onToast={showToast} />}
       {route === "rules" && <RulesPage />}
       {route === "settings" && <SettingsPage storage={storage} theme={theme} setTheme={setTheme} onToast={message => { showToast(message); void loadStorage().catch(() => undefined); }} />}

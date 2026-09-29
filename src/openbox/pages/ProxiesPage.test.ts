@@ -84,10 +84,13 @@ describe("proxy view grouping", () => {
       thresholds: { low: 100, medium: 200 },
       history: [],
       testing: false,
+      testingNode: node.name,
     }));
     expect(markup).not.toContain(`aria-label="选择 ${node.name}"`);
     expect(markup).toContain(`aria-label="测试 ${node.name} 延迟"`);
-    expect(markup).toContain("policy-option-latency success");
+    expect(markup).toContain("policy-option-latency success testing");
+    expect(markup).toContain('aria-busy="true"');
+    expect(markup).toContain('class="latency-testing-dots"');
   });
 
   it("keeps a subscription node card static and animates only its latency button", () => {
@@ -327,12 +330,18 @@ describe("proxy view grouping", () => {
       thresholds: { low: 100, medium: 200 },
       history: [],
       latencyHistory: {},
-      testingGroup: "",
+      testingGroup: fast.name,
     }));
     expect(markup).toContain('class="node-health-summary visible" aria-hidden="false"');
     expect(markup).toContain('class="policy-card-collapse collapsed" aria-hidden="true" inert=""');
     expect(markup).toContain("节点状态：1 已测速，0 未测速");
     expect(markup).toContain("直连");
+    expect(markup).toContain('aria-label="选择 直连"');
+    expect(markup).toContain('aria-label="测试 直连 延迟"');
+    expect(markup).toContain('class="policy-option split-action active"');
+    expect(markup).not.toContain('class="policy-option split-action active disabled"');
+    expect(markup).toContain('class="policy-option-latency success testing"');
+    expect(markup).toContain('class="latency-testing-dots"');
   });
 
   it("filters child node cards without hiding the parent group or changing its total", () => {

@@ -24,6 +24,17 @@ export function formatDateTime(value?: string) {
   return new Intl.DateTimeFormat("zh-CN", { month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit" }).format(date);
 }
 
+export function formatRelativeTime(value?: string, now = Date.now()) {
+  if (!value) return "—";
+  const startedAt = new Date(value).getTime();
+  if (!Number.isFinite(startedAt)) return value;
+  const elapsed = Math.max(0, now - startedAt);
+  if (elapsed < 60_000) return "几秒前";
+  if (elapsed < 3_600_000) return `${Math.floor(elapsed / 60_000)} 分钟前`;
+  if (elapsed < 86_400_000) return `${Math.floor(elapsed / 3_600_000)} 小时前`;
+  return `${Math.floor(elapsed / 86_400_000)} 天前`;
+}
+
 export function matchesQuery(values: Array<string | number | undefined>, query: string) {
   const terms = query.trim().toLocaleLowerCase().split(/\s+/).filter(Boolean);
   if (!terms.length) return true;
