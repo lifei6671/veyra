@@ -18,6 +18,8 @@ import type {
   SiteLatencyHistory,
   StorageResponse,
   Subscription,
+  SubscriptionNodeLatencyResult,
+  SubscriptionPreview,
   SubscriptionShare,
   TestSite,
   TerminalTestCapability,
@@ -134,6 +136,9 @@ export const api = {
 
   storage: () => request<StorageResponse>("/api/storage"),
   patchStorage: (entries: Record<string, string>, removed: string[] = []) => request<unknown>("/api/storage", { method: "PATCH", ...json({ entries, removed }) }),
+  backgroundImage: async () => (await request<{ image: string }>("/api/background-image")).image,
+  saveBackgroundImage: (image: string) => request<unknown>("/api/background-image", { method: "PUT", ...json({ image }) }),
+  deleteBackgroundImage: () => request<void>("/api/background-image", { method: "DELETE" }),
 
   serviceStatus: () => request<ServiceStatus>("/api/openbox/service/status"),
   serviceAction: (action: "start" | "stop" | "restart") => request<ServiceStatus>(`/api/openbox/service/core/${action}`, { method: "POST" }),
@@ -162,10 +167,17 @@ export const api = {
   trafficDrill: (day: string, kind: TrafficDimension, key: string, by: TrafficDimension, hour?: number | null, countDirect = true) => request<TrafficDrill>(`/api/openbox/traffic/drill?day=${encodeURIComponent(day)}&kind=${kind}&key=${encodeURIComponent(key)}&by=${by}&limit=200${hour == null ? "" : `&hour=${hour}`}${countDirect ? "" : "&direct=0"}`),
 
   groups: () => request<GroupsResponse>("/api/openbox/groups"),
-  saveGroups: (groups: OpenBoxGroup[]) => request<GroupsResponse>("/api/openbox/groups", { method: "PUT", ...json({ groups }) }),
+  defaultGroups: async () => (await request<{ groups: OpenBoxGroup[] }>("/api/openbox/defaults/groups")).groups,
+  saveGroups: (groups: OpenBoxGroup[]) => request<{ groups: OpenBoxGroup[] }>("/api/openbox/groups", { method: "PUT", ...json({ groups }) }),
 
   subscriptions: async () => (await request<{ subscriptions: Subscription[] }>("/api/openbox/subscriptions")).subscriptions,
+  previewSubscription: (value: Partial<Subscription>) => request<SubscriptionPreview>("/api/openbox/subscriptions/preview", { method: "POST", ...json(value) }),
+  testSubscriptionNodes: (value: Record<string, unknown>) => request<{ results: SubscriptionNodeLatencyResult[] }>("/api/openbox/nodes/latency", { method: "POST", ...json(value) }),
   subscriptionShares: async () => (await request<{ shares: SubscriptionShare[] }>("/api/openbox/subscription-shares")).shares,
+  createSubscriptionShare: async (value: Pick<SubscriptionShare, "name" | "host" | "protocol" | "subscriptionIds" | "token">) => (await request<{ share: SubscriptionShare }>("/api/openbox/subscription-shares", { method: "POST", ...json(value) })).share,
+  updateSubscriptionShare: async (id: string, value: Partial<Pick<SubscriptionShare, "name" | "host" | "protocol" | "subscriptionIds" | "enabled">> & { regenerate?: boolean }) => (await request<{ share: SubscriptionShare }>(`/api/openbox/subscription-shares/${encodeURIComponent(id)}`, { method: "PATCH", ...json(value) })).share,
+  regenerateSubscriptionShare: async (id: string) => (await request<{ share: SubscriptionShare }>(`/api/openbox/subscription-shares/${encodeURIComponent(id)}/regenerate`, { method: "POST" })).share,
+  deleteSubscriptionShare: (id: string) => request<void>(`/api/openbox/subscription-shares/${encodeURIComponent(id)}`, { method: "DELETE" }),
   createSubscription: (value: Partial<Subscription>) => request<Subscription>("/api/openbox/subscriptions", { method: "POST", ...json(value) }),
   updateSubscription: (id: string, value: Partial<Subscription>) => request<Subscription>(`/api/openbox/subscriptions/${encodeURIComponent(id)}`, { method: "PATCH", ...json(value) }),
   refreshSubscription: (id: string) => request<void>(`/api/openbox/subscriptions/${encodeURIComponent(id)}/refresh`, { method: "POST", ...json({}) }),

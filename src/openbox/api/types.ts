@@ -241,6 +241,23 @@ export type OpenBoxGroup = {
   interval?: string;
   tolerance?: number;
   idleTimeout?: string;
+  lanes?: OpenBoxGroupLane[];
+  failover?: OpenBoxGroupFailover;
+};
+
+export type OpenBoxGroupLane = {
+  id: string;
+  name: string;
+  icon: string;
+  members: string[];
+  manual?: boolean;
+};
+
+export type OpenBoxGroupFailover = {
+  timeoutMs: number;
+  failureThreshold: number;
+  restorePrimary: boolean;
+  recoveryHoldMs: number;
 };
 
 export type GroupsResponse = {
@@ -257,19 +274,66 @@ export type Subscription = {
   urls?: string[];
   format: string;
   nodeCount: number;
-  renameOptions?: Record<string, unknown>;
-  autoUpdate?: string | boolean;
-  createdAt: string;
-  updatedAt: string;
-  kernelStale: boolean;
+  enabled?: boolean;
+  content?: string;
+  renameOptions?: SubscriptionRenameOptions;
+  autoUpdate?: SubscriptionAutoUpdate | null;
+  nodeDns?: SubscriptionNodeDns | null;
+  createdAt: string | number;
+  updatedAt: string | number;
+  kernelStale: boolean | number;
+};
+
+export type SubscriptionAutoUpdate = {
+  enabled: boolean;
+  days: number;
+  hour: number;
+  mode?: "hours";
+  hours?: number;
+};
+
+export type SubscriptionNodeDns = { url: string; bootstrap?: string };
+
+export type SubscriptionRenameOptions = {
+  enabled?: boolean;
+  usePrefix?: boolean;
+  template?: string;
+  seqPad?: number;
+  unknownLabel?: string;
+  featureKeywords?: string[];
+  excludeKeywords?: string[];
+  disabled?: string[];
+  overrides?: Record<string, string>;
+  regionDict?: Array<{ code: string; name: string; keywords: string[] }>;
+};
+
+export type SubscriptionPreview = {
+  format: string;
+  usage?: unknown;
+  nodes: Array<{ tag: string; originalTag: string; type: string; server: string; regionCode?: string }>;
+  preview: Array<{ originalTag: string; newTag: string }>;
+  groups: Array<{ name: string; type: string; nodeTags: string[] }>;
+  skipped: Array<{ name: string; type: string; reason: string; detail?: string }>;
+  excluded: Array<{ name: string }>;
+  disabled: Array<{ name: string }>;
+};
+
+export type SubscriptionNodeLatencyResult = {
+  ok: boolean;
+  ms?: number;
+  reason?: string;
+  error?: string;
 };
 
 export type SubscriptionShare = {
   id: string;
   name: string;
-  enabled?: boolean;
+  host: string;
+  protocol: string;
+  subscriptionIds: string[];
+  token: string;
+  enabled: boolean;
   url?: string;
-  [key: string]: unknown;
 };
 
 export type RoutingPolicy = {

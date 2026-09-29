@@ -250,10 +250,11 @@ export function PolicyLatency({ groupName, history, delay, thresholds, busy, tes
   </span>;
 }
 
-export function ProxyOption({ option, active, disabled, thresholds, showIcon = true, testing = false, onClick, onTest }: {
+export function ProxyOption({ option, active, disabled, testDisabled = false, thresholds, showIcon = true, testing = false, onClick, onTest }: {
   option: ControllerProxy;
   active: boolean;
   disabled: boolean;
+  testDisabled?: boolean;
   thresholds: LatencyThresholds;
   showIcon?: boolean;
   testing?: boolean;
@@ -273,8 +274,9 @@ export function ProxyOption({ option, active, disabled, thresholds, showIcon = t
       type="button"
       className={`policy-option-latency${delay ? ` ${latencyClass(delay, thresholds)}` : ""}${testing ? " testing" : ""}`}
       aria-label={`测试 ${option.name} 延迟`}
+      title={`测试 ${option.name} 延迟`}
       aria-busy={testing || undefined}
-      disabled={disabled}
+      disabled={disabled || testDisabled}
       onClick={onTest}
     >{testing
       ? <span className="latency-testing-dots" aria-hidden="true"><i /><i /><i /></span>

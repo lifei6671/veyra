@@ -42,14 +42,17 @@ export function SettingsPage({ storage, theme, setTheme, onToast }: {
 }) {
   const [section, setSection] = useState<SectionId>(() => {
     const saved = sessionStorage.getItem("openbox:settings-section");
-    sessionStorage.removeItem("openbox:settings-section");
     return settingsSections.some(item => item.id === saved) ? saved as SectionId : "panel";
   });
   const [subscriptionAddToken, setSubscriptionAddToken] = useState(0);
+  const selectSection = (next: SectionId) => {
+    sessionStorage.setItem("openbox:settings-section", next);
+    setSection(next);
+  };
   return <main className="page settings-page">
-    <nav className="settings-top-nav" aria-label="设置分类">{settingsSections.map(item => { const Icon = item.icon; return <button type="button" key={item.id} className={section === item.id ? "active" : ""} onClick={() => setSection(item.id)}><Icon />{item.label}</button>; })}{section === "subscriptions" && <button type="button" className="settings-nav-add" aria-label="添加订阅或节点" onClick={() => setSubscriptionAddToken(value => value + 1)}><PlusIcon /></button>}</nav>
+    <nav className="settings-top-nav" aria-label="设置分类">{settingsSections.map(item => { const Icon = item.icon; return <button type="button" key={item.id} className={section === item.id ? "active" : ""} onClick={() => selectSection(item.id)}><Icon />{item.label}</button>; })}<div id="settings-header-actions" className="settings-header-actions">{section === "subscriptions" && <button type="button" className="settings-nav-add tooltip-trigger tooltip-align-right" aria-label="添加订阅或节点" data-tooltip="添加订阅或节点" onClick={() => setSubscriptionAddToken(value => value + 1)}><PlusIcon /></button>}</div></nav>
     {section === "panel" && <PanelSettings storage={storage} theme={theme} setTheme={setTheme} onSaved={onToast} />}
-    {section === "subscriptions" && <SubscriptionSettings onToast={onToast} addToken={subscriptionAddToken} />}
+    {section === "subscriptions" && <SubscriptionSettings storage={storage} onToast={onToast} addToken={subscriptionAddToken} />}
     {section === "groups" && <GroupSettings onToast={onToast} />}
     {section === "routing" && <RoutingSettings onToast={onToast} />}
     {section === "clients" && <StructuredSettings section="clients" onToast={onToast} />}
