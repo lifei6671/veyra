@@ -156,6 +156,16 @@ describe("parseResponseBody", () => {
 });
 
 describe("target routing API contracts", () => {
+  it("checks the shared-server port and saves only servers, consuming the returned profile", async () => {
+    const servers = [{ id: "home/test", name: "家", enabled: true, protocol: "mixed" as const, port: 7080, address: "example.com" }];
+    const profile = { ipv6: true, servers: [{ ...servers[0], address: "saved.example.com" }] };
+    const fetchMock = vi.fn().mockResolvedValueOnce(new Response(JSON.stringify({ ok: false, reason: "reserved" }))).mockResolvedValueOnce(new Response(JSON.stringify({ profile })));
+    vi.stubGlobal("fetch", fetchMock); vi.stubGlobal("localStorage", { getItem: () => null }); vi.stubGlobal("navigator", { language: "zh-CN" });
+    await expect(api.checkServerPort(7080, servers[0].id)).resolves.toEqual({ ok: false, reason: "reserved" });
+    await expect(api.saveProfile({ servers })).resolves.toEqual(profile);
+    expect(fetchMock.mock.calls[0][0]).toBe("/api/openbox/servers/port-check?port=7080&id=home%2Ftest");
+    expect(fetchMock.mock.calls[1]).toMatchObject(["/api/openbox/profile", { method: "PUT", body: JSON.stringify({ servers }) }]);
+  });
   it("tests unsaved chain content and saves only chainProxies, returning backend node metadata", async () => {
     const request = { link: "socks5://example.com:1080", upstream: "所有-自动", testUrl: "https://example.com/204", timeoutMs: 5000, ipUrls: ["https://api.ip.sb/geoip"] };
     const latency = { ok: true, ms: 123, via: "节点", ip: { ok: false, error: "timeout" } };

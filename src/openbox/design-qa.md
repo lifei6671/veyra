@@ -384,3 +384,25 @@ final result: passed
 - 真实后端页面只读验证：现有链式卡片、协议三个选项、上游节点/节点组、排除内置候选、Esc 只收起下拉框、取消草稿；未保存线上配置或执行真实链式测速。原版与本地在 1280×720 下字段弹窗同为 576×550，名称/上游输入高 32，地址列 112/320/96，账号列各 268，底栏按钮 52×32；上游徽章高 20，背景和边框同为 `oklab(0.93 0 0 / 0.75)`。
 - 实际组件的内存隔离入口操作验证：新增账号特殊字符编码、HTTP 回填、分享链接保存、保存忙碌/失败/候选刷新失败、启停、删除取消和确认、把手排序与持久化顺序、预览/内核两种测速路径、IP 成功与失败、修改输入清除旧结果、加载/错误/空列表。深色和 600×500 窄屏验证完成；窄屏弹窗 568×350，底栏 bottom=425，上游列表位于视口内，原生 select 数量为零。隔离数据不写真实后端；控制台无 warning/error。
 - 验证：`pnpm lint`、`pnpm test src/openbox`（15 文件 / 132 项）、`pnpm build`、`git diff --check`。构建保留既有大 chunk 提示。临时入口、下载资源和测试标签页收尾删除，视口恢复。截图位于本次 visualization 目录 `chain-proxy/`：原版 source-fields/source-link，真实本地 local-fields/local-link/local-cards，以及隔离的 isolated-test-result/dark-editor/narrow-upstream。
+
+## 2026-10-02 共享网络原版迁移
+
+- 先提交此前全部工作为 `663e4ad`，未 push。对照线上 `ShareNetworkPage` / `ServerEditDialog` / `ShareCodeDialog` / `ShareRegionsCard`（`assets/index-R7_omgFM.js`）及中文/API 资源，替换共享网络 JSON 编辑器；最后一个调用消失后删除旧 `StructuredSettings`。卡片、添加/编辑、扫码和删除确认沿用公共 Modal、Tooltip 和 SortableList。
+- 五种协议 Shadowsocks / VLESS / TUIC / Hysteria2 / SOCKS5+HTTP 的字段、默认端口、TLS 提示、随机 UUID/密码、SS 2022 密钥及混淆密码按原版实现。URI 的 UTF-8 Base64、IPv6 括号、名称/认证编码、TLS/SNI/ALPN/混淆参数与原版一致；二维码使用已有 qrcode.react，176 px 编辑预览 / 224 px 扫码，M 纠错及原版留白。缺连接地址时禁用扫码和复制，停用及局域网地址显示对应警告。
+- 原版加载 `/api/openbox/profile`，保存只 PUT `{ servers }`；编辑保存前 GET `/api/openbox/servers/port-check?port=…&id=…`，处理面板/内核保留端口、已有服务器、其他监听服务和检测失败。保留禁用服务器的端口占用，编辑排除自身。消费返回的服务器数据，保存失败保留草稿并回退列表；启停、删除和排序只改 servers。
+- 当前原版 App 扫码和地区分流被功能开关禁用，未请求额外分享数据；本地同样显示“即将开放”及禁用入口，不假造地区规则。原版与本地 1280×720 实测：服务器卡高 70 px，地区提示卡 109.5 px，SS 编辑弹窗 576×602，输入高 32，预览二维码 176×176。浅/深色使用原版主题值；所有协议/加密选择使用 shadcn/Radix，无原生 select。
+- 实际组件内存隔离操作验证：同端口编辑排除自身、必填/重复端口/混合认证校验、保留端口和检测异常反馈、保存失败留稿、SS 2022 随机密钥、后端回读、复制、启用、删除取消与确认、把手排序和持久化顺序、加载/失败重试/空列表。真实页面只读与未保存草稿检查，没有写线上服务器或改变内核。StrictMode 下保存路径通过；控制台无 warning/error。600×500 下单列表单可滚动，弹窗 568×350、底栏 bottom=425；Esc 只关闭下拉框，视口已恢复。
+- 验证：`pnpm lint`、`pnpm test src/openbox`（16 文件 / 140 项）、`pnpm build`、`git diff --check`。截图位于本次 visualization 目录 `share-network/`：原版 source-cards、本地 local-cards/local-editor，以及隔离的 isolated-code/dark-editor/narrow-editor。临时测试入口、下载资源及测试标签页收尾清理，已有开发服务器保留运行。
+
+## 2026-10-02 共享服务器输入框与图标按钮接缝
+
+- 根因是 `.routing-dialog input:not([type="checkbox"])` 的选择器优先级高于 `.server-join > input`，将输入框右侧直角覆盖为圆角。提高限定在 server-join 内的输入框规则优先级，并同步原版外侧 8.7 px 圆角；按钮保留左侧直角和 -1 px 边框重叠。编辑器与扫码弹窗的分享链接共用修正，不改请求或字段逻辑。
+- 1280×720 与在线原版对比：密码输入 225×32、分享输入 505×32、按钮 40×32，图标 16×16；接缝重叠 1 px，输入右侧及按钮左侧圆角为 0，图标中心和按钮中心一致。逐一切换五种协议，UUID、密码、混淆密码及分享链接均同高、接缝正确、图标居中。仅修改未保存草稿，未更改线上密码或服务器；临时对照页清理，控制台无 warning/error。
+- `pnpm lint`、`git diff --check` 通过；纯 CSS 修正不新增单元测试。截图：本次 visualization 目录 `share-network/join-input-fixed.png`。
+
+## 2026-10-02 VLESS UUID 宽度与拼接焦点
+
+- 原版 VLESS UUID 占半行（输入 225 px），焦点 outline 仅围住输入、不含生成按钮。按用户最新反馈调整 VLESS UUID 为整行、TLS 单独下一行；1280×720 实测 UUID 输入 505 px、整体 544 px，可显示完整 UUID。这是本轮明确要求的原版布局差异，其他协议字段排列保持不变。
+- server-join 统一用 focus-within 绘制完整 8.7 px 圆角焦点框，取消内部输入和按钮各自 outline，键盘 Tab 到按钮仍有整体焦点标记。UUID/密码/混淆密码和只读分享链接关闭拼写检查，避免标识符被错误标红。
+- 浏览器逐一验证五种协议拼接字段、输入焦点、VLESS 生成按钮键盘焦点；整体 outline 保留，内部 outline 为 none。未保存服务器或更改线上凭据，控制台无 warning/error，临时对照页面已关闭。截图 `share-network/vless-wide-focus.png`。
+- `pnpm lint`、`pnpm build`、`git diff --check` 通过，构建保留既有大 chunk 提示；本次未改变数据和 API 行为，不新增单元测试。

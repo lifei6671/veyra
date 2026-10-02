@@ -1981,6 +1981,70 @@ button.rule-summary { cursor: pointer; }
 .terminal-outbound-field .routing-outbound-trigger { width: 100%; flex: none; order: 0; }
 @media (max-width: 767px) { .ob-modal.terminal-route-dialog { max-height: 70dvh; } }
 
+/* ShareNetworkPage / ServerEditDialog / ShareCodeDialog from Open-Box. */
+.share-network-settings, .server-edit-dialog, .server-code-dialog { --accent: oklch(76.662% .135 153.45); --warning: oklch(84.71% .199 83.87); }
+.settings-header-actions .server-add-button, .server-empty > .primary-button, .server-edit-dialog > footer .primary-button { color: oklch(33.387% .04 162.24); background: oklch(76.662% .135 153.45); }
+.server-card .routing-policy-copy { display: flex; flex-direction: column; gap: 4px; }
+.server-card .routing-policy-title { flex-wrap: wrap; }
+.server-card .routing-policy-title h3 { font-weight: 400; }
+.server-card .routing-policy-actions { gap: 8px; }
+.server-card-detail { display: flex; flex-wrap: wrap; column-gap: 12px; color: color-mix(in oklab, var(--text) 60%, transparent); font-size: 12px; line-height: 16px; }
+.server-warning { margin: 0; color: var(--warning); font-size: 12px; line-height: 16px; }
+.server-regions-card { padding: 16px 16px 28px; border: 1px solid color-mix(in oklab, oklch(86% 0 0) 60%, transparent); }
+.server-regions-card > header, .server-regions-card > header > div { display: flex; align-items: center; gap: 8px; }
+.server-regions-card > header { justify-content: space-between; margin-bottom: 12px; }
+.server-regions-card > header > div { gap: 4px; }
+.server-regions-card h2 { display: flex; align-items: center; gap: 8px; margin: 0; font-size: 16px; font-weight: 600; line-height: 24px; }
+.server-regions-card h2 > span { padding: 0 9px; border: 1px solid color-mix(in oklab, oklch(93% 0 0) 75%, transparent); border-radius: 7px; background: color-mix(in oklab, oklch(93% 0 0) 75%, transparent); font-size: 12px; font-weight: 400; line-height: 18px; }
+.server-regions-card > p { margin: 0; color: color-mix(in oklab, var(--text) 60%, transparent); font-size: 12px; line-height: 19.5px; }
+.theme-dark .server-regions-card { border-color: color-mix(in oklab, oklch(21.15% .012 254.09) 60%, transparent); }
+.theme-dark .server-regions-card h2 > span { border-color: color-mix(in oklab, oklch(23.26% .014 253.1) 75%, transparent); background: color-mix(in oklab, oklch(23.26% .014 253.1) 75%, transparent); }
+.server-empty { display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 56px 0; color: var(--muted); }
+.server-empty > svg { width: 40px; height: 40px; color: color-mix(in oklab, var(--text) 30%, transparent); }
+.server-empty p { margin: 0; }
+.server-empty > button { height: 32px; padding: 0 12px; font-size: 14px; font-weight: 600; }
+.server-loading { padding: 16px; }
+.server-loading .loading-spinner { width: 16px; height: 16px; margin: 0; border-width: 2px; }
+.ob-modal.server-edit-dialog { width: min(576px, calc(100vw - 32px)); }
+.ob-modal.server-code-dialog { width: min(448px, calc(100vw - 32px)); }
+.ob-modal-backdrop:has(.server-edit-dialog, .server-code-dialog) { padding: 16px; }
+.server-edit-dialog > footer button { padding: 0 12px; font-size: 14px; font-weight: 600; }
+.server-edit-dialog .compact-button, .server-edit-dialog .server-join-button, .server-code-dialog .server-join-button { background: oklch(93% 0 0); }
+.theme-dark .server-edit-dialog .compact-button, .theme-dark .server-edit-dialog .server-join-button, .theme-dark .server-code-dialog .server-join-button { background: oklch(23.26% .014 253.1); }
+.server-form { display: flex; flex-direction: column; gap: 16px; font-size: 14px; line-height: 20px; }
+.server-field-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.server-field { display: flex; min-width: 0; flex-direction: column; gap: 4px; }
+.server-field-wide { grid-column: 1 / -1; }
+.server-field > span { font-size: 12px; font-weight: 500; line-height: 16px; }
+.server-field .ob-select-trigger { width: 100%; height: 32px; }
+.server-join { display: flex; min-width: 0; width: 100%; }
+.routing-dialog .server-join > input:not([type="checkbox"]) { width: 0; min-width: 0; flex: 1; border-radius: 8.7px 0 0 8.7px; }
+.server-join > .ob-tooltip-anchor { display: flex; flex: none; margin-left: -1px; }
+.server-join .server-join-button { width: 40px; height: 32px; padding: 0; border: 1px solid var(--line); border-radius: 0 8.7px 8.7px 0; }
+.server-join:focus-within { border-radius: 8.7px; outline: 2px solid var(--text); outline-offset: 2px; }
+.routing-dialog .server-join > input:focus { border-color: var(--line); outline: none; }
+.server-join .server-join-button:focus-visible { outline: none; }
+.server-edit-dialog .server-credential-input { font-family: "SFMono-Regular", Consolas, monospace; }
+.server-edit-dialog .server-share-link input, .server-code-dialog .server-share-link input { font-family: "SFMono-Regular", Consolas, monospace; font-size: 12px; }
+.server-tls-field { display: flex; align-items: center; gap: 12px; grid-column: 1 / -1; }
+.server-hint { margin: 0; color: color-mix(in oklab, var(--text) 60%, transparent); font-size: 12px; line-height: 16px; }
+.server-edit-qr, .server-code-qr { flex: none; align-self: center; padding: 4px; border-radius: 9px; background: white; }
+.server-edit-qr { width: 176px; height: 176px; }
+.server-code-qr { width: 224px; height: 224px; }
+.server-code-content { display: flex; flex-direction: column; gap: 12px; }
+.server-code-content [role="tablist"] { display: flex; align-self: center; padding: 4px; border-radius: 9px; background: var(--surface-solid); }
+.server-code-content [role="tab"] { height: 24px; padding: 0 8px; border: 0; border-radius: 6px; color: var(--text); background: transparent; font-size: 14px; cursor: pointer; }
+.server-code-content [role="tab"]:disabled { color: color-mix(in oklab, var(--text) 40%, transparent); cursor: not-allowed; }
+.server-code-content [role="tab"] small { font-size: 12px; }
+.server-code-content [aria-selected="true"] { color: oklch(33.387% .04 162.24); background: var(--accent); }
+.server-code-content > .server-hint { text-align: center; }
+.server-edit-dialog .loading-spinner { width: 16px; height: 16px; margin: 0; border-width: 2px; }
+@media (max-width: 767px) {
+  .ob-modal.server-edit-dialog, .ob-modal.server-code-dialog { max-height: 70dvh; }
+  .server-field-grid { grid-template-columns: minmax(0, 1fr); }
+  .server-card .routing-policy-actions { gap: 0; }
+}
+
 /* ChainProxyPage / ChainProxyEditDialog from the original Open-Box. */
 .chain-proxy-settings, .chain-proxy-dialog { --accent: oklch(76.662% .135 153.45); --warning: oklch(84.71% .199 83.87); }
 .settings-header-actions .chain-add-button, .chain-proxy-empty > .primary-button, .chain-proxy-dialog > footer .primary-button { color: oklch(33.387% .04 162.24); background: oklch(76.662% .135 153.45); }

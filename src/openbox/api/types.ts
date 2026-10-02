@@ -394,6 +394,22 @@ export type ChainLatencyResponse = SubscriptionNodeLatencyResult & {
   ip?: { ok: boolean; body?: string; url?: string; error?: string };
 };
 
+export type SharedServer = {
+  id: string;
+  enabled?: boolean;
+  name: string;
+  protocol: "shadowsocks" | "vless" | "tuic" | "hysteria2" | "mixed";
+  port: number;
+  address: string;
+  method?: string;
+  password?: string;
+  uuid?: string;
+  tls?: boolean;
+  obfs?: string;
+  username?: string;
+};
+export type ServerPortCheck = { ok: boolean; reason?: "reserved" | "server" | "listening" | string };
+
 export type OpenBoxProfile = {
   ipv6: boolean;
   ipv6Proxy: string;
@@ -404,7 +420,7 @@ export type OpenBoxProfile = {
   bypassPortsMode: string;
   tun: { autoRedirect: boolean; stack: string; mtu: number; tcpMss: number };
   chainProxies: ChainProxy[];
-  servers: Array<Record<string, unknown>>;
+  servers: SharedServer[];
   clientRoutes: ClientRoutingRule[];
   dns: {
     split: boolean;
