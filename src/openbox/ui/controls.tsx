@@ -53,16 +53,18 @@ export function SelectControl({
   </Select>;
 }
 
-export function SwitchControl({ label, checked, defaultChecked, onCheckedChange, className }: {
+export function SwitchControl({ label, checked, defaultChecked, onCheckedChange, className, disabled }: {
   label: string;
   checked?: boolean;
   defaultChecked?: boolean;
+  disabled?: boolean;
   onCheckedChange?: (checked: boolean) => void;
   className?: string;
 }) {
   return <SwitchPrimitive.Root
     className={join("ob-switch", className)}
     aria-label={label}
+    disabled={disabled}
     checked={checked}
     defaultChecked={defaultChecked}
     onCheckedChange={onCheckedChange}

@@ -429,12 +429,12 @@ export type OpenBoxProfile = {
     direct: string;
     directProtocol: string;
     directPort: number;
-    directExtras: string[];
+    directExtras: DnsUpstream[];
     proxy: string;
     proxyProtocol: string;
     proxyPort: number;
-    proxyExtras: string[];
-    rewrite?: Record<string, unknown>;
+    proxyExtras: DnsUpstream[];
+    rewrite?: { enabled?: boolean; initialized?: number; rules: DnsRewriteRule[] };
   };
   traffic: { keepMonths: number };
   testUrl: string;
@@ -471,6 +471,24 @@ export type ClientDevice = { id?: string; name: string; [key: string]: unknown }
 export type ClientsResponse = { clients?: KnownClient[]; devices?: ClientDevice[] };
 
 export type DnsFilterConfig = {
-  enabled?: boolean;
-  [key: string]: unknown;
+  enabled: boolean;
+  lists: DnsFilterList[];
+  allowDomains: string[];
+  autoUpdate?: { enabled: boolean; days: number; hour: number };
 };
+export type DnsUpstream = { server: string; protocol: "udp" | "tcp"; port: number };
+export type DnsUpstreamTest = { ok: boolean; ms?: number; error?: string; via?: string; policy?: string; chain?: string[]; warning?: string; note?: string };
+export type DnsRewriteRule = { id: string; enabled?: boolean; source: string; domain: string; addresses: string[]; note?: string };
+export type DnsFilterList = { id: string; name: string; url: string; enabled: boolean };
+export type DnsFilterStatus = {
+  settings: DnsFilterConfig;
+  pending: boolean;
+  connected: boolean;
+  applied?: { enabled: boolean };
+  lists: Record<string, { count?: number; updatedAt?: number; unsupported?: number; unsupportedExamples?: string[]; error?: string }>;
+  queryLog?: { reason?: string };
+};
+export type DnsRecord = { id: string; at: number; domain: string; qtype: string; result: string; source: string; name?: string; self?: { kind: string; iface: string }; via?: string; list?: string; elapsed: number | null };
+export type DnsPageResult<T> = { rows: T[]; total: number; page: number; pageSize: number };
+export type DnsPreviewRule = { type: string; value: string; rule: string; conditional?: boolean; action: "allow" | "block"; important?: boolean };
+export type DnsPreview = DnsPageResult<DnsPreviewRule> & { count: number; source: string; unsupported: number; unsupportedExamples: string[] };
