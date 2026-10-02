@@ -1980,6 +1980,65 @@ button.rule-summary { cursor: pointer; }
 .terminal-route-dialog .terminal-mode-field input[type="radio"]:checked { border-color: var(--text); background: radial-gradient(circle, var(--text) 0 6px, transparent 6.5px); }
 .terminal-outbound-field .routing-outbound-trigger { width: 100%; flex: none; order: 0; }
 @media (max-width: 767px) { .ob-modal.terminal-route-dialog { max-height: 70dvh; } }
+
+/* ChainProxyPage / ChainProxyEditDialog from the original Open-Box. */
+.chain-proxy-settings, .chain-proxy-dialog { --accent: oklch(76.662% .135 153.45); --warning: oklch(84.71% .199 83.87); }
+.settings-header-actions .chain-add-button, .chain-proxy-empty > .primary-button, .chain-proxy-dialog > footer .primary-button { color: oklch(33.387% .04 162.24); background: oklch(76.662% .135 153.45); }
+.chain-proxy-card .routing-policy-title { flex-wrap: wrap; column-gap: 8px; row-gap: 4px; }
+.chain-proxy-card .chain-via-badge { max-width: 100%; padding: 0 7px; border: 1px solid color-mix(in oklab, oklch(93% 0 0) 75%, transparent); color: var(--text); background: color-mix(in oklab, oklch(93% 0 0) 75%, transparent); line-height: 18px; }
+.theme-dark .chain-proxy-card .chain-via-badge { border-color: color-mix(in oklab, oklch(23.26% .014 253.1) 75%, transparent); background: color-mix(in oklab, oklch(23.26% .014 253.1) 75%, transparent); }
+.chain-proxy-card .routing-policy-title > .ob-tooltip-anchor { min-width: 0; padding: 0; background: transparent; }
+.chain-proxy-card .routing-policy-copy p { white-space: normal; overflow-wrap: anywhere; }
+.chain-card-delay { flex: none; font-size: 14px; font-weight: 500; line-height: 20px; }
+.chain-card-location { display: block; min-width: 0; overflow: hidden; color: color-mix(in oklab, var(--text) 70%, transparent); font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
+.chain-upstream-missing, .chain-ip-unknown { color: var(--warning); font-size: 12px; }
+.chain-proxy-empty { display: flex; padding: 56px 0; flex-direction: column; align-items: center; gap: 12px; color: var(--muted); }
+.chain-proxy-empty > svg { width: 40px; height: 40px; color: color-mix(in oklab, var(--text) 30%, transparent); }
+.chain-proxy-empty p { margin: 0; font-size: 14px; line-height: 20px; }
+.chain-proxy-empty a { color: color-mix(in srgb, var(--accent) 70%, var(--text) 30%); font-weight: 600; text-decoration: none; }
+.chain-proxy-empty a:hover { text-decoration: underline; }
+.chain-proxy-empty > button { display: inline-flex; height: 32px; align-items: center; gap: 8px; padding: 0 12px; font-size: 14px; font-weight: 600; }
+.chain-proxy-empty > button svg { width: 16px; height: 16px; }
+.ob-modal.chain-proxy-dialog { width: min(576px, calc(100vw - 32px)); }
+.ob-modal-backdrop:has(.chain-proxy-dialog) { padding: 16px; }
+.chain-proxy-dialog > footer button { padding: 0 12px; font-size: 14px; font-weight: 600; }
+.chain-proxy-dialog .compact-button { background: oklch(93% 0 0); }
+.theme-dark .chain-proxy-dialog .compact-button { background: oklch(23.26% .014 253.1); }
+.chain-proxy-form { display: flex; flex-direction: column; gap: 16px; color: var(--text); font-size: 14px; line-height: 20px; }
+.chain-proxy-field { display: flex; min-width: 0; flex-direction: column; gap: 4px; }
+.chain-proxy-field > span, .chain-node-header > label { font-size: 12px; font-weight: 500; line-height: 16px; }
+.chain-upstream-field .routing-outbound-placeholder { color: var(--faint); }
+.chain-node-header { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.chain-node-header [role="tablist"] { display: flex; padding: 4px; border-radius: 9px; background: var(--surface-solid); }
+.chain-node-header [role="tab"] { height: 24px; padding: 0 8px; border: 0; border-radius: 6px; color: color-mix(in oklab, var(--text) 50%, transparent); background: transparent; font-size: 14px; cursor: pointer; }
+.chain-node-header [aria-selected="true"] { color: oklch(33.387% .04 162.24); background: var(--accent); }
+.chain-proxy-field textarea { width: 100%; height: 86.56px; min-height: 86.56px; padding: 8px 12px; border: 1px solid var(--line); border-radius: 9px; color: var(--text); background: var(--surface-solid); font-family: "SFMono-Regular", Consolas, monospace; font-size: 12px; line-height: 17.5px; resize: vertical; }
+.chain-proxy-field textarea:focus { outline: 2px solid var(--text); outline-offset: 2px; }
+.chain-address-fields { display: grid; grid-template-columns: 112px minmax(0, 1fr) 96px; gap: 8px; }
+.chain-credential-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.chain-proxy-dialog .chain-address-fields input, .chain-proxy-dialog .chain-credential-fields input { width: 100%; font-family: "SFMono-Regular", Consolas, monospace; font-size: 14px; }
+.chain-scheme-select { width: 100%; height: 32px; background: var(--surface-solid); }
+.chain-hint { margin: 0; color: color-mix(in oklab, var(--text) 50%, transparent); font-size: 12px; line-height: 16px; }
+.chain-upstream-field .routing-outbound-trigger { width: 100%; order: 0; flex: none; }
+.chain-test-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.chain-proxy-dialog .chain-test-button { display: inline-flex; height: 32px; align-items: center; gap: 6px; padding: 0 12px; font-size: 14px; font-weight: 600; }
+.chain-test-button svg { width: 16px; height: 16px; }
+.chain-test-button .loading-spinner, .chain-proxy-card .loading-spinner { width: 16px; height: 16px; margin: 0; border-width: 2px; }
+.chain-test-delay { font-weight: 500; }
+.chain-delay-fast { color: var(--accent-strong); }
+.chain-delay-medium { color: var(--warning); }
+.chain-delay-slow, .chain-test-error { color: var(--danger); }
+.chain-test-error { margin: 0; overflow-wrap: anywhere; font-size: 12px; line-height: 16px; }
+.chain-test-row > .ob-tooltip-anchor { margin-left: auto; }
+.chain-ip-details { display: inline-flex; flex: none; align-items: center; gap: 2px; color: var(--text); font-size: 12px; text-decoration: none; }
+.chain-ip-details:hover { text-decoration: underline; }
+.chain-ip-details svg { width: 12px; height: 12px; }
+.chain-ip-result { display: flex; flex-direction: column; gap: 2px; font-size: 12px; line-height: 16px; }
+.chain-ip-result > div:first-child { display: flex; flex-wrap: wrap; gap: 4px; }
+.chain-ip-result > div:first-child > span { color: color-mix(in oklab, var(--text) 60%, transparent); }
+.chain-ip-result code { font-family: "SFMono-Regular", Consolas, monospace; }
+@media (max-width: 767px) { .ob-modal.chain-proxy-dialog { max-height: 70dvh; } }
+@media (max-width: 639px) { .chain-address-fields { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @media (max-width: 639px) {
   .ob-modal-backdrop:has(.routing-edit-modal) { padding: 0; }
   .ob-modal.routing-edit-modal { width: 100vw; height: 100dvh; max-height: 100dvh; border-radius: 0; }

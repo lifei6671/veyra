@@ -156,6 +156,18 @@ describe("parseResponseBody", () => {
 });
 
 describe("target routing API contracts", () => {
+  it("tests unsaved chain content and saves only chainProxies, returning backend node metadata", async () => {
+    const request = { link: "socks5://example.com:1080", upstream: "所有-自动", testUrl: "https://example.com/204", timeoutMs: 5000, ipUrls: ["https://api.ip.sb/geoip"] };
+    const latency = { ok: true, ms: 123, via: "节点", ip: { ok: false, error: "timeout" } };
+    const chainProxies = [{ id: "chain", name: "住宅", enabled: true, link: request.link, upstream: request.upstream }];
+    const profile = { ipv6: true, chainProxies: [{ ...chainProxies[0], node: { type: "socks", server: "example.com", port: 1080 } }] };
+    const fetchMock = vi.fn().mockResolvedValueOnce(new Response(JSON.stringify(latency))).mockResolvedValueOnce(new Response(JSON.stringify({ profile })));
+    vi.stubGlobal("fetch", fetchMock); vi.stubGlobal("localStorage", { getItem: () => null }); vi.stubGlobal("navigator", { language: "zh-CN" });
+    await expect(api.testChainProxy(request)).resolves.toEqual(latency);
+    await expect(api.saveProfile({ chainProxies })).resolves.toEqual(profile);
+    expect(fetchMock.mock.calls[0]).toMatchObject(["/api/openbox/chain-proxies/latency", { method: "POST", body: JSON.stringify(request) }]);
+    expect(fetchMock.mock.calls[1]).toMatchObject(["/api/openbox/profile", { method: "PUT", body: JSON.stringify({ chainProxies }) }]);
+  });
   it("reads known terminals and saves only clientRoutes, consuming the complete backend profile", async () => {
     const clients = [{ ip: "192.168.1.10", name: "电视", mac: "aa:bb:cc:dd:ee:ff" }];
     const clientRoutes = [{ id: "tv", name: "电视", match: "mac" as const, sources: [], macs: [clients[0].mac], outbound: "直连" }];

@@ -46,6 +46,8 @@ export type GeoIpInfo = {
   countryCode: string;
   country: string;
   organization: string;
+  region?: string;
+  city?: string;
 };
 
 export type ControllerRule = { type: string; payload: string; proxy: string };
@@ -378,6 +380,20 @@ export type ClientRoutingRule = {
 };
 export type KnownClient = { ip: string; name?: string; mac?: string; [key: string]: unknown };
 
+export type ChainProxy = {
+  id: string;
+  enabled?: boolean;
+  name: string;
+  link: string;
+  upstream: string;
+  node?: { type: string; server: string; port: number; [key: string]: unknown };
+};
+export type ChainLatencyRequest = { link: string; upstream: string; testUrl: string; timeoutMs: number; ipUrls: string[] };
+export type ChainLatencyResponse = SubscriptionNodeLatencyResult & {
+  via?: string;
+  ip?: { ok: boolean; body?: string; url?: string; error?: string };
+};
+
 export type OpenBoxProfile = {
   ipv6: boolean;
   ipv6Proxy: string;
@@ -387,7 +403,7 @@ export type OpenBoxProfile = {
   bypassPorts: string;
   bypassPortsMode: string;
   tun: { autoRedirect: boolean; stack: string; mtu: number; tcpMss: number };
-  chainProxies: Array<Record<string, unknown>>;
+  chainProxies: ChainProxy[];
   servers: Array<Record<string, unknown>>;
   clientRoutes: ClientRoutingRule[];
   dns: {
