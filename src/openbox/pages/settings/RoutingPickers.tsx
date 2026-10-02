@@ -1,12 +1,12 @@
-import { ArrowPathIcon, BoltIcon, MinusIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import { ArrowPathIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { api } from "../../api/client";
-import type { GroupsResponse, ProxiesResponse, RuleSetEntriesResponse, RuleSetEntry, RoutingRuleType } from "../../api/types";
+import type { RuleSetEntriesResponse, RuleSetEntry, RoutingRuleType } from "../../api/types";
 import { IconButton, Modal } from "../../components/shared";
 import { SelectControl } from "../../ui/controls";
-import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger } from "../../ui/select";
-import { latestLatency } from "../../lib/format";
-import { filterGeoCategories, geoDescription, resolveOutboundProxy, RULE_TYPES, type GeoKind } from "./RoutingSettings.helpers";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger } from "../../ui/select";
+import { usePickerSearch } from "../../components/usePickerSearch";
+import { filterGeoCategories, geoDescription, RULE_TYPES, type GeoKind } from "./RoutingSettings.helpers";
 
 const countCache = new Map<string, Promise<number>>();
 const sourceKey = (source: { tag: string } | { url: string }) => "tag" in source ? source.tag : `url:${source.url}`;
@@ -14,26 +14,6 @@ function ruleCount(source: { tag: string } | { url: string }) {
   const key = sourceKey(source);
   if (!countCache.has(key)) countCache.set(key, api.ruleSetEntries(source, "", 0, 1).then(value => value.total).catch(error => { countCache.delete(key); throw error; }));
   return countCache.get(key)!;
-}
-
-function usePickerSearch(open: boolean) {
-  const [container, setContainer] = useState<HTMLElement>();
-  const input = useRef<HTMLInputElement>(null);
-  const popup = useRef<HTMLDivElement>(null);
-  useEffect(() => { setContainer(document.querySelector<HTMLElement>(".openbox-app")!); }, []);
-  useEffect(() => {
-    if (!open) return;
-    const frame = requestAnimationFrame(() => {
-      popup.current?.querySelector('[data-state="checked"]')?.scrollIntoView({ block: "nearest" });
-      input.current?.focus();
-    });
-    return () => cancelAnimationFrame(frame);
-  }, [open]);
-  const onKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === "ArrowDown") { event.preventDefault(); popup.current?.querySelector<HTMLElement>('[role="option"]:not([data-disabled])')?.focus(); }
-    if (event.key !== "Escape" && event.key !== "Tab") event.stopPropagation();
-  };
-  return { container, input, popup, onKeyDown };
 }
 
 export function GeoCategorySelect({ kind, value, excluded, onChange }: { kind: GeoKind; value: string; excluded: string[]; onChange: (value: string) => void }) {
@@ -158,64 +138,4 @@ export function RuleImportModal({ onClose, onImport }: { onClose: () => void; on
     {error && <p role="alert" className="routing-read-error">{error}</p>}
     {entries && <><p className={entries.length > 200 ? "routing-warning" : ""}>{entries.length > 200 ? `共 ${entries.length} 条，超过 200 条不能导入明细——请改用「规则集链接」直接引用这个地址。` : `共 ${entries.length} 条可导入规则`}</p><div className="routing-entries-list import-list"><EntriesList entries={entries} /></div></>}
   </div></Modal>;
-}
-
-function OutboundLatency({ delay, testing }: { delay: number | null; testing: boolean }) {
-  const [display, setDisplay] = useState(delay);
-  const displayed = useRef(delay);
-  useEffect(() => {
-    if (delay === displayed.current) return;
-    if (!delay || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      displayed.current = delay; setDisplay(delay); return;
-    }
-    const from = displayed.current ?? 0;
-    let frame = 0, start: number | undefined;
-    const animate = (time: number) => {
-      start ??= time;
-      const progress = Math.min(1, (time - start) / 1000);
-      const next = Math.round(from + (delay - from) * (1 - 2 ** (-10 * progress)) / (1 - 2 ** -10));
-      displayed.current = next; setDisplay(next);
-      if (progress < 1) frame = requestAnimationFrame(animate);
-    };
-    frame = requestAnimationFrame(animate);
-    return () => cancelAnimationFrame(frame);
-  }, [delay]);
-  return <small className="routing-outbound-latency" aria-label={testing ? "测速中" : delay ? `${delay}ms` : "暂无延迟"} aria-busy={testing}>
-    {testing ? <svg className="routing-latency-dots" viewBox="0 0 24 24" aria-hidden="true">{[4, 12, 20].map((x, index) => <circle key={x} cx={x} cy="12" r="3"><animate attributeName="cy" values="12;6;12;12" keyTimes="0;0.286;0.571;1" dur="1.05s" repeatCount="indefinite" begin={`${index * .1}s`} /></circle>)}</svg> : delay ? display : <MinusIcon aria-hidden="true" />}
-  </small>;
-}
-
-export function OutboundPicker({ groups, value, testUrl, onChange, onToast }: { groups: GroupsResponse | null; value: string; testUrl: string; onChange: (value: string) => void; onToast: (value: string) => void }) {
-  const [open, setOpen] = useState(false), [tab, setTab] = useState("nodes"), [search, setSearch] = useState("");
-  const [proxies, setProxies] = useState<ProxiesResponse | null>(null);
-  const [testing, setTesting] = useState<string[]>([]);
-  const [testingAll, setTestingAll] = useState(false);
-  const picker = usePickerSearch(open);
-  const builtin = (groups?.groups ?? []).filter(group => group.kind && group.enabled !== false).map(group => group.name);
-  const nodeGroups = (groups?.groups ?? []).filter(group => !group.kind && group.enabled !== false).map(group => group.name);
-  const nodes = groups?.availableNodes ?? [];
-  const subscriptions = [...new Set(nodes.map(node => node.subscription))];
-  const matches = (name: string) => name.toLowerCase().includes(search.trim().toLowerCase());
-  const visible = tab === "groups" ? nodeGroups.filter(matches) : [...builtin.filter(matches), ...nodes.filter(node => matches(node.name) || matches(node.subscription)).map(node => node.name)];
-  const test = async (name: string) => {
-    const proxy = resolveOutboundProxy(name, proxies);
-    if (!proxy || ["block", "reject"].includes(proxy.type.toLowerCase())) return;
-    const target = proxy.name;
-    setTesting(current => [...current, name]);
-    try { const { delay } = await api.testProxy(target, testUrl, 5000); setProxies(current => current ? { ...current, proxies: { ...current.proxies, [target]: { ...proxy, history: [...proxy.history ?? [], { time: new Date().toISOString(), delay }] } } } : current); }
-    catch (error) { onToast(error instanceof Error ? error.message : "测速失败"); }
-    finally { setTesting(current => current.filter(item => item !== name)); }
-  };
-  const option = (name: string) => {
-    const proxy = resolveOutboundProxy(name, proxies);
-    const delay = latestLatency(proxy?.history);
-    const testable = proxy && !["block", "reject"].includes(proxy.type.toLowerCase());
-    return <SelectItem key={name} value={name}><span>{name}</span>{testable && <><OutboundLatency delay={delay} testing={testing.includes(name)} /><IconButton label={`测试${name}`} tooltip portalTooltip className="tooltip-trigger" disabled={testing.includes(name)} onPointerUp={event => event.stopPropagation()} onClick={event => { event.preventDefault(); event.stopPropagation(); void test(name); }}><BoltIcon /></IconButton></>}</SelectItem>;
-  };
-  return <Select value={value} open={open} onOpenChange={next => { setOpen(next); if (next) { setSearch(""); setTab(nodeGroups.includes(value) ? "groups" : "nodes"); void api.proxies().then(setProxies).catch(reason => onToast(reason instanceof Error ? reason.message : "出站状态读取失败")); } }} onValueChange={onChange}>
-    <SelectTrigger className="routing-outbound-trigger" aria-label="选择出站"><span>{value || "选择出站"}</span></SelectTrigger>
-    <SelectContent ref={picker.popup} className="routing-picker routing-outbound-picker" portalContainer={picker.container} align="start" header={<div className="routing-outbound-header"><div role="tablist"><button type="button" role="tab" aria-selected={tab === "nodes"} onClick={() => setTab("nodes")}>节点 ({builtin.length + nodes.length})</button><button type="button" role="tab" aria-selected={tab === "groups"} onClick={() => setTab("groups")}>节点组 ({nodeGroups.length})</button></div><div className="panel-icon-search"><input ref={picker.input} aria-label="搜索出站" placeholder="搜索" value={search} onChange={event => setSearch(event.target.value)} onKeyDown={picker.onKeyDown} /><button type="button" aria-label="清空出站搜索" onClick={() => { setSearch(""); picker.input.current?.focus(); }}><XMarkIcon /></button></div><IconButton label="测试所有" tooltip portalTooltip className="tooltip-trigger" disabled={testingAll || testing.length > 0} aria-busy={testingAll} onClick={() => void (async () => { setTestingAll(true); try { for (let index = 0; index < visible.length; index += 5) await Promise.all(visible.slice(index, index + 5).map(test)); } finally { setTestingAll(false); } })()}>{testingAll ? <span className="loading-spinner" /> : <BoltIcon />}</IconButton></div>}>
-      {tab === "groups" ? <SelectGroup>{nodeGroups.filter(matches).map(option)}</SelectGroup> : <><SelectGroup>{builtin.some(matches) && <SelectLabel>内置</SelectLabel>}{builtin.filter(matches).map(option)}</SelectGroup>{subscriptions.map(subscription => { const selected = nodes.filter(node => node.subscription === subscription && (matches(node.name) || matches(subscription))); return selected.length ? <SelectGroup key={subscription}><SelectLabel>{subscription || "无订阅"}</SelectLabel>{selected.map(node => option(node.name))}</SelectGroup> : null; })}</>}{!visible.length && <p className="routing-picker-empty">没有匹配的条目</p>}
-    </SelectContent>
-  </Select>;
 }

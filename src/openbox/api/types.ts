@@ -365,6 +365,19 @@ export type CustomRoutingRule = { type: RoutingRuleType; value: string; outbound
 export type RuleSetEntry = { type: string; value: string };
 export type RuleSetEntriesResponse = { entries: RuleSetEntry[]; total: number; matched: number };
 
+export type ClientRoutingRule = {
+  id: string;
+  name: string;
+  enabled?: boolean;
+  match?: "ip" | "mac";
+  sources: string[];
+  macs?: string[];
+  outbound?: string;
+  bypass?: boolean;
+  admit?: boolean;
+};
+export type KnownClient = { ip: string; name?: string; mac?: string; [key: string]: unknown };
+
 export type OpenBoxProfile = {
   ipv6: boolean;
   ipv6Proxy: string;
@@ -376,7 +389,7 @@ export type OpenBoxProfile = {
   tun: { autoRedirect: boolean; stack: string; mtu: number; tcpMss: number };
   chainProxies: Array<Record<string, unknown>>;
   servers: Array<Record<string, unknown>>;
-  clientRoutes: Array<Record<string, unknown>>;
+  clientRoutes: ClientRoutingRule[];
   dns: {
     split: boolean;
     mode: string;
@@ -423,7 +436,7 @@ export type UpdateStatus = {
 };
 
 export type ClientDevice = { id?: string; name: string; [key: string]: unknown };
-export type ClientsResponse = { clients?: Array<Record<string, unknown>>; devices?: ClientDevice[] };
+export type ClientsResponse = { clients?: KnownClient[]; devices?: ClientDevice[] };
 
 export type DnsFilterConfig = {
   enabled?: boolean;

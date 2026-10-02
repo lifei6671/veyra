@@ -16,6 +16,7 @@ import { PanelSettings } from "./settings/PanelSettings";
 import { SubscriptionSettings } from "./settings/SubscriptionSettings";
 import { GroupSettings } from "./settings/GroupSettings";
 import { RoutingSettings } from "./settings/RoutingSettings";
+import { ClientRoutingSettings } from "./settings/ClientRoutingSettings";
 import { StructuredSettings } from "./settings/StructuredSettings";
 import { DnsSettings } from "./settings/DnsSettings";
 import { BackendSettings } from "./settings/BackendSettings";
@@ -77,7 +78,7 @@ export function SettingsPage({ storage, theme, setTheme, onToast }: {
     {section === "subscriptions" && <SubscriptionSettings storage={storage} onToast={onToast} addToken={subscriptionAddToken} />}
     {section === "groups" && <GroupSettings onToast={onToast} />}
     {section === "routing" && <RoutingSettings onToast={onToast} />}
-    {section === "clients" && <StructuredSettings section="clients" onToast={onToast} />}
+    {section === "clients" && <ClientRoutingSettings onToast={onToast} />}
     {section === "chain" && <StructuredSettings section="chain" onToast={onToast} />}
     {section === "share" && <StructuredSettings section="share" onToast={onToast} />}
     {section === "dns" && <DnsSettings onToast={onToast} />}

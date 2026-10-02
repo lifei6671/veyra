@@ -604,3 +604,20 @@ final result: passed
 No actionable P0/P1/P2 findings remain in the actual-route expanded-detail scope.
 
 final result: passed
+
+
+---
+
+# OpenBox Terminal Routing — Visual and API QA
+
+- Reference: `https://openbox.disign.me/#/settings`, terminal-routing menu; public bundle `assets/index-R7_omgFM.js` components `ClientRoutingPage` and `ClientRouteEditDialog`, plus the live light-theme dialog.
+- Mapping: `ClientRoutingSettings.tsx` replaces the former terminal JSON editor. It reuses the common Modal, SortableList, portal Tooltip and shadcn/Radix outbound picker; the known-client picker also uses shadcn/Radix Select.
+- API: load `/api/openbox/profile` and `/api/openbox/groups`, then `/api/openbox/clients`. Save with `PUT /api/openbox/profile` containing only `{clientRoutes}` and render the returned Profile. The terminal-config/device APIs are no longer used by this menu.
+- Source behavior reproduced: IP/MAC matching, known-client search and repeated append without closing, selected checks, route/bypass/admit modes, inactive-input clearing on save, source/MAC normalization and validation, enabled state, missing-outbound warning, unique active allowlist count, delete confirmation and persisted sorting.
+- Visual measurements: editor width 576 px, 16 px body padding, 32 px inputs, 86.56 px textarea, 20 px radios, 52 × 32 px footer buttons with 14 px semibold labels. Primary and warning colors trace to the original dialog tokens. Light and dark dialogs were inspected with the actual bundled MiSans font.
+- Real backend verification was read-only: the local menu rendered the returned terminal rule and known clients, opened the editor, appended a known client, and exercised IP/MAC and outbound controls. The real page reported no console warnings/errors. No production terminal rules were written during verification.
+- Save, validation errors, failure draft retention, disable/re-enable, delete cancel/confirm, allowlist counting and dragging were exercised in an isolated browser fixture using the real UI with an in-memory API. Captured save payloads contained only `clientRoutes`. Temporary fixture files and browser tabs were removed after verification. Fixture-only hot reloads emitted duplicate-createRoot warnings; these were absent from the real application tab.
+- At 600 × 500, the editor measured 568 × 350 px with the footer visible; its body scrolled independently. Known-client and outbound popovers remained inside the viewport. Escape dismissed the picker while preserving the editor.
+- Evidence directory: `/Users/lifeilin/.codex/visualizations/2026/10/02/01a0fb2a-a6f0-7c41-adbf-936f28103039/terminal-routing/`. Final captures: `local-editor-final.png`, `local-page-final.png`, `cards-final.png`, `dark-editor-final.png`; source capture: `source-editor.png`.
+- Automated verification: `pnpm test src/openbox` passed 123 tests across 13 files; `pnpm lint`, `pnpm build`, and `git diff --check` passed. Build retains the existing large-chunk advisory.
+- Intentional failure behavior improvement: saving failures preserve the dialog draft rather than closing it before the request finishes.
