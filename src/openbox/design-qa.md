@@ -374,3 +374,13 @@ final result: passed
 - 实际浏览器分别验证终端分流和前置自定义分流的列表、搜索、清空、节点组切换、选择回填、选中状态及 Escape 关闭。终端分流还验证了直连测速时列表保持打开。取消编辑后未保存线上规则，控制台无 warning/error。
 - `pnpm lint`、`pnpm test src/openbox`（14 个文件 / 123 项测试）、`pnpm build`、`git diff --check` 通过。
 - 截图：`/Users/lifeilin/.codex/visualizations/2026/10/02/01a0fb2a-a6f0-7c41-adbf-936f28103039/terminal-routing/shared-outbound-final.png`。
+
+## 2026-10-02 链式代理原版迁移
+
+- 对照线上 `ChainProxyPage` / `ChainProxyEditDialog`（`assets/index-R7_omgFM.js`）及 API、中文文案资源，将原 JSON 编辑器替换为可排序链式代理卡片、添加/编辑弹窗和删除确认。卡片显示后端解析的节点类型、服务器和端口，上游徽章、停用状态及失效上游提示；沿用公共 Modal、Tooltip 和 SortableList，不新增独立浮层实现。
+- 编辑器按原版区分链接与字段输入：HTTP / HTTPS / SOCKS5、域名/IP、端口和账号；打开时回填可解析的 HTTP/SOCKS 链接，分享链接/配置保持原文。两个模式保留独立草稿，端口校验 1–65535，账号正确 URI 编码，保存验证名称和自身引用。协议用 shadcn/Radix Select；上游复用目标/终端分流的公共 OutboundPicker，排除内置、停用组及正在编辑的自身节点。
+- 读取 `/api/openbox/profile`、`/api/openbox/groups` 和 controller proxies。保存仅 PUT `{ chainProxies }`，消费返回的完整 Profile 及解析 node，再刷新上游候选。新增、编辑、启停、删除与排序均保留其他 Profile 字段；保存失败保留草稿，PUT 成功但候选刷新失败明确显示“已保存”。
+- 预览测速 POST `/api/openbox/chain-proxies/latency`，只发 `link/upstream/testUrl/timeoutMs/ipUrls`；测速地址、超时和首选 IP API 沿用面板设置，其他 IP API 按原顺序后备。编辑草稿无需名称或保存即可测试，返回的 via、错误、IP、ASN、国家/城市、组织和详情链接直接渲染，不另发浏览器 IP 查询。已在内核中的卡片另调用 controller 延迟接口并显示内核延迟，未加载/停用卡片显示预览延迟及解释提示。
+- 真实后端页面只读验证：现有链式卡片、协议三个选项、上游节点/节点组、排除内置候选、Esc 只收起下拉框、取消草稿；未保存线上配置或执行真实链式测速。原版与本地在 1280×720 下字段弹窗同为 576×550，名称/上游输入高 32，地址列 112/320/96，账号列各 268，底栏按钮 52×32；上游徽章高 20，背景和边框同为 `oklab(0.93 0 0 / 0.75)`。
+- 实际组件的内存隔离入口操作验证：新增账号特殊字符编码、HTTP 回填、分享链接保存、保存忙碌/失败/候选刷新失败、启停、删除取消和确认、把手排序与持久化顺序、预览/内核两种测速路径、IP 成功与失败、修改输入清除旧结果、加载/错误/空列表。深色和 600×500 窄屏验证完成；窄屏弹窗 568×350，底栏 bottom=425，上游列表位于视口内，原生 select 数量为零。隔离数据不写真实后端；控制台无 warning/error。
+- 验证：`pnpm lint`、`pnpm test src/openbox`（15 文件 / 132 项）、`pnpm build`、`git diff --check`。构建保留既有大 chunk 提示。临时入口、下载资源和测试标签页收尾删除，视口恢复。截图位于本次 visualization 目录 `chain-proxy/`：原版 source-fields/source-link，真实本地 local-fields/local-link/local-cards，以及隔离的 isolated-test-result/dark-editor/narrow-upstream。

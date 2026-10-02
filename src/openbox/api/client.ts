@@ -1,5 +1,7 @@
 import type {
   AuthStatus,
+  ChainLatencyRequest,
+  ChainLatencyResponse,
   ClientDevice,
   ClientsResponse,
   ControllerConfig,
@@ -176,6 +178,7 @@ export const api = {
   subscriptions: async () => (await request<{ subscriptions: Subscription[] }>("/api/openbox/subscriptions")).subscriptions,
   previewSubscription: (value: Partial<Subscription>) => request<SubscriptionPreview>("/api/openbox/subscriptions/preview", { method: "POST", ...json(value) }),
   testSubscriptionNodes: (value: Record<string, unknown>) => request<{ results: SubscriptionNodeLatencyResult[] }>("/api/openbox/nodes/latency", { method: "POST", ...json(value) }),
+  testChainProxy: (value: ChainLatencyRequest) => request<ChainLatencyResponse>("/api/openbox/chain-proxies/latency", { method: "POST", signal: AbortSignal.timeout(30_000), ...json(value) }),
   subscriptionShares: async () => (await request<{ shares: SubscriptionShare[] }>("/api/openbox/subscription-shares")).shares,
   createSubscriptionShare: async (value: Pick<SubscriptionShare, "name" | "host" | "protocol" | "subscriptionIds" | "token">) => (await request<{ share: SubscriptionShare }>("/api/openbox/subscription-shares", { method: "POST", ...json(value) })).share,
   updateSubscriptionShare: async (id: string, value: Partial<Pick<SubscriptionShare, "name" | "host" | "protocol" | "subscriptionIds" | "enabled">> & { regenerate?: boolean }) => (await request<{ share: SubscriptionShare }>(`/api/openbox/subscription-shares/${encodeURIComponent(id)}`, { method: "PATCH", ...json(value) })).share,

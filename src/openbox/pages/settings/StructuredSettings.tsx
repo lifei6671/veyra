@@ -3,10 +3,9 @@ import { api } from "../../api/client";
 import type { OpenBoxProfile } from "../../api/types";
 import { ErrorState } from "../../components/shared";
 
-type StructuredSection = "chain" | "share";
+type StructuredSection = "share";
 
-const copy: Record<StructuredSection, { title: string; description: string; field: "chainProxies" | "servers" }> = {
-  chain: { title: "链式代理", description: "编辑后端 Profile 中的链式代理定义。", field: "chainProxies" },
+const copy: Record<StructuredSection, { title: string; description: string; field: "servers" }> = {
   share: { title: "共享网络", description: "管理供局域网设备使用的入站服务器定义。", field: "servers" },
 };
 
