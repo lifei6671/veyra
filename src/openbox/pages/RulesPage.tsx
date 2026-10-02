@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ArrowPathIcon, ArrowRightCircleIcon, BoltIcon, ChevronDownIcon, MagnifyingGlassIcon, MapIcon, SparklesIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import { toast } from "sonner";
+import { SelectControl } from "../ui/controls";
 import { api } from "../api/client";
 import type { ControllerProxy, ControllerRule, PenetrationResult, RouteDiagnosticResult, RouteProbeMethod, StorageResponse, TerminalTestCapability } from "../api/types";
 import { latestLatency, matchesQuery } from "../lib/format";
@@ -336,9 +337,7 @@ export function RouteComparison({ target, penetration, penetrationLoading, penet
       loading={actualLoading}
       showLoadingSpinner
       actions={<div className="route-diagnostic-actions">
-        {mode === "terminal" && <select className="route-method-select" aria-label="探测方式" value={method} onChange={event => onMethodChange(event.target.value)}>
-          {["GET", "HEAD", "TCP", "TLS"].map(value => <option value={value} key={value}>{value}</option>)}
-        </select>}
+        {mode === "terminal" && <SelectControl className="route-method-select" label="探测方式" value={method} onValueChange={onMethodChange} options={["GET", "HEAD", "TCP", "TLS"].map(value => ({ value, label: value }))} />}
         <div className="route-mode-toggle">
           <button type="button" className={mode === "terminal" ? "active" : ""} title="模拟一台 LAN 终端的访问" onClick={() => onModeChange("terminal")}>模拟终端</button>
           <button type="button" className={mode === "kernel" ? "active" : ""} title="内核诊断走面板回环入站，只展示内核内部的分流" onClick={() => onModeChange("kernel")}>内核诊断</button>

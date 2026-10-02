@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { api } from "../api/client";
 import type { ControllerProxy, ProxiesResponse, ProxyHistory, StorageResponse, Subscription } from "../api/types";
 import { latestLatency } from "../lib/format";
-import { SearchInputGroup, SegmentedGroup, SegmentedItem } from "../ui/controls";
+import { SearchInputGroup, SelectControl, SegmentedGroup, SegmentedItem } from "../ui/controls";
 import { ErrorState, IconButton, Modal } from "../components/shared";
 import { appendProxyGroupLatencyHistory, NodeHealthDots, ProxyGroupCard, ProxyOption, groupIcon, isVisibleProxy, mergeProxyGroupLatencyResult, mergeProxyLatencies, preserveProxyLatencies, proxyMatchesQuery, selectedProxyDelay, sortProxyNodes, summarizeGroupLatencyTest } from "../components/ProxyCards";
 import type { ProxyNodeSortMode } from "../components/ProxyCards";
@@ -373,13 +373,7 @@ export function ProxiesPage({ storage, onToast, onNodeCardMinWidthChange }: { st
   </main>;
   {settingsOpen && <Modal title="策略设置" className="proxy-settings-modal" onClose={() => setSettingsOpen(false)}>
     <div className="proxy-settings">
-      <label className="proxy-setting-row"><span>节点排序方式</span><select aria-label="节点排序方式" value={viewSettings.nodeSort} onChange={event => saveViewSettings({ ...viewSettings, nodeSort: event.target.value as ProxyNodeSortMode })}>
-        <option value="default">按配置排序</option>
-        <option value="nameAsc">按名称升序</option>
-        <option value="nameDesc">按名称降序</option>
-        <option value="latencyAsc">按延迟升序</option>
-        <option value="latencyDesc">按延迟降序</option>
-      </select></label>
+      <label className="proxy-setting-row"><span>节点排序方式</span><SelectControl label="节点排序方式" value={viewSettings.nodeSort} onValueChange={value => saveViewSettings({ ...viewSettings, nodeSort: value as ProxyNodeSortMode })} options={[{ value: "default", label: "按配置排序" }, { value: "nameAsc", label: "按名称升序" }, { value: "nameDesc", label: "按名称降序" }, { value: "latencyAsc", label: "按延迟升序" }, { value: "latencyDesc", label: "按延迟降序" }]} /></label>
       <label className="proxy-setting-row"><span>节点根据提供商分组</span><input className="proxy-setting-toggle" type="checkbox" checked={viewSettings.groupByProvider} onChange={event => saveViewSettings({ ...viewSettings, groupByProvider: event.target.checked })} /></label>
       <label className="proxy-setting-row"><span>节点卡片最小宽度</span><span className="proxy-width-control"><input aria-label="节点卡片最小宽度" type="number" min="100" max="320" value={viewSettings.nodeCardMinWidth} onChange={event => saveViewSettings({ ...viewSettings, nodeCardMinWidth: clampNodeCardWidth(event.target.value) })} /><button type="button" onClick={() => saveViewSettings({ ...viewSettings, nodeCardMinWidth: 145 })}>重置</button></span></label>
       <div className="proxy-settings-divider" />

@@ -1,6 +1,6 @@
-import type { ComponentProps, ReactNode } from "react";
-import { CheckIcon, ChevronDownIcon, ChevronUpIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
-import * as SelectPrimitive from "@radix-ui/react-select";
+import { useState, type ComponentProps, type ReactNode } from "react";
+import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "./select";
 import * as SwitchPrimitive from "@radix-ui/react-switch";
 import * as ToggleGroupPrimitive from "@radix-ui/react-toggle-group";
 
@@ -9,6 +9,8 @@ const join = (...classes: Array<string | undefined | false>) => classes.filter(B
 export type SelectOption = {
   value: string;
   label: string;
+  group?: string;
+  disabled?: boolean;
 };
 
 export function SelectControl({
@@ -18,6 +20,8 @@ export function SelectControl({
   defaultValue,
   onValueChange,
   className,
+  disabled,
+  placeholder,
 }: {
   label: string;
   options: SelectOption[];
@@ -25,27 +29,26 @@ export function SelectControl({
   defaultValue?: string;
   onValueChange?: (value: string) => void;
   className?: string;
+  disabled?: boolean;
+  placeholder?: string;
 }) {
-  return <SelectPrimitive.Root value={value} defaultValue={defaultValue} onValueChange={onValueChange}>
-    <SelectPrimitive.Trigger className={join("ob-select-trigger", className)} aria-label={label}>
-      <SelectPrimitive.Value />
-      <SelectPrimitive.Icon asChild><ChevronDownIcon aria-hidden="true" /></SelectPrimitive.Icon>
-    </SelectPrimitive.Trigger>
-    <SelectPrimitive.Portal>
-      <SelectPrimitive.Content className="ob-select-content" position="popper" sideOffset={4}>
-        <SelectPrimitive.ScrollUpButton className="ob-select-scroll"><ChevronUpIcon aria-hidden="true" /></SelectPrimitive.ScrollUpButton>
-        <SelectPrimitive.Viewport className="ob-select-viewport">
-          <SelectPrimitive.Group>
-            {options.map(option => <SelectPrimitive.Item className="ob-select-item" value={option.value} key={option.value}>
-              <SelectPrimitive.ItemText>{option.label}</SelectPrimitive.ItemText>
-              <SelectPrimitive.ItemIndicator className="ob-select-indicator"><CheckIcon aria-hidden="true" /></SelectPrimitive.ItemIndicator>
-            </SelectPrimitive.Item>)}
-          </SelectPrimitive.Group>
-        </SelectPrimitive.Viewport>
-        <SelectPrimitive.ScrollDownButton className="ob-select-scroll"><ChevronDownIcon aria-hidden="true" /></SelectPrimitive.ScrollDownButton>
-      </SelectPrimitive.Content>
-    </SelectPrimitive.Portal>
-  </SelectPrimitive.Root>;
+  const [selected, setSelected] = useState(defaultValue);
+  const current = value ?? selected;
+  const groups = [...new Set(options.map(option => option.group))];
+  const encode = (item: string | undefined) => item === "" ? "__openbox_empty__" : item;
+  return <Select value={encode(current)} disabled={disabled} onValueChange={next => {
+    const decoded = next === "__openbox_empty__" ? "" : next;
+    if (value === undefined) setSelected(decoded);
+    onValueChange?.(decoded);
+  }}>
+    <SelectTrigger className={className} aria-label={label}>
+      <SelectValue placeholder={placeholder}>{options.find(option => option.value === current)?.label ?? placeholder ?? current}</SelectValue>
+    </SelectTrigger>
+    <SelectContent>{groups.map(group => <SelectGroup key={group ?? "ungrouped"}>
+      {group && <SelectLabel>{group}</SelectLabel>}
+      {options.filter(option => option.group === group).map(option => <SelectItem value={encode(option.value)!} key={option.value} disabled={option.disabled}>{option.label}</SelectItem>)}
+    </SelectGroup>)}</SelectContent>
+  </Select>;
 }
 
 export function SwitchControl({ label, checked, defaultChecked, onCheckedChange, className }: {

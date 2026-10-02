@@ -13,6 +13,7 @@ import {
   ChevronUpIcon,
   ClipboardDocumentIcon,
   LinkIcon,
+  MagnifyingGlassIcon,
   NoSymbolIcon,
   PencilSquareIcon,
   PlusIcon,
@@ -20,6 +21,7 @@ import {
   TrashIcon,
   XMarkIcon,
 } from "@heroicons/react/24/outline";
+import { SelectControl } from "../../ui/controls";
 import { api } from "../../api/client";
 import type {
   ControllerProxy,
@@ -564,7 +566,7 @@ function SubscriptionEditorModal({ form, nodeCount, setForm, busy, preview, prev
         <p>一行一个,多个地址的节点合在一起;支持内网 / 本机地址,不校验 https 证书。</p>
         <div className="subscription-source-options">
           <label><span>定期更新</span><input type="checkbox" className="switch-input" aria-label="定期更新" checked={form.autoUpdate.enabled} onChange={event => patchForm({ autoUpdate: { ...form.autoUpdate, enabled: event.target.checked } })} /></label>
-          {form.autoUpdate.enabled && <><select aria-label="更新周期" value={form.autoUpdate.mode === "hours" ? `h${form.autoUpdate.hours ?? 6}` : `d${form.autoUpdate.days}`} onChange={event => patchForm({ autoUpdate: autoUpdateFromValue(form.autoUpdate, event.target.value) })}>{[1,2,3,4,6,8,12].map(value => <option key={`h${value}`} value={`h${value}`}>每 {value} 小时</option>)}{[1,2,3,7,14,30].map(value => <option key={`d${value}`} value={`d${value}`}>每 {value} 天</option>)}</select>{form.autoUpdate.mode !== "hours" && <select aria-label="更新时间" value={form.autoUpdate.hour} onChange={event => patchForm({ autoUpdate: { ...form.autoUpdate, hour: Number(event.target.value) } })}>{Array.from({ length: 24 }, (_, hour) => <option key={hour} value={hour}>{String(hour).padStart(2, "0")}:00</option>)}</select>}</>}
+          {form.autoUpdate.enabled && <><SelectControl label="更新周期" value={form.autoUpdate.mode === "hours" ? `h${form.autoUpdate.hours ?? 6}` : `d${form.autoUpdate.days}`} onValueChange={value => patchForm({ autoUpdate: autoUpdateFromValue(form.autoUpdate, value) })} options={[...[1,2,3,4,6,8,12].map(value => ({ value: `h${value}`, label: `每 ${value} 小时` })), ...[1,2,3,7,14,30].map(value => ({ value: `d${value}`, label: `每 ${value} 天` }))]} />{form.autoUpdate.mode !== "hours" && <SelectControl label="更新时间" value={String(form.autoUpdate.hour)} onValueChange={value => patchForm({ autoUpdate: { ...form.autoUpdate, hour: Number(value) } })} options={Array.from({ length: 24 }, (_, hour) => ({ value: String(hour), label: `${String(hour).padStart(2, "0")}:00` }))} />}</>}
           <button type="button" className="subscription-dns-toggle" onClick={() => patchForm({ nodeDnsExpanded: !form.nodeDnsExpanded })}>订阅 DNS 解析 <ChevronDownIcon className={form.nodeDnsExpanded ? "expanded" : ""} /></button>
         </div>
       </div> : <div className="subscription-node-source">
@@ -632,14 +634,7 @@ function SubscriptionEditorModal({ form, nodeCount, setForm, busy, preview, prev
           <Bars3Icon className="subscription-drag-handle" aria-label="拖拽排序" />
           <label className="subscription-region-select">
             <span aria-hidden="true">{countryFlag(region.code)}</span>
-            <select aria-label={`${region.name || region.code || "新地区"} 地区`} value={region.code} onChange={event => {
-              const selected = regionDict.find(item => item.code === event.target.value);
-              patchRegion(index, selected ? { code: selected.code, name: selected.name } : { code: event.target.value });
-            }}>
-              {!region.code && <option value="">选择地区</option>}
-              {uniqueRegions(regionDict).map(option => <option key={option.code} value={option.code}>{option.name || option.code}</option>)}
-            </select>
-            <ChevronDownIcon />
+            <SelectControl label={`${region.name || region.code || "新地区"} 地区`} value={region.code} onValueChange={value => { const selected = regionDict.find(item => item.code === value); patchRegion(index, selected ? { code: selected.code, name: selected.name } : { code: value }); }} options={[...(!region.code ? [{ value: "", label: "选择地区" }] : []), ...uniqueRegions(regionDict).map(option => ({ value: option.code, label: option.name || option.code }))]} />
           </label>
           <input value={region.keywords.join(",")} aria-label={`${region.name || region.code || "新地区"} 关键词`} placeholder="关键词,用逗号分隔" onChange={event => patchRegion(index, { keywords: commaValues(event.target.value) })} />
           <IconButton label="删除地区规则" tooltip className="tooltip-trigger tooltip-align-right subscription-region-remove" onClick={() => patchRename({ regionDict: regionDict.filter((_, itemIndex) => itemIndex !== index) })}><XMarkIcon /></IconButton>
@@ -651,7 +646,7 @@ function SubscriptionEditorModal({ form, nodeCount, setForm, busy, preview, prev
     </div>}
 
     {form.tab === "nodes" && <div className="subscription-preview-panel">
-      {!validSubscriptionForm(form) ? <div className="subscription-preview-state">填写链接或粘贴内容后,这里会实时显示预览结果。</div> : <>
+      {!validSubscriptionForm(form) ? <div className="subscription-preview-state"><MagnifyingGlassIcon aria-hidden="true" />填写链接或粘贴内容后,这里会实时显示预览结果。</div> : <>
         {preview && <div className="subscription-preview-heading"><strong>解析出 {preview.nodes.length} 个节点</strong><span>{preview.format}</span></div>}
         {previewError && <div className="subscription-preview-error">{previewError}</div>}
         {preview && !previewError && <>
@@ -702,7 +697,7 @@ function SubscriptionShareModal({ form, items, busy, setForm, onSave, onClose }:
       <fieldset><legend>选择要分享的订阅</legend>{items.map(item => <label key={item.id}><input type="checkbox" checked={form.subscriptionIds.includes(item.id)} onChange={event => patchForm({ subscriptionIds: event.target.checked ? [...form.subscriptionIds, item.id] : form.subscriptionIds.filter(id => id !== item.id) })} /><span>{item.name}</span><small>{item.nodeCount} 个节点</small></label>)}</fieldset>
       <div className="subscription-share-fields">
         <label><span>标题</span><input value={form.name} placeholder="例如:手机代理订阅" onChange={event => patchForm({ name: event.target.value })} /></label>
-        <label><span>域名或 IP</span><span className="subscription-share-host"><select aria-label="分享链接协议" value={form.protocol} onChange={event => patchForm({ protocol: event.target.value })}><option value="http">http://</option><option value="https">https://</option></select><input value={form.host} onChange={event => patchForm({ host: event.target.value })} /></span></label>
+        <label><span>域名或 IP</span><span className="subscription-share-host"><SelectControl label="分享链接协议" value={form.protocol} onValueChange={value => patchForm({ protocol: value })} options={[{ value: "http", label: "http://" }, { value: "https", label: "https://" }]} /><input value={form.host} onChange={event => patchForm({ host: event.target.value })} /></span></label>
         <label><span>分享链接</span><span className="subscription-share-link"><input readOnly value={shareUrl} /><IconButton label="复制分享链接" tooltip className="tooltip-trigger tooltip-align-right" onClick={() => void navigator.clipboard.writeText(shareUrl)}><ClipboardDocumentIcon /></IconButton></span></label>
         <div className="subscription-share-qr"><QRCodeSVG value={shareUrl} size={164} level="M" aria-label="订阅分享二维码" /></div>
       </div>

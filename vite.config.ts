@@ -3,7 +3,7 @@ import react from "@vitejs/plugin-react";
 
 const openBoxProxy = {
   "/api": {
-    target: "http://192.168.1.10:3036",
+    target: "https://openbox.disign.me",
     changeOrigin: true,
     ws: true,
   },

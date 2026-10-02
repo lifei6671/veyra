@@ -1,4 +1,5 @@
-import type { ButtonHTMLAttributes, ReactNode } from "react";
+import { useEffect, useId, useState, type ButtonHTMLAttributes, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 import { ExclamationTriangleIcon, XMarkIcon } from "@heroicons/react/24/outline";
 
 export function Glyph({ children }: { children: ReactNode }) {
@@ -30,7 +31,7 @@ export function EmptyState({ icon, title, text, compact = false }: { icon: React
 }
 
 export function LoadingView({ label = "正在连接 Open-Box 后端" }: { label?: string }) {
-  return <main className="page loading-page" aria-label={label}><span className="loading-spinner" /><strong>{label}</strong><small>192.168.1.10:3036</small></main>;
+  return <main className="page loading-page" aria-label={label}><span className="loading-spinner" /><strong>{label}</strong><small>https://openbox.disign.me</small></main>;
 }
 
 export function ErrorState({ title = "加载失败", error, onRetry }: { title?: string; error: unknown; onRetry?: () => void }) {
@@ -39,13 +40,17 @@ export function ErrorState({ title = "加载失败", error, onRetry }: { title?:
 }
 
 export function Modal({ title, children, onClose, footer, className = "" }: { title: string; children: ReactNode; onClose: () => void; footer?: ReactNode; className?: string }) {
-  return <div className="ob-modal-backdrop" role="presentation" onMouseDown={event => { if (event.target === event.currentTarget) onClose(); }}>
-    <section className={`ob-modal${className ? ` ${className}` : ""}`} role="dialog" aria-modal="true" aria-labelledby="ob-modal-title">
-      <header><h2 id="ob-modal-title">{title}</h2><button type="button" aria-label="关闭" data-tooltip="关闭" className="tooltip-trigger tooltip-align-right" onClick={onClose}><XMarkIcon aria-hidden="true" /></button></header>
+  const titleId = useId();
+  const [container, setContainer] = useState<HTMLElement | null>(null);
+  useEffect(() => { setContainer(document.querySelector(".openbox-app") ?? document.body); }, []);
+  if (!container) return null;
+  return createPortal(<div className="ob-modal-backdrop" role="presentation" onMouseDown={event => { if (event.target === event.currentTarget) onClose(); }}>
+    <section className={`ob-modal${className ? ` ${className}` : ""}`} role="dialog" aria-modal="true" aria-labelledby={titleId}>
+      <header><h2 id={titleId}>{title}</h2><button type="button" aria-label="关闭" data-tooltip="关闭" className="tooltip-trigger tooltip-align-right" onClick={onClose}><XMarkIcon aria-hidden="true" /></button></header>
       <div className="ob-modal-body">{children}</div>
       {footer && <footer>{footer}</footer>}
     </section>
-  </div>;
+  </div>, container);
 }
 
 export function ConfirmButton({ children, confirmText, onConfirm, className = "", disabled = false }: {

@@ -1,9 +1,38 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { api, normalizeGeoIpInfo, parseResponseBody } from "./client";
+import { buildAutoGroups, mergeAutoGroups } from "../pages/settings/GroupSettings.helpers";
 
 afterEach(() => vi.unstubAllGlobals());
 
 describe("parseResponseBody", () => {
+  it("loads and saves panel settings with the original storage and background API payloads", async () => {
+    const entries = { "config/global-radius": "16", "config/ipv6-test": "true", "config/test-sites": JSON.stringify([{ id: "google", icon: "brand:github", name: "GitHub", url: "https://github.com/" }]) };
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce(new Response(JSON.stringify({ entries }), { headers: { "content-type": "text/plain" } }))
+      .mockResolvedValueOnce(new Response("{}"))
+      .mockResolvedValueOnce(new Response('{"image":"data:image/png;base64,fixture"}'))
+      .mockResolvedValueOnce(new Response("{}"))
+      .mockResolvedValueOnce(new Response(null, { status: 204 }))
+      .mockResolvedValueOnce(new Response("{}"));
+    vi.stubGlobal("fetch", fetchMock);
+    vi.stubGlobal("localStorage", { getItem: () => "zh-CN" });
+    vi.stubGlobal("navigator", { language: "zh-CN" });
+
+    await expect(api.storage()).resolves.toEqual({ entries });
+    await api.patchStorage(entries);
+    await expect(api.backgroundImage()).resolves.toBe("data:image/png;base64,fixture");
+    await api.saveBackgroundImage("data:image/png;base64,fixture");
+    await api.deleteBackgroundImage();
+    await api.changePassword("old-test-password", "four");
+
+    expect(fetchMock.mock.calls[0][0]).toBe("/api/storage");
+    expect(fetchMock.mock.calls[1]).toMatchObject(["/api/storage", { method: "PATCH", body: JSON.stringify({ entries, removed: [] }) }]);
+    expect(fetchMock.mock.calls[2][0]).toBe("/api/background-image");
+    expect(fetchMock.mock.calls[3]).toMatchObject(["/api/background-image", { method: "PUT", body: JSON.stringify({ image: "data:image/png;base64,fixture" }) }]);
+    expect(fetchMock.mock.calls[4]).toMatchObject(["/api/background-image", { method: "DELETE" }]);
+    expect(fetchMock.mock.calls[5]).toMatchObject(["/api/auth/change-password", { method: "POST", body: JSON.stringify({ currentPassword: "old-test-password", newPassword: "four" }) }]);
+  });
+
   it("parses JSON returned with the backend text/plain content type", () => {
     expect(parseResponseBody('{"proxies":{"DIRECT":{"name":"DIRECT"}}}', "text/plain")).toEqual({
       proxies: { DIRECT: { name: "DIRECT" } },
@@ -74,6 +103,23 @@ describe("parseResponseBody", () => {
     expect(fetchMock.mock.calls[0][0]).toBe("/api/openbox/groups");
     expect(fetchMock.mock.calls[1]).toMatchObject(["/api/openbox/groups", { method: "PUT", body: JSON.stringify({ groups: [group] }) }]);
     expect(fetchMock.mock.calls[2][0]).toBe("/api/openbox/defaults/groups");
+  });
+
+  it("sends auto groups in country order and uses the saved groups and compiler warnings returned by the backend", async () => {
+    const existing = { id: "manual", name: "美国-手动", type: "selector", mode: "dynamic", icon: "US", keywords: ["us"], members: [] };
+    const auto = { id: "auto-us-urltest-123-0", name: "美国-自动", type: "urltest", mode: "dynamic", icon: "US", keywords: ["us", "united", "美国", "美國", "united states", "america", "洛杉矶", "洛杉磯", "硅谷", "圣何塞", "西雅图", "纽约"], members: [], interval: "300s", tolerance: 100 };
+    const saved = { groups: [{ ...auto, enabled: true, iconScale: 0 }, existing], dropped: [{ name: "空组", reason: "empty" }], dangling: [{ name: "旧组", members: ["失效节点"] }] };
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce(new Response(JSON.stringify({ groups: [existing], types: ["urltest", "selector"], availableNodes: [{ name: "🇺🇸 01", subscription: "A" }], availableGroups: [] })))
+      .mockResolvedValueOnce(new Response(JSON.stringify(saved)));
+    vi.stubGlobal("fetch", fetchMock);
+    vi.stubGlobal("localStorage", { getItem: () => null });
+    vi.stubGlobal("navigator", { language: "zh-CN" });
+    const loaded = await api.groups();
+    const generated = buildAutoGroups(loaded.groups, ["US"], ["urltest", "selector"], 123);
+    expect(generated).toEqual([auto]);
+    await expect(api.saveGroups(mergeAutoGroups(loaded.groups, generated))).resolves.toEqual(saved);
+    expect(fetchMock.mock.calls[1]).toMatchObject(["/api/openbox/groups", { method: "PUT", body: JSON.stringify({ groups: [auto, existing] }) }]);
   });
 
   it("uses the original route lookup and diagnostic API contracts", async () => {

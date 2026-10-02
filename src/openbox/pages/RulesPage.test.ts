@@ -289,7 +289,9 @@ describe("RulesPage helpers", () => {
     expect(markup).toContain("此设备不能模拟 LAN 终端");
     expect(markup).toContain("改用内核诊断");
     expect(markup).toContain('class="route-mode-toggle"');
-    expect(markup).toContain('<select class="route-method-select" aria-label="探测方式"');
+    expect(markup).toContain('class="ob-select-trigger route-method-select"');
+    expect(markup).toContain('role="combobox"');
+    expect(markup).toContain('aria-label="探测方式"');
     expect(markup).toContain('<span>重新测试</span>');
     expect(markup).not.toContain(">0</div>");
   });
