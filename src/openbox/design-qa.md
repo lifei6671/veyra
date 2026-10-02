@@ -364,3 +364,13 @@ final result: passed
 - 右上角“测试所有”按钮采用项目已有工具按钮的灰色背景：浅色 oklch(93% 0 0)、深色 oklch(23.26% .014 253.1)，悬停加深 7%；限定在出站选择器头部，不改节点行的单独测速按钮。
 - 真实前置分流弹窗检查按钮 32×32 px、圆角 9 px、实际浅色背景 oklch(0.93 0 0)。批量测速时旋转图标及灰色背景保留；仅测速，没有保存配置。截图 outbound-button-background.png。
 - git diff --check 通过；本次仅 CSS 外观调整，无业务逻辑变更。
+
+
+## 公共出口选择器抽取验证（2026-10-02）
+
+- `components/OutboundPicker.tsx` 为目标分流和终端分流共用的唯一实现；节点/节点组、搜索、测速、延迟动画和 Tooltip 均由它维护。组件不再依赖设置页面模块或 Geo 分类目录。
+- 共用搜索焦点行为移至 `components/usePickerSearch.ts`，供出口、Geo 分类和已知终端选择器直接复用；测速叶节点解析及现有循环检测测试移至组件目录，无旧路径转发层。
+- 与抽取前源码逐字比较，OutboundPicker 和 OutboundLatency 函数体保持一致；保留现有公共样式和请求契约。
+- 实际浏览器分别验证终端分流和前置自定义分流的列表、搜索、清空、节点组切换、选择回填、选中状态及 Escape 关闭。终端分流还验证了直连测速时列表保持打开。取消编辑后未保存线上规则，控制台无 warning/error。
+- `pnpm lint`、`pnpm test src/openbox`（14 个文件 / 123 项测试）、`pnpm build`、`git diff --check` 通过。
+- 截图：`/Users/lifeilin/.codex/visualizations/2026/10/02/01a0fb2a-a6f0-7c41-adbf-936f28103039/terminal-routing/shared-outbound-final.png`。

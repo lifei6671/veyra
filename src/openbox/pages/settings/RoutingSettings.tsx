@@ -8,7 +8,8 @@ import { SortableList } from "../../components/SortableList";
 import { SelectControl } from "../../ui/controls";
 import { GroupIcon, ScaleControl } from "./GroupSettings";
 import { PanelIconPicker } from "./PanelIconPicker";
-import { OutboundPicker, RuleImportModal, RuleValue } from "./RoutingPickers";
+import { OutboundPicker } from "../../components/OutboundPicker";
+import { RuleImportModal, RuleValue } from "./RoutingPickers";
 import { applyPolicyRules, importRuleRows, policyRuleRows, policySummary, RULE_TYPES, rulesValidation, sortPolicyRules, splitRuleRows, type RuleRow } from "./RoutingSettings.helpers";
 
 type Editor = { kind: "policy" | "custom" | "fallback"; policy: RoutingPolicy; rows: RuleRow[] };

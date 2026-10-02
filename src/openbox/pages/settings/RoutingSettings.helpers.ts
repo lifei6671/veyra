@@ -1,4 +1,4 @@
-import type { CustomRoutingRule, ProxiesResponse, RoutingPolicy, RoutingRuleType, RuleSetEntry } from "../../api/types";
+import type { CustomRoutingRule, RoutingPolicy, RoutingRuleType, RuleSetEntry } from "../../api/types";
 import catalog from "../../assets/geo-catalog.json";
 
 export type RuleRow = CustomRoutingRule & { key: number; note: string };
@@ -69,16 +69,6 @@ export function importRuleRows(rows: RuleRow[], entries: RuleSetEntry[]): RuleRo
   return [...rows.filter(row => row.value.trim()), ...supported.map(entry => ({ key: ++key, type: types[entry.type], value: entry.value, outbound, note: "" }))];
 }
 export type GeoKind = "geosite" | "geoip";
-export function resolveOutboundProxy(name: string, proxies: ProxiesResponse | null) {
-  const visited = new Set<string>();
-  let current = proxies?.proxies[name];
-  while (current?.now) {
-    if (visited.has(current.name)) return undefined;
-    visited.add(current.name);
-    current = proxies?.proxies[current.now];
-  }
-  return current;
-}
 export const GEO_CATALOG: Record<GeoKind, string[][]> = catalog;
 const geoRows = {
   geosite: new Map(GEO_CATALOG.geosite.map(row => [row[0], row])),

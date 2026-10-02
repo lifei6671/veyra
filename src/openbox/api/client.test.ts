@@ -156,6 +156,17 @@ describe("parseResponseBody", () => {
 });
 
 describe("target routing API contracts", () => {
+  it("reads known terminals and saves only clientRoutes, consuming the complete backend profile", async () => {
+    const clients = [{ ip: "192.168.1.10", name: "电视", mac: "aa:bb:cc:dd:ee:ff" }];
+    const clientRoutes = [{ id: "tv", name: "电视", match: "mac" as const, sources: [], macs: [clients[0].mac], outbound: "直连" }];
+    const profile = { clientRoutes, ipv6: true, serverNormalized: true };
+    const fetchMock = vi.fn().mockResolvedValueOnce(new Response(JSON.stringify({ clients }))).mockResolvedValueOnce(new Response(JSON.stringify({ profile })));
+    vi.stubGlobal("fetch", fetchMock); vi.stubGlobal("localStorage", { getItem: () => null }); vi.stubGlobal("navigator", { language: "zh-CN" });
+    await expect(api.clients()).resolves.toEqual({ clients });
+    await expect(api.saveProfile({ clientRoutes })).resolves.toEqual(profile);
+    expect(fetchMock.mock.calls[0][0]).toBe("/api/openbox/clients");
+    expect(fetchMock.mock.calls[1]).toMatchObject(["/api/openbox/profile", { method: "PUT", body: JSON.stringify({ clientRoutes }) }]);
+  });
   it("saves only the changed routing portion and consumes the returned profile and installation defaults", async () => {
     const routing = { policies: [{ id: "ai", name: "AI", rulesets: ["geosite-category-ai-!cn"] }], fallbackDefault: "直连", fallbackName: "其他", fallbackIcon: "globe:generic" };
     const profile = { routing, ipv6: true, serverNormalized: true };

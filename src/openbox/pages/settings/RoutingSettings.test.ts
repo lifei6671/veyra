@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { applyPolicyRules, filterGeoCategories, GEO_CATALOG, geoDescription, importRuleRows, policyRuleRows, policySummary, resolveOutboundProxy, rulesValidation, sortPolicyRules, splitRuleRows, type RuleRow } from "./RoutingSettings.helpers";
+import { applyPolicyRules, filterGeoCategories, GEO_CATALOG, geoDescription, importRuleRows, policyRuleRows, policySummary, rulesValidation, sortPolicyRules, splitRuleRows, type RuleRow } from "./RoutingSettings.helpers";
 
 const row = (key: number, type: RuleRow["type"], value: string, note = "", outbound = "直连"): RuleRow => ({ key, type, value, note, outbound });
 
@@ -59,15 +59,5 @@ describe("original geosite/geoip catalog", () => {
     expect(filterGeoCategories("geosite", "youtube", ["youtube", "youtube@ads"], "youtube", "all").map(value => value[0])).toEqual(["youtube", "youtube@cn"]);
     expect(filterGeoCategories("geoip", "", [], "", "region").every(value => /^[a-z]{2}$/.test(value[0]))).toBe(true);
     expect(filterGeoCategories("geoip", "", [], "", "other").every(value => !/^[a-z]{2}$/.test(value[0]))).toBe(true);
-  });
-});
-
-
-describe("custom outbound latency", () => {
-  it("resolves the currently selected leaf through groups and stops on a controller cycle", () => {
-    const leaf = { name: "美国节点", type: "Vless", history: [{ time: "2026-10-02", delay: 123 }] };
-    const proxies = { proxies: { leaf, auto: { name: "auto", type: "URLTest", now: "leaf" }, manual: { name: "manual", type: "Selector", now: "auto" }, cycle: { name: "cycle", type: "Selector", now: "cycle" } } };
-    expect(resolveOutboundProxy("manual", proxies)).toBe(leaf);
-    expect(resolveOutboundProxy("cycle", proxies)).toBeUndefined();
   });
 });
