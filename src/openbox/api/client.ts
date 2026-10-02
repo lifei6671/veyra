@@ -9,6 +9,8 @@ import type {
   SaveGroupsResponse,
   OpenBoxGroup,
   OpenBoxProfile,
+  RuleSetEntriesResponse,
+  RuleSetEntry,
   ProxiesResponse,
   ProxyLatencyHistoryResponse,
   PenetrationResult,
@@ -185,7 +187,15 @@ export const api = {
   deleteSubscription: (id: string) => request<void>(`/api/openbox/subscriptions/${encodeURIComponent(id)}`, { method: "DELETE" }),
 
   profile: async () => (await request<{ profile: OpenBoxProfile }>("/api/openbox/profile")).profile,
-  saveProfile: async (profile: OpenBoxProfile) => (await request<{ profile: OpenBoxProfile }>("/api/openbox/profile", { method: "PUT", ...json(profile) })).profile,
+  saveProfile: async (profile: Omit<Partial<OpenBoxProfile>, "routing"> & { routing?: Partial<OpenBoxProfile["routing"]> }) => (await request<{ profile: OpenBoxProfile }>("/api/openbox/profile", { method: "PUT", ...json(profile) })).profile,
+  defaultRouting: async () => (await request<{ routing: OpenBoxProfile["routing"] }>("/api/openbox/defaults/routing")).routing,
+  ruleSetEntries: (source: { tag: string } | { url: string }, q = "", offset = 0, limit = 50) => {
+    const params = new URLSearchParams({ ...source, offset: String(offset), limit: String(limit) });
+    if (q) params.set("q", q);
+    return request<RuleSetEntriesResponse>(`/api/openbox/rulesets/${"tag" in source ? "entries" : "preview"}?${params}`);
+  },
+  importRuleSet: (url: string) => request<{ entries: RuleSetEntry[] }>(`/api/openbox/rulesets/import?${new URLSearchParams({ url })}`),
+  refreshRuleSet: (url: string) => request<{ total: number; needsRestart?: boolean }>("/api/openbox/rulesets/refresh", { method: "POST", signal: AbortSignal.timeout(120_000), ...json({ url }) }),
   clients: () => request<ClientsResponse>("/api/openbox/clients"),
   devices: async () => (await request<{ devices: ClientDevice[] }>("/api/openbox/client-config/devices")).devices,
   createDevice: (name: string) => request<ClientDevice>("/api/openbox/client-config/devices", { method: "POST", ...json({ name }) }),

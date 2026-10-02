@@ -1,4 +1,4 @@
-import { useEffect, useId, useState, type ButtonHTMLAttributes, type ReactNode } from "react";
+import { useEffect, useId, useLayoutEffect, useRef, useState, type ButtonHTMLAttributes, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { ExclamationTriangleIcon, XMarkIcon } from "@heroicons/react/24/outline";
 
@@ -6,20 +6,48 @@ export function Glyph({ children }: { children: ReactNode }) {
   return <span className="glyph" aria-hidden="true">{children}</span>;
 }
 
-export function IconButton({ label, children, active, tooltip = false, className = "", ...props }: ButtonHTMLAttributes<HTMLButtonElement> & {
+export function Tooltip({ label, children, enabled = true }: { label: string; children: ReactNode; enabled?: boolean }) {
+  const id = useId();
+  const anchor = useRef<HTMLElement | null>(null), layer = useRef<HTMLDivElement>(null);
+  const [open, setOpen] = useState(false), [position, setPosition] = useState({ left: 0, top: 0 });
+  const show = (element: HTMLElement) => {
+    const dialogs = document.querySelectorAll('[role="dialog"]');
+    if (!enabled || dialogs.length && !dialogs[dialogs.length - 1].contains(element) && !element.closest("[role=listbox]")) return;
+    anchor.current = element; setOpen(true);
+  };
+  useLayoutEffect(() => {
+    if (!open || !enabled || !anchor.current || !layer.current) return;
+    const target = anchor.current.getBoundingClientRect(), tip = layer.current.getBoundingClientRect();
+    const above = target.top - tip.height - 8;
+    setPosition({ left: Math.max(8, Math.min(window.innerWidth - tip.width - 8, target.left + (target.width - tip.width) / 2)), top: above >= 8 ? above : Math.min(window.innerHeight - tip.height - 8, target.bottom + 8) });
+  }, [open, enabled, label]);
+  useEffect(() => {
+    if (!open) return;
+    const close = () => setOpen(false);
+    window.addEventListener("scroll", close, true); window.addEventListener("resize", close);
+    return () => { window.removeEventListener("scroll", close, true); window.removeEventListener("resize", close); };
+  }, [open]);
+  return <span className="ob-tooltip-anchor" onPointerEnter={event => show(event.currentTarget.firstElementChild as HTMLElement)} onPointerLeave={() => setOpen(false)} onFocus={event => show(event.target as HTMLElement)} onBlur={() => setOpen(false)} onClickCapture={() => setOpen(false)} onKeyDown={event => { if (event.key === "Escape") setOpen(false); }} aria-describedby={open && enabled ? id : undefined}>
+    {children}{open && enabled && createPortal(<div ref={layer} id={id} role="tooltip" className="ob-portal-tooltip" style={position}>{label}</div>, document.body)}
+  </span>;
+}
+
+export function IconButton({ label, children, active, tooltip = false, portalTooltip = false, className = "", ...props }: ButtonHTMLAttributes<HTMLButtonElement> & {
   label: string;
   children: ReactNode;
   active?: boolean;
   tooltip?: boolean;
+  portalTooltip?: boolean;
 }) {
-  return <button
+  const button = <button
     type="button"
     aria-label={label}
     title={tooltip ? undefined : label}
-    data-tooltip={tooltip ? label : undefined}
-    className={`icon-button${active ? " active" : ""}${className ? ` ${className}` : ""}`}
+    data-tooltip={tooltip && !portalTooltip ? label : undefined}
+    className={`icon-button${active ? " active" : ""} ${portalTooltip ? className.split(" ").filter(name => !name.startsWith("tooltip-")).join(" ") : className}`.trim()}
     {...props}
   >{children}</button>;
+  return portalTooltip ? <Tooltip label={label}>{button}</Tooltip> : button;
 }
 
 export function PageToolbar({ title, subtitle, children }: { title: string; subtitle?: string; children?: ReactNode }) {

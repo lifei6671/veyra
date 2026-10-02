@@ -320,3 +320,47 @@ final result: passed
 - 添加国家/地区改用共用 shadcn/Radix Select，补齐搜索、清空按钮、国旗/名称/代码、悬停与键盘高亮，以及“没有匹配的国家/地区”空状态。浮层脱离弹窗滚动区域，并保留应用主题。默认六地区全部选中且只有美国有节点时，原版和本地均无可添加项，完整空面板同为 256×94 px，不再显示空白条；保持只列出有节点且未选地区的原版规则。
 - 浏览器验证：移除美国后可添加美国；搜索 JP 显示无匹配，× 清空搜索且面板保持打开；ArrowDown / Enter 可选择美国并关闭面板，Esc 仅关闭下拉框。高亮背景与原版同为 `oklch(0.93 0 0)`；600×500 窗口中浮层完整可见，弹窗高 450 px，底栏按钮完整可见。回归分组规则共用 Select 的当前项、三种选项与关闭行为。
 - `pnpm lint`、`pnpm test src/openbox`（11 文件 / 104 项）、`pnpm build`、`git diff --check` 通过。构建保留已有大 chunk 提示。本次未修改 API 或生成逻辑，所有测试表单取消；临时标签页清理，视口恢复。截图位于本次 visualization 目录 `country-picker-drag/`：`empty-dropdown.png`、`original-empty-dropdown.png`、`drag-preview.png`、`narrow-dropdown.png`、`country-option.png`。
+
+## 2026-10-02 目标分流原版复刻
+
+- 对应原版 `RoutingPage` / `RoutingPoliciesCard` / `GeoCategorySelect` / `GeoEntriesDialog` / `OutboundPicker`。替换旧版“基础分流 + 策略摘要”界面，按真实 Profile 渲染前置固定卡片、可排序站点集和系统兜底卡片；固定卡片用虚线边框。编辑、启停、删除、恢复默认和顶部添加按钮均对应原版行为。
+- 普通站点集和前置编辑共用 896 px / 90dvh 弹窗；600×500 下为全屏，规则类型/备注和规则值/出口分行。兜底弹窗宽 672 px、按内容自适应（实测 206 px 高）。全部复用公共 Modal Portal、原版图标目录和缩放控件；卡片弹窗打开时隐藏背景按钮提示，缩放提示在 BODY，实测越过底栏后仍完整，关闭无残留。
+- geosite 1899 项、geoip 260 项目录及多语言描述来自原版加载资源，来源见 `assets/geo-catalog.md`。选择器使用 shadcn/Radix，展开时自动定位当前项，选中/悬停沿原版灰色状态；中英文搜索、已用项排除、逐批追加以及 geoip 范围切换有效，清空搜索保留浮层。600×500 分类浮层完整位于视口内；深色值按原版主题定义并在隔离页面实际核验。
+- 真实后端读取并渲染 14 张卡片；AI 分类返回 182 条规则，分页和 `openai` 搜索显示后端返回的 9 条匹配。明细、远端预览、导入及刷新使用 `/api/openbox/rulesets/*`；Profile 保存仅 PUT `{ routing: 修改部分 }`，消费返回的完整 `profile`。普通规则按六个字段归并，前置保留行顺序/各自出口，备注使用原版键。复用安装包默认值接口，不在 UI 猜默认配置。
+- 独立 1421 测试页面实际操作验证：必填反馈、多值拆行和备注回读、嵌套导入预览/追加、前置出口必填/节点选择、卡片拖动及固定首尾、兜底名称保存、失败时保留草稿、删除及恢复默认。8 次 Profile PUT 均只含 routing，未触及其他 Profile 字段；出口测速按钮正确更新延迟且不选中/关闭下拉框。隔离页面使用内存测试数据，线上配置未写入；临时入口和服务器在收尾删除/停止。
+- 验证：`pnpm lint`、`pnpm test src/openbox`（12 文件 / 115 项）、`pnpm build`、`git diff --check`。构建保留已有大 chunk 提示。截图位于本次 visualization 目录 `target-routing/`：`source-editor.png`、`local-editor.png`、`local-cards.png`、`fallback-tooltip.png`（真实后端页面）及 `narrow-picker.png`、`dark-picker.png`（隔离页面）。
+
+## 2026-10-02 目标分流提示边界、分类展开与详情尺寸修正
+
+- 固定把手、卡片操作、顶部添加/恢复、规则删除/刷新及出站测速共用 Tooltip，直接挂载 BODY（z-index 1300），按实际尺寸优先向上显示并限制在视口 8 px 边界内；鼠标离开、失焦、点击、Esc、滚动和窗口改变时关闭。背景卡片提示在弹窗打开时不显示。原先 CSS 伪元素提示及明细搜索组的失效样式已移除。
+- 工具栏图标按钮被通用按钮样式覆盖为左右 12 px 内边距，32 px 按钮内的 16 px SVG 偏右 4 px；统一恢复居中及零内边距。1280 px 下添加按钮 x=1240 / width=32，SVG x=1248 / width=16；提示 right=1272，完整位于视口内。
+- 原版分类来自前端打包的 geo-catalog，目录来源保持 assets/geo-catalog.md，并非展开时请求后端。原实现为定位 YouTube 挂载 1899 个 Radix 选项，且每个描述重复线性查找。描述改为索引读取，列表保留完整目录和顺序，按实际行高窗口化最多 60 项；仍使用 shadcn/Radix Select。同一浏览器 click 调用（含工具开销）由索引优化后的 1042 ms 降至窗口化后的 272 ms。实际检查当前 YouTube 选中高亮、上下滚动、搜索及清空；滚动前后均仅 60 项、无空白，搜索 YouTube 为 3 项。触发器补齐原版分类描述。
+- 原版详情搜索为带右侧清空按钮的 32 px / 14 px 输入框，移除多余搜索图标并恢复同样高度；原版加载更多为 32 px 的 flex 按钮，本地同步尺寸并将通用 28 px spinner 改为按钮内 16 px、零外边距，旋转期间完整可见。真实 geosite-youtube 返回 178 条，点击加载更多后由 50 追加为 100 条，搜索框实测 32 px。
+- 浏览器验证 1280×720、1070×850、600×500：固定把手 top=82，提示 bottom=74，鼠标位于把手时不挡字；规则编辑提示挂 BODY；出站浮层右侧“测试所有”提示在窄屏下 right=592，保留 8 px 边界，跨出下拉边框仍完整。窄屏详情高 450 px，可滚动，加载动画截图显示完整。
+- 验证：115 项 OpenBox 测试、类型检查、构建与 diff 检查通过；构建仍有已有大 chunk 提示。没有保存线上配置。本轮临时对照页清理并恢复视口。截图位于本次 visualization 目录 target-routing-fixes/：fixed-handle-tooltip.png、outbound-tooltip.png、narrow-outbound-tooltip.png、youtube-categories.png、details-loading-more.png。
+
+## 2026-10-02 分类浮层收起延迟修正
+
+- 上一轮仅限制可见选项数量，仍让 Radix SelectContent 在关闭时将选项重新挂载到内部 DocumentFragment；TikTok 两条 geosite 规则会同时保留隐藏列表。现在仅在 open 时挂载分类 Content，关闭直接卸载，触发器显式显示当前值，不依赖隐藏 ItemText。分类浮层取消通用 select-pop 的 120 ms 动画；其余 Select 沿用现有行为。
+- 临时 React Profiler 对照实际 TikTok 页面：原关闭过程出现约 15.1 / 14.2 / 10.1 / 8.9 / 10.9 ms 的列表更新，修正后主要关闭更新约 0.2 ms，不再回挂隐藏选项。该数字为开发环境单次渲染耗时，并非完整输入到屏幕延迟；性能记录代码已删除。
+- 真实浏览器检查：TikTok 两条 geosite 的当前项、过滤已用分类、搜索选择、重开高亮、Esc；点击弹窗空白处收起时 listbox/option 为 0，编辑 dialog 保留。YouTube 单条 geosite、Netflix geoip 同样通过。临时选择仅用于草稿，取消后原值 tiktok / tiktok@!cn 保持，没有保存线上配置。
+- 类型检查、115 项 OpenBox 测试、构建和 diff 检查通过；保留已有大 chunk 提示。验证截图位于本次 visualization 目录 geo-picker-lifecycle/dismissed.png。临时页面已清理。
+
+## 2026-10-02 前置出站测速动画修正
+
+- 对照原版 OutboundPicker / LatencyTag：测速期间隐藏数字，显示 16 px SVG 三点跳动（1.05 秒循环，三点分别延后 0 / 0.1 / 0.2 秒）；替换静态省略号。延迟标签固定 40×20 px，显示不带 ms 的数字，辅助标签保留单位；返回结果后按原版约 1 秒缓出更新数字，减少动态效果偏好下直接显示结果。
+- 节点与节点组共用同一延迟标签；测试所有期间顶部闪电切换成 16 px 旋转加载图标，保持按钮原有禁用行为。没有改动测速 API、出站选择或 Profile 保存逻辑。
+- 真实浏览器操作：单节点测速从 202 更新到 204；节点组测速时有 3 个动画点，返回目标 181ms 时实测过渡数字 190，随后结束为 181。批量测速期间 aria-busy=true，完成后 false；下拉框始终保留，触发器仍为“选择出站”。仅测速，没有保存线上配置。
+- 类型检查、115 项 OpenBox 测试、构建和 diff 检查通过；构建保留已有大 chunk 提示。截图在本次 visualization 目录 outbound-latency/testing.png、testing-all.png、group-result.png。临时参考资源和浏览器标签页已清理。
+
+## 2026-10-02 分流停用徽章
+
+- 普通站点集和前置分流共用卡片的“已停用”标记增加专用 class，使用既有 --danger 红色背景及白色文字；前置/系统兜底等其他标记保持原样，停用卡片原有 0.5 透明度不变。
+- 当前真实 Profile 中规则均启用，使用加载实际 openbox.css 的临时静态样式预览检查：背景 rgb(240,107,107)、文字 rgb(255,255,255)，卡片 opacity 0.5。未切换或保存线上规则。截图 routing-disabled-badge.png，预览文件已清理。
+- pnpm lint、git diff --check 通过；纯样式变更未新增单元测试。
+
+## 2026-10-02 出站选择器批量测速按钮背景
+
+- 右上角“测试所有”按钮采用项目已有工具按钮的灰色背景：浅色 oklch(93% 0 0)、深色 oklch(23.26% .014 253.1)，悬停加深 7%；限定在出站选择器头部，不改节点行的单独测速按钮。
+- 真实前置分流弹窗检查按钮 32×32 px、圆角 9 px、实际浅色背景 oklch(0.93 0 0)。批量测速时旋转图标及灰色背景保留；仅测速，没有保存配置。截图 outbound-button-background.png。
+- git diff --check 通过；本次仅 CSS 外观调整，无业务逻辑变更。

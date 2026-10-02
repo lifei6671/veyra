@@ -343,13 +343,27 @@ export type SubscriptionShare = {
 };
 
 export type RoutingPolicy = {
+  id?: string;
   name?: string;
   enabled?: boolean;
   icon?: string;
+  iconScale?: number;
+  rulesets?: string[];
+  ruleUrls?: string[];
+  domainSuffix?: string[];
+  domain?: string[];
+  domainKeyword?: string[];
+  ipCidr?: string[];
+  notes?: Record<string, string>;
   outbound?: string;
   target?: string;
   [key: string]: unknown;
 };
+
+export type RoutingRuleType = "domainSuffix" | "domain" | "domainKeyword" | "ipCidr" | "geosite" | "geoip" | "ruleUrl" | "ruleset" | "port";
+export type CustomRoutingRule = { type: RoutingRuleType; value: string; outbound: string; note?: string };
+export type RuleSetEntry = { type: string; value: string };
+export type RuleSetEntriesResponse = { entries: RuleSetEntry[]; total: number; matched: number };
 
 export type OpenBoxProfile = {
   ipv6: boolean;
@@ -388,6 +402,8 @@ export type OpenBoxProfile = {
     fallbackDefault: string;
     fallbackName: string;
     fallbackIcon: string;
+    fallbackIconScale?: number;
+    custom?: { name?: string; icon?: string; iconScale?: number; enabled?: boolean; rules?: CustomRoutingRule[] };
   };
   [key: string]: unknown;
 };
