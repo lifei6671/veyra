@@ -36,8 +36,9 @@ export const settingsSections = [
 
 type SectionId = typeof settingsSections[number]["id"];
 
-export function SettingsPage({ storage, theme, setTheme, onToast }: {
+export function SettingsPage({ storage, theme, setTheme, onToast, platform }: {
   storage: StorageResponse;
+  platform?: string;
   theme: "light" | "dark";
   setTheme: (theme: "light" | "dark") => void;
   onToast: (message: string) => void;
@@ -82,7 +83,7 @@ export function SettingsPage({ storage, theme, setTheme, onToast }: {
     {section === "clients" && <ClientRoutingSettings onToast={onToast} />}
     {section === "chain" && <ChainProxySettings storage={storage} onToast={onToast} />}
     {section === "share" && <ShareNetworkSettings onToast={onToast} />}
-    {section === "dns" && <DnsSettings onToast={onToast} />}
+    {section === "dns" && <DnsSettings onToast={onToast} platform={platform} />}
     {section === "backend" && <BackendSettings onToast={onToast} />}
     </div>
   </main>;

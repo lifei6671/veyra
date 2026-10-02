@@ -147,7 +147,7 @@ export function OpenBoxApp() {
       {route === "connections" && <ConnectionsPage frame={live.connections} storage={storage} onPatchStorage={patchStorage} onToast={showToast} />}
       {route === "logs" && <LogsPage />}
       {route === "rules" && <RulesPage storage={storage} onToast={showToast} />}
-      {route === "settings" && <SettingsPage storage={storage} theme={theme} setTheme={setTheme} onToast={message => { showToast(message); void loadStorage().catch(() => undefined); }} />}
+      {route === "settings" && <SettingsPage platform={service?.platform} storage={storage} theme={theme} setTheme={setTheme} onToast={message => { showToast(message); void loadStorage().catch(() => undefined); }} />}
     </AppShell>
     <Toaster theme={theme} />
   </>;

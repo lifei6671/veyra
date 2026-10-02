@@ -406,3 +406,29 @@ final result: passed
 - server-join 统一用 focus-within 绘制完整 8.7 px 圆角焦点框，取消内部输入和按钮各自 outline，键盘 Tab 到按钮仍有整体焦点标记。UUID/密码/混淆密码和只读分享链接关闭拼写检查，避免标识符被错误标红。
 - 浏览器逐一验证五种协议拼接字段、输入焦点、VLESS 生成按钮键盘焦点；整体 outline 保留，内部 outline 为 none。未保存服务器或更改线上凭据，控制台无 warning/error，临时对照页面已关闭。截图 `share-network/vless-wide-focus.png`。
 - `pnpm lint`、`pnpm build`、`git diff --check` 通过，构建保留既有大 chunk 提示；本次未改变数据和 API 行为，不新增单元测试。
+
+## 2026-10-02 DNS 设置原版迁移
+
+- 开始前提交全部既有代码为 `e6553c6 feat(openbox): replicate shared network server settings`，未推送。本轮 DNS 变更留在工作区。对照在线 `DnsPage`、`DnsModeCard`、`DnsUpstreamCard`、`DnsRewriteCard`、`DnsFilterCard`、`DnsFilterPreviewDialog` 和 `DnsFilterRecords`（`assets/index-R7_omgFM.js`），中文来自 `index-Cu3FGbAJ.js`，请求契约来自 `windowResizeState-DNdNlz3k.js`；主题值通过真实页面作用域的 computed style 核对。
+- 替换原简化 DNS 表单为劫持方式/FakeIP、上游、重写、域名过滤及查询记录五张卡片。沿用公共 Modal/Tooltip，所有下拉框使用已有 shadcn/Radix Select，测试与保存忙碌状态使用公共 Switch 的可选 disabled 属性。复用已加载 ServiceStatus.platform，systemd 不显示 DNSmasq 转发，不重复查询服务状态。
+- Profile 仅 PUT `{ dns: partial }` 并消费返回完整 Profile；上游 UDP/TCP、端口、主/备用及每侧最多四个按原版管理，保存前 POST `/api/openbox/dns/upstream-test`，测试失败保持草稿、不发 PUT。重写保留启停与备注，目标/固定 IP 更新即时反馈；新增、源域名及启停变更提示重启。默认重写 GET `/api/openbox/profile/defaults?region=cn`，恢复只重置默认项，保留自定义项。
+- 过滤完整状态 GET `/api/openbox/dns-filter` 每 10 秒刷新，前台且未保存/应用时执行。PUT 同路径保存 settings，重新读取 Profile/status；应用或下载指定名单 POST `/api/openbox/dns-filter/apply` 的 update/listId。名单增删改、启停、规则数量/更新时间/跳过/错误、自动更新和放行域名折叠区均按原版实现；放行输入逐行去空白、去重复，保留泛域名。名单编辑预览使用同一 API，关闭预览返回原草稿。
+- `/api/openbox/dns-filter/preview` 的 url/search/action/page/pageSize 与 `/records` 的 search/result/page/pageSize 正确编码，消费返回分页字段；预览搜索和动作筛选为原版 250 ms 防抖，过期响应不覆盖新筛选。查询默认 blocked、10 行/页，预览默认 all、20 行/页；共享分页支持自定义 1–1000。查询结果、终端、名单、时间和耗时直接渲染；清缓存 POST `/api/openbox/dns/flush-cache`。
+- 真实后端只读加载与原版对比：1280×720、内容宽 1008 时五卡高度均为 211 / 254 / 234.5 / 262 / 319.140625 px；上游弹窗 512×262、重写弹窗 512×338、名单编辑 512×238，与原版一致。边框、背景、按钮、开关、行距、搜索高度及表格空状态核对。600×500 折叠侧栏后，上游弹窗位于 x=44、y=119、width=512、height=262，无文档横向溢出；协议/地址/端口宽度 80/264/80，控件不重叠。深色弹窗、shadcn 选项及预览滚动检查完成；可见原生 select 数量为零。
+- 实际组件 StrictMode 内存隔离验证：失败上游只 POST test；成功测试后 PUT 备用 DNS 并提示重启；apply 后取消待重启；只改重写目标不提示重启；过滤启用、自动更新、放行域名去重、预览筛选/分页/返回编辑、查询空状态、请求失败及恢复、保存失败保持原值。未写线上 Profile/filter、下载应用名单、清缓存或重启真实内核。开发热更新中出现过未完成模块和临时入口重载日志，最终完整重载后的真实页面/隔离入口无新增 warning/error。
+- 验证：`pnpm lint`、`pnpm test src/openbox`（17 文件 / 149 项，包括新增 9 项 DNS 行为及 API 契约测试）、`pnpm build`、`git diff --check` 通过；保留既有大 chunk 提示。临时入口、下载资源和测试标签页已清理，临时视口恢复，原开发服务器保留。截图目录：`/Users/lifeilin/.codex/visualizations/2026/10/02/01a0fb2a-a6f0-7c41-adbf-936f28103039/dns-settings/`，包括 original-top、local-top、local-filter-records、filter-editor、rewrite-editor、narrow-upstream、dark-upstream、preview-fixture。
+
+## 2026-10-02 DNS 徽章与查询框反馈修正
+
+- 原版上游徽章 computed style 为灰色填充与同色边框 `oklab(.93 0 0 / .75)`、左右 padding 9 px、line-height 17.1429 px。修正原先的描边样式；真实本地“兜底直连 DNS”实测 96.4921875×20 px，与原版一致，“代理 DNS 上游”同步修正。深色沿用既有共享/链式徽章的主题填充值。
+- 按用户最新要求，保留“已生效”绿色背景，移除黑字覆盖，使用深绿色文字；查询结果表的浅绿成功徽章规则保持独立。
+- 查询框原本仅设置宽度和高度，遗漏完整 border，导致浏览器默认 inset 黑边。补齐四边 1 px 主题边框、背景、字体、12 px 内边距及完整圆角焦点框。1070×850 折叠侧栏真实页面验证：输入 208×32 px，四边 computed border 完全一致，聚焦 outline 2 px / offset 2 px，失焦 outline 为 none。未提交查询或写入后端配置。
+- `pnpm lint`、`git diff --check` 通过；仅 CSS 修正，不新增单元测试。控制台无新增 warning/error，截图 `dns-settings/badges-fixed.png`、`dns-settings/query-input-focus-fixed.png`。
+
+## 2026-10-02 DNS 上游测速与切换用途保存
+
+- 按用户要求，编辑器测速成功时延迟数字替换闪电图标，不另起一行；完整 ms、via、warning、note 放在公共 Tooltip 中，点击数字可重新测试，修改字段清除旧结果。失败结果仍显示错误反馈。
+- 原版 `DnsUpstreamCard` 仅在删除时禁止移除某侧最后一项，编辑切换用途仍可保存；构造部分 DNS patch 时跳过没有条目的侧，保留后端该侧既有配置。迁移版误将删除限制用于编辑验证，并假定 patch 两侧都有条目。本轮修正这两处，编辑按原版原位置替换，保留主/备用顺序，保存前仍测试新上游。
+- 更新行为回归测试，保护切换唯一上游时保存可用、空侧不清空既有值的契约。实际组件 StrictMode 隔离浏览器验证：延迟数字与输入行垂直居中、成功结果段落数量为零；切换用途保存先 POST test 再 PUT 目标侧 patch，消费回读并关闭弹窗；测试失败只 POST、不 PUT、保留草稿且恢复按钮，空地址仍禁用保存。
+- `pnpm test src/openbox/pages/settings/DnsSettings.test.ts`（9 项）、`pnpm lint`、`pnpm build` 通过；构建保留既有大 chunk 提示。临时隔离入口和原版资源已删除，隔离流程未写线上配置。
+- 真实本地页面测速返回 46 ms，数字位于原闪电位置，保存按钮可用；将唯一代理上游切换为直连的未保存草稿同样可保存。真实流程仅测试和取消，未 PUT 线上 Profile 或重启内核，控制台无 warning/error。截图 `dns-settings/upstream-inline-latency-real.png`。

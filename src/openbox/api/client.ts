@@ -7,6 +7,13 @@ import type {
   ClientsResponse,
   ControllerConfig,
   DnsFilterConfig,
+  DnsFilterStatus,
+  DnsRecord,
+  DnsPageResult,
+  DnsPreview,
+  DnsUpstream,
+  DnsUpstreamTest,
+  DnsRewriteRule,
   GeoIpInfo,
   GroupsResponse,
   SaveGroupsResponse,
@@ -192,7 +199,7 @@ export const api = {
   deleteSubscription: (id: string) => request<void>(`/api/openbox/subscriptions/${encodeURIComponent(id)}`, { method: "DELETE" }),
 
   profile: async () => (await request<{ profile: OpenBoxProfile }>("/api/openbox/profile")).profile,
-  saveProfile: async (profile: Omit<Partial<OpenBoxProfile>, "routing"> & { routing?: Partial<OpenBoxProfile["routing"]> }) => (await request<{ profile: OpenBoxProfile }>("/api/openbox/profile", { method: "PUT", ...json(profile) })).profile,
+  saveProfile: async (profile: Omit<Partial<OpenBoxProfile>, "routing" | "dns"> & { routing?: Partial<OpenBoxProfile["routing"]>; dns?: Partial<OpenBoxProfile["dns"]> }) => (await request<{ profile: OpenBoxProfile }>("/api/openbox/profile", { method: "PUT", ...json(profile) })).profile,
   defaultRouting: async () => (await request<{ routing: OpenBoxProfile["routing"] }>("/api/openbox/defaults/routing")).routing,
   ruleSetEntries: (source: { tag: string } | { url: string }, q = "", offset = 0, limit = 50) => {
     const params = new URLSearchParams({ ...source, offset: String(offset), limit: String(limit) });
@@ -205,7 +212,12 @@ export const api = {
   devices: async () => (await request<{ devices: ClientDevice[] }>("/api/openbox/client-config/devices")).devices,
   createDevice: (name: string) => request<ClientDevice>("/api/openbox/client-config/devices", { method: "POST", ...json({ name }) }),
   deleteDevice: (name: string) => request<void>(`/api/openbox/client-config/devices/${encodeURIComponent(name)}`, { method: "DELETE" }),
-  dnsFilter: () => request<DnsFilterConfig>("/api/openbox/dns-filter"),
-  saveDnsFilter: (config: DnsFilterConfig) => request<DnsFilterConfig>("/api/openbox/dns-filter", { method: "PUT", ...json(config) }),
+  dnsFilter: () => request<DnsFilterStatus>("/api/openbox/dns-filter"),
+  saveDnsFilter: (config: DnsFilterConfig) => request<unknown>("/api/openbox/dns-filter", { method: "PUT", ...json(config) }),
+  applyDnsFilter: (update = false, listId = "") => request<unknown>("/api/openbox/dns-filter/apply", { method: "POST", signal: AbortSignal.timeout(300_000), ...json({ update, ...(listId ? { listId } : {}) }) }),
+  dnsRecords: (search: string, result: string, page: number, pageSize: number) => request<DnsPageResult<DnsRecord>>(`/api/openbox/dns-filter/records?${new URLSearchParams({ search, result, page: String(page), pageSize: String(pageSize) })}`),
+  dnsPreview: (url: string, search: string, action: string, page: number, pageSize: number) => request<DnsPreview>(`/api/openbox/dns-filter/preview?${new URLSearchParams({ url, search, action, page: String(page), pageSize: String(pageSize) })}`),
+  testDnsUpstream: (value: DnsUpstream & { side: "direct" | "proxy" }) => request<DnsUpstreamTest>("/api/openbox/dns/upstream-test", { method: "POST", ...json(value) }),
+  dnsRewriteDefaults: async () => (await request<{ dnsRewriteDefaults?: DnsRewriteRule[] }>("/api/openbox/profile/defaults?region=cn")).dnsRewriteDefaults ?? [],
   flushDns: () => request<void>("/api/openbox/dns/flush-cache", { method: "POST" }),
 };
