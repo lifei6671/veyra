@@ -39,7 +39,7 @@ export function AuthScreen({ status, onAuthenticated }: { status: AuthStatus; on
       {setup && <label><span>确认密码</span><input type="password" autoComplete="new-password" value={confirm} onChange={event => setConfirm(event.target.value)} required minLength={8} /></label>}
       {error && <div className="auth-error" role="alert">{error}</div>}
       <button className="primary-button" type="submit" disabled={submitting || !password}>{submitting ? "正在连接…" : setup ? "保存并进入" : "登录"}</button>
-      <small>后端：http://192.168.1.10:3036</small>
+      <small>后端：https://openbox.disign.me</small>
     </form>
   </main>;
 }

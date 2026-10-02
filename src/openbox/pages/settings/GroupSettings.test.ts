@@ -1,10 +1,14 @@
 import { describe, expect, it } from "vitest";
 import type { GroupsResponse, OpenBoxGroup } from "../../api/types";
 import {
+  availableAutoCountries,
   buildAutoGroups,
+  COUNTRY_OPTIONS,
+  countryNodeCount,
   dynamicGroupMembers,
   groupSummary,
   mergeAutoGroups,
+  memberFilterOptions,
   moveItem,
   normalizeEditorGroup,
 } from "./GroupSettings.helpers";
@@ -30,6 +34,16 @@ const dynamicGroup: OpenBoxGroup = {
 };
 
 describe("outbound group API projection", () => {
+  it("offers member filters only for the kinds and subscriptions present in each pane", () => {
+    expect(memberFilterOptions([])).toEqual([{ value: "", label: "全部" }]);
+    expect(memberFilterOptions([{ kind: "group", name: "直连", subscription: "" }])).toEqual([
+      { value: "", label: "全部" }, { value: "kind:group", label: "全部节点组" },
+    ]);
+    expect(memberFilterOptions(nodes.map(node => ({ ...node, kind: "node" })))).toEqual([
+      { value: "", label: "全部" }, { value: "kind:node", label: "全部节点" },
+      { value: "sub:订阅 A", label: "订阅 A" }, { value: "sub:订阅 B", label: "订阅 B" },
+    ]);
+  });
   it("renders dynamic counts from backend availableNodes without mock members", () => {
     expect(dynamicGroupMembers(dynamicGroup, nodes)).toEqual(nodes.map(node => node.name));
     expect(groupSummary(dynamicGroup, nodes)).toBe("动态组 · 当前 3 个节点 · 检测间隔 300s · 容差 100ms");
@@ -84,7 +98,45 @@ describe("outbound group API projection", () => {
 
     expect(generated.map(group => group.name)).toEqual(["美国-自动", "美国-手动", "香港-自动", "香港-手动"]);
     expect(generated[0]).toMatchObject({ id: "auto-us-urltest-123-0", mode: "dynamic", icon: "US", interval: "300s", tolerance: 100 });
+    expect(generated[0]).not.toHaveProperty("enabled");
+    expect(generated[0]).not.toHaveProperty("iconScale");
+    expect(generated[1]).not.toHaveProperty("interval");
+    expect(generated[1]).not.toHaveProperty("tolerance");
     expect(buildAutoGroups([{ ...dynamicGroup, name: "美国-自动" }], ["US"], ["urltest"], 123)).toEqual([]);
+  });
+
+  it("recognizes flag-only names, short-code boundaries and CN2 exactly like the source", () => {
+    const available = ["🇺🇸 01", "US-02", "Russia", "Australia", "🇨🇳 03", "CN2 GIA 美国", "CN20", "CN2", "CN-04", "🇫🇷 Paris", "India"].map(name => ({ name, subscription: "A" }));
+    expect(dynamicGroupMembers({ keywords: ["US"] }, available)).toEqual(["🇺🇸 01", "US-02"]);
+    expect(dynamicGroupMembers({ keywords: ["cn"] }, available)).toEqual(["🇨🇳 03", "CN20", "CN-04"]);
+    expect(dynamicGroupMembers({ keywords: ["   "] }, available)).toEqual([]);
+    expect(countryNodeCount(COUNTRY_OPTIONS.find(country => country.code === "FR")!.keywords, available)).toBe(1);
+    expect(countryNodeCount(COUNTRY_OPTIONS.find(country => country.code === "IN")!.keywords, available)).toBe(1);
+  });
+
+  it("offers only recognized unselected countries, ordered by node count", () => {
+    const available = [...nodes, { name: "US-02", subscription: "C" }, { name: "🇫🇷 01", subscription: "C" }];
+    expect(availableAutoCountries(["HK", "SG"], available).map(country => [country.code, country.count])).toEqual([["US", 2], ["FR", 1]]);
+    expect(availableAutoCountries([], [])).toEqual([]);
+  });
+
+  it("allows default countries with zero nodes and skips duplicate names independently of icon and type", () => {
+    const existing = [{ ...dynamicGroup, name: "法国-自动", icon: "", type: "selector" }];
+    const generated = buildAutoGroups(existing, ["FR", "HK"], ["urltest", "selector"], 456);
+    expect(generated.map(group => group.name)).toEqual(["法国-手动", "香港-自动", "香港-手动"]);
+    expect(generated[0].id).toBe("auto-fr-selector-456-0");
+    expect(buildAutoGroups([...existing, ...generated], ["FR", "HK"], ["urltest", "selector"], 456)).toEqual([]);
+  });
+
+  it("keeps unrelated groups and groups each country at its existing first position", () => {
+    const existing = [
+      dynamicGroup,
+      { ...dynamicGroup, id: "hk-manual", name: "香港-手动", icon: "hk", type: "selector" },
+      { ...dynamicGroup, id: "unrelated", name: "其他", icon: "globe:earth-asia" },
+      { ...dynamicGroup, id: "hk-other", name: "香港其他", icon: "HK", type: "failover" },
+    ];
+    const generated = buildAutoGroups(existing, ["US", "HK"], ["selector", "urltest"], 123);
+    expect(mergeAutoGroups(existing, generated).map(group => group.name)).toEqual(["所有-自动", "香港-自动", "香港-手动", "香港其他", "其他", "美国-自动", "美国-手动"]);
   });
 
   it("preserves country adjacency when generated groups are merged and supports reorder placeholders", () => {

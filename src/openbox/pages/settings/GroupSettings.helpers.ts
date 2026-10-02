@@ -1,12 +1,16 @@
-import dartIcon from "../../assets/group-dart.svg";
-import earthAsiaIcon from "../../assets/group-earth-asia.svg";
-import earthMeridiansIcon from "../../assets/group-earth-meridians.svg";
-import crossIcon from "../../assets/group-cross.svg";
 import type { GroupsResponse, OpenBoxGroup } from "../../api/types";
+import countries from "../../assets/group-countries.json";
 
 export type GroupType = "urltest" | "selector" | "failover";
 export type MemberOption = { kind: "group" | "node"; name: string; subscription: string };
-export type IconCategory = "region" | "brand" | "other";
+export function memberFilterOptions(items: MemberOption[]) {
+  return [
+    { value: "", label: "全部" },
+    ...(items.some(item => item.kind === "group") ? [{ value: "kind:group", label: "全部节点组" }] : []),
+    ...(items.some(item => item.kind === "node") ? [{ value: "kind:node", label: "全部节点" }] : []),
+    ...[...new Set(items.filter(item => item.kind === "node").map(item => item.subscription).filter(Boolean))].map(subscription => ({ value: `sub:${subscription}`, label: subscription })),
+  ];
+}
 
 export const GROUP_TYPE_LABELS: Record<string, string> = {
   urltest: "自动择优（url-test）",
@@ -14,38 +18,26 @@ export const GROUP_TYPE_LABELS: Record<string, string> = {
   failover: "故障转移（failover）",
 };
 
-export const COUNTRY_OPTIONS = [
-  { code: "HK", name: "香港", keywords: ["hk", "hong kong", "hongkong", "香港", "深港"] },
-  { code: "TW", name: "台湾", keywords: ["tw", "taiwan", "台湾", "台灣", "臺灣", "台北"] },
-  { code: "SG", name: "新加坡", keywords: ["sg", "singapore", "新加坡", "狮城", "獅城"] },
-  { code: "JP", name: "日本", keywords: ["jp", "japan", "日本", "东京", "東京", "大阪"] },
-  { code: "KR", name: "韩国", keywords: ["kr", "korea", "韩国", "韓國", "首尔", "首爾"] },
-  { code: "US", name: "美国", keywords: ["us", "united states", "america", "美国", "美國", "洛杉矶", "洛杉磯", "硅谷", "圣何塞", "西雅图", "纽约"] },
-  { code: "GB", name: "英国", keywords: ["uk", "gb", "united kingdom", "britain", "英国", "英國", "伦敦", "倫敦"] },
-  { code: "DE", name: "德国", keywords: ["de", "germany", "德国", "德國", "法兰克福", "法蘭克福"] },
-  { code: "CN", name: "中国", keywords: ["cn", "china", "中国", "中國", "回国", "回國", "back to china"] },
-] as const;
+export const COUNTRY_OPTIONS = countries;
 
 export const DEFAULT_AUTO_COUNTRIES = ["HK", "TW", "SG", "JP", "KR", "US"];
 
-export const ICON_ASSETS: Record<string, string> = {
-  "misc:dart": dartIcon,
-  "globe:earth-asia": earthAsiaIcon,
-  "globe:earth-meridians": earthMeridiansIcon,
-  "misc:cross": crossIcon,
-};
+function normalizeNodeName(value: string) {
+  return value.replace(/[\u{1F1E6}-\u{1F1FF}]{2}/gu, flag => ` ${[...flag].map(letter => String.fromCharCode(letter.codePointAt(0)! - 127462 + 97)).join("")} `).toLowerCase();
+}
 
-export const ICON_OPTIONS: Array<{ code: string; label: string; category: IconCategory }> = [
-  { code: "globe:earth-meridians", label: "地球·彩色", category: "other" },
-  { code: "globe:earth-asia", label: "地球·彩色(亚洲)", category: "other" },
-  { code: "misc:dart", label: "靶心", category: "other" },
-  { code: "misc:cross", label: "拒绝(叉)", category: "other" },
-  ...COUNTRY_OPTIONS.map(country => ({ code: country.code, label: country.name, category: "region" as const })),
-];
+function matchesKeyword(name: string, keyword: string) {
+  const normalized = normalizeNodeName(keyword).trim();
+  if (!normalized) return false;
+  if (/^[a-z]{2,3}$/i.test(normalized)) {
+    const cn2 = normalized === "cn" ? "(?!2(?![0-9]))" : "";
+    return new RegExp(`(^|[^a-z])${normalized}${cn2}([^a-z]|$)`, "i").test(name);
+  }
+  return name.includes(normalized);
+}
 
 export function dynamicGroupMembers(group: Pick<OpenBoxGroup, "keywords">, nodes: GroupsResponse["availableNodes"]) {
-  const keywords = group.keywords.map(keyword => keyword.trim().toLowerCase()).filter(Boolean);
-  return nodes.map(node => node.name).filter(name => !keywords.length || keywords.some(keyword => name.toLowerCase().includes(keyword)));
+  return nodes.map(node => node.name).filter(name => !group.keywords.length || group.keywords.some(keyword => matchesKeyword(normalizeNodeName(name), keyword)));
 }
 
 export function groupSummary(group: OpenBoxGroup, nodes: GroupsResponse["availableNodes"]) {
@@ -77,9 +69,7 @@ export function buildAutoGroups(existing: OpenBoxGroup[], countries: string[], t
         name,
         type,
         mode: "dynamic",
-        enabled: true,
         icon: code,
-        iconScale: 0,
         keywords: [...country.keywords],
         members: [],
         ...(type === "urltest" ? { interval: "300s", tolerance: 100 } : {}),
@@ -90,17 +80,18 @@ export function buildAutoGroups(existing: OpenBoxGroup[], countries: string[], t
 }
 
 export function mergeAutoGroups(existing: OpenBoxGroup[], generated: OpenBoxGroup[]) {
-  const countryCodes = [...new Set(generated.map(group => /^[A-Za-z]{2}$/.test(group.icon) ? group.icon.toUpperCase() : "").filter(Boolean))];
-  const typeOrder: Record<string, number> = { urltest: 0, selector: 1, failover: 2 };
+  const countryCode = (group: OpenBoxGroup) => /^[A-Za-z]{2}$/.test(group.icon) ? group.icon.toUpperCase() : "";
+  const countryCodes = [...new Set(generated.map(countryCode).filter(Boolean))];
+  const typeOrder: Record<string, number> = { urltest: 0, selector: 1 };
   let result = [...existing];
   countryCodes.forEach(code => {
-    const block = [...result.filter(item => item.icon.toUpperCase() === code), ...generated.filter(item => item.icon.toUpperCase() === code)]
+    const block = [...result.filter(item => countryCode(item) === code), ...generated.filter(item => countryCode(item) === code)]
       .sort((a, b) => (typeOrder[a.type] ?? 9) - (typeOrder[b.type] ?? 9));
-    const index = result.findIndex(item => item.icon.toUpperCase() === code);
-    result = result.filter(item => item.icon.toUpperCase() !== code);
+    const index = result.findIndex(item => countryCode(item) === code);
+    result = result.filter(item => countryCode(item) !== code);
     result.splice(index < 0 ? result.length : index, 0, ...block);
   });
-  return [...result, ...generated.filter(group => !countryCodes.includes(group.icon.toUpperCase()))];
+  return [...result, ...generated.filter(group => !countryCode(group))];
 }
 
 export function cloneGroup(group: OpenBoxGroup): OpenBoxGroup {
@@ -158,7 +149,13 @@ export function filterMembers(items: MemberOption[], search: string, filter: str
 }
 
 export function countryNodeCount(keywords: readonly string[], nodes: GroupsResponse["availableNodes"]) {
-  return nodes.filter(node => keywords.some(keyword => node.name.toLowerCase().includes(keyword.toLowerCase()))).length;
+  return nodes.filter(node => keywords.some(keyword => matchesKeyword(normalizeNodeName(node.name), keyword))).length;
+}
+
+export function availableAutoCountries(selected: string[], nodes: GroupsResponse["availableNodes"]) {
+  return COUNTRY_OPTIONS.map(country => ({ ...country, count: countryNodeCount(country.keywords, nodes) }))
+    .filter(country => country.count > 0 && !selected.includes(country.code))
+    .sort((a, b) => b.count - a.count);
 }
 
 export function moveItem<T>(items: T[], from: number, to: number) {
@@ -177,10 +174,6 @@ export function secondsValue(value?: string) {
   if (!match) return 300;
   const amount = Number(match[1]);
   return Math.round(amount * (match[2] === "ms" ? .001 : match[2] === "m" ? 60 : match[2] === "h" ? 3600 : 1));
-}
-
-export function countryFlag(code: string) {
-  return String.fromCodePoint(...[...code].map(character => 127397 + character.charCodeAt(0)));
 }
 
 export function errorMessage(reason: unknown, fallback: string) {

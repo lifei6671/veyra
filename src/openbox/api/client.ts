@@ -6,6 +6,7 @@ import type {
   DnsFilterConfig,
   GeoIpInfo,
   GroupsResponse,
+  SaveGroupsResponse,
   OpenBoxGroup,
   OpenBoxProfile,
   ProxiesResponse,
@@ -168,7 +169,7 @@ export const api = {
 
   groups: () => request<GroupsResponse>("/api/openbox/groups"),
   defaultGroups: async () => (await request<{ groups: OpenBoxGroup[] }>("/api/openbox/defaults/groups")).groups,
-  saveGroups: (groups: OpenBoxGroup[]) => request<{ groups: OpenBoxGroup[] }>("/api/openbox/groups", { method: "PUT", ...json({ groups }) }),
+  saveGroups: (groups: OpenBoxGroup[]) => request<SaveGroupsResponse>("/api/openbox/groups", { method: "PUT", ...json({ groups }) }),
 
   subscriptions: async () => (await request<{ subscriptions: Subscription[] }>("/api/openbox/subscriptions")).subscriptions,
   previewSubscription: (value: Partial<Subscription>) => request<SubscriptionPreview>("/api/openbox/subscriptions/preview", { method: "POST", ...json(value) }),

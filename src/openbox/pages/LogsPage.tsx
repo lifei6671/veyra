@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState } from "react";
-import { ArrowDownTrayIcon, ChevronDownIcon, PauseIcon, PlayIcon, SparklesIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import { ArrowDownTrayIcon, PauseIcon, PlayIcon, SparklesIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import type { ControllerLogFrame } from "../api/types";
 import { useControllerSocket } from "../hooks/useControllerSocket";
 import { SearchInputGroup, SelectControl } from "../ui/controls";
@@ -76,19 +76,7 @@ export function LogsPage() {
     <div className="route-controls log-controls">
       <SelectControl label="日志级别" value={level} onValueChange={changeLevel} className="log-level-select" options={logLevels.map(value => ({ value, label: value }))} />
       <div className="log-filter-cluster">
-        <div className="log-category-select">
-          <select aria-label="日志类型" value={filter} onChange={event => setFilter(event.target.value)}>
-            <option value="all">全部</option>
-            {filters.levels.length > 0 && <optgroup label="日志等级">
-              {filters.levels.map(value => <option value={`level:${value}`} key={value}>{value}</option>)}
-            </optgroup>}
-            {filters.categories.length > 0 && <optgroup label="日志类型">
-              {filters.categories.map(value => <option value={`type:${value}`} key={value}>{value}</option>)}
-            </optgroup>}
-          </select>
-          <span className="log-category-value" aria-hidden="true">{selectedFilterLabel}</span>
-          <ChevronDownIcon aria-hidden="true" />
-        </div>
+        <SelectControl className="log-category-select" label="日志类型" value={filter} placeholder={selectedFilterLabel} onValueChange={setFilter} options={[{ value: "all", label: "全部" }, ...filters.levels.map(value => ({ value: `level:${value}`, label: value, group: "日志等级" })), ...filters.categories.map(value => ({ value: `type:${value}`, label: value, group: "日志类型" }))]} />
         <SearchInputGroup label="搜索日志" value={query} onChange={setQuery} onClear={() => setQuery("")} placeholder="搜索 | Regex" className={search.invalid ? "search-invalid" : ""} />
         <IconButton label="格式化查询" onClick={() => setQuery(normalizeLogQuery(query))}><SparklesIcon /></IconButton>
       </div>

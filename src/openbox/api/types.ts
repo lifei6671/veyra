@@ -231,9 +231,9 @@ export type OpenBoxGroup = {
   name: string;
   type: "urltest" | "selector" | "failover" | string;
   mode: "static" | "dynamic" | string;
-  enabled: boolean;
+  enabled?: boolean;
   icon: string;
-  iconScale: number;
+  iconScale?: number;
   keywords: string[];
   members: string[];
   kind?: string;
@@ -265,6 +265,12 @@ export type GroupsResponse = {
   types: string[];
   availableNodes: Array<{ name: string; subscription: string }>;
   availableGroups: string[];
+};
+
+export type SaveGroupsResponse = {
+  groups: OpenBoxGroup[];
+  dropped?: Array<{ name: string; reason: string }>;
+  dangling?: Array<{ name: string; members: string[] }>;
 };
 
 export type Subscription = {
