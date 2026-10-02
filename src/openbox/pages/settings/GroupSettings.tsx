@@ -439,7 +439,7 @@ function MemberPane({ title, items, checked, setChecked, search, setSearch, filt
   return <section className="group-member-pane"><header className="group-member-head"><div className="group-member-title"><strong>{title}</strong><span><input value={search} placeholder="按名称过滤…" onChange={event => setSearch(event.target.value)} /></span></div><div className="group-member-tools"><button type="button" onClick={toggleAll}>全选</button><button type="button" onClick={invert}>反选</button><button type="button" onClick={clear}>清空选择</button><SelectControl label={`${title}过滤`} value={filter} onValueChange={setFilter} options={filterOptions ?? [{ value: "", label: "全部" }, ...(showGroups ? [{ value: "kind:group", label: "全部节点组" }] : []), { value: "kind:node", label: "全部节点" }, ...subscriptions.map(subscription => ({ value: `sub:${subscription}`, label: subscription }))]} /></div></header><div className="group-member-list">{items.length ? items.map(item => <label key={`${item.kind}-${item.name}`}><input type="checkbox" checked={checked.includes(item.name)} onChange={event => setChecked(current => event.target.checked ? [...current, item.name] : current.filter(name => name !== item.name))} />{direction === "left" && <IconButton label="移出" tooltip className="tooltip-trigger" onClick={event => { event.preventDefault(); onMove(item.name); }}><ChevronLeftIcon /></IconButton>}<span>{item.name}</span>{direction === "right" && <>{item.kind === "group" && <small>出站节点</small>}<IconButton label="添加" tooltip className="tooltip-trigger tooltip-align-right" onClick={event => { event.preventDefault(); onMove(item.name); }}><ChevronRightIcon /></IconButton></>}</label>) : <p>{empty ?? "没有匹配的条目。"}</p>}</div></section>;
 }
 
-function ScaleControl({ value, onChange }: { value: number; onChange: (value: number) => void }) {
+export function ScaleControl({ value, onChange }: { value: number; onChange: (value: number) => void }) {
   const id = useId();
   const tooltip = useRef<HTMLDivElement>(null);
   const [tip, setTip] = useState<{ text: string; left: number; top: number; triggerTop: number; triggerBottom: number; wide: boolean } | null>(null);
@@ -606,7 +606,7 @@ function Field({ label, children }: { label: string; children: ReactNode }) {
   return <label className="group-field"><span>{label}</span>{children}</label>;
 }
 
-function GroupIcon({ code, scale = 0, baseSize = 18 }: { code: string; scale?: number; baseSize?: number }) {
+export function GroupIcon({ code, scale = 0, baseSize = 18 }: { code: string; scale?: number; baseSize?: number }) {
   const size = Math.max(12, baseSize + scale);
   const asset = panelIcons.find(icon => icon.code === code)?.asset;
   if (asset) return <img className="group-icon" src={asset} alt={code} title={code} style={{ width: size, height: size }} />;

@@ -154,3 +154,29 @@ describe("parseResponseBody", () => {
     expect(fetchMock.mock.calls[2][0]).toBe("/api/openbox/traffic/drill?day=2026-09-28&kind=client&key=192.168.1.10&by=host&limit=200&hour=15&direct=0");
   });
 });
+
+describe("target routing API contracts", () => {
+  it("saves only the changed routing portion and consumes the returned profile and installation defaults", async () => {
+    const routing = { policies: [{ id: "ai", name: "AI", rulesets: ["geosite-category-ai-!cn"] }], fallbackDefault: "直连", fallbackName: "其他", fallbackIcon: "globe:generic" };
+    const profile = { routing, ipv6: true, serverNormalized: true };
+    const fetchMock = vi.fn().mockResolvedValueOnce(new Response(JSON.stringify({ profile }))).mockResolvedValueOnce(new Response(JSON.stringify({ routing })));
+    vi.stubGlobal("fetch", fetchMock); vi.stubGlobal("localStorage", { getItem: () => null }); vi.stubGlobal("navigator", { language: "zh-CN" });
+    await expect(api.saveProfile({ routing: { policies: routing.policies } })).resolves.toEqual(profile);
+    await expect(api.defaultRouting()).resolves.toEqual(routing);
+    expect(fetchMock.mock.calls[0]).toMatchObject(["/api/openbox/profile", { method: "PUT", body: JSON.stringify({ routing: { policies: routing.policies } }) }]);
+    expect(fetchMock.mock.calls[1][0]).toBe("/api/openbox/defaults/routing");
+  });
+  it("uses the source endpoints and pagination for geosite, remote rule previews, imports and refreshes", async () => {
+    const result = { entries: [{ type: "domain", value: "example.com" }], total: 182, matched: 1 };
+    const fetchMock = vi.fn().mockImplementation(async () => new Response(JSON.stringify(result)));
+    vi.stubGlobal("fetch", fetchMock); vi.stubGlobal("localStorage", { getItem: () => null }); vi.stubGlobal("navigator", { language: "zh-CN" });
+    await expect(api.ruleSetEntries({ tag: "geosite-category-ai-!cn" }, "example", 50)).resolves.toEqual(result);
+    await api.ruleSetEntries({ url: "https://example.com/list?a=1&b=2" }, "", 0, 1);
+    await api.importRuleSet("https://example.com/list?a=1&b=2");
+    await api.refreshRuleSet("https://example.com/list");
+    expect(fetchMock.mock.calls[0][0]).toBe("/api/openbox/rulesets/entries?tag=geosite-category-ai-%21cn&offset=50&limit=50&q=example");
+    expect(fetchMock.mock.calls[1][0]).toBe("/api/openbox/rulesets/preview?url=https%3A%2F%2Fexample.com%2Flist%3Fa%3D1%26b%3D2&offset=0&limit=1");
+    expect(fetchMock.mock.calls[2][0]).toBe("/api/openbox/rulesets/import?url=https%3A%2F%2Fexample.com%2Flist%3Fa%3D1%26b%3D2");
+    expect(fetchMock.mock.calls[3]).toMatchObject(["/api/openbox/rulesets/refresh", { method: "POST", body: JSON.stringify({ url: "https://example.com/list" }) }]);
+  });
+});

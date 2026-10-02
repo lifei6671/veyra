@@ -20,6 +20,7 @@ export function SelectControl({
   defaultValue,
   onValueChange,
   className,
+  contentClassName,
   disabled,
   placeholder,
 }: {
@@ -29,6 +30,7 @@ export function SelectControl({
   defaultValue?: string;
   onValueChange?: (value: string) => void;
   className?: string;
+  contentClassName?: string;
   disabled?: boolean;
   placeholder?: string;
 }) {
@@ -44,7 +46,7 @@ export function SelectControl({
     <SelectTrigger className={className} aria-label={label}>
       <SelectValue placeholder={placeholder}>{options.find(option => option.value === current)?.label ?? placeholder ?? current}</SelectValue>
     </SelectTrigger>
-    <SelectContent>{groups.map(group => <SelectGroup key={group ?? "ungrouped"}>
+    <SelectContent className={contentClassName}>{groups.map(group => <SelectGroup key={group ?? "ungrouped"}>
       {group && <SelectLabel>{group}</SelectLabel>}
       {options.filter(option => option.group === group).map(option => <SelectItem value={encode(option.value)!} key={option.value} disabled={option.disabled}>{option.label}</SelectItem>)}
     </SelectGroup>)}</SelectContent>
