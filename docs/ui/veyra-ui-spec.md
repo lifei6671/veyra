@@ -1,10 +1,12 @@
 ---
 Version: "0.5"
-Status: APPROVED
-Contract: BINDING
+Status: ARCHIVED
+Contract: NON_BINDING
 ---
 
 # Veyra UI Spec
+
+> 2026-10-03：用户已停用旧 UI 门禁。本文件保留历史设计和验收记录，正文中的强制绑定、状态迁移及人工批准要求均不再执行。当前路线见 [Rust / GPUI 方案](../openbox-rust-gpui-implementation-plan.md)，任务进度见 [SESSION](../openbox-rust-gpui-tasks/SESSION.md)。
 
 > 发布说明：依据用户对 Human Design / Contract Gate022 的精确批准与 publication 授权，发布 Contract0.5 candidate008；从 §1 起正文保持批准草案原始字节。
 > 批准记录：.sdlc/evidence/TASK-019/human-design-contract-approval-023.json（sha256:f294331571a8874efaa8c4b2cde9f9d64cc3a1595e3b1622438fdc6e06fb961f）。

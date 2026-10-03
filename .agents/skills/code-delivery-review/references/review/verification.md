@@ -22,6 +22,4 @@
 
 - material Requirement 没有可追踪 Evidence，或关键失败路径无法被现有验证捕获；
 - Evidence 未运行、失败、过期、目标不匹配，或只证明编译而未证明行为；
-- 验证缺口使 P0/P1 候选无法确认或反证：Required Context/Coverage 不足时返回
-  `outcome: BLOCKED`、`review_result: REWORK`；工具、权限、依赖或环境不可用时返回
-  `outcome: UNAVAILABLE`、`review_result: null`。具体映射遵循 [结果适配](../result-adapter.md)。
+- 验证不足时说明哪些问题尚无法确认；工具、权限或环境不可用时准确报告原因和影响，不要求流程状态或结果适配文件。

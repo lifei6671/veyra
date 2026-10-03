@@ -23,7 +23,7 @@ export default defineConfig({
     },
   },
   server: {
-    watch: { ignored: ["**/src-tauri/target/**", "**/.sdlc/evidence/**"] },
+    watch: { ignored: ["**/src-tauri/target/**"] },
     proxy: openBoxProxy,
   },
   preview: {
