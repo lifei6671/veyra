@@ -432,3 +432,20 @@ final result: passed
 - 更新行为回归测试，保护切换唯一上游时保存可用、空侧不清空既有值的契约。实际组件 StrictMode 隔离浏览器验证：延迟数字与输入行垂直居中、成功结果段落数量为零；切换用途保存先 POST test 再 PUT 目标侧 patch，消费回读并关闭弹窗；测试失败只 POST、不 PUT、保留草稿且恢复按钮，空地址仍禁用保存。
 - `pnpm test src/openbox/pages/settings/DnsSettings.test.ts`（9 项）、`pnpm lint`、`pnpm build` 通过；构建保留既有大 chunk 提示。临时隔离入口和原版资源已删除，隔离流程未写线上配置。
 - 真实本地页面测速返回 46 ms，数字位于原闪电位置，保存按钮可用；将唯一代理上游切换为直连的未保存草稿同样可保存。真实流程仅测试和取消，未 PUT 线上 Profile 或重启内核，控制台无 warning/error。截图 `dns-settings/upstream-inline-latency-real.png`。
+
+## 2026-10-03 后端设置原版迁移
+
+- 开始前将此前全部代码提交为 `4a037ed feat(openbox): replicate DNS settings and upstream interactions`，未推送。本轮后端设置变更留在工作区。参考线上 `KernelPage` / `KernelServiceCard` / 更新、流量保留及导入导出组件（`index-R7_omgFM.js`），API 来自 `windowResizeState-DNdNlz3k.js`，文案来自 `index-Cu3FGbAJ.js`，深色标志滤镜来自原版 `index-BLwWkYdY.css`。
+- 替换简化表单为服务、运行参数、数据三组卡片：真实内核/面板/自启状态，Open-Box/内核/Geo 版本与链接，启动/停止/重启，手动检查更新、下载通道、自动更新计划与进度；节点地址直连、直连旁路、QUIC、端口黑白名单、IPv6 策略、TUN、测速地址和流量保留。原版客户端配置入口当前禁用，本地同步展示“即将开放”。下拉框均使用现有 shadcn/Radix Select，弹窗与 Tooltip 沿用公共组件。
+- 修改即时 PUT `/api/openbox/profile` 的局部 patch，并渲染返回完整 Profile；TUN 只提交改变的字段。端口语法、空测速地址默认值、保留月份 1–36 与容量预测公式按原版实现。错误时反馈并保持后端状态，端口和测速地址失败草稿保留。服务操作检查返回 `ok/code/stderr/durationMs/warning`，断连重启只根据本次操作之后的 deployment state 恢复结果。
+- 更新使用 `/api/openbox/update/check|run|status|cancel`；后台运行时 1.5 秒轮询，面板重启断连时有限等待，关闭窗口不取消升级，重新进入可恢复进度。渲染真实阶段、bytes/total 与 logTail；新版本徽章沿用原版红色状态。成功升级与恢复出厂按原版延时刷新；恢复出厂必须经过 10 秒倒计时确认。
+- 备份 GET `/api/openbox/backup` 携带四类 include 标志，生成带时间的 JSON 文件；文件选择或拖入先校验格式、预览来源时间和各类数量（节点统计顶层 nodes），再以 replace/append POST `/api/openbox/backup/import`。导入订阅按原版逐条刷新并统计成功/失败，面板外观导入后刷新；诊断使用 `/api/openbox/diagnostics` 返回数据导出。导出文件的 Blob 内容、文件名、点击与临时 URL 回收有单元回归；内置浏览器未提供 Blob 下载完成事件，未将下载落盘视为浏览器实测通过。
+- 真实后端只读检查版本、状态、配置与统计渲染。1280×720 下服务卡高度 357 px，与原版一致；公共恢复出厂弹窗 512×206 px。实际组件内存隔离验证即时保存、局部 TUN patch、失败回退、非法端口、更新检查/运行/关闭/取消、导入无效文件与预览、追加导入和订阅刷新、备份与诊断导出、恢复倒计时。没有写线上 Profile、导入线上数据、升级或恢复真实服务。
+- 浅色、深色和 390×844 窄屏检查完成：无文档横向溢出，导入弹窗宽 358、高 382 px、底栏 bottom=613，按钮完整可见；本地原生 select 数量 0，最终真实页面与隔离页控制台无 warning/error。开发服务器保留运行，临时测试入口和参考资源已删除，视口恢复。
+- 验证：`pnpm lint`、`pnpm test src/openbox`（18 文件 / 157 项，其中新增 8 项后端行为/API/文件导出测试）、`pnpm build` 通过；构建保留既有大 chunk 提示。截图目录 `/Users/lifeilin/.codex/visualizations/2026/10/02/01a0fb2a-a6f0-7c41-adbf-936f28103039/backend-settings/`：original-top、local-top、local-runtime、local-data、dark-top、dark-import、narrow-import。
+
+## 2026-10-03 后端下载通道提示与端口切换组
+
+- 公共 Portal Tooltip 原先只限制到视口宽度，长文案在桌面上形成超长单行。按原版 tooltip 的 `max-width:20rem;white-space:normal` 将公共浮层限制为 320 px 与视口可用宽度的较小值，保持已有 Portal 层级及定位。下载通道提示实测 320×64 px，分三行；390 px 视口下 left=62、right=382，保留边界 8 px。
+- 黑白名单继续复用现有 Radix 单选切换组，修正为共用 75% 面板填充底框、绿色选中项及透明非选中项。与原版实测一致：整体 124×40 px，内边距 4 px，两项各 58×32 px、左右 padding 8 px、选项圆角 6 px；移除白色选中项及阴影。未修改保存与 API 行为，未切换线上端口策略。
+- `pnpm lint`、`pnpm build`、`git diff --check` 通过，保留既有大 chunk 提示；纯样式修正不新增单元测试。截图 `backend-settings/tooltip-and-port-tabs-fixed.png`、`backend-settings/narrow-tooltip-fixed.png`；临时对照 CSS 和构建日志删除，视口恢复，已有用户标签页保留。

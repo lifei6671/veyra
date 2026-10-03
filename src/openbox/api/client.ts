@@ -1,5 +1,13 @@
 import type {
   AuthStatus,
+  BackupOptions,
+  OpenBoxBackup,
+  BackupImportResult,
+  ProfilePatch,
+  ServiceActionResult,
+  DeployState,
+  UpdateCheck,
+  TrafficUsage,
   ChainLatencyRequest,
   ChainLatencyResponse,
   ServerPortCheck,
@@ -154,10 +162,20 @@ export const api = {
   deleteBackgroundImage: () => request<void>("/api/background-image", { method: "DELETE" }),
 
   serviceStatus: () => request<ServiceStatus>("/api/openbox/service/status"),
-  serviceAction: (action: "start" | "stop" | "restart") => request<ServiceStatus>(`/api/openbox/service/core/${action}`, { method: "POST" }),
+  serviceAction: (action: "start" | "stop" | "restart") => request<ServiceActionResult>(`/api/openbox/service/core/${action}`, { method: "POST" }),
   controllerConfig: () => request<ControllerConfig>("/api/controller/configs"),
   version: () => request<{ version: string }>("/api/controller/version"),
   updateStatus: () => request<UpdateStatus>("/api/openbox/update/status"),
+  kernelVersion: () => request<{ version: string }>("/api/openbox/kernel/version"),
+  deployState: async () => (await request<{ state: DeployState }>("/api/openbox/deploy/state")).state,
+  checkUpdate: () => request<UpdateCheck>("/api/openbox/update/check"),
+  runUpdate: (channel: string) => request<unknown>("/api/openbox/update/run", { method: "POST", ...json({ channel }) }),
+  cancelUpdate: () => request<unknown>("/api/openbox/update/cancel", { method: "POST" }),
+  factoryReset: () => request<unknown>("/api/openbox/factory-reset", { method: "POST" }),
+  trafficUsage: () => request<TrafficUsage>("/api/openbox/traffic/usage"),
+  backup: (options: BackupOptions) => request<OpenBoxBackup>(`/api/openbox/backup?${new URLSearchParams(Object.entries(options).map(([key, value]) => [key, value ? "1" : "0"]))}`),
+  importBackup: (backup: OpenBoxBackup, mode: "replace" | "append") => request<BackupImportResult>(`/api/openbox/backup/import?subscriptions=${mode}`, { method: "POST", ...json(backup) }),
+  diagnostics: () => request<unknown>("/api/openbox/diagnostics"),
 
   proxies: () => request<ProxiesResponse>("/api/controller/proxies"),
   proxyLatencyHistory: () => request<ProxyLatencyHistoryResponse>("/api/openbox/latency-history"),
@@ -199,7 +217,7 @@ export const api = {
   deleteSubscription: (id: string) => request<void>(`/api/openbox/subscriptions/${encodeURIComponent(id)}`, { method: "DELETE" }),
 
   profile: async () => (await request<{ profile: OpenBoxProfile }>("/api/openbox/profile")).profile,
-  saveProfile: async (profile: Omit<Partial<OpenBoxProfile>, "routing" | "dns"> & { routing?: Partial<OpenBoxProfile["routing"]>; dns?: Partial<OpenBoxProfile["dns"]> }) => (await request<{ profile: OpenBoxProfile }>("/api/openbox/profile", { method: "PUT", ...json(profile) })).profile,
+  saveProfile: async (profile: ProfilePatch) => (await request<{ profile: OpenBoxProfile }>("/api/openbox/profile", { method: "PUT", ...json(profile) })).profile,
   defaultRouting: async () => (await request<{ routing: OpenBoxProfile["routing"] }>("/api/openbox/defaults/routing")).routing,
   ruleSetEntries: (source: { tag: string } | { url: string }, q = "", offset = 0, limit = 50) => {
     const params = new URLSearchParams({ ...source, offset: String(offset), limit: String(limit) });
