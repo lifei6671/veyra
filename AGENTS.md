@@ -21,7 +21,11 @@
 
 ## 任务恢复与变更
 
-- 继续迁移任务时读取 `docs/openbox-rust-gpui-tasks/SESSION.md`、任务总表和当前任务卡；只加载相关方案小节。任务文档记录进度，不依赖隐藏状态文件或流程引擎。
+- 后续 Veyra Rust/GPUI 开发默认遵守 [长期开发总规范](docs/openbox-rust-gpui-tasks/DEVELOPMENT_WORKFLOW.md)。恢复时读取该规范、`docs/openbox-rust-gpui-tasks/SESSION.md`、任务总表和相关任务卡，只加载相关方案小节；任务文档记录进度，不依赖隐藏状态文件或流程引擎。
+- P0–P7/Windows 仅作里程碑分组及组合验收，不作统一串行 Gate；READY 由每卡显式依赖全部 DONE 决定。允许多个 READY 且写范围不冲突的任务并行 DOING，SESSION 使用 Active Tasks / Ready Queue / Blocked。
+- 公共领域模型、共享 DTO、Cargo workspace 和 Runtime 公共契约各设单一 owner；并行前登记写范围/资源冲突，公共契约先由 owner 整合。UI fixture 可以先做，但真实服务/Runtime/Observation 集成及实际 UI 验收完成后才 DONE。
+- 配置事实→派生目录→Runtime→Observation→UI 保持单向事实归属；Unified OutboundCatalog = Base OutboundCatalog + Group/Failover + ChainProxy，统一负责 self/cycle/dangling 校验，Chain 保存后注册为 Outbound 并先于 Routing/Client Routing 完成。
+- 保存成功与已应用分别反馈；同一 state_epoch 下 config_revision 与 selection_revision 独立推进。UI latency preference test URL、Runtime health test URL、group health URL 三种语义不合并，UI diagnostics ipv6-test 与 Runtime profile ipv6 不合并。
 - 历史测试、失败和证据不改写为通过。已经明确退役的流程脚本及其专用测试可以随流程清理，业务测试继续保留。
 - 已存在的测试不自动删除/禁用。代码改动影响到的 Veyra 自有逻辑仍做定向回归，避免仅因历史庞大测试设施存在就扩建它。
 - 当前 Task 验收与后续 Task 保持独立；修改验收范围不等于实现完成或用户验收通过。

@@ -309,7 +309,7 @@ pub async fn save_profile(
 
 ### 6.2 数据类型原则
 
-- `SubscriptionId`、`NodeId`、`GroupId`、`RuleId` 保持稳定；显示名可以改变。OpenBox 以名称引用的成员在导入边界解析为 ID。
+- `SubscriptionId`、`NodeId`、`GroupId`、`RuleId`、`OutboundId` 保持稳定；显示名可以改变。OpenBox 以名称引用的成员在导入边界解析为 ID。
 - 网络输入、备份输入允许暂存未知字段并给出兼容性报告；进入编译模型后只允许已支持字段。
 - 不把 TS 的 `[key: string]: unknown` 转成贯穿内部业务的 `serde_json::Value`。
 - `ProfilePatch` 区分未提供、清空、设值；嵌套对象合并允许字段，数组明确采用整体替换。可空字段需要 `Missing/Null/Value` 等明确表示。
@@ -320,11 +320,17 @@ pub async fn save_profile(
 
 #### 6.2.1 状态版本与整体替换
 
-一个业务快照共享一个持久化 `state_epoch`，配置 revision 与选择 revision 各自递增。本文的 `saved_revision`、`applied_revision` 和 `selection_revision` 均是同一 epoch 内的计数简称；跨快照比较必须使用完整 `StateVersion`，不能仅比较数字。
+一个业务快照共享一个持久化 `state_epoch`，`config_revision`（配置）与 `selection_revision`（选择）各自递增；saved/applied revision 表示对应配置版本的已保存/已应用位置。本文的 `saved_revision`、`applied_revision` 和 `selection_revision` 均是同一 epoch 内的计数简称；跨快照比较必须使用完整 `StateVersion`，不能仅比较数字。
 
 备份恢复、替换型导入、恢复出厂或整份快照回退时生成新 epoch；不沿用备份中的并发版本。普通 patch、追加导入和不替换状态空间的 schema 升级只推进相关计数。整体替换先暂停写入并处理在途提交，换 epoch 后拒绝旧任务的写回；不为每个实体再加一套 epoch。
 
 配置/选择写操作携带预期版本；页面读结果按既有请求代次丢弃过期响应；内核事件仍按实例 ID 判断。数据替换后若旧实例暂时继续运行，UI 显示其旧 `applied_version`，它不能回写新业务状态。实例清理凭实际实例身份执行，不因 epoch 改变而遗失旧资源归属。
+
+#### 6.2.2 派生出口目录与偏好边界
+
+P2-02A 先交付 Base OutboundCatalog/OutboundId，至少包含 Node、implicit provider/subscription group、首个闭环所需 selector/urltest 语义、Direct、Block。Domain 使用 Direct / Block，外部/内核 reject 仅在导入/适配边界映射为 Block。P2-02B 的最小 Compiler 负责将目录语义编译成 sing-box，不拥有第二份出口定义；P4 按注册契约扩展为 **Unified OutboundCatalog = Base OutboundCatalog + Group/Failover + ChainProxy**。目录由配置事实派生、不另存一份编辑真相，统一负责 self/cycle/dangling 校验，供 Routing/Client Routing/Rules/Connections/Proxy UI 使用。P3 只验收基础代理视图和已加载规则，完整目录消费在 P4 集成，Rules 的 DNS 完整诊断在 P5 闭合。
+
+P1-04A 交付视觉桌面偏好，包含 sidebar 折叠/展开及 layout 类纯视觉布局；P1-04B 交付 proxy columns、hide unavailable 等跨页面行为偏好。UI latency preference test URL、Runtime health test URL、group health URL 是三种独立语义；group 空值仅按既有规则继承 Runtime 全局 health URL，不合并为 UI 测速偏好。UI diagnostics `config/ipv6-test` 与 Runtime profile `ipv6` 分别建模和消费，诊断选项不改变运行配置。
 
 ### 6.3 错误分类
 
@@ -517,7 +523,7 @@ GeoSite/GeoIP 分类目录只是 UI 元数据。实际匹配需要对应、版�
 
 ### 8.4 链式代理
 
-将链接解析为受支持的出站协议和鉴权字段，`upstream` 解析为节点或组 ID。保存前检查无效地址、无效上游、自循环和跨组循环。
+将链接解析为受支持的出站协议和鉴权字段，`upstream` 通过 OutboundCatalog 解析为稳定 OutboundId。保存前校验地址/字段，并由目录统一检查 self/cycle/dangling（含跨组引用）；Chain 保存后注册为 Outbound，在 Routing/Client Routing 之前完成，避免分流自建出口列表。
 
 测速和出口 IP 查询必须使用同一条候选链路。链路尚未应用时使用临时受管实例，反馈结果带候选内容的指纹或版本；用户修改字段后旧结果立即失效。
 
@@ -981,7 +987,7 @@ macOS helper 和 Windows 服务在自己的受保护目录使用对应的 runtim
 
 未知字段保留在导入兼容信息中，报告未采用字段；不能透传给 Compiler。无法解析的重要节点或策略应阻止该部分应用，而非静默删除。
 
-备份包含可迁移的业务数据和已确认选择，不包含运行身份、pending 操作、权限宿主恢复记录或可直接触发启动的 manifest。备份中的 epoch/revision 不作为恢复后的并发凭据：整体恢复/replace 创建新 epoch，append 使用当前 epoch 并推进相关版本。恢复后的应用动作按 §7.3 重新验证。
+备份包含可迁移的业务数据和已确认选择，不包含 OS 登录项/注册状态、运行中 updater 状态、运行身份、pending 操作、权限宿主恢复记录或可直接触发启动的 manifest。若桌面 update preference 属于版本化 AppConfig，其字段、默认值与迁移在 P1-02 定义；备份等待该持久 schema 稳定，不等待 P6-03 登录启动/P6-04 Updater 行为完成。备份中的 epoch/revision 不作为恢复后的并发凭据：整体恢复/replace 创建新 epoch，append 使用当前 epoch 并推进相关版本。恢复后的应用动作按 §7.3 重新验证。
 
 ### 12.3 旧 Veyra 状态
 
@@ -1029,16 +1035,16 @@ P0 的版本记录包含 Rust toolchain、GPUI Kit release/commit、该版本要
 
 ## 15 实施阶段与完成条件
 
-阶段编号只用于本文路线的任务追踪。原 **61–97 人日**未充分拆分原型与平台部署，仍不作为有效工期；取消旧流程、签名公证和自动更新后，P0 需按新范围重新估算。Windows/Linux 不包含在 macOS 工期内。
+阶段编号用于里程碑分组与组合验收，不作统一串行 Gate；READY 由每张任务卡的显式技术依赖决定，写范围不冲突可并行 DOING。后续 Veyra Rust/GPUI 开发默认遵守[长期开发总规范](openbox-rust-gpui-tasks/DEVELOPMENT_WORKFLOW.md)，状态与依赖见[任务总表](openbox-rust-gpui-tasks/IMPLEMENTATION_PHASES.md)、并行交接见[SESSION](openbox-rust-gpui-tasks/SESSION.md)。原 **61–97 人日**未充分拆分原型与平台部署，仍不作为有效工期；取消旧流程、签名公证和自动更新后，P0 需按新范围重新估算。Windows/Linux 不包含在 macOS 工期内。
 
 | 阶段 | 工作内容 | 完成条件 | 估算状态 |
 | --- | --- | --- | --- |
 | P0 基线与可行性 | UI/DTO 样本、GPUI/托盘、无发布签名 helper/IPC、缓存与出站、GitHub 分发 | §15.1 关键原型有结果，范围明确并完成 P1–P7 重估 | 先做最小原型，不等待开发者证书 |
 | P1 核心抽取与桌面壳 | core/desktop workspace、持久化与 state_epoch、主题、导航、错误与弹层、平台路径、托盘 | core 在 macOS 脱离 Tauri/GPUI 构建并通过定向单测；配置保存恢复；GPUI 与隐藏后托盘可用 | P0 按实测原型重估 |
 | P2 本机代理闭环 | 订阅、编译、启停、cache_file、选择恢复、最后成功配置、应用出站、helper 系统代理 | 导入到真实访问再停止恢复跑通；helper 以普通用户运行 SystemProxy child；PAC/多服务/GUI 崩溃与恢复记录验证通过；授权拒绝可继续手动代理 | P0 按实测原型重估 |
-| P3 观测与主页面 | 概览、代理、连接、日志、规则预览、统计库和历史查询 | 六主页面可操作；流量单位、分页、取消、暂停和断流验证通过；高基数样本确认容量、保留周期和下钻成本 | 分开估算图表/下钻、虚拟列表、统计服务 |
-| P4 完整配置能力 | 订阅高级项、动态组/failover、选择写权、分流、规则集、链式代理 | 保存/应用/重启恢复覆盖；手动覆盖、成员变化和迟到探测回归通过 | P0 按确认的 failover 语义重估 |
-| P5 DNS 与共享 | DNS 配置/过滤/测试、经确认的记录/热更、五种共享入站、订阅分享 | 所有可用按钮有真实业务；不可用项有已批准范围说明；分享可撤销 | DNS 缺口与五种入站分别拆项，不合并吞掉未知量 |
+| P3 观测与主页面 | 概览、代理基础视图、连接、日志、已加载规则、统计库和历史查询 | 六主页面可操作；流量单位、分页、取消、暂停和断流验证通过；高基数样本确认容量、保留周期和下钻成本 | 分开估算图表/下钻、虚拟列表、统计服务 |
+| P4 完整配置能力 | 订阅高级项、动态组/failover、chain、统一出口目录、目标/终端分流及基础诊断、规则集 | 保存/应用/重启恢复覆盖；手动覆盖、成员变化和迟到探测回归通过 | P0 按确认的 failover 语义重估 |
+| P5 DNS 与共享 | DNS 配置/过滤/测试、经确认的记录/热更、Rules 完整诊断、五种共享入站、订阅分享 | 所有可用按钮有真实业务；不可用项有已批准范围说明；分享可撤销 | DNS 缺口与五种入站分别拆项，不合并吞掉未知量 |
 | P6 macOS TUN 与生命周期 | helper 扩展 TUN、登录启动、睡眠/切网恢复、GitHub 更新入口 | 授权/清理、手动安装更新与 helper 升级协调通过真实验证 | 按原型结果重估 |
 | P7 数据与发布收尾 | 备份/恢复/重置、诊断、GitHub 包构建与安装说明 | 数据回退、手动升级和下载包首次启动通过 | 不含发布签名、公证或自动安装 |
 

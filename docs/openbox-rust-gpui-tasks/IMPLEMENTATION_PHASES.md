@@ -1,12 +1,12 @@
 # OpenBox Rust / GPUI 执行任务总表
 
-基线日期：2026-10-03。技术范围以[实现方案](../openbox-rust-gpui-implementation-plan.md)为准；本目录负责执行顺序、状态和验收记录。
+基线日期：2026-10-03。技术范围以[实现方案](../openbox-rust-gpui-implementation-plan.md)为准；本目录负责显式技术依赖 DAG、任务状态和验收记录；P0–P7/Windows 保留为里程碑分组。后续开发默认遵守[长期开发总规范](DEVELOPMENT_WORKFLOW.md)。
 
 **看当前进度先读 [SESSION.md](SESSION.md)，领取任务再读下表对应任务卡。** 本表是任务状态的唯一记录位置；任务卡中的复选框记录验收项，SESSION 只汇总当前进度和下一步。
 
 ## 1 当前基线与范围
 
-- 新路线共 **57 个 macOS 任务、7 个 Windows 后续任务**，包括各阶段验收任务。当前完成 1 项范围/流程清理，技术原型与功能实现尚未开始。
+- 新路线共 **61 个 macOS 任务、7 个 Windows 后续任务**，包括各阶段验收任务。当前完成 1 项范围/流程清理，技术原型与功能实现尚未开始。
 - 已有 React UI 和旧 Rust 模块是迁移输入，不直接算 GPUI 新路线完成。P0-02 的完成仅指本次明确要求的范围/规则调整，功能实现完成量仍为 0。
 - 当前工作树尚无根 Cargo workspace 和 `crates/`；本次没有执行原型、网络变更、应用构建或设备验收。
 - 旧 SDLC 状态与 UI 门禁已按用户要求退役；不恢复缺失文件，不补办历史 DCR/UI Contract。当前进度以本目录为准。
@@ -15,21 +15,22 @@
 
 ## 2 如何执行与更新
 
-1. 读 SESSION 的当前任务与阻塞，再打开任务卡；核对阶段前置、额外依赖及最新批准范围。
-2. 开始时将本表状态改为 DOING，填写负责人、开始日期/当前动作到 SESSION；默认一次推进一个当前 Task。
-3. 按卡片的执行范围完成交付物，逐条验证并勾选验收项。未适用项必须注明已批准原因，不能直接勾选成 PASS。
-4. 实现后按风险做必要审查与定向验证；仍缺真实平台/界面结果时使用 ACCEPTANCE。验收项完成即可 DONE 并继续依赖已满足的任务，不强制逐 Task 人工签字。
-5. 满足完成条件后更新本表为 DONE，并链接证据；同步 SESSION 的计数、里程碑、当前/下一任务及剩余问题。中途停止也要记录精确下一动作。
-6. 遇到外部阻塞，登记缺失条件、影响任务和解除条件；只有真实阻塞才写 BLOCKED。普通依赖未完成的任务保持 TODO。
-7. 范围或方案发生变化，先更新对应决策和任务卡；拆分任务用原 ID 加后缀并更新依赖/计数/覆盖表，不重用旧 ID 或抹掉历史结论。
+1. 读 [长期开发总规范](DEVELOPMENT_WORKFLOW.md)、SESSION 的 Active Tasks/Ready Queue/Blocked，再读对应任务卡与相关方案小节；核对显式依赖及实际交付身份。
+2. 所有显式依赖 DONE 后 TODO 转 READY。领取时核对写范围、公共契约 owner 和真实资源预约，登记负责人及下一动作；允许多个 READY 且写范围不冲突的任务并行 DOING。
+3. 公共领域模型、共享 DTO、Cargo workspace、Runtime 公共契约各设单一 owner；冲突写入先串行整合，独立消费任务继续推进。UI fixture 可先做，但不满足依赖或真实集成 DONE 条件。
+4. 按任务卡实现、验证与必要审查；仍缺真实 UI/平台结果使用 ACCEPTANCE。验收项完成才 DONE，不强制逐 Task 人工签字。
+5. 更新本表状态/负责人/证据，同步 SESSION 计数、Active Tasks/Ready Queue/Blocked 与里程碑；完成后重算下游 READY，中止也登记精确下一动作。
+6. 外部真实阻塞才记 BLOCKED，列缺失条件和解除动作；普通依赖未完成保持 TODO，READY 写冲突等待在队列注明。
+7. 范围/契约/依赖变更同步技术方案必要小节、任务卡、本表依赖/覆盖/计数及 SESSION；只做最小后缀拆分，保持历史证据与未运行结果。
 
-依赖表示技术前置，不表示自动授权并行、修改系统或发布。P0 做隔离原型；生产实现按具体技术依赖开始，不等待与当前任务无关的旧流程。后续以已批准 Task 的实际授权范围执行，不为普通实现细节逐步重复申请。
+阶段是里程碑分组和组合验收，不作统一串行 Gate，不继承上一阶段出口。每卡依赖是 DAG 的定义来源，下表是同一依赖的摘要。依赖已满足可跨阶段推进；动作授权仍以当前用户/已批准 Task 为准，发布不因 READY 自动获授权。
 
 ### 状态约定
 
 | 状态 | 含义 | 是否计完成 |
 | --- | --- | --- |
-| TODO | 待开始，可能尚有普通前置依赖 | 否 |
+| TODO | 普通显式依赖尚未完成 | 否 |
+| READY | 所有显式依赖 DONE，待无冲突领取 | 否 |
 | DOING | 正在实现或验证，有明确下一动作 | 否 |
 | REVIEW | 按风险需要的审查或修复反馈尚未完成 | 否 |
 | ACCEPTANCE | 仍待真实平台/界面结果，或用户明确要求的人工验收 | 否 |
@@ -52,7 +53,7 @@
 
 执行前确认是否启动真实 child/外部资源，并使用合理外层超时。真实权限/网络/导入/重置验收在已授权的隔离环境完成；已有证据足够时不重复扩大测试。
 
-每次交付在对应阶段文件末尾追加一段记录，主表“证据”列链接到该段或现有交付记录。无需预先创建 64 份证据模板。
+每次交付在对应阶段文件末尾追加一段记录，主表“证据”列链接到该段或现有交付记录。无需预先创建 68 份证据模板；证据字段与更新规则见长期规范。
 
 ```text
 Task：OBG-Px-xx
@@ -60,7 +61,7 @@ Task：OBG-Px-xx
 源码 commit 与未提交 diff / 构建身份：
 交付物路径：
 环境：OS / 架构 / GPUI 与内核版本（按任务适用）
-验收项：逐项 PASS / FAIL / N/A，N/A 附批准依据
+验收项：逐项 PASS / FAIL / NOT_RUN / N/A，N/A 附批准依据
 验证：命令或操作 → 预期 → 实际；测试数量、日志/截图路径
 必要审查：执行人或记录、结论、问题处理；自查不得称为独立审查
 实际验收：操作/结果/日期；仅在用户明确要求时另记人工确认
@@ -70,132 +71,136 @@ Task：OBG-Px-xx
 
 ## 3 阶段与里程碑
 
-| 阶段 | 可交付结果 | 入口 | 出口任务 |
+| 里程碑 | 可交付结果 | 组合验收范围 | 出口任务 |
 | --- | --- | --- | --- |
-| P0 | 已核实的路线、能力差异、当前范围与新版估算 | 当前可以开始基线调查 | OBG-P0-09 |
-| P1 | 无 Tauri 核心库、配置保存、桌面壳和托盘 | P0-01/02/03/04 DONE | OBG-P1-07 |
-| P2 | 首个可用 macOS 代理版本 | P1 出口 DONE | OBG-P2-09 |
-| P3 | 六主页面主体、可靠观测与历史下钻 | P2 出口 DONE | OBG-P3-08 |
-| P4 | 分组/主备/分流/链路完整配置切片 | P3 出口 DONE | OBG-P4-07 |
-| P5 | 已批准范围内的 DNS、五种共享入站、订阅分享 | P4 出口 DONE | OBG-P5-07 |
-| P6 | macOS TUN/生命周期/更新集成 | P5 出口 DONE | OBG-P6-05 |
-| P7 | 数据维护、GitHub 包与 macOS 候选版验收 | P6 出口 DONE | OBG-P7-05 |
-| W0–W3 | Windows 单独验证的版本 | 单独排期并确认 core 基线 | OBG-W3-02 |
+| P0 | 已核实路线、能力差异、当前范围与新版估算 | 基线与原型结论；未依赖原型的任务可先行 | OBG-P0-09 |
+| P1 | 无 Tauri 核心库、配置保存、桌面壳和托盘 | 核心/状态/壳层/两类偏好/桌面资源 | OBG-P1-07 |
+| P2 | 首个可用 macOS 代理版本 | 订阅→Base 目录→Compiler→Runtime/网络/选择/系统代理 | OBG-P2-09 |
+| P3 | 主页面基础能力、可靠观测与历史下钻 | 基础代理/已加载规则/连接/日志/概览，不含完整 DNS 诊断 | OBG-P3-08 |
+| P4 | 高级配置及 Unified OutboundCatalog | 订阅高级→动态组→failover→chain→统一目录→routing/client routing | OBG-P4-07 |
+| P5 | DNS、五种共享入站、订阅分享与完整 Rules | DNS 后闭合 Rules；Shared Inbound/Share 按自身依赖并行 | OBG-P5-07 |
+| P6 | macOS TUN/生命周期/更新集成 | helper/系统代理/恢复/编译/网络/DNS 的平台组合 | OBG-P6-05 |
+| P7 | 数据维护、GitHub 包与 macOS 候选版验收 | 稳定 schema、生命周期清理及首期全部证据 | OBG-P7-05 |
+| W0–W3 | Windows 单独验证的版本 | 排期确认、选定 core 基线和 Windows 实际结果 | OBG-W3-02 |
 
-阶段内以下表为建议顺序，每张卡列出真正依赖；P0 权限/分发原型未结束时，已满足核心前置的 P1 可继续。阶段出口任务负责组合验收，单个子任务 DONE 不代表整个阶段完成。
+组合验收出口只约束显式依赖它的任务，不作为下一编号阶段的统一入口。任务表按里程碑分组；同组行顺序不代表串行。P4-01/02、P5-05/06 等在 READY 且无写/资源冲突时可并行。
 
 ## 4 任务状态总表
 
-“估算”在 P0 出口回填人日及假设；当前的 `—` 表示尚未估算。“证据”为空表示尚未提交完成证据。
+“估算”在 P0 出口回填人日及假设；当前的 `—` 表示尚未估算。“证据”为空表示尚未提交完成证据。当前 macOS 61 项（DONE 1、READY 1、TODO 59），Windows 7 项 DEFERRED，共 68 项。原 P1-04/P2-02/P4-05 由后缀子任务替代，不重复计数。
 
 ### P0 基线与可行性（9 项）
 
-| 任务 | 状态 | 负责人 | 估算 | 证据 |
-| --- | --- | --- | --- | --- |
-| [OBG-P0-01 UI/接口基线](P0-feasibility.md#obg-p0-01) | TODO | — | — | — |
-| [OBG-P0-02 范围与规则](P0-feasibility.md#obg-p0-02) | DONE | Codex | 文档调整，不计实现工期 | [清理记录](P0-feasibility.md#cleanup-record) |
-| [OBG-P0-03 GPUI/输入/托盘原型](P0-feasibility.md#obg-p0-03) | TODO | — | — | — |
-| [OBG-P0-04 内核/控制器/缓存原型](P0-feasibility.md#obg-p0-04) | TODO | — | — | — |
-| [OBG-P0-05 本地 helper 原型](P0-feasibility.md#obg-p0-05) | TODO | — | — | — |
-| [OBG-P0-06 自身出站原型](P0-feasibility.md#obg-p0-06) | TODO | — | — | — |
-| [OBG-P0-07 观测/DNS/诊断能力](P0-feasibility.md#obg-p0-07) | TODO | — | — | — |
-| [OBG-P0-08 更新与分发路线](P0-feasibility.md#obg-p0-08) | TODO | — | — | — |
-| [OBG-P0-09 出口与重新估算](P0-feasibility.md#obg-p0-09) | TODO | — | — | — |
+| 任务 | 显式依赖 | 状态 | 负责人 | 估算 | 证据 |
+| --- | --- | --- | --- | --- | --- |
+| [OBG-P0-01 UI/接口基线](P0-feasibility.md#obg-p0-01) | 无 | READY | — | — | — |
+| [OBG-P0-02 范围与规则](P0-feasibility.md#obg-p0-02) | 无 | DONE | Codex | 文档调整，不计实现工期 | [清理记录](P0-feasibility.md#cleanup-record) |
+| [OBG-P0-03 GPUI/输入/托盘原型](P0-feasibility.md#obg-p0-03) | P0-01 | TODO | — | — | — |
+| [OBG-P0-04 内核/控制器/缓存原型](P0-feasibility.md#obg-p0-04) | P0-01 | TODO | — | — | — |
+| [OBG-P0-05 本地 helper 原型](P0-feasibility.md#obg-p0-05) | P0-03、P0-04 | TODO | — | — | — |
+| [OBG-P0-06 自身出站原型](P0-feasibility.md#obg-p0-06) | P0-04、P0-05 | TODO | — | — | — |
+| [OBG-P0-07 观测/DNS/诊断能力](P0-feasibility.md#obg-p0-07) | P0-01、P0-04 | TODO | — | — | — |
+| [OBG-P0-08 更新与分发路线](P0-feasibility.md#obg-p0-08) | P0-03、P0-05 | TODO | — | — | — |
+| [OBG-P0-09 出口与重新估算](P0-feasibility.md#obg-p0-09) | P0-01、P0-02、P0-03、P0-04、P0-05、P0-06、P0-07、P0-08 | TODO | — | — | — |
 
-### P1 核心库与桌面壳（7 项）
+### P1 核心库与桌面壳（8 项）
 
-| 任务 | 状态 | 负责人 | 估算 | 证据 |
-| --- | --- | --- | --- | --- |
-| [OBG-P1-01 核心抽取](P1-core-and-shell.md#obg-p1-01) | TODO | — | — | — |
-| [OBG-P1-02 类型/持久化/版本](P1-core-and-shell.md#obg-p1-02) | TODO | — | — | — |
-| [OBG-P1-03 GPUI 壳与状态桥](P1-core-and-shell.md#obg-p1-03) | TODO | — | — | — |
-| [OBG-P1-04 主题/组件/面板](P1-core-and-shell.md#obg-p1-04) | TODO | — | — | — |
-| [OBG-P1-05 目录/单实例/文件](P1-core-and-shell.md#obg-p1-05) | TODO | — | — | — |
-| [OBG-P1-06 托盘与关闭](P1-core-and-shell.md#obg-p1-06) | TODO | — | — | — |
-| [OBG-P1-07 桌面壳验收](P1-core-and-shell.md#obg-p1-07) | TODO | — | — | — |
+| 任务 | 显式依赖 | 状态 | 负责人 | 估算 | 证据 |
+| --- | --- | --- | --- | --- | --- |
+| [OBG-P1-01 核心抽取](P1-core-and-shell.md#obg-p1-01) | P0-01、P0-02 | TODO | — | — | — |
+| [OBG-P1-02 类型/持久化/版本](P1-core-and-shell.md#obg-p1-02) | P1-01 | TODO | — | — | — |
+| [OBG-P1-03 GPUI 壳与状态桥](P1-core-and-shell.md#obg-p1-03) | P1-02、P0-03 | TODO | — | — | — |
+| [OBG-P1-04A 视觉桌面偏好/主题/组件](P1-core-and-shell.md#obg-p1-04a) | P1-02、P1-03 | TODO | — | — | — |
+| [OBG-P1-04B 跨页面行为偏好](P1-core-and-shell.md#obg-p1-04b) | P1-02、P1-03 | TODO | — | — | — |
+| [OBG-P1-05 目录/单实例/文件](P1-core-and-shell.md#obg-p1-05) | P1-02、P1-03 | TODO | — | — | — |
+| [OBG-P1-06 托盘与关闭](P1-core-and-shell.md#obg-p1-06) | P1-03、P1-05 | TODO | — | — | — |
+| [OBG-P1-07 桌面壳验收](P1-core-and-shell.md#obg-p1-07) | P1-01、P1-02、P1-03、P1-04A、P1-04B、P1-05、P1-06 | TODO | — | — | — |
 
-### P2 本机代理闭环（9 项）
+### P2 本机代理闭环（10 项）
 
-| 任务 | 状态 | 负责人 | 估算 | 证据 |
-| --- | --- | --- | --- | --- |
-| [OBG-P2-01 订阅基础闭环](P2-local-proxy.md#obg-p2-01) | TODO | — | — | — |
-| [OBG-P2-02 最小 Compiler](P2-local-proxy.md#obg-p2-02) | TODO | — | — | — |
-| [OBG-P2-03 Runtime/服务状态](P2-local-proxy.md#obg-p2-03) | TODO | — | — | — |
-| [OBG-P2-04 选择/缓存/成功记录](P2-local-proxy.md#obg-p2-04) | TODO | — | — | — |
-| [OBG-P2-05 自身出站客户端](P2-local-proxy.md#obg-p2-05) | TODO | — | — | — |
-| [OBG-P2-06 helper/IPC](P2-local-proxy.md#obg-p2-06) | TODO | — | — | — |
-| [OBG-P2-07 系统代理与恢复](P2-local-proxy.md#obg-p2-07) | TODO | — | — | — |
-| [OBG-P2-08 选择与节点测速](P2-local-proxy.md#obg-p2-08) | TODO | — | — | — |
-| [OBG-P2-09 首个可用版本验收](P2-local-proxy.md#obg-p2-09) | TODO | — | — | — |
+| 任务 | 显式依赖 | 状态 | 负责人 | 估算 | 证据 |
+| --- | --- | --- | --- | --- | --- |
+| [OBG-P2-01 订阅基础闭环](P2-local-proxy.md#obg-p2-01) | P1-02、P1-03、P1-04A、P0-06 | TODO | — | — | — |
+| [OBG-P2-02A Base OutboundCatalog/OutboundId](P2-local-proxy.md#obg-p2-02a) | P2-01 | TODO | — | — | — |
+| [OBG-P2-02B 最小 Compiler](P2-local-proxy.md#obg-p2-02b) | P2-02A、P0-04 | TODO | — | — | — |
+| [OBG-P2-03 Runtime/服务状态](P2-local-proxy.md#obg-p2-03) | P2-02B、P1-03 | TODO | — | — | — |
+| [OBG-P2-04 选择/缓存/成功记录](P2-local-proxy.md#obg-p2-04) | P2-03 | TODO | — | — | — |
+| [OBG-P2-05 自身出站客户端](P2-local-proxy.md#obg-p2-05) | P2-03、P0-06 | TODO | — | — | — |
+| [OBG-P2-06 helper/IPC](P2-local-proxy.md#obg-p2-06) | P2-03、P2-04、P0-05 | TODO | — | — | — |
+| [OBG-P2-07 系统代理与恢复](P2-local-proxy.md#obg-p2-07) | P2-06、P2-05 | TODO | — | — | — |
+| [OBG-P2-08 选择与节点测速](P2-local-proxy.md#obg-p2-08) | P2-02A、P2-04、P2-05、P1-04B | TODO | — | — | — |
+| [OBG-P2-09 首个可用版本验收](P2-local-proxy.md#obg-p2-09) | P1-07、P2-01、P2-02A、P2-02B、P2-03、P2-04、P2-05、P2-06、P2-07、P2-08 | TODO | — | — | — |
 
 ### P3 观测与主页面（8 项）
 
-| 任务 | 状态 | 负责人 | 估算 | 证据 |
-| --- | --- | --- | --- | --- |
-| [OBG-P3-01 观测与事件](P3-observability.md#obg-p3-01) | TODO | — | — | — |
-| [OBG-P3-02 连接](P3-observability.md#obg-p3-02) | TODO | — | — | — |
-| [OBG-P3-03 日志](P3-observability.md#obg-p3-03) | TODO | — | — | — |
-| [OBG-P3-04 统计存储](P3-observability.md#obg-p3-04) | TODO | — | — | — |
-| [OBG-P3-05 概览/站点测速](P3-observability.md#obg-p3-05) | TODO | — | — | — |
-| [OBG-P3-06 历史/下钻/容量设置](P3-observability.md#obg-p3-06) | TODO | — | — | — |
-| [OBG-P3-07 代理/规则视图](P3-observability.md#obg-p3-07) | TODO | — | — | — |
-| [OBG-P3-08 主页面阶段验收](P3-observability.md#obg-p3-08) | TODO | — | — | — |
+| 任务 | 显式依赖 | 状态 | 负责人 | 估算 | 证据 |
+| --- | --- | --- | --- | --- | --- |
+| [OBG-P3-01 观测与事件](P3-observability.md#obg-p3-01) | P2-03、P0-07 | TODO | — | — | — |
+| [OBG-P3-02 连接](P3-observability.md#obg-p3-02) | P3-01、P2-02A、P2-05、P2-08、P1-04B | TODO | — | — | — |
+| [OBG-P3-03 日志](P3-observability.md#obg-p3-03) | P3-01、P1-05 | TODO | — | — | — |
+| [OBG-P3-04 统计存储](P3-observability.md#obg-p3-04) | P3-01 | TODO | — | — | — |
+| [OBG-P3-05 概览/站点测速](P3-observability.md#obg-p3-05) | P3-01、P3-04、P1-04B、P2-05 | TODO | — | — | — |
+| [OBG-P3-06 历史/下钻/容量设置](P3-observability.md#obg-p3-06) | P3-04、P3-05 | TODO | — | — | — |
+| [OBG-P3-07 代理基础视图/已加载规则](P3-observability.md#obg-p3-07) | P3-01、P2-02A、P2-08、P1-04B | TODO | — | — | — |
+| [OBG-P3-08 主页面基础能力验收](P3-observability.md#obg-p3-08) | P3-01、P3-02、P3-03、P3-04、P3-05、P3-06、P3-07 | TODO | — | — | — |
 
-### P4 完整配置能力（7 项）
+### P4 完整配置能力（9 项）
 
-| 任务 | 状态 | 负责人 | 估算 | 证据 |
-| --- | --- | --- | --- | --- |
-| [OBG-P4-01 订阅高级项](P4-configuration.md#obg-p4-01) | TODO | — | — | — |
-| [OBG-P4-02 静态/动态组](P4-configuration.md#obg-p4-02) | TODO | — | — | — |
-| [OBG-P4-03 failover](P4-configuration.md#obg-p4-03) | TODO | — | — | — |
-| [OBG-P4-04 规则资源](P4-configuration.md#obg-p4-04) | TODO | — | — | — |
-| [OBG-P4-05 分流/终端/诊断](P4-configuration.md#obg-p4-05) | TODO | — | — | — |
-| [OBG-P4-06 链式代理](P4-configuration.md#obg-p4-06) | TODO | — | — | — |
-| [OBG-P4-07 配置阶段验收](P4-configuration.md#obg-p4-07) | TODO | — | — | — |
+| 任务 | 显式依赖 | 状态 | 负责人 | 估算 | 证据 |
+| --- | --- | --- | --- | --- | --- |
+| [OBG-P4-01 订阅高级项](P4-configuration.md#obg-p4-01) | P2-01、P2-05 | TODO | — | — | — |
+| [OBG-P4-02 静态/动态组](P4-configuration.md#obg-p4-02) | P2-01、P2-02A、P2-02B、P1-03、P1-04A | TODO | — | — | — |
+| [OBG-P4-03 failover](P4-configuration.md#obg-p4-03) | P4-02、P2-04 | TODO | — | — | — |
+| [OBG-P4-04 规则资源](P4-configuration.md#obg-p4-04) | P2-02B、P2-04、P2-05、P1-04A | TODO | — | — | — |
+| [OBG-P4-06 链式代理](P4-configuration.md#obg-p4-06) | P2-02A、P2-02B、P2-05、P2-08 | TODO | — | — | — |
+| [OBG-P4-05A 目标分流/统一目录](P4-configuration.md#obg-p4-05a) | P4-03、P4-04、P4-06 | TODO | — | — | — |
+| [OBG-P4-05B 终端分流](P4-configuration.md#obg-p4-05b) | P4-05A、P3-01 | TODO | — | — | — |
+| [OBG-P4-05C Routing/Terminal 基础诊断](P4-configuration.md#obg-p4-05c) | P4-05A、P4-05B、P1-04B、P2-05、P3-07 | TODO | — | — | — |
+| [OBG-P4-07 配置阶段验收](P4-configuration.md#obg-p4-07) | P4-01、P4-02、P4-03、P4-04、P4-06、P4-05A、P4-05B、P4-05C | TODO | — | — | — |
 
 ### P5 DNS 与共享（7 项）
 
-| 任务 | 状态 | 负责人 | 估算 | 证据 |
-| --- | --- | --- | --- | --- |
-| [OBG-P5-01 DNS 上游/重写](P5-dns-and-sharing.md#obg-p5-01) | TODO | — | — | — |
-| [OBG-P5-02 DNS 过滤](P5-dns-and-sharing.md#obg-p5-02) | TODO | — | — | — |
-| [OBG-P5-03 DNS 观测/热更边界](P5-dns-and-sharing.md#obg-p5-03) | TODO | — | — | — |
-| [OBG-P5-04 五种共享入站](P5-dns-and-sharing.md#obg-p5-04) | TODO | — | — | — |
-| [OBG-P5-05 共享 UI/URI](P5-dns-and-sharing.md#obg-p5-05) | TODO | — | — | — |
-| [OBG-P5-06 订阅分享](P5-dns-and-sharing.md#obg-p5-06) | TODO | — | — | — |
-| [OBG-P5-07 DNS/共享验收](P5-dns-and-sharing.md#obg-p5-07) | TODO | — | — | — |
+| 任务 | 显式依赖 | 状态 | 负责人 | 估算 | 证据 |
+| --- | --- | --- | --- | --- | --- |
+| [OBG-P5-01 DNS 上游/重写](P5-dns-and-sharing.md#obg-p5-01) | P2-02B、P2-03、P2-05、P0-07、P1-04A | TODO | — | — | — |
+| [OBG-P5-02 DNS 过滤](P5-dns-and-sharing.md#obg-p5-02) | P5-01、P2-05 | TODO | — | — | — |
+| [OBG-P5-03 DNS 观测/热更边界](P5-dns-and-sharing.md#obg-p5-03) | P5-02、P3-01、P4-05C | TODO | — | — | — |
+| [OBG-P5-04 五种共享入站](P5-dns-and-sharing.md#obg-p5-04) | P2-02B、P2-03 | TODO | — | — | — |
+| [OBG-P5-05 共享 UI/URI](P5-dns-and-sharing.md#obg-p5-05) | P5-04、P1-04A、P1-05 | TODO | — | — | — |
+| [OBG-P5-06 订阅分享](P5-dns-and-sharing.md#obg-p5-06) | P2-01、P1-05、P1-04A | TODO | — | — | — |
+| [OBG-P5-07 DNS/共享验收](P5-dns-and-sharing.md#obg-p5-07) | P5-01、P5-02、P5-03、P5-04、P5-05、P5-06、P4-07 | TODO | — | — | — |
 
 ### P6 macOS TUN 与生命周期（5 项）
 
-| 任务 | 状态 | 负责人 | 估算 | 证据 |
-| --- | --- | --- | --- | --- |
-| [OBG-P6-01 TUN/模式交接](P6-macos-lifecycle.md#obg-p6-01) | TODO | — | — | — |
-| [OBG-P6-02 睡眠/切网/恢复](P6-macos-lifecycle.md#obg-p6-02) | TODO | — | — | — |
-| [OBG-P6-03 登录启动/退出](P6-macos-lifecycle.md#obg-p6-03) | TODO | — | — | — |
-| [OBG-P6-04 更新集成](P6-macos-lifecycle.md#obg-p6-04) | TODO | — | — | — |
-| [OBG-P6-05 macOS 平台验收](P6-macos-lifecycle.md#obg-p6-05) | TODO | — | — | — |
+| 任务 | 显式依赖 | 状态 | 负责人 | 估算 | 证据 |
+| --- | --- | --- | --- | --- | --- |
+| [OBG-P6-01 TUN/模式交接](P6-macos-lifecycle.md#obg-p6-01) | P2-06、P2-07、P2-04、P2-02B、P2-05、P5-01 | TODO | — | — | — |
+| [OBG-P6-02 睡眠/切网/恢复](P6-macos-lifecycle.md#obg-p6-02) | P6-01 | TODO | — | — | — |
+| [OBG-P6-03 登录启动/退出](P6-macos-lifecycle.md#obg-p6-03) | P6-02、P1-06、P4-01、P5-06 | TODO | — | — | — |
+| [OBG-P6-04 更新集成](P6-macos-lifecycle.md#obg-p6-04) | P6-02、P0-08、P2-05 | TODO | — | — | — |
+| [OBG-P6-05 macOS 平台验收](P6-macos-lifecycle.md#obg-p6-05) | P6-01、P6-02、P6-03、P6-04 | TODO | — | — | — |
 
 ### P7 数据与发布收尾（5 项）
 
-| 任务 | 状态 | 负责人 | 估算 | 证据 |
-| --- | --- | --- | --- | --- |
-| [OBG-P7-01 备份与导入](P7-data-and-release.md#obg-p7-01) | TODO | — | — | — |
-| [OBG-P7-02 诊断/重置](P7-data-and-release.md#obg-p7-02) | TODO | — | — | — |
-| [OBG-P7-03 GitHub 包/手动升级](P7-data-and-release.md#obg-p7-03) | TODO | — | — | — |
-| [OBG-P7-04 全范围验收](P7-data-and-release.md#obg-p7-04) | TODO | — | — | — |
-| [OBG-P7-05 macOS 候选版验收](P7-data-and-release.md#obg-p7-05) | TODO | — | — | — |
+| 任务 | 显式依赖 | 状态 | 负责人 | 估算 | 证据 |
+| --- | --- | --- | --- | --- | --- |
+| [OBG-P7-01 备份与导入](P7-data-and-release.md#obg-p7-01) | P1-02、P1-04A、P1-04B、P1-05、P3-06、P4-01、P4-03、P4-05B、P4-06、P5-02、P5-04、P5-06 | TODO | — | — | — |
+| [OBG-P7-02 诊断/重置](P7-data-and-release.md#obg-p7-02) | P7-01、P6-02、P6-03、P2-07、P5-06 | TODO | — | — | — |
+| [OBG-P7-03 GitHub 包/手动升级](P7-data-and-release.md#obg-p7-03) | P7-01、P7-02、P6-05 | TODO | — | — | — |
+| [OBG-P7-04 全范围验收](P7-data-and-release.md#obg-p7-04) | P1-07、P2-09、P3-08、P4-07、P5-07、P6-05、P7-01、P7-02 | TODO | — | — | — |
+| [OBG-P7-05 macOS 候选版验收](P7-data-and-release.md#obg-p7-05) | P7-03、P7-04、P0-09 | TODO | — | — | — |
 
 ### Windows 后续（7 项，不计 macOS 进度）
 
-| 任务 | 状态 | 负责人 | 估算 | 证据 |
-| --- | --- | --- | --- | --- |
-| [OBG-W0-01 构建/GPUI 原型](WINDOWS.md#obg-w0-01) | DEFERRED | — | — | — |
-| [OBG-W0-02 服务/TUN 原型](WINDOWS.md#obg-w0-02) | DEFERRED | — | — | — |
-| [OBG-W1-01 普通代理/WinINet](WINDOWS.md#obg-w1-01) | DEFERRED | — | — | — |
-| [OBG-W2-01 服务/Named Pipe](WINDOWS.md#obg-w2-01) | DEFERRED | — | — | — |
-| [OBG-W2-02 TUN/owner 交接](WINDOWS.md#obg-w2-02) | DEFERRED | — | — | — |
-| [OBG-W3-01 安装/升级/卸载](WINDOWS.md#obg-w3-01) | DEFERRED | — | — | — |
-| [OBG-W3-02 Windows 独立验收](WINDOWS.md#obg-w3-02) | DEFERRED | — | — | — |
+| 任务 | 显式依赖 | 状态 | 负责人 | 估算 | 证据 |
+| --- | --- | --- | --- | --- | --- |
+| [OBG-W0-01 构建/GPUI 原型](WINDOWS.md#obg-w0-01) | P1-01、P1-03；Windows 排期确认 | DEFERRED | — | — | — |
+| [OBG-W0-02 服务/TUN 原型](WINDOWS.md#obg-w0-02) | W0-01、P2-03 | DEFERRED | — | — | — |
+| [OBG-W1-01 普通代理/WinINet](WINDOWS.md#obg-w1-01) | W0-01、P2-01、P2-02B、P2-04、P2-05、P2-08 | DEFERRED | — | — | — |
+| [OBG-W2-01 服务/Named Pipe](WINDOWS.md#obg-w2-01) | W0-02、W1-01、P2-06 | DEFERRED | — | — | — |
+| [OBG-W2-02 TUN/owner 交接](WINDOWS.md#obg-w2-02) | W2-01、P6-01 | DEFERRED | — | — | — |
+| [OBG-W3-01 安装/升级/卸载](WINDOWS.md#obg-w3-01) | W2-02、P7-01、P6-04 | DEFERRED | — | — | — |
+| [OBG-W3-02 Windows 独立验收](WINDOWS.md#obg-w3-02) | W3-01、P3-08、P4-07、P5-07、P7-02 | DEFERRED | — | — | — |
 
 ## 5 功能覆盖与验收归属
 
@@ -206,20 +211,20 @@ Task：OBG-Px-xx
 | 范围 | 主要交付任务 |
 | --- | --- |
 | 概览 | P3-05、P3-06 |
-| 代理 | P2-08、P3-07、P4-03 |
-| 连接 | P3-02 |
+| 代理 | P2-08、P3-07 基础视图；P4-03、P4-05C/07 完整目录/组/主备/Chain 集成 |
+| 连接 | P3-02 基础连接；P4-05C/07 Unified OutboundCatalog 映射 |
 | 日志 | P3-03 |
-| 规则 | P3-07、P4-05 |
+| 规则 | P3-07 基础已加载列表；P4-05A/B/C 分流与基础诊断；P5-03/07 DNS 后最终集成 |
 | 设置壳与导航 | P1-03；下列九分类分别验收 |
-| 面板设置 | P1-04 |
+| 面板设置 | P1-04A 含 sidebar/layout 纯视觉偏好；P1-04B 含 proxy columns/hide unavailable 跨页面行为偏好 |
 | 订阅管理 | P2-01、P4-01、P5-06 |
 | 出站节点 | P4-02、P4-03 |
-| 目标分流 | P4-04、P4-05 |
-| 终端分流 | P4-05；不可用项有批准差异 |
+| 目标分流 | P4-04、P4-05A；P4-05C 基础诊断 |
+| 终端分流 | P3-01 Observation/client discovery → P4-05B/C；P3-02 仅为连接页面消费者，不可用项有批准差异 |
 | 链式代理 | P4-06 |
 | 共享网络 | P5-04、P5-05 |
 | DNS 设置 | P5-01、P5-02、P5-03 |
-| 后端设置 | P2-02/03/07、P3-06、P6-01/03/04、P7-01/02；基础字段、保留周期、TUN、更新与数据工具逐项验收 |
+| 后端设置 | P2-02B/03/07、P3-06、P6-01/03/04、P7-01/02；基础字段、保留周期、TUN、更新与数据工具逐项验收 |
 
 ### 77 个 client 方法
 
@@ -228,17 +233,18 @@ Task：OBG-Px-xx
 | API 编号 | 主要任务 | 交付或范围处理 |
 | --- | --- | --- |
 | 01–04 | P1-03 | 本地启动/OS 用户边界替代 Web 鉴权，桌面范围由 P0-02 记录 |
-| 05–09 | P1-04 | 偏好与背景资源 |
+| 05–06 | P1-04B | 偏好快照/patch 公共行为；视觉字段由 P1-04A 验收 |
+| 07–09 | P1-04A | 背景资源与视觉偏好 |
 | 10–11、15–16 | P2-03 | Runtime 状态、动作、版本与操作结果 |
 | 12–13 | P3-07 | 当前无业务页面调用，只按内部实际需要使用，不强制新增 UI |
 | 14、17–19 | P6-04 | 更新检查/下载/进度/取消，P7 验证分发 |
 | 20、24 | P7-02 | 重置与脱敏诊断 |
 | 21、40–42 | P3-06 | 历史查询、下钻和容量；P3-04 提供存储 |
 | 22–23 | P7-01 | 备份与导入 |
-| 25–29、48 | P2-08 | 选择、测速与延迟历史；完整展示在 P3-07 |
+| 25–29、48 | P2-08 | 选择、测速与延迟历史；基础展示在 P3-07，完整 Group/Failover/Chain 在 P4-05C/07 集成 |
 | 30 | P2-05 | GeoIp 来源、字段与出站策略 |
 | 31 | P3-07 | 已加载规则 |
-| 32–35、62、66 | P4-05 | 预览/诊断/默认路由/真实终端，平台不可用状态 |
+| 32–35 | P4-05C | Routing/Terminal 基础诊断；DNS 完整阶段与 Rules 最终集成在 P5-03/07 闭合 |
 | 36–37 | P3-02 | 当前实例的连接关闭 |
 | 38–39 | P3-05 | 站点测速与历史 |
 | 43–45 | P4-02 | 分组与默认组；P4-03 完成主备策略 |
@@ -247,7 +253,9 @@ Task：OBG-Px-xx
 | 50 | P5-04 | 按协议检查共享端口 |
 | 51–55 | P5-06 | 订阅分享生命周期 |
 | 60–61 | P1-02 | 类型化 profile/patch；编译与各字段行为随对应任务验收 |
+| 62 | P4-05A | 默认路由与目标分流，统一出口目录 |
 | 63–65 | P4-04 | 规则资源预览/导入/刷新 |
+| 66 | P4-05B | 基于 P3-01 Observation 的 clients.observed()/已知终端投影与 Client Routing；不依赖 Connections 页面，平台不可用状态 |
 | 67–69 | P0-02 | 当前无业务调用，不新增设备分发系统；记录不迁移范围 |
 | 70–72、74 | P5-02 | 过滤状态/保存/应用/预览 |
 | 73、77 | P5-03 | DNS 记录与真实缓存清理，按已批准能力交付 |
@@ -262,7 +270,7 @@ Task：OBG-Px-xx
 | 1 首次启动 | P1-03、P2-09 |
 | 2 订阅 | P2-01、P4-01 |
 | 3 出口选择 | P2-04、P2-08 |
-| 4 分流 | P4-05 |
+| 4 分流 | P4-05A/B/C；DNS 完整诊断在 P5-03/07 补证 |
 | 5 DNS | P5-01/02/03 |
 | 6 连接 | P3-02 |
 | 7 日志 | P3-03 |
