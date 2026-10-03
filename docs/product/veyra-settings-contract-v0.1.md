@@ -1,9 +1,9 @@
 # Veyra Settings Contract V0.1
 
-> 状态：产品契约已冻结，可进入技术拆分与实现
+> 状态：历史参考；2026-10-03 起不再作为当前迁移的强制契约
 > 目标平台：Windows V0.1
 > 目的：定义 Veyra Settings 的产品语义、默认值、状态所有权、持久化边界、运行时副作用与页面信息架构。
-> 视觉实现继续遵守 `docs/ui/veyra-ui-spec.md`。
+> 当前视觉与技术路线以 [OpenBox Rust / GPUI 方案](../openbox-rust-gpui-implementation-plan.md)为准，旧 UI 门禁已停用。
 
 ---
 

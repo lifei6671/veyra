@@ -1,5 +1,7 @@
 # 跨平台 sing-box 桌面客户端技术设计方案 V0.1
 
+> 历史方案：2026-10-03 起当前路线以 [OpenBox Rust / GPUI 方案](openbox-rust-gpui-implementation-plan.md)为准。本文旧 Task、SDLC 状态和 UI 门禁不再约束新任务。
+
 ## 修订记录
 
 - 2026-09-05：确认订阅卡片“使用”立即切换到所选订阅的运行配置；保留其它已导入订阅，

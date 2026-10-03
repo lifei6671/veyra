@@ -1,7 +1,7 @@
 interface:
   display_name: "Code Delivery Review"
-  short_description: "独立全面审查冻结交付单元的覆盖、身份、证据和实现风险"
-  default_prompt: "使用 $code-delivery-review 对当前冻结 Task 执行完整覆盖、身份新鲜且只读的独立交付审查。"
+  short_description: "按当前需求只读审查代码变更、行为风险和真实验证结果，不依赖旧流程工件"
+  default_prompt: "使用 $code-delivery-review 只读审查当前任务的代码改动、关键行为和实际验证结果。"
 
 policy:
   allow_implicit_invocation: true
