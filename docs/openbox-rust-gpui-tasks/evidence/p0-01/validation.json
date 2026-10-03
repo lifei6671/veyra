@@ -1,0 +1,59 @@
+{
+  "json": 19,
+  "source_hashes": 69,
+  "source_refs": 90,
+  "identity": {
+    "streams": 4,
+    "pages": 6,
+    "settings": 9
+  },
+  "png": 8,
+  "visual_checks_pass": 54,
+  "historical_harness_failures": 1,
+  "remote_audit": {
+    "login_POST": 2,
+    "GET": 15,
+    "WebSocket": 4,
+    "other_POST": 0,
+    "PUT": 0,
+    "PATCH": 0,
+    "DELETE": 0
+  },
+  "redaction": "PASS: strict value allowlist, credential keys removed; metadata no request bodies/headers",
+  "dag": {
+    "count": 68,
+    "states": {
+      "DONE": 2,
+      "READY": 3,
+      "TODO": 56,
+      "DEFERRED": 7
+    },
+    "ready": [
+      "P0-03",
+      "P0-04",
+      "P1-01"
+    ]
+  },
+  "markdown_links": 141,
+  "protected_files_unchanged": 3,
+  "diff_check": "PASS",
+  "ast": {
+    "api": 77,
+    "business": 72,
+    "unused": [
+      "controllerConfig",
+      "version",
+      "devices",
+      "createDevice",
+      "deleteDevice"
+    ],
+    "reference_sites_match": true
+  },
+  "cleanup": {
+    "temporary_directory_removed": true,
+    "cookie_jar_absent": true,
+    "raw_responses_and_frames": "never written; cleared from memory",
+    "owned_vite_stopped": true,
+    "owned_browser_closed": true
+  }
+}

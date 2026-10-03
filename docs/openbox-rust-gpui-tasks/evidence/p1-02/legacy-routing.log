@@ -1,0 +1,25 @@
+   Compiling veyra-core v0.1.0 (/Users/lifeilin/wx_lifeilin/github.com/lifei6671/veyra/crates/veyra-core)
+   Compiling veyra v0.1.0 (/Users/lifeilin/wx_lifeilin/github.com/lifei6671/veyra/src-tauri)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 4.25s
+     Running unittests src/lib.rs (target/debug/deps/veyra_lib-b009d9e91782e91b)
+
+running 17 tests
+test application::proxy_routing::tests::apply_tuple_drift_maps_to_the_frozen_state_changed_error ... ok
+test application::proxy_routing::tests::apply_without_active_subscription_fails_before_runtime_dispatch ... ok
+test application::proxy_routing::tests::canonical_apply_mapping_owns_in_progress_and_terminal_runtime_truth ... ok
+test application::proxy_routing::tests::duplicate_or_incomplete_reorder_is_rejected ... ok
+test application::proxy_routing::tests::epoch_replacement_invalidates_old_routing_form ... ok
+test application::proxy_routing::tests::frozen_validation_boundaries_accept_limits_and_reject_plus_or_minus_one ... ok
+test application::proxy_routing::tests::manager_covers_closed_structural_mutations_with_persisted_snapshots ... ok
+test application::proxy_routing::tests::manager_manual_save_advances_only_revision_and_returns_authoritative_snapshot ... ok
+test application::proxy_routing::tests::manager_rejects_boundary_values_without_advancing_revision ... ok
+test application::proxy_routing::tests::manager_save_failure_preserves_bytes_generation_and_revision ... ok
+test application::proxy_routing::tests::manager_structural_save_and_noop_obey_generation_revision_and_cas ... ok
+test application::proxy_routing::tests::manual_selection_only_changes_revision_material_not_generation ... ok
+test application::proxy_routing::tests::nested_mutation_objects_reject_unknown_and_null_fields ... ok
+test application::proxy_routing::tests::post_save_manual_result_only_uses_superseded_when_a_reload_proves_drift ... ok
+test application::proxy_routing::tests::request_is_closed_and_exact ... ok
+test application::proxy_routing::tests::response_has_frozen_exact_snapshot_keys ... ok
+test application::proxy_routing::tests::revision_observe_bumps_only_when_cas_material_changes ... ok
+
+test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 74 filtered out; finished in 0.22s

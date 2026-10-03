@@ -4,11 +4,12 @@
 //! internal concrete operations remain test-covered but unconstructed in the production crate.
 #![allow(dead_code)]
 
-use std::fmt;
 use std::num::NonZeroU16;
 use std::sync::Mutex;
 
 use reqwest::Url;
+
+pub(crate) use veyra_core::application::system_proxy::*;
 
 use super::recovery::{ProxyRecoveryRecord, ProxyRecoveryStore};
 
@@ -97,13 +98,6 @@ impl ObservedProxyState {
     fn new(snapshot: ProxySnapshot) -> Self {
         Self { snapshot }
     }
-}
-
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub(crate) enum ProxyState {
-    NotManaged,
-    Managed,
-    UserModified,
 }
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -307,72 +301,6 @@ unsafe fn copy_and_free_global_string(
         .map(Some)
         .map_err(|_| SystemProxyPortError::Unavailable)
 }
-
-pub(crate) trait SystemProxyController: Send + Sync {
-    fn enable_loopback_proxy(
-        &self,
-        mixed_port: NonZeroU16,
-    ) -> Result<SystemProxyEnableOutcome, SystemProxyEnableError>;
-    fn restore_proxy(&self) -> Result<SystemProxyRestoreOutcome, SystemProxyError>;
-    fn state(&self) -> Result<ProxyState, SystemProxyError>;
-}
-
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
-pub(crate) enum SystemProxyEnableOutcome {
-    Enabled,
-}
-
-/// 启用失败的补偿确定性。只有 `SafelyUnapplied` 允许调用方停止 sidecar；任何
-/// 写入、回读、回滚或恢复记录状态未能证明时，都必须保留 sidecar 进入恢复状态。
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
-pub(crate) enum SystemProxyEnableError {
-    SafelyUnapplied(SystemProxyError),
-    StateUncertain(SystemProxyError),
-}
-
-impl fmt::Display for SystemProxyEnableError {
-    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Self::SafelyUnapplied(_) => formatter.write_str("Windows system proxy was not applied"),
-            Self::StateUncertain(_) => {
-                formatter.write_str("Windows system proxy state is uncertain and requires recovery")
-            }
-        }
-    }
-}
-
-impl std::error::Error for SystemProxyEnableError {}
-
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
-pub(crate) enum SystemProxyRestoreOutcome {
-    Restored,
-    NotManaged,
-    UserModified,
-}
-
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
-pub(crate) enum SystemProxyError {
-    Read,
-    Write,
-    Notify,
-    RecoveryStore,
-    Verification,
-}
-
-impl fmt::Display for SystemProxyError {
-    fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let message = match self {
-            Self::Read => "unable to read the Windows system proxy state",
-            Self::Write => "unable to write the Windows system proxy state",
-            Self::Notify => "unable to notify Windows about the system proxy state",
-            Self::RecoveryStore => "unable to update the private proxy recovery state",
-            Self::Verification => "Windows system proxy state did not verify after the operation",
-        };
-        formatter.write_str(message)
-    }
-}
-
-impl std::error::Error for SystemProxyError {}
 
 /// Serializes capture, apply, verification, and recovery. It never changes the real system
 /// unless a production `SystemProxyPort` is explicitly constructed and supplied by application

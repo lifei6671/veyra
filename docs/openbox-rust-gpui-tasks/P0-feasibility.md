@@ -13,10 +13,12 @@
 
 **验收**：
 
-- [ ] 77 个 client 方法、4 个流通道均有去向；未使用接口与当前页面入口区分清楚。
-- [ ] 同尺寸浅色/深色截图覆盖壳层、节点卡片、弹层、DNS 表格与背景；记录来源、状态和尺寸。
-- [ ] failover 手动选择、traffic 单位、DNS 热更/记录等歧义被列为待验证项；没有将猜测写成接口事实。
-- [ ] 样本脱敏，可供后续离线契约测试使用；不为采样修改生产配置。
+- [x] 77 个 client 方法、4 个流通道均有去向；未使用接口与当前页面入口区分清楚。
+- [x] 同尺寸浅色/深色截图覆盖壳层、节点卡片、弹层、DNS 表格与背景；记录来源、状态和尺寸。
+- [x] failover 手动选择、traffic 单位、DNS 热更/记录等歧义被列为待验证项；没有将猜测写成接口事实。
+- [x] 样本脱敏，可供后续离线契约测试使用；不为采样修改生产配置。
+
+**当前结果**：四项验收全部 PASS，P0-01 DONE。当前源码 8 张同尺寸浅深色截图及真实操作通过；有界登录重试成功，13 指定 GET 与四 WS 取得真实脱敏样本。详见[最终验收](P0-01-baseline.md#current-acceptance)。以下旧交付/失败记录保留历史身份。
 
 <a id="obg-p0-02"></a>
 ## OBG-P0-02 落实当前范围与轻量任务规则
@@ -154,3 +156,24 @@
 来源：用户明确停用旧流程并指定 GitHub 无发布签名分发。交付物：`AGENTS.md`、精简后的项目审查技能、已归档旧 UI 契约、当前方案/任务，以及旧门禁脚本、专用测试与旧流程技能锁记录的删除。当前工作树本就没有 `.sdlc/` 状态目录，本次移除其规则和配置引用，没有伪造状态恢复或历史验收结果。
 
 验证：64 个任务卡及状态一致，依赖无环；77 个 API、19 个场景覆盖完整；150 个本地链接及章节引用有效，已跟踪与新增文档的差异格式检查通过。`pnpm exec vitest list --filesOnly` 成功发现 29 个产品测试文件，旧门禁已不在集合中；本次没有运行这些测试。技能 YAML/字段检查使用系统 Ruby 通过；Python `quick_validate.py` 因缺少 PyYAML 未能运行，没有为此新增依赖。此记录不代表任何 GPUI/helper/TUN 原型已通过。下一任务为 OBG-P0-01。
+
+<a id="baseline-record"></a>
+### OBG-P0-01 交付记录（2026-10-03）
+
+负责人 Codex /root；源码 `7fab0e47d2a28446e131b7cd737ef4a5a43d55fb`，分支 codex/dist-react-restore。本轮先领取 DOING，实际写范围为 P0 卡、主表、SESSION、[基线文档](P0-01-baseline.md)、[fixtures](fixtures/p0-01/README.md)；Core/Config + Observation + GPUI 基线文档 owner 单一，产品公共契约/生产资源只读。既有 .gitignore、AGENTS、DEVELOPMENT_WORKFLOW 未覆盖，未 commit/push/publish。
+
+交付：77 client 方法与逐项业务位置/后续任务、4 流通道、六页面/九分类/关键状态与弹层、未知字段/宽类型清单；五组 22 个离线 case（已有测试样本及源码消费契约，每项 commit/source/redaction/observed=false）；结构和历史视觉元数据另列，真实运行观测 0。
+
+验收：接口去向 PASS；同尺寸五类浅深色截图 NOT_RUN；歧义登记 PASS；脱敏样本 PASS。当前仅差视觉验收，状态 ACCEPTANCE。GUI inventory 成功，但访问现有 localhost 页面被浏览器安全策略拒绝（用户拒绝访问权限），没有绕过；旧 Veyra pair 不属于当前 OpenBox，本机 OpenBox 历史图尺寸不一致/捕获身份不足，不用于凑 PASS。
+
+验证：TypeScript 7.0.2 AST api properties=77，业务引用方法=72、无业务=5；四通道及实际消费者=4；RouteKey/根组件/侧栏六身份、SettingsPage 九身份与分支一致；JSON/来源/源码指纹/脱敏、本轮本地 Markdown links/anchors、新文件 whitespace 和 git diff --check 定向检查。具体最终计数在 [基线验证结果](P0-01-baseline.md#final-validation)。产品代码未改，pnpm/cargo/build/test/内核/网络/权限 NOT_RUN。自查者为 Codex /root，不声称独立 Review。
+
+下一步：在允许访问的 GUI/browser 环境中，按基线 §7 固定 1280×720 CSS viewport + DPR，隔离生产写入，捕获 light/dark 壳层/背景、节点、非写弹窗、DNS 表并登记版本/操作/像素/hash/来源。四验收真实齐全后 DONE，再重算 P0-03/P0-04/P0-07/P1-01。当前仅 P0-02 DONE，四下游继续 TODO，Ready Queue 空；不开始本轮以外任务。
+
+2026-10-03 追加授权恢复：用户允许 localhost 与远端只读取证，但两个浏览器访问调用仍被工具权限拒绝。无新增真实响应或截图，保持 ACCEPTANCE；详见 [授权后的实际尝试](P0-01-baseline.md#authorization-attempt)。需解除保存的工具访问限制后继续，不绕过、不改生产配置。
+
+2026-10-03 明确授权 CLI 替代取证：本机 Vite/HTML 入口核对成功；Chromium Mach 服务权限拒绝、WebKit 启动退出，视觉仍 NOT_RUN。新增 17 observed=true 请求失败 case（13 GET 全 403、4 WS 无帧）；没有业务 DTO/流帧或语义结论。P0-01 继续 ACCEPTANCE，READY=0；当前精确环境下一步及方法汇总见 [CLI 只读实际结果](P0-01-baseline.md#readonly-observation)。先前访问失败与 JFIF density 修复历史保留。
+
+2026-10-03 临时登录例外：仅一次 auth/login POST，返回 403；原 13 GET 与前置/HTTP1.1 确认同为 403，WS 3×401/1×502、无帧。单次浏览器确认仍因 Mach 服务拒绝而失败，视觉 NOT_RUN、P0-01 ACCEPTANCE、READY=0；临时会话/脚本已删除。详见 [临时登录实际结果](P0-01-baseline.md#temporary-auth-observation)。
+
+2026-10-03 最终验收追加：四项 PASS，P0-01 DONE；8 PNG（1280×720/DPR 1/Chromium 149.0.7827.22），54 操作/状态断言、77/4/6/9、脱敏与 DAG 检查通过。登录两次（403 后一次传输修正重试 200）、普通 GET 14 成功/1 失败、四 WS 各有帧，traffic 单位/区间或速率/重置仍 UNKNOWN。P0-03/P0-04/P1-01 READY，P0-07 TODO；没有开始下游实现。完整证据和历史限制见[当前最终验收](P0-01-baseline.md#current-acceptance)。

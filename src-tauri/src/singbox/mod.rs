@@ -1,18 +1,15 @@
 //! 强类型受管配置编译、最终字节校验与受控 sidecar 边界。
 
-pub(crate) mod clash_api;
-mod compiler;
+pub use veyra_core::singbox::clash_api;
 pub(crate) mod managed_sidecar;
-pub(crate) mod runtime;
+pub use veyra_core::singbox::runtime;
+
+pub use veyra_core::singbox::{
+    ConfigCompiler, GeneratedConfig, RuntimeProfile, SingBoxCompiler, SingBoxPlan,
+};
 
 #[cfg(test)]
-pub(crate) mod test_support {
-    use std::sync::Mutex;
-
-    pub(crate) static FIXED_CLASH_API_TEST_LOCK: Mutex<()> = Mutex::new(());
-}
-
-pub use compiler::{ConfigCompiler, GeneratedConfig, RuntimeProfile, SingBoxCompiler, SingBoxPlan};
+pub use veyra_core::singbox::test_support;
 
 #[cfg(all(test, target_os = "windows"))]
 mod task009_controlled_network {

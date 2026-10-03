@@ -1,0 +1,1 @@
+PASS: 68 Task identities/dependency existence/acyclic DAG; {'DONE': 3, 'READY': 3, 'TODO': 55, 'DEFERRED': 7}; READY P0-03/P0-04/P1-02; 102 local links/anchors; new source whitespace.

@@ -1,0 +1,105 @@
+{
+  "repositoryImageCount": 41,
+  "externalHistoricalImageCount": 21,
+  "items": [
+    {
+      "path": "docs/ui/reference/veyra/windows-light/task012-final-proxies-light-960.png",
+      "format": "PNG",
+      "pixels": [
+        1462,
+        1016
+      ],
+      "sha256": "8d3860079bddbcdabf49e17657ba391a982a771e1692f6162abd6a0467660ba0",
+      "state": "旧 TASK-012 Windows，浅色出口组；本轮目视",
+      "source": "docs/ui/visual-reference.md / repository historic evidence",
+      "captureCommit": "UNKNOWN",
+      "captureCommand": "UNKNOWN",
+      "newCapture": false
+    },
+    {
+      "path": "docs/ui/reference/veyra/windows-dark/task012-final-proxies-dark-960.png",
+      "format": "PNG",
+      "pixels": [
+        1462,
+        1016
+      ],
+      "sha256": "428fc16104a3c99cc05c956accb22a45d836a79f52f8771a90af1e7d10c45073",
+      "state": "旧 TASK-012 Windows，深色出口组",
+      "source": "docs/ui/visual-reference.md / repository historic evidence",
+      "captureCommit": "UNKNOWN",
+      "captureCommand": "UNKNOWN",
+      "newCapture": false
+    },
+    {
+      "path": "docs/ui/reference/veyra/windows-light/subscriptions.png",
+      "format": "PNG",
+      "pixels": [
+        1985,
+        1434
+      ],
+      "sha256": "03eb2454d189bbb9356888a38495f1be9d4a5ef23725b3462d265db41af8a037",
+      "state": "visual-reference.md 旧 Tauri，浅色订阅",
+      "source": "docs/ui/visual-reference.md / repository historic evidence",
+      "captureCommit": "UNKNOWN",
+      "captureCommand": "UNKNOWN",
+      "newCapture": false
+    },
+    {
+      "path": "docs/ui/reference/veyra/windows-dark/subscriptions.png",
+      "format": "PNG",
+      "pixels": [
+        1985,
+        1434
+      ],
+      "sha256": "abd66798e75d2904d26fb84e7c3864db14837c57160eede3405456ff397ef120",
+      "state": "visual-reference.md 旧 Tauri，深色订阅",
+      "source": "docs/ui/visual-reference.md / repository historic evidence",
+      "captureCommit": "UNKNOWN",
+      "captureCommand": "UNKNOWN",
+      "newCapture": false
+    },
+    {
+      "path": "/Users/lifeilin/.codex/visualizations/2026/10/02/01a0fb2a-a6f0-7c41-adbf-936f28103039/dns-settings/local-top.png",
+      "format": "JPEG",
+      "pixels": [
+        1070,
+        850
+      ],
+      "sha256": "22e26b47d0643652b8cec7ed970d89299eb38001f8d377bdfef0b1f33c6cd577",
+      "state": "历史浅色 DNS 顶部",
+      "source": "src/openbox/design-qa.md（2026-10-02 DNS）",
+      "captureCommit": "UNKNOWN",
+      "captureCommand": "UNKNOWN",
+      "newCapture": false
+    },
+    {
+      "path": "/Users/lifeilin/.codex/visualizations/2026/10/02/01a0fb2a-a6f0-7c41-adbf-936f28103039/dns-settings/local-filter-records.png",
+      "format": "JPEG",
+      "pixels": [
+        1070,
+        850
+      ],
+      "sha256": "8812707551801b8555de3dd3a25de19a87a93dd0a1a8886f9f7f896ebd5fd261",
+      "state": "历史浅色空 DNS 表/pending/背景；本轮目视",
+      "source": "src/openbox/design-qa.md（2026-10-02 DNS）",
+      "captureCommit": "UNKNOWN",
+      "captureCommand": "UNKNOWN",
+      "newCapture": false
+    },
+    {
+      "path": "/Users/lifeilin/.codex/visualizations/2026/10/02/01a0fb2a-a6f0-7c41-adbf-936f28103039/dns-settings/dark-upstream.png",
+      "format": "JPEG",
+      "pixels": [
+        600,
+        500
+      ],
+      "sha256": "57686027a03fb414df861e2544e9bc9ecb893c3e35e611e6bf385f64e4fdfe1f",
+      "state": "历史深色 DNS 上游弹窗",
+      "source": "src/openbox/design-qa.md（2026-10-02 DNS）",
+      "captureCommit": "UNKNOWN",
+      "captureCommand": "UNKNOWN",
+      "newCapture": false
+    }
+  ],
+  "acceptance": "NOT_RUN; historic dimensions/source do not satisfy current same-size OpenBox pair"
+}

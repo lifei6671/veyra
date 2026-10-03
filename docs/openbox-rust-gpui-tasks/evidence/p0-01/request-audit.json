@@ -1,0 +1,4077 @@
+{
+  "scope": "current acceptance run only; prior failures retained in older fixtures",
+  "remote": [
+    {
+      "method": "GET",
+      "host": "openbox.disign.me",
+      "path": "/api/auth/status",
+      "purpose": "pre-authentication status",
+      "status": "403",
+      "content_type": "text/html; charset=UTF-8",
+      "timestamp": "2026-10-03T10:56:22.129457+00:00",
+      "exit_code": 0,
+      "body_removed": true,
+      "transport": "HTTP"
+    },
+    {
+      "method": "POST",
+      "host": "openbox.disign.me",
+      "path": "/api/auth/login",
+      "purpose": "temporary authentication only",
+      "status": "403",
+      "content_type": "text/html; charset=UTF-8",
+      "timestamp": "2026-10-03T10:57:14.149285+00:00",
+      "exit_code": 0,
+      "body_removed": true,
+      "response_format": "html",
+      "authenticated": false,
+      "transport": "HTTP"
+    },
+    {
+      "method": "GET",
+      "host": "openbox.disign.me",
+      "path": "/api/auth/status",
+      "purpose": "diagnose curl versus Node transport before any bounded login retry",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "timestamp": "2026-10-03T10:57:42.940Z",
+      "body_removed": true,
+      "auth_status": {
+        "enabled": true,
+        "authenticated": false,
+        "passwordSet": true
+      },
+      "transport": "HTTP"
+    },
+    {
+      "method": "POST",
+      "host": "openbox.disign.me",
+      "path": "/api/auth/login",
+      "purpose": "bounded authentication retry after transport diagnosis",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "timestamp": "2026-10-03T10:58:42.032Z",
+      "transport": "HTTP"
+    },
+    {
+      "method": "GET",
+      "host": "openbox.disign.me",
+      "path": "/api/auth/status",
+      "purpose": "authorized read-only observation",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "timestamp": "2026-10-03T10:59:01.587Z",
+      "transport": "HTTP"
+    },
+    {
+      "method": "GET",
+      "host": "openbox.disign.me",
+      "path": "/api/storage",
+      "purpose": "authorized read-only observation",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "timestamp": "2026-10-03T10:59:05.137Z",
+      "transport": "HTTP"
+    },
+    {
+      "method": "GET",
+      "host": "openbox.disign.me",
+      "path": "/api/openbox/service/status",
+      "purpose": "authorized read-only observation",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "timestamp": "2026-10-03T10:59:05.979Z",
+      "transport": "HTTP"
+    },
+    {
+      "method": "GET",
+      "host": "openbox.disign.me",
+      "path": "/api/controller/configs",
+      "purpose": "authorized read-only observation",
+      "status": 200,
+      "content_type": "application/json",
+      "timestamp": "2026-10-03T10:59:07.448Z",
+      "transport": "HTTP"
+    },
+    {
+      "method": "GET",
+      "host": "openbox.disign.me",
+      "path": "/api/controller/version",
+      "purpose": "authorized read-only observation",
+      "status": 200,
+      "content_type": "application/json",
+      "timestamp": "2026-10-03T10:59:10.224Z",
+      "transport": "HTTP"
+    },
+    {
+      "method": "GET",
+      "host": "openbox.disign.me",
+      "path": "/api/openbox/traffic/usage",
+      "purpose": "authorized read-only observation",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "timestamp": "2026-10-03T10:59:10.723Z",
+      "transport": "HTTP"
+    },
+    {
+      "method": "GET",
+      "host": "openbox.disign.me",
+      "path": "/api/controller/proxies",
+      "purpose": "authorized read-only observation",
+      "status": 200,
+      "content_type": "text/plain; charset=utf-8",
+      "timestamp": "2026-10-03T10:59:11.228Z",
+      "transport": "HTTP"
+    },
+    {
+      "method": "GET",
+      "host": "openbox.disign.me",
+      "path": "/api/controller/rules",
+      "purpose": "authorized read-only observation",
+      "status": 200,
+      "content_type": "application/json",
+      "timestamp": "2026-10-03T10:59:15.705Z",
+      "transport": "HTTP"
+    },
+    {
+      "method": "GET",
+      "host": "openbox.disign.me",
+      "path": "/api/openbox/groups",
+      "purpose": "authorized read-only observation",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "timestamp": "2026-10-03T10:59:16.198Z",
+      "transport": "HTTP"
+    },
+    {
+      "method": "GET",
+      "host": "openbox.disign.me",
+      "path": "/api/openbox/subscriptions",
+      "purpose": "authorized read-only observation",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "timestamp": "2026-10-03T10:59:16.690Z",
+      "transport": "HTTP"
+    },
+    {
+      "method": "GET",
+      "host": "openbox.disign.me",
+      "path": "/api/openbox/profile",
+      "purpose": "authorized read-only observation",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "timestamp": "2026-10-03T10:59:17.471Z",
+      "transport": "HTTP"
+    },
+    {
+      "method": "GET",
+      "host": "openbox.disign.me",
+      "path": "/api/openbox/dns-filter",
+      "purpose": "authorized read-only observation",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "timestamp": "2026-10-03T10:59:19.434Z",
+      "transport": "HTTP"
+    },
+    {
+      "method": "GET",
+      "host": "openbox.disign.me",
+      "path": "/api/openbox/dns-filter/records?search=&result=&page=1&pageSize=20",
+      "purpose": "authorized read-only observation",
+      "status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "timestamp": "2026-10-03T10:59:20.607Z",
+      "transport": "HTTP"
+    },
+    {
+      "method": "GET",
+      "host": "openbox.disign.me",
+      "path": "/api/controller-ws/logs?level=info",
+      "transport": "WebSocket",
+      "purpose": "read-only sampling; no business sends",
+      "timestamp": "2026-10-03T10:59:43.506Z",
+      "status": 101,
+      "content_type": null
+    },
+    {
+      "method": "GET",
+      "host": "openbox.disign.me",
+      "path": "/api/controller-ws/connections",
+      "transport": "WebSocket",
+      "purpose": "read-only sampling; no business sends",
+      "timestamp": "2026-10-03T10:59:43.504Z",
+      "status": 101,
+      "content_type": null
+    },
+    {
+      "method": "GET",
+      "host": "openbox.disign.me",
+      "path": "/api/controller-ws/memory",
+      "transport": "WebSocket",
+      "purpose": "read-only sampling; no business sends",
+      "timestamp": "2026-10-03T10:59:43.506Z",
+      "status": 101,
+      "content_type": null
+    },
+    {
+      "method": "GET",
+      "host": "openbox.disign.me",
+      "path": "/api/controller-ws/traffic",
+      "transport": "WebSocket",
+      "purpose": "read-only sampling; no business sends",
+      "timestamp": "2026-10-03T10:59:43.507Z",
+      "status": 101,
+      "content_type": null
+    }
+  ],
+  "visual": [
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/openbox.html",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.212Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/@vite/client",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.220Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/main.tsx",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.220Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/@react-refresh",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.221Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/node_modules/.vite/deps/react.js?v=3ab5054c",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.230Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/node_modules/.vite/deps/react-dom_client.js?v=3ab5054c",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.230Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/OpenBoxApp.tsx",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.231Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/assets/fonts/MiSans-VF-tRsyHePl.css",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.231Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/openbox.css",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.231Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/node_modules/.vite/deps/react_jsx-dev-runtime.js?v=3ab5054c",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.231Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/node_modules/.pnpm/vite@8.2.2/node_modules/vite/dist/client/env.mjs",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.231Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/node_modules/.vite/deps/rolldown-runtime-DC62tzP2.js?v=3ab5054c",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.233Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/node_modules/.vite/deps/sonner.js?v=3ab5054c",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.244Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/api/client.ts",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.244Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/components/AppShell.tsx",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.246Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/components/AuthScreen.tsx",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.246Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/components/shared.tsx",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.246Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/hooks/useLiveMetrics.ts",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.246Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/pages/OverviewPage.tsx",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.246Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/pages/ProxiesPage.tsx",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.246Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/pages/ConnectionsPage.tsx",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.247Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/pages/LogsPage.tsx",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.247Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/pages/RulesPage.tsx",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.247Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/pages/SettingsPage.tsx",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.247Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/ui/sonner.tsx",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.247Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/",
+      "purpose": "isolated WebSocket mock",
+      "transport": "WebSocket",
+      "timestamp": "2026-10-03T11:06:23.249Z",
+      "result": "mock-no-server-connect"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/node_modules/.vite/deps/react-dom.js?v=3ab5054c",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.250Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/node_modules/.vite/deps/@heroicons_react_24_outline.js?v=3ab5054c",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.251Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/assets/openbox-logo.png?import",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.252Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/lib/format.ts",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.252Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/hooks/useControllerSocket.ts",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.252Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/",
+      "purpose": "isolated WebSocket mock",
+      "transport": "WebSocket",
+      "timestamp": "2026-10-03T11:06:23.254Z",
+      "result": "mock-no-server-connect"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/assets/baidu.svg?import",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.256Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/assets/google.svg?import",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.256Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/assets/openai.svg?import",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.256Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/assets/telegram.svg?import",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.256Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/ui/controls.tsx",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.257Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/components/ProxyCards.tsx",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.257Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/pages/settings/PanelSettings.tsx",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.257Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/pages/settings/SubscriptionSettings.tsx",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.259Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/pages/settings/GroupSettings.tsx",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.259Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/pages/settings/RoutingSettings.tsx",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.259Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/pages/settings/ClientRoutingSettings.tsx",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.259Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/pages/settings/ChainProxySettings.tsx",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.259Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/pages/settings/ShareNetworkSettings.tsx",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.259Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/pages/settings/DnsSettings.tsx",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.259Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/pages/settings/BackendSettings.tsx",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.259Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/assets/group-global.svg?import",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.263Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/assets/group-other.svg?import",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.263Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/assets/option-auto.svg?import",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.263Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/assets/option-direct.svg?import",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.263Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/ui/select.tsx",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.266Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/node_modules/.vite/deps/@radix-ui_react-switch.js?v=3ab5054c",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.267Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/node_modules/.vite/deps/@radix-ui_react-toggle-group.js?v=3ab5054c",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.267Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/assets/group-speed.svg?import",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.268Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/assets/group-ai.svg?import",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.268Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/assets/group-youtube.svg?import",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.268Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/assets/group-tiktok.svg?import",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.268Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/assets/group-netflix.svg?import",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.268Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/assets/group-github.svg?import",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.268Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/assets/group-google.svg?import",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.269Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/assets/group-microsoft.svg?import",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.269Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/assets/group-apple.svg?import",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.269Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/assets/group-games.svg?import",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.269Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/assets/group-china.svg?import",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.269Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/assets/option-manual.svg?import",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.269Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/assets/option-reject.svg?import",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.269Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/node_modules/.vite/deps/qrcode__react.js?v=3ab5054c",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.270Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/pages/settings/PanelIconPicker.tsx",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.272Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/pages/settings/GroupSettings.helpers.ts",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.272Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/components/SortableList.tsx",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.272Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/components/OutboundPicker.tsx",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.273Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/pages/settings/RoutingPickers.tsx",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.273Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/pages/settings/RoutingSettings.helpers.ts",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.273Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/components/usePickerSearch.ts",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.274Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/pages/settings/ClientRoutingSettings.helpers.ts",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.274Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/pages/settings/ChainProxySettings.helpers.ts",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.274Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/pages/settings/ShareNetworkSettings.helpers.ts",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.274Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/node_modules/.vite/deps/@radix-ui_react-select.js?v=3ab5054c",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.275Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/pages/settings/DnsFilterSettings.tsx",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.276Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/pages/settings/DnsQueryRecords.tsx",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.276Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/pages/settings/DnsSettings.messages.ts",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.276Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/pages/settings/DnsSettings.helpers.ts",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.276Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/node_modules/.vite/deps/react_jsx-runtime.js?v=3ab5054c",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.276Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/node_modules/.vite/deps/dist-CTWaG7Rn.js?v=3ab5054c",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.276Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/node_modules/.vite/deps/dist-B4oKpv63.js?v=3ab5054c",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.277Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/pages/settings/BackendDataSettings.tsx",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.277Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/pages/settings/BackendUpdateControls.tsx",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.277Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/pages/settings/BackendSettings.messages.ts",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.277Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/pages/settings/BackendSettings.helpers.ts",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.277Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/node_modules/.vite/deps/dist-B1XncUND.js?v=3ab5054c",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.278Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/assets/panel-icons.json?import",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.279Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/assets/group-countries.json?import",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.280Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/components/OutboundPicker.helpers.ts",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.280Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/assets/geo-catalog.json?import",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.280Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/assets/fonts/MiSans-VF.94-gh6bDI8D.woff2",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.531Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/assets/fonts/MiSans-VF.95-B0-MMqvr.woff2",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.532Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/assets/fonts/MiSans-VF.93-DzrNOHhG.woff2",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.532Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/assets/fonts/MiSans-VF.92-CLRMALO4.woff2",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.532Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/assets/fonts/MiSans-VF.91-CiB2QwuO.woff2",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.532Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/assets/fonts/MiSans-VF.90-qo5GhZr3.woff2",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.532Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/auth/status",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.536Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/auth/status",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.537Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/controller-ws/connections",
+      "purpose": "isolated WebSocket mock",
+      "transport": "WebSocket",
+      "timestamp": "2026-10-03T11:06:23.544Z",
+      "result": "mock-no-server-connect"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/controller-ws/traffic",
+      "purpose": "isolated WebSocket mock",
+      "transport": "WebSocket",
+      "timestamp": "2026-10-03T11:06:23.545Z",
+      "result": "mock-no-server-connect"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/controller-ws/memory",
+      "purpose": "isolated WebSocket mock",
+      "transport": "WebSocket",
+      "timestamp": "2026-10-03T11:06:23.545Z",
+      "result": "mock-no-server-connect"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/storage",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.545Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/service/status",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.545Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/assets/panel-background.jpg",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.603Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/assets/fonts/MiSans-VF.87-BpiH4zH4.woff2",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.604Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/assets/fonts/MiSans-VF.89-ClSUXW-g.woff2",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.604Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/assets/fonts/MiSans-VF.88-DZXe9ihV.woff2",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.604Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/site-latency/history",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.604Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/traffic/month?month=2026-10",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.604Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/traffic/day?day=2026-10-03&limit=500",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.604Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/site-latency/history",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.604Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/traffic/month?month=2026-10",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.604Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/traffic/day?day=2026-10-03&limit=500",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.604Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/assets/openbox-logo.png",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:23.605Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/controller/proxies",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:24.149Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/subscriptions",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:24.150Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/latency-history",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:24.150Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/controller/proxies",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:24.150Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/subscriptions",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:24.150Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/latency-history",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:24.150Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/assets/fonts/MiSans-VF.84-B31dyeEm.woff2",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:24.913Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/assets/fonts/MiSans-VF.86-w00qjmqg.woff2",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:24.913Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/assets/fonts/MiSans-VF.83-CIWg3-eZ.woff2",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:24.914Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/assets/fonts/MiSans-VF.79-BDyAlqCy.woff2",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:24.914Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/assets/fonts/MiSans-VF.85-BDhS4011.woff2",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:24.914Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/controller/proxies",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:25.445Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/controller/proxies",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:25.446Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/controller-ws/logs",
+      "purpose": "isolated WebSocket mock",
+      "transport": "WebSocket",
+      "timestamp": "2026-10-03T11:06:25.684Z",
+      "result": "mock-no-server-connect"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/controller-ws/logs",
+      "purpose": "isolated WebSocket mock",
+      "transport": "WebSocket",
+      "timestamp": "2026-10-03T11:06:25.684Z",
+      "result": "mock-no-server-connect"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/controller/rules",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:25.923Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/controller/proxies",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:25.924Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/controller/rules",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:25.924Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/controller/proxies",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:25.924Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/assets/fonts/NotoColorEmoji-flagsonly-CWWDk9km.ttf",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:25.925Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/assets/fonts/MiSans-VF.8-cUG6TyEp.woff2",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:26.178Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/site-latency/history",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:26.422Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/traffic/month?month=2026-10",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:26.422Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/traffic/day?day=2026-10-03&limit=500",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:26.423Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/site-latency/history",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:26.423Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/traffic/month?month=2026-10",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:26.423Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/traffic/day?day=2026-10-03&limit=500",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:26.423Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/subscriptions",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:27.110Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/subscription-shares",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:27.111Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/controller/proxies",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:27.111Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/groups",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:27.111Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/latency-history",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:27.111Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/subscriptions",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:27.112Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/subscription-shares",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:27.113Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/controller/proxies",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:27.113Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/groups",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:27.113Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/latency-history",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:27.113Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/groups",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:27.340Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/groups",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:27.341Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/assets/fonts/MiSans-VF.77-yTFBS9ab.woff2",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:27.352Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/profile",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:27.566Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/profile",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:27.566Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/profile",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:27.804Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/groups",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:27.805Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/profile",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:27.805Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/groups",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:27.806Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/clients",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:27.809Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/clients",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:27.812Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/profile",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:28.033Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/groups",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:28.034Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/profile",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:28.034Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/groups",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:28.035Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/controller/proxies",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:28.037Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/controller/proxies",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:28.038Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/profile",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:28.265Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/profile",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:28.265Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/profile",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:28.495Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/kernel/version",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:28.496Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/traffic/usage",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:28.496Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/service/status",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:28.496Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/profile",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:28.496Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/kernel/version",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:28.498Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/traffic/usage",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:28.498Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/service/status",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:28.499Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/assets/openbox-logo.png",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:28.543Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/update/status",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:28.543Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/subscriptions",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:28.544Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/update/status",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:28.544Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/subscriptions",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:28.544Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/assets/fonts/MiSans-VF.82-r9XyzL8H.woff2",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:28.553Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/assets/fonts/MiSans-VF.81-D0uQeEiD.woff2",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:28.554Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/assets/fonts/MiSans-VF.76-BMEx8f4b.woff2",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:28.554Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/profile",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:28.776Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/dns-filter",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:28.777Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/profile",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:28.777Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/dns-filter",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:28.777Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/dns-filter/records?search=&result=blocked&page=1&pageSize=10",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:28.833Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/dns-filter/records?search=&result=blocked&page=1&pageSize=10",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:28.834Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/site-latency/history",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:29.529Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/traffic/month?month=2026-10",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:29.529Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/traffic/day?day=2026-10-03&limit=500",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:29.529Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/site-latency/history",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:29.530Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/traffic/month?month=2026-10",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:29.530Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/traffic/day?day=2026-10-03&limit=500",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:29.530Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/profile",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:29.763Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/dns-filter",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:29.763Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/profile",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:29.763Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/dns-filter",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:29.764Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/dns-filter/records?search=&result=blocked&page=1&pageSize=10",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:29.806Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/dns-filter/records?search=&result=blocked&page=1&pageSize=10",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:29.806Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/site-latency/history",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:32.327Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/traffic/month?month=2026-10",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:32.328Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/traffic/day?day=2026-10-03&limit=500",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:32.328Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/site-latency/history",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:32.328Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/traffic/month?month=2026-10",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:32.329Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/traffic/day?day=2026-10-03&limit=500",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:32.329Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/profile",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:32.566Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/dns-filter",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:32.567Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/profile",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:32.567Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/dns-filter",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:32.567Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/dns-filter/records?search=&result=blocked&page=1&pageSize=10",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:32.609Z",
+      "result": "mock",
+      "status": 503
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/dns-filter/records?search=&result=blocked&page=1&pageSize=10",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:32.609Z",
+      "result": "mock",
+      "status": 503
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/storage",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:32.612Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/site-latency/history",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:32.775Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/traffic/month?month=2026-10",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:32.775Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/traffic/day?day=2026-10-03&limit=500",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:32.775Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/site-latency/history",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:32.776Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/traffic/month?month=2026-10",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:32.776Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/traffic/day?day=2026-10-03&limit=500",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:06:32.776Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/openbox.html",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.092Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/@vite/client",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.099Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/main.tsx",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.099Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/@react-refresh",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.100Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/node_modules/.vite/deps/react.js?v=3ab5054c",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.108Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/node_modules/.vite/deps/react-dom_client.js?v=3ab5054c",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.109Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/OpenBoxApp.tsx",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.109Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/assets/fonts/MiSans-VF-tRsyHePl.css",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.109Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/openbox.css",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.109Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/node_modules/.vite/deps/react_jsx-dev-runtime.js?v=3ab5054c",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.110Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/node_modules/.pnpm/vite@8.2.2/node_modules/vite/dist/client/env.mjs",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.110Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/node_modules/.vite/deps/rolldown-runtime-DC62tzP2.js?v=3ab5054c",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.111Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/node_modules/.vite/deps/sonner.js?v=3ab5054c",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.122Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/api/client.ts",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.122Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/components/AppShell.tsx",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.123Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/components/AuthScreen.tsx",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.123Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/components/shared.tsx",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.123Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/hooks/useLiveMetrics.ts",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.123Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/pages/OverviewPage.tsx",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.123Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/pages/ProxiesPage.tsx",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.123Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/pages/ConnectionsPage.tsx",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.124Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/pages/LogsPage.tsx",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.124Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/pages/RulesPage.tsx",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.124Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/pages/SettingsPage.tsx",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.124Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/ui/sonner.tsx",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.124Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/",
+      "purpose": "isolated WebSocket mock",
+      "transport": "WebSocket",
+      "timestamp": "2026-10-03T11:07:07.126Z",
+      "result": "mock-no-server-connect"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/node_modules/.vite/deps/react-dom.js?v=3ab5054c",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.127Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/node_modules/.vite/deps/@heroicons_react_24_outline.js?v=3ab5054c",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.128Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/assets/openbox-logo.png?import",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.129Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/lib/format.ts",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.129Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/hooks/useControllerSocket.ts",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.129Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/assets/baidu.svg?import",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.130Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/assets/google.svg?import",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.130Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/assets/openai.svg?import",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.130Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/assets/telegram.svg?import",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.130Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/ui/controls.tsx",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.130Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/",
+      "purpose": "isolated WebSocket mock",
+      "transport": "WebSocket",
+      "timestamp": "2026-10-03T11:07:07.131Z",
+      "result": "mock-no-server-connect"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/components/ProxyCards.tsx",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.131Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/pages/settings/PanelSettings.tsx",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.132Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/pages/settings/SubscriptionSettings.tsx",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.133Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/pages/settings/GroupSettings.tsx",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.133Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/pages/settings/RoutingSettings.tsx",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.133Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/pages/settings/ClientRoutingSettings.tsx",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.133Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/pages/settings/ChainProxySettings.tsx",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.133Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/pages/settings/ShareNetworkSettings.tsx",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.134Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/pages/settings/DnsSettings.tsx",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.134Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/pages/settings/BackendSettings.tsx",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.134Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/assets/group-global.svg?import",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.136Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/assets/group-other.svg?import",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.136Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/assets/option-auto.svg?import",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.136Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/assets/option-direct.svg?import",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.136Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/ui/select.tsx",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.137Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/node_modules/.vite/deps/@radix-ui_react-switch.js?v=3ab5054c",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.137Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/node_modules/.vite/deps/@radix-ui_react-toggle-group.js?v=3ab5054c",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.137Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/assets/group-speed.svg?import",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.137Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/assets/group-ai.svg?import",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.137Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/assets/group-youtube.svg?import",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.138Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/assets/group-tiktok.svg?import",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.138Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/assets/group-netflix.svg?import",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.138Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/assets/group-github.svg?import",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.138Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/assets/group-google.svg?import",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.139Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/assets/group-microsoft.svg?import",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.139Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/assets/group-apple.svg?import",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.139Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/assets/group-games.svg?import",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.139Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/assets/group-china.svg?import",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.139Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/assets/option-manual.svg?import",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.139Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/assets/option-reject.svg?import",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.139Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/pages/settings/PanelIconPicker.tsx",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.139Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/components/SortableList.tsx",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.141Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/components/OutboundPicker.tsx",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.142Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/pages/settings/RoutingPickers.tsx",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.142Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/pages/settings/RoutingSettings.helpers.ts",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.142Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/node_modules/.vite/deps/qrcode__react.js?v=3ab5054c",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.142Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/components/usePickerSearch.ts",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.142Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/pages/settings/ClientRoutingSettings.helpers.ts",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.142Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/pages/settings/GroupSettings.helpers.ts",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.142Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/pages/settings/ChainProxySettings.helpers.ts",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.142Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/pages/settings/ShareNetworkSettings.helpers.ts",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.142Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/pages/settings/BackendDataSettings.tsx",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.143Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/pages/settings/BackendUpdateControls.tsx",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.143Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/pages/settings/BackendSettings.messages.ts",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.143Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/pages/settings/BackendSettings.helpers.ts",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.143Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/pages/settings/DnsFilterSettings.tsx",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.144Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/pages/settings/DnsQueryRecords.tsx",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.144Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/pages/settings/DnsSettings.messages.ts",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.144Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/pages/settings/DnsSettings.helpers.ts",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.144Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/node_modules/.vite/deps/@radix-ui_react-select.js?v=3ab5054c",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.144Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/node_modules/.vite/deps/react_jsx-runtime.js?v=3ab5054c",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.144Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/node_modules/.vite/deps/dist-CTWaG7Rn.js?v=3ab5054c",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.145Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/node_modules/.vite/deps/dist-B4oKpv63.js?v=3ab5054c",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.145Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/node_modules/.vite/deps/dist-B1XncUND.js?v=3ab5054c",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.145Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/assets/panel-icons.json?import",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.147Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/components/OutboundPicker.helpers.ts",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.147Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/assets/geo-catalog.json?import",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.148Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/assets/group-countries.json?import",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.148Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/assets/fonts/MiSans-VF.94-gh6bDI8D.woff2",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.381Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/assets/fonts/MiSans-VF.95-B0-MMqvr.woff2",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.382Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/assets/fonts/MiSans-VF.93-DzrNOHhG.woff2",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.382Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/assets/fonts/MiSans-VF.92-CLRMALO4.woff2",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.382Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/assets/fonts/MiSans-VF.91-CiB2QwuO.woff2",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.382Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/assets/fonts/MiSans-VF.90-qo5GhZr3.woff2",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.382Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/auth/status",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.387Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/auth/status",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.387Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/controller-ws/connections",
+      "purpose": "isolated WebSocket mock",
+      "transport": "WebSocket",
+      "timestamp": "2026-10-03T11:07:07.391Z",
+      "result": "mock-no-server-connect"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/controller-ws/traffic",
+      "purpose": "isolated WebSocket mock",
+      "transport": "WebSocket",
+      "timestamp": "2026-10-03T11:07:07.392Z",
+      "result": "mock-no-server-connect"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/controller-ws/memory",
+      "purpose": "isolated WebSocket mock",
+      "transport": "WebSocket",
+      "timestamp": "2026-10-03T11:07:07.392Z",
+      "result": "mock-no-server-connect"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/storage",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.392Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/service/status",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.393Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/assets/panel-background.jpg",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.441Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/assets/fonts/MiSans-VF.87-BpiH4zH4.woff2",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.442Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/assets/fonts/MiSans-VF.89-ClSUXW-g.woff2",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.442Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/assets/fonts/MiSans-VF.88-DZXe9ihV.woff2",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.442Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/site-latency/history",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.442Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/traffic/month?month=2026-10",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.442Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/traffic/day?day=2026-10-03&limit=500",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.442Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/site-latency/history",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.442Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/traffic/month?month=2026-10",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.442Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/traffic/day?day=2026-10-03&limit=500",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.443Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/assets/openbox-logo.png",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.443Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/controller/proxies",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.968Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/subscriptions",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.968Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/latency-history",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.968Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/controller/proxies",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.968Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/subscriptions",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.969Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/latency-history",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:07.969Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/assets/fonts/MiSans-VF.84-B31dyeEm.woff2",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:08.745Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/assets/fonts/MiSans-VF.86-w00qjmqg.woff2",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:08.745Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/assets/fonts/MiSans-VF.83-CIWg3-eZ.woff2",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:08.745Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/assets/fonts/MiSans-VF.79-BDyAlqCy.woff2",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:08.745Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/assets/fonts/MiSans-VF.85-BDhS4011.woff2",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:08.745Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/controller/proxies",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:09.294Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/controller/proxies",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:09.294Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/controller-ws/logs",
+      "purpose": "isolated WebSocket mock",
+      "transport": "WebSocket",
+      "timestamp": "2026-10-03T11:07:09.521Z",
+      "result": "mock-no-server-connect"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/controller-ws/logs",
+      "purpose": "isolated WebSocket mock",
+      "transport": "WebSocket",
+      "timestamp": "2026-10-03T11:07:09.522Z",
+      "result": "mock-no-server-connect"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/controller/rules",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:09.761Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/controller/proxies",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:09.762Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/controller/rules",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:09.762Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/controller/proxies",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:09.762Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/assets/fonts/NotoColorEmoji-flagsonly-CWWDk9km.ttf",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:09.762Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/assets/fonts/MiSans-VF.8-cUG6TyEp.woff2",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:10.024Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/site-latency/history",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:10.275Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/traffic/month?month=2026-10",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:10.276Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/traffic/day?day=2026-10-03&limit=500",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:10.276Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/site-latency/history",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:10.277Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/traffic/month?month=2026-10",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:10.278Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/traffic/day?day=2026-10-03&limit=500",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:10.279Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/subscriptions",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:10.973Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/subscription-shares",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:10.973Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/controller/proxies",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:10.973Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/groups",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:10.973Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/latency-history",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:10.974Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/subscriptions",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:10.974Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/subscription-shares",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:10.974Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/controller/proxies",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:10.975Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/groups",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:10.975Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/latency-history",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:10.976Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/groups",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:11.198Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/groups",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:11.198Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/assets/fonts/MiSans-VF.77-yTFBS9ab.woff2",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:11.210Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/profile",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:11.426Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/profile",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:11.427Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/profile",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:11.668Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/groups",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:11.668Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/profile",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:11.668Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/groups",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:11.668Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/clients",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:11.670Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/clients",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:11.671Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/profile",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:11.902Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/groups",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:11.902Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/profile",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:11.902Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/groups",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:11.902Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/controller/proxies",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:11.905Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/controller/proxies",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:11.906Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/profile",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:12.134Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/profile",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:12.134Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/profile",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:12.357Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/kernel/version",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:12.357Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/traffic/usage",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:12.358Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/service/status",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:12.358Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/profile",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:12.358Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/kernel/version",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:12.359Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/traffic/usage",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:12.359Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/service/status",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:12.359Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/assets/openbox-logo.png",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:12.403Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/update/status",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:12.404Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/subscriptions",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:12.404Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/update/status",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:12.404Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/subscriptions",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:12.404Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/assets/fonts/MiSans-VF.82-r9XyzL8H.woff2",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:12.414Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/assets/fonts/MiSans-VF.81-D0uQeEiD.woff2",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:12.414Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/src/openbox/assets/fonts/MiSans-VF.76-BMEx8f4b.woff2",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:12.414Z",
+      "result": "local-source"
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/profile",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:12.582Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/dns-filter",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:12.582Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/profile",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:12.582Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/dns-filter",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:12.583Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/dns-filter/records?search=&result=blocked&page=1&pageSize=10",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:12.633Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/dns-filter/records?search=&result=blocked&page=1&pageSize=10",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:12.634Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/site-latency/history",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:13.318Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/traffic/month?month=2026-10",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:13.319Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/traffic/day?day=2026-10-03&limit=500",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:13.319Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/site-latency/history",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:13.319Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/traffic/month?month=2026-10",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:13.319Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/traffic/day?day=2026-10-03&limit=500",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:13.319Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/profile",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:13.561Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/dns-filter",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:13.561Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/profile",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:13.562Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/dns-filter",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:13.562Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/dns-filter/records?search=&result=blocked&page=1&pageSize=10",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:13.607Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/dns-filter/records?search=&result=blocked&page=1&pageSize=10",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:13.607Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/site-latency/history",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:16.114Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/traffic/month?month=2026-10",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:16.114Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/traffic/day?day=2026-10-03&limit=500",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:16.114Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/site-latency/history",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:16.115Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/traffic/month?month=2026-10",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:16.115Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/traffic/day?day=2026-10-03&limit=500",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:16.115Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/profile",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:16.350Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/dns-filter",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:16.351Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/profile",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:16.351Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/dns-filter",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:16.351Z",
+      "result": "mock",
+      "status": 200
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/dns-filter/records?search=&result=blocked&page=1&pageSize=10",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:16.394Z",
+      "result": "mock",
+      "status": 503
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/openbox/dns-filter/records?search=&result=blocked&page=1&pageSize=10",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:16.394Z",
+      "result": "mock",
+      "status": 503
+    },
+    {
+      "method": "GET",
+      "host": "127.0.0.1:1420",
+      "path": "/api/storage",
+      "purpose": "isolated visual browser rendering",
+      "timestamp": "2026-10-03T11:07:16.397Z",
+      "result": "mock",
+      "status": 200
+    }
+  ],
+  "violations": [],
+  "remote_summary": {
+    "login_POST": 2,
+    "GET": 15,
+    "WebSocket": 4,
+    "other_POST": 0,
+    "PUT": 0,
+    "PATCH": 0,
+    "DELETE": 0
+  },
+  "initial_visual_attempt": {
+    "guard": "same all-request interception; no route can forward API writes; last observed violations=0",
+    "result": "REPL timeout before dark theme verification; granular request list unavailable after kernel reset"
+  },
+  "secrets": "No request bodies, authentication headers or cookies recorded",
+  "cleanup": {
+    "temporary_cookie_jar_deleted": true,
+    "raw_HTTP_and_WS": "memory only, cleared before browser checks; REPL later reset",
+    "browser": "final contexts and browser closed; no matching owned browser remains",
+    "vite": "owned session stopped",
+    "business_WS_sends": 0
+  },
+  "bootstrap_local_probe": {
+    "method": "GET",
+    "host": "127.0.0.1:1420",
+    "path": "/openbox.html",
+    "purpose": "detect existing Vite",
+    "result": "connection refused before own temporary server started",
+    "timestamp_precision": "before 2026-10-03T10:58:00Z; exact timestamp not retained"
+  }
+}

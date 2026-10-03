@@ -1,0 +1,84 @@
+{
+  "cases": [
+    {
+      "id": "session-ws-connections",
+      "provenance": {
+        "category": "实际运行观测",
+        "observed": true,
+        "commit": "7fab0e47d2a28446e131b7cd737ef4a5a43d55fb",
+        "source": [],
+        "endpoint": "/api/controller-ws/connections",
+        "origin": "wss://openbox.disign.me",
+        "transport": "WebSocket read",
+        "observedAt": "2026-10-03T10:44:39.153Z",
+        "redaction": "仅本次临时 jar 会话，header 仅内存使用不打印/落盘；帧字符串全部删除、非消费键替换、连接数组只留计数，数字仅 traffic/memory 合约形状。"
+      },
+      "outcome": "handshake-rejected",
+      "httpStatus": 401,
+      "contentType": "application/json; charset=utf-8",
+      "frames": [],
+      "sessionEstablished": false,
+      "limit": "前置登录返回 403，未建立已鉴权会话；沿用同一临时 jar 尝试 4 秒，无业务 send，不重试/绕过；无帧不证明 traffic/DNS 语义。"
+    },
+    {
+      "id": "session-ws-logs",
+      "provenance": {
+        "category": "实际运行观测",
+        "observed": true,
+        "commit": "7fab0e47d2a28446e131b7cd737ef4a5a43d55fb",
+        "source": [],
+        "endpoint": "/api/controller-ws/logs?level=info",
+        "origin": "wss://openbox.disign.me",
+        "transport": "WebSocket read",
+        "observedAt": "2026-10-03T10:44:39.160Z",
+        "redaction": "仅本次临时 jar 会话，header 仅内存使用不打印/落盘；帧字符串全部删除、非消费键替换、连接数组只留计数，数字仅 traffic/memory 合约形状。"
+      },
+      "outcome": "handshake-rejected",
+      "httpStatus": 401,
+      "contentType": "application/json; charset=utf-8",
+      "frames": [],
+      "sessionEstablished": false,
+      "limit": "前置登录返回 403，未建立已鉴权会话；沿用同一临时 jar 尝试 4 秒，无业务 send，不重试/绕过；无帧不证明 traffic/DNS 语义。"
+    },
+    {
+      "id": "session-ws-memory",
+      "provenance": {
+        "category": "实际运行观测",
+        "observed": true,
+        "commit": "7fab0e47d2a28446e131b7cd737ef4a5a43d55fb",
+        "source": [],
+        "endpoint": "/api/controller-ws/memory",
+        "origin": "wss://openbox.disign.me",
+        "transport": "WebSocket read",
+        "observedAt": "2026-10-03T10:44:39.160Z",
+        "redaction": "仅本次临时 jar 会话，header 仅内存使用不打印/落盘；帧字符串全部删除、非消费键替换、连接数组只留计数，数字仅 traffic/memory 合约形状。"
+      },
+      "outcome": "handshake-rejected",
+      "httpStatus": 401,
+      "contentType": "application/json; charset=utf-8",
+      "frames": [],
+      "sessionEstablished": false,
+      "limit": "前置登录返回 403，未建立已鉴权会话；沿用同一临时 jar 尝试 4 秒，无业务 send，不重试/绕过；无帧不证明 traffic/DNS 语义。"
+    },
+    {
+      "id": "session-ws-traffic",
+      "provenance": {
+        "category": "实际运行观测",
+        "observed": true,
+        "commit": "7fab0e47d2a28446e131b7cd737ef4a5a43d55fb",
+        "source": [],
+        "endpoint": "/api/controller-ws/traffic",
+        "origin": "wss://openbox.disign.me",
+        "transport": "WebSocket read",
+        "observedAt": "2026-10-03T10:44:39.161Z",
+        "redaction": "仅本次临时 jar 会话，header 仅内存使用不打印/落盘；帧字符串全部删除、非消费键替换、连接数组只留计数，数字仅 traffic/memory 合约形状。"
+      },
+      "outcome": "handshake-rejected",
+      "httpStatus": 502,
+      "contentType": "text/html",
+      "frames": [],
+      "sessionEstablished": false,
+      "limit": "前置登录返回 403，未建立已鉴权会话；沿用同一临时 jar 尝试 4 秒，无业务 send，不重试/绕过；无帧不证明 traffic/DNS 语义。"
+    }
+  ]
+}

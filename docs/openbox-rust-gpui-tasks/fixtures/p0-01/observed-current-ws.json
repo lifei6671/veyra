@@ -1,0 +1,593 @@
+{
+  "traffic_semantics": "UNKNOWN: nonmonotonic; frontend differences frames, first frame rate zero; no reconnect/reset experiment",
+  "cases": [
+    {
+      "id": "current-ws-connections",
+      "channel": "connections",
+      "endpoint": "/api/controller-ws/connections",
+      "transport": "WebSocket",
+      "http_status": 101,
+      "content_type": null,
+      "observed_at": "2026-10-03T10:59:43.504Z",
+      "frames": [
+        {
+          "received_at": "2026-10-03T10:59:45.635Z",
+          "value": {
+            "connections": [
+              {
+                "chains": [
+                  "fixture-value",
+                  "fixture-value"
+                ],
+                "download": 1,
+                "id": "fixture-value",
+                "metadata": {
+                  "destinationIP": "192.0.2.1",
+                  "destinationPort": "fixture-value",
+                  "dnsMode": "fixture-value",
+                  "host": "example.com",
+                  "network": "fixture-value",
+                  "sourceIP": "192.0.2.1",
+                  "sourcePort": "fixture-value",
+                  "type": "fixture-value"
+                },
+                "rule": "fixture-value",
+                "rulePayload": "",
+                "start": "fixture-value",
+                "upload": 1
+              },
+              {
+                "chains": [
+                  "fixture-value",
+                  "fixture-value"
+                ],
+                "download": 1,
+                "id": "fixture-value",
+                "metadata": {
+                  "destinationIP": "192.0.2.1",
+                  "destinationPort": "fixture-value",
+                  "dnsMode": "fixture-value",
+                  "host": "example.com",
+                  "network": "fixture-value",
+                  "sourceIP": "192.0.2.1",
+                  "sourcePort": "fixture-value",
+                  "type": "fixture-value"
+                },
+                "rule": "fixture-value",
+                "rulePayload": "",
+                "start": "fixture-value",
+                "upload": 1
+              }
+            ],
+            "downloadTotal": 1,
+            "memory": 1,
+            "uploadTotal": 1
+          }
+        },
+        {
+          "received_at": "2026-10-03T10:59:46.641Z",
+          "value": {
+            "connections": [
+              {
+                "chains": [
+                  "fixture-value",
+                  "fixture-value"
+                ],
+                "download": 1,
+                "id": "fixture-value",
+                "metadata": {
+                  "destinationIP": "192.0.2.1",
+                  "destinationPort": "fixture-value",
+                  "dnsMode": "fixture-value",
+                  "host": "example.com",
+                  "network": "fixture-value",
+                  "sourceIP": "192.0.2.1",
+                  "sourcePort": "fixture-value",
+                  "type": "fixture-value"
+                },
+                "rule": "fixture-value",
+                "rulePayload": "",
+                "start": "fixture-value",
+                "upload": 1
+              },
+              {
+                "chains": [
+                  "fixture-value",
+                  "fixture-value"
+                ],
+                "download": 1,
+                "id": "fixture-value",
+                "metadata": {
+                  "destinationIP": "192.0.2.1",
+                  "destinationPort": "fixture-value",
+                  "dnsMode": "fixture-value",
+                  "host": "example.com",
+                  "network": "fixture-value",
+                  "sourceIP": "192.0.2.1",
+                  "sourcePort": "fixture-value",
+                  "type": "fixture-value"
+                },
+                "rule": "fixture-value",
+                "rulePayload": "",
+                "start": "fixture-value",
+                "upload": 1
+              }
+            ],
+            "downloadTotal": 1,
+            "memory": 1,
+            "uploadTotal": 1
+          }
+        },
+        {
+          "received_at": "2026-10-03T10:59:47.642Z",
+          "value": {
+            "connections": [
+              {
+                "chains": [
+                  "fixture-value",
+                  "fixture-value"
+                ],
+                "download": 1,
+                "id": "fixture-value",
+                "metadata": {
+                  "destinationIP": "192.0.2.1",
+                  "destinationPort": "fixture-value",
+                  "dnsMode": "fixture-value",
+                  "host": "example.com",
+                  "network": "fixture-value",
+                  "sourceIP": "192.0.2.1",
+                  "sourcePort": "fixture-value",
+                  "type": "fixture-value"
+                },
+                "rule": "fixture-value",
+                "rulePayload": "",
+                "start": "fixture-value",
+                "upload": 1
+              },
+              {
+                "chains": [
+                  "fixture-value",
+                  "fixture-value"
+                ],
+                "download": 1,
+                "id": "fixture-value",
+                "metadata": {
+                  "destinationIP": "192.0.2.1",
+                  "destinationPort": "fixture-value",
+                  "dnsMode": "fixture-value",
+                  "host": "example.com",
+                  "network": "fixture-value",
+                  "sourceIP": "192.0.2.1",
+                  "sourcePort": "fixture-value",
+                  "type": "fixture-value"
+                },
+                "rule": "fixture-value",
+                "rulePayload": "",
+                "start": "fixture-value",
+                "upload": 1
+              }
+            ],
+            "downloadTotal": 1,
+            "memory": 1,
+            "uploadTotal": 1
+          }
+        },
+        {
+          "received_at": "2026-10-03T10:59:48.637Z",
+          "value": {
+            "connections": [
+              {
+                "chains": [
+                  "fixture-value",
+                  "fixture-value"
+                ],
+                "download": 1,
+                "id": "fixture-value",
+                "metadata": {
+                  "destinationIP": "192.0.2.1",
+                  "destinationPort": "fixture-value",
+                  "dnsMode": "fixture-value",
+                  "host": "example.com",
+                  "network": "fixture-value",
+                  "sourceIP": "192.0.2.1",
+                  "sourcePort": "fixture-value",
+                  "type": "fixture-value"
+                },
+                "rule": "fixture-value",
+                "rulePayload": "",
+                "start": "fixture-value",
+                "upload": 1
+              },
+              {
+                "chains": [
+                  "fixture-value",
+                  "fixture-value"
+                ],
+                "download": 1,
+                "id": "fixture-value",
+                "metadata": {
+                  "destinationIP": "192.0.2.1",
+                  "destinationPort": "fixture-value",
+                  "dnsMode": "fixture-value",
+                  "host": "example.com",
+                  "network": "fixture-value",
+                  "sourceIP": "192.0.2.1",
+                  "sourcePort": "fixture-value",
+                  "type": "fixture-value"
+                },
+                "rule": "fixture-value",
+                "rulePayload": "",
+                "start": "fixture-value",
+                "upload": 1
+              }
+            ],
+            "downloadTotal": 1,
+            "memory": 1,
+            "uploadTotal": 1
+          }
+        },
+        {
+          "received_at": "2026-10-03T10:59:49.637Z",
+          "value": {
+            "connections": [
+              {
+                "chains": [
+                  "fixture-value",
+                  "fixture-value"
+                ],
+                "download": 1,
+                "id": "fixture-value",
+                "metadata": {
+                  "destinationIP": "192.0.2.1",
+                  "destinationPort": "fixture-value",
+                  "dnsMode": "fixture-value",
+                  "host": "example.com",
+                  "network": "fixture-value",
+                  "sourceIP": "192.0.2.1",
+                  "sourcePort": "fixture-value",
+                  "type": "fixture-value"
+                },
+                "rule": "fixture-value",
+                "rulePayload": "",
+                "start": "fixture-value",
+                "upload": 1
+              },
+              {
+                "chains": [
+                  "fixture-value",
+                  "fixture-value"
+                ],
+                "download": 1,
+                "id": "fixture-value",
+                "metadata": {
+                  "destinationIP": "192.0.2.1",
+                  "destinationPort": "fixture-value",
+                  "dnsMode": "fixture-value",
+                  "host": "example.com",
+                  "network": "fixture-value",
+                  "sourceIP": "192.0.2.1",
+                  "sourcePort": "fixture-value",
+                  "type": "fixture-value"
+                },
+                "rule": "fixture-value",
+                "rulePayload": "",
+                "start": "fixture-value",
+                "upload": 1
+              }
+            ],
+            "downloadTotal": 1,
+            "memory": 1,
+            "uploadTotal": 1
+          }
+        },
+        {
+          "received_at": "2026-10-03T10:59:50.635Z",
+          "value": {
+            "connections": [
+              {
+                "chains": [
+                  "fixture-value",
+                  "fixture-value"
+                ],
+                "download": 1,
+                "id": "fixture-value",
+                "metadata": {
+                  "destinationIP": "192.0.2.1",
+                  "destinationPort": "fixture-value",
+                  "dnsMode": "fixture-value",
+                  "host": "example.com",
+                  "network": "fixture-value",
+                  "sourceIP": "192.0.2.1",
+                  "sourcePort": "fixture-value",
+                  "type": "fixture-value"
+                },
+                "rule": "fixture-value",
+                "rulePayload": "",
+                "start": "fixture-value",
+                "upload": 1
+              },
+              {
+                "chains": [
+                  "fixture-value",
+                  "fixture-value"
+                ],
+                "download": 1,
+                "id": "fixture-value",
+                "metadata": {
+                  "destinationIP": "192.0.2.1",
+                  "destinationPort": "fixture-value",
+                  "dnsMode": "fixture-value",
+                  "host": "example.com",
+                  "network": "fixture-value",
+                  "sourceIP": "192.0.2.1",
+                  "sourcePort": "fixture-value",
+                  "type": "fixture-value"
+                },
+                "rule": "fixture-value",
+                "rulePayload": "",
+                "start": "fixture-value",
+                "upload": 1
+              }
+            ],
+            "downloadTotal": 1,
+            "memory": 1,
+            "uploadTotal": 1
+          }
+        }
+      ],
+      "provenance": {
+        "observed": true,
+        "commit": "7fab0e47d2a28446e131b7cd737ef4a5a43d55fb",
+        "source": [
+          "src/openbox/api/client.ts:153",
+          "src/openbox/hooks/useLiveMetrics.ts:35",
+          "src/openbox/hooks/useControllerSocket.ts:26"
+        ],
+        "controller_version": "1.14.1-openbox",
+        "service_version": "UNKNOWN",
+        "redaction": "All non-empty string values replaced; dynamic keys renamed; credential/process fields removed; arrays truncated to two; nonzero numbers mapped to sign. traffic separately uses ordinal ranks preserving comparison, never byte magnitudes.",
+        "removed_categories": [
+          "credentials",
+          "session headers",
+          "subscription/share URLs",
+          "node and group names",
+          "node servers",
+          "public/private IPs",
+          "user domains",
+          "process paths",
+          "usernames",
+          "provider identifiers",
+          "exact usage quantities"
+        ]
+      },
+      "proves": "Authenticated handshake and real JSON frame structure.",
+      "cannot_prove": "Rate versus interval bytes, byte unit, reset/reconnect behavior, instance scope, complete stream or mutation behavior."
+    },
+    {
+      "id": "current-ws-logs",
+      "channel": "logs",
+      "endpoint": "/api/controller-ws/logs?level=info",
+      "transport": "WebSocket",
+      "http_status": 101,
+      "content_type": null,
+      "observed_at": "2026-10-03T10:59:43.506Z",
+      "frames": [
+        {
+          "received_at": "2026-10-03T10:59:47.684Z",
+          "value": {
+            "type": "fixture-value",
+            "payload": "fixture-value"
+          }
+        },
+        {
+          "received_at": "2026-10-03T10:59:47.685Z",
+          "value": {
+            "type": "fixture-value",
+            "payload": "fixture-value"
+          }
+        },
+        {
+          "received_at": "2026-10-03T10:59:47.685Z",
+          "value": {
+            "type": "fixture-value",
+            "payload": "fixture-value"
+          }
+        },
+        {
+          "received_at": "2026-10-03T10:59:48.293Z",
+          "value": {
+            "type": "fixture-value",
+            "payload": "fixture-value"
+          }
+        },
+        {
+          "received_at": "2026-10-03T10:59:48.294Z",
+          "value": {
+            "type": "fixture-value",
+            "payload": "fixture-value"
+          }
+        },
+        {
+          "received_at": "2026-10-03T10:59:48.294Z",
+          "value": {
+            "type": "fixture-value",
+            "payload": "fixture-value"
+          }
+        }
+      ],
+      "provenance": {
+        "observed": true,
+        "commit": "7fab0e47d2a28446e131b7cd737ef4a5a43d55fb",
+        "source": [
+          "src/openbox/api/client.ts:153",
+          "src/openbox/hooks/useLiveMetrics.ts:35",
+          "src/openbox/hooks/useControllerSocket.ts:26"
+        ],
+        "controller_version": "1.14.1-openbox",
+        "service_version": "UNKNOWN",
+        "redaction": "All non-empty string values replaced; dynamic keys renamed; credential/process fields removed; arrays truncated to two; nonzero numbers mapped to sign. traffic separately uses ordinal ranks preserving comparison, never byte magnitudes.",
+        "removed_categories": [
+          "credentials",
+          "session headers",
+          "subscription/share URLs",
+          "node and group names",
+          "node servers",
+          "public/private IPs",
+          "user domains",
+          "process paths",
+          "usernames",
+          "provider identifiers",
+          "exact usage quantities"
+        ]
+      },
+      "proves": "Authenticated handshake and real JSON frame structure.",
+      "cannot_prove": "Rate versus interval bytes, byte unit, reset/reconnect behavior, instance scope, complete stream or mutation behavior."
+    },
+    {
+      "id": "current-ws-memory",
+      "channel": "memory",
+      "endpoint": "/api/controller-ws/memory",
+      "transport": "WebSocket",
+      "http_status": 101,
+      "content_type": null,
+      "observed_at": "2026-10-03T10:59:43.506Z",
+      "frames": [
+        {
+          "received_at": "2026-10-03T10:59:46.634Z",
+          "value": {
+            "inuse": 0,
+            "oslimit": 0
+          }
+        },
+        {
+          "received_at": "2026-10-03T10:59:47.636Z",
+          "value": {
+            "inuse": 1,
+            "oslimit": 0
+          }
+        },
+        {
+          "received_at": "2026-10-03T10:59:48.637Z",
+          "value": {
+            "inuse": 1,
+            "oslimit": 0
+          }
+        },
+        {
+          "received_at": "2026-10-03T10:59:49.635Z",
+          "value": {
+            "inuse": 1,
+            "oslimit": 0
+          }
+        },
+        {
+          "received_at": "2026-10-03T10:59:50.634Z",
+          "value": {
+            "inuse": 1,
+            "oslimit": 0
+          }
+        }
+      ],
+      "provenance": {
+        "observed": true,
+        "commit": "7fab0e47d2a28446e131b7cd737ef4a5a43d55fb",
+        "source": [
+          "src/openbox/api/client.ts:153",
+          "src/openbox/hooks/useLiveMetrics.ts:35",
+          "src/openbox/hooks/useControllerSocket.ts:26"
+        ],
+        "controller_version": "1.14.1-openbox",
+        "service_version": "UNKNOWN",
+        "redaction": "All non-empty string values replaced; dynamic keys renamed; credential/process fields removed; arrays truncated to two; nonzero numbers mapped to sign. traffic separately uses ordinal ranks preserving comparison, never byte magnitudes.",
+        "removed_categories": [
+          "credentials",
+          "session headers",
+          "subscription/share URLs",
+          "node and group names",
+          "node servers",
+          "public/private IPs",
+          "user domains",
+          "process paths",
+          "usernames",
+          "provider identifiers",
+          "exact usage quantities"
+        ]
+      },
+      "proves": "Authenticated handshake and real JSON frame structure.",
+      "cannot_prove": "Rate versus interval bytes, byte unit, reset/reconnect behavior, instance scope, complete stream or mutation behavior."
+    },
+    {
+      "id": "current-ws-traffic",
+      "channel": "traffic",
+      "endpoint": "/api/controller-ws/traffic",
+      "transport": "WebSocket",
+      "http_status": 101,
+      "content_type": null,
+      "observed_at": "2026-10-03T10:59:43.507Z",
+      "frames": [
+        {
+          "received_at": "2026-10-03T10:59:46.026Z",
+          "value": {
+            "up": 1,
+            "down": 2
+          }
+        },
+        {
+          "received_at": "2026-10-03T10:59:47.028Z",
+          "value": {
+            "up": 0,
+            "down": 1
+          }
+        },
+        {
+          "received_at": "2026-10-03T10:59:48.026Z",
+          "value": {
+            "up": 2,
+            "down": 0
+          }
+        },
+        {
+          "received_at": "2026-10-03T10:59:49.026Z",
+          "value": {
+            "up": 3,
+            "down": 3
+          }
+        },
+        {
+          "received_at": "2026-10-03T10:59:50.027Z",
+          "value": {
+            "up": 4,
+            "down": 4
+          }
+        }
+      ],
+      "provenance": {
+        "observed": true,
+        "commit": "7fab0e47d2a28446e131b7cd737ef4a5a43d55fb",
+        "source": [
+          "src/openbox/api/client.ts:153",
+          "src/openbox/hooks/useLiveMetrics.ts:35",
+          "src/openbox/hooks/useControllerSocket.ts:26"
+        ],
+        "controller_version": "1.14.1-openbox",
+        "service_version": "UNKNOWN",
+        "redaction": "All non-empty string values replaced; dynamic keys renamed; credential/process fields removed; arrays truncated to two; nonzero numbers mapped to sign. traffic separately uses ordinal ranks preserving comparison, never byte magnitudes.",
+        "removed_categories": [
+          "credentials",
+          "session headers",
+          "subscription/share URLs",
+          "node and group names",
+          "node servers",
+          "public/private IPs",
+          "user domains",
+          "process paths",
+          "usernames",
+          "provider identifiers",
+          "exact usage quantities"
+        ]
+      },
+      "proves": "Five numeric frames with both upward and downward transitions in one uninterrupted subscription; stored values are ordinal ranks, not original units.",
+      "cannot_prove": "Rate versus interval bytes, byte unit, reset/reconnect behavior, instance scope, complete stream or mutation behavior."
+    }
+  ]
+}

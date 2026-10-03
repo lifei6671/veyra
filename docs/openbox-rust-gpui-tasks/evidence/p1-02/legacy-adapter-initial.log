@@ -1,0 +1,9 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.12s
+     Running unittests src/lib.rs (target/debug/deps/veyra_lib-b009d9e91782e91b)
+
+running 3 tests
+test application::runtime_adapter_tests::concrete_proxy_notification_rollback_failure_preserves_ready_sidecar ... ok
+test application::runtime_adapter_tests::concrete_proxy_readback_failure_preserves_ready_sidecar_and_requires_recovery ... ok
+test application::runtime_adapter_tests::concrete_proxy_stable_record_failure_preserves_ready_sidecar ... ok
+
+test result: ok. 3 passed; 0 failed; 0 ignored; 0 measured; 87 filtered out; finished in 0.00s

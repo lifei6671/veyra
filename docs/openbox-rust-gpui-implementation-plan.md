@@ -245,11 +245,11 @@ core 独立于 GPUI、Tauri。desktop 是 composition root，持有 `Arc<AppServ
 
 | 现有位置 | 复用内容 | 必须补齐或隔离 |
 | --- | --- | --- |
-| `src-tauri/src/subscription/` | 下载、JSON/YAML/URI/Base64 解析、规范化 | 多 URL、OpenBox 重命名/排除/禁用、nodeDns、错误条目展示的差异 |
-| `src-tauri/src/domain/` | 稳定身份、节点、路由等领域概念 | OpenBox 的分组、链路、DNS、服务配置字段；逐项映射 |
-| `src-tauri/src/storage/` | schema 迁移、校验、原子写、备份恢复 | 新桌面 schema；不得直接将旧 `StoredStateV6` 当 OpenBox profile |
-| `src-tauri/src/singbox/compiler.rs` | 封闭配置模型、最终校验、secret 注入 | 当前 UI 所需的 DNS、共享入站、failover 编排、规则资源 |
-| `src-tauri/src/singbox/runtime.rs` | `SidecarPort`、check/prepare/run/ready/stop、失败清理 | macOS 进程、资源定位和权限实现 |
+| `crates/veyra-core/src/subscription/` | 下载、JSON/YAML/URI/Base64 解析、规范化 | 多 URL、OpenBox 重命名/排除/禁用、nodeDns、错误条目展示的差异 |
+| `crates/veyra-core/src/domain/` | 稳定身份、节点、路由等领域概念 | OpenBox 的分组、链路、DNS、服务配置字段；逐项映射 |
+| `crates/veyra-core/src/storage/` | schema 迁移、校验、原子写、备份恢复 | 新桌面 schema；不得直接将旧 `StoredStateV6` 当 OpenBox profile |
+| `crates/veyra-core/src/singbox/compiler.rs` | 封闭配置模型、最终校验、secret 注入 | 当前 UI 所需的 DNS、共享入站、failover 编排、规则资源 |
+| `crates/veyra-core/src/singbox/runtime.rs` | `SidecarPort`、check/prepare/run/ready/stop、失败清理 | macOS 进程、资源定位和权限实现 |
 | `src-tauri/src/singbox/clash_api.rs` | 控制器通信、鉴权、可复用 DTO | UI 需要的代理/连接/规则/测速及实际数据单位 |
 | `src-tauri/src/application/` | 配置应用、订阅管理、调度和观测逻辑 | 去掉 Tauri 运行时和事件绑定；核查旧模型限制 |
 | `src-tauri/src/platform/windows/` | Windows 进程、Job Object、私有运行目录及代理归属实现 | 抽离 Tauri 依赖；补服务入口、IPC、提权安装和服务账户适配 |
@@ -325,6 +325,8 @@ pub async fn save_profile(
 备份恢复、替换型导入、恢复出厂或整份快照回退时生成新 epoch；不沿用备份中的并发版本。普通 patch、追加导入和不替换状态空间的 schema 升级只推进相关计数。整体替换先暂停写入并处理在途提交，换 epoch 后拒绝旧任务的写回；不为每个实体再加一套 epoch。
 
 配置/选择写操作携带预期版本；页面读结果按既有请求代次丢弃过期响应；内核事件仍按实例 ID 判断。数据替换后若旧实例暂时继续运行，UI 显示其旧 `applied_version`，它不能回写新业务状态。实例清理凭实际实例身份执行，不因 epoch 改变而遗失旧资源归属。
+
+P1-02 已交付的本地实现见[类型/快照记录](openbox-rust-gpui-tasks/P1-core-and-shell.md#p1-02-delivery)：schema v7 在既有 AppState 中保存一个 128-bit 随机 `StateEpoch`、两个独立计数、受支持的 Profile 子集及 AppConfig；`ConfigVersion`/`SelectionVersion` 分别封装 StateVersion，整体写入使用 SnapshotVersion。新 epoch 的两个计数从 0 开始；相同事实的 no-op 不推进计数。旧 pool 的手动选择继续作为单一选择事实，不新增一份平行 selection 数据。ProfileService、SelectionService、SnapshotService 共用现有 StateAccessGate/JsonStateStore；本卡的保存结果统一为 SavedOnly，不启动内核、不给 Applied/RestartRequired 的运行证明。RuntimeFacts/LastSuccessfulVersion 是实际 Runtime owner 的读写契约，尚未实现 §7.6 manifest 持久化。
 
 #### 6.2.2 派生出口目录与偏好边界
 
@@ -989,9 +991,13 @@ macOS helper 和 Windows 服务在自己的受保护目录使用对应的 runtim
 
 备份包含可迁移的业务数据和已确认选择，不包含 OS 登录项/注册状态、运行中 updater 状态、运行身份、pending 操作、权限宿主恢复记录或可直接触发启动的 manifest。若桌面 update preference 属于版本化 AppConfig，其字段、默认值与迁移在 P1-02 定义；备份等待该持久 schema 稳定，不等待 P6-03 登录启动/P6-04 Updater 行为完成。备份中的 epoch/revision 不作为恢复后的并发凭据：整体恢复/replace 创建新 epoch，append 使用当前 epoch 并推进相关版本。恢复后的应用动作按 §7.3 重新验证。
 
+P1-02 的 append 入口接收已经规范化的 subscription/provider/node 批次，保持当前 epoch 并原子提交；重复 ID 或非法引用拒绝整个批次。完整备份兼容报告、冲突 ID 重映射与后续刷新属于 P7-01，不在此基础事务内提前实现。replace 接收完整类型化业务事实，丢弃导入的并发 token，校验当前配置及选择预期版本后生成新 epoch。没有运行身份/manifest 从备份进入本卡的业务模型。
+
 ### 12.3 旧 Veyra 状态
 
 现有 Rust 的 `state.json` 与 OpenBox 备份分别走独立 importer，标明来源格式和迁移版本。新桌面首次试运行使用独立数据目录；用户确认切换后再导入正式目录。
+
+P1-02 的 v6→v7 migration 明确保留原 subscriptions/providers/nodes/pools/routes、active_subscription_id 与旧 generation；原 schema 没有 epoch，因此首次升级分配并持久化一次，后续读/不替换状态空间的升级沿用既有 epoch。迁移补入受支持 Profile 默认值，未把 StoredStateV6 当作 OpenBox Profile；新增 AppConfig `check_updates_on_start = true` 仅是桌面版本检查偏好，不实现自动安装、OS 登录项或 updater 进度。完整 OpenBox importer 仍属 P7-01。损坏/缺失当前快照而整体恢复 `.bak` 同样产生新 epoch，恢复成功前不返回新版本。
 
 升级迁移前保留旧快照；旧应用继续使用原目录，避免两个版本同时写一个 state 文件。回退到旧版本意味着恢复其支持的旧 schema 快照，不能保证新 schema 被旧二进制读取。
 
@@ -1339,11 +1345,11 @@ Windows 阶段另需覆盖：未安装服务的普通代理、首次 UAC 取消/
 | [后端数据设置](../src/openbox/pages/settings/BackendDataSettings.tsx) | 备份选项、append/replace、导入后刷新和禁用占位 |
 | [后端 helpers](../src/openbox/pages/settings/BackendSettings.helpers.ts) | 部分失败消息、保留周期、备份结构和断线恢复 |
 | [后端文案](../src/openbox/pages/settings/BackendSettings.messages.ts) | 入口旁路、端口放行和重置的用户可见语义 |
-| [Rust application](../src-tauri/src/application) | 可抽取业务、调度、配置应用和观测 |
-| [Rust subscription](../src-tauri/src/subscription) | 已有订阅解析与规范化 |
-| [Rust storage](../src-tauri/src/storage) | 已有存储、迁移及快照机制 |
-| [Rust Compiler](../src-tauri/src/singbox/compiler.rs) | 受控配置和最终校验边界 |
-| [Rust Runtime](../src-tauri/src/singbox/runtime.rs) | 受管实例生命周期和清理边界 |
+| [Rust application](../crates/veyra-core/src/application) | 已抽取业务、调度、版本/快照与观测契约；旧入口编排仍在 src-tauri/src/application |
+| [Rust subscription](../crates/veyra-core/src/subscription) | 已有订阅解析与规范化 |
+| [Rust storage](../crates/veyra-core/src/storage) | 已有存储、迁移及快照机制 |
+| [Rust Compiler](../crates/veyra-core/src/singbox/compiler.rs) | 受控配置和最终校验边界 |
+| [Rust Runtime](../crates/veyra-core/src/singbox/runtime.rs) | 受管实例生命周期和清理边界 |
 | [平台模块](../src-tauri/src/platform/mod.rs) | 当前声明的 Windows 适配事实 |
 | [Tauri 资源配置](../src-tauri/tauri.conf.json) | 当前 Windows sing-box 1.14.0 打包资源 |
 

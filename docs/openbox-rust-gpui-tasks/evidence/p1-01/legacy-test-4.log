@@ -1,0 +1,20 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.13s
+     Running unittests src/lib.rs (target/debug/deps/veyra_lib-b009d9e91782e91b)
+
+running 14 tests
+test platform::windows::system_proxy::tests::enables_and_restores_complete_pac_wpad_snapshot ... ok
+test platform::windows::system_proxy::tests::managed_semantic_comparison_accepts_equivalent_bypass_order_only ... ok
+test platform::windows::system_proxy::tests::notification_failure_never_overwrites_a_concurrent_user_change ... ok
+test platform::windows::system_proxy::tests::notification_failure_restores_only_the_just_applied_managed_state ... ok
+test platform::windows::system_proxy::tests::proxy_settings_notification_failure_enters_the_existing_uncertain_state ... ok
+test platform::windows::system_proxy::tests::readback_failure_keeps_the_transitioning_record_without_recursing ... ok
+test platform::windows::system_proxy::tests::readback_mismatch_preserves_user_modified_observed_state ... ok
+test platform::windows::system_proxy::tests::stable_record_failure_reports_uncertain_state_after_verified_proxy_apply ... ok
+test platform::windows::system_proxy::tests::subscription_proxy_accepts_one_explicit_credential_free_authority ... ok
+test platform::windows::system_proxy::tests::subscription_proxy_rejects_pac_wpad_credentials_and_ambiguous_maps ... ok
+test platform::windows::system_proxy::tests::transition_record_is_never_marked_stable_before_readback_verifies ... ok
+test platform::windows::system_proxy::tests::transitioning_crash_record_is_only_restored_when_managed_state_is_still_observed ... ok
+test platform::windows::system_proxy::tests::user_manual_change_blocks_restore_without_an_overwrite ... ok
+test platform::windows::system_proxy::tests::write_failure_proves_original_system_state_before_allowing_sidecar_stop ... ok
+
+test result: ok. 14 passed; 0 failed; 0 ignored; 0 measured; 76 filtered out; finished in 0.00s

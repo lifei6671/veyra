@@ -1,0 +1,79 @@
+{
+  "cases": [
+    {
+      "id": "service-action-failure",
+      "value": {
+        "ok": false,
+        "code": 2,
+        "stderr": "invalid config"
+      },
+      "provenance": {
+        "category": "已有测试样本",
+        "commit": "7fab0e47d2a28446e131b7cd737ef4a5a43d55fb",
+        "source": [
+          "src/openbox/pages/settings/BackendSettings.test.ts:51"
+        ],
+        "redaction": "人工合成或既有测试数据；无实际用户凭据。域名仅 example.com/example.net/.invalid，IP 用文档网段，名称/ID 用 fixture，时间固定。",
+        "observed": false
+      },
+      "limit": "ServiceActionResult.code 是消费字段，不宣称为 HTTP status 或真实进程 exit code。"
+    },
+    {
+      "id": "http-json-error",
+      "value": {
+        "status": 401,
+        "contentType": "application/json",
+        "body": {
+          "code": "FIXTURE_UNAUTHORIZED",
+          "message": "fixture unauthorized"
+        }
+      },
+      "provenance": {
+        "category": "源码消费契约",
+        "commit": "7fab0e47d2a28446e131b7cd737ef4a5a43d55fb",
+        "source": [
+          "src/openbox/api/client.ts:83"
+        ],
+        "redaction": "人工合成或既有测试数据；无实际用户凭据。域名仅 example.com/example.net/.invalid，IP 用文档网段，名称/ID 用 fixture，时间固定。",
+        "observed": false
+      },
+      "limit": "status/contentType 是 fixture 传输外壳；body 键来自 request 的消费路径。FIXTURE_UNAUTHORIZED 是合成标记，不是已观测错误码。"
+    },
+    {
+      "id": "http-text-error",
+      "value": {
+        "status": 503,
+        "contentType": "text/plain",
+        "body": "service unavailable"
+      },
+      "provenance": {
+        "category": "已有测试样本",
+        "commit": "7fab0e47d2a28446e131b7cd737ef4a5a43d55fb",
+        "source": [
+          "src/openbox/api/client.test.ts:42",
+          "src/openbox/api/client.ts:83"
+        ],
+        "redaction": "人工合成或既有测试数据；无实际用户凭据。域名仅 example.com/example.net/.invalid，IP 用文档网段，名称/ID 用 fixture，时间固定。",
+        "observed": false
+      },
+      "limit": "body 复用 parser 测试；503 是源码消费契约合成，原测试只验证 text 解析，非实际错误响应。"
+    },
+    {
+      "id": "empty-success",
+      "value": {
+        "status": 204,
+        "body": null
+      },
+      "provenance": {
+        "category": "已有测试样本",
+        "commit": "7fab0e47d2a28446e131b7cd737ef4a5a43d55fb",
+        "source": [
+          "src/openbox/api/client.test.ts:69"
+        ],
+        "redaction": "人工合成或既有测试数据；无实际用户凭据。域名仅 example.com/example.net/.invalid，IP 用文档网段，名称/ID 用 fixture，时间固定。",
+        "observed": false
+      },
+      "limit": "空响应 parse 为 null，虽 selectProxy 声明 void；不得要求真实响应 JSON {}。"
+    }
+  ]
+}

@@ -1,0 +1,458 @@
+{
+  "source_head": "7fab0e47d2a28446e131b7cd737ef4a5a43d55fb",
+  "browser": "Chromium 149.0.7827.22",
+  "data_boundary": "真实浏览器渲染 + 模拟数据状态; all API fulfilled locally, all WS mocked without connecting server; external requests blocked",
+  "resolved_harness_failure": "Same-document hash navigation did not reload theme storage; fresh document used for dark. Earlier timeout retained in checks, not a product JS error.",
+  "prior_attempt": "Initial light rendering succeeded; REPL dark batch timed out waiting for theme and kernel reset. Final bounded run below replaces screenshots; earlier attempt not claimed complete.",
+  "shots": [
+    {
+      "file": "visual/light-shell.png",
+      "theme": "light",
+      "state": "overview empty traffic and bundled background",
+      "url": "http://127.0.0.1:1420/openbox.html#/overview",
+      "observed_at": "2026-10-03T11:06:24.103Z",
+      "css_viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "devicePixelRatio": 1,
+      "physical_pixels": {
+        "width": 1280,
+        "height": 720
+      },
+      "format": "PNG",
+      "sha256": "aa4ad136946530aa2c37f2590c6a0eb6c6b9aeecbf8d9a8bbfd680c94c858f91",
+      "browser": "Chromium 149.0.7827.22",
+      "source_head": "7fab0e47d2a28446e131b7cd737ef4a5a43d55fb"
+    },
+    {
+      "file": "visual/light-proxies.png",
+      "theme": "light",
+      "state": "expanded selector and two synthetic node cards",
+      "url": "http://127.0.0.1:1420/openbox.html#/proxies",
+      "observed_at": "2026-10-03T11:06:24.872Z",
+      "css_viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "devicePixelRatio": 1,
+      "physical_pixels": {
+        "width": 1280,
+        "height": 720
+      },
+      "format": "PNG",
+      "sha256": "fa7dcb795002023ff4fdb7a73d062522f947204e76f28bf0bc98c7f4e1bf47b1",
+      "browser": "Chromium 149.0.7827.22",
+      "source_head": "7fab0e47d2a28446e131b7cd737ef4a5a43d55fb"
+    },
+    {
+      "file": "visual/light-modal.png",
+      "theme": "light",
+      "state": "strategy settings; no inputs changed",
+      "url": "http://127.0.0.1:1420/openbox.html#/proxies",
+      "observed_at": "2026-10-03T11:06:25.378Z",
+      "css_viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "devicePixelRatio": 1,
+      "physical_pixels": {
+        "width": 1280,
+        "height": 720
+      },
+      "format": "PNG",
+      "sha256": "ed3b031bb00cfc28ac61e44046cfee376397d569528733b3954284c463b9cb8b",
+      "browser": "Chromium 149.0.7827.22",
+      "source_head": "7fab0e47d2a28446e131b7cd737ef4a5a43d55fb"
+    },
+    {
+      "file": "visual/light-dns.png",
+      "theme": "light",
+      "state": "DNS query empty table; scrolled to records",
+      "url": "http://127.0.0.1:1420/openbox.html#/settings",
+      "observed_at": "2026-10-03T11:06:29.468Z",
+      "css_viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "devicePixelRatio": 1,
+      "physical_pixels": {
+        "width": 1280,
+        "height": 720
+      },
+      "format": "PNG",
+      "sha256": "c022d4badd9eeff4a751ef23b53abd512c461c273cef0db2204e491e2ab266bb",
+      "browser": "Chromium 149.0.7827.22",
+      "source_head": "7fab0e47d2a28446e131b7cd737ef4a5a43d55fb"
+    },
+    {
+      "file": "visual/dark-shell.png",
+      "theme": "dark",
+      "state": "overview empty traffic and bundled background",
+      "url": "http://127.0.0.1:1420/openbox.html#/overview",
+      "observed_at": "2026-10-03T11:07:07.927Z",
+      "css_viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "devicePixelRatio": 1,
+      "physical_pixels": {
+        "width": 1280,
+        "height": 720
+      },
+      "format": "PNG",
+      "sha256": "cbb32d0c7da71f5817ad22165aa83df9fdea8375f95af5f672330a7494d6c580",
+      "browser": "Chromium 149.0.7827.22",
+      "source_head": "7fab0e47d2a28446e131b7cd737ef4a5a43d55fb"
+    },
+    {
+      "file": "visual/dark-proxies.png",
+      "theme": "dark",
+      "state": "expanded selector and two synthetic node cards",
+      "url": "http://127.0.0.1:1420/openbox.html#/proxies",
+      "observed_at": "2026-10-03T11:07:08.706Z",
+      "css_viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "devicePixelRatio": 1,
+      "physical_pixels": {
+        "width": 1280,
+        "height": 720
+      },
+      "format": "PNG",
+      "sha256": "2e9fab56670ba47df5563cacca7a6f14dd136eb597b3fda98aa49827a0024707",
+      "browser": "Chromium 149.0.7827.22",
+      "source_head": "7fab0e47d2a28446e131b7cd737ef4a5a43d55fb"
+    },
+    {
+      "file": "visual/dark-modal.png",
+      "theme": "dark",
+      "state": "strategy settings; no inputs changed",
+      "url": "http://127.0.0.1:1420/openbox.html#/proxies",
+      "observed_at": "2026-10-03T11:07:09.228Z",
+      "css_viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "devicePixelRatio": 1,
+      "physical_pixels": {
+        "width": 1280,
+        "height": 720
+      },
+      "format": "PNG",
+      "sha256": "a1a487e07393e06d0dc2789975a7ffc1a1f537fdafe88b1f0bc26cd2337168d2",
+      "browser": "Chromium 149.0.7827.22",
+      "source_head": "7fab0e47d2a28446e131b7cd737ef4a5a43d55fb"
+    },
+    {
+      "file": "visual/dark-dns.png",
+      "theme": "dark",
+      "state": "DNS query empty table; scrolled to records",
+      "url": "http://127.0.0.1:1420/openbox.html#/settings",
+      "observed_at": "2026-10-03T11:07:13.260Z",
+      "css_viewport": {
+        "width": 1280,
+        "height": 720
+      },
+      "devicePixelRatio": 1,
+      "physical_pixels": {
+        "width": 1280,
+        "height": 720
+      },
+      "format": "PNG",
+      "sha256": "1d8bc4063919feb5c53e5d22345ba57a9a10070ad11f929c729b76e56080a033",
+      "browser": "Chromium 149.0.7827.22",
+      "source_head": "7fab0e47d2a28446e131b7cd737ef4a5a43d55fb"
+    }
+  ],
+  "checks": [
+    {
+      "theme": "light",
+      "action": "main navigation 代理",
+      "result": "PASS"
+    },
+    {
+      "theme": "light",
+      "action": "proxy collapse/expand",
+      "result": "PASS"
+    },
+    {
+      "theme": "light",
+      "action": "modal open/close",
+      "result": "PASS"
+    },
+    {
+      "theme": "light",
+      "action": "main navigation 连接",
+      "result": "PASS"
+    },
+    {
+      "theme": "light",
+      "action": "main navigation 日志",
+      "result": "PASS"
+    },
+    {
+      "theme": "light",
+      "action": "main navigation 规则",
+      "result": "PASS"
+    },
+    {
+      "theme": "light",
+      "action": "main navigation 设置",
+      "result": "PASS"
+    },
+    {
+      "theme": "light",
+      "action": "main navigation 概览",
+      "result": "PASS"
+    },
+    {
+      "theme": "light",
+      "action": "main navigation 设置",
+      "result": "PASS"
+    },
+    {
+      "theme": "light",
+      "action": "settings navigation 面板设置",
+      "result": "PASS"
+    },
+    {
+      "theme": "light",
+      "action": "settings navigation 订阅管理",
+      "result": "PASS"
+    },
+    {
+      "theme": "light",
+      "action": "settings navigation 出站节点",
+      "result": "PASS"
+    },
+    {
+      "theme": "light",
+      "action": "settings navigation 目标分流",
+      "result": "PASS"
+    },
+    {
+      "theme": "light",
+      "action": "settings navigation 终端分流",
+      "result": "PASS"
+    },
+    {
+      "theme": "light",
+      "action": "settings navigation 链式代理",
+      "result": "PASS"
+    },
+    {
+      "theme": "light",
+      "action": "settings navigation 共享网络",
+      "result": "PASS"
+    },
+    {
+      "theme": "light",
+      "action": "settings navigation 后端设置",
+      "result": "PASS"
+    },
+    {
+      "theme": "light",
+      "action": "settings navigation DNS 设置",
+      "result": "PASS"
+    },
+    {
+      "theme": "light",
+      "action": "DNS table and empty state",
+      "result": "PASS"
+    },
+    {
+      "theme": "light",
+      "action": "viewport horizontal overflow",
+      "result": "PASS"
+    },
+    {
+      "theme": "light",
+      "action": "main navigation 概览",
+      "result": "PASS"
+    },
+    {
+      "theme": "light",
+      "action": "main navigation 设置",
+      "result": "PASS"
+    },
+    {
+      "theme": "light",
+      "action": "DNS loading/busy",
+      "result": "PASS"
+    },
+    {
+      "theme": "light",
+      "action": "main navigation 概览",
+      "result": "PASS"
+    },
+    {
+      "theme": "light",
+      "action": "main navigation 设置",
+      "result": "PASS"
+    },
+    {
+      "theme": "light",
+      "action": "DNS read error",
+      "result": "PASS"
+    },
+    {
+      "action": "bounded visual batch",
+      "result": "FAIL",
+      "detail": "page.waitForFunction: Timeout 5000ms exceeded."
+    },
+    {
+      "theme": "dark",
+      "action": "main navigation 代理",
+      "result": "PASS"
+    },
+    {
+      "theme": "dark",
+      "action": "proxy collapse/expand",
+      "result": "PASS"
+    },
+    {
+      "theme": "dark",
+      "action": "modal open/close",
+      "result": "PASS"
+    },
+    {
+      "theme": "dark",
+      "action": "main navigation 连接",
+      "result": "PASS"
+    },
+    {
+      "theme": "dark",
+      "action": "main navigation 日志",
+      "result": "PASS"
+    },
+    {
+      "theme": "dark",
+      "action": "main navigation 规则",
+      "result": "PASS"
+    },
+    {
+      "theme": "dark",
+      "action": "main navigation 设置",
+      "result": "PASS"
+    },
+    {
+      "theme": "dark",
+      "action": "main navigation 概览",
+      "result": "PASS"
+    },
+    {
+      "theme": "dark",
+      "action": "main navigation 设置",
+      "result": "PASS"
+    },
+    {
+      "theme": "dark",
+      "action": "settings navigation 面板设置",
+      "result": "PASS"
+    },
+    {
+      "theme": "dark",
+      "action": "settings navigation 订阅管理",
+      "result": "PASS"
+    },
+    {
+      "theme": "dark",
+      "action": "settings navigation 出站节点",
+      "result": "PASS"
+    },
+    {
+      "theme": "dark",
+      "action": "settings navigation 目标分流",
+      "result": "PASS"
+    },
+    {
+      "theme": "dark",
+      "action": "settings navigation 终端分流",
+      "result": "PASS"
+    },
+    {
+      "theme": "dark",
+      "action": "settings navigation 链式代理",
+      "result": "PASS"
+    },
+    {
+      "theme": "dark",
+      "action": "settings navigation 共享网络",
+      "result": "PASS"
+    },
+    {
+      "theme": "dark",
+      "action": "settings navigation 后端设置",
+      "result": "PASS"
+    },
+    {
+      "theme": "dark",
+      "action": "settings navigation DNS 设置",
+      "result": "PASS"
+    },
+    {
+      "theme": "dark",
+      "action": "DNS table and empty state",
+      "result": "PASS"
+    },
+    {
+      "theme": "dark",
+      "action": "viewport horizontal overflow",
+      "result": "PASS"
+    },
+    {
+      "theme": "dark",
+      "action": "main navigation 概览",
+      "result": "PASS"
+    },
+    {
+      "theme": "dark",
+      "action": "main navigation 设置",
+      "result": "PASS"
+    },
+    {
+      "theme": "dark",
+      "action": "DNS loading/busy",
+      "result": "PASS"
+    },
+    {
+      "theme": "dark",
+      "action": "main navigation 概览",
+      "result": "PASS"
+    },
+    {
+      "theme": "dark",
+      "action": "main navigation 设置",
+      "result": "PASS"
+    },
+    {
+      "theme": "dark",
+      "action": "DNS read error",
+      "result": "PASS"
+    },
+    {
+      "theme": "dark",
+      "action": "no JS runtime errors",
+      "result": "PASS"
+    },
+    {
+      "theme": "dark",
+      "action": "no blocked write/unmapped API",
+      "result": "PASS"
+    }
+  ],
+  "runtimeErrors": [],
+  "violations": [],
+  "final_result": "PASS",
+  "review": {
+    "reviewer": "Codex /root; self-review, not independent review",
+    "images_reviewed": 8,
+    "layout": "No page-wide horizontal overflow or broken layout; vertical content and settings tabs remain scrollable; node labels intentionally ellipsized.",
+    "existing_visual_limits": "Dark theme retains light sidebar/card surfaces and low text contrast in current source; recorded as baseline, not redesigned. Proxy page retains a stray semicolon from current source.",
+    "resolved_failures": "Historical harness timeout retained; fresh-document dark run passed.",
+    "source_inventory": "../../fixtures/p0-01/source-inventory.json",
+    "mock_data": "../../fixtures/p0-01/visual-data.json"
+  }
+}

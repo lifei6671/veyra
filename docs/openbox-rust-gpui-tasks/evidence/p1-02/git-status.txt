@@ -1,0 +1,61 @@
+ M .gitignore
+ M AGENTS.md
+ M docs/openbox-rust-gpui-implementation-plan.md
+ M docs/openbox-rust-gpui-tasks/DEVELOPMENT_WORKFLOW.md
+ M docs/openbox-rust-gpui-tasks/IMPLEMENTATION_PHASES.md
+ M docs/openbox-rust-gpui-tasks/P0-feasibility.md
+ M docs/openbox-rust-gpui-tasks/P1-core-and-shell.md
+ M docs/openbox-rust-gpui-tasks/SESSION.md
+ D src-tauri/Cargo.lock
+ M src-tauri/Cargo.toml
+ M src-tauri/src/application/managed_observation_runtime.rs
+ M src-tauri/src/application/mod.rs
+ D src-tauri/src/application/observability.rs
+ D src-tauri/src/application/provider_replacement.rs
+ M src-tauri/src/application/proxy_routing.rs
+ D src-tauri/src/application/runtime.rs
+ D src-tauri/src/application/selected_subscription.rs
+ D src-tauri/src/application/state_access.rs
+ D src-tauri/src/application/subscription_management.rs
+ D src-tauri/src/application/subscription_scheduler.rs
+ D src-tauri/src/domain/mod.rs
+ D src-tauri/src/domain/state.rs
+ M src-tauri/src/lib.rs
+ M src-tauri/src/platform/mod.rs
+ M src-tauri/src/platform/windows/mod.rs
+ M src-tauri/src/platform/windows/system_proxy.rs
+ D src-tauri/src/singbox/clash_api.rs
+ D src-tauri/src/singbox/compiler.rs
+ M src-tauri/src/singbox/managed_sidecar.rs
+ M src-tauri/src/singbox/mod.rs
+ D src-tauri/src/singbox/runtime.rs
+ D src-tauri/src/storage/migration.rs
+ D src-tauri/src/storage/mod.rs
+ D src-tauri/src/storage/snapshot.rs
+ D src-tauri/src/storage/store.rs
+ D src-tauri/src/storage/validation.rs
+ D src-tauri/src/subscription/document.rs
+ D src-tauri/src/subscription/fetch.rs
+ D src-tauri/src/subscription/mod.rs
+ D src-tauri/src/subscription/normalize.rs
+ D src-tauri/src/subscription/parser.rs
+ D src-tauri/tests/fixtures/state/v1-invalid-reference.json
+ D src-tauri/tests/fixtures/state/v1-valid.json
+ D src-tauri/tests/fixtures/subscriptions/clash-compatible.yaml
+ D src-tauri/tests/fixtures/subscriptions/clash-empty-flow-shape-021.yaml
+ D src-tauri/tests/fixtures/subscriptions/clash.yaml
+ D src-tauri/tests/fixtures/subscriptions/nodes.base64
+ D src-tauri/tests/fixtures/subscriptions/nodes.nested-base64
+ D src-tauri/tests/fixtures/subscriptions/nodes.uri
+ D src-tauri/tests/fixtures/subscriptions/proxies.json
+ D src-tauri/tests/fixtures/subscriptions/singbox-response-shape-021.json
+ D src-tauri/tests/fixtures/subscriptions/singbox.json
+ D src-tauri/tests/fixtures/subscriptions/vmess.uri
+?? Cargo.lock
+?? Cargo.toml
+?? crates/
+?? docs/openbox-rust-gpui-tasks/P0-01-baseline.md
+?? docs/openbox-rust-gpui-tasks/evidence/
+?? docs/openbox-rust-gpui-tasks/fixtures/
+?? src-tauri/src/application/runtime_adapter_tests.rs
+?? src-tauri/src/platform/observation_sidecar.rs

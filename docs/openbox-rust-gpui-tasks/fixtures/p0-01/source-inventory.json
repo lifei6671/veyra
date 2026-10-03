@@ -1,0 +1,1983 @@
+{
+  "commit": "7fab0e47d2a28446e131b7cd737ef4a5a43d55fb",
+  "methodCounting": "TypeScript 7.0.2 AST api object properties; imported api property references; tests separated; all src/**/*.ts(x)",
+  "methods": [
+    {
+      "number": 1,
+      "name": "authStatus",
+      "line": 153,
+      "declaration": "authStatus: () => request<AuthStatus>(\"/api/auth/status\", { cache: \"no-store\" })",
+      "business": [
+        {
+          "file": "src/openbox/OpenBoxApp.tsx",
+          "line": 75,
+          "kind": "call"
+        }
+      ],
+      "tests": []
+    },
+    {
+      "number": 2,
+      "name": "login",
+      "line": 154,
+      "declaration": "login: (password: string) => request<AuthStatus>(\"/api/auth/login\", { method: \"POST\", ...json({ password }) })",
+      "business": [
+        {
+          "file": "src/openbox/components/AuthScreen.tsx",
+          "line": 23,
+          "kind": "call"
+        }
+      ],
+      "tests": []
+    },
+    {
+      "number": 3,
+      "name": "setupPassword",
+      "line": 155,
+      "declaration": "setupPassword: (password: string) => request<AuthStatus>(\"/api/auth/setup\", { method: \"POST\", ...json({ password }) })",
+      "business": [
+        {
+          "file": "src/openbox/components/AuthScreen.tsx",
+          "line": 23,
+          "kind": "call"
+        }
+      ],
+      "tests": []
+    },
+    {
+      "number": 4,
+      "name": "changePassword",
+      "line": 156,
+      "declaration": "changePassword: (currentPassword: string, newPassword: string) => request<AuthStatus>(\"/api/auth/change-password\", { method: \"POST\", ...json({ currentPassword, newPassword }) })",
+      "business": [
+        {
+          "file": "src/openbox/pages/settings/PanelSettings.tsx",
+          "line": 135,
+          "kind": "call"
+        }
+      ],
+      "tests": [
+        {
+          "file": "src/openbox/api/client.test.ts",
+          "line": 26,
+          "kind": "call"
+        }
+      ]
+    },
+    {
+      "number": 5,
+      "name": "storage",
+      "line": 158,
+      "declaration": "storage: () => request<StorageResponse>(\"/api/storage\")",
+      "business": [
+        {
+          "file": "src/openbox/OpenBoxApp.tsx",
+          "line": 44,
+          "kind": "call"
+        }
+      ],
+      "tests": [
+        {
+          "file": "src/openbox/api/client.test.ts",
+          "line": 21,
+          "kind": "call"
+        }
+      ]
+    },
+    {
+      "number": 6,
+      "name": "patchStorage",
+      "line": 159,
+      "declaration": "patchStorage: (entries: Record<string, string>, removed: string[] = []) => request<unknown>(\"/api/storage\", { method: \"PATCH\", ...json({ entries, removed }) })",
+      "business": [
+        {
+          "file": "src/openbox/pages/OverviewPage.tsx",
+          "line": 141,
+          "kind": "call"
+        },
+        {
+          "file": "src/openbox/pages/settings/PanelSettings.tsx",
+          "line": 71,
+          "kind": "call"
+        },
+        {
+          "file": "src/openbox/OpenBoxApp.tsx",
+          "line": 61,
+          "kind": "call"
+        },
+        {
+          "file": "src/openbox/OpenBoxApp.tsx",
+          "line": 113,
+          "kind": "call"
+        }
+      ],
+      "tests": [
+        {
+          "file": "src/openbox/api/client.test.ts",
+          "line": 22,
+          "kind": "call"
+        }
+      ]
+    },
+    {
+      "number": 7,
+      "name": "backgroundImage",
+      "line": 160,
+      "declaration": "backgroundImage: async () => (await request<{ image: string }>(\"/api/background-image\")).image",
+      "business": [
+        {
+          "file": "src/openbox/OpenBoxApp.tsx",
+          "line": 51,
+          "kind": "call"
+        }
+      ],
+      "tests": [
+        {
+          "file": "src/openbox/api/client.test.ts",
+          "line": 23,
+          "kind": "call"
+        }
+      ]
+    },
+    {
+      "number": 8,
+      "name": "saveBackgroundImage",
+      "line": 161,
+      "declaration": "saveBackgroundImage: (image: string) => request<unknown>(\"/api/background-image\", { method: \"PUT\", ...json({ image }) })",
+      "business": [
+        {
+          "file": "src/openbox/pages/settings/PanelSettings.tsx",
+          "line": 107,
+          "kind": "call"
+        }
+      ],
+      "tests": [
+        {
+          "file": "src/openbox/api/client.test.ts",
+          "line": 24,
+          "kind": "call"
+        }
+      ]
+    },
+    {
+      "number": 9,
+      "name": "deleteBackgroundImage",
+      "line": 162,
+      "declaration": "deleteBackgroundImage: () => request<void>(\"/api/background-image\", { method: \"DELETE\" })",
+      "business": [
+        {
+          "file": "src/openbox/pages/settings/PanelSettings.tsx",
+          "line": 85,
+          "kind": "call"
+        }
+      ],
+      "tests": [
+        {
+          "file": "src/openbox/api/client.test.ts",
+          "line": 25,
+          "kind": "call"
+        }
+      ]
+    },
+    {
+      "number": 10,
+      "name": "serviceStatus",
+      "line": 164,
+      "declaration": "serviceStatus: () => request<ServiceStatus>(\"/api/openbox/service/status\")",
+      "business": [
+        {
+          "file": "src/openbox/pages/settings/BackendSettings.tsx",
+          "line": 35,
+          "kind": "call"
+        },
+        {
+          "file": "src/openbox/pages/settings/BackendSettings.tsx",
+          "line": 52,
+          "kind": "call"
+        },
+        {
+          "file": "src/openbox/OpenBoxApp.tsx",
+          "line": 70,
+          "kind": "call"
+        }
+      ],
+      "tests": []
+    },
+    {
+      "number": 11,
+      "name": "serviceAction",
+      "line": 165,
+      "declaration": "serviceAction: (action: \"start\" | \"stop\" | \"restart\") => request<ServiceActionResult>(`/api/openbox/service/core/${action}`, { method: \"POST\" })",
+      "business": [
+        {
+          "file": "src/openbox/pages/settings/BackendSettings.helpers.ts",
+          "line": 47,
+          "kind": "call"
+        },
+        {
+          "file": "src/openbox/OpenBoxApp.tsx",
+          "line": 124,
+          "kind": "call"
+        }
+      ],
+      "tests": []
+    },
+    {
+      "number": 12,
+      "name": "controllerConfig",
+      "line": 166,
+      "declaration": "controllerConfig: () => request<ControllerConfig>(\"/api/controller/configs\")",
+      "business": [],
+      "tests": []
+    },
+    {
+      "number": 13,
+      "name": "version",
+      "line": 167,
+      "declaration": "version: () => request<{ version: string }>(\"/api/controller/version\")",
+      "business": [],
+      "tests": []
+    },
+    {
+      "number": 14,
+      "name": "updateStatus",
+      "line": 168,
+      "declaration": "updateStatus: () => request<UpdateStatus>(\"/api/openbox/update/status\")",
+      "business": [
+        {
+          "file": "src/openbox/pages/settings/BackendUpdateControls.tsx",
+          "line": 24,
+          "kind": "call"
+        }
+      ],
+      "tests": [
+        {
+          "file": "src/openbox/pages/settings/BackendSettings.test.ts",
+          "line": 11,
+          "kind": "call"
+        }
+      ]
+    },
+    {
+      "number": 15,
+      "name": "kernelVersion",
+      "line": 169,
+      "declaration": "kernelVersion: () => request<{ version: string }>(\"/api/openbox/kernel/version\")",
+      "business": [
+        {
+          "file": "src/openbox/pages/settings/BackendSettings.tsx",
+          "line": 33,
+          "kind": "call"
+        }
+      ],
+      "tests": [
+        {
+          "file": "src/openbox/pages/settings/BackendSettings.test.ts",
+          "line": 11,
+          "kind": "call"
+        }
+      ]
+    },
+    {
+      "number": 16,
+      "name": "deployState",
+      "line": 170,
+      "declaration": "deployState: async () => (await request<{ state: DeployState }>(\"/api/openbox/deploy/state\")).state",
+      "business": [
+        {
+          "file": "src/openbox/pages/settings/BackendSettings.helpers.ts",
+          "line": 52,
+          "kind": "call"
+        }
+      ],
+      "tests": [
+        {
+          "file": "src/openbox/pages/settings/BackendSettings.test.ts",
+          "line": 12,
+          "kind": "call"
+        }
+      ]
+    },
+    {
+      "number": 17,
+      "name": "checkUpdate",
+      "line": 171,
+      "declaration": "checkUpdate: () => request<UpdateCheck>(\"/api/openbox/update/check\")",
+      "business": [
+        {
+          "file": "src/openbox/pages/settings/BackendUpdateControls.tsx",
+          "line": 51,
+          "kind": "call"
+        }
+      ],
+      "tests": [
+        {
+          "file": "src/openbox/pages/settings/BackendSettings.test.ts",
+          "line": 11,
+          "kind": "call"
+        }
+      ]
+    },
+    {
+      "number": 18,
+      "name": "runUpdate",
+      "line": 172,
+      "declaration": "runUpdate: (channel: string) => request<unknown>(\"/api/openbox/update/run\", { method: \"POST\", ...json({ channel }) })",
+      "business": [
+        {
+          "file": "src/openbox/pages/settings/BackendUpdateControls.tsx",
+          "line": 54,
+          "kind": "call"
+        }
+      ],
+      "tests": [
+        {
+          "file": "src/openbox/pages/settings/BackendSettings.test.ts",
+          "line": 11,
+          "kind": "call"
+        }
+      ]
+    },
+    {
+      "number": 19,
+      "name": "cancelUpdate",
+      "line": 173,
+      "declaration": "cancelUpdate: () => request<unknown>(\"/api/openbox/update/cancel\", { method: \"POST\" })",
+      "business": [
+        {
+          "file": "src/openbox/pages/settings/BackendUpdateControls.tsx",
+          "line": 58,
+          "kind": "call"
+        }
+      ],
+      "tests": [
+        {
+          "file": "src/openbox/pages/settings/BackendSettings.test.ts",
+          "line": 11,
+          "kind": "call"
+        }
+      ]
+    },
+    {
+      "number": 20,
+      "name": "factoryReset",
+      "line": 174,
+      "declaration": "factoryReset: () => request<unknown>(\"/api/openbox/factory-reset\", { method: \"POST\" })",
+      "business": [
+        {
+          "file": "src/openbox/pages/settings/BackendSettings.tsx",
+          "line": 55,
+          "kind": "call"
+        }
+      ],
+      "tests": [
+        {
+          "file": "src/openbox/pages/settings/BackendSettings.test.ts",
+          "line": 12,
+          "kind": "call"
+        }
+      ]
+    },
+    {
+      "number": 21,
+      "name": "trafficUsage",
+      "line": 175,
+      "declaration": "trafficUsage: () => request<TrafficUsage>(\"/api/openbox/traffic/usage\")",
+      "business": [
+        {
+          "file": "src/openbox/pages/settings/BackendSettings.tsx",
+          "line": 34,
+          "kind": "call"
+        }
+      ],
+      "tests": [
+        {
+          "file": "src/openbox/pages/settings/BackendSettings.test.ts",
+          "line": 11,
+          "kind": "call"
+        }
+      ]
+    },
+    {
+      "number": 22,
+      "name": "backup",
+      "line": 176,
+      "declaration": "backup: (options: BackupOptions) => request<OpenBoxBackup>(`/api/openbox/backup?${new URLSearchParams(Object.entries(options).map(([key, value]) => [key, value ? \"1\" : \"0\"]))}`)",
+      "business": [
+        {
+          "file": "src/openbox/pages/settings/BackendDataSettings.tsx",
+          "line": 33,
+          "kind": "call"
+        }
+      ],
+      "tests": [
+        {
+          "file": "src/openbox/pages/settings/BackendSettings.test.ts",
+          "line": 12,
+          "kind": "call"
+        }
+      ]
+    },
+    {
+      "number": 23,
+      "name": "importBackup",
+      "line": 177,
+      "declaration": "importBackup: (backup: OpenBoxBackup, mode: \"replace\" | \"append\") => request<BackupImportResult>(`/api/openbox/backup/import?subscriptions=${mode}`, { method: \"POST\", ...json(backup) })",
+      "business": [
+        {
+          "file": "src/openbox/pages/settings/BackendDataSettings.tsx",
+          "line": 39,
+          "kind": "call"
+        }
+      ],
+      "tests": [
+        {
+          "file": "src/openbox/pages/settings/BackendSettings.test.ts",
+          "line": 12,
+          "kind": "call"
+        }
+      ]
+    },
+    {
+      "number": 24,
+      "name": "diagnostics",
+      "line": 178,
+      "declaration": "diagnostics: () => request<unknown>(\"/api/openbox/diagnostics\")",
+      "business": [
+        {
+          "file": "src/openbox/pages/settings/BackendDataSettings.tsx",
+          "line": 55,
+          "kind": "call"
+        }
+      ],
+      "tests": [
+        {
+          "file": "src/openbox/pages/settings/BackendSettings.test.ts",
+          "line": 12,
+          "kind": "call"
+        }
+      ]
+    },
+    {
+      "number": 25,
+      "name": "proxies",
+      "line": 180,
+      "declaration": "proxies: () => request<ProxiesResponse>(\"/api/controller/proxies\")",
+      "business": [
+        {
+          "file": "src/openbox/pages/ProxiesPage.tsx",
+          "line": 52,
+          "kind": "call"
+        },
+        {
+          "file": "src/openbox/pages/ConnectionsPage.tsx",
+          "line": 385,
+          "kind": "call"
+        },
+        {
+          "file": "src/openbox/pages/RulesPage.tsx",
+          "line": 48,
+          "kind": "call"
+        },
+        {
+          "file": "src/openbox/pages/settings/SubscriptionSettings.tsx",
+          "line": 104,
+          "kind": "call"
+        },
+        {
+          "file": "src/openbox/components/OutboundPicker.tsx",
+          "line": 63,
+          "kind": "call"
+        },
+        {
+          "file": "src/openbox/pages/settings/ChainProxySettings.tsx",
+          "line": 77,
+          "kind": "call"
+        }
+      ],
+      "tests": []
+    },
+    {
+      "number": 26,
+      "name": "proxyLatencyHistory",
+      "line": 181,
+      "declaration": "proxyLatencyHistory: () => request<ProxyLatencyHistoryResponse>(\"/api/openbox/latency-history\")",
+      "business": [
+        {
+          "file": "src/openbox/pages/ProxiesPage.tsx",
+          "line": 52,
+          "kind": "call"
+        },
+        {
+          "file": "src/openbox/pages/settings/SubscriptionSettings.tsx",
+          "line": 106,
+          "kind": "call"
+        }
+      ],
+      "tests": []
+    },
+    {
+      "number": 27,
+      "name": "selectProxy",
+      "line": 182,
+      "declaration": "selectProxy: (group: string, name: string) => request<void>(`/api/controller/proxies/${encodeURIComponent(group)}`, { method: \"PUT\", ...json({ name }) })",
+      "business": [
+        {
+          "file": "src/openbox/pages/ProxiesPage.tsx",
+          "line": 121,
+          "kind": "call"
+        },
+        {
+          "file": "src/openbox/pages/ConnectionsPage.tsx",
+          "line": 469,
+          "kind": "call"
+        },
+        {
+          "file": "src/openbox/pages/RulesPage.tsx",
+          "line": 141,
+          "kind": "call"
+        }
+      ],
+      "tests": [
+        {
+          "file": "src/openbox/api/client.test.ts",
+          "line": 77,
+          "kind": "call"
+        }
+      ]
+    },
+    {
+      "number": 28,
+      "name": "testProxy",
+      "line": 183,
+      "declaration": "testProxy: (name: string, url: string, timeout: number) => request<{ delay: number }>(`/api/controller/proxies/${encodeURIComponent(name)}/delay?url=${encodeURIComponent(url)}&timeout=${timeout}`)",
+      "business": [
+        {
+          "file": "src/openbox/pages/ProxiesPage.tsx",
+          "line": 162,
+          "kind": "call"
+        },
+        {
+          "file": "src/openbox/pages/ProxiesPage.tsx",
+          "line": 178,
+          "kind": "call"
+        },
+        {
+          "file": "src/openbox/pages/ProxiesPage.tsx",
+          "line": 193,
+          "kind": "call"
+        },
+        {
+          "file": "src/openbox/pages/ConnectionsPage.tsx",
+          "line": 497,
+          "kind": "call"
+        },
+        {
+          "file": "src/openbox/pages/RulesPage.tsx",
+          "line": 176,
+          "kind": "call"
+        },
+        {
+          "file": "src/openbox/pages/settings/SubscriptionSettings.tsx",
+          "line": 219,
+          "kind": "call"
+        },
+        {
+          "file": "src/openbox/pages/settings/SubscriptionSettings.tsx",
+          "line": 237,
+          "kind": "call"
+        },
+        {
+          "file": "src/openbox/components/OutboundPicker.tsx",
+          "line": 53,
+          "kind": "call"
+        },
+        {
+          "file": "src/openbox/pages/settings/ChainProxySettings.tsx",
+          "line": 109,
+          "kind": "call"
+        }
+      ],
+      "tests": [
+        {
+          "file": "src/openbox/api/client.test.ts",
+          "line": 78,
+          "kind": "call"
+        }
+      ]
+    },
+    {
+      "number": 29,
+      "name": "testProxyGroup",
+      "line": 184,
+      "declaration": "testProxyGroup: (group: string, url: string, timeout: number) => request<Record<string, number>>(`/api/controller/group/${encodeURIComponent(group)}/delay?url=${encodeURIComponent(url)}&timeout=${timeout}`)",
+      "business": [
+        {
+          "file": "src/openbox/pages/ProxiesPage.tsx",
+          "line": 139,
+          "kind": "call"
+        },
+        {
+          "file": "src/openbox/pages/ConnectionsPage.tsx",
+          "line": 482,
+          "kind": "call"
+        },
+        {
+          "file": "src/openbox/pages/RulesPage.tsx",
+          "line": 156,
+          "kind": "call"
+        }
+      ],
+      "tests": []
+    },
+    {
+      "number": 30,
+      "name": "geoIp",
+      "line": 185,
+      "declaration": "geoIp",
+      "business": [
+        {
+          "file": "src/openbox/pages/ConnectionsPage.tsx",
+          "line": 395,
+          "kind": "call"
+        }
+      ],
+      "tests": [
+        {
+          "file": "src/openbox/api/client.test.ts",
+          "line": 65,
+          "kind": "call"
+        }
+      ]
+    },
+    {
+      "number": 31,
+      "name": "rules",
+      "line": 186,
+      "declaration": "rules: () => request<RulesResponse>(\"/api/controller/rules\")",
+      "business": [
+        {
+          "file": "src/openbox/pages/RulesPage.tsx",
+          "line": 48,
+          "kind": "call"
+        }
+      ],
+      "tests": []
+    },
+    {
+      "number": 32,
+      "name": "penetration",
+      "line": 187,
+      "declaration": "penetration: (target: string) => request<PenetrationResult>(\"/api/openbox/penetration\", { method: \"POST\", ...json({ target }) })",
+      "business": [
+        {
+          "file": "src/openbox/pages/RulesPage.tsx",
+          "line": 100,
+          "kind": "call"
+        }
+      ],
+      "tests": [
+        {
+          "file": "src/openbox/api/client.test.ts",
+          "line": 131,
+          "kind": "call"
+        }
+      ]
+    },
+    {
+      "number": 33,
+      "name": "terminalTestCapability",
+      "line": 188,
+      "declaration": "terminalTestCapability: () => request<TerminalTestCapability>(\"/api/openbox/terminal-test/capability\")",
+      "business": [
+        {
+          "file": "src/openbox/pages/RulesPage.tsx",
+          "line": 78,
+          "kind": "call"
+        }
+      ],
+      "tests": [
+        {
+          "file": "src/openbox/api/client.test.ts",
+          "line": 132,
+          "kind": "call"
+        }
+      ]
+    },
+    {
+      "number": 34,
+      "name": "terminalTest",
+      "line": 189,
+      "declaration": "terminalTest: (target: string, port?: number, method: RouteProbeMethod = \"GET\") => request<TerminalTestResult>(\"/api/openbox/terminal-test\", { method: \"POST\", ...json({ target, port, method }) })",
+      "business": [
+        {
+          "file": "src/openbox/pages/RulesPage.tsx",
+          "line": 82,
+          "kind": "call"
+        }
+      ],
+      "tests": [
+        {
+          "file": "src/openbox/api/client.test.ts",
+          "line": 133,
+          "kind": "call"
+        }
+      ]
+    },
+    {
+      "number": 35,
+      "name": "routeTest",
+      "line": 190,
+      "declaration": "routeTest: (target: string, port?: number) => request<RouteDiagnosticResult>(\"/api/openbox/route-test\", { method: \"POST\", ...json({ target, port }) })",
+      "business": [
+        {
+          "file": "src/openbox/pages/RulesPage.tsx",
+          "line": 74,
+          "kind": "call"
+        }
+      ],
+      "tests": [
+        {
+          "file": "src/openbox/api/client.test.ts",
+          "line": 134,
+          "kind": "call"
+        }
+      ]
+    },
+    {
+      "number": 36,
+      "name": "closeConnection",
+      "line": 191,
+      "declaration": "closeConnection: (id: string) => request<void>(`/api/controller/connections/${encodeURIComponent(id)}`, { method: \"DELETE\" })",
+      "business": [
+        {
+          "file": "src/openbox/pages/ConnectionsPage.tsx",
+          "line": 425,
+          "kind": "call"
+        }
+      ],
+      "tests": []
+    },
+    {
+      "number": 37,
+      "name": "closeAllConnections",
+      "line": 192,
+      "declaration": "closeAllConnections: () => request<void>(\"/api/controller/connections\", { method: \"DELETE\" })",
+      "business": [
+        {
+          "file": "src/openbox/pages/ConnectionsPage.tsx",
+          "line": 435,
+          "kind": "call"
+        }
+      ],
+      "tests": []
+    },
+    {
+      "number": 38,
+      "name": "siteLatencyHistory",
+      "line": 194,
+      "declaration": "siteLatencyHistory: () => request<SiteLatencyHistory>(\"/api/openbox/site-latency/history\")",
+      "business": [
+        {
+          "file": "src/openbox/pages/OverviewPage.tsx",
+          "line": 96,
+          "kind": "call"
+        },
+        {
+          "file": "src/openbox/pages/OverviewPage.tsx",
+          "line": 129,
+          "kind": "call"
+        }
+      ],
+      "tests": []
+    },
+    {
+      "number": 39,
+      "name": "testSites",
+      "line": 195,
+      "declaration": "testSites: (sites: TestSite[]) => request<{ results?: Record<string, number> }>(\"/api/openbox/site-latency\", { method: \"POST\", signal: AbortSignal.timeout(30_000), ...json({ sites }) })",
+      "business": [
+        {
+          "file": "src/openbox/pages/OverviewPage.tsx",
+          "line": 128,
+          "kind": "call"
+        }
+      ],
+      "tests": []
+    },
+    {
+      "number": 40,
+      "name": "trafficMonth",
+      "line": 196,
+      "declaration": "trafficMonth: (month: string, countDirect = true) => request<TrafficMonth>(`/api/openbox/traffic/month?month=${encodeURIComponent(month)}${countDirect ? \"\" : \"&direct=0\"}`)",
+      "business": [
+        {
+          "file": "src/openbox/pages/OverviewPage.tsx",
+          "line": 96,
+          "kind": "call"
+        }
+      ],
+      "tests": [
+        {
+          "file": "src/openbox/api/client.test.ts",
+          "line": 148,
+          "kind": "call"
+        }
+      ]
+    },
+    {
+      "number": 41,
+      "name": "trafficDay",
+      "line": 197,
+      "declaration": "trafficDay: (day: string, hour?: number | null, countDirect = true) => request<TrafficDay>(`/api/openbox/traffic/day?day=${encodeURIComponent(day)}&limit=500${hour == null ? \"\" : `&hour=${hour}`}${countDirect ? \"\" : \"&direct=0\"}`)",
+      "business": [
+        {
+          "file": "src/openbox/pages/OverviewPage.tsx",
+          "line": 113,
+          "kind": "call"
+        }
+      ],
+      "tests": [
+        {
+          "file": "src/openbox/api/client.test.ts",
+          "line": 149,
+          "kind": "call"
+        }
+      ]
+    },
+    {
+      "number": 42,
+      "name": "trafficDrill",
+      "line": 198,
+      "declaration": "trafficDrill: (day: string, kind: TrafficDimension, key: string, by: TrafficDimension, hour?: number | null, countDirect = true) => request<TrafficDrill>(`/api/openbox/traffic/drill?day=${encodeURIComponent(day)}&kind=${kind}&key=${encodeURIComponent(key)}&by=${by}&limit=200${hour == null ? \"\" : `&hour=${hour}`}${countDirect ? \"\" : \"&direct=0\"}`)",
+      "business": [
+        {
+          "file": "src/openbox/pages/OverviewPage.tsx",
+          "line": 179,
+          "kind": "call"
+        }
+      ],
+      "tests": [
+        {
+          "file": "src/openbox/api/client.test.ts",
+          "line": 150,
+          "kind": "call"
+        }
+      ]
+    },
+    {
+      "number": 43,
+      "name": "groups",
+      "line": 200,
+      "declaration": "groups: () => request<GroupsResponse>(\"/api/openbox/groups\")",
+      "business": [
+        {
+          "file": "src/openbox/pages/settings/SubscriptionSettings.tsx",
+          "line": 105,
+          "kind": "call"
+        },
+        {
+          "file": "src/openbox/pages/settings/GroupSettings.tsx",
+          "line": 70,
+          "kind": "call"
+        },
+        {
+          "file": "src/openbox/pages/settings/RoutingSettings.tsx",
+          "line": 42,
+          "kind": "call"
+        },
+        {
+          "file": "src/openbox/pages/settings/ClientRoutingSettings.tsx",
+          "line": 45,
+          "kind": "call"
+        },
+        {
+          "file": "src/openbox/pages/settings/ChainProxySettings.tsx",
+          "line": 75,
+          "kind": "call"
+        },
+        {
+          "file": "src/openbox/pages/settings/ChainProxySettings.tsx",
+          "line": 93,
+          "kind": "call"
+        }
+      ],
+      "tests": [
+        {
+          "file": "src/openbox/api/client.test.ts",
+          "line": 99,
+          "kind": "call"
+        },
+        {
+          "file": "src/openbox/api/client.test.ts",
+          "line": 118,
+          "kind": "call"
+        }
+      ]
+    },
+    {
+      "number": 44,
+      "name": "defaultGroups",
+      "line": 201,
+      "declaration": "defaultGroups: async () => (await request<{ groups: OpenBoxGroup[] }>(\"/api/openbox/defaults/groups\")).groups",
+      "business": [
+        {
+          "file": "src/openbox/pages/settings/GroupSettings.tsx",
+          "line": 214,
+          "kind": "call"
+        }
+      ],
+      "tests": [
+        {
+          "file": "src/openbox/api/client.test.ts",
+          "line": 101,
+          "kind": "call"
+        }
+      ]
+    },
+    {
+      "number": 45,
+      "name": "saveGroups",
+      "line": 202,
+      "declaration": "saveGroups: (groups: OpenBoxGroup[]) => request<SaveGroupsResponse>(\"/api/openbox/groups\", { method: \"PUT\", ...json({ groups }) })",
+      "business": [
+        {
+          "file": "src/openbox/pages/settings/GroupSettings.tsx",
+          "line": 86,
+          "kind": "call"
+        }
+      ],
+      "tests": [
+        {
+          "file": "src/openbox/api/client.test.ts",
+          "line": 100,
+          "kind": "call"
+        },
+        {
+          "file": "src/openbox/api/client.test.ts",
+          "line": 121,
+          "kind": "call"
+        }
+      ]
+    },
+    {
+      "number": 46,
+      "name": "subscriptions",
+      "line": 204,
+      "declaration": "subscriptions: async () => (await request<{ subscriptions: Subscription[] }>(\"/api/openbox/subscriptions\")).subscriptions",
+      "business": [
+        {
+          "file": "src/openbox/pages/ProxiesPage.tsx",
+          "line": 52,
+          "kind": "call"
+        },
+        {
+          "file": "src/openbox/pages/settings/SubscriptionSettings.tsx",
+          "line": 102,
+          "kind": "call"
+        },
+        {
+          "file": "src/openbox/pages/settings/BackendDataSettings.tsx",
+          "line": 18,
+          "kind": "call"
+        },
+        {
+          "file": "src/openbox/pages/settings/BackendDataSettings.tsx",
+          "line": 52,
+          "kind": "call"
+        }
+      ],
+      "tests": []
+    },
+    {
+      "number": 47,
+      "name": "previewSubscription",
+      "line": 205,
+      "declaration": "previewSubscription: (value: Partial<Subscription>) => request<SubscriptionPreview>(\"/api/openbox/subscriptions/preview\", { method: \"POST\", ...json(value) })",
+      "business": [
+        {
+          "file": "src/openbox/pages/settings/SubscriptionSettings.tsx",
+          "line": 139,
+          "kind": "call"
+        }
+      ],
+      "tests": []
+    },
+    {
+      "number": 48,
+      "name": "testSubscriptionNodes",
+      "line": 206,
+      "declaration": "testSubscriptionNodes: (value: Record<string, unknown>) => request<{ results: SubscriptionNodeLatencyResult[] }>(\"/api/openbox/nodes/latency\", { method: \"POST\", ...json(value) })",
+      "business": [
+        {
+          "file": "src/openbox/pages/settings/SubscriptionSettings.tsx",
+          "line": 519,
+          "kind": "call"
+        }
+      ],
+      "tests": []
+    },
+    {
+      "number": 49,
+      "name": "testChainProxy",
+      "line": 207,
+      "declaration": "testChainProxy: (value: ChainLatencyRequest) => request<ChainLatencyResponse>(\"/api/openbox/chain-proxies/latency\", { method: \"POST\", signal: AbortSignal.timeout(30_000), ...json(value) })",
+      "business": [
+        {
+          "file": "src/openbox/pages/settings/ChainProxySettings.tsx",
+          "line": 41,
+          "kind": "call"
+        },
+        {
+          "file": "src/openbox/pages/settings/ChainProxySettings.tsx",
+          "line": 109,
+          "kind": "call"
+        }
+      ],
+      "tests": [
+        {
+          "file": "src/openbox/api/client.test.ts",
+          "line": 176,
+          "kind": "call"
+        }
+      ]
+    },
+    {
+      "number": 50,
+      "name": "checkServerPort",
+      "line": 208,
+      "declaration": "checkServerPort: (port: number, id: string) => request<ServerPortCheck>(`/api/openbox/servers/port-check?port=${port}&id=${encodeURIComponent(id)}`)",
+      "business": [
+        {
+          "file": "src/openbox/pages/settings/ShareNetworkSettings.tsx",
+          "line": 34,
+          "kind": "call"
+        }
+      ],
+      "tests": [
+        {
+          "file": "src/openbox/api/client.test.ts",
+          "line": 164,
+          "kind": "call"
+        }
+      ]
+    },
+    {
+      "number": 51,
+      "name": "subscriptionShares",
+      "line": 209,
+      "declaration": "subscriptionShares: async () => (await request<{ shares: SubscriptionShare[] }>(\"/api/openbox/subscription-shares\")).shares",
+      "business": [
+        {
+          "file": "src/openbox/pages/settings/SubscriptionSettings.tsx",
+          "line": 103,
+          "kind": "call"
+        }
+      ],
+      "tests": []
+    },
+    {
+      "number": 52,
+      "name": "createSubscriptionShare",
+      "line": 210,
+      "declaration": "createSubscriptionShare: async (value: Pick<SubscriptionShare, \"name\" | \"host\" | \"protocol\" | \"subscriptionIds\" | \"token\">) => (await request<{ share: SubscriptionShare }>(\"/api/openbox/subscription-shares\", { method: \"POST\", ...json(value) })).share",
+      "business": [
+        {
+          "file": "src/openbox/pages/settings/SubscriptionSettings.tsx",
+          "line": 283,
+          "kind": "call"
+        }
+      ],
+      "tests": []
+    },
+    {
+      "number": 53,
+      "name": "updateSubscriptionShare",
+      "line": 211,
+      "declaration": "updateSubscriptionShare: async (id: string, value: Partial<Pick<SubscriptionShare, \"name\" | \"host\" | \"protocol\" | \"subscriptionIds\" | \"enabled\">> & { regenerate?: boolean }) => (await request<{ share: SubscriptionShare }>(`/api/openbox/subscription-shares/${encodeURIComponent(id)}`, { method: \"PATCH\", ...json(value) })).share",
+      "business": [
+        {
+          "file": "src/openbox/pages/settings/SubscriptionSettings.tsx",
+          "line": 275,
+          "kind": "call"
+        },
+        {
+          "file": "src/openbox/pages/settings/SubscriptionSettings.tsx",
+          "line": 304,
+          "kind": "call"
+        }
+      ],
+      "tests": []
+    },
+    {
+      "number": 54,
+      "name": "regenerateSubscriptionShare",
+      "line": 212,
+      "declaration": "regenerateSubscriptionShare: async (id: string) => (await request<{ share: SubscriptionShare }>(`/api/openbox/subscription-shares/${encodeURIComponent(id)}/regenerate`, { method: \"POST\" })).share",
+      "business": [
+        {
+          "file": "src/openbox/pages/settings/SubscriptionSettings.tsx",
+          "line": 323,
+          "kind": "call"
+        }
+      ],
+      "tests": []
+    },
+    {
+      "number": 55,
+      "name": "deleteSubscriptionShare",
+      "line": 213,
+      "declaration": "deleteSubscriptionShare: (id: string) => request<void>(`/api/openbox/subscription-shares/${encodeURIComponent(id)}`, { method: \"DELETE\" })",
+      "business": [
+        {
+          "file": "src/openbox/pages/settings/SubscriptionSettings.tsx",
+          "line": 337,
+          "kind": "call"
+        }
+      ],
+      "tests": []
+    },
+    {
+      "number": 56,
+      "name": "createSubscription",
+      "line": 214,
+      "declaration": "createSubscription: (value: Partial<Subscription>) => request<Subscription>(\"/api/openbox/subscriptions\", { method: \"POST\", ...json(value) })",
+      "business": [
+        {
+          "file": "src/openbox/pages/settings/SubscriptionSettings.tsx",
+          "line": 164,
+          "kind": "call"
+        }
+      ],
+      "tests": []
+    },
+    {
+      "number": 57,
+      "name": "updateSubscription",
+      "line": 215,
+      "declaration": "updateSubscription: (id: string, value: Partial<Subscription>) => request<Subscription>(`/api/openbox/subscriptions/${encodeURIComponent(id)}`, { method: \"PATCH\", ...json(value) })",
+      "business": [
+        {
+          "file": "src/openbox/pages/settings/SubscriptionSettings.tsx",
+          "line": 164,
+          "kind": "call"
+        },
+        {
+          "file": "src/openbox/pages/settings/SubscriptionSettings.tsx",
+          "line": 192,
+          "kind": "call"
+        }
+      ],
+      "tests": []
+    },
+    {
+      "number": 58,
+      "name": "refreshSubscription",
+      "line": 216,
+      "declaration": "refreshSubscription: (id: string) => request<void>(`/api/openbox/subscriptions/${encodeURIComponent(id)}/refresh`, { method: \"POST\", ...json({}) })",
+      "business": [
+        {
+          "file": "src/openbox/pages/ProxiesPage.tsx",
+          "line": 207,
+          "kind": "call"
+        },
+        {
+          "file": "src/openbox/pages/ProxiesPage.tsx",
+          "line": 221,
+          "kind": "call"
+        },
+        {
+          "file": "src/openbox/pages/settings/SubscriptionSettings.tsx",
+          "line": 178,
+          "kind": "call"
+        },
+        {
+          "file": "src/openbox/pages/settings/BackendDataSettings.tsx",
+          "line": 45,
+          "kind": "call"
+        }
+      ],
+      "tests": []
+    },
+    {
+      "number": 59,
+      "name": "deleteSubscription",
+      "line": 217,
+      "declaration": "deleteSubscription: (id: string) => request<void>(`/api/openbox/subscriptions/${encodeURIComponent(id)}`, { method: \"DELETE\" })",
+      "business": [
+        {
+          "file": "src/openbox/pages/settings/SubscriptionSettings.tsx",
+          "line": 206,
+          "kind": "call"
+        }
+      ],
+      "tests": []
+    },
+    {
+      "number": 60,
+      "name": "profile",
+      "line": 219,
+      "declaration": "profile: async () => (await request<{ profile: OpenBoxProfile }>(\"/api/openbox/profile\")).profile",
+      "business": [
+        {
+          "file": "src/openbox/pages/settings/RoutingSettings.tsx",
+          "line": 26,
+          "kind": "call"
+        },
+        {
+          "file": "src/openbox/pages/settings/ClientRoutingSettings.tsx",
+          "line": 45,
+          "kind": "call"
+        },
+        {
+          "file": "src/openbox/pages/settings/ChainProxySettings.tsx",
+          "line": 75,
+          "kind": "call"
+        },
+        {
+          "file": "src/openbox/pages/settings/ShareNetworkSettings.tsx",
+          "line": 75,
+          "kind": "call"
+        },
+        {
+          "file": "src/openbox/pages/settings/DnsSettings.tsx",
+          "line": 55,
+          "kind": "call"
+        },
+        {
+          "file": "src/openbox/pages/settings/DnsSettings.tsx",
+          "line": 56,
+          "kind": "call"
+        },
+        {
+          "file": "src/openbox/pages/settings/BackendSettings.tsx",
+          "line": 29,
+          "kind": "call"
+        },
+        {
+          "file": "src/openbox/pages/settings/BackendSettings.tsx",
+          "line": 32,
+          "kind": "call"
+        }
+      ],
+      "tests": []
+    },
+    {
+      "number": 61,
+      "name": "saveProfile",
+      "line": 220,
+      "declaration": "saveProfile: async (profile: ProfilePatch) => (await request<{ profile: OpenBoxProfile }>(\"/api/openbox/profile\", { method: \"PUT\", ...json(profile) })).profile",
+      "business": [
+        {
+          "file": "src/openbox/pages/settings/RoutingSettings.tsx",
+          "line": 32,
+          "kind": "call"
+        },
+        {
+          "file": "src/openbox/pages/settings/ClientRoutingSettings.tsx",
+          "line": 58,
+          "kind": "call"
+        },
+        {
+          "file": "src/openbox/pages/settings/ChainProxySettings.tsx",
+          "line": 90,
+          "kind": "call"
+        },
+        {
+          "file": "src/openbox/pages/settings/ShareNetworkSettings.tsx",
+          "line": 84,
+          "kind": "call"
+        },
+        {
+          "file": "src/openbox/pages/settings/DnsSettings.tsx",
+          "line": 64,
+          "kind": "call"
+        },
+        {
+          "file": "src/openbox/pages/settings/BackendSettings.tsx",
+          "line": 45,
+          "kind": "call"
+        }
+      ],
+      "tests": [
+        {
+          "file": "src/openbox/api/client.test.ts",
+          "line": 165,
+          "kind": "call"
+        },
+        {
+          "file": "src/openbox/api/client.test.ts",
+          "line": 177,
+          "kind": "call"
+        },
+        {
+          "file": "src/openbox/api/client.test.ts",
+          "line": 188,
+          "kind": "call"
+        },
+        {
+          "file": "src/openbox/api/client.test.ts",
+          "line": 197,
+          "kind": "call"
+        },
+        {
+          "file": "src/openbox/pages/settings/BackendSettings.test.ts",
+          "line": 22,
+          "kind": "call"
+        },
+        {
+          "file": "src/openbox/pages/settings/DnsSettings.test.ts",
+          "line": 65,
+          "kind": "call"
+        }
+      ]
+    },
+    {
+      "number": 62,
+      "name": "defaultRouting",
+      "line": 221,
+      "declaration": "defaultRouting: async () => (await request<{ routing: OpenBoxProfile[\"routing\"] }>(\"/api/openbox/defaults/routing\")).routing",
+      "business": [
+        {
+          "file": "src/openbox/pages/settings/RoutingSettings.tsx",
+          "line": 98,
+          "kind": "call"
+        }
+      ],
+      "tests": [
+        {
+          "file": "src/openbox/api/client.test.ts",
+          "line": 198,
+          "kind": "call"
+        }
+      ]
+    },
+    {
+      "number": 63,
+      "name": "ruleSetEntries",
+      "line": 222,
+      "declaration": "ruleSetEntries: (source: { tag: string } | { url: string }, q = \"\", offset = 0, limit = 50) => {\n    const params = new URLSearchParams({ ...source, offset: String(offset), limit: String(limit) });\n    if (q) params.set(\"q\", q);\n    return request<RuleSetEntriesResponse>(`/api/openbox/rulesets/${\"tag\" in source ? \"entries\" : \"preview\"}?${params}`);\n  }",
+      "business": [
+        {
+          "file": "src/openbox/pages/settings/RoutingPickers.tsx",
+          "line": 15,
+          "kind": "call"
+        },
+        {
+          "file": "src/openbox/pages/settings/RoutingPickers.tsx",
+          "line": 103,
+          "kind": "call"
+        }
+      ],
+      "tests": [
+        {
+          "file": "src/openbox/api/client.test.ts",
+          "line": 206,
+          "kind": "call"
+        },
+        {
+          "file": "src/openbox/api/client.test.ts",
+          "line": 207,
+          "kind": "call"
+        }
+      ]
+    },
+    {
+      "number": 64,
+      "name": "importRuleSet",
+      "line": 227,
+      "declaration": "importRuleSet: (url: string) => request<{ entries: RuleSetEntry[] }>(`/api/openbox/rulesets/import?${new URLSearchParams({ url })}`)",
+      "business": [
+        {
+          "file": "src/openbox/pages/settings/RoutingPickers.tsx",
+          "line": 131,
+          "kind": "call"
+        }
+      ],
+      "tests": [
+        {
+          "file": "src/openbox/api/client.test.ts",
+          "line": 208,
+          "kind": "call"
+        }
+      ]
+    },
+    {
+      "number": 65,
+      "name": "refreshRuleSet",
+      "line": 228,
+      "declaration": "refreshRuleSet: (url: string) => request<{ total: number; needsRestart?: boolean }>(\"/api/openbox/rulesets/refresh\", { method: \"POST\", signal: AbortSignal.timeout(120_000), ...json({ url }) })",
+      "business": [
+        {
+          "file": "src/openbox/pages/settings/RoutingPickers.tsx",
+          "line": 80,
+          "kind": "call"
+        }
+      ],
+      "tests": [
+        {
+          "file": "src/openbox/api/client.test.ts",
+          "line": 209,
+          "kind": "call"
+        }
+      ]
+    },
+    {
+      "number": 66,
+      "name": "clients",
+      "line": 229,
+      "declaration": "clients: () => request<ClientsResponse>(\"/api/openbox/clients\")",
+      "business": [
+        {
+          "file": "src/openbox/pages/settings/ClientRoutingSettings.tsx",
+          "line": 47,
+          "kind": "call"
+        }
+      ],
+      "tests": [
+        {
+          "file": "src/openbox/api/client.test.ts",
+          "line": 187,
+          "kind": "call"
+        }
+      ]
+    },
+    {
+      "number": 67,
+      "name": "devices",
+      "line": 230,
+      "declaration": "devices: async () => (await request<{ devices: ClientDevice[] }>(\"/api/openbox/client-config/devices\")).devices",
+      "business": [],
+      "tests": []
+    },
+    {
+      "number": 68,
+      "name": "createDevice",
+      "line": 231,
+      "declaration": "createDevice: (name: string) => request<ClientDevice>(\"/api/openbox/client-config/devices\", { method: \"POST\", ...json({ name }) })",
+      "business": [],
+      "tests": []
+    },
+    {
+      "number": 69,
+      "name": "deleteDevice",
+      "line": 232,
+      "declaration": "deleteDevice: (name: string) => request<void>(`/api/openbox/client-config/devices/${encodeURIComponent(name)}`, { method: \"DELETE\" })",
+      "business": [],
+      "tests": []
+    },
+    {
+      "number": 70,
+      "name": "dnsFilter",
+      "line": 233,
+      "declaration": "dnsFilter: () => request<DnsFilterStatus>(\"/api/openbox/dns-filter\")",
+      "business": [
+        {
+          "file": "src/openbox/pages/settings/DnsSettings.tsx",
+          "line": 55,
+          "kind": "call"
+        },
+        {
+          "file": "src/openbox/pages/settings/DnsSettings.tsx",
+          "line": 56,
+          "kind": "call"
+        },
+        {
+          "file": "src/openbox/pages/settings/DnsSettings.tsx",
+          "line": 57,
+          "kind": "call"
+        }
+      ],
+      "tests": []
+    },
+    {
+      "number": 71,
+      "name": "saveDnsFilter",
+      "line": 234,
+      "declaration": "saveDnsFilter: (config: DnsFilterConfig) => request<unknown>(\"/api/openbox/dns-filter\", { method: \"PUT\", ...json(config) })",
+      "business": [
+        {
+          "file": "src/openbox/pages/settings/DnsSettings.tsx",
+          "line": 92,
+          "kind": "call"
+        }
+      ],
+      "tests": [
+        {
+          "file": "src/openbox/pages/settings/DnsSettings.test.ts",
+          "line": 66,
+          "kind": "call"
+        }
+      ]
+    },
+    {
+      "number": 72,
+      "name": "applyDnsFilter",
+      "line": 235,
+      "declaration": "applyDnsFilter: (update = false, listId = \"\") => request<unknown>(\"/api/openbox/dns-filter/apply\", { method: \"POST\", signal: AbortSignal.timeout(300_000), ...json({ update, ...(listId ? { listId } : {}) }) })",
+      "business": [
+        {
+          "file": "src/openbox/pages/settings/DnsSettings.tsx",
+          "line": 66,
+          "kind": "call"
+        }
+      ],
+      "tests": [
+        {
+          "file": "src/openbox/pages/settings/DnsSettings.test.ts",
+          "line": 67,
+          "kind": "call"
+        }
+      ]
+    },
+    {
+      "number": 73,
+      "name": "dnsRecords",
+      "line": 236,
+      "declaration": "dnsRecords: (search: string, result: string, page: number, pageSize: number) => request<DnsPageResult<DnsRecord>>(`/api/openbox/dns-filter/records?${new URLSearchParams({ search, result, page: String(page), pageSize: String(pageSize) })}`)",
+      "business": [
+        {
+          "file": "src/openbox/pages/settings/DnsQueryRecords.tsx",
+          "line": 18,
+          "kind": "call"
+        }
+      ],
+      "tests": [
+        {
+          "file": "src/openbox/pages/settings/DnsSettings.test.ts",
+          "line": 77,
+          "kind": "call"
+        }
+      ]
+    },
+    {
+      "number": 74,
+      "name": "dnsPreview",
+      "line": 237,
+      "declaration": "dnsPreview: (url: string, search: string, action: string, page: number, pageSize: number) => request<DnsPreview>(`/api/openbox/dns-filter/preview?${new URLSearchParams({ url, search, action, page: String(page), pageSize: String(pageSize) })}`)",
+      "business": [
+        {
+          "file": "src/openbox/pages/settings/DnsFilterSettings.tsx",
+          "line": 15,
+          "kind": "call"
+        }
+      ],
+      "tests": [
+        {
+          "file": "src/openbox/pages/settings/DnsSettings.test.ts",
+          "line": 78,
+          "kind": "call"
+        }
+      ]
+    },
+    {
+      "number": 75,
+      "name": "testDnsUpstream",
+      "line": 238,
+      "declaration": "testDnsUpstream: (value: DnsUpstream & { side: \"direct\" | \"proxy\" }) => request<DnsUpstreamTest>(\"/api/openbox/dns/upstream-test\", { method: \"POST\", ...json(value) })",
+      "business": [
+        {
+          "file": "src/openbox/pages/settings/DnsSettings.tsx",
+          "line": 24,
+          "kind": "call"
+        },
+        {
+          "file": "src/openbox/pages/settings/DnsSettings.tsx",
+          "line": 76,
+          "kind": "call"
+        }
+      ],
+      "tests": [
+        {
+          "file": "src/openbox/pages/settings/DnsSettings.test.ts",
+          "line": 64,
+          "kind": "call"
+        }
+      ]
+    },
+    {
+      "number": 76,
+      "name": "dnsRewriteDefaults",
+      "line": 239,
+      "declaration": "dnsRewriteDefaults: async () => (await request<{ dnsRewriteDefaults?: DnsRewriteRule[] }>(\"/api/openbox/profile/defaults?region=cn\")).dnsRewriteDefaults ?? []",
+      "business": [
+        {
+          "file": "src/openbox/pages/settings/DnsSettings.tsx",
+          "line": 89,
+          "kind": "call"
+        }
+      ],
+      "tests": [
+        {
+          "file": "src/openbox/pages/settings/DnsSettings.test.ts",
+          "line": 79,
+          "kind": "call"
+        }
+      ]
+    },
+    {
+      "number": 77,
+      "name": "flushDns",
+      "line": 240,
+      "declaration": "flushDns: () => request<void>(\"/api/openbox/dns/flush-cache\", { method: \"POST\" })",
+      "business": [
+        {
+          "file": "src/openbox/pages/settings/DnsSettings.tsx",
+          "line": 67,
+          "kind": "call"
+        }
+      ],
+      "tests": [
+        {
+          "file": "src/openbox/pages/settings/DnsSettings.test.ts",
+          "line": 67,
+          "kind": "call"
+        }
+      ]
+    }
+  ],
+  "sources": [
+    {
+      "file": "src/openbox/api/types.ts",
+      "sha256": "529a31b20fc46b181f6863b1b52a41b0a5922bc1f3efc66a00736a5cf5aec0a1",
+      "lines": 504
+    },
+    {
+      "file": "src/openbox/api/client.ts",
+      "sha256": "90a61044419565cd7e8772b022db50640ae8b70e41ae26f1d03bead70cf3c22f",
+      "lines": 242
+    },
+    {
+      "file": "src/openbox/lib/format.ts",
+      "sha256": "0532b87b2d5eb404f9712fcc3a427d49e7508b2e6b3476ce15d3bc6e95b2237a",
+      "lines": 63
+    },
+    {
+      "file": "src/openbox/components/shared.tsx",
+      "sha256": "82d0acfd379e3fe67ddc90adb4105e259cbee21ba7087e40c9666f517405948e",
+      "lines": 112
+    },
+    {
+      "file": "src/openbox/components/AppShell.tsx",
+      "sha256": "298fce70d738e3ab5686e5bad102b262814308fd9f6810f7e56c3518f2eaf875",
+      "lines": 77
+    },
+    {
+      "file": "src/openbox/components/AuthScreen.tsx",
+      "sha256": "9c7751e0ea8d6e38d7d64c07b4c755198d86a6d5e0e1de52f6bda07c5c4e4f20",
+      "lines": 46
+    },
+    {
+      "file": "src/openbox/hooks/useControllerSocket.ts",
+      "sha256": "b6ff352ec0676fc75996e7811dcc3ead0de8f880d192ed0a7c5c402c113d46c1",
+      "lines": 59
+    },
+    {
+      "file": "src/openbox/hooks/useLiveMetrics.ts",
+      "sha256": "8abd567bfb249efd20bf8f983ea38a96c266ae9b43cebb13c260bc646a4c285b",
+      "lines": 61
+    },
+    {
+      "file": "src/openbox/ui/select.tsx",
+      "sha256": "ac1a7f83e03df113f4da97b9e9716a6c48f0b9e110b0aeebe6628d5a813c96b1",
+      "lines": 36
+    },
+    {
+      "file": "src/openbox/ui/controls.tsx",
+      "sha256": "0d76c594887c54d9d5aeb1b602132eb367736d3d1ec9f8d4962e8b8d79bfb255",
+      "lines": 113
+    },
+    {
+      "file": "src/openbox/pages/OverviewPage.tsx",
+      "sha256": "71f550a875440de0cf41a9a1b0af5394d3824ab3c26aa6c614d671700c95606a",
+      "lines": 643
+    },
+    {
+      "file": "src/openbox/components/ProxyCards.tsx",
+      "sha256": "17549e2a7a6da8a36f4e3e0d36e297918daee244778328ae748c52fe58e4366b",
+      "lines": 412
+    },
+    {
+      "file": "src/openbox/pages/ProxiesPage.tsx",
+      "sha256": "5a8fb82e972fbd25e0f00fc2d0105d4c3b814891b82d9a1734a844b125d7db47",
+      "lines": 574
+    },
+    {
+      "file": "src/openbox/pages/ConnectionsPage.tsx",
+      "sha256": "d47fd51fefd3b8ba63b86834b307d3a779111f9f6266e7a3b2fc8191937ae517",
+      "lines": 1001
+    },
+    {
+      "file": "src/openbox/pages/LogsPage.tsx",
+      "sha256": "28316c59b2229adcb474caa94da8423ecba4fa7a0e0075ca597991b2e5b6029e",
+      "lines": 135
+    },
+    {
+      "file": "src/openbox/pages/RulesPage.tsx",
+      "sha256": "d5eb847c319a3f03509fbc4332dff7ce0cae6f3e2cb3a45fef737376fc4ce9dd",
+      "lines": 730
+    },
+    {
+      "file": "src/openbox/pages/settings/PanelIconPicker.tsx",
+      "sha256": "c7db1988fa50440b7fb4b2e8a26829b5a7223e03f76f25153cba99dd3edde4db",
+      "lines": 61
+    },
+    {
+      "file": "src/openbox/pages/settings/PanelSettings.tsx",
+      "sha256": "d882df4699e9d721b2601fbdac91122299cdf9718bc225873e38381b2ef7ab60",
+      "lines": 268
+    },
+    {
+      "file": "src/openbox/pages/settings/SubscriptionSettings.tsx",
+      "sha256": "d94353699a231fa3573b4dc2caa336037ca3af5bdb24de3837cc16d2a9c06ec1",
+      "lines": 914
+    },
+    {
+      "file": "src/openbox/pages/settings/GroupSettings.helpers.ts",
+      "sha256": "f8ca4db45f478455af38688068592172ff09e06502a4614a1935936b6d306c54",
+      "lines": 182
+    },
+    {
+      "file": "src/openbox/pages/settings/GroupSettings.tsx",
+      "sha256": "1416b9e383e1b6967c9d67cf15c0964b652df4946ee9fd76cc62ef66dd1a996e",
+      "lines": 628
+    },
+    {
+      "file": "src/openbox/components/SortableList.tsx",
+      "sha256": "e89d4c1e2ba4293fa6a87aaa54727b2976ecab946b7ff102f7599297c94af3cb",
+      "lines": 91
+    },
+    {
+      "file": "src/openbox/components/OutboundPicker.helpers.ts",
+      "sha256": "ad12dd248a559d0a40dc1ceb45dff868c9f1e92e4cd6d7c6d8555e179d674acd",
+      "lines": 13
+    },
+    {
+      "file": "src/openbox/components/usePickerSearch.ts",
+      "sha256": "169adf18131cdc7d24d01ffb68883bdc68f3af9440c17a38d12cdd403ae25103",
+      "lines": 23
+    },
+    {
+      "file": "src/openbox/components/OutboundPicker.tsx",
+      "sha256": "55c1d49bd2433a6e8587fcee7b040e267da294fa6e3ce4a9a0205d0a5cdfb094",
+      "lines": 70
+    },
+    {
+      "file": "src/openbox/pages/settings/RoutingSettings.helpers.ts",
+      "sha256": "d747df2a101dbdb382f3ddb2f7eff59546495b79cec386fa75c14318a313fac2",
+      "lines": 94
+    },
+    {
+      "file": "src/openbox/pages/settings/RoutingPickers.tsx",
+      "sha256": "ddcb11a4901282be85f7f3ddd9583a52e93d948fb1af51b2db41c6b422d574a7",
+      "lines": 142
+    },
+    {
+      "file": "src/openbox/pages/settings/RoutingSettings.tsx",
+      "sha256": "6455f6152958546d6d48e0261b222ba280e409041dfa74db077e5d2d527db41e",
+      "lines": 101
+    },
+    {
+      "file": "src/openbox/pages/settings/ClientRoutingSettings.helpers.ts",
+      "sha256": "4035348bab66ccb8dd773825009c5578075582f7ae75add9391c783122a3f9ee",
+      "lines": 66
+    },
+    {
+      "file": "src/openbox/pages/settings/ClientRoutingSettings.tsx",
+      "sha256": "000f091dfc5b17b889306f9bb2918bf4d124096622c84b7d65982d2b966ef68e",
+      "lines": 100
+    },
+    {
+      "file": "src/openbox/pages/settings/ChainProxySettings.helpers.ts",
+      "sha256": "7ee9d31e707a0124807e38d2ae72fa271edc0be8f04caec875d04f108dec7b53",
+      "lines": 82
+    },
+    {
+      "file": "src/openbox/pages/settings/ChainProxySettings.tsx",
+      "sha256": "fcae9d8dc50e519cce59bcbbdad9e0fe4daec4c6222d4bed7572d68e4e8f08d8",
+      "lines": 136
+    },
+    {
+      "file": "src/openbox/pages/settings/ShareNetworkSettings.helpers.ts",
+      "sha256": "439592a227f952a6675ba54e34a3dabfe7f46ffc7e3611980a97ab6b66ed2975",
+      "lines": 91
+    },
+    {
+      "file": "src/openbox/pages/settings/ShareNetworkSettings.tsx",
+      "sha256": "426bc03684c35f9b3e6c42f68ad22d0b50d8ad32c0359a1aed82d0510215e3f8",
+      "lines": 110
+    },
+    {
+      "file": "src/openbox/pages/settings/DnsSettings.messages.ts",
+      "sha256": "a755c9b8310570a1e1d0ef78f90e395d5fc57a2909607bc393fa4aac72c8c498",
+      "lines": 145
+    },
+    {
+      "file": "src/openbox/pages/settings/DnsSettings.helpers.ts",
+      "sha256": "9b5cb9d1f49e49337eba9c45cc7c2c2d3080441fc74175a90f31a9bfcb868445",
+      "lines": 49
+    },
+    {
+      "file": "src/openbox/pages/settings/DnsQueryRecords.tsx",
+      "sha256": "f79b95e16798fbc7ff9f25249b12a78deb299c2de9dc95de7cd349fa8c4b288c",
+      "lines": 28
+    },
+    {
+      "file": "src/openbox/pages/settings/DnsFilterSettings.tsx",
+      "sha256": "c801bacba0c5e326e379e5abac557c7d672a90b9c26a0c9c2cfd695c46a3ceda",
+      "lines": 44
+    },
+    {
+      "file": "src/openbox/pages/settings/DnsSettings.tsx",
+      "sha256": "64a1c62ef990f591e9628cca4b518a3cb0a130eca9c1609b8ef6e75352827be6",
+      "lines": 100
+    },
+    {
+      "file": "src/openbox/pages/settings/BackendSettings.messages.ts",
+      "sha256": "b5d926b47773c29e24f981942cf641cef1da01776d41c17aedd7a3c24cc994ec",
+      "lines": 167
+    },
+    {
+      "file": "src/openbox/pages/settings/BackendSettings.helpers.ts",
+      "sha256": "dc3f688d27b76ed78f0cc05cafac6d9451bf1c284df930e8dc626c4017f41645",
+      "lines": 66
+    },
+    {
+      "file": "src/openbox/pages/settings/BackendDataSettings.tsx",
+      "sha256": "4e6bb1461975c0a2e3d2d3d0436c39601c6fb0df883b5a959042b93a4f17990c",
+      "lines": 69
+    },
+    {
+      "file": "src/openbox/pages/settings/BackendUpdateControls.tsx",
+      "sha256": "5070260d1d011da67c6c880b679a67a5bd2423a0273227f1b50a9f1b7865f73a",
+      "lines": 74
+    },
+    {
+      "file": "src/openbox/pages/settings/BackendSettings.tsx",
+      "sha256": "c9ad58994b44b342afcac30ee4d407fef2a33e522bc4df070c395fb472bb33cb",
+      "lines": 82
+    },
+    {
+      "file": "src/openbox/pages/SettingsPage.tsx",
+      "sha256": "f164b85307937a7c859857f6a262da875e0a90ec35917f020de188c52ab22348",
+      "lines": 91
+    },
+    {
+      "file": "src/openbox/ui/sonner.tsx",
+      "sha256": "3fe54463607e1bf673ff2dc0b018061d13fcfe42304520ce9c704db5a753b973",
+      "lines": 43
+    },
+    {
+      "file": "src/openbox/OpenBoxApp.tsx",
+      "sha256": "e15f1c92e690809d862f346186a9d02e9a1880d261fe596d528847c0139c97ed",
+      "lines": 155
+    },
+    {
+      "file": "src/openbox/main.tsx",
+      "sha256": "103f2a0a4622cd39f58ece06c5969769422bb0028bb2a44138e19390ad123ba3",
+      "lines": 12
+    },
+    {
+      "file": "src/openbox/api/client.test.ts",
+      "sha256": "98a2136ca81e5e392768dadb3f3b6a3dc2eabbbc13ed1c7de35422a8e959051d",
+      "lines": 216
+    },
+    {
+      "file": "src/openbox/components/OutboundPicker.test.ts",
+      "sha256": "768f201ed942cbefcd9b9539dbe6bae59a4b57e24c29f778b1ad88720ebce418",
+      "lines": 12
+    },
+    {
+      "file": "src/openbox/pages/ConnectionsPage.test.ts",
+      "sha256": "1f57182c7aeb74e496f38e76f325c6f148b773c52ef1b765f00b13dea2b5cb05",
+      "lines": 171
+    },
+    {
+      "file": "src/openbox/pages/LogsPage.test.ts",
+      "sha256": "0925a216fa4bac6638f9d24fc11497d21ac2dc95dce8a296d1e8b7f6f1726aff",
+      "lines": 25
+    },
+    {
+      "file": "src/openbox/pages/OverviewPage.test.ts",
+      "sha256": "e28822a8cf853c1d920c9e0c62fafa3ea48b918e51d5d860e98371a53e707266",
+      "lines": 57
+    },
+    {
+      "file": "src/openbox/pages/ProxiesPage.test.ts",
+      "sha256": "a804ead1ce37eff9a34383c26d551e391a521f5f3ba3c5ebd7a599c08aa831c0",
+      "lines": 445
+    },
+    {
+      "file": "src/openbox/pages/RulesPage.test.ts",
+      "sha256": "a6cfc611fd26b292b3ad2febbf18d6d38cdef147cc60b0eb7674c673b7ce36c1",
+      "lines": 362
+    },
+    {
+      "file": "src/openbox/pages/SettingsPage.test.ts",
+      "sha256": "4ea4bd3bc280c63e0a6b29733b0435911c7c9124b90f0884fe289178e2b5c5b0",
+      "lines": 19
+    },
+    {
+      "file": "src/openbox/pages/settings/BackendSettings.test.ts",
+      "sha256": "b24d1fb1b8d2755b8b8bd0717d030aaf9a6850261a27f102a89ac7c49b9efd04",
+      "lines": 68
+    },
+    {
+      "file": "src/openbox/pages/settings/ChainProxySettings.test.ts",
+      "sha256": "8fad7708c33acb0305f23514f469348458cd163eab0174ade85bdba57c9c6524",
+      "lines": 75
+    },
+    {
+      "file": "src/openbox/pages/settings/ClientRoutingSettings.test.ts",
+      "sha256": "0bba79b2e14c38a190fa86ac462a4d3061b9d735727aa7f886a59abd2f9bfae8",
+      "lines": 55
+    },
+    {
+      "file": "src/openbox/pages/settings/DnsSettings.test.ts",
+      "sha256": "cf64f34ca02836c55f568070bdeca119ed458e68033648f579b2ce399bbd64f9",
+      "lines": 85
+    },
+    {
+      "file": "src/openbox/pages/settings/GroupSettings.test.ts",
+      "sha256": "3ea28a7f8232626552807f856fcd6770708cfb8cef01be187ac1243d004f1412",
+      "lines": 151
+    },
+    {
+      "file": "src/openbox/pages/settings/PanelSettings.test.ts",
+      "sha256": "92f76cf5a439e252e231d8d7fb9eaf441aca8157e1dd473ec2c85c1cb0d98165",
+      "lines": 52
+    },
+    {
+      "file": "src/openbox/pages/settings/RoutingSettings.test.ts",
+      "sha256": "dda2994a68f0d4ff44c3d97cb2fda9e3126311b314328e9d15881a9e51210993",
+      "lines": 64
+    },
+    {
+      "file": "src/openbox/pages/settings/ShareNetworkSettings.test.ts",
+      "sha256": "f1a49775aab37702c0cf2aff7e56c2276934ee45bb67647c13be928760454062",
+      "lines": 64
+    },
+    {
+      "file": "src/openbox/pages/settings/SubscriptionSettings.test.ts",
+      "sha256": "4e9069b377d1d1a5430ff98543862c81541909d61660271e3db56cc8f5762bb8",
+      "lines": 134
+    },
+    {
+      "file": "src/openbox/ui/controls.test.ts",
+      "sha256": "424aabfc16bf622fb8085a7efd6f9d0d1627e00b3c47290de04038d9fcb11f84",
+      "lines": 33
+    },
+    {
+      "file": "src/openbox/openbox.css",
+      "sha256": "b0e441729fdd55863036d71cd0c198cdd65d760e139ef8ae973a5b390128cf03"
+    },
+    {
+      "file": "vite.config.ts",
+      "sha256": "949415cb68b80029f52c7d6ca1f793cc63013cade45bcad6b656897280ca417b"
+    },
+    {
+      "file": "package.json",
+      "sha256": "f758b3f3c6a5168e503b195efb6ccce7a5be440bc2f346970a71449d8743e8f4"
+    }
+  ]
+}

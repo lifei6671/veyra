@@ -1,0 +1,785 @@
+//! 仅包含 Off 与 System Proxy 的串行运行时协调器。
+//!
+//! 该层接收已验证的领域运行意图，绝不接收 UI 命令、路径、PID 或原生参数。具体
+//! sidecar 与系统代理操作均通过封闭 Port 注入，因此默认构造和单元测试不会
+//! 启动外部进程或改写系统代理。
+
+// TASK-004 只验证闭合 Port 的运行时语义，明确不接入 Tauri/UI 或真实生产 Port；
+// 在后续授权接线前，这些内部用例会仅由本模块单元测试构造。
+#![allow(dead_code)]
+
+use std::sync::Mutex;
+
+use thiserror::Error;
+
+use crate::{
+    application::observability::InMemoryRuntimeObservations,
+    application::system_proxy::{
+        SystemProxyController, SystemProxyEnableError, SystemProxyRestoreOutcome,
+    },
+    domain::{DnsPolicy, RouteTarget, RuntimeIntent},
+    singbox::{
+        ConfigCompiler, RuntimeProfile, SingBoxCompiler,
+        runtime::{
+            RuntimeObservationSidecarPort, SidecarLifecycle, SidecarPort, SidecarPortError,
+            SidecarRuntime,
+        },
+        secret::generate_api_secret,
+    },
+};
+
+/// 应用可证明的捕获状态。`RecoveryRequired` 不能被静默降级为 Off。
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum CaptureMode {
+    Off,
+    SystemProxy,
+    RecoveryRequired,
+}
+
+/// 进入 System Proxy 后的可观察结果。
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum ActivateOutcome {
+    Activated,
+    Reconfigured,
+}
+
+/// 退出 System Proxy 后的可观察结果。
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum DeactivateOutcome {
+    Deactivated,
+    UserProxyPreserved,
+    AlreadyOff,
+}
+
+/// 脱敏且面向状态恢复的应用层失败。
+#[derive(Clone, Copy, Debug, Eq, Error, PartialEq)]
+pub enum RuntimeSupervisorError {
+    #[error("runtime intent could not be compiled")]
+    BuildFailed,
+    #[error("managed sidecar could not reach a stable ready state")]
+    SidecarFailed,
+    #[error("system proxy could not be applied")]
+    ProxyApplyFailed,
+    #[error("system proxy could not be restored")]
+    ProxyRestoreFailed,
+    #[error("runtime requires recovery before another mode transition")]
+    RecoveryRequired,
+}
+
+/// 串行协调 sidecar 与 System Proxy 的内部运行态；不持久化到 `AppState`。
+pub struct RuntimeSupervisor<S, P> {
+    compiler: SingBoxCompiler,
+    sidecar: Mutex<SidecarRuntime<S>>,
+    proxy: P,
+    state: Mutex<CaptureMode>,
+    transition: Mutex<()>,
+}
+
+impl<S, P> RuntimeSupervisor<S, P>
+where
+    S: SidecarPort,
+    P: SystemProxyController,
+{
+    pub fn new(sidecar: SidecarRuntime<S>, proxy: P) -> Self {
+        Self {
+            compiler: SingBoxCompiler,
+            sidecar: Mutex::new(sidecar),
+            proxy,
+            state: Mutex::new(CaptureMode::Off),
+            transition: Mutex::new(()),
+        }
+    }
+
+    pub fn capture_mode(&self) -> CaptureMode {
+        self.state
+            .lock()
+            .map(|state| *state)
+            .unwrap_or(CaptureMode::RecoveryRequired)
+    }
+
+    /// 在 Off 时先使 sidecar Ready，再改写受控 loopback 代理；在已启用时仅替换
+    /// 已验证 sidecar 配置，避免重新覆盖用户系统设置。
+    pub fn activate_system_proxy(
+        &self,
+        intent: &RuntimeIntent,
+        default_target: &RouteTarget,
+    ) -> Result<ActivateOutcome, RuntimeSupervisorError> {
+        let _transition = self
+            .transition
+            .lock()
+            .map_err(|_| RuntimeSupervisorError::RecoveryRequired)?;
+        match self.capture_mode() {
+            CaptureMode::Off => self.activate_from_off(intent, default_target),
+            CaptureMode::SystemProxy => self.reconfigure(intent, default_target),
+            CaptureMode::RecoveryRequired => Err(RuntimeSupervisorError::RecoveryRequired),
+        }
+    }
+
+    /// 先按 Platform Adapter 的语义条件恢复用户代理，再停止当前受管 child。
+    pub fn deactivate_system_proxy(&self) -> Result<DeactivateOutcome, RuntimeSupervisorError> {
+        let _transition = self
+            .transition
+            .lock()
+            .map_err(|_| RuntimeSupervisorError::RecoveryRequired)?;
+        match self.capture_mode() {
+            CaptureMode::Off => Ok(DeactivateOutcome::AlreadyOff),
+            CaptureMode::RecoveryRequired => Err(RuntimeSupervisorError::RecoveryRequired),
+            CaptureMode::SystemProxy => {
+                let restore = self
+                    .proxy
+                    .restore_proxy()
+                    .map_err(|_| RuntimeSupervisorError::ProxyRestoreFailed)?;
+                self.stop_sidecar_or_require_recovery()?;
+                self.set_state(CaptureMode::Off);
+                Ok(match restore {
+                    SystemProxyRestoreOutcome::UserModified => {
+                        DeactivateOutcome::UserProxyPreserved
+                    }
+                    SystemProxyRestoreOutcome::Restored | SystemProxyRestoreOutcome::NotManaged => {
+                        DeactivateOutcome::Deactivated
+                    }
+                })
+            }
+        }
+    }
+
+    fn activate_from_off(
+        &self,
+        intent: &RuntimeIntent,
+        default_target: &RouteTarget,
+    ) -> Result<ActivateOutcome, RuntimeSupervisorError> {
+        let mixed_port = self.start_sidecar(intent, default_target)?;
+        match self.proxy.enable_loopback_proxy(mixed_port) {
+            Ok(_) => {
+                self.set_state(CaptureMode::SystemProxy);
+                Ok(ActivateOutcome::Activated)
+            }
+            Err(SystemProxyEnableError::SafelyUnapplied(_)) => {
+                match self.stop_sidecar_or_require_recovery() {
+                    Ok(()) => Err(RuntimeSupervisorError::ProxyApplyFailed),
+                    Err(_) => Err(RuntimeSupervisorError::RecoveryRequired),
+                }
+            }
+            Err(SystemProxyEnableError::StateUncertain(_)) => {
+                self.set_state(CaptureMode::RecoveryRequired);
+                Err(RuntimeSupervisorError::RecoveryRequired)
+            }
+        }
+    }
+
+    fn reconfigure(
+        &self,
+        intent: &RuntimeIntent,
+        default_target: &RouteTarget,
+    ) -> Result<ActivateOutcome, RuntimeSupervisorError> {
+        self.start_sidecar(intent, default_target)?;
+        Ok(ActivateOutcome::Reconfigured)
+    }
+
+    fn start_sidecar(
+        &self,
+        intent: &RuntimeIntent,
+        default_target: &RouteTarget,
+    ) -> Result<std::num::NonZeroU16, RuntimeSupervisorError> {
+        let plan = self
+            .compiler
+            .compile(
+                intent,
+                default_target,
+                DnsPolicy::System,
+                RuntimeProfile::ObservationOnly,
+            )
+            .map_err(|_| RuntimeSupervisorError::BuildFailed)?;
+        let secret = generate_api_secret().map_err(|_| RuntimeSupervisorError::BuildFailed)?;
+        let candidate = plan
+            .finalize(&secret)
+            .map_err(|_| RuntimeSupervisorError::BuildFailed)?;
+        let mut sidecar = self
+            .sidecar
+            .lock()
+            .map_err(|_| RuntimeSupervisorError::RecoveryRequired)?;
+        if sidecar.start_or_replace(candidate).is_err() {
+            if sidecar.snapshot().lifecycle == SidecarLifecycle::RecoveryRequired
+                || (self.capture_mode() == CaptureMode::SystemProxy
+                    && sidecar.snapshot().lifecycle != SidecarLifecycle::Ready)
+            {
+                self.set_state(CaptureMode::RecoveryRequired);
+            }
+            return Err(RuntimeSupervisorError::SidecarFailed);
+        }
+        sidecar
+            .mixed_port()
+            .ok_or(RuntimeSupervisorError::SidecarFailed)
+    }
+
+    fn stop_sidecar_or_require_recovery(&self) -> Result<(), RuntimeSupervisorError> {
+        let mut sidecar = self
+            .sidecar
+            .lock()
+            .map_err(|_| RuntimeSupervisorError::RecoveryRequired)?;
+        if sidecar.stop().is_err() {
+            self.set_state(CaptureMode::RecoveryRequired);
+            return Err(RuntimeSupervisorError::RecoveryRequired);
+        }
+        Ok(())
+    }
+
+    fn set_state(&self, state: CaptureMode) {
+        if let Ok(mut current) = self.state.lock() {
+            *current = state;
+        }
+    }
+}
+
+impl<S, P> RuntimeSupervisor<S, P>
+where
+    S: SidecarPort + RuntimeObservationSidecarPort,
+    P: SystemProxyController,
+{
+    /// 只由后端运行时 owner 调用的受控采样入口。
+    ///
+    /// 它只在已有 active child 时委托 Port 读取固定 bridge；IPC Snapshot、事件和窗口操作均不调用此方法。
+    pub fn refresh_runtime_observation(&self, observations: &InMemoryRuntimeObservations) {
+        let sampled = self
+            .sidecar
+            .lock()
+            .map_err(|_| SidecarPortError)
+            .and_then(|mut sidecar| {
+                sidecar.with_active_port(|port, child| port.read_runtime_observation(child))
+            });
+        match sampled {
+            Ok(Some(observation)) => observations.record_managed_observation(observation),
+            Ok(None) => {}
+            Err(_) => observations.record_managed_recovery(),
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::{
+        num::NonZeroU16,
+        sync::{
+            Arc, Mutex,
+            mpsc::{self, Receiver, Sender},
+        },
+        thread,
+        time::Duration,
+    };
+
+    use super::*;
+    use crate::application::system_proxy::{
+        ProxyState, SystemProxyEnableOutcome, SystemProxyError,
+    };
+    use crate::{
+        application::observability::{
+            InMemoryRuntimeObservations, ObservationSource, ObservedSidecarLifecycle,
+            RuntimeObservationPort,
+        },
+        domain::{NodeId, ProtocolOptions, ProviderId, ProxyNode, ProxyProtocol},
+        singbox::runtime::{ManagedSidecar, SidecarPortError},
+    };
+
+    #[derive(Default)]
+    struct MockSidecar {
+        events: Arc<Mutex<Vec<&'static str>>>,
+        fail_check: bool,
+        fail_stop: bool,
+        next_identity: u64,
+        second_check: Option<Sender<usize>>,
+        observation:
+            Option<Result<crate::singbox::clash_api::ClashRuntimeObservation, SidecarPortError>>,
+    }
+
+    impl MockSidecar {
+        fn record(&self, event: &'static str) {
+            self.events.lock().expect("test events").push(event);
+        }
+    }
+
+    impl SidecarPort for MockSidecar {
+        fn cancel_pending(&mut self) -> Result<(), SidecarPortError> {
+            Ok(())
+        }
+
+        fn has_pending_cleanup(&self) -> bool {
+            false
+        }
+
+        fn check(&mut self, _: &crate::singbox::GeneratedConfig) -> Result<(), SidecarPortError> {
+            self.record("check");
+            self.next_identity += 1;
+            if self.next_identity > 1
+                && let Some(second_check) = &self.second_check
+            {
+                let _ = second_check.send(self.next_identity as usize);
+            }
+            (!self.fail_check).then_some(()).ok_or(SidecarPortError)
+        }
+
+        fn prepare(&mut self, _: &crate::singbox::GeneratedConfig) -> Result<(), SidecarPortError> {
+            self.record("prepare");
+            Ok(())
+        }
+
+        fn run(&mut self) -> Result<ManagedSidecar, SidecarPortError> {
+            self.record("run");
+            Ok(ManagedSidecar::from_port_identity(self.next_identity))
+        }
+
+        fn ready(&mut self, _: &ManagedSidecar) -> Result<(), SidecarPortError> {
+            self.record("ready");
+            Ok(())
+        }
+
+        fn stop(&mut self, _: &ManagedSidecar) -> Result<(), SidecarPortError> {
+            self.record("stop");
+            (!self.fail_stop).then_some(()).ok_or(SidecarPortError)
+        }
+    }
+
+    impl RuntimeObservationSidecarPort for MockSidecar {
+        fn read_runtime_observation(
+            &mut self,
+            _: &ManagedSidecar,
+        ) -> Result<crate::singbox::clash_api::ClashRuntimeObservation, SidecarPortError> {
+            self.record("observe");
+            self.observation.take().unwrap_or(Err(SidecarPortError))
+        }
+    }
+
+    struct MockProxy {
+        events: Arc<Mutex<Vec<&'static str>>>,
+        fail_enable: bool,
+        fail_restore: bool,
+        restore: SystemProxyRestoreOutcome,
+        enable_started: Mutex<Option<Sender<()>>>,
+        enable_release: Mutex<Option<Receiver<()>>>,
+    }
+
+    impl MockProxy {
+        fn new(events: Arc<Mutex<Vec<&'static str>>>) -> Self {
+            Self {
+                events,
+                fail_enable: false,
+                fail_restore: false,
+                restore: SystemProxyRestoreOutcome::Restored,
+                enable_started: Mutex::new(None),
+                enable_release: Mutex::new(None),
+            }
+        }
+
+        fn record(&self, event: &'static str) {
+            self.events.lock().expect("test events").push(event);
+        }
+    }
+
+    impl SystemProxyController for MockProxy {
+        fn enable_loopback_proxy(
+            &self,
+            _: NonZeroU16,
+        ) -> Result<SystemProxyEnableOutcome, SystemProxyEnableError> {
+            self.record("proxy-enable");
+            if let Some(started) = self.enable_started.lock().expect("test gate").take() {
+                started.send(()).expect("test receiver");
+                self.enable_release
+                    .lock()
+                    .expect("test gate")
+                    .take()
+                    .expect("test release gate")
+                    .recv()
+                    .expect("test release");
+            }
+            (!self.fail_enable)
+                .then_some(SystemProxyEnableOutcome::Enabled)
+                .ok_or(SystemProxyEnableError::SafelyUnapplied(
+                    SystemProxyError::Write,
+                ))
+        }
+
+        fn restore_proxy(&self) -> Result<SystemProxyRestoreOutcome, SystemProxyError> {
+            self.record("proxy-restore");
+            (!self.fail_restore)
+                .then_some(self.restore)
+                .ok_or(SystemProxyError::Read)
+        }
+
+        fn state(&self) -> Result<ProxyState, SystemProxyError> {
+            Ok(ProxyState::NotManaged)
+        }
+    }
+
+    fn default_target() -> RouteTarget {
+        RouteTarget::Pool(crate::domain::PoolId("main".to_owned()))
+    }
+
+    fn intent() -> RuntimeIntent {
+        RuntimeIntent {
+            nodes: vec![ProxyNode {
+                id: NodeId("node".to_owned()),
+                provider_id: ProviderId("provider".to_owned()),
+                name: "fixture node".to_owned(),
+                protocol: ProxyProtocol::Vless,
+                server: "example.invalid".to_owned(),
+                port: 443,
+                options: ProtocolOptions::Vless {
+                    uuid: "00000000-0000-4000-8000-000000000001".to_owned(),
+                    flow: None,
+                },
+                transport: None,
+                tls: None,
+            }],
+            pools: vec![crate::domain::RuntimePool {
+                id: crate::domain::PoolId("main".to_owned()),
+                members: vec![NodeId("node".to_owned())],
+                selection: crate::domain::SelectionPolicy::Manual {
+                    selected_node_id: None,
+                },
+            }],
+            routes: Vec::new(),
+        }
+    }
+
+    fn supervisor<P>(sidecar: MockSidecar, proxy: P) -> RuntimeSupervisor<MockSidecar, P>
+    where
+        P: SystemProxyController,
+    {
+        RuntimeSupervisor::new(
+            SidecarRuntime::new(
+                sidecar,
+                NonZeroU16::new(20_890).expect("non-zero fixture port"),
+            ),
+            proxy,
+        )
+    }
+
+    #[test]
+    fn activation_waits_for_ready_before_applying_loopback_proxy() {
+        let events = Arc::new(Mutex::new(Vec::new()));
+        let result = supervisor(
+            MockSidecar {
+                events: Arc::clone(&events),
+                ..MockSidecar::default()
+            },
+            MockProxy::new(Arc::clone(&events)),
+        )
+        .activate_system_proxy(&intent(), &default_target());
+
+        assert_eq!(result, Ok(ActivateOutcome::Activated));
+        assert_eq!(
+            *events.lock().expect("test events"),
+            vec!["check", "prepare", "run", "ready", "proxy-enable"]
+        );
+    }
+
+    #[test]
+    fn sidecar_failure_leaves_system_proxy_untouched() {
+        let events = Arc::new(Mutex::new(Vec::new()));
+        let runtime = supervisor(
+            MockSidecar {
+                events: Arc::clone(&events),
+                fail_check: true,
+                ..MockSidecar::default()
+            },
+            MockProxy::new(Arc::clone(&events)),
+        );
+
+        assert_eq!(
+            runtime.activate_system_proxy(&intent(), &default_target()),
+            Err(RuntimeSupervisorError::SidecarFailed)
+        );
+        assert_eq!(runtime.capture_mode(), CaptureMode::Off);
+        assert_eq!(*events.lock().expect("test events"), vec!["check"]);
+    }
+
+    #[test]
+    fn refresh_reads_only_the_active_sidecars_fixed_safe_summary() {
+        let events = Arc::new(Mutex::new(Vec::new()));
+        let runtime = supervisor(
+            MockSidecar {
+                events: Arc::clone(&events),
+                observation: Some(Ok(crate::singbox::clash_api::ClashRuntimeObservation {
+                    connections: crate::singbox::clash_api::ClashConnectionSnapshot {
+                        upload_total_bytes: 0,
+                        download_total_bytes: 0,
+                        connection_count: 2,
+                    },
+                    traffic: Some(crate::singbox::clash_api::ClashTrafficObservation {
+                        upload_bytes_per_second: 10,
+                        download_bytes_per_second: 20,
+                        upload_total_bytes: 30,
+                        download_total_bytes: 40,
+                    }),
+                    latest_log: None,
+                })),
+                ..MockSidecar::default()
+            },
+            MockProxy::new(Arc::clone(&events)),
+        );
+        let observations = InMemoryRuntimeObservations::new_mock();
+
+        runtime.refresh_runtime_observation(&observations);
+        assert_eq!(observations.snapshot().source, ObservationSource::MockOnly);
+
+        runtime
+            .activate_system_proxy(&intent(), &default_target())
+            .expect("activate mock runtime");
+        runtime.refresh_runtime_observation(&observations);
+
+        let snapshot = observations.snapshot();
+        assert_eq!(snapshot.source, ObservationSource::ManagedSidecar);
+        assert_eq!(snapshot.sidecar_lifecycle, ObservedSidecarLifecycle::Ready);
+        assert_eq!(snapshot.connections.active, 2);
+        assert_eq!(snapshot.traffic.upload_total_bytes, 30);
+        assert_eq!(events.lock().expect("test events").last(), Some(&"observe"));
+    }
+
+    #[test]
+    fn active_bridge_failure_maps_to_closed_recovery_without_raw_error() {
+        let events = Arc::new(Mutex::new(Vec::new()));
+        let runtime = supervisor(
+            MockSidecar {
+                events: Arc::clone(&events),
+                observation: Some(Err(SidecarPortError)),
+                ..MockSidecar::default()
+            },
+            MockProxy::new(Arc::clone(&events)),
+        );
+        let observations = InMemoryRuntimeObservations::new_mock();
+
+        runtime
+            .activate_system_proxy(&intent(), &default_target())
+            .expect("activate mock runtime");
+        runtime.refresh_runtime_observation(&observations);
+
+        let snapshot = observations.snapshot();
+        assert_eq!(snapshot.source, ObservationSource::ManagedSidecar);
+        assert_eq!(
+            snapshot.sidecar_lifecycle,
+            ObservedSidecarLifecycle::RecoveryRequired
+        );
+        assert_eq!(snapshot.latest_log, None);
+    }
+
+    #[test]
+    fn proxy_apply_failure_stops_the_ready_sidecar() {
+        let events = Arc::new(Mutex::new(Vec::new()));
+        let runtime = supervisor(
+            MockSidecar {
+                events: Arc::clone(&events),
+                ..MockSidecar::default()
+            },
+            MockProxy {
+                events: Arc::clone(&events),
+                fail_enable: true,
+                fail_restore: false,
+                restore: SystemProxyRestoreOutcome::Restored,
+                enable_started: Mutex::new(None),
+                enable_release: Mutex::new(None),
+            },
+        );
+
+        assert_eq!(
+            runtime.activate_system_proxy(&intent(), &default_target()),
+            Err(RuntimeSupervisorError::ProxyApplyFailed)
+        );
+        assert_eq!(runtime.capture_mode(), CaptureMode::Off);
+        assert_eq!(
+            *events.lock().expect("test events"),
+            vec!["check", "prepare", "run", "ready", "proxy-enable", "stop"]
+        );
+    }
+
+    #[test]
+    fn proxy_apply_compensation_stop_failure_requires_recovery() {
+        let events = Arc::new(Mutex::new(Vec::new()));
+        let runtime = supervisor(
+            MockSidecar {
+                events: Arc::clone(&events),
+                fail_stop: true,
+                ..MockSidecar::default()
+            },
+            MockProxy {
+                events: Arc::clone(&events),
+                fail_enable: true,
+                fail_restore: false,
+                restore: SystemProxyRestoreOutcome::Restored,
+                enable_started: Mutex::new(None),
+                enable_release: Mutex::new(None),
+            },
+        );
+
+        assert_eq!(
+            runtime.activate_system_proxy(&intent(), &default_target()),
+            Err(RuntimeSupervisorError::RecoveryRequired)
+        );
+        assert_eq!(runtime.capture_mode(), CaptureMode::RecoveryRequired);
+    }
+
+    #[test]
+    fn restore_failure_keeps_sidecar_running_and_mode_stable() {
+        let events = Arc::new(Mutex::new(Vec::new()));
+        let runtime = supervisor(
+            MockSidecar {
+                events: Arc::clone(&events),
+                ..MockSidecar::default()
+            },
+            MockProxy {
+                events: Arc::clone(&events),
+                fail_enable: false,
+                fail_restore: true,
+                restore: SystemProxyRestoreOutcome::Restored,
+                enable_started: Mutex::new(None),
+                enable_release: Mutex::new(None),
+            },
+        );
+        runtime
+            .activate_system_proxy(&intent(), &default_target())
+            .expect("activate runtime");
+        events.lock().expect("test events").clear();
+
+        assert_eq!(
+            runtime.deactivate_system_proxy(),
+            Err(RuntimeSupervisorError::ProxyRestoreFailed)
+        );
+        assert_eq!(runtime.capture_mode(), CaptureMode::SystemProxy);
+        assert_eq!(*events.lock().expect("test events"), vec!["proxy-restore"]);
+    }
+
+    #[test]
+    fn user_proxy_change_is_preserved_before_stopping_sidecar() {
+        let events = Arc::new(Mutex::new(Vec::new()));
+        let runtime = supervisor(
+            MockSidecar {
+                events: Arc::clone(&events),
+                ..MockSidecar::default()
+            },
+            MockProxy {
+                events: Arc::clone(&events),
+                fail_enable: false,
+                fail_restore: false,
+                restore: SystemProxyRestoreOutcome::UserModified,
+                enable_started: Mutex::new(None),
+                enable_release: Mutex::new(None),
+            },
+        );
+        runtime
+            .activate_system_proxy(&intent(), &default_target())
+            .expect("activate runtime");
+        events.lock().expect("test events").clear();
+
+        assert_eq!(
+            runtime.deactivate_system_proxy(),
+            Ok(DeactivateOutcome::UserProxyPreserved)
+        );
+        assert_eq!(runtime.capture_mode(), CaptureMode::Off);
+        assert_eq!(
+            *events.lock().expect("test events"),
+            vec!["proxy-restore", "stop"]
+        );
+    }
+
+    #[test]
+    fn reconfiguration_replaces_sidecar_without_reapplying_system_proxy() {
+        let events = Arc::new(Mutex::new(Vec::new()));
+        let runtime = supervisor(
+            MockSidecar {
+                events: Arc::clone(&events),
+                ..MockSidecar::default()
+            },
+            MockProxy::new(Arc::clone(&events)),
+        );
+        runtime
+            .activate_system_proxy(&intent(), &default_target())
+            .expect("activate runtime");
+        events.lock().expect("test events").clear();
+
+        assert_eq!(
+            runtime.activate_system_proxy(&intent(), &default_target()),
+            Ok(ActivateOutcome::Reconfigured)
+        );
+        assert_eq!(runtime.capture_mode(), CaptureMode::SystemProxy);
+        assert_eq!(
+            *events.lock().expect("test events"),
+            vec!["check", "prepare", "stop", "run", "ready"]
+        );
+    }
+
+    #[test]
+    fn concurrent_mode_changes_cannot_interleave_proxy_and_sidecar_operations() {
+        let events = Arc::new(Mutex::new(Vec::new()));
+        let (proxy_started_tx, proxy_started_rx) = mpsc::channel();
+        let (proxy_release_tx, proxy_release_rx) = mpsc::channel();
+        let (second_check_tx, second_check_rx) = mpsc::channel();
+        let proxy = MockProxy::new(Arc::clone(&events));
+        *proxy.enable_started.lock().expect("test gate") = Some(proxy_started_tx);
+        *proxy.enable_release.lock().expect("test gate") = Some(proxy_release_rx);
+        let runtime = Arc::new(supervisor(
+            MockSidecar {
+                events,
+                second_check: Some(second_check_tx),
+                ..MockSidecar::default()
+            },
+            proxy,
+        ));
+
+        let first_runtime = Arc::clone(&runtime);
+        let first = thread::spawn(move || {
+            first_runtime.activate_system_proxy(&intent(), &default_target())
+        });
+        proxy_started_rx
+            .recv_timeout(Duration::from_secs(1))
+            .expect("first transition reached the blocked proxy operation");
+
+        let second_runtime = Arc::clone(&runtime);
+        let second = thread::spawn(move || {
+            second_runtime.activate_system_proxy(&intent(), &default_target())
+        });
+        assert!(
+            second_check_rx
+                .recv_timeout(Duration::from_millis(100))
+                .is_err(),
+            "a second sidecar check must wait until the first proxy operation finishes"
+        );
+
+        proxy_release_tx.send(()).expect("release first transition");
+        assert_eq!(
+            first.join().expect("first transition thread"),
+            Ok(ActivateOutcome::Activated)
+        );
+        assert_eq!(
+            second.join().expect("second transition thread"),
+            Ok(ActivateOutcome::Reconfigured)
+        );
+        assert_eq!(
+            second_check_rx
+                .recv_timeout(Duration::from_secs(1))
+                .expect("second transition eventually starts"),
+            2
+        );
+    }
+
+    #[test]
+    fn rejected_default_preserves_active_configuration_without_port_calls() {
+        let events = Arc::new(Mutex::new(Vec::new()));
+        let runtime = supervisor(
+            MockSidecar {
+                events: Arc::clone(&events),
+                ..MockSidecar::default()
+            },
+            MockProxy::new(Arc::clone(&events)),
+        );
+        runtime
+            .activate_system_proxy(&intent(), &default_target())
+            .expect("active fixture");
+        let before = runtime.sidecar.lock().expect("sidecar").snapshot();
+        events.lock().expect("events").clear();
+        assert_eq!(
+            runtime.activate_system_proxy(&intent(), &RouteTarget::Unconfigured),
+            Err(RuntimeSupervisorError::BuildFailed)
+        );
+        assert_eq!(runtime.sidecar.lock().expect("sidecar").snapshot(), before);
+        assert_eq!(runtime.capture_mode(), CaptureMode::SystemProxy);
+        assert!(events.lock().expect("events").is_empty());
+    }
+}

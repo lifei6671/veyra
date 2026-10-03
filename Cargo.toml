@@ -1,0 +1,4 @@
+[workspace]
+members = ["crates/veyra-core", "src-tauri"]
+default-members = ["crates/veyra-core"]
+resolver = "3"

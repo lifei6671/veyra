@@ -1,0 +1,392 @@
+{
+  "cases": [
+    {
+      "id": "prelogin-auth-status",
+      "provenance": {
+        "category": "实际运行观测",
+        "observed": true,
+        "commit": "7fab0e47d2a28446e131b7cd737ef4a5a43d55fb",
+        "source": [],
+        "endpoint": "/api/auth/status",
+        "origin": "https://openbox.disign.me",
+        "transport": "HTTP GET",
+        "observedAt": "2026-10-03T10:43:42.397218+00:00",
+        "redaction": "仅使用本次临时会话；不记录请求 body/headers/凭据。响应所有字符串值、动态字典键和未知字段名删除；只留字段类型/数组长度，HTML 只留长度。原文仅内存。"
+      },
+      "httpStatus": 403,
+      "contentType": "text/html; charset=UTF-8",
+      "curlExit": 0,
+      "fieldShape": {
+        "kind": "non-json",
+        "bytes": 4545,
+        "bodyRemoved": true
+      },
+      "authenticatedConfirmed": false,
+      "limit": "单次登录尝试，不跟随重定向；拒绝响应不证明业务 DTO。未取得或保存服务/控制器版本。"
+    },
+    {
+      "id": "login-login",
+      "provenance": {
+        "category": "实际运行观测",
+        "observed": true,
+        "commit": "7fab0e47d2a28446e131b7cd737ef4a5a43d55fb",
+        "source": [],
+        "endpoint": "/api/auth/login",
+        "origin": "https://openbox.disign.me",
+        "transport": "HTTP POST",
+        "observedAt": "2026-10-03T10:43:43.123552+00:00",
+        "redaction": "仅使用本次临时会话；不记录请求 body/headers/凭据。响应所有字符串值、动态字典键和未知字段名删除；只留字段类型/数组长度，HTML 只留长度。原文仅内存。"
+      },
+      "httpStatus": 403,
+      "contentType": "text/html; charset=UTF-8",
+      "curlExit": 0,
+      "fieldShape": {
+        "kind": "non-json",
+        "bytes": 4545,
+        "bodyRemoved": true
+      },
+      "authenticatedConfirmed": false,
+      "limit": "单次登录尝试，不跟随重定向；拒绝响应不证明业务 DTO。未取得或保存服务/控制器版本。"
+    },
+    {
+      "id": "readonly-after-login-attempt-1",
+      "provenance": {
+        "category": "实际运行观测",
+        "observed": true,
+        "commit": "7fab0e47d2a28446e131b7cd737ef4a5a43d55fb",
+        "source": [],
+        "endpoint": "/api/auth/status",
+        "origin": "https://openbox.disign.me",
+        "transport": "HTTP GET",
+        "observedAt": "2026-10-03T10:43:43.804285+00:00",
+        "redaction": "仅使用本次临时会话；不记录请求 body/headers/凭据。响应所有字符串值、动态字典键和未知字段名删除；只留字段类型/数组长度，HTML 只留长度。原文仅内存。"
+      },
+      "httpStatus": 403,
+      "contentType": "text/html; charset=UTF-8",
+      "curlExit": 0,
+      "fieldShape": {
+        "kind": "non-json",
+        "bytes": 4545,
+        "bodyRemoved": true
+      },
+      "authenticatedConfirmed": false,
+      "limit": "单次登录尝试，不跟随重定向；拒绝响应不证明业务 DTO。未取得或保存服务/控制器版本。"
+    },
+    {
+      "id": "readonly-after-login-attempt-2",
+      "provenance": {
+        "category": "实际运行观测",
+        "observed": true,
+        "commit": "7fab0e47d2a28446e131b7cd737ef4a5a43d55fb",
+        "source": [],
+        "endpoint": "/api/storage",
+        "origin": "https://openbox.disign.me",
+        "transport": "HTTP GET",
+        "observedAt": "2026-10-03T10:43:43.804572+00:00",
+        "redaction": "仅使用本次临时会话；不记录请求 body/headers/凭据。响应所有字符串值、动态字典键和未知字段名删除；只留字段类型/数组长度，HTML 只留长度。原文仅内存。"
+      },
+      "httpStatus": 403,
+      "contentType": "text/html; charset=UTF-8",
+      "curlExit": 0,
+      "fieldShape": {
+        "kind": "non-json",
+        "bytes": 4545,
+        "bodyRemoved": true
+      },
+      "authenticatedConfirmed": false,
+      "limit": "单次登录尝试，不跟随重定向；拒绝响应不证明业务 DTO。未取得或保存服务/控制器版本。"
+    },
+    {
+      "id": "readonly-after-login-attempt-3",
+      "provenance": {
+        "category": "实际运行观测",
+        "observed": true,
+        "commit": "7fab0e47d2a28446e131b7cd737ef4a5a43d55fb",
+        "source": [],
+        "endpoint": "/api/openbox/service/status",
+        "origin": "https://openbox.disign.me",
+        "transport": "HTTP GET",
+        "observedAt": "2026-10-03T10:43:43.804752+00:00",
+        "redaction": "仅使用本次临时会话；不记录请求 body/headers/凭据。响应所有字符串值、动态字典键和未知字段名删除；只留字段类型/数组长度，HTML 只留长度。原文仅内存。"
+      },
+      "httpStatus": 403,
+      "contentType": "text/html; charset=UTF-8",
+      "curlExit": 0,
+      "fieldShape": {
+        "kind": "non-json",
+        "bytes": 4545,
+        "bodyRemoved": true
+      },
+      "authenticatedConfirmed": false,
+      "limit": "单次登录尝试，不跟随重定向；拒绝响应不证明业务 DTO。未取得或保存服务/控制器版本。"
+    },
+    {
+      "id": "readonly-after-login-attempt-4",
+      "provenance": {
+        "category": "实际运行观测",
+        "observed": true,
+        "commit": "7fab0e47d2a28446e131b7cd737ef4a5a43d55fb",
+        "source": [],
+        "endpoint": "/api/controller/configs",
+        "origin": "https://openbox.disign.me",
+        "transport": "HTTP GET",
+        "observedAt": "2026-10-03T10:43:43.816078+00:00",
+        "redaction": "仅使用本次临时会话；不记录请求 body/headers/凭据。响应所有字符串值、动态字典键和未知字段名删除；只留字段类型/数组长度，HTML 只留长度。原文仅内存。"
+      },
+      "httpStatus": 403,
+      "contentType": "text/html; charset=UTF-8",
+      "curlExit": 0,
+      "fieldShape": {
+        "kind": "non-json",
+        "bytes": 4545,
+        "bodyRemoved": true
+      },
+      "authenticatedConfirmed": false,
+      "limit": "单次登录尝试，不跟随重定向；拒绝响应不证明业务 DTO。未取得或保存服务/控制器版本。"
+    },
+    {
+      "id": "readonly-after-login-attempt-5",
+      "provenance": {
+        "category": "实际运行观测",
+        "observed": true,
+        "commit": "7fab0e47d2a28446e131b7cd737ef4a5a43d55fb",
+        "source": [],
+        "endpoint": "/api/controller/version",
+        "origin": "https://openbox.disign.me",
+        "transport": "HTTP GET",
+        "observedAt": "2026-10-03T10:43:44.467741+00:00",
+        "redaction": "仅使用本次临时会话；不记录请求 body/headers/凭据。响应所有字符串值、动态字典键和未知字段名删除；只留字段类型/数组长度，HTML 只留长度。原文仅内存。"
+      },
+      "httpStatus": 403,
+      "contentType": "text/html; charset=UTF-8",
+      "curlExit": 0,
+      "fieldShape": {
+        "kind": "non-json",
+        "bytes": 4545,
+        "bodyRemoved": true
+      },
+      "authenticatedConfirmed": false,
+      "limit": "单次登录尝试，不跟随重定向；拒绝响应不证明业务 DTO。未取得或保存服务/控制器版本。"
+    },
+    {
+      "id": "readonly-after-login-attempt-6",
+      "provenance": {
+        "category": "实际运行观测",
+        "observed": true,
+        "commit": "7fab0e47d2a28446e131b7cd737ef4a5a43d55fb",
+        "source": [],
+        "endpoint": "/api/openbox/traffic/usage",
+        "origin": "https://openbox.disign.me",
+        "transport": "HTTP GET",
+        "observedAt": "2026-10-03T10:43:44.472063+00:00",
+        "redaction": "仅使用本次临时会话；不记录请求 body/headers/凭据。响应所有字符串值、动态字典键和未知字段名删除；只留字段类型/数组长度，HTML 只留长度。原文仅内存。"
+      },
+      "httpStatus": 403,
+      "contentType": "text/html; charset=UTF-8",
+      "curlExit": 0,
+      "fieldShape": {
+        "kind": "non-json",
+        "bytes": 4545,
+        "bodyRemoved": true
+      },
+      "authenticatedConfirmed": false,
+      "limit": "单次登录尝试，不跟随重定向；拒绝响应不证明业务 DTO。未取得或保存服务/控制器版本。"
+    },
+    {
+      "id": "readonly-after-login-attempt-7",
+      "provenance": {
+        "category": "实际运行观测",
+        "observed": true,
+        "commit": "7fab0e47d2a28446e131b7cd737ef4a5a43d55fb",
+        "source": [],
+        "endpoint": "/api/controller/proxies",
+        "origin": "https://openbox.disign.me",
+        "transport": "HTTP GET",
+        "observedAt": "2026-10-03T10:43:44.482891+00:00",
+        "redaction": "仅使用本次临时会话；不记录请求 body/headers/凭据。响应所有字符串值、动态字典键和未知字段名删除；只留字段类型/数组长度，HTML 只留长度。原文仅内存。"
+      },
+      "httpStatus": 403,
+      "contentType": "text/html; charset=UTF-8",
+      "curlExit": 0,
+      "fieldShape": {
+        "kind": "non-json",
+        "bytes": 4545,
+        "bodyRemoved": true
+      },
+      "authenticatedConfirmed": false,
+      "limit": "单次登录尝试，不跟随重定向；拒绝响应不证明业务 DTO。未取得或保存服务/控制器版本。"
+    },
+    {
+      "id": "readonly-after-login-attempt-8",
+      "provenance": {
+        "category": "实际运行观测",
+        "observed": true,
+        "commit": "7fab0e47d2a28446e131b7cd737ef4a5a43d55fb",
+        "source": [],
+        "endpoint": "/api/controller/rules",
+        "origin": "https://openbox.disign.me",
+        "transport": "HTTP GET",
+        "observedAt": "2026-10-03T10:43:44.486709+00:00",
+        "redaction": "仅使用本次临时会话；不记录请求 body/headers/凭据。响应所有字符串值、动态字典键和未知字段名删除；只留字段类型/数组长度，HTML 只留长度。原文仅内存。"
+      },
+      "httpStatus": 403,
+      "contentType": "text/html; charset=UTF-8",
+      "curlExit": 0,
+      "fieldShape": {
+        "kind": "non-json",
+        "bytes": 4545,
+        "bodyRemoved": true
+      },
+      "authenticatedConfirmed": false,
+      "limit": "单次登录尝试，不跟随重定向；拒绝响应不证明业务 DTO。未取得或保存服务/控制器版本。"
+    },
+    {
+      "id": "readonly-after-login-attempt-9",
+      "provenance": {
+        "category": "实际运行观测",
+        "observed": true,
+        "commit": "7fab0e47d2a28446e131b7cd737ef4a5a43d55fb",
+        "source": [],
+        "endpoint": "/api/openbox/groups",
+        "origin": "https://openbox.disign.me",
+        "transport": "HTTP GET",
+        "observedAt": "2026-10-03T10:43:45.134043+00:00",
+        "redaction": "仅使用本次临时会话；不记录请求 body/headers/凭据。响应所有字符串值、动态字典键和未知字段名删除；只留字段类型/数组长度，HTML 只留长度。原文仅内存。"
+      },
+      "httpStatus": 403,
+      "contentType": "text/html; charset=UTF-8",
+      "curlExit": 0,
+      "fieldShape": {
+        "kind": "non-json",
+        "bytes": 4545,
+        "bodyRemoved": true
+      },
+      "authenticatedConfirmed": false,
+      "limit": "单次登录尝试，不跟随重定向；拒绝响应不证明业务 DTO。未取得或保存服务/控制器版本。"
+    },
+    {
+      "id": "readonly-after-login-attempt-10",
+      "provenance": {
+        "category": "实际运行观测",
+        "observed": true,
+        "commit": "7fab0e47d2a28446e131b7cd737ef4a5a43d55fb",
+        "source": [],
+        "endpoint": "/api/openbox/subscriptions",
+        "origin": "https://openbox.disign.me",
+        "transport": "HTTP GET",
+        "observedAt": "2026-10-03T10:43:45.143519+00:00",
+        "redaction": "仅使用本次临时会话；不记录请求 body/headers/凭据。响应所有字符串值、动态字典键和未知字段名删除；只留字段类型/数组长度，HTML 只留长度。原文仅内存。"
+      },
+      "httpStatus": 403,
+      "contentType": "text/html; charset=UTF-8",
+      "curlExit": 0,
+      "fieldShape": {
+        "kind": "non-json",
+        "bytes": 4545,
+        "bodyRemoved": true
+      },
+      "authenticatedConfirmed": false,
+      "limit": "单次登录尝试，不跟随重定向；拒绝响应不证明业务 DTO。未取得或保存服务/控制器版本。"
+    },
+    {
+      "id": "readonly-after-login-attempt-11",
+      "provenance": {
+        "category": "实际运行观测",
+        "observed": true,
+        "commit": "7fab0e47d2a28446e131b7cd737ef4a5a43d55fb",
+        "source": [],
+        "endpoint": "/api/openbox/profile",
+        "origin": "https://openbox.disign.me",
+        "transport": "HTTP GET",
+        "observedAt": "2026-10-03T10:43:45.151218+00:00",
+        "redaction": "仅使用本次临时会话；不记录请求 body/headers/凭据。响应所有字符串值、动态字典键和未知字段名删除；只留字段类型/数组长度，HTML 只留长度。原文仅内存。"
+      },
+      "httpStatus": 403,
+      "contentType": "text/html; charset=UTF-8",
+      "curlExit": 0,
+      "fieldShape": {
+        "kind": "non-json",
+        "bytes": 4545,
+        "bodyRemoved": true
+      },
+      "authenticatedConfirmed": false,
+      "limit": "单次登录尝试，不跟随重定向；拒绝响应不证明业务 DTO。未取得或保存服务/控制器版本。"
+    },
+    {
+      "id": "readonly-after-login-attempt-12",
+      "provenance": {
+        "category": "实际运行观测",
+        "observed": true,
+        "commit": "7fab0e47d2a28446e131b7cd737ef4a5a43d55fb",
+        "source": [],
+        "endpoint": "/api/openbox/dns-filter",
+        "origin": "https://openbox.disign.me",
+        "transport": "HTTP GET",
+        "observedAt": "2026-10-03T10:43:45.157445+00:00",
+        "redaction": "仅使用本次临时会话；不记录请求 body/headers/凭据。响应所有字符串值、动态字典键和未知字段名删除；只留字段类型/数组长度，HTML 只留长度。原文仅内存。"
+      },
+      "httpStatus": 403,
+      "contentType": "text/html; charset=UTF-8",
+      "curlExit": 0,
+      "fieldShape": {
+        "kind": "non-json",
+        "bytes": 4545,
+        "bodyRemoved": true
+      },
+      "authenticatedConfirmed": false,
+      "limit": "单次登录尝试，不跟随重定向；拒绝响应不证明业务 DTO。未取得或保存服务/控制器版本。"
+    },
+    {
+      "id": "readonly-after-login-attempt-13",
+      "provenance": {
+        "category": "实际运行观测",
+        "observed": true,
+        "commit": "7fab0e47d2a28446e131b7cd737ef4a5a43d55fb",
+        "source": [],
+        "endpoint": "/api/openbox/dns-filter/records?search=&result=&page=1&pageSize=20",
+        "origin": "https://openbox.disign.me",
+        "transport": "HTTP GET",
+        "observedAt": "2026-10-03T10:43:45.831241+00:00",
+        "redaction": "仅使用本次临时会话；不记录请求 body/headers/凭据。响应所有字符串值、动态字典键和未知字段名删除；只留字段类型/数组长度，HTML 只留长度。原文仅内存。"
+      },
+      "httpStatus": 403,
+      "contentType": "text/html; charset=UTF-8",
+      "curlExit": 0,
+      "fieldShape": {
+        "kind": "non-json",
+        "bytes": 4545,
+        "bodyRemoved": true
+      },
+      "authenticatedConfirmed": false,
+      "limit": "单次登录尝试，不跟随重定向；拒绝响应不证明业务 DTO。未取得或保存服务/控制器版本。"
+    },
+    {
+      "id": "http11-auth-status-confirm",
+      "provenance": {
+        "category": "实际运行观测",
+        "observed": true,
+        "commit": "7fab0e47d2a28446e131b7cd737ef4a5a43d55fb",
+        "source": [],
+        "endpoint": "/api/auth/status",
+        "origin": "https://openbox.disign.me",
+        "transport": "HTTP GET",
+        "observedAt": "2026-10-03T10:46:28.553974+00:00",
+        "redaction": "不使用凭据；响应原文仅内存；仅保留状态/类型/长度、固定通用页面标记，不保存内容。"
+      },
+      "httpStatus": 403,
+      "contentType": "text/html; charset=UTF-8",
+      "curlExit": 0,
+      "httpVersion": "1.1",
+      "fieldShape": {
+        "kind": "non-json",
+        "bytes": 4545,
+        "bodyRemoved": true
+      },
+      "genericPageMarkers": [
+        "cloudflare",
+        "attention required"
+      ],
+      "limit": "一次 HTTP/1.1 只读确认，因 WS 返回与 curl 不同；不推断拒绝来源，不重试登录。"
+    }
+  ]
+}

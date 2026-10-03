@@ -1,0 +1,303 @@
+{
+  "cases": [
+    {
+      "id": "http-1",
+      "provenance": {
+        "category": "实际运行观测",
+        "observed": true,
+        "commit": "7fab0e47d2a28446e131b7cd737ef4a5a43d55fb",
+        "endpoint": "/api/auth/status",
+        "origin": "https://openbox.disign.me",
+        "transport": "HTTP GET",
+        "observedAt": "2026-10-03T10:31:49.911237+00:00",
+        "redaction": "不读取认证信息。所有字符串值、未知字段名及动态字典键删除；仅保留消费契约字段名、类型和数组长度。响应原文仅内存，不落盘。",
+        "source": []
+      },
+      "httpStatus": 403,
+      "contentType": "text/html; charset=UTF-8",
+      "curlExit": 0,
+      "fieldShape": {
+        "kind": "non-json",
+        "bytes": 4545,
+        "bodyRemoved": true
+      },
+      "limit": "无凭据、不跟随重定向；类型形状不能证明运行语义。服务/控制器版本字符串删除，未作为公开版本核实。"
+    },
+    {
+      "id": "http-2",
+      "provenance": {
+        "category": "实际运行观测",
+        "observed": true,
+        "commit": "7fab0e47d2a28446e131b7cd737ef4a5a43d55fb",
+        "endpoint": "/api/storage",
+        "origin": "https://openbox.disign.me",
+        "transport": "HTTP GET",
+        "observedAt": "2026-10-03T10:31:49.912583+00:00",
+        "redaction": "不读取认证信息。所有字符串值、未知字段名及动态字典键删除；仅保留消费契约字段名、类型和数组长度。响应原文仅内存，不落盘。",
+        "source": []
+      },
+      "httpStatus": 403,
+      "contentType": "text/html; charset=UTF-8",
+      "curlExit": 0,
+      "fieldShape": {
+        "kind": "non-json",
+        "bytes": 4545,
+        "bodyRemoved": true
+      },
+      "limit": "无凭据、不跟随重定向；类型形状不能证明运行语义。服务/控制器版本字符串删除，未作为公开版本核实。"
+    },
+    {
+      "id": "http-3",
+      "provenance": {
+        "category": "实际运行观测",
+        "observed": true,
+        "commit": "7fab0e47d2a28446e131b7cd737ef4a5a43d55fb",
+        "endpoint": "/api/openbox/service/status",
+        "origin": "https://openbox.disign.me",
+        "transport": "HTTP GET",
+        "observedAt": "2026-10-03T10:31:49.912729+00:00",
+        "redaction": "不读取认证信息。所有字符串值、未知字段名及动态字典键删除；仅保留消费契约字段名、类型和数组长度。响应原文仅内存，不落盘。",
+        "source": []
+      },
+      "httpStatus": 403,
+      "contentType": "text/html; charset=UTF-8",
+      "curlExit": 0,
+      "fieldShape": {
+        "kind": "non-json",
+        "bytes": 4545,
+        "bodyRemoved": true
+      },
+      "limit": "无凭据、不跟随重定向；类型形状不能证明运行语义。服务/控制器版本字符串删除，未作为公开版本核实。"
+    },
+    {
+      "id": "http-4",
+      "provenance": {
+        "category": "实际运行观测",
+        "observed": true,
+        "commit": "7fab0e47d2a28446e131b7cd737ef4a5a43d55fb",
+        "endpoint": "/api/controller/configs",
+        "origin": "https://openbox.disign.me",
+        "transport": "HTTP GET",
+        "observedAt": "2026-10-03T10:31:49.915348+00:00",
+        "redaction": "不读取认证信息。所有字符串值、未知字段名及动态字典键删除；仅保留消费契约字段名、类型和数组长度。响应原文仅内存，不落盘。",
+        "source": []
+      },
+      "httpStatus": 403,
+      "contentType": "text/html; charset=UTF-8",
+      "curlExit": 0,
+      "fieldShape": {
+        "kind": "non-json",
+        "bytes": 4545,
+        "bodyRemoved": true
+      },
+      "limit": "无凭据、不跟随重定向；类型形状不能证明运行语义。服务/控制器版本字符串删除，未作为公开版本核实。"
+    },
+    {
+      "id": "http-5",
+      "provenance": {
+        "category": "实际运行观测",
+        "observed": true,
+        "commit": "7fab0e47d2a28446e131b7cd737ef4a5a43d55fb",
+        "endpoint": "/api/controller/version",
+        "origin": "https://openbox.disign.me",
+        "transport": "HTTP GET",
+        "observedAt": "2026-10-03T10:31:50.624048+00:00",
+        "redaction": "不读取认证信息。所有字符串值、未知字段名及动态字典键删除；仅保留消费契约字段名、类型和数组长度。响应原文仅内存，不落盘。",
+        "source": []
+      },
+      "httpStatus": 403,
+      "contentType": "text/html; charset=UTF-8",
+      "curlExit": 0,
+      "fieldShape": {
+        "kind": "non-json",
+        "bytes": 4545,
+        "bodyRemoved": true
+      },
+      "limit": "无凭据、不跟随重定向；类型形状不能证明运行语义。服务/控制器版本字符串删除，未作为公开版本核实。"
+    },
+    {
+      "id": "http-6",
+      "provenance": {
+        "category": "实际运行观测",
+        "observed": true,
+        "commit": "7fab0e47d2a28446e131b7cd737ef4a5a43d55fb",
+        "endpoint": "/api/openbox/traffic/usage",
+        "origin": "https://openbox.disign.me",
+        "transport": "HTTP GET",
+        "observedAt": "2026-10-03T10:31:50.630644+00:00",
+        "redaction": "不读取认证信息。所有字符串值、未知字段名及动态字典键删除；仅保留消费契约字段名、类型和数组长度。响应原文仅内存，不落盘。",
+        "source": []
+      },
+      "httpStatus": 403,
+      "contentType": "text/html; charset=UTF-8",
+      "curlExit": 0,
+      "fieldShape": {
+        "kind": "non-json",
+        "bytes": 4545,
+        "bodyRemoved": true
+      },
+      "limit": "无凭据、不跟随重定向；类型形状不能证明运行语义。服务/控制器版本字符串删除，未作为公开版本核实。"
+    },
+    {
+      "id": "http-7",
+      "provenance": {
+        "category": "实际运行观测",
+        "observed": true,
+        "commit": "7fab0e47d2a28446e131b7cd737ef4a5a43d55fb",
+        "endpoint": "/api/controller/proxies",
+        "origin": "https://openbox.disign.me",
+        "transport": "HTTP GET",
+        "observedAt": "2026-10-03T10:31:50.633058+00:00",
+        "redaction": "不读取认证信息。所有字符串值、未知字段名及动态字典键删除；仅保留消费契约字段名、类型和数组长度。响应原文仅内存，不落盘。",
+        "source": []
+      },
+      "httpStatus": 403,
+      "contentType": "text/html; charset=UTF-8",
+      "curlExit": 0,
+      "fieldShape": {
+        "kind": "non-json",
+        "bytes": 4545,
+        "bodyRemoved": true
+      },
+      "limit": "无凭据、不跟随重定向；类型形状不能证明运行语义。服务/控制器版本字符串删除，未作为公开版本核实。"
+    },
+    {
+      "id": "http-8",
+      "provenance": {
+        "category": "实际运行观测",
+        "observed": true,
+        "commit": "7fab0e47d2a28446e131b7cd737ef4a5a43d55fb",
+        "endpoint": "/api/controller/rules",
+        "origin": "https://openbox.disign.me",
+        "transport": "HTTP GET",
+        "observedAt": "2026-10-03T10:31:51.123416+00:00",
+        "redaction": "不读取认证信息。所有字符串值、未知字段名及动态字典键删除；仅保留消费契约字段名、类型和数组长度。响应原文仅内存，不落盘。",
+        "source": []
+      },
+      "httpStatus": 403,
+      "contentType": "text/html; charset=UTF-8",
+      "curlExit": 0,
+      "fieldShape": {
+        "kind": "non-json",
+        "bytes": 4545,
+        "bodyRemoved": true
+      },
+      "limit": "无凭据、不跟随重定向；类型形状不能证明运行语义。服务/控制器版本字符串删除，未作为公开版本核实。"
+    },
+    {
+      "id": "http-9",
+      "provenance": {
+        "category": "实际运行观测",
+        "observed": true,
+        "commit": "7fab0e47d2a28446e131b7cd737ef4a5a43d55fb",
+        "endpoint": "/api/openbox/groups",
+        "origin": "https://openbox.disign.me",
+        "transport": "HTTP GET",
+        "observedAt": "2026-10-03T10:31:51.327928+00:00",
+        "redaction": "不读取认证信息。所有字符串值、未知字段名及动态字典键删除；仅保留消费契约字段名、类型和数组长度。响应原文仅内存，不落盘。",
+        "source": []
+      },
+      "httpStatus": 403,
+      "contentType": "text/html; charset=UTF-8",
+      "curlExit": 0,
+      "fieldShape": {
+        "kind": "non-json",
+        "bytes": 4545,
+        "bodyRemoved": true
+      },
+      "limit": "无凭据、不跟随重定向；类型形状不能证明运行语义。服务/控制器版本字符串删除，未作为公开版本核实。"
+    },
+    {
+      "id": "http-10",
+      "provenance": {
+        "category": "实际运行观测",
+        "observed": true,
+        "commit": "7fab0e47d2a28446e131b7cd737ef4a5a43d55fb",
+        "endpoint": "/api/openbox/subscriptions",
+        "origin": "https://openbox.disign.me",
+        "transport": "HTTP GET",
+        "observedAt": "2026-10-03T10:31:51.359861+00:00",
+        "redaction": "不读取认证信息。所有字符串值、未知字段名及动态字典键删除；仅保留消费契约字段名、类型和数组长度。响应原文仅内存，不落盘。",
+        "source": []
+      },
+      "httpStatus": 403,
+      "contentType": "text/html; charset=UTF-8",
+      "curlExit": 0,
+      "fieldShape": {
+        "kind": "non-json",
+        "bytes": 4545,
+        "bodyRemoved": true
+      },
+      "limit": "无凭据、不跟随重定向；类型形状不能证明运行语义。服务/控制器版本字符串删除，未作为公开版本核实。"
+    },
+    {
+      "id": "http-11",
+      "provenance": {
+        "category": "实际运行观测",
+        "observed": true,
+        "commit": "7fab0e47d2a28446e131b7cd737ef4a5a43d55fb",
+        "endpoint": "/api/openbox/profile",
+        "origin": "https://openbox.disign.me",
+        "transport": "HTTP GET",
+        "observedAt": "2026-10-03T10:31:51.390120+00:00",
+        "redaction": "不读取认证信息。所有字符串值、未知字段名及动态字典键删除；仅保留消费契约字段名、类型和数组长度。响应原文仅内存，不落盘。",
+        "source": []
+      },
+      "httpStatus": 403,
+      "contentType": "text/html; charset=UTF-8",
+      "curlExit": 0,
+      "fieldShape": {
+        "kind": "non-json",
+        "bytes": 4545,
+        "bodyRemoved": true
+      },
+      "limit": "无凭据、不跟随重定向；类型形状不能证明运行语义。服务/控制器版本字符串删除，未作为公开版本核实。"
+    },
+    {
+      "id": "http-12",
+      "provenance": {
+        "category": "实际运行观测",
+        "observed": true,
+        "commit": "7fab0e47d2a28446e131b7cd737ef4a5a43d55fb",
+        "endpoint": "/api/openbox/dns-filter",
+        "origin": "https://openbox.disign.me",
+        "transport": "HTTP GET",
+        "observedAt": "2026-10-03T10:31:51.861933+00:00",
+        "redaction": "不读取认证信息。所有字符串值、未知字段名及动态字典键删除；仅保留消费契约字段名、类型和数组长度。响应原文仅内存，不落盘。",
+        "source": []
+      },
+      "httpStatus": 403,
+      "contentType": "text/html; charset=UTF-8",
+      "curlExit": 0,
+      "fieldShape": {
+        "kind": "non-json",
+        "bytes": 4545,
+        "bodyRemoved": true
+      },
+      "limit": "无凭据、不跟随重定向；类型形状不能证明运行语义。服务/控制器版本字符串删除，未作为公开版本核实。"
+    },
+    {
+      "id": "http-13",
+      "provenance": {
+        "category": "实际运行观测",
+        "observed": true,
+        "commit": "7fab0e47d2a28446e131b7cd737ef4a5a43d55fb",
+        "endpoint": "/api/openbox/dns-filter/records?search=&result=&page=1&pageSize=20",
+        "origin": "https://openbox.disign.me",
+        "transport": "HTTP GET",
+        "observedAt": "2026-10-03T10:31:52.002099+00:00",
+        "redaction": "不读取认证信息。所有字符串值、未知字段名及动态字典键删除；仅保留消费契约字段名、类型和数组长度。响应原文仅内存，不落盘。",
+        "source": []
+      },
+      "httpStatus": 403,
+      "contentType": "text/html; charset=UTF-8",
+      "curlExit": 0,
+      "fieldShape": {
+        "kind": "non-json",
+        "bytes": 4545,
+        "bodyRemoved": true
+      },
+      "limit": "无凭据、不跟随重定向；类型形状不能证明运行语义。服务/控制器版本字符串删除，未作为公开版本核实。"
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "task": "OBG-P1-01",
+  "owner": "Codex /root",
+  "date": "2026-10-03",
+  "head": "7fab0e47d2a28446e131b7cd737ef4a5a43d55fb",
+  "source": "uncommitted P1-01 diff on preserved dirty P0 baseline",
+  "environment": {
+    "os": "macOS 27.0 (26A428)",
+    "arch": "arm64",
+    "cargo": "1.99.0",
+    "rustc": "1.99.0"
+  },
+  "core_test_count": 243,
+  "guaranteed_pure_core_test_count": 178,
+  "legacy_test_counts": {
+    "managed-runtime-mock": 34,
+    "proxy-routing": 16,
+    "runtime-adapter-mock": 3,
+    "commands": 11,
+    "system-proxy-mock": 14,
+    "window-delta": 1
+  },
+  "core_ui_dependencies": [],
+  "lock_closure_count": 159,
+  "core_windows_ui_source_matches": [],
+  "legacy_production_test_support_enabled": false,
+  "real_child_system_proxy": "NOT_RUN; not required by pure local extraction",
+  "windows_real_execution": "NOT_RUN; retained cfg implementations and tests",
+  "required_library_clippy": "PASS for core and legacy",
+  "optional_all_targets_clippy": "FAIL: 5 pre-existing test-only lints; source expressions/signature inherited, not a production lint gate"
+}

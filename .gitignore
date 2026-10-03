@@ -33,3 +33,6 @@ src-tauri/target/
 src-tauri/binaries/
 .playwright-cli/
 /output/
+
+# Local agent/workspace state
+.workbuddy-ai/

@@ -1,0 +1,78 @@
+{
+  "task": "OBG-P1-02",
+  "acceptance": {
+    "patch": "PASS",
+    "atomic_versions": "PASS",
+    "runtime_facts": "PASS",
+    "typed_errors": "PASS"
+  },
+  "tests": {
+    "core-tests": {
+      "passed": 275,
+      "failed": 0,
+      "ignored": 0,
+      "measured": 0,
+      "filtered": 0
+    },
+    "legacy-routing": {
+      "passed": 17,
+      "failed": 0,
+      "ignored": 0,
+      "measured": 0,
+      "filtered": 74
+    },
+    "legacy-observation": {
+      "passed": 34,
+      "failed": 0,
+      "ignored": 0,
+      "measured": 0,
+      "filtered": 57
+    },
+    "legacy-adapter": {
+      "passed": 3,
+      "failed": 0,
+      "ignored": 0,
+      "measured": 0,
+      "filtered": 88
+    },
+    "legacy-commands": {
+      "passed": 11,
+      "failed": 0,
+      "ignored": 0,
+      "measured": 0,
+      "filtered": 80
+    }
+  },
+  "new_core_tests": 32,
+  "production_feature_legacy_test_support": false,
+  "core_ui_or_concrete_windows_reverse_dependency": false,
+  "protected_files_unchanged": [
+    ".gitignore",
+    "AGENTS.md",
+    "docs/openbox-rust-gpui-tasks/DEVELOPMENT_WORKFLOW.md"
+  ],
+  "dag": {
+    "DONE": 4,
+    "READY": 2,
+    "TODO": 55,
+    "DEFERRED": 7
+  },
+  "ready": [
+    "P0-03",
+    "P0-04"
+  ],
+  "checked_task_cards": 68,
+  "checked_local_links": 142,
+  "diff_check": "PASS",
+  "untracked_core_whitespace": "PASS",
+  "review": "implementer self-review; no independent reviewer",
+  "head": "7fab0e47d2a28446e131b7cd737ef4a5a43d55fb",
+  "not_run": [
+    "browser/visual",
+    "real sing-box/runtime manifest",
+    "system proxy/helper",
+    "Windows host"
+  ],
+  "commit_push_publish": false,
+  "cleaned_test_fixture_count": 13
+}

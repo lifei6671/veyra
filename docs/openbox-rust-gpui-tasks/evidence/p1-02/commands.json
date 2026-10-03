@@ -1,0 +1,189 @@
+[
+  {
+    "name": "core-check",
+    "command": [
+      "cargo",
+      "check",
+      "-p",
+      "veyra-core"
+    ],
+    "timeout": 600,
+    "exit": 0
+  },
+  {
+    "name": "core-build",
+    "command": [
+      "cargo",
+      "build",
+      "-p",
+      "veyra-core",
+      "--lib"
+    ],
+    "timeout": 600,
+    "exit": 0
+  },
+  {
+    "name": "core-tests",
+    "command": [
+      "cargo",
+      "test",
+      "-p",
+      "veyra-core",
+      "--lib",
+      "--",
+      "--test-threads=1"
+    ],
+    "timeout": 600,
+    "exit": 0
+  },
+  {
+    "name": "core-clippy",
+    "command": [
+      "cargo",
+      "clippy",
+      "-p",
+      "veyra-core",
+      "--lib",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "timeout": 600,
+    "exit": 0
+  },
+  {
+    "name": "legacy-check",
+    "command": [
+      "cargo",
+      "check",
+      "--manifest-path",
+      "src-tauri/Cargo.toml",
+      "--all-targets"
+    ],
+    "timeout": 900,
+    "exit": 0
+  },
+  {
+    "name": "legacy-clippy",
+    "command": [
+      "cargo",
+      "clippy",
+      "--manifest-path",
+      "src-tauri/Cargo.toml",
+      "--lib",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "timeout": 900,
+    "exit": 0
+  },
+  {
+    "name": "legacy-routing",
+    "command": [
+      "cargo",
+      "test",
+      "--manifest-path",
+      "src-tauri/Cargo.toml",
+      "--lib",
+      "application::proxy_routing::tests::",
+      "--",
+      "--test-threads=1"
+    ],
+    "timeout": 900,
+    "exit": 0
+  },
+  {
+    "name": "legacy-observation",
+    "command": [
+      "cargo",
+      "test",
+      "--manifest-path",
+      "src-tauri/Cargo.toml",
+      "--lib",
+      "application::managed_observation_runtime::tests::",
+      "--",
+      "--test-threads=1",
+      "--skip",
+      "real_worker_"
+    ],
+    "timeout": 900,
+    "exit": 0
+  },
+  {
+    "name": "legacy-adapter",
+    "command": [
+      "cargo",
+      "test",
+      "--manifest-path",
+      "src-tauri/Cargo.toml",
+      "--lib",
+      "application::runtime_adapter_tests::",
+      "--",
+      "--test-threads=1"
+    ],
+    "timeout": 900,
+    "exit": 0
+  },
+  {
+    "name": "legacy-commands",
+    "command": [
+      "cargo",
+      "test",
+      "--manifest-path",
+      "src-tauri/Cargo.toml",
+      "--lib",
+      "commands::tests::",
+      "--",
+      "--test-threads=1"
+    ],
+    "timeout": 900,
+    "exit": 0
+  },
+  {
+    "name": "fmt",
+    "command": [
+      "cargo",
+      "fmt",
+      "--all",
+      "--",
+      "--check"
+    ],
+    "timeout": 600,
+    "exit": 0
+  },
+  {
+    "name": "core-tree",
+    "command": [
+      "cargo",
+      "tree",
+      "--locked",
+      "--offline",
+      "-p",
+      "veyra-core",
+      "--target",
+      "aarch64-apple-darwin",
+      "-e",
+      "normal,build,features"
+    ],
+    "timeout": 600,
+    "exit": 0
+  },
+  {
+    "name": "legacy-features",
+    "command": [
+      "cargo",
+      "tree",
+      "--locked",
+      "--offline",
+      "-p",
+      "veyra",
+      "--target",
+      "aarch64-apple-darwin",
+      "-e",
+      "normal,build,features"
+    ],
+    "timeout": 600,
+    "exit": 0
+  }
+]

@@ -1,0 +1,40 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.15s
+     Running unittests src/lib.rs (target/debug/deps/veyra_lib-b009d9e91782e91b)
+
+running 34 tests
+test application::managed_observation_runtime::tests::activation_cancellation_after_commit_still_finishes_the_selected_runtime ... ok
+test application::managed_observation_runtime::tests::activation_checks_and_saves_before_stop_then_publishes_applied_pair ... ok
+test application::managed_observation_runtime::tests::activation_postcommit_failure_keeps_selection_and_reports_actual_runtime ... ok
+test application::managed_observation_runtime::tests::activation_precommit_failures_and_cancellation_preserve_old_state_and_child ... ok
+test application::managed_observation_runtime::tests::activation_timeout_retains_both_owned_guards_until_cancelled_worker_finishes ... ok
+test application::managed_observation_runtime::tests::applied_routing_index_contains_only_generation_and_stable_runtime_tag_mapping ... ok
+test application::managed_observation_runtime::tests::dropped_save_receiver_does_not_cancel_worker_commit ... ok
+test application::managed_observation_runtime::tests::each_start_failure_reports_its_stage_and_actual_lifecycle_without_retry ... ok
+test application::managed_observation_runtime::tests::force_bypasses_only_the_authoritative_already_current_shortcut ... ok
+test application::managed_observation_runtime::tests::forced_request_reports_reactivated_after_real_commit ... ok
+test application::managed_observation_runtime::tests::inactive_document_save_commits_exact_text_without_runtime_apply ... ok
+test application::managed_observation_runtime::tests::lost_response_reports_failure_without_overwriting_the_owner_lifecycle ... ok
+test application::managed_observation_runtime::tests::lost_shutdown_response_preserves_authoritative_completion_for_retry ... ok
+test application::managed_observation_runtime::tests::manual_selection_classifies_only_applied_index_read_back_tags ... ok
+test application::managed_observation_runtime::tests::manual_selection_does_no_io_when_stopped_or_missing_from_applied_index ... ok
+test application::managed_observation_runtime::tests::missing_state_fails_closed_without_asking_the_worker_to_start ... ok
+test application::managed_observation_runtime::tests::rejected_compilation_does_not_call_the_port_or_overwrite_a_healthy_observation ... ok
+test application::managed_observation_runtime::tests::routing_apply_dispatch_failure_replaces_queued_phase_with_state_changed_terminal ... ok
+test application::managed_observation_runtime::tests::routing_apply_projects_pre_worker_configuration_failure_into_same_operation_terminal ... ok
+test application::managed_observation_runtime::tests::routing_apply_rejects_a_changed_structural_tuple_before_worker_dispatch ... ok
+test application::managed_observation_runtime::tests::running_configuration_reads_exact_active_slot_with_applied_pair ... ok
+test application::managed_observation_runtime::tests::running_configuration_rejects_active_bytes_over_limit ... ok
+test application::managed_observation_runtime::tests::selected_document_save_prepares_persists_then_replaces_runtime ... ok
+test application::managed_observation_runtime::tests::selected_exact_save_retries_failed_apply_without_advancing_generation ... ok
+test application::managed_observation_runtime::tests::selected_save_postpersist_deadline_keeps_new_revision_and_old_child ... ok
+test application::managed_observation_runtime::tests::selected_save_postpersist_start_failure_keeps_new_revision ... ok
+test application::managed_observation_runtime::tests::selected_save_preparation_failure_preserves_state_and_old_child ... ok
+test application::managed_observation_runtime::tests::selected_save_unconfirmed_preparation_cleanup_publishes_recovery ... ok
+test application::managed_observation_runtime::tests::selected_start_requires_selection_and_already_current_compares_applied_generation ... ok
+test application::managed_observation_runtime::tests::selected_stopped_save_starts_saved_candidate ... ok
+test application::managed_observation_runtime::tests::shutdown_closes_subscription_coordinator_before_core_and_allows_cleanup_retry ... ok
+test application::managed_observation_runtime::tests::start_state_load_fails_fast_while_a_state_commit_holds_the_gate ... ok
+test application::managed_observation_runtime::tests::stop_without_a_managed_child_is_closed_and_idempotent ... ok
+test application::managed_observation_runtime::tests::stored_default_target_is_carried_exactly_into_compilation ... ok
+
+test result: ok. 34 passed; 0 failed; 0 ignored; 0 measured; 57 filtered out; finished in 15.79s

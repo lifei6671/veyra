@@ -1,0 +1,48 @@
+{
+  "commit": "7fab0e47d2a28446e131b7cd737ef4a5a43d55fb",
+  "observedAt": "2026-10-03T10:36:26.696628+00:00",
+  "environment": {
+    "os": "macOS 27.0",
+    "build": "26A428",
+    "architecture": "arm64",
+    "node": "22.22.0",
+    "playwright": "1.62.1"
+  },
+  "url": "http://127.0.0.1:1420/openbox.html",
+  "localServer": {
+    "command": "pnpm dev --host 127.0.0.1",
+    "identity": "Vite 8.2.2; temporary owned process, stopped after investigation",
+    "htmlGet": "GET successful; title Open-Box React; script /src/openbox/main.tsx"
+  },
+  "requestedViewport": [
+    1280,
+    720
+  ],
+  "dpr": null,
+  "browserVersion": null,
+  "physicalPixels": null,
+  "screenshots": [],
+  "result": "NOT_RUN",
+  "attempts": [
+    {
+      "engine": "Chromium",
+      "command": "node /private/tmp/p0-capture.mjs",
+      "executable": "chromium_headless_shell-1226/chrome-headless-shell-mac-arm64/chrome-headless-shell",
+      "result": "launch failed before page/context creation",
+      "error": "bootstrap_check_in org.chromium.Chromium.MachPortRendezvousServer: Permission denied (1100); SIGTRAP",
+      "earlierAttempt": "default Playwright executable chromium_headless_shell-1234 not installed; explicitly selected existing 1226, no install"
+    },
+    {
+      "engine": "WebKit",
+      "command": "node /private/tmp/p0-webkit.mjs",
+      "executable": "webkit-2287/pw_run.sh",
+      "result": "launch failed before page/context creation",
+      "error": "Abort trap: 6; launcher exit 134; detailed cause not established"
+    }
+  ],
+  "limits": [
+    "No rendered UI, no interaction, no mock responses consumed. Requested viewport is not measured browser evidence.",
+    "No credential reads or storage export; no production writes.",
+    "No permission escalation available; no OS policy changed."
+  ]
+}

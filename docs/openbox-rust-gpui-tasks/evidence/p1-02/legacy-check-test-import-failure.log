@@ -1,0 +1,10 @@
+    Checking veyra-core v0.1.0 (/Users/lifeilin/wx_lifeilin/github.com/lifei6671/veyra/crates/veyra-core)
+    Checking veyra v0.1.0 (/Users/lifeilin/wx_lifeilin/github.com/lifei6671/veyra/src-tauri)
+error[E0433]: cannot find `state_service` in `application`
+    --> src-tauri/src/application/proxy_routing.rs:2704:40
+     |
+2704 |         let core = crate::application::state_service::SnapshotService::new(
+     |                                        ^^^^^^^^^^^^^ could not find `state_service` in `application`
+
+For more information about this error, try `rustc --explain E0433`.
+error: could not compile `veyra` (lib test) due to 1 previous error

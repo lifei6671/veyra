@@ -1,0 +1,76 @@
+    Checking veyra-core v0.1.0 (/Users/lifeilin/wx_lifeilin/github.com/lifei6671/veyra/crates/veyra-core)
+error: the borrowed expression implements the required traits
+    --> crates/veyra-core/src/application/observability.rs:1087:47
+     |
+1087 |         let serialized = serde_json::to_value(&delta.traffic).expect("safe traffic DTO");
+     |                                               ^^^^^^^^^^^^^^ help: change this to: `delta.traffic`
+     |
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#needless_borrows_for_generic_args
+     = note: `-D clippy::needless-borrows-for-generic-args` implied by `-D warnings`
+     = help: to override `-D warnings` add `#[allow(clippy::needless_borrows_for_generic_args)]`
+
+error: the `Err`-variant returned from this closure is very large
+    --> crates/veyra-core/src/singbox/clash_api.rs:1151:92
+     |
+1151 |   ...   let mut socket = timeout(REQUEST_TIMEOUT, accept_hdr_async(stream, |request: &Request, response: Response| {
+     |  __________________________________________________________________________^
+1152 | | ...       assert_eq!(request.uri().path(), path);
+1153 | | ...       assert!(request.headers().get("authorization").and_then(|v| v.to_str().ok()) == Some(authorization.as_str()), "authent...
+1154 | | ...       Ok(response)
+1155 | | ...   })).await.expect("bounded handshake").expect("traffic handshake");
+     | |_______^ the `Err`-variant is at least 136 bytes
+     |
+     = help: try reducing the size of `tokio_tungstenite::tungstenite::http::Response<std::option::Option<std::string::String>>`, for example by boxing large elements or replacing it with `Box<tokio_tungstenite::tungstenite::http::Response<std::option::Option<std::string::String>>>`
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#result_large_err
+     = note: `-D clippy::result-large-err` implied by `-D warnings`
+     = help: to override `-D warnings` add `#[allow(clippy::result_large_err)]`
+
+error: the `Err`-variant returned from this closure is very large
+    --> crates/veyra-core/src/singbox/clash_api.rs:1228:50
+     |
+1228 |                           accept_hdr_async(stream, |request: &Request, response: Response| {
+     |  __________________________________________________^
+1229 | |                             assert_eq!(request.uri().path(), "/traffic");
+1230 | |                             assert!(
+1231 | |                                 request
+...    |
+1238 | |                             Ok(response)
+1239 | |                         }),
+     | |_________________________^ the `Err`-variant is at least 136 bytes
+     |
+     = help: try reducing the size of `tokio_tungstenite::tungstenite::http::Response<std::option::Option<std::string::String>>`, for example by boxing large elements or replacing it with `Box<tokio_tungstenite::tungstenite::http::Response<std::option::Option<std::string::String>>>`
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#result_large_err
+
+error: the `Err`-variant returned from this closure is very large
+    --> crates/veyra-core/src/singbox/clash_api.rs:1317:55
+     |
+1317 |               let mut socket = accept_hdr_async(stream, |request: &Request, response: Response| {
+     |  _______________________________________________________^
+1318 | |                 assert_eq!(request.uri().path(), expected_path);
+1319 | |                 assert!(
+1320 | |                     request
+...    |
+1327 | |                 Ok(response)
+1328 | |             })
+     | |_____________^ the `Err`-variant is at least 136 bytes
+     |
+     = help: try reducing the size of `tokio_tungstenite::tungstenite::http::Response<std::option::Option<std::string::String>>`, for example by boxing large elements or replacing it with `Box<tokio_tungstenite::tungstenite::http::Response<std::option::Option<std::string::String>>>`
+     = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#result_large_err
+
+error: this function has too many arguments (8/7)
+   --> crates/veyra-core/src/singbox/compiler.rs:193:5
+    |
+193 | /     pub fn compile_wireguard_local_positive(
+194 | |         &self,
+195 | |         intent: &RuntimeIntent,
+196 | |         default_target: &RouteTarget,
+...   |
+201 | |         host_udp_port: NonZeroU16,
+202 | |     ) -> Result<SingBoxPlan, CompileError> {
+    | |__________________________________________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#too_many_arguments
+    = note: `-D clippy::too-many-arguments` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::too_many_arguments)]`
+
+error: could not compile `veyra-core` (lib test) due to 5 previous errors

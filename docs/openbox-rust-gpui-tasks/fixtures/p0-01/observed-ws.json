@@ -1,0 +1,68 @@
+{
+  "cases": [
+    {
+      "id": "ws-connections",
+      "provenance": {
+        "category": "实际运行观测",
+        "observed": true,
+        "commit": "7fab0e47d2a28446e131b7cd737ef4a5a43d55fb",
+        "source": [],
+        "endpoint": "/api/controller-ws/connections",
+        "transport": "WebSocket read",
+        "observedAt": "2026-10-03T10:33:10.465Z",
+        "redaction": "无凭据。字符串值与非消费字段名删除，连接数组只留长度；帧原文仅内存。"
+      },
+      "outcome": "handshake-or-transport-error",
+      "frames": [],
+      "limit": "4 秒只读采样，不发送业务帧；失败无绕过。握手状态由 Node WebSocket 不公开，不能推断 HTTP 状态。"
+    },
+    {
+      "id": "ws-logs",
+      "provenance": {
+        "category": "实际运行观测",
+        "observed": true,
+        "commit": "7fab0e47d2a28446e131b7cd737ef4a5a43d55fb",
+        "source": [],
+        "endpoint": "/api/controller-ws/logs?level=info",
+        "transport": "WebSocket read",
+        "observedAt": "2026-10-03T10:33:10.484Z",
+        "redaction": "无凭据。字符串值与非消费字段名删除，连接数组只留长度；帧原文仅内存。"
+      },
+      "outcome": "handshake-or-transport-error",
+      "frames": [],
+      "limit": "4 秒只读采样，不发送业务帧；失败无绕过。握手状态由 Node WebSocket 不公开，不能推断 HTTP 状态。"
+    },
+    {
+      "id": "ws-memory",
+      "provenance": {
+        "category": "实际运行观测",
+        "observed": true,
+        "commit": "7fab0e47d2a28446e131b7cd737ef4a5a43d55fb",
+        "source": [],
+        "endpoint": "/api/controller-ws/memory",
+        "transport": "WebSocket read",
+        "observedAt": "2026-10-03T10:33:10.485Z",
+        "redaction": "无凭据。字符串值与非消费字段名删除，连接数组只留长度；帧原文仅内存。"
+      },
+      "outcome": "handshake-or-transport-error",
+      "frames": [],
+      "limit": "4 秒只读采样，不发送业务帧；失败无绕过。握手状态由 Node WebSocket 不公开，不能推断 HTTP 状态。"
+    },
+    {
+      "id": "ws-traffic",
+      "provenance": {
+        "category": "实际运行观测",
+        "observed": true,
+        "commit": "7fab0e47d2a28446e131b7cd737ef4a5a43d55fb",
+        "source": [],
+        "endpoint": "/api/controller-ws/traffic",
+        "transport": "WebSocket read",
+        "observedAt": "2026-10-03T10:33:10.485Z",
+        "redaction": "无凭据。字符串值与非消费字段名删除，连接数组只留长度；帧原文仅内存。"
+      },
+      "outcome": "handshake-or-transport-error",
+      "frames": [],
+      "limit": "4 秒只读采样，不发送业务帧；失败无绕过。握手状态由 Node WebSocket 不公开，不能推断 HTTP 状态。"
+    }
+  ]
+}

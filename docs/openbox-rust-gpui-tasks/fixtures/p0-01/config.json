@@ -1,0 +1,161 @@
+{
+  "cases": [
+    {
+      "id": "profile-dns-envelope",
+      "value": {
+        "profile": {
+          "dns": {
+            "split": true,
+            "mode": "hijack",
+            "fakeIpForProxy": true,
+            "direct": "192.0.2.53",
+            "directProtocol": "udp",
+            "directPort": 53,
+            "directExtras": [
+              {
+                "server": "192.0.2.54",
+                "protocol": "tcp",
+                "port": 5353
+              }
+            ],
+            "proxy": "198.51.100.53",
+            "proxyProtocol": "udp",
+            "proxyPort": 53,
+            "proxyExtras": []
+          }
+        }
+      },
+      "provenance": {
+        "category": "已有测试样本",
+        "commit": "7fab0e47d2a28446e131b7cd737ef4a5a43d55fb",
+        "source": [
+          "src/openbox/pages/settings/DnsSettings.test.ts:6",
+          "src/openbox/pages/settings/DnsSettings.test.ts:62"
+        ],
+        "redaction": "人工合成或既有测试数据；无实际用户凭据。域名仅 example.com/example.net/.invalid，IP 用文档网段，名称/ID 用 fixture，时间固定。",
+        "observed": false
+      },
+      "limit": "测试中的部分 profile 响应，不能当完整 OpenBoxProfile 默认配置。地址替换为文档 IP，不能用于连通测试。"
+    },
+    {
+      "id": "profile-tun-patch",
+      "value": {
+        "tun": {
+          "stack": "gvisor"
+        }
+      },
+      "provenance": {
+        "category": "已有测试样本",
+        "commit": "7fab0e47d2a28446e131b7cd737ef4a5a43d55fb",
+        "source": [
+          "src/openbox/pages/settings/BackendSettings.test.ts:19"
+        ],
+        "redaction": "人工合成或既有测试数据；无实际用户凭据。域名仅 example.com/example.net/.invalid，IP 用文档网段，名称/ID 用 fixture，时间固定。",
+        "observed": false
+      },
+      "limit": "saveProfile 虽为 PUT，只发变化字段。"
+    },
+    {
+      "id": "storage",
+      "value": {
+        "entries": {
+          "config/global-radius": "16",
+          "config/ipv6-test": "true",
+          "config/test-sites": "[{\"id\":\"fixture-site\",\"icon\":\"brand:github\",\"name\":\"fixture-site\",\"url\":\"https://example.com/\"}]"
+        }
+      },
+      "provenance": {
+        "category": "已有测试样本",
+        "commit": "7fab0e47d2a28446e131b7cd737ef4a5a43d55fb",
+        "source": [
+          "src/openbox/api/client.test.ts:10"
+        ],
+        "redaction": "人工合成或既有测试数据；无实际用户凭据。域名仅 example.com/example.net/.invalid，IP 用文档网段，名称/ID 用 fixture，时间固定。",
+        "observed": false
+      },
+      "limit": "entries 值为字符串，包含嵌套 JSON 字符串；不是 GPUI Preferences 的设计 DTO。"
+    },
+    {
+      "id": "subscription",
+      "value": {
+        "id": "fixture-subscription",
+        "name": "fixture-subscription",
+        "format": "auto",
+        "nodeCount": 3,
+        "createdAt": 1,
+        "updatedAt": 2,
+        "kernelStale": 0
+      },
+      "provenance": {
+        "category": "已有测试样本",
+        "commit": "7fab0e47d2a28446e131b7cd737ef4a5a43d55fb",
+        "source": [
+          "src/openbox/pages/settings/SubscriptionSettings.test.ts:6"
+        ],
+        "redaction": "人工合成或既有测试数据；无实际用户凭据。域名仅 example.com/example.net/.invalid，IP 用文档网段，名称/ID 用 fixture，时间固定。",
+        "observed": false
+      },
+      "limit": "createdAt/updatedAt 允许 string/number；kernelStale 允许 boolean/number，实际单位/编码未证实。"
+    },
+    {
+      "id": "subscription-preview",
+      "value": {
+        "format": "auto",
+        "nodes": [
+          {
+            "tag": "fixture-node-a",
+            "originalTag": "fixture-original",
+            "type": "vless",
+            "server": "node.example.com",
+            "regionCode": "US"
+          }
+        ],
+        "preview": [
+          {
+            "originalTag": "fixture-original",
+            "newTag": "fixture-node-a"
+          }
+        ],
+        "groups": [],
+        "skipped": [
+          {
+            "name": "fixture-unsupported",
+            "type": "unsupported",
+            "reason": "unsupported"
+          }
+        ],
+        "excluded": [],
+        "disabled": []
+      },
+      "provenance": {
+        "category": "源码消费契约",
+        "commit": "7fab0e47d2a28446e131b7cd737ef4a5a43d55fb",
+        "source": [
+          "src/openbox/api/types.ts:318",
+          "src/openbox/pages/settings/SubscriptionSettings.tsx:139"
+        ],
+        "redaction": "人工合成或既有测试数据；无实际用户凭据。域名仅 example.com/example.net/.invalid，IP 用文档网段，名称/ID 用 fixture，时间固定。",
+        "observed": false
+      },
+      "limit": "usage: unknown 未填；不推断 skipped.reason 枚举。"
+    },
+    {
+      "id": "backup-minimal",
+      "value": {
+        "format": "open-box-backup",
+        "profile": {},
+        "nodes": []
+      },
+      "provenance": {
+        "category": "已有测试样本",
+        "commit": "7fab0e47d2a28446e131b7cd737ef4a5a43d55fb",
+        "source": [
+          "src/openbox/pages/settings/BackendSettings.test.ts:10"
+        ],
+        "redaction": "人工合成或既有测试数据；无实际用户凭据。域名仅 example.com/example.net/.invalid，IP 用文档网段，名称/ID 用 fixture，时间固定。",
+        "observed": false
+      },
+      "limit": "parseBackup 接受的最小形状，不是可恢复完整备份；未知节点/背景/面板字段未补全。"
+    }
+  ]
+}

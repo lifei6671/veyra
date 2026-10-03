@@ -1,0 +1,13 @@
+{
+  "commit": "7fab0e47d2a28446e131b7cd737ef4a5a43d55fb",
+  "at": "2026-10-03T10:44:07.883Z",
+  "command": "node /private/tmp/p0-browser-confirm.mjs",
+  "engine": "existing Chromium headless shell 1226",
+  "playwright": "1.62.1",
+  "attempts": 1,
+  "result": "NOT_RUN",
+  "reason": "MachPortRendezvousServer permission denied (1100); browser exited before context",
+  "newScreenshots": 0,
+  "viewportMeasured": false,
+  "limits": "Only one process launch confirmation; no local/remote page requests; no OS policy changes."
+}
