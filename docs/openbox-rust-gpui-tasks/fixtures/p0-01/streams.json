@@ -1,0 +1,135 @@
+{
+  "cases": [
+    {
+      "id": "connections",
+      "value": {
+        "connections": [
+          {
+            "id": "fixture-connection",
+            "chains": [
+              "直连",
+              "fixture-policy"
+            ],
+            "download": 1024,
+            "upload": 512,
+            "metadata": {
+              "destinationIP": "198.51.100.10",
+              "destinationPort": "7844",
+              "dnsMode": "normal",
+              "host": "a.example.com",
+              "network": "udp",
+              "processPath": "",
+              "sourceIP": "192.0.2.10",
+              "sourcePort": "37387",
+              "type": "tun/tun-in"
+            },
+            "rule": "final",
+            "rulePayload": "",
+            "start": "2026-10-03T00:00:00Z"
+          }
+        ]
+      },
+      "provenance": {
+        "category": "已有测试样本",
+        "commit": "7fab0e47d2a28446e131b7cd737ef4a5a43d55fb",
+        "source": [
+          "src/openbox/pages/ConnectionsPage.test.ts:7",
+          "src/openbox/api/types.ts:163",
+          "src/openbox/hooks/useLiveMetrics.ts:15"
+        ],
+        "redaction": "人工合成或既有测试数据；无实际用户凭据。域名仅 example.com/example.net/.invalid，IP 用文档网段，名称/ID 用 fixture，时间固定。",
+        "observed": false
+      },
+      "limit": "connection helper 测试值包装成 ConnectionsFrame；未采集 WS。closedConnections 是 hook 补出的本地历史，非本例 wire 字段。"
+    },
+    {
+      "id": "logs",
+      "value": {
+        "type": "info",
+        "payload": "[TCP] dial example.com:443 failed"
+      },
+      "provenance": {
+        "category": "源码消费契约",
+        "commit": "7fab0e47d2a28446e131b7cd737ef4a5a43d55fb",
+        "source": [
+          "src/openbox/api/types.ts:172",
+          "src/openbox/pages/LogsPage.test.ts:6",
+          "src/openbox/pages/LogsPage.tsx:22"
+        ],
+        "redaction": "人工合成或既有测试数据；无实际用户凭据。域名仅 example.com/example.net/.invalid，IP 用文档网段，名称/ID 用 fixture，时间固定。",
+        "observed": false
+      },
+      "limit": "payload 复用测试字符串，type 合成；无 wire 时间/id/category，它们由 UI 添加。"
+    },
+    {
+      "id": "memory",
+      "value": {
+        "inuse": 1048576,
+        "oslimit": 0
+      },
+      "provenance": {
+        "category": "源码消费契约",
+        "commit": "7fab0e47d2a28446e131b7cd737ef4a5a43d55fb",
+        "source": [
+          "src/openbox/api/types.ts:171",
+          "src/openbox/hooks/useLiveMetrics.ts:52"
+        ],
+        "redaction": "人工合成或既有测试数据；无实际用户凭据。域名仅 example.com/example.net/.invalid，IP 用文档网段，名称/ID 用 fixture，时间固定。",
+        "observed": false
+      },
+      "limit": "数值仅覆盖字段形状；oslimit 0 和单位含义尚无真实证据。"
+    },
+    {
+      "id": "traffic",
+      "value": {
+        "up": 1024,
+        "down": 2048
+      },
+      "provenance": {
+        "category": "源码消费契约",
+        "commit": "7fab0e47d2a28446e131b7cd737ef4a5a43d55fb",
+        "source": [
+          "src/openbox/api/types.ts:170",
+          "src/openbox/hooks/useLiveMetrics.ts:45"
+        ],
+        "redaction": "人工合成或既有测试数据；无实际用户凭据。域名仅 example.com/example.net/.invalid，IP 用文档网段，名称/ID 用 fixture，时间固定。",
+        "observed": false
+      },
+      "limit": "任意合成数字，不代表 bytes/Bps/累计/区间。"
+    },
+    {
+      "id": "traffic-next",
+      "value": {
+        "up": 2048,
+        "down": 4096
+      },
+      "provenance": {
+        "category": "源码消费契约",
+        "commit": "7fab0e47d2a28446e131b7cd737ef4a5a43d55fb",
+        "source": [
+          "src/openbox/hooks/useLiveMetrics.ts:45"
+        ],
+        "redaction": "人工合成或既有测试数据；无实际用户凭据。域名仅 example.com/example.net/.invalid，IP 用文档网段，名称/ID 用 fixture，时间固定。",
+        "observed": false
+      },
+      "limit": "按测试 harness 注入接收间隔 1s 可检查当前差分行为，不证明服务端语义。"
+    },
+    {
+      "id": "traffic-reset",
+      "value": {
+        "up": 0,
+        "down": 0
+      },
+      "provenance": {
+        "category": "源码消费契约",
+        "commit": "7fab0e47d2a28446e131b7cd737ef4a5a43d55fb",
+        "source": [
+          "src/openbox/hooks/useLiveMetrics.ts:45"
+        ],
+        "redaction": "人工合成或既有测试数据；无实际用户凭据。域名仅 example.com/example.net/.invalid，IP 用文档网段，名称/ID 用 fixture，时间固定。",
+        "observed": false
+      },
+      "limit": "回退输入覆盖当前 Math.max(0,delta/elapsed) 分支；无实际重置/重连观测。"
+    }
+  ]
+}

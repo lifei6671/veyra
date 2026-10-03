@@ -1,0 +1,1391 @@
+{
+  "cases": [
+    {
+      "id": "current-http-0",
+      "endpoint": "/api/auth/login",
+      "transport": "HTTP",
+      "http_status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "observed_at": "2026-10-03T10:58:42.032Z",
+      "value": {
+        "enabled": true,
+        "authenticated": true
+      },
+      "provenance": {
+        "observed": true,
+        "commit": "7fab0e47d2a28446e131b7cd737ef4a5a43d55fb",
+        "source": [
+          "src/openbox/api/client.ts:153",
+          "src/openbox/hooks/useLiveMetrics.ts:35",
+          "src/openbox/hooks/useControllerSocket.ts:26"
+        ],
+        "controller_version": "1.14.1-openbox",
+        "service_version": "UNKNOWN",
+        "redaction": "All non-empty string values replaced; dynamic keys renamed; credential/process fields removed; arrays truncated to two; nonzero numbers mapped to sign. traffic separately uses ordinal ranks preserving comparison, never byte magnitudes.",
+        "removed_categories": [
+          "credentials",
+          "session headers",
+          "subscription/share URLs",
+          "node and group names",
+          "node servers",
+          "public/private IPs",
+          "user domains",
+          "process paths",
+          "usernames",
+          "provider identifiers",
+          "exact usage quantities"
+        ]
+      },
+      "proves": "Response status, parsed JSON field/container types and sampled structure only.",
+      "cannot_prove": "Original string values, numeric quantities, complete arrays, mutation behavior or platform support."
+    },
+    {
+      "id": "current-http-1",
+      "endpoint": "/api/auth/status",
+      "transport": "HTTP",
+      "http_status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "observed_at": "2026-10-03T10:59:01.587Z",
+      "value": {
+        "enabled": true,
+        "authenticated": true
+      },
+      "provenance": {
+        "observed": true,
+        "commit": "7fab0e47d2a28446e131b7cd737ef4a5a43d55fb",
+        "source": [
+          "src/openbox/api/client.ts:153",
+          "src/openbox/hooks/useLiveMetrics.ts:35",
+          "src/openbox/hooks/useControllerSocket.ts:26"
+        ],
+        "controller_version": "1.14.1-openbox",
+        "service_version": "UNKNOWN",
+        "redaction": "All non-empty string values replaced; dynamic keys renamed; credential/process fields removed; arrays truncated to two; nonzero numbers mapped to sign. traffic separately uses ordinal ranks preserving comparison, never byte magnitudes.",
+        "removed_categories": [
+          "credentials",
+          "session headers",
+          "subscription/share URLs",
+          "node and group names",
+          "node servers",
+          "public/private IPs",
+          "user domains",
+          "process paths",
+          "usernames",
+          "provider identifiers",
+          "exact usage quantities"
+        ]
+      },
+      "proves": "Response status, parsed JSON field/container types and sampled structure only.",
+      "cannot_prove": "Original string values, numeric quantities, complete arrays, mutation behavior or platform support."
+    },
+    {
+      "id": "current-http-2",
+      "endpoint": "/api/storage",
+      "transport": "HTTP",
+      "http_status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "observed_at": "2026-10-03T10:59:05.137Z",
+      "value": {
+        "entries": {
+          "fixture-field-1": "fixture-value",
+          "fixture-field-2": "fixture-value",
+          "fixture-field-3": "fixture-value",
+          "fixture-field-4": "fixture-value",
+          "fixture-field-5": "fixture-value",
+          "fixture-field-6": "fixture-value",
+          "fixture-field-7": "fixture-value",
+          "fixture-field-8": "fixture-value",
+          "fixture-field-9": "fixture-value",
+          "fixture-field-10": "fixture-value",
+          "fixture-field-11": "fixture-value",
+          "fixture-field-12": "fixture-value",
+          "fixture-field-13": "fixture-value",
+          "fixture-field-14": "fixture-value",
+          "fixture-field-15": "fixture-value",
+          "fixture-field-16": "fixture-value",
+          "fixture-field-17": "fixture-value",
+          "fixture-field-18": "fixture-value",
+          "fixture-field-19": "fixture-value",
+          "fixture-field-20": "https://example.invalid",
+          "fixture-field-21": "fixture-value",
+          "fixture-field-22": "fixture-value",
+          "fixture-field-23": "fixture-value",
+          "fixture-field-24": "fixture-value",
+          "fixture-field-25": "fixture-value",
+          "fixture-field-26": "fixture-value",
+          "fixture-field-27": "fixture-value",
+          "fixture-field-28": "fixture-value",
+          "fixture-field-29": "https://example.invalid",
+          "fixture-field-30": "fixture-value",
+          "fixture-field-31": "fixture-value",
+          "fixture-field-32": "fixture-value",
+          "fixture-field-33": "fixture-value",
+          "fixture-field-34": "fixture-value",
+          "fixture-field-35": "https://example.invalid",
+          "fixture-field-36": "fixture-value",
+          "fixture-field-37": "fixture-value",
+          "fixture-field-38": "fixture-value",
+          "fixture-field-39": "fixture-value",
+          "fixture-field-40": "fixture-value",
+          "fixture-field-41": "fixture-value",
+          "fixture-field-42": "fixture-value",
+          "fixture-field-43": "fixture-value",
+          "fixture-field-44": "fixture-value",
+          "fixture-field-45": "fixture-value",
+          "fixture-field-46": "fixture-value",
+          "fixture-field-47": "fixture-value",
+          "fixture-field-48": "fixture-value",
+          "fixture-field-49": "fixture-value",
+          "fixture-field-50": "fixture-value",
+          "fixture-field-51": "fixture-value",
+          "fixture-field-52": "fixture-value",
+          "fixture-field-53": "fixture-value",
+          "fixture-field-54": "",
+          "fixture-field-55": "fixture-value",
+          "fixture-field-56": "fixture-value",
+          "fixture-field-57": "fixture-value",
+          "fixture-field-58": "fixture-value",
+          "fixture-field-59": "fixture-value",
+          "fixture-field-60": "fixture-value",
+          "fixture-field-61": "fixture-value",
+          "fixture-field-62": "fixture-value",
+          "fixture-field-63": "fixture-value",
+          "fixture-field-64": "fixture-value",
+          "fixture-field-65": "fixture-value",
+          "fixture-field-66": "fixture-value",
+          "fixture-field-67": "fixture-value",
+          "fixture-field-68": "fixture-value",
+          "fixture-field-69": "https://example.invalid",
+          "fixture-field-70": "fixture-value",
+          "fixture-field-71": "fixture-value",
+          "fixture-field-72": "fixture-value",
+          "fixture-field-73": "fixture-value",
+          "fixture-field-74": "fixture-value",
+          "fixture-field-75": "fixture-value",
+          "fixture-field-76": "fixture-value",
+          "fixture-field-77": "fixture-value",
+          "fixture-field-78": "fixture-value",
+          "fixture-field-79": "fixture-value",
+          "fixture-field-80": "fixture-value",
+          "fixture-field-81": "fixture-value",
+          "fixture-field-82": "fixture-value",
+          "fixture-field-83": "fixture-value",
+          "fixture-field-84": "fixture-value",
+          "fixture-field-85": "fixture-value"
+        }
+      },
+      "provenance": {
+        "observed": true,
+        "commit": "7fab0e47d2a28446e131b7cd737ef4a5a43d55fb",
+        "source": [
+          "src/openbox/api/client.ts:153",
+          "src/openbox/hooks/useLiveMetrics.ts:35",
+          "src/openbox/hooks/useControllerSocket.ts:26"
+        ],
+        "controller_version": "1.14.1-openbox",
+        "service_version": "UNKNOWN",
+        "redaction": "All non-empty string values replaced; dynamic keys renamed; credential/process fields removed; arrays truncated to two; nonzero numbers mapped to sign. traffic separately uses ordinal ranks preserving comparison, never byte magnitudes.",
+        "removed_categories": [
+          "credentials",
+          "session headers",
+          "subscription/share URLs",
+          "node and group names",
+          "node servers",
+          "public/private IPs",
+          "user domains",
+          "process paths",
+          "usernames",
+          "provider identifiers",
+          "exact usage quantities"
+        ]
+      },
+      "proves": "Response status, parsed JSON field/container types and sampled structure only.",
+      "cannot_prove": "Original string values, numeric quantities, complete arrays, mutation behavior or platform support."
+    },
+    {
+      "id": "current-http-3",
+      "endpoint": "/api/openbox/service/status",
+      "transport": "HTTP",
+      "http_status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "observed_at": "2026-10-03T10:59:05.979Z",
+      "value": {
+        "core": {
+          "running": true,
+          "raw": "fixture-value",
+          "autostart": true,
+          "uptimeSeconds": 1
+        },
+        "panel": {
+          "running": true,
+          "raw": "fixture-value"
+        },
+        "conflicts": [],
+        "platform": "fixture-value",
+        "fixture-field-1": {
+          "pending": false,
+          "fixture-field-1": []
+        }
+      },
+      "provenance": {
+        "observed": true,
+        "commit": "7fab0e47d2a28446e131b7cd737ef4a5a43d55fb",
+        "source": [
+          "src/openbox/api/client.ts:153",
+          "src/openbox/hooks/useLiveMetrics.ts:35",
+          "src/openbox/hooks/useControllerSocket.ts:26"
+        ],
+        "controller_version": "1.14.1-openbox",
+        "service_version": "UNKNOWN",
+        "redaction": "All non-empty string values replaced; dynamic keys renamed; credential/process fields removed; arrays truncated to two; nonzero numbers mapped to sign. traffic separately uses ordinal ranks preserving comparison, never byte magnitudes.",
+        "removed_categories": [
+          "credentials",
+          "session headers",
+          "subscription/share URLs",
+          "node and group names",
+          "node servers",
+          "public/private IPs",
+          "user domains",
+          "process paths",
+          "usernames",
+          "provider identifiers",
+          "exact usage quantities"
+        ]
+      },
+      "proves": "Response status, parsed JSON field/container types and sampled structure only.",
+      "cannot_prove": "Original string values, numeric quantities, complete arrays, mutation behavior or platform support."
+    },
+    {
+      "id": "current-http-4",
+      "endpoint": "/api/controller/configs",
+      "transport": "HTTP",
+      "http_status": 200,
+      "content_type": "application/json",
+      "observed_at": "2026-10-03T10:59:07.448Z",
+      "value": {
+        "port": 0,
+        "fixture-field-1": 0,
+        "fixture-field-2": 0,
+        "fixture-field-3": 0,
+        "fixture-field-4": 0,
+        "fixture-field-5": false,
+        "fixture-field-6": "192.0.2.1",
+        "mode": "fixture-value",
+        "mode-list": [
+          "fixture-value"
+        ],
+        "log-level": "fixture-value",
+        "ipv6": false,
+        "tun": null
+      },
+      "provenance": {
+        "observed": true,
+        "commit": "7fab0e47d2a28446e131b7cd737ef4a5a43d55fb",
+        "source": [
+          "src/openbox/api/client.ts:153",
+          "src/openbox/hooks/useLiveMetrics.ts:35",
+          "src/openbox/hooks/useControllerSocket.ts:26"
+        ],
+        "controller_version": "1.14.1-openbox",
+        "service_version": "UNKNOWN",
+        "redaction": "All non-empty string values replaced; dynamic keys renamed; credential/process fields removed; arrays truncated to two; nonzero numbers mapped to sign. traffic separately uses ordinal ranks preserving comparison, never byte magnitudes.",
+        "removed_categories": [
+          "credentials",
+          "session headers",
+          "subscription/share URLs",
+          "node and group names",
+          "node servers",
+          "public/private IPs",
+          "user domains",
+          "process paths",
+          "usernames",
+          "provider identifiers",
+          "exact usage quantities"
+        ]
+      },
+      "proves": "Response status, parsed JSON field/container types and sampled structure only.",
+      "cannot_prove": "Original string values, numeric quantities, complete arrays, mutation behavior or platform support."
+    },
+    {
+      "id": "current-http-5",
+      "endpoint": "/api/controller/version",
+      "transport": "HTTP",
+      "http_status": 200,
+      "content_type": "application/json",
+      "observed_at": "2026-10-03T10:59:10.224Z",
+      "value": {
+        "fixture-field-1": true,
+        "fixture-field-2": true,
+        "version": "fixture-value"
+      },
+      "provenance": {
+        "observed": true,
+        "commit": "7fab0e47d2a28446e131b7cd737ef4a5a43d55fb",
+        "source": [
+          "src/openbox/api/client.ts:153",
+          "src/openbox/hooks/useLiveMetrics.ts:35",
+          "src/openbox/hooks/useControllerSocket.ts:26"
+        ],
+        "controller_version": "1.14.1-openbox",
+        "service_version": "UNKNOWN",
+        "redaction": "All non-empty string values replaced; dynamic keys renamed; credential/process fields removed; arrays truncated to two; nonzero numbers mapped to sign. traffic separately uses ordinal ranks preserving comparison, never byte magnitudes.",
+        "removed_categories": [
+          "credentials",
+          "session headers",
+          "subscription/share URLs",
+          "node and group names",
+          "node servers",
+          "public/private IPs",
+          "user domains",
+          "process paths",
+          "usernames",
+          "provider identifiers",
+          "exact usage quantities"
+        ]
+      },
+      "proves": "Response status, parsed JSON field/container types and sampled structure only.",
+      "cannot_prove": "Original string values, numeric quantities, complete arrays, mutation behavior or platform support."
+    },
+    {
+      "id": "current-http-6",
+      "endpoint": "/api/openbox/traffic/usage",
+      "transport": "HTTP",
+      "http_status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "observed_at": "2026-10-03T10:59:10.723Z",
+      "value": {
+        "rows": 1,
+        "days": 1,
+        "fixture-field-1": "fixture-value",
+        "fixture-field-2": "fixture-value",
+        "bytes": 1,
+        "fixture-field-3": 1,
+        "fixture-field-4": 1,
+        "fixture-field-5": 1,
+        "fixture-field-6": 0,
+        "fixture-field-7": 0,
+        "perDay": 1,
+        "oldPerDay": 1,
+        "hourPerDay": 1,
+        "hourKeepDays": 1,
+        "collapseAfterDays": 1,
+        "fixture-field-8": 1
+      },
+      "provenance": {
+        "observed": true,
+        "commit": "7fab0e47d2a28446e131b7cd737ef4a5a43d55fb",
+        "source": [
+          "src/openbox/api/client.ts:153",
+          "src/openbox/hooks/useLiveMetrics.ts:35",
+          "src/openbox/hooks/useControllerSocket.ts:26"
+        ],
+        "controller_version": "1.14.1-openbox",
+        "service_version": "UNKNOWN",
+        "redaction": "All non-empty string values replaced; dynamic keys renamed; credential/process fields removed; arrays truncated to two; nonzero numbers mapped to sign. traffic separately uses ordinal ranks preserving comparison, never byte magnitudes.",
+        "removed_categories": [
+          "credentials",
+          "session headers",
+          "subscription/share URLs",
+          "node and group names",
+          "node servers",
+          "public/private IPs",
+          "user domains",
+          "process paths",
+          "usernames",
+          "provider identifiers",
+          "exact usage quantities"
+        ]
+      },
+      "proves": "Response status, parsed JSON field/container types and sampled structure only.",
+      "cannot_prove": "Original string values, numeric quantities, complete arrays, mutation behavior or platform support."
+    },
+    {
+      "id": "current-http-7",
+      "endpoint": "/api/controller/proxies",
+      "transport": "HTTP",
+      "http_status": 200,
+      "content_type": "text/plain; charset=utf-8",
+      "observed_at": "2026-10-03T10:59:11.228Z",
+      "value": {
+        "proxies": {
+          "fixture-field-1": {
+            "all": [
+              "fixture-value",
+              "fixture-value"
+            ],
+            "history": [],
+            "name": "fixture-value",
+            "now": "fixture-value",
+            "type": "fixture-value",
+            "udp": true
+          },
+          "fixture-field-2": {
+            "type": "fixture-value",
+            "name": "fixture-value",
+            "udp": true,
+            "history": []
+          },
+          "fixture-field-3": {
+            "type": "fixture-value",
+            "name": "fixture-value",
+            "udp": true,
+            "history": [
+              {
+                "time": "fixture-value",
+                "delay": 1
+              }
+            ],
+            "now": "fixture-value",
+            "all": [
+              "fixture-value",
+              "fixture-value"
+            ]
+          },
+          "fixture-field-4": {
+            "type": "fixture-value",
+            "name": "fixture-value",
+            "udp": true,
+            "history": [
+              {
+                "time": "fixture-value",
+                "delay": 1
+              }
+            ],
+            "now": "fixture-value",
+            "all": [
+              "fixture-value",
+              "fixture-value"
+            ]
+          },
+          "fixture-field-5": {
+            "type": "fixture-value",
+            "name": "fixture-value",
+            "udp": true,
+            "history": []
+          },
+          "fixture-field-6": {
+            "type": "fixture-value",
+            "name": "fixture-value",
+            "udp": true,
+            "history": [
+              {
+                "time": "fixture-value",
+                "delay": 1
+              }
+            ],
+            "now": "fixture-value",
+            "all": [
+              "fixture-value",
+              "fixture-value"
+            ]
+          },
+          "fixture-field-7": {
+            "type": "fixture-value",
+            "name": "fixture-value",
+            "udp": true,
+            "history": [
+              {
+                "time": "fixture-value",
+                "delay": 1
+              }
+            ],
+            "now": "fixture-value",
+            "all": [
+              "fixture-value",
+              "fixture-value"
+            ]
+          },
+          "fixture-field-8": {
+            "type": "fixture-value",
+            "name": "fixture-value",
+            "udp": true,
+            "history": [
+              {
+                "time": "fixture-value",
+                "delay": 1
+              }
+            ],
+            "now": "fixture-value",
+            "all": [
+              "fixture-value",
+              "fixture-value"
+            ]
+          },
+          "fixture-field-9": {
+            "type": "fixture-value",
+            "name": "fixture-value",
+            "udp": true,
+            "history": [
+              {
+                "time": "fixture-value",
+                "delay": 1
+              }
+            ],
+            "now": "fixture-value",
+            "all": [
+              "fixture-value",
+              "fixture-value"
+            ]
+          },
+          "fixture-field-10": {
+            "type": "fixture-value",
+            "name": "fixture-value",
+            "udp": true,
+            "history": [
+              {
+                "time": "fixture-value",
+                "delay": 1
+              }
+            ],
+            "now": "fixture-value",
+            "all": [
+              "fixture-value",
+              "fixture-value"
+            ]
+          },
+          "fixture-field-11": {
+            "type": "fixture-value",
+            "name": "fixture-value",
+            "udp": true,
+            "history": [
+              {
+                "time": "fixture-value",
+                "delay": 1
+              }
+            ],
+            "now": "fixture-value",
+            "all": [
+              "fixture-value",
+              "fixture-value"
+            ]
+          },
+          "fixture-field-12": {
+            "type": "fixture-value",
+            "name": "fixture-value",
+            "udp": true,
+            "history": [
+              {
+                "time": "fixture-value",
+                "delay": 1
+              }
+            ],
+            "now": "fixture-value",
+            "all": [
+              "fixture-value",
+              "fixture-value"
+            ]
+          },
+          "fixture-field-13": {
+            "type": "fixture-value",
+            "name": "fixture-value",
+            "udp": true,
+            "history": [
+              {
+                "time": "fixture-value",
+                "delay": 1
+              }
+            ],
+            "now": "fixture-value",
+            "all": [
+              "fixture-value",
+              "fixture-value"
+            ]
+          },
+          "fixture-field-14": {
+            "type": "fixture-value",
+            "name": "fixture-value",
+            "udp": true,
+            "history": [],
+            "now": "fixture-value",
+            "all": [
+              "fixture-value",
+              "fixture-value"
+            ]
+          },
+          "fixture-field-15": {
+            "type": "fixture-value",
+            "name": "fixture-value",
+            "udp": true,
+            "history": [
+              {
+                "time": "fixture-value",
+                "delay": 1
+              }
+            ],
+            "now": "fixture-value",
+            "all": [
+              "fixture-value",
+              "fixture-value"
+            ]
+          },
+          "fixture-field-16": {
+            "type": "fixture-value",
+            "name": "fixture-value",
+            "udp": true,
+            "history": [
+              {
+                "time": "fixture-value",
+                "delay": 1
+              }
+            ],
+            "now": "fixture-value",
+            "all": [
+              "fixture-value",
+              "fixture-value"
+            ]
+          },
+          "fixture-field-17": {
+            "type": "fixture-value",
+            "name": "fixture-value",
+            "udp": true,
+            "history": [],
+            "now": "fixture-value",
+            "all": [
+              "fixture-value",
+              "fixture-value"
+            ]
+          },
+          "fixture-field-18": {
+            "type": "fixture-value",
+            "name": "fixture-value",
+            "udp": true,
+            "history": [],
+            "now": "fixture-value",
+            "all": [
+              "fixture-value",
+              "fixture-value"
+            ]
+          },
+          "fixture-field-19": {
+            "type": "fixture-value",
+            "name": "fixture-value",
+            "udp": true,
+            "history": [
+              {
+                "time": "fixture-value",
+                "delay": 1
+              }
+            ]
+          },
+          "fixture-field-20": {
+            "type": "fixture-value",
+            "name": "fixture-value",
+            "udp": true,
+            "history": [
+              {
+                "time": "fixture-value",
+                "delay": 1
+              }
+            ]
+          },
+          "fixture-field-21": {
+            "type": "fixture-value",
+            "name": "fixture-value",
+            "udp": true,
+            "history": [
+              {
+                "time": "fixture-value",
+                "delay": 1
+              }
+            ]
+          },
+          "fixture-field-22": {
+            "type": "fixture-value",
+            "name": "fixture-value",
+            "udp": true,
+            "history": [
+              {
+                "time": "fixture-value",
+                "delay": 1
+              }
+            ]
+          },
+          "fixture-field-23": {
+            "type": "fixture-value",
+            "name": "fixture-value",
+            "udp": true,
+            "history": [
+              {
+                "time": "fixture-value",
+                "delay": 1
+              }
+            ]
+          },
+          "fixture-field-24": {
+            "type": "fixture-value",
+            "name": "fixture-value",
+            "udp": true,
+            "history": [
+              {
+                "time": "fixture-value",
+                "delay": 1
+              }
+            ]
+          },
+          "fixture-field-25": {
+            "type": "fixture-value",
+            "name": "fixture-value",
+            "udp": true,
+            "history": [
+              {
+                "time": "fixture-value",
+                "delay": 1
+              }
+            ]
+          },
+          "fixture-field-26": {
+            "type": "fixture-value",
+            "name": "fixture-value",
+            "udp": true,
+            "history": [
+              {
+                "time": "fixture-value",
+                "delay": 1
+              }
+            ]
+          },
+          "fixture-field-27": {
+            "type": "fixture-value",
+            "name": "fixture-value",
+            "udp": true,
+            "history": [
+              {
+                "time": "fixture-value",
+                "delay": 1
+              }
+            ]
+          },
+          "fixture-field-28": {
+            "type": "fixture-value",
+            "name": "fixture-value",
+            "udp": true,
+            "history": [
+              {
+                "time": "fixture-value",
+                "delay": 1
+              }
+            ]
+          },
+          "fixture-field-29": {
+            "type": "fixture-value",
+            "name": "fixture-value",
+            "udp": true,
+            "history": [
+              {
+                "time": "fixture-value",
+                "delay": 1
+              }
+            ]
+          },
+          "fixture-field-30": {
+            "type": "fixture-value",
+            "name": "fixture-value",
+            "udp": false,
+            "history": []
+          }
+        }
+      },
+      "provenance": {
+        "observed": true,
+        "commit": "7fab0e47d2a28446e131b7cd737ef4a5a43d55fb",
+        "source": [
+          "src/openbox/api/client.ts:153",
+          "src/openbox/hooks/useLiveMetrics.ts:35",
+          "src/openbox/hooks/useControllerSocket.ts:26"
+        ],
+        "controller_version": "1.14.1-openbox",
+        "service_version": "UNKNOWN",
+        "redaction": "All non-empty string values replaced; dynamic keys renamed; credential/process fields removed; arrays truncated to two; nonzero numbers mapped to sign. traffic separately uses ordinal ranks preserving comparison, never byte magnitudes.",
+        "removed_categories": [
+          "credentials",
+          "session headers",
+          "subscription/share URLs",
+          "node and group names",
+          "node servers",
+          "public/private IPs",
+          "user domains",
+          "process paths",
+          "usernames",
+          "provider identifiers",
+          "exact usage quantities"
+        ]
+      },
+      "proves": "Response status, parsed JSON field/container types and sampled structure only.",
+      "cannot_prove": "Original string values, numeric quantities, complete arrays, mutation behavior or platform support."
+    },
+    {
+      "id": "current-http-8",
+      "endpoint": "/api/controller/rules",
+      "transport": "HTTP",
+      "http_status": 200,
+      "content_type": "application/json",
+      "observed_at": "2026-10-03T10:59:15.705Z",
+      "value": {
+        "rules": [
+          {
+            "type": "fixture-value",
+            "payload": "",
+            "proxy": "fixture-value"
+          },
+          {
+            "type": "fixture-value",
+            "payload": "fixture-value",
+            "proxy": "fixture-value"
+          }
+        ]
+      },
+      "provenance": {
+        "observed": true,
+        "commit": "7fab0e47d2a28446e131b7cd737ef4a5a43d55fb",
+        "source": [
+          "src/openbox/api/client.ts:153",
+          "src/openbox/hooks/useLiveMetrics.ts:35",
+          "src/openbox/hooks/useControllerSocket.ts:26"
+        ],
+        "controller_version": "1.14.1-openbox",
+        "service_version": "UNKNOWN",
+        "redaction": "All non-empty string values replaced; dynamic keys renamed; credential/process fields removed; arrays truncated to two; nonzero numbers mapped to sign. traffic separately uses ordinal ranks preserving comparison, never byte magnitudes.",
+        "removed_categories": [
+          "credentials",
+          "session headers",
+          "subscription/share URLs",
+          "node and group names",
+          "node servers",
+          "public/private IPs",
+          "user domains",
+          "process paths",
+          "usernames",
+          "provider identifiers",
+          "exact usage quantities"
+        ]
+      },
+      "proves": "Response status, parsed JSON field/container types and sampled structure only.",
+      "cannot_prove": "Original string values, numeric quantities, complete arrays, mutation behavior or platform support."
+    },
+    {
+      "id": "current-http-9",
+      "endpoint": "/api/openbox/groups",
+      "transport": "HTTP",
+      "http_status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "observed_at": "2026-10-03T10:59:16.198Z",
+      "value": {
+        "groups": [
+          {
+            "id": "fixture-value",
+            "name": "fixture-value",
+            "type": "fixture-value",
+            "mode": "fixture-value",
+            "enabled": true,
+            "icon": "fixture-value",
+            "iconScale": 0,
+            "keywords": [],
+            "members": [],
+            "kind": "fixture-value"
+          },
+          {
+            "id": "fixture-value",
+            "name": "fixture-value",
+            "type": "fixture-value",
+            "mode": "fixture-value",
+            "enabled": true,
+            "icon": "fixture-value",
+            "iconScale": 0,
+            "keywords": [],
+            "members": [],
+            "testUrl": "",
+            "interval": "fixture-value",
+            "tolerance": 1,
+            "idleTimeout": "fixture-value"
+          }
+        ],
+        "types": [
+          "fixture-value",
+          "fixture-value"
+        ],
+        "availableNodes": [
+          {
+            "name": "fixture-value",
+            "subscription": "fixture-value",
+            "region": "fixture-value"
+          },
+          {
+            "name": "fixture-value",
+            "subscription": "fixture-value",
+            "region": "fixture-value"
+          }
+        ],
+        "availableGroups": [
+          "fixture-value",
+          "fixture-value"
+        ]
+      },
+      "provenance": {
+        "observed": true,
+        "commit": "7fab0e47d2a28446e131b7cd737ef4a5a43d55fb",
+        "source": [
+          "src/openbox/api/client.ts:153",
+          "src/openbox/hooks/useLiveMetrics.ts:35",
+          "src/openbox/hooks/useControllerSocket.ts:26"
+        ],
+        "controller_version": "1.14.1-openbox",
+        "service_version": "UNKNOWN",
+        "redaction": "All non-empty string values replaced; dynamic keys renamed; credential/process fields removed; arrays truncated to two; nonzero numbers mapped to sign. traffic separately uses ordinal ranks preserving comparison, never byte magnitudes.",
+        "removed_categories": [
+          "credentials",
+          "session headers",
+          "subscription/share URLs",
+          "node and group names",
+          "node servers",
+          "public/private IPs",
+          "user domains",
+          "process paths",
+          "usernames",
+          "provider identifiers",
+          "exact usage quantities"
+        ]
+      },
+      "proves": "Response status, parsed JSON field/container types and sampled structure only.",
+      "cannot_prove": "Original string values, numeric quantities, complete arrays, mutation behavior or platform support."
+    },
+    {
+      "id": "current-http-10",
+      "endpoint": "/api/openbox/subscriptions",
+      "transport": "HTTP",
+      "http_status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "observed_at": "2026-10-03T10:59:16.690Z",
+      "value": {
+        "subscriptions": [
+          {
+            "id": "fixture-value",
+            "name": "fixture-value",
+            "url": "https://example.invalid",
+            "urls": [
+              "https://example.invalid"
+            ],
+            "format": "fixture-value",
+            "nodeCount": 1,
+            "renameOptions": {
+              "enabled": false,
+              "template": "fixture-value",
+              "usePrefix": false,
+              "unknownLabel": "fixture-value",
+              "seqPad": 1,
+              "regionDict": [
+                {
+                  "code": "fixture-value",
+                  "name": "fixture-value",
+                  "keywords": [
+                    "fixture-value",
+                    "fixture-value"
+                  ]
+                },
+                {
+                  "code": "fixture-value",
+                  "name": "fixture-value",
+                  "keywords": [
+                    "fixture-value",
+                    "fixture-value"
+                  ]
+                }
+              ],
+              "featureKeywords": [
+                "fixture-value",
+                "fixture-value"
+              ],
+              "excludeKeywords": [
+                "fixture-value",
+                "fixture-value"
+              ],
+              "overrides": {},
+              "disabled": []
+            },
+            "autoUpdate": null,
+            "createdAt": 1,
+            "updatedAt": 1,
+            "enabled": true,
+            "kernelStale": 0
+          }
+        ]
+      },
+      "provenance": {
+        "observed": true,
+        "commit": "7fab0e47d2a28446e131b7cd737ef4a5a43d55fb",
+        "source": [
+          "src/openbox/api/client.ts:153",
+          "src/openbox/hooks/useLiveMetrics.ts:35",
+          "src/openbox/hooks/useControllerSocket.ts:26"
+        ],
+        "controller_version": "1.14.1-openbox",
+        "service_version": "UNKNOWN",
+        "redaction": "All non-empty string values replaced; dynamic keys renamed; credential/process fields removed; arrays truncated to two; nonzero numbers mapped to sign. traffic separately uses ordinal ranks preserving comparison, never byte magnitudes.",
+        "removed_categories": [
+          "credentials",
+          "session headers",
+          "subscription/share URLs",
+          "node and group names",
+          "node servers",
+          "public/private IPs",
+          "user domains",
+          "process paths",
+          "usernames",
+          "provider identifiers",
+          "exact usage quantities"
+        ]
+      },
+      "proves": "Response status, parsed JSON field/container types and sampled structure only.",
+      "cannot_prove": "Original string values, numeric quantities, complete arrays, mutation behavior or platform support."
+    },
+    {
+      "id": "current-http-11",
+      "endpoint": "/api/openbox/profile",
+      "transport": "HTTP",
+      "http_status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "observed_at": "2026-10-03T10:59:17.471Z",
+      "value": {
+        "profile": {
+          "ipv6": true,
+          "ipv6Proxy": "fixture-value",
+          "directForNodes": true,
+          "rejectQuic": true,
+          "directBypass": false,
+          "bypassPorts": "",
+          "fixture-field-1": "",
+          "bypassPortsMode": "fixture-value",
+          "tun": {
+            "autoRedirect": true,
+            "stack": "fixture-value",
+            "mtu": 0,
+            "tcpMss": 0
+          },
+          "servers": [
+            {
+              "id": "fixture-value",
+              "enabled": true,
+              "name": "fixture-value",
+              "protocol": "fixture-value",
+              "port": 1,
+              "address": "192.0.2.1",
+              "method": "fixture-value"
+            }
+          ],
+          "clientRoutes": [
+            {
+              "id": "fixture-value",
+              "enabled": true,
+              "name": "fixture-value",
+              "match": "fixture-value",
+              "sources": [
+                "fixture-value"
+              ],
+              "macs": [],
+              "outbound": "fixture-value"
+            }
+          ],
+          "dns": {
+            "split": true,
+            "mode": "fixture-value",
+            "fakeIpForProxy": true,
+            "direct": "fixture-value",
+            "directProtocol": "fixture-value",
+            "directPort": 1,
+            "directExtras": [
+              {
+                "server": "192.0.2.1",
+                "protocol": "fixture-value",
+                "port": 1
+              }
+            ],
+            "proxy": "fixture-value",
+            "proxyProtocol": "fixture-value",
+            "proxyPort": 1,
+            "proxyExtras": [],
+            "rewrite": {
+              "initialized": 1,
+              "rules": [
+                {
+                  "id": "fixture-value",
+                  "enabled": true,
+                  "source": "fixture-value",
+                  "domain": "example.com",
+                  "addresses": [],
+                  "note": ""
+                },
+                {
+                  "id": "fixture-value",
+                  "enabled": true,
+                  "source": "fixture-value",
+                  "domain": "example.com",
+                  "addresses": [],
+                  "note": ""
+                }
+              ]
+            },
+            "fixture-field-1": {
+              "enabled": true,
+              "lists": [
+                {
+                  "id": "fixture-value",
+                  "name": "fixture-value",
+                  "url": "https://example.invalid",
+                  "enabled": true
+                }
+              ],
+              "allowDomains": [],
+              "autoUpdate": {
+                "enabled": false,
+                "days": 1,
+                "hour": 1
+              }
+            },
+            "region": "fixture-value"
+          },
+          "traffic": {
+            "keepMonths": 1
+          },
+          "testUrl": "https://example.invalid",
+          "directTestUrl": "https://example.invalid",
+          "updates": {
+            "openbox": {
+              "auto": false,
+              "hour": 1,
+              "channel": "fixture-value",
+              "checkChannel": "fixture-value",
+              "days": 1
+            }
+          },
+          "routing": {
+            "policies": [
+              {
+                "id": "fixture-value",
+                "name": "fixture-value",
+                "icon": "fixture-value",
+                "fixture-field-1": "fixture-value",
+                "rulesets": [],
+                "domain": [
+                  "example.com",
+                  "example.com"
+                ],
+                "domainSuffix": [
+                  "example.com",
+                  "example.com"
+                ],
+                "domainKeyword": [],
+                "ipCidr": [
+                  "fixture-value",
+                  "fixture-value"
+                ]
+              },
+              {
+                "id": "fixture-value",
+                "name": "fixture-value",
+                "icon": "fixture-value",
+                "fixture-field-1": "fixture-value",
+                "rulesets": [
+                  "fixture-value"
+                ],
+                "domain": [],
+                "domainSuffix": [],
+                "domainKeyword": [],
+                "ipCidr": []
+              }
+            ],
+            "fallbackDefault": "fixture-value",
+            "fallbackName": "fixture-value",
+            "fallbackIcon": "fixture-value",
+            "fixture-field-1": [
+              "fixture-value",
+              "fixture-value"
+            ]
+          },
+          "chainProxies": [
+            {
+              "id": "fixture-value",
+              "enabled": true,
+              "name": "fixture-value",
+              "link": "https://example.invalid",
+              "upstream": "fixture-value",
+              "node": {
+                "type": "fixture-value",
+                "server": "192.0.2.1",
+                "port": 1
+              }
+            }
+          ]
+        }
+      },
+      "provenance": {
+        "observed": true,
+        "commit": "7fab0e47d2a28446e131b7cd737ef4a5a43d55fb",
+        "source": [
+          "src/openbox/api/client.ts:153",
+          "src/openbox/hooks/useLiveMetrics.ts:35",
+          "src/openbox/hooks/useControllerSocket.ts:26"
+        ],
+        "controller_version": "1.14.1-openbox",
+        "service_version": "UNKNOWN",
+        "redaction": "All non-empty string values replaced; dynamic keys renamed; credential/process fields removed; arrays truncated to two; nonzero numbers mapped to sign. traffic separately uses ordinal ranks preserving comparison, never byte magnitudes.",
+        "removed_categories": [
+          "credentials",
+          "session headers",
+          "subscription/share URLs",
+          "node and group names",
+          "node servers",
+          "public/private IPs",
+          "user domains",
+          "process paths",
+          "usernames",
+          "provider identifiers",
+          "exact usage quantities"
+        ]
+      },
+      "proves": "Response status, parsed JSON field/container types and sampled structure only.",
+      "cannot_prove": "Original string values, numeric quantities, complete arrays, mutation behavior or platform support."
+    },
+    {
+      "id": "current-http-12",
+      "endpoint": "/api/openbox/dns-filter",
+      "transport": "HTTP",
+      "http_status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "observed_at": "2026-10-03T10:59:19.434Z",
+      "value": {
+        "settings": {
+          "enabled": true,
+          "lists": [
+            {
+              "id": "fixture-value",
+              "name": "fixture-value",
+              "url": "https://example.invalid",
+              "enabled": true
+            }
+          ],
+          "allowDomains": [],
+          "autoUpdate": {
+            "enabled": false,
+            "days": 1,
+            "hour": 1
+          }
+        },
+        "lists": {
+          "fixture-field-1": {
+            "url": "https://example.invalid",
+            "fixture-field-1": "fixture-value",
+            "fixture-field-2": "fixture-value",
+            "count": 1,
+            "unsupported": 0,
+            "unsupportedExamples": [],
+            "updatedAt": 1,
+            "error": ""
+          }
+        },
+        "applied": {
+          "enabled": true,
+          "key": "fixture-value"
+        },
+        "queryLog": {
+          "fixture-field-1": false,
+          "reason": ""
+        },
+        "pending": false,
+        "fixture-field-1": false,
+        "connected": true
+      },
+      "provenance": {
+        "observed": true,
+        "commit": "7fab0e47d2a28446e131b7cd737ef4a5a43d55fb",
+        "source": [
+          "src/openbox/api/client.ts:153",
+          "src/openbox/hooks/useLiveMetrics.ts:35",
+          "src/openbox/hooks/useControllerSocket.ts:26"
+        ],
+        "controller_version": "1.14.1-openbox",
+        "service_version": "UNKNOWN",
+        "redaction": "All non-empty string values replaced; dynamic keys renamed; credential/process fields removed; arrays truncated to two; nonzero numbers mapped to sign. traffic separately uses ordinal ranks preserving comparison, never byte magnitudes.",
+        "removed_categories": [
+          "credentials",
+          "session headers",
+          "subscription/share URLs",
+          "node and group names",
+          "node servers",
+          "public/private IPs",
+          "user domains",
+          "process paths",
+          "usernames",
+          "provider identifiers",
+          "exact usage quantities"
+        ]
+      },
+      "proves": "Response status, parsed JSON field/container types and sampled structure only.",
+      "cannot_prove": "Original string values, numeric quantities, complete arrays, mutation behavior or platform support."
+    },
+    {
+      "id": "current-http-13",
+      "endpoint": "/api/openbox/dns-filter/records?search=&result=&page=1&pageSize=20",
+      "transport": "HTTP",
+      "http_status": 200,
+      "content_type": "application/json; charset=utf-8",
+      "observed_at": "2026-10-03T10:59:20.607Z",
+      "value": {
+        "page": 1,
+        "pageSize": 1,
+        "total": 1,
+        "rows": [
+          {
+            "id": 1,
+            "at": 1,
+            "domain": "example.com",
+            "qtype": "fixture-value",
+            "source": "",
+            "result": "fixture-value",
+            "list": "",
+            "elapsed": 0,
+            "via": "",
+            "name": ""
+          },
+          {
+            "id": 1,
+            "at": 1,
+            "domain": "example.com",
+            "qtype": "fixture-value",
+            "source": "",
+            "result": "fixture-value",
+            "list": "",
+            "elapsed": 0,
+            "via": "",
+            "name": ""
+          }
+        ]
+      },
+      "provenance": {
+        "observed": true,
+        "commit": "7fab0e47d2a28446e131b7cd737ef4a5a43d55fb",
+        "source": [
+          "src/openbox/api/client.ts:153",
+          "src/openbox/hooks/useLiveMetrics.ts:35",
+          "src/openbox/hooks/useControllerSocket.ts:26"
+        ],
+        "controller_version": "1.14.1-openbox",
+        "service_version": "UNKNOWN",
+        "redaction": "All non-empty string values replaced; dynamic keys renamed; credential/process fields removed; arrays truncated to two; nonzero numbers mapped to sign. traffic separately uses ordinal ranks preserving comparison, never byte magnitudes.",
+        "removed_categories": [
+          "credentials",
+          "session headers",
+          "subscription/share URLs",
+          "node and group names",
+          "node servers",
+          "public/private IPs",
+          "user domains",
+          "process paths",
+          "usernames",
+          "provider identifiers",
+          "exact usage quantities"
+        ]
+      },
+      "proves": "Response status, parsed JSON field/container types and sampled structure only.",
+      "cannot_prove": "Original string values, numeric quantities, complete arrays, mutation behavior or platform support."
+    }
+  ]
+}

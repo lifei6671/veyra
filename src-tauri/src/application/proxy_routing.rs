@@ -430,6 +430,7 @@ pub(crate) enum MutationError {
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 struct CasMaterial {
+    state_epoch: crate::domain::StateEpoch,
     active_subscription_id: Option<String>,
     desired_generation: u64,
     providers: Vec<(String, String, String)>,
@@ -441,6 +442,7 @@ struct CasMaterial {
 impl From<&AppState> for CasMaterial {
     fn from(state: &AppState) -> Self {
         Self {
+            state_epoch: state.state_epoch.clone(),
             active_subscription_id: state.active_subscription_id.as_ref().map(|v| v.0.clone()),
             desired_generation: state.active_configuration_generation,
             providers: state
@@ -649,12 +651,15 @@ impl ProxyRoutingManager {
                 revision: Some(current),
             };
         }
-        if self.store.save(&state).is_err() {
-            return MutationResult::Error {
-                error: MutationError::SaveFailed,
-                revision: Some(current),
-            };
-        }
+        state = match self.store.commit(&state) {
+            Ok(saved) => saved,
+            Err(_) => {
+                return MutationResult::Error {
+                    error: MutationError::SaveFailed,
+                    revision: Some(current),
+                };
+            }
+        };
         let revision = match self
             .revision
             .lock()
@@ -790,7 +795,11 @@ impl ProxyRoutingManager {
             .has_snapshot_or_backup()
             .map_err(|_| MutationError::StateUnavailable)?
         {
-            return Ok(AppState::empty());
+            let initial = AppState::try_empty().map_err(|_| MutationError::StateUnavailable)?;
+            self.store
+                .save(&initial)
+                .map_err(|_| MutationError::SaveFailed)?;
+            return Ok(initial);
         }
         self.store
             .load()
@@ -936,7 +945,9 @@ fn map_state_validation(error: StateValidationError) -> MutationError {
         | StateValidationError::InvalidSelection
         | StateValidationError::EmptyPoolMembership
         | StateValidationError::InactivePoolTarget => MutationError::ReferenceConflict,
-        StateValidationError::InvalidIdentifier
+        StateValidationError::InvalidProfile
+        | StateValidationError::InvalidVersion
+        | StateValidationError::InvalidIdentifier
         | StateValidationError::DuplicateIdentifier
         | StateValidationError::InvalidRoute
         | StateValidationError::InvalidProtocolOptions
@@ -1813,7 +1824,12 @@ mod tests {
         let subscriptions =
             Arc::new(SubscriptionManager::new(state_file.clone(), gate.clone()).unwrap());
         let runtime = Arc::new(ManagedObservationRuntimeController::new(
-            root.join("resources"),
+            || {
+                Err::<crate::platform::observation_sidecar::ObservationSidecarPort, _>(
+                    crate::singbox::runtime::SidecarPortError,
+                )
+            },
+            tauri::async_runtime::handle().inner().clone(),
             root.clone(),
             observations,
             gate.clone(),
@@ -2674,6 +2690,38 @@ mod tests {
                 revision: Some(1)
             }
         ));
+        drop(manager);
+        fs::remove_dir_all(root).unwrap();
+    }
+    // Protect the old IPC CAS envelope when identical business facts are replaced with a new epoch.
+    #[test]
+    fn epoch_replacement_invalidates_old_routing_form() {
+        let (root, manager) = manager_fixture("epoch-replace", &AppState::empty());
+        let SnapshotResult::Ok { snapshot } = manager.snapshot() else {
+            panic!("snapshot")
+        };
+        let store = JsonStateStore::new(root.join("state.json")).unwrap();
+        let core = veyra_core::application::state_service::SnapshotService::new(
+            store.clone(),
+            manager.gate.clone(),
+        );
+        let old = core.snapshot().unwrap();
+        core.replace(old.version(), old.clone()).unwrap();
+        let bytes = fs::read(root.join("state.json")).unwrap();
+        assert!(matches!(
+            manager.mutate(MutateProxyRoutingRequest {
+                expected_revision: snapshot.revision,
+                mutation: ProxyRoutingMutation::SetDefaultTarget {
+                    target: DefaultTargetDto::Direct
+                }
+            }),
+            MutationResult::Error {
+                error: MutationError::Conflict,
+                ..
+            }
+        ));
+        assert_eq!(fs::read(root.join("state.json")).unwrap(), bytes);
+        assert_ne!(store.load().unwrap().state_epoch, old.state_epoch);
         drop(manager);
         fs::remove_dir_all(root).unwrap();
     }

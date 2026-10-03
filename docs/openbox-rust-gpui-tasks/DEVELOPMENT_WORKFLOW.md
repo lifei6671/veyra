@@ -99,7 +99,17 @@ P1-04A 包含 sidebar 折叠/展开、layout 类纯视觉桌面偏好；proxy co
 
 新依赖必须指向存在的 Task，不能依赖整阶段；调整后校验无环。拆分最小化，已有证据保留身份与历史结果，不能把旧 FAIL/NOT_RUN 改写为 PASS。
 
-## 8 Task 生命周期与验证证据
+## 8 Legacy 切片退役
+
+迁移采用“完成一片，退役一片”，不等待整个 macOS GPUI 版本结束后统一删除旧工程。`src/openbox` 与 `src-tauri` 在对应切片完成前是行为、视觉、业务实现和测试的迁移输入，不因为新目录出现就提前删除。
+
+一个 Legacy 切片只有同时满足以下条件才允许退役：新 Core/Runtime 或 GPUI 实现已经接管该职责；真实服务/运行链路已接通；该 Task 要求的测试和实际 UI/平台验收已通过；仓库内已无生产/测试引用指向旧实现；必要的接口样本、视觉基线和行为差异已留在任务证据或 Git 历史。满足后在同一切片或紧随其后的清理提交中删除旧实现、专用测试/脚本和不再使用的依赖。
+
+退役必须按功能边界执行，例如 Subscription、Outbound/Group、Runtime、Observation、Routing、DNS 分别清理；禁止提前一次删除整个 React/Tauri 基线。删除前使用仓库搜索确认引用，删除后运行受影响的新链路验证和 `git diff --check`。仍被其他 Legacy 测试/入口消费的 helper、fixture、图标或脚本继续保留，并在消费者迁移后再删。
+
+生成物和本机状态不属于 Legacy 迁移资产：`dist/`、Rust `target/`、Tauri 生成 schema 等可随时清理；`node_modules/` 在仍需运行 React 基线时可保留。本地 Agent/Workspace 状态必须被 Git 忽略，不作为项目源码提交。
+
+## 9 Task 生命周期与验证证据
 
 | 状态 | 条件与退出动作 |
 | --- | --- |
@@ -120,7 +130,7 @@ DONE 后重新计算依赖任务的 READY，未就绪任务保持 TODO。返工�
 
 文档变更只校验 Markdown links/anchors、Task ID 唯一、依赖存在与无环、任务计数和 77 API/19 场景归属、`git diff --check`；不运行产品构建、网络或权限测试。产品实现时使用实际已有命令，新 workspace 命令在 P1-01 创建后登记。
 
-## 9 如何更新任务表与 SESSION
+## 10 如何更新任务表与 SESSION
 
 1. 恢复时读本规范、SESSION、主表和候选卡，再读取相关方案小节；重核源码/工作树及依赖证据。
 2. 主表登记状态、负责人、估算、证据及显式依赖；任务卡是依赖定义来源，主表依赖摘要必须一致。

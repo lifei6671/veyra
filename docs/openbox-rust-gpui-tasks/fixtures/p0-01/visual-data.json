@@ -1,0 +1,273 @@
+{
+  "observed": false,
+  "source_head": "7fab0e47d2a28446e131b7cd737ef4a5a43d55fb",
+  "source": [
+    "src/openbox/api/types.ts:1",
+    "src/openbox/OpenBoxApp.tsx:43"
+  ],
+  "purpose": "Synthetic data for current browser UI only; never sent to production",
+  "redaction": "All names synthetic; empty user data; documentation IPs and example domains",
+  "mocks": {
+    "/api/auth/status": {
+      "enabled": false,
+      "authenticated": true,
+      "passwordSet": false
+    },
+    "/api/storage": {
+      "entries": {
+        "config/theme-mode": "light",
+        "config/language": "zh-CN",
+        "config/auto-connection-check": "false",
+        "config/dashboard-transparent": "90"
+      }
+    },
+    "/api/openbox/service/status": {
+      "core": {
+        "running": true,
+        "autostart": false,
+        "uptimeSeconds": 3600
+      },
+      "panel": {
+        "running": true
+      },
+      "conflicts": [],
+      "platform": "fixture"
+    },
+    "/api/controller/proxies": {
+      "proxies": {
+        "fixture-group-a": {
+          "name": "fixture-group-a",
+          "type": "Selector",
+          "now": "fixture-node-a",
+          "all": [
+            "fixture-node-a",
+            "fixture-node-b"
+          ]
+        },
+        "fixture-node-a": {
+          "name": "fixture-node-a",
+          "type": "Shadowsocks",
+          "alive": true,
+          "history": [
+            {
+              "time": "2026-10-03T00:00:00Z",
+              "delay": 35
+            }
+          ]
+        },
+        "fixture-node-b": {
+          "name": "fixture-node-b",
+          "type": "VLESS",
+          "alive": true,
+          "history": [
+            {
+              "time": "2026-10-03T00:00:00Z",
+              "delay": 85
+            }
+          ]
+        }
+      }
+    },
+    "/api/openbox/subscriptions": {
+      "subscriptions": []
+    },
+    "/api/openbox/latency-history": {
+      "history": {},
+      "updatedAt": 0
+    },
+    "/api/openbox/profile": {
+      "profile": {
+        "ipv6": false,
+        "ipv6Proxy": "node",
+        "directForNodes": true,
+        "rejectQuic": false,
+        "directBypass": true,
+        "bypassPorts": "",
+        "bypassPortsMode": "blacklist",
+        "tun": {
+          "autoRedirect": false,
+          "stack": "mixed",
+          "mtu": 9000,
+          "tcpMss": 0
+        },
+        "chainProxies": [],
+        "servers": [],
+        "clientRoutes": [],
+        "dns": {
+          "split": true,
+          "mode": "redir-host",
+          "fakeIpForProxy": false,
+          "direct": "192.0.2.53",
+          "directProtocol": "udp",
+          "directPort": 53,
+          "directExtras": [],
+          "proxy": "198.51.100.53",
+          "proxyProtocol": "tcp",
+          "proxyPort": 53,
+          "proxyExtras": [],
+          "rewrite": {
+            "enabled": false,
+            "rules": []
+          }
+        },
+        "traffic": {
+          "keepMonths": 3
+        },
+        "testUrl": "https://example.com",
+        "directTestUrl": "https://example.com",
+        "updates": {
+          "openbox": {
+            "auto": false,
+            "hour": 3,
+            "channel": "stable",
+            "checkChannel": "stable",
+            "days": 7
+          }
+        },
+        "routing": {
+          "policies": [],
+          "fallbackDefault": "Direct",
+          "fallbackName": "fixture-default",
+          "fallbackIcon": "",
+          "custom": {
+            "enabled": false,
+            "rules": []
+          }
+        }
+      }
+    },
+    "/api/openbox/groups": {
+      "groups": [],
+      "types": [
+        "selector",
+        "urltest",
+        "failover"
+      ],
+      "availableNodes": [],
+      "availableGroups": []
+    },
+    "/api/openbox/clients": {
+      "clients": [],
+      "devices": []
+    },
+    "/api/openbox/subscription-shares": {
+      "shares": []
+    },
+    "/api/controller/rules": {
+      "rules": []
+    },
+    "/api/openbox/site-latency/history": {
+      "history": {},
+      "timeoutMs": 5000
+    },
+    "/api/openbox/traffic/month": {
+      "month": "2026-10",
+      "today": "2026-10-03",
+      "days": [],
+      "total": {
+        "up": 0,
+        "down": 0,
+        "conns": 0
+      },
+      "avg": {
+        "up": 0,
+        "down": 0
+      },
+      "avgDays": 0,
+      "direct": {
+        "excluded": false,
+        "tag": "Direct"
+      }
+    },
+    "/api/openbox/traffic/day": {
+      "day": "2026-10-03",
+      "today": "2026-10-03",
+      "hour": null,
+      "total": {
+        "up": 0,
+        "down": 0,
+        "conns": 0
+      },
+      "nodes": [],
+      "hosts": [],
+      "clients": [],
+      "hours": [],
+      "nowHour": 0,
+      "direct": {
+        "excluded": false,
+        "tag": "Direct"
+      }
+    },
+    "/api/openbox/dns-filter": {
+      "settings": {
+        "enabled": false,
+        "lists": [],
+        "allowDomains": [],
+        "autoUpdate": {
+          "enabled": false,
+          "days": 7,
+          "hour": 3
+        }
+      },
+      "pending": false,
+      "connected": true,
+      "applied": {
+        "enabled": false
+      },
+      "lists": {}
+    },
+    "/api/openbox/dns-filter/records": {
+      "rows": [],
+      "total": 0,
+      "page": 1,
+      "pageSize": 10
+    },
+    "/api/openbox/kernel/version": {
+      "version": "fixture"
+    },
+    "/api/openbox/traffic/usage": {
+      "days": 0,
+      "bytes": 0,
+      "perDay": 0
+    },
+    "/api/openbox/update/status": {
+      "version": "fixture",
+      "singboxVersion": "fixture",
+      "builtAt": "",
+      "geoVersion": "",
+      "geoDate": "",
+      "geoCounts": {
+        "geosite": 0,
+        "geoip": 0
+      },
+      "channel": {
+        "mode": "stable",
+        "prefix": ""
+      },
+      "status": {
+        "stage": "idle",
+        "running": false
+      },
+      "logTail": ""
+    }
+  },
+  "wsMocks": {
+    "connections": {
+      "connections": [],
+      "downloadTotal": 0,
+      "uploadTotal": 0
+    },
+    "memory": {
+      "inuse": 67108864,
+      "oslimit": 0
+    },
+    "traffic": {
+      "up": 0,
+      "down": 0
+    },
+    "logs": {
+      "type": "info",
+      "payload": "fixture log entry"
+    }
+  }
+}

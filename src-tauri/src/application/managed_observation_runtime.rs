@@ -35,7 +35,6 @@ use crate::{
         subscription_scheduler::SubscriptionScheduler,
     },
     domain::{AppState, DnsPolicy, NodeId, PoolId, SubscriptionId},
-    platform::windows::managed_sidecar_port::WindowsManagedSidecarPort,
     singbox::{
         ConfigCompiler, GeneratedConfig, RuntimeProfile, SingBoxCompiler,
         clash_api::ClashApiClient,
@@ -271,7 +270,9 @@ enum WorkerRequest {
 }
 
 struct WorkerContext {
+    #[cfg(test)]
     resource_root: PathBuf,
+    handle: tokio::runtime::Handle,
     app_local_data_root: PathBuf,
     observations: InMemoryRuntimeObservations,
     state_gate: StateAccessGate,
@@ -298,15 +299,21 @@ pub(crate) struct ManagedObservationRuntimeController {
 }
 
 impl ManagedObservationRuntimeController {
-    /// 所有路径由 Tauri PathResolver 在 setup 中确定；此处不触发资源校验、进程或网络 I/O。
-    pub(crate) fn new(
-        resource_root: PathBuf,
+    /// 入口注入现有平台 Port 构造及 Tokio Handle；资源校验仍延迟到 worker 的首次启动。
+    pub(crate) fn new<P>(
+        initialize_port: impl FnMut() -> Result<P, crate::singbox::runtime::SidecarPortError>
+        + Send
+        + 'static,
+        handle: tokio::runtime::Handle,
         app_local_data_root: PathBuf,
         observations: InMemoryRuntimeObservations,
         state_gate: StateAccessGate,
         subscriptions: Arc<SubscriptionManager>,
         scheduler: Option<Arc<SubscriptionScheduler>>,
-    ) -> Self {
+    ) -> Self
+    where
+        P: SidecarPort + RuntimeObservationSidecarPort + Send + 'static,
+    {
         let (requests, receiver) = mpsc::sync_channel(REQUEST_QUEUE_CAPACITY);
         let state_file = app_local_data_root.join("state.json");
         let worker_observations = observations.clone();
@@ -322,7 +329,9 @@ impl ManagedObservationRuntimeController {
             worker_loop(
                 receiver,
                 WorkerContext {
-                    resource_root,
+                    #[cfg(test)]
+                    resource_root: PathBuf::new(),
+                    handle,
                     app_local_data_root,
                     observations: worker_observations,
                     state_gate: worker_gate,
@@ -331,6 +340,7 @@ impl ManagedObservationRuntimeController {
                     shutdown_complete: worker_complete,
                     selector_runtime_nodes: worker_selector_runtime_nodes,
                 },
+                initialize_port,
             )
         });
         Self {
@@ -894,9 +904,13 @@ fn load_runtime_intent(
     project_selected_runtime(&state).map_err(|_| LoadRuntimeIntentError::Configuration)
 }
 
-fn worker_loop(requests: Receiver<WorkerRequest>, context: WorkerContext) {
+fn worker_loop<P: SidecarPort + RuntimeObservationSidecarPort>(
+    requests: Receiver<WorkerRequest>,
+    context: WorkerContext,
+    mut initialize_port: impl FnMut() -> Result<P, crate::singbox::runtime::SidecarPortError>,
+) {
     let observations = &context.observations;
-    let mut runtime: Option<SidecarRuntime<WindowsManagedSidecarPort>> = None;
+    let mut runtime: Option<SidecarRuntime<P>> = None;
     let mut applied_routing_index: Option<AppliedRoutingIndex> = None;
     loop {
         match requests.recv_timeout(SAMPLE_INTERVAL) {
@@ -908,13 +922,7 @@ fn worker_loop(requests: Receiver<WorkerRequest>, context: WorkerContext) {
                 let result = if context.shutdown_requested.load(Ordering::Acquire) {
                     ManagedRuntimeStartResult::Busy
                 } else {
-                    start_runtime(
-                        &mut runtime,
-                        &context.resource_root,
-                        &context.app_local_data_root,
-                        &intent,
-                        observations,
-                    )
+                    start_runtime(&mut runtime, &mut initialize_port, &intent, observations)
                 };
                 if result == ManagedRuntimeStartResult::Started {
                     install_applied_routing_index(
@@ -952,10 +960,7 @@ fn worker_loop(requests: Receiver<WorkerRequest>, context: WorkerContext) {
                 );
                 let response = request.response.clone();
                 if runtime.is_none() {
-                    match WindowsManagedSidecarPort::new(
-                        context.resource_root.clone(),
-                        context.app_local_data_root.clone(),
-                    ) {
+                    match initialize_port() {
                         Ok(port) => runtime = Some(SidecarRuntime::new_observation_only(port)),
                         Err(_) => {
                             switch_phase(
@@ -1005,6 +1010,7 @@ fn worker_loop(requests: Receiver<WorkerRequest>, context: WorkerContext) {
                     &context.selector_runtime_nodes,
                     &request.pool_id,
                     &request.node_id,
+                    &context.handle,
                 );
                 let _ = request.response.send(result);
             }
@@ -1027,12 +1033,9 @@ fn worker_loop(requests: Receiver<WorkerRequest>, context: WorkerContext) {
                     deadline,
                     &context,
                     || {
-                        WindowsManagedSidecarPort::new(
-                            context.resource_root.clone(),
-                            context.app_local_data_root.clone(),
-                        )
-                        .map(SidecarRuntime::new_observation_only)
-                        .map_err(|_| ())
+                        initialize_port()
+                            .map(SidecarRuntime::new_observation_only)
+                            .map_err(|_| ())
                     },
                     || {},
                 );
@@ -1171,6 +1174,7 @@ fn reconcile_manual_selection<P: SidecarPort>(
     selector_runtime_nodes: &Mutex<BTreeMap<PoolId, NodeId>>,
     pool_id: &PoolId,
     node_id: &NodeId,
+    handle: &tokio::runtime::Handle,
 ) -> ManualSelectionRuntimeResult {
     let Some(runtime) = runtime else {
         return ManualSelectionRuntimeResult::SavedOnly(
@@ -1238,7 +1242,7 @@ fn reconcile_manual_selection<P: SidecarPort>(
             );
         }
     };
-    let runtime_tag = tauri::async_runtime::block_on(async {
+    let runtime_tag = handle.block_on(async {
         // PUT 的 transport/response 不是终态；同一 owned worker 总是继续 GET。
         let _ = client.write_selector(&tags.pool, &tags.node).await;
         client.read_selector(&tags.pool).await
@@ -1308,10 +1312,9 @@ fn classify_selector_read_back(
     }
 }
 
-fn start_runtime(
-    runtime: &mut Option<SidecarRuntime<WindowsManagedSidecarPort>>,
-    resource_root: &Path,
-    app_local_data_root: &Path,
+fn start_runtime<P: SidecarPort>(
+    runtime: &mut Option<SidecarRuntime<P>>,
+    initialize_port: &mut impl FnMut() -> Result<P, crate::singbox::runtime::SidecarPortError>,
     intent: &ObservationCompilationInput,
     observations: &InMemoryRuntimeObservations,
 ) -> ManagedRuntimeStartResult {
@@ -1329,10 +1332,7 @@ fn start_runtime(
         };
     }
 
-    let port = match WindowsManagedSidecarPort::new(
-        resource_root.to_path_buf(),
-        app_local_data_root.to_path_buf(),
-    ) {
+    let port = match initialize_port() {
         Ok(port) => port,
         Err(_) => {
             observations.record_managed_failure(None, ManagedRuntimeFailure::Start);
@@ -1474,7 +1474,7 @@ fn apply_activation<P: SidecarPort>(
         }
         if request.candidate != request.expected {
             store
-                .save(&request.candidate)
+                .commit(&request.candidate)
                 .map_err(|_| ActivationError::SaveFailed)?;
         }
         Ok(true)
@@ -2087,8 +2087,8 @@ fn observed_lifecycle(lifecycle: SidecarLifecycle) -> ObservedSidecarLifecycle {
     }
 }
 
-fn stop_runtime(
-    runtime: &mut Option<SidecarRuntime<WindowsManagedSidecarPort>>,
+fn stop_runtime<P: SidecarPort>(
+    runtime: &mut Option<SidecarRuntime<P>>,
     observations: &InMemoryRuntimeObservations,
 ) -> ManagedRuntimeStopResult {
     let Some(runtime) = runtime.as_mut() else {
@@ -2114,8 +2114,8 @@ fn stop_runtime(
     }
 }
 
-fn sample_runtime(
-    runtime: Option<&mut SidecarRuntime<WindowsManagedSidecarPort>>,
+fn sample_runtime<P: SidecarPort + RuntimeObservationSidecarPort>(
+    runtime: Option<&mut SidecarRuntime<P>>,
     observations: &InMemoryRuntimeObservations,
 ) {
     let Some(runtime) = runtime else {
@@ -2147,6 +2147,15 @@ fn sample_runtime(
 
 #[cfg(test)]
 mod tests {
+    use crate::platform::observation_sidecar::ObservationSidecarPort as WindowsManagedSidecarPort;
+
+    fn worker_loop(requests: Receiver<WorkerRequest>, context: WorkerContext) {
+        let resources = context.resource_root.clone();
+        let data = context.app_local_data_root.clone();
+        super::worker_loop(requests, context, move || {
+            WindowsManagedSidecarPort::new(resources.clone(), data.clone())
+        });
+    }
     use crate::domain::RouteTarget;
     use std::{
         path::PathBuf,
@@ -2373,6 +2382,7 @@ mod tests {
                 &selected,
                 &PoolId("pool".into()),
                 &NodeId("node".into()),
+                tauri::async_runtime::handle().inner(),
             ),
             ManualSelectionRuntimeResult::SavedOnly(ManualSelectionSavedOnlyReason::RuntimeStopped)
         );
@@ -2389,6 +2399,7 @@ mod tests {
                 &selected,
                 &PoolId("default".into()),
                 &NodeId("node".into()),
+                tauri::async_runtime::handle().inner(),
             ),
             ManualSelectionRuntimeResult::SavedOnly(
                 ManualSelectionSavedOnlyReason::NotInAppliedArtifact
@@ -2621,6 +2632,7 @@ mod tests {
         WorkerContext {
             subscriptions: test_manager(app_local_data_root.join("state.json")),
             resource_root,
+            handle: tauri::async_runtime::handle().inner().clone(),
             app_local_data_root,
             observations,
             state_gate: StateAccessGate::default(),
@@ -3378,7 +3390,10 @@ mod tests {
             ),
         ] {
             let (context, mut runtime, request) = activation_fixture(fault);
-            let candidate = request.candidate.clone();
+            let candidate = request
+                .candidate
+                .revised_from(&request.expected)
+                .expect("committed version");
             assert!(
                 matches!(apply_activation(&mut runtime, request, &context), ActivationResult::Error { error, .. } if error == code)
             );
@@ -4322,7 +4337,8 @@ mod tests {
     fn missing_state_fails_closed_without_asking_the_worker_to_start() {
         let root = isolated_test_root();
         let controller = ManagedObservationRuntimeController::new(
-            root.join("resources"),
+            || Err::<WindowsManagedSidecarPort, _>(crate::singbox::runtime::SidecarPortError),
+            tauri::async_runtime::handle().inner().clone(),
             root.join("app-data"),
             InMemoryRuntimeObservations::new_mock(),
             StateAccessGate::default(),
@@ -4352,7 +4368,8 @@ mod tests {
     fn stop_without_a_managed_child_is_closed_and_idempotent() {
         let root = isolated_test_root();
         let controller = ManagedObservationRuntimeController::new(
-            root.join("resources"),
+            || Err::<WindowsManagedSidecarPort, _>(crate::singbox::runtime::SidecarPortError),
+            tauri::async_runtime::handle().inner().clone(),
             root.join("app-data"),
             InMemoryRuntimeObservations::new_mock(),
             StateAccessGate::default(),
@@ -4650,9 +4667,10 @@ mod tests {
         let (requests, receiver) = mpsc::sync_channel(1);
         let observations = InMemoryRuntimeObservations::new_mock();
         let mut controller = test_controller(requests, observations.clone());
-        controller.scheduler = Some(Arc::new(SubscriptionScheduler::start(Arc::clone(
-            &controller.subscriptions,
-        ))));
+        controller.scheduler = Some(Arc::new(SubscriptionScheduler::start(
+            Arc::clone(&controller.subscriptions),
+            tauri::async_runtime::handle().inner(),
+        )));
         let subscriptions = Arc::clone(&controller.subscriptions);
         let complete = Arc::clone(&controller.shutdown_complete);
         let worker = thread::spawn(move || {

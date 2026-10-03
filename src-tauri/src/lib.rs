@@ -1,10 +1,10 @@
 pub mod application;
 pub mod commands;
-pub mod domain;
+pub use veyra_core::domain;
 pub mod platform;
 pub mod singbox;
-pub mod storage;
-pub mod subscription;
+pub use veyra_core::storage;
+pub use veyra_core::subscription;
 
 use std::sync::{
     Arc,
@@ -63,17 +63,25 @@ pub fn run() {
             let app_local_data_root = app.path().app_local_data_dir()?;
             let observations = (*app.state::<InMemoryRuntimeObservations>()).clone();
             let state_gate = StateAccessGate::default();
-            let subscriptions = Arc::new(SubscriptionManager::new(
+            let handle = tauri::async_runtime::handle().inner().clone();
+            let mut subscriptions = SubscriptionManager::new(
                 app_local_data_root.join("state.json"),
                 state_gate.clone(),
-            )?);
+            )?;
+            subscriptions.set_system_proxy_url_reader(|| {
+                platform::windows::system_proxy::read_subscription_proxy_url()
+                    .map_err(|_| application::subscription_management::SubscriptionOperationError::SystemProxyUnavailable)
+            });
+            let subscriptions = Arc::new(subscriptions);
             let scheduler = Arc::new(
                 application::subscription_scheduler::SubscriptionScheduler::start(Arc::clone(
                     &subscriptions,
-                )),
+                ), &handle),
             );
+            let port_data_root = app_local_data_root.clone();
             let runtime = Arc::new(ManagedObservationRuntimeController::new(
-                resource_root,
+                move || platform::observation_sidecar::ObservationSidecarPort::new(resource_root.clone(), port_data_root.clone()),
+                handle,
                 app_local_data_root.clone(),
                 observations.clone(),
                 state_gate.clone(),

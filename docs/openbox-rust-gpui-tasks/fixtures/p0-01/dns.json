@@ -1,0 +1,71 @@
+{
+  "cases": [
+    {
+      "id": "dns-upstream-failure",
+      "value": {
+        "ok": false,
+        "error": "unreachable",
+        "note": "线路不可用"
+      },
+      "provenance": {
+        "category": "已有测试样本",
+        "commit": "7fab0e47d2a28446e131b7cd737ef4a5a43d55fb",
+        "source": [
+          "src/openbox/pages/settings/DnsSettings.test.ts:62"
+        ],
+        "redaction": "人工合成或既有测试数据；无实际用户凭据。域名仅 example.com/example.net/.invalid，IP 用文档网段，名称/ID 用 fixture，时间固定。",
+        "observed": false
+      },
+      "limit": "业务失败是 HTTP 成功中的 ok:false；这份测试不证明实际 UI 操作已通过。"
+    },
+    {
+      "id": "dns-records-pagination",
+      "value": {
+        "rows": [],
+        "page": 2,
+        "pageSize": 20,
+        "total": 100
+      },
+      "provenance": {
+        "category": "已有测试样本",
+        "commit": "7fab0e47d2a28446e131b7cd737ef4a5a43d55fb",
+        "source": [
+          "src/openbox/pages/settings/DnsSettings.test.ts:74"
+        ],
+        "redaction": "人工合成或既有测试数据；无实际用户凭据。域名仅 example.com/example.net/.invalid，IP 用文档网段，名称/ID 用 fixture，时间固定。",
+        "observed": false
+      },
+      "limit": "原测试合成空 rows/total=100，保留该形状但不能当实际分页一致性证据。"
+    },
+    {
+      "id": "dns-filter-unavailable",
+      "value": {
+        "settings": {
+          "enabled": false,
+          "lists": [],
+          "allowDomains": []
+        },
+        "pending": true,
+        "connected": false,
+        "applied": {
+          "enabled": false
+        },
+        "lists": {},
+        "queryLog": {
+          "reason": "failed"
+        }
+      },
+      "provenance": {
+        "category": "源码消费契约",
+        "commit": "7fab0e47d2a28446e131b7cd737ef4a5a43d55fb",
+        "source": [
+          "src/openbox/api/types.ts:483",
+          "src/openbox/pages/settings/DnsQueryRecords.tsx:23"
+        ],
+        "redaction": "人工合成或既有测试数据；无实际用户凭据。域名仅 example.com/example.net/.invalid，IP 用文档网段，名称/ID 用 fixture，时间固定。",
+        "observed": false
+      },
+      "limit": "用于离线不可用/待应用分支；reason 只有消费判断，不能推出 macOS 真实能力。"
+    }
+  ]
+}

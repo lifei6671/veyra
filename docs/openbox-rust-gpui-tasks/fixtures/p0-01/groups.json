@@ -1,0 +1,130 @@
+{
+  "cases": [
+    {
+      "id": "failover-save",
+      "value": {
+        "groups": [
+          {
+            "id": "failover",
+            "name": "主备出口",
+            "type": "failover",
+            "mode": "static",
+            "enabled": true,
+            "icon": "globe:earth-asia",
+            "iconScale": 0,
+            "keywords": [],
+            "members": [],
+            "interval": "300s",
+            "tolerance": 100,
+            "testUrl": "",
+            "lanes": [
+              {
+                "id": "primary",
+                "name": "主用",
+                "icon": "US",
+                "members": [
+                  "fixture-node-a"
+                ]
+              },
+              {
+                "id": "backup",
+                "name": "备用",
+                "icon": "HK",
+                "members": [
+                  "fixture-node-b",
+                  "fixture-node-a"
+                ],
+                "manual": true
+              }
+            ],
+            "failover": {
+              "timeoutMs": 7000,
+              "failureThreshold": 3,
+              "restorePrimary": false,
+              "recoveryHoldMs": 90000
+            }
+          }
+        ]
+      },
+      "provenance": {
+        "category": "已有测试样本",
+        "commit": "7fab0e47d2a28446e131b7cd737ef4a5a43d55fb",
+        "source": [
+          "src/openbox/pages/settings/GroupSettings.test.ts:62",
+          "src/openbox/pages/settings/GroupSettings.helpers.ts:106"
+        ],
+        "redaction": "人工合成或既有测试数据；无实际用户凭据。域名仅 example.com/example.net/.invalid，IP 用文档网段，名称/ID 用 fixture，时间固定。",
+        "observed": false
+      },
+      "limit": "按测试期望和 helper 规范化组合；manual 字段不证明运行选择写权或恢复语义。"
+    },
+    {
+      "id": "groups-warning",
+      "value": {
+        "groups": [],
+        "dropped": [
+          {
+            "name": "fixture-empty",
+            "reason": "empty"
+          }
+        ],
+        "dangling": [
+          {
+            "name": "fixture-old",
+            "members": [
+              "fixture-missing"
+            ]
+          }
+        ]
+      },
+      "provenance": {
+        "category": "已有测试样本",
+        "commit": "7fab0e47d2a28446e131b7cd737ef4a5a43d55fb",
+        "source": [
+          "src/openbox/api/client.test.ts:108"
+        ],
+        "redaction": "人工合成或既有测试数据；无实际用户凭据。域名仅 example.com/example.net/.invalid，IP 用文档网段，名称/ID 用 fixture，时间固定。",
+        "observed": false
+      },
+      "limit": "抽取测试的 dropped/dangling 形状；groups 缩减为空，不是完整真实响应。"
+    },
+    {
+      "id": "controller-proxies",
+      "value": {
+        "proxies": {
+          "fixture-selector": {
+            "name": "fixture-selector",
+            "type": "Selector",
+            "now": "fixture-node-a",
+            "all": [
+              "fixture-node-a"
+            ]
+          },
+          "fixture-node-a": {
+            "name": "fixture-node-a",
+            "type": "VLESS",
+            "udp": true,
+            "alive": true,
+            "history": [
+              {
+                "time": "2026-10-03T00:00:00Z",
+                "delay": 188
+              }
+            ]
+          }
+        }
+      },
+      "provenance": {
+        "category": "源码消费契约",
+        "commit": "7fab0e47d2a28446e131b7cd737ef4a5a43d55fb",
+        "source": [
+          "src/openbox/api/types.ts:31",
+          "src/openbox/pages/ProxiesPage.tsx:121"
+        ],
+        "redaction": "人工合成或既有测试数据；无实际用户凭据。域名仅 example.com/example.net/.invalid，IP 用文档网段，名称/ID 用 fixture，时间固定。",
+        "observed": false
+      },
+      "limit": "纯类型/消费示例；type 拼写及 now/all 的运行更新需真实响应确认。"
+    }
+  ]
+}
