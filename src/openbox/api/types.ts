@@ -9,7 +9,7 @@ export type AuthStatus = {
 export type ServiceStatus = {
   core: { running: boolean; autostart: boolean; uptimeSeconds: number; raw?: string };
   panel: { running: boolean; raw?: string };
-  conflicts: string[];
+  conflicts: { id: string; label: string }[];
   platform: string;
 };
 
@@ -463,7 +463,7 @@ export type UpdateStatus = {
   geoDate: string;
   geoCounts: { geosite: number; geoip: number };
   channel: { mode: string; prefix: string };
-  status: { stage: string; running: boolean };
+  status: { stage: string; running: boolean; message?: string; bytes?: number | null; total?: number | null };
   logTail: string;
 };
 
@@ -492,3 +492,12 @@ export type DnsRecord = { id: string; at: number; domain: string; qtype: string;
 export type DnsPageResult<T> = { rows: T[]; total: number; page: number; pageSize: number };
 export type DnsPreviewRule = { type: string; value: string; rule: string; conditional?: boolean; action: "allow" | "block"; important?: boolean };
 export type DnsPreview = DnsPageResult<DnsPreviewRule> & { count: number; source: string; unsupported: number; unsupportedExamples: string[] };
+
+export type ServiceActionResult = { ok: boolean; code: number; stderr?: string; durationMs?: number; warning?: string };
+export type DeployState = { stage: string; at: number; message?: string; warning?: string };
+export type UpdateCheck = { hasUpdate: boolean; latest: string };
+export type TrafficUsage = { days: number; bytes: number; perDay: number; oldPerDay?: number; collapseAfterDays?: number; hourPerDay?: number; hourKeepDays?: number };
+export type BackupOptions = { subscriptions: boolean; chainProxies: boolean; clientRoutes: boolean; servers: boolean };
+export type OpenBoxBackup = { format: "open-box-backup"; profile: Record<string, unknown>; exportedAt?: string | number; subscriptions?: Array<{ id?: string; url?: string; urls?: string[]; nodes?: unknown[] }>; nodes?: unknown[]; panelSettings?: unknown; backgroundImage?: unknown; [key: string]: unknown };
+export type BackupImportResult = { imported: { subscriptions?: number; panelSettings?: boolean; backgroundImage?: boolean } };
+export type ProfilePatch = Omit<Partial<OpenBoxProfile>, "routing" | "dns" | "tun"> & { routing?: Partial<OpenBoxProfile["routing"]>; dns?: Partial<OpenBoxProfile["dns"]>; tun?: Partial<OpenBoxProfile["tun"]> };
