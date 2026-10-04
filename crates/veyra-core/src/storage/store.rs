@@ -51,7 +51,7 @@ impl JsonStateStore {
         let document =
             serde_json::from_slice(contents).map_err(|_| StateStoreError::InvalidJson)?;
         let (migrated, was_migrated) = migrate_to_current(document)?;
-        let stored = serde_json::from_value::<StoredStateV7>(migrated)
+        let stored = serde_json::from_value::<StoredStateV8>(migrated)
             .map_err(|_| StateStoreError::InvalidStoredState)?;
         let state = validate_state(AppState::try_from(stored)?)?;
         Ok((state, was_migrated))
@@ -70,7 +70,7 @@ impl JsonStateStore {
 
     fn write_current_without_backup(&self, state: &AppState) -> Result<(), StateStoreError> {
         validate_state(state.clone())?;
-        let contents = serde_json::to_vec_pretty(&StoredStateV7::from(state))
+        let contents = serde_json::to_vec_pretty(&StoredStateV8::from(state))
             .map_err(|_| StateStoreError::SerializationFailed)?;
         atomic_replace(&self.state_file, &contents)
     }
@@ -161,7 +161,7 @@ impl StateStore for JsonStateStore {
 
     fn save(&self, state: &AppState) -> Result<(), StateStoreError> {
         validate_state(state.clone())?;
-        let stored = StoredStateV7::from(state);
+        let stored = StoredStateV8::from(state);
         let contents =
             serde_json::to_vec_pretty(&stored).map_err(|_| StateStoreError::SerializationFailed)?;
 
@@ -173,7 +173,7 @@ impl StateStore for JsonStateStore {
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
-struct StoredStateV7 {
+struct StoredStateV8 {
     schema_version: u32,
     state_epoch: crate::domain::StateEpoch,
     config_revision: u64,
@@ -190,7 +190,7 @@ struct StoredStateV7 {
     routes: Vec<RoutePolicy>,
 }
 
-impl From<&AppState> for StoredStateV7 {
+impl From<&AppState> for StoredStateV8 {
     fn from(state: &AppState) -> Self {
         Self {
             schema_version: CURRENT_SCHEMA_VERSION,
@@ -211,10 +211,10 @@ impl From<&AppState> for StoredStateV7 {
     }
 }
 
-impl TryFrom<StoredStateV7> for AppState {
+impl TryFrom<StoredStateV8> for AppState {
     type Error = StateStoreError;
 
-    fn try_from(stored: StoredStateV7) -> Result<Self, Self::Error> {
+    fn try_from(stored: StoredStateV8) -> Result<Self, Self::Error> {
         if stored.schema_version != CURRENT_SCHEMA_VERSION {
             return Err(StateStoreError::UnsupportedSchemaVersion);
         }
@@ -504,7 +504,7 @@ mod tests {
     #[test]
     fn migrates_v3_subscription_fields_without_changing_existing_identity() {
         let store = unique_test_store();
-        let mut v3 = serde_json::to_value(StoredStateV7::from(&valid_state_with_pool_and_route()))
+        let mut v3 = serde_json::to_value(StoredStateV8::from(&valid_state_with_pool_and_route()))
             .expect("encode current fixture");
         v3["schema_version"] = serde_json::json!(3);
         let object = v3.as_object_mut().expect("state object");
@@ -554,7 +554,7 @@ mod tests {
     #[test]
     fn migrates_v4_remote_subscription_to_current_without_changing_identity_or_references() {
         let store = unique_test_store();
-        let mut v4 = serde_json::to_value(StoredStateV7::from(&valid_state_with_pool_and_route()))
+        let mut v4 = serde_json::to_value(StoredStateV8::from(&valid_state_with_pool_and_route()))
             .expect("encode current fixture");
         v4["schema_version"] = serde_json::json!(4);
         let object = v4.as_object_mut().expect("state object");
@@ -629,7 +629,7 @@ mod tests {
         original.active_subscription_id = Some(original.subscriptions[0].id.clone());
         original.active_configuration_generation = 7;
         let mut v5 =
-            serde_json::to_value(StoredStateV7::from(&original)).expect("encode current fixture");
+            serde_json::to_value(StoredStateV8::from(&original)).expect("encode current fixture");
         v5["schema_version"] = serde_json::json!(5);
         v5["subscriptions"][0]
             .as_object_mut()
@@ -716,7 +716,7 @@ mod tests {
         let state = valid_state();
         store.save(&state).expect("save current state");
         let before = fs::read(store.state_file()).expect("read current state");
-        let mut candidate = serde_json::to_value(StoredStateV7::from(&state))
+        let mut candidate = serde_json::to_value(StoredStateV8::from(&state))
             .expect("serialize unsupported candidate");
         candidate["schema_version"] = serde_json::json!(0);
 
@@ -807,7 +807,7 @@ mod tests {
     #[test]
     fn rejects_an_unsupported_schema_without_replacing_the_snapshot() {
         let store = unique_test_store();
-        let mut document = serde_json::to_value(StoredStateV7::from(&valid_state()))
+        let mut document = serde_json::to_value(StoredStateV8::from(&valid_state()))
             .expect("serialize future schema");
         document["schema_version"] = serde_json::json!(99);
         let bytes = serde_json::to_vec(&document).expect("encode future schema");

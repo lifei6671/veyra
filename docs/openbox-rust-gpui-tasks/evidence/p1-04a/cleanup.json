@@ -1,0 +1,26 @@
+{
+  "result": "PASS",
+  "normal_UI_quit": true,
+  "processes": {
+    "desktop": {
+      "matches": 0,
+      "exit": 1
+    },
+    "sing_box": {
+      "matches": 0,
+      "exit": 1
+    }
+  },
+  "removed_owned_paths": [
+    "/private/tmp/veyra-p1-04a-background-a.png",
+    "/private/tmp/veyra-p1-04a-background-b.png",
+    "/private/tmp/veyra-p1-04a-keyboard-state",
+    "/private/tmp/veyra-p1-04a-shots",
+    "/private/tmp/veyra-p1-04a-state",
+    "/private/tmp/veyra-p1-04a.app"
+  ],
+  "remaining_failure_fixture": false,
+  "network_actions": "none; no OpenBox HTTP, public request, login, sing-box or proxy/TUN change; user TUN neither inspected nor used as evidence",
+  "commit_push": "not performed",
+  "final_keyboard_regression_cleaned": true
+}

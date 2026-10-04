@@ -1,0 +1,519 @@
+{
+  "captured_by": "Codex Desktop via native cua",
+  "screenshots": [
+    {
+      "path": "visual/background.png",
+      "sha256": "56d441083d2d2ac57fac36ddc93b8422c9ff657d8b062b180b7433fb624ca89d",
+      "logical_content": [
+        1280,
+        720
+      ],
+      "scale_factor": 2,
+      "physical_screenshot": [
+        2560,
+        1506
+      ],
+      "titlebar_included": true,
+      "titlebar_physical_height": 66,
+      "capture": "actual GPUI native app; JPEG encoded as PNG without crop/resize",
+      "raw_capture_sha256": "15bae71a9ecb61fa6c460a9a52604532af973d70a04047d4549d63cff5a13928",
+      "source_stage": "earlier actual acceptance or before-fix comparison; retained as historical evidence",
+      "binary_sha256": null
+    },
+    {
+      "path": "visual/background-blur.png",
+      "sha256": "54e73a90136e30ebe3b969aaaa8ab6306cb60af19f10dda8b7a979f75f4dae9f",
+      "logical_content": [
+        1280,
+        720
+      ],
+      "scale_factor": 2,
+      "physical_screenshot": [
+        2560,
+        1506
+      ],
+      "titlebar_included": true,
+      "titlebar_physical_height": 66,
+      "capture": "actual GPUI native app; JPEG encoded as PNG without crop/resize",
+      "raw_capture_sha256": "7a7dafea7ebfa6377d4b3e474ae0e2e6cfd36892fa58eaf856cbaa08bd4ffe65",
+      "source_stage": "earlier actual acceptance or before-fix comparison; retained as historical evidence",
+      "binary_sha256": null
+    },
+    {
+      "path": "visual/background-opacity.png",
+      "sha256": "667aa4b3b49e34a605b77696eb5caedfc84945fc28822d4a0bca01148925e2dd",
+      "logical_content": [
+        1280,
+        720
+      ],
+      "scale_factor": 2,
+      "physical_screenshot": [
+        2560,
+        1506
+      ],
+      "titlebar_included": true,
+      "titlebar_physical_height": 66,
+      "capture": "actual GPUI native app; JPEG encoded as PNG without crop/resize",
+      "raw_capture_sha256": "6f1f8ed6a62b1947d7cbed9ea278260eeb1e6acf17c182225f00c8b8d89523fe",
+      "source_stage": "earlier actual acceptance or before-fix comparison; retained as historical evidence",
+      "binary_sha256": null
+    },
+    {
+      "path": "visual/dark-panel.png",
+      "sha256": "5eb68f2ffeebba6f8cb8af0b052485e48f06692f04b99d3896aa93152f6cd15f",
+      "logical_content": [
+        1280,
+        720
+      ],
+      "scale_factor": 2,
+      "physical_screenshot": [
+        2560,
+        1506
+      ],
+      "titlebar_included": true,
+      "titlebar_physical_height": 66,
+      "capture": "actual GPUI native app; JPEG encoded as PNG without crop/resize",
+      "raw_capture_sha256": "a78de7de49a725a418de4c3e87e95782f146f8a65f011d2a432d0e6373bdead3",
+      "source_stage": "final Input/SVG/footer corrections",
+      "binary_sha256": "abe12faac1301e9309b469aa41d110b3398c1f4e9dd84299e933268cba68e203"
+    },
+    {
+      "path": "visual/dark-sidebar-collapsed.png",
+      "sha256": "e2ef56d2b79fa881b8932e7e735b8e260824cbeee5af6492ff59f25e2c498788",
+      "logical_content": [
+        1280,
+        720
+      ],
+      "scale_factor": 2,
+      "physical_screenshot": [
+        2560,
+        1506
+      ],
+      "titlebar_included": true,
+      "titlebar_physical_height": 66,
+      "capture": "actual GPUI native app; JPEG encoded as PNG without crop/resize",
+      "raw_capture_sha256": "68da0f561147d7c44b7d46d91fcf29c8e18276d1b483efb04cec53920f9bc32c",
+      "source_stage": "final Input/SVG/footer corrections",
+      "binary_sha256": "abe12faac1301e9309b469aa41d110b3398c1f4e9dd84299e933268cba68e203"
+    },
+    {
+      "path": "visual/dark-sidebar-expanded.png",
+      "sha256": "42b911a8b08081618a2b57afa707959f5ea71de4ff640ec71dedd5d1f88691f4",
+      "logical_content": [
+        1280,
+        720
+      ],
+      "scale_factor": 2,
+      "physical_screenshot": [
+        2560,
+        1506
+      ],
+      "titlebar_included": true,
+      "titlebar_physical_height": 66,
+      "capture": "actual GPUI native app; JPEG encoded as PNG without crop/resize",
+      "raw_capture_sha256": "9a46d756edf165f96c87030c59ab5bf96f27fa739370f01abc5abb90b0db1d31",
+      "source_stage": "final Input/SVG/footer corrections",
+      "binary_sha256": "abe12faac1301e9309b469aa41d110b3398c1f4e9dd84299e933268cba68e203"
+    },
+    {
+      "path": "visual/english-panel.png",
+      "sha256": "5597eb33fe3ced63382084e22ed4b0f2a60ce975b9c4c4300359cfcc20e092ad",
+      "logical_content": [
+        1280,
+        720
+      ],
+      "scale_factor": 2,
+      "physical_screenshot": [
+        2560,
+        1506
+      ],
+      "titlebar_included": true,
+      "titlebar_physical_height": 66,
+      "capture": "actual GPUI native app; JPEG encoded as PNG without crop/resize",
+      "raw_capture_sha256": "ef16d2d04a931ca31e644c952bf89a878dd0cb8d42f23582abe67b857d5dcd31",
+      "source_stage": "earlier actual acceptance or before-fix comparison; retained as historical evidence",
+      "binary_sha256": null
+    },
+    {
+      "path": "visual/escape-dropdown-only.png",
+      "sha256": "a05cda5fc6fb7aad2724f0ed5b1aeddc836255d0fbe40f4e6528361b454880ae",
+      "logical_content": [
+        1280,
+        720
+      ],
+      "scale_factor": 2,
+      "physical_screenshot": [
+        2560,
+        1506
+      ],
+      "titlebar_included": true,
+      "titlebar_physical_height": 66,
+      "capture": "actual GPUI native app; JPEG encoded as PNG without crop/resize",
+      "raw_capture_sha256": "e20ad65952dc67fe5af985b7c265bd1dd09f3b05ed7aa0b2efbe191b2ce4dc32",
+      "source_stage": "final Input/SVG/footer corrections",
+      "binary_sha256": "abe12faac1301e9309b469aa41d110b3398c1f4e9dd84299e933268cba68e203"
+    },
+    {
+      "path": "visual/focus-return.png",
+      "sha256": "6dc32fdc630034b7c0142874f3c334cdd0f065d4009f8036e8185ed50e09a132",
+      "logical_content": [
+        1280,
+        720
+      ],
+      "scale_factor": 2,
+      "physical_screenshot": [
+        2560,
+        1506
+      ],
+      "titlebar_included": true,
+      "titlebar_physical_height": 66,
+      "capture": "actual GPUI native app; JPEG encoded as PNG without crop/resize",
+      "raw_capture_sha256": "ed634edf3a42ebaf09548f21f42d3416f3bae67b33dc6839b3d88bf5d548c7d5",
+      "source_stage": "final Input/SVG/footer corrections",
+      "binary_sha256": "abe12faac1301e9309b469aa41d110b3398c1f4e9dd84299e933268cba68e203"
+    },
+    {
+      "path": "visual/human-input-drag-result.png",
+      "sha256": "89c87ad8a43b8ad47825211d70d686af957ac5a9991e93420428114a7d42e330",
+      "logical_content": [
+        1280,
+        720
+      ],
+      "scale_factor": 2,
+      "physical_screenshot": [
+        2560,
+        1506
+      ],
+      "titlebar_included": true,
+      "titlebar_physical_height": 66,
+      "capture": "actual GPUI native app; JPEG encoded as PNG without crop/resize",
+      "raw_capture_sha256": "4ab32d652489594336d8b6e3df5c5a64a1cbd06d435da356c0378622203ade70",
+      "source_stage": "earlier actual acceptance or before-fix comparison; retained as historical evidence",
+      "binary_sha256": null
+    },
+    {
+      "path": "visual/input-clipping-before.png",
+      "sha256": "9d4213d90d0d3e201331e9aa5cd3bdca7e1d23e076184a4a5c26728c091330e5",
+      "logical_content": [
+        1280,
+        720
+      ],
+      "scale_factor": 2,
+      "physical_screenshot": [
+        2560,
+        1506
+      ],
+      "titlebar_included": true,
+      "titlebar_physical_height": 66,
+      "capture": "actual GPUI native app; JPEG encoded as PNG without crop/resize",
+      "raw_capture_sha256": "69d7fa77efce6eea1d7a21e8a0effed3b894ed9df3b99d8723485ed36c9c266e",
+      "source_stage": "earlier actual acceptance or before-fix comparison; retained as historical evidence",
+      "binary_sha256": null
+    },
+    {
+      "path": "visual/input-clipping-fixed.png",
+      "sha256": "d60c4397652e506ef33db527adb6d96d7634b7fd0c08227a5ce29ca4db9ab857",
+      "logical_content": [
+        1280,
+        720
+      ],
+      "scale_factor": 2,
+      "physical_screenshot": [
+        2560,
+        1506
+      ],
+      "titlebar_included": true,
+      "titlebar_physical_height": 66,
+      "capture": "actual GPUI native app; JPEG encoded as PNG without crop/resize",
+      "raw_capture_sha256": "b58564d2ae4ffb0eb0a85183a50848cc7d4c5a481cc892b0bdb543a028b231fe",
+      "source_stage": "final Input/SVG/footer corrections",
+      "binary_sha256": "abe12faac1301e9309b469aa41d110b3398c1f4e9dd84299e933268cba68e203"
+    },
+    {
+      "path": "visual/light-panel.png",
+      "sha256": "a1844b5cc9acbd7038a7c306938eeeab9880180833b61c699cce7ddaf49f1648",
+      "logical_content": [
+        1280,
+        720
+      ],
+      "scale_factor": 2,
+      "physical_screenshot": [
+        2560,
+        1506
+      ],
+      "titlebar_included": true,
+      "titlebar_physical_height": 66,
+      "capture": "actual GPUI native app; JPEG encoded as PNG without crop/resize",
+      "raw_capture_sha256": "e80065090461446f75c7c4207cab7e8fc098dcab6411c80e66bf92d5d109dfe2",
+      "source_stage": "final Input/SVG/footer corrections",
+      "binary_sha256": "abe12faac1301e9309b469aa41d110b3398c1f4e9dd84299e933268cba68e203"
+    },
+    {
+      "path": "visual/light-sidebar-collapsed.png",
+      "sha256": "4b6dba7254405325b5377b8bc1e3b53fc02699307161899940e5dc53bc844e7d",
+      "logical_content": [
+        1280,
+        720
+      ],
+      "scale_factor": 2,
+      "physical_screenshot": [
+        2560,
+        1506
+      ],
+      "titlebar_included": true,
+      "titlebar_physical_height": 66,
+      "capture": "actual GPUI native app; JPEG encoded as PNG without crop/resize",
+      "raw_capture_sha256": "a7121dcd372fe503282d7a3591b3cd059b721a47e5f28dfec944a81f77c8c3b1",
+      "source_stage": "final Input/SVG/footer corrections",
+      "binary_sha256": "abe12faac1301e9309b469aa41d110b3398c1f4e9dd84299e933268cba68e203"
+    },
+    {
+      "path": "visual/light-sidebar-expanded.png",
+      "sha256": "7ddf3916129b5fa3c3fa7914fe27b422886536b9ac781b729aad951f000e89da",
+      "logical_content": [
+        1280,
+        720
+      ],
+      "scale_factor": 2,
+      "physical_screenshot": [
+        2560,
+        1506
+      ],
+      "titlebar_included": true,
+      "titlebar_physical_height": 66,
+      "capture": "actual GPUI native app; JPEG encoded as PNG without crop/resize",
+      "raw_capture_sha256": "14b02dac1ed57db8370912351d7502850acd4b84ae059015f99a0d1a67bb0871",
+      "source_stage": "final Input/SVG/footer corrections",
+      "binary_sha256": "abe12faac1301e9309b469aa41d110b3398c1f4e9dd84299e933268cba68e203"
+    },
+    {
+      "path": "visual/modal.png",
+      "sha256": "257d20cb57ae57c11f620f7c5b1303b43e885bcda69e27e1e5f48b087e11b0e3",
+      "logical_content": [
+        1280,
+        720
+      ],
+      "scale_factor": 2,
+      "physical_screenshot": [
+        2560,
+        1506
+      ],
+      "titlebar_included": true,
+      "titlebar_physical_height": 66,
+      "capture": "actual GPUI native app; JPEG encoded as PNG without crop/resize",
+      "raw_capture_sha256": "62c1aeb9f02b31d9c255b1830efe65860b73d970040d72d958d27f73d4f2e694",
+      "source_stage": "final Input/SVG/footer corrections",
+      "binary_sha256": "abe12faac1301e9309b469aa41d110b3398c1f4e9dd84299e933268cba68e203"
+    },
+    {
+      "path": "visual/modal-input-fixed.png",
+      "sha256": "77d46e9bf318d699db05aad20eb376c364b44ae899ca2bad9c21ad19708fa219",
+      "logical_content": [
+        1280,
+        720
+      ],
+      "scale_factor": 2,
+      "physical_screenshot": [
+        2560,
+        1506
+      ],
+      "titlebar_included": true,
+      "titlebar_physical_height": 66,
+      "capture": "actual GPUI native app; JPEG encoded as PNG without crop/resize",
+      "raw_capture_sha256": "2344487b4f81c629f892c6da0e4912a1dcf082ba1995e3515e0713be7312f41f",
+      "source_stage": "final Input/SVG/footer corrections",
+      "binary_sha256": "abe12faac1301e9309b469aa41d110b3398c1f4e9dd84299e933268cba68e203"
+    },
+    {
+      "path": "visual/modal-select.png",
+      "sha256": "ef001bce341583cb87e8c05bcd81c61d3676b5953ba6acdfa20d2934d78af012",
+      "logical_content": [
+        1280,
+        720
+      ],
+      "scale_factor": 2,
+      "physical_screenshot": [
+        2560,
+        1506
+      ],
+      "titlebar_included": true,
+      "titlebar_physical_height": 66,
+      "capture": "actual GPUI native app; JPEG encoded as PNG without crop/resize",
+      "raw_capture_sha256": "9ba2e434667029199192a96912efe71e7e9d2fe03024b09c3f0b2415805733bd",
+      "source_stage": "final Input/SVG/footer corrections",
+      "binary_sha256": "abe12faac1301e9309b469aa41d110b3398c1f4e9dd84299e933268cba68e203"
+    },
+    {
+      "path": "visual/page-input-fixed.png",
+      "sha256": "bd9b55ebb0de9658ca17f6b15ad009a9f7be2be083323794c239cd235d1bd955",
+      "logical_content": [
+        1280,
+        720
+      ],
+      "scale_factor": 2,
+      "physical_screenshot": [
+        2560,
+        1506
+      ],
+      "titlebar_included": true,
+      "titlebar_physical_height": 66,
+      "capture": "actual GPUI native app; JPEG encoded as PNG without crop/resize",
+      "raw_capture_sha256": "a4a713bb8b314a4f350a659195035a9fc906ad6c0ea16e955aabc6b3195386f4",
+      "source_stage": "final Input/SVG/footer corrections",
+      "binary_sha256": "abe12faac1301e9309b469aa41d110b3398c1f4e9dd84299e933268cba68e203"
+    },
+    {
+      "path": "visual/restart-restored.png",
+      "sha256": "32d244e8cc2fbd689ee538a49f48e8a38950fc8aefdd8df69dad0843ed405dd4",
+      "logical_content": [
+        1280,
+        720
+      ],
+      "scale_factor": 2,
+      "physical_screenshot": [
+        2560,
+        1506
+      ],
+      "titlebar_included": true,
+      "titlebar_physical_height": 66,
+      "capture": "actual GPUI native app; JPEG encoded as PNG without crop/resize",
+      "raw_capture_sha256": "544fd76ad98be83f73c92dccfbc0b2de1c4237b1153fa8b6ff647bd7fb05dd58",
+      "source_stage": "final Input/SVG/footer corrections",
+      "binary_sha256": "abe12faac1301e9309b469aa41d110b3398c1f4e9dd84299e933268cba68e203"
+    },
+    {
+      "path": "visual/restart-restored-dark.png",
+      "sha256": "7c7f35f28a233886efb29e56c1d049f084279ffb7098f2fe6b0f0f54985afd70",
+      "logical_content": [
+        1280,
+        720
+      ],
+      "scale_factor": 2,
+      "physical_screenshot": [
+        2560,
+        1506
+      ],
+      "titlebar_included": true,
+      "titlebar_physical_height": 66,
+      "capture": "actual GPUI native app; JPEG encoded as PNG without crop/resize",
+      "raw_capture_sha256": "f1d74e137df07c590b85151abd0c95544db140286a603e20f0e7d4cb05828a74",
+      "source_stage": "final Input/SVG/footer corrections",
+      "binary_sha256": "abe12faac1301e9309b469aa41d110b3398c1f4e9dd84299e933268cba68e203"
+    },
+    {
+      "path": "visual/save-failure-draft.png",
+      "sha256": "482a63a6686de29e8ac57518a5a8798eff651b0ea5df4b1f71450894f3be28ee",
+      "logical_content": [
+        1280,
+        720
+      ],
+      "scale_factor": 2,
+      "physical_screenshot": [
+        2560,
+        1506
+      ],
+      "titlebar_included": true,
+      "titlebar_physical_height": 66,
+      "capture": "actual GPUI native app; JPEG encoded as PNG without crop/resize",
+      "raw_capture_sha256": "41fbeaea9e348fbc0281db6f0f7f538acb913cd6d9b86c572921bbe09211f4b7",
+      "source_stage": "earlier actual acceptance or before-fix comparison; retained as historical evidence",
+      "binary_sha256": null
+    },
+    {
+      "path": "visual/system-panel.png",
+      "sha256": "3a93e564e68e68732e406dd3bd52f28992f2dbef83b4894688d028a93a3aab26",
+      "logical_content": [
+        1280,
+        720
+      ],
+      "scale_factor": 2,
+      "physical_screenshot": [
+        2560,
+        1506
+      ],
+      "titlebar_included": true,
+      "titlebar_physical_height": 66,
+      "capture": "actual GPUI native app; JPEG encoded as PNG without crop/resize",
+      "raw_capture_sha256": "d255bce432de453aa04ebc6aca5075817d183311e8cef04c7b42d4554a25113c",
+      "source_stage": "earlier actual acceptance or before-fix comparison; retained as historical evidence",
+      "binary_sha256": null
+    },
+    {
+      "path": "visual/toast-error.png",
+      "sha256": "e8cec5163cb3bdbd51535e6cfa1255dad656cd8bddd765c4821062d180e8755f",
+      "logical_content": [
+        1280,
+        720
+      ],
+      "scale_factor": 2,
+      "physical_screenshot": [
+        2560,
+        1506
+      ],
+      "titlebar_included": true,
+      "titlebar_physical_height": 66,
+      "capture": "actual GPUI native app; JPEG encoded as PNG without crop/resize",
+      "raw_capture_sha256": "1c29c2007dcdfa29ac9fb62787c01606a84468b086e6bb60159ed90709cb742e",
+      "source_stage": "earlier actual acceptance or before-fix comparison; retained as historical evidence",
+      "binary_sha256": null
+    },
+    {
+      "path": "visual/toast-success.png",
+      "sha256": "bd022b668d1954c64e46695efdd4a9216546be772bb625945118920a9513d612",
+      "logical_content": [
+        1280,
+        720
+      ],
+      "scale_factor": 2,
+      "physical_screenshot": [
+        2560,
+        1506
+      ],
+      "titlebar_included": true,
+      "titlebar_physical_height": 66,
+      "capture": "actual GPUI native app; JPEG encoded as PNG without crop/resize",
+      "raw_capture_sha256": "ea6490af1b44ca569686f10d6d69722996046e36fc8b106ab6e5a500d62564d6",
+      "source_stage": "earlier actual acceptance or before-fix comparison; retained as historical evidence",
+      "binary_sha256": null
+    },
+    {
+      "path": "visual/traditional-panel.png",
+      "sha256": "79a0e5bdb3f2c5997a1dc7b885b26f4d2df8292aef80abc61242f276ea6cf48b",
+      "logical_content": [
+        1280,
+        720
+      ],
+      "scale_factor": 2,
+      "physical_screenshot": [
+        2560,
+        1506
+      ],
+      "titlebar_included": true,
+      "titlebar_physical_height": 66,
+      "capture": "actual GPUI native app; JPEG encoded as PNG without crop/resize",
+      "raw_capture_sha256": "cb04c1a34db75b14864ee7e4121a521abd826ca24504702f6eadbd3edd15b5cd",
+      "source_stage": "earlier actual acceptance or before-fix comparison; retained as historical evidence",
+      "binary_sha256": null
+    },
+    {
+      "path": "visual/keyboard-input-editing.png",
+      "sha256": "0fb4685932b467584498d1016fa646d73e321d6a9c98fa1306b6b54aaa850d9f",
+      "logical_content": [
+        1280,
+        720
+      ],
+      "scale_factor": 2,
+      "physical_screenshot": [
+        2560,
+        1506
+      ],
+      "titlebar_included": true,
+      "titlebar_physical_height": 66,
+      "capture": "actual GPUI native app; JPEG encoded as PNG without crop/resize",
+      "raw_capture_sha256": "25fe9859bf820995c67f72f7d1d31828424f43e936777dba46d2cbd421b0561c",
+      "source_stage": "final Switch/Copy/Paste/Undo/Redo/Backspace keyboard regression",
+      "binary_sha256": null
+    }
+  ],
+  "count": 27
+}

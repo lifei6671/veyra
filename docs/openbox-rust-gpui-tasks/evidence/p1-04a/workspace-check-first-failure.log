@@ -1,0 +1,26 @@
+    Checking veyra-core v0.1.0 (/Users/lifeilin/wx_lifeilin/github.com/lifei6671/veyra/crates/veyra-core)
+    Checking veyra v0.1.0 (/Users/lifeilin/wx_lifeilin/github.com/lifei6671/veyra/src-tauri)
+    Checking veyra-desktop v0.1.0 (/Users/lifeilin/wx_lifeilin/github.com/lifei6671/veyra/crates/veyra-desktop)
+error[E0004]: non-exhaustive patterns: `StateValidationError::InvalidVisualPreferences` not covered
+    --> src-tauri/src/application/proxy_routing.rs:939:11
+     |
+ 939 |     match error {
+     |           ^^^^^ pattern `StateValidationError::InvalidVisualPreferences` not covered
+     |
+note: `StateValidationError` defined here
+    --> crates/veyra-core/src/domain/state.rs:1007:1
+     |
+1007 | pub enum StateValidationError {
+     | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+1008 |     InvalidProfile,
+1009 |     InvalidVisualPreferences,
+     |     ------------------------ not covered
+     = note: the matched value is of type `StateValidationError`
+help: ensure that all possible cases are being handled by adding a match arm with a wildcard pattern or an explicit pattern as shown
+     |
+ 955 ~         | StateValidationError::UnsupportedSchemaVersion => MutationError::ValidationFailed,
+ 956 ~         StateValidationError::InvalidVisualPreferences => todo!(),
+     |
+
+For more information about this error, try `rustc --explain E0004`.
+error: could not compile `veyra` (lib) due to 1 previous error

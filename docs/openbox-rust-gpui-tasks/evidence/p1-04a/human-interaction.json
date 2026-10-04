@@ -1,0 +1,25 @@
+{
+  "task": "OBG-P1-04A",
+  "date": "2026-10-04",
+  "source": "direct user reply in this task",
+  "reply": "全部正常",
+  "requested_actions": [
+    "普通 Input 和 Modal Input 使用中文输入法键入、候选窗口、选词提交（不得 paste）",
+    "快速来回拖动 opacity/blur 并停在最终值",
+    "稳定 ID 图片项拖到 Drop 区、再拖到区外取消"
+  ],
+  "results": {
+    "ordinary_input_IME": "PASS human confirmed",
+    "modal_input_IME": "PASS human confirmed",
+    "candidate_commit": "PASS human confirmed; candidate overlay not independently captured",
+    "continuous_slider": "PASS human confirmed and actual generation/submission logs",
+    "drag_drop_cancel": "PASS human confirmed; internal drag start/drop telemetry not captured"
+  },
+  "scope": "Human Interaction Evidence; not automated paste or independent Host Review",
+  "subsequent_feedback": [
+    "单行文字上下裁切：统一 Input padding/height 修复，实际 GUI 字形复测",
+    "侧栏导航/展开折叠 icon 小：替换 bundled SVG、22/20 logical px",
+    "底栏区域高度/按钮对比不足：64 logical px 底栏、边框和对比，实际浅深色复测"
+  ],
+  "IME_after_padding_fix": "only sizing/padding changed; prior actual human IME evidence retained; subsequent glyph insertion is visual regression, not new IME proof"
+}

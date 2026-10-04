@@ -1,0 +1,213 @@
+{
+  "schema_version": 8,
+  "migration": "explicit v7 to v8 adds AppConfig.visual; preserves epoch and both revisions; no edit",
+  "fields": {
+    "language": [
+      "zh-CN",
+      "en-US",
+      "zh-TW"
+    ],
+    "theme_mode": [
+      "system",
+      "light",
+      "dark"
+    ],
+    "background": "None | ManagedAsset(SHA256 ID)",
+    "background_opacity": {
+      "range": [
+        0,
+        100
+      ],
+      "default": 90
+    },
+    "background_blur": {
+      "range": [
+        0,
+        40
+      ],
+      "default": 10
+    },
+    "global_radius": {
+      "range": [
+        0,
+        24
+      ],
+      "default": 16
+    },
+    "sidebar_collapsed": {
+      "default": false,
+      "logical_widths": [
+        256,
+        64
+      ]
+    }
+  },
+  "truth": "existing AppState/JsonStateStore only",
+  "writes": "ConfigVersion CAS; SavedOnly; config revision advances; no-op does not; epoch/selection unchanged",
+  "B_fields": "not implemented",
+  "actual_restart": {
+    "result": "PASS",
+    "before": {
+      "schema_version": 8,
+      "state_epoch": [
+        123,
+        4,
+        59,
+        214,
+        82,
+        144,
+        223,
+        249,
+        69,
+        255,
+        87,
+        118,
+        155,
+        86,
+        191,
+        156
+      ],
+      "config_revision": 38,
+      "selection_revision": 0,
+      "app_config": {
+        "check_updates_on_start": true,
+        "visual": {
+          "language": "zh-TW",
+          "theme_mode": "system",
+          "background": {
+            "kind": "managed_asset",
+            "id": "e4dac3a39ba40d43d179c397b9d1a42d1e4643fd18876fc7832d2926ce2edade"
+          },
+          "background_opacity": 20,
+          "background_blur": 0,
+          "global_radius": 13,
+          "sidebar_collapsed": true
+        }
+      }
+    },
+    "after": {
+      "schema_version": 8,
+      "state_epoch": [
+        123,
+        4,
+        59,
+        214,
+        82,
+        144,
+        223,
+        249,
+        69,
+        255,
+        87,
+        118,
+        155,
+        86,
+        191,
+        156
+      ],
+      "config_revision": 38,
+      "selection_revision": 0,
+      "app_config": {
+        "check_updates_on_start": true,
+        "visual": {
+          "language": "zh-TW",
+          "theme_mode": "system",
+          "background": {
+            "kind": "managed_asset",
+            "id": "e4dac3a39ba40d43d179c397b9d1a42d1e4643fd18876fc7832d2926ce2edade"
+          },
+          "background_opacity": 20,
+          "background_blur": 0,
+          "global_radius": 13,
+          "sidebar_collapsed": true
+        }
+      }
+    },
+    "all_seven_fields_equal": true,
+    "epoch_config_selection_unchanged": true,
+    "managed_background_exists": true,
+    "mode": "system retained; actual macOS light used"
+  },
+  "actual_dark_restart": {
+    "result": "PASS",
+    "before": {
+      "schema_version": 8,
+      "state_epoch": [
+        123,
+        4,
+        59,
+        214,
+        82,
+        144,
+        223,
+        249,
+        69,
+        255,
+        87,
+        118,
+        155,
+        86,
+        191,
+        156
+      ],
+      "config_revision": 41,
+      "selection_revision": 0,
+      "app_config": {
+        "check_updates_on_start": true,
+        "visual": {
+          "language": "zh-TW",
+          "theme_mode": "dark",
+          "background": {
+            "kind": "managed_asset",
+            "id": "e4dac3a39ba40d43d179c397b9d1a42d1e4643fd18876fc7832d2926ce2edade"
+          },
+          "background_opacity": 20,
+          "background_blur": 0,
+          "global_radius": 13,
+          "sidebar_collapsed": true
+        }
+      }
+    },
+    "after": {
+      "schema_version": 8,
+      "state_epoch": [
+        123,
+        4,
+        59,
+        214,
+        82,
+        144,
+        223,
+        249,
+        69,
+        255,
+        87,
+        118,
+        155,
+        86,
+        191,
+        156
+      ],
+      "config_revision": 41,
+      "selection_revision": 0,
+      "app_config": {
+        "check_updates_on_start": true,
+        "visual": {
+          "language": "zh-TW",
+          "theme_mode": "dark",
+          "background": {
+            "kind": "managed_asset",
+            "id": "e4dac3a39ba40d43d179c397b9d1a42d1e4643fd18876fc7832d2926ce2edade"
+          },
+          "background_opacity": 20,
+          "background_blur": 0,
+          "global_radius": 13,
+          "sidebar_collapsed": true
+        }
+      }
+    },
+    "all_seven_fields_equal": true,
+    "epoch_config_selection_unchanged": true,
+    "managed_background_exists": true
+  }
+}

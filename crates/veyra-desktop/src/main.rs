@@ -1,8 +1,10 @@
 mod app;
 mod navigation;
+mod preferences;
 mod services;
 mod state_bridge;
 mod ui;
+mod visual_assets;
 use gpui_kit::{
     assets::Assets,
     component::{Theme, ThemeMode},
@@ -11,12 +13,14 @@ use gpui_kit::{
 use std::{path::PathBuf, sync::Arc};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
-    // P1-03 isolation only. P1-05 owns the eventual platform directory decision.
-    let explicit_root = std::env::var_os("VEYRA_P1_03_STATE_ROOT").map(PathBuf::from);
+    // P1 temporary/evidence isolation. P1-05 owns the platform directory decision.
+    let explicit_root = std::env::var_os("VEYRA_DESKTOP_STATE_ROOT")
+        .or_else(|| std::env::var_os("VEYRA_P1_03_STATE_ROOT"))
+        .map(PathBuf::from);
     let root = explicit_root.clone().unwrap_or_else(|| {
-        std::env::temp_dir().join(format!("veyra-p1-03-{}", std::process::id()))
+        std::env::temp_dir().join(format!("veyra-p1-04a-{}", std::process::id()))
     });
-    eprintln!("P1-03 temporary state root: {}", root.display());
+    eprintln!("P1-04A injected temporary state root: {}", root.display());
     let (services, receiver) = services::AppServices::new(root.clone())?;
     let services = Arc::new(services);
     gpui_kit::application().with_assets(Assets).run(move |cx| {
@@ -26,7 +30,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             WindowOptions {
                 window_bounds: Some(WindowBounds::centered(size(px(1280.), px(720.)), cx)),
                 titlebar: Some(TitlebarOptions {
-                    title: Some("Veyra · P1-03 desktop shell".into()),
+                    title: Some("Veyra · Desktop".into()),
                     ..Default::default()
                 }),
                 ..Default::default()

@@ -37,6 +37,8 @@ impl AppErrorCode {
 /// Closed paths prevent user-controlled keys or identifiers from becoming error output.
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Serialize)]
 pub enum FieldPath {
+    #[serde(rename = "app_config.visual")]
+    DesktopVisual,
     #[serde(rename = "profile.ipv6")]
     Ipv6,
     #[serde(rename = "profile.dns")]

@@ -19,3 +19,6 @@ pub use state::{
     SubscriptionSource, SubscriptionTraffic, SubscriptionUpdatePolicy, TlsOptions, TrafficMatcher,
     Transport,
 };
+
+mod desktop_visual;
+pub use desktop_visual::*;

@@ -180,3 +180,31 @@ impl SelectionService {
 
 #[cfg(test)]
 mod tests;
+
+/// Typed local visual preference transaction. Never applies runtime configuration.
+#[derive(Clone)]
+pub struct DesktopPreferencesService {
+    snapshots: SnapshotService,
+}
+impl DesktopPreferencesService {
+    pub fn new(snapshots: SnapshotService) -> Self {
+        Self { snapshots }
+    }
+    pub fn save(
+        &self,
+        expected: ConfigVersion,
+        visual: crate::domain::DesktopVisualPreferences,
+    ) -> Result<SaveOutcome<AppState, ConfigVersion>, AppError> {
+        visual.validate()?;
+        let _guard = self.snapshots.lock()?;
+        let mut next = self.snapshots.load_or_initialize()?;
+        next.config_version().0.require(&expected.0)?;
+        next.app_config.visual = visual;
+        let saved = self.snapshots.store.commit(&next)?;
+        Ok(SaveOutcome {
+            version: saved.config_version(),
+            value: saved,
+            effect: ApplyEffect::SavedOnly,
+        })
+    }
+}

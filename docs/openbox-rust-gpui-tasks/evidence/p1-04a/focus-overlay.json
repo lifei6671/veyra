@@ -1,0 +1,32 @@
+{
+  "automatic_model": "PASS Escape closes dropdown before Modal; ModalFocus captures trigger and returns focus; reopen works",
+  "actual_GUI": {
+    "Tab_ShiftTab": "PASS, observed focus ring and Select keyboard opening",
+    "Select": "Down opens; Up/Down move; Enter commits Beta; stays in Modal",
+    "Escape1": "dropdown list removed, Modal Input/Select remain",
+    "Escape2": "Modal removed",
+    "focus_return": "PASS after explicit persistent trigger FocusHandle binding; green ring; Space/Enter reopens without pointer",
+    "initial_focus": "Modal Input",
+    "pointer_focus_first_attempt": "FAIL captured prior path Input; fixed with explicit trigger focus; no claim initial attempt passed",
+    "ordinary_input_editing": "Chinese selection / Cmd+C/V / Cmd+Z / Cmd+Shift+Z / Backspace PASS through actual native keys",
+    "IME": "PASS Human Interaction Evidence: user confirms ordinary/Modal candidate composition and commit; no automated candidate overlay claim",
+    "Switch": "PASS final native keys: focus via Path Input then Shift+Tab; Space off→on; Enter on→off",
+    "final_input_editing": {
+      "native_selection": "Cmd+Left then Shift+Right twice selects 中文",
+      "Cmd+C/V": "中文测试→中文测试中文",
+      "Cmd+Z": "中文测试",
+      "Cmd+Shift+Z": "中文测试中文",
+      "Backspace": "中文测试中",
+      "AX_selection_tool": "NOT_SUPPORTED; replaced with real keyboard selection, not a product failure",
+      "composition": "not inferred from test paste; human evidence separately recorded"
+    }
+  },
+  "IME": "PASS human confirmation recorded in human-interaction.json",
+  "not_claimed": "automated paste is not IME",
+  "input_clipping_fix": {
+    "root_cause": "Medium padding8px per side leaves14px for20px line; Input::h applies only to multiline",
+    "fix": "Styled single-line height32px, padding4px, font14px/line20px for all desktop Inputs",
+    "actual": "Chinese, Á accent, gjpq descenders, numbers, Emoji in ordinary/Modal/page Inputs visually complete",
+    "keyboard_after_fix": "Tab/Down opens Select; Escape1 removes only list; Escape2 closes Modal; Space reopens from returned trigger"
+  }
+}

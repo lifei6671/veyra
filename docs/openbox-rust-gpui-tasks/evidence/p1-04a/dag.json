@@ -1,0 +1,652 @@
+{
+  "card_count": 68,
+  "actual_card_dependencies_match_table": true,
+  "acyclic": true,
+  "status_counts": {
+    "DONE": 9,
+    "ACCEPTANCE": 1,
+    "TODO": 49,
+    "READY": 2,
+    "DEFERRED": 7
+  },
+  "ready": [
+    "P1-04B",
+    "P1-05"
+  ],
+  "tasks": {
+    "P0-01": {
+      "status": "DONE",
+      "dependencies": [],
+      "card": "P0-feasibility.md#obg-p0-01"
+    },
+    "P0-02": {
+      "status": "DONE",
+      "dependencies": [],
+      "card": "P0-feasibility.md#obg-p0-02"
+    },
+    "P0-03": {
+      "status": "DONE",
+      "dependencies": [
+        "P0-01"
+      ],
+      "card": "P0-feasibility.md#obg-p0-03"
+    },
+    "P0-04": {
+      "status": "DONE",
+      "dependencies": [
+        "P0-01"
+      ],
+      "card": "P0-feasibility.md#obg-p0-04"
+    },
+    "P0-05": {
+      "status": "ACCEPTANCE",
+      "dependencies": [
+        "P0-03",
+        "P0-04"
+      ],
+      "card": "P0-feasibility.md#obg-p0-05"
+    },
+    "P0-06": {
+      "status": "TODO",
+      "dependencies": [
+        "P0-04",
+        "P0-05"
+      ],
+      "card": "P0-feasibility.md#obg-p0-06"
+    },
+    "P0-07": {
+      "status": "DONE",
+      "dependencies": [
+        "P0-01",
+        "P0-04"
+      ],
+      "card": "P0-feasibility.md#obg-p0-07"
+    },
+    "P0-08": {
+      "status": "TODO",
+      "dependencies": [
+        "P0-03",
+        "P0-05"
+      ],
+      "card": "P0-feasibility.md#obg-p0-08"
+    },
+    "P0-09": {
+      "status": "TODO",
+      "dependencies": [
+        "P0-01",
+        "P0-02",
+        "P0-03",
+        "P0-04",
+        "P0-05",
+        "P0-06",
+        "P0-07",
+        "P0-08"
+      ],
+      "card": "P0-feasibility.md#obg-p0-09"
+    },
+    "P1-01": {
+      "status": "DONE",
+      "dependencies": [
+        "P0-01",
+        "P0-02"
+      ],
+      "card": "P1-core-and-shell.md#obg-p1-01"
+    },
+    "P1-02": {
+      "status": "DONE",
+      "dependencies": [
+        "P1-01"
+      ],
+      "card": "P1-core-and-shell.md#obg-p1-02"
+    },
+    "P1-03": {
+      "status": "DONE",
+      "dependencies": [
+        "P1-02",
+        "P0-03"
+      ],
+      "card": "P1-core-and-shell.md#obg-p1-03"
+    },
+    "P1-04A": {
+      "status": "DONE",
+      "dependencies": [
+        "P1-02",
+        "P1-03"
+      ],
+      "card": "P1-core-and-shell.md#obg-p1-04a"
+    },
+    "P1-04B": {
+      "status": "READY",
+      "dependencies": [
+        "P1-02",
+        "P1-03"
+      ],
+      "card": "P1-core-and-shell.md#obg-p1-04b"
+    },
+    "P1-05": {
+      "status": "READY",
+      "dependencies": [
+        "P1-02",
+        "P1-03"
+      ],
+      "card": "P1-core-and-shell.md#obg-p1-05"
+    },
+    "P1-06": {
+      "status": "TODO",
+      "dependencies": [
+        "P1-03",
+        "P1-05"
+      ],
+      "card": "P1-core-and-shell.md#obg-p1-06"
+    },
+    "P1-07": {
+      "status": "TODO",
+      "dependencies": [
+        "P1-01",
+        "P1-02",
+        "P1-03",
+        "P1-04A",
+        "P1-04B",
+        "P1-05",
+        "P1-06"
+      ],
+      "card": "P1-core-and-shell.md#obg-p1-07"
+    },
+    "P2-01": {
+      "status": "TODO",
+      "dependencies": [
+        "P1-02",
+        "P1-03",
+        "P1-04A",
+        "P0-06"
+      ],
+      "card": "P2-local-proxy.md#obg-p2-01"
+    },
+    "P2-02A": {
+      "status": "TODO",
+      "dependencies": [
+        "P2-01"
+      ],
+      "card": "P2-local-proxy.md#obg-p2-02a"
+    },
+    "P2-02B": {
+      "status": "TODO",
+      "dependencies": [
+        "P2-02A",
+        "P0-04"
+      ],
+      "card": "P2-local-proxy.md#obg-p2-02b"
+    },
+    "P2-03": {
+      "status": "TODO",
+      "dependencies": [
+        "P2-02B",
+        "P1-03"
+      ],
+      "card": "P2-local-proxy.md#obg-p2-03"
+    },
+    "P2-04": {
+      "status": "TODO",
+      "dependencies": [
+        "P2-03"
+      ],
+      "card": "P2-local-proxy.md#obg-p2-04"
+    },
+    "P2-05": {
+      "status": "TODO",
+      "dependencies": [
+        "P2-03",
+        "P0-06"
+      ],
+      "card": "P2-local-proxy.md#obg-p2-05"
+    },
+    "P2-06": {
+      "status": "TODO",
+      "dependencies": [
+        "P2-03",
+        "P2-04",
+        "P0-05"
+      ],
+      "card": "P2-local-proxy.md#obg-p2-06"
+    },
+    "P2-07": {
+      "status": "TODO",
+      "dependencies": [
+        "P2-06",
+        "P2-05"
+      ],
+      "card": "P2-local-proxy.md#obg-p2-07"
+    },
+    "P2-08": {
+      "status": "TODO",
+      "dependencies": [
+        "P2-02A",
+        "P2-04",
+        "P2-05",
+        "P1-04B"
+      ],
+      "card": "P2-local-proxy.md#obg-p2-08"
+    },
+    "P2-09": {
+      "status": "TODO",
+      "dependencies": [
+        "P1-07",
+        "P2-01",
+        "P2-02A",
+        "P2-02B",
+        "P2-03",
+        "P2-04",
+        "P2-05",
+        "P2-06",
+        "P2-07",
+        "P2-08"
+      ],
+      "card": "P2-local-proxy.md#obg-p2-09"
+    },
+    "P3-01": {
+      "status": "TODO",
+      "dependencies": [
+        "P2-03",
+        "P0-07"
+      ],
+      "card": "P3-observability.md#obg-p3-01"
+    },
+    "P3-02": {
+      "status": "TODO",
+      "dependencies": [
+        "P3-01",
+        "P2-02A",
+        "P2-05",
+        "P2-08",
+        "P1-04B"
+      ],
+      "card": "P3-observability.md#obg-p3-02"
+    },
+    "P3-03": {
+      "status": "TODO",
+      "dependencies": [
+        "P3-01",
+        "P1-05"
+      ],
+      "card": "P3-observability.md#obg-p3-03"
+    },
+    "P3-04": {
+      "status": "TODO",
+      "dependencies": [
+        "P3-01"
+      ],
+      "card": "P3-observability.md#obg-p3-04"
+    },
+    "P3-05": {
+      "status": "TODO",
+      "dependencies": [
+        "P3-01",
+        "P3-04",
+        "P1-04B",
+        "P2-05"
+      ],
+      "card": "P3-observability.md#obg-p3-05"
+    },
+    "P3-06": {
+      "status": "TODO",
+      "dependencies": [
+        "P3-04",
+        "P3-05"
+      ],
+      "card": "P3-observability.md#obg-p3-06"
+    },
+    "P3-07": {
+      "status": "TODO",
+      "dependencies": [
+        "P3-01",
+        "P2-02A",
+        "P2-08",
+        "P1-04B"
+      ],
+      "card": "P3-observability.md#obg-p3-07"
+    },
+    "P3-08": {
+      "status": "TODO",
+      "dependencies": [
+        "P3-01",
+        "P3-02",
+        "P3-03",
+        "P3-04",
+        "P3-05",
+        "P3-06",
+        "P3-07"
+      ],
+      "card": "P3-observability.md#obg-p3-08"
+    },
+    "P4-01": {
+      "status": "TODO",
+      "dependencies": [
+        "P2-01",
+        "P2-05"
+      ],
+      "card": "P4-configuration.md#obg-p4-01"
+    },
+    "P4-02": {
+      "status": "TODO",
+      "dependencies": [
+        "P2-01",
+        "P2-02A",
+        "P2-02B",
+        "P1-03",
+        "P1-04A"
+      ],
+      "card": "P4-configuration.md#obg-p4-02"
+    },
+    "P4-03": {
+      "status": "TODO",
+      "dependencies": [
+        "P4-02",
+        "P2-04"
+      ],
+      "card": "P4-configuration.md#obg-p4-03"
+    },
+    "P4-04": {
+      "status": "TODO",
+      "dependencies": [
+        "P2-02B",
+        "P2-04",
+        "P2-05",
+        "P1-04A"
+      ],
+      "card": "P4-configuration.md#obg-p4-04"
+    },
+    "P4-06": {
+      "status": "TODO",
+      "dependencies": [
+        "P2-02A",
+        "P2-02B",
+        "P2-05",
+        "P2-08"
+      ],
+      "card": "P4-configuration.md#obg-p4-06"
+    },
+    "P4-05A": {
+      "status": "TODO",
+      "dependencies": [
+        "P4-03",
+        "P4-04",
+        "P4-06"
+      ],
+      "card": "P4-configuration.md#obg-p4-05a"
+    },
+    "P4-05B": {
+      "status": "TODO",
+      "dependencies": [
+        "P4-05A",
+        "P3-01"
+      ],
+      "card": "P4-configuration.md#obg-p4-05b"
+    },
+    "P4-05C": {
+      "status": "TODO",
+      "dependencies": [
+        "P4-05A",
+        "P4-05B",
+        "P1-04B",
+        "P2-05",
+        "P3-07"
+      ],
+      "card": "P4-configuration.md#obg-p4-05c"
+    },
+    "P4-07": {
+      "status": "TODO",
+      "dependencies": [
+        "P4-01",
+        "P4-02",
+        "P4-03",
+        "P4-04",
+        "P4-06",
+        "P4-05A",
+        "P4-05B",
+        "P4-05C"
+      ],
+      "card": "P4-configuration.md#obg-p4-07"
+    },
+    "P5-01": {
+      "status": "TODO",
+      "dependencies": [
+        "P2-02B",
+        "P2-03",
+        "P2-05",
+        "P0-07",
+        "P1-04A"
+      ],
+      "card": "P5-dns-and-sharing.md#obg-p5-01"
+    },
+    "P5-02": {
+      "status": "TODO",
+      "dependencies": [
+        "P5-01",
+        "P2-05"
+      ],
+      "card": "P5-dns-and-sharing.md#obg-p5-02"
+    },
+    "P5-03": {
+      "status": "TODO",
+      "dependencies": [
+        "P5-02",
+        "P3-01",
+        "P4-05C"
+      ],
+      "card": "P5-dns-and-sharing.md#obg-p5-03"
+    },
+    "P5-04": {
+      "status": "TODO",
+      "dependencies": [
+        "P2-02B",
+        "P2-03"
+      ],
+      "card": "P5-dns-and-sharing.md#obg-p5-04"
+    },
+    "P5-05": {
+      "status": "TODO",
+      "dependencies": [
+        "P5-04",
+        "P1-04A",
+        "P1-05"
+      ],
+      "card": "P5-dns-and-sharing.md#obg-p5-05"
+    },
+    "P5-06": {
+      "status": "TODO",
+      "dependencies": [
+        "P2-01",
+        "P1-05",
+        "P1-04A"
+      ],
+      "card": "P5-dns-and-sharing.md#obg-p5-06"
+    },
+    "P5-07": {
+      "status": "TODO",
+      "dependencies": [
+        "P5-01",
+        "P5-02",
+        "P5-03",
+        "P5-04",
+        "P5-05",
+        "P5-06",
+        "P4-07"
+      ],
+      "card": "P5-dns-and-sharing.md#obg-p5-07"
+    },
+    "P6-01": {
+      "status": "TODO",
+      "dependencies": [
+        "P2-06",
+        "P2-07",
+        "P2-04",
+        "P2-02B",
+        "P2-05",
+        "P5-01"
+      ],
+      "card": "P6-macos-lifecycle.md#obg-p6-01"
+    },
+    "P6-02": {
+      "status": "TODO",
+      "dependencies": [
+        "P6-01"
+      ],
+      "card": "P6-macos-lifecycle.md#obg-p6-02"
+    },
+    "P6-03": {
+      "status": "TODO",
+      "dependencies": [
+        "P6-02",
+        "P1-06",
+        "P4-01",
+        "P5-06"
+      ],
+      "card": "P6-macos-lifecycle.md#obg-p6-03"
+    },
+    "P6-04": {
+      "status": "TODO",
+      "dependencies": [
+        "P6-02",
+        "P0-08",
+        "P2-05"
+      ],
+      "card": "P6-macos-lifecycle.md#obg-p6-04"
+    },
+    "P6-05": {
+      "status": "TODO",
+      "dependencies": [
+        "P6-01",
+        "P6-02",
+        "P6-03",
+        "P6-04"
+      ],
+      "card": "P6-macos-lifecycle.md#obg-p6-05"
+    },
+    "P7-01": {
+      "status": "TODO",
+      "dependencies": [
+        "P1-02",
+        "P1-04A",
+        "P1-04B",
+        "P1-05",
+        "P3-06",
+        "P4-01",
+        "P4-03",
+        "P4-05B",
+        "P4-06",
+        "P5-02",
+        "P5-04",
+        "P5-06"
+      ],
+      "card": "P7-data-and-release.md#obg-p7-01"
+    },
+    "P7-02": {
+      "status": "TODO",
+      "dependencies": [
+        "P7-01",
+        "P6-02",
+        "P6-03",
+        "P2-07",
+        "P5-06"
+      ],
+      "card": "P7-data-and-release.md#obg-p7-02"
+    },
+    "P7-03": {
+      "status": "TODO",
+      "dependencies": [
+        "P7-01",
+        "P7-02",
+        "P6-05"
+      ],
+      "card": "P7-data-and-release.md#obg-p7-03"
+    },
+    "P7-04": {
+      "status": "TODO",
+      "dependencies": [
+        "P1-07",
+        "P2-09",
+        "P3-08",
+        "P4-07",
+        "P5-07",
+        "P6-05",
+        "P7-01",
+        "P7-02"
+      ],
+      "card": "P7-data-and-release.md#obg-p7-04"
+    },
+    "P7-05": {
+      "status": "TODO",
+      "dependencies": [
+        "P7-03",
+        "P7-04",
+        "P0-09"
+      ],
+      "card": "P7-data-and-release.md#obg-p7-05"
+    },
+    "W0-01": {
+      "status": "DEFERRED",
+      "dependencies": [
+        "P1-01",
+        "P1-03"
+      ],
+      "card": "WINDOWS.md#obg-w0-01"
+    },
+    "W0-02": {
+      "status": "DEFERRED",
+      "dependencies": [
+        "W0-01",
+        "P2-03"
+      ],
+      "card": "WINDOWS.md#obg-w0-02"
+    },
+    "W1-01": {
+      "status": "DEFERRED",
+      "dependencies": [
+        "W0-01",
+        "P2-01",
+        "P2-02B",
+        "P2-04",
+        "P2-05",
+        "P2-08"
+      ],
+      "card": "WINDOWS.md#obg-w1-01"
+    },
+    "W2-01": {
+      "status": "DEFERRED",
+      "dependencies": [
+        "W0-02",
+        "W1-01",
+        "P2-06"
+      ],
+      "card": "WINDOWS.md#obg-w2-01"
+    },
+    "W2-02": {
+      "status": "DEFERRED",
+      "dependencies": [
+        "W2-01",
+        "P6-01"
+      ],
+      "card": "WINDOWS.md#obg-w2-02"
+    },
+    "W3-01": {
+      "status": "DEFERRED",
+      "dependencies": [
+        "W2-02",
+        "P7-01",
+        "P6-04"
+      ],
+      "card": "WINDOWS.md#obg-w3-01"
+    },
+    "W3-02": {
+      "status": "DEFERRED",
+      "dependencies": [
+        "W3-01",
+        "P3-08",
+        "P4-07",
+        "P5-07",
+        "P7-02"
+      ],
+      "card": "WINDOWS.md#obg-w3-02"
+    }
+  }
+}

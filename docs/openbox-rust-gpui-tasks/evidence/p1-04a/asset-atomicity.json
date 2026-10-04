@@ -1,0 +1,124 @@
+{
+  "automated": {
+    "result": "PASS",
+    "test": "services::visual_tests::prepared_background_failed_commit_retry_and_backup_reference_are_atomic",
+    "failure": "state.tmp directory blocks atomic StateStore commit after B image prepared",
+    "old_A": "reference and asset remain",
+    "prepared_B": "managed pending draft; not authoritative until Retry",
+    "retry": "SavedOnly B; epoch and selection unchanged",
+    "cleanup": "A remains while backup references A; removed only after subsequent committed state+backup both B"
+  },
+  "asset_limits": {
+    "formats": [
+      "PNG",
+      "JPEG"
+    ],
+    "input_bytes": 8388608,
+    "dimensions_max": 4096,
+    "decode_allocation_max": 67108864
+  },
+  "commit_order": [
+    "decode/validate",
+    "canonical PNG temporary write",
+    "fsync",
+    "rename",
+    "asset directory fsync",
+    "StateAccessGate + expected ConfigVersion CAS commit",
+    "foreground adopts saved core snapshot",
+    "Gate-protected unreferenced asset cleanup"
+  ],
+  "actual_GUI": {
+    "result": "PASS",
+    "before": {
+      "state_epoch": [
+        123,
+        4,
+        59,
+        214,
+        82,
+        144,
+        223,
+        249,
+        69,
+        255,
+        87,
+        118,
+        155,
+        86,
+        191,
+        156
+      ],
+      "config_revision": 8,
+      "selection_revision": 0,
+      "app_config": {
+        "check_updates_on_start": true,
+        "visual": {
+          "language": "zh-CN",
+          "theme_mode": "dark",
+          "background": {
+            "kind": "managed_asset",
+            "id": "4a1eb51443319405c2fb6751fbe49c8e5a55608612f513bfcdef4d879a19e5aa"
+          },
+          "background_opacity": 40,
+          "background_blur": 10,
+          "global_radius": 16,
+          "sidebar_collapsed": false
+        }
+      }
+    },
+    "retry": {
+      "state_epoch": [
+        123,
+        4,
+        59,
+        214,
+        82,
+        144,
+        223,
+        249,
+        69,
+        255,
+        87,
+        118,
+        155,
+        86,
+        191,
+        156
+      ],
+      "config_revision": 9,
+      "selection_revision": 0,
+      "app_config": {
+        "check_updates_on_start": true,
+        "visual": {
+          "language": "zh-CN",
+          "theme_mode": "dark",
+          "background": {
+            "kind": "managed_asset",
+            "id": "e4dac3a39ba40d43d179c397b9d1a42d1e4643fd18876fc7832d2926ce2edade"
+          },
+          "background_opacity": 40,
+          "background_blur": 10,
+          "global_radius": 16,
+          "sidebar_collapsed": false
+        }
+      }
+    },
+    "failed_state_commit": "state.tmp directory in disposable root; after B ready Core remains A and both files present; draft B retained",
+    "old_asset_cleanup": "A kept while backup references A; later actual Preference commit removed A when current+backup both B",
+    "second_failure": "final build saved radius14/draft13; StorageFailed toast; removed fixture; Retry committed13"
+  },
+  "blur_cache": {
+    "algorithm": "image::DynamicImage::fast_blur, three box Gaussian approximation",
+    "sigma": "saved 0–40 interpreted on image pixels; no claim of CSS/native intensity equivalence",
+    "cache_identity": "asset SHA256 + fast algorithm + blur",
+    "first_1280x720_debug_blur20_ms": 838,
+    "previous_gaussian_ms": [
+      3148,
+      6157
+    ],
+    "render": "GPUI only receives prepared file path; CPU/cache I/O on Tokio blocking worker; input draft and navigation stay responsive",
+    "scope": "background image only; card backdrop blur not implemented",
+    "native_window": "WindowBackgroundAppearance::Blurred for nonzero Preference; boolean capability only; opaque for0",
+    "first_1280x720_debug_blur38_ms": 853
+  }
+}

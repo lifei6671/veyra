@@ -1,0 +1,95 @@
+    Checking veyra-core v0.1.0 (/Users/lifeilin/wx_lifeilin/github.com/lifei6671/veyra/crates/veyra-core)
+    Checking veyra-desktop v0.1.0 (/Users/lifeilin/wx_lifeilin/github.com/lifei6671/veyra/crates/veyra-desktop)
+error: this `if` statement can be collapsed
+  --> crates/veyra-desktop/src/services.rs:66:13
+   |
+66 | /             if let (Ok(before), Ok(saved)) = (&before, &result) {
+67 | |                 if let veyra_core::domain::DesktopBackground::ManagedAsset(old) =
+68 | |                     &before.app_config.visual.background
+...  |
+89 | |             }
+   | |_____________^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#collapsible_if
+   = note: `-D clippy::collapsible-if` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(clippy::collapsible_if)]`
+help: collapse nested if block
+   |
+66 ~             if let (Ok(before), Ok(saved)) = (&before, &result)
+67 ~                 && let veyra_core::domain::DesktopBackground::ManagedAsset(old) =
+68 |                     &before.app_config.visual.background
+...
+87 |                     }
+88 ~                 }
+   |
+
+error: this `if` statement can be collapsed
+  --> crates/veyra-desktop/src/services.rs:77:21
+   |
+77 | /                     if let Some(backup) = backup {
+78 | |                         if let Err(error) = assets.release_unreferenced(
+79 | |                             old,
+80 | |                             &[
+...  |
+87 | |                     }
+   | |_____________________^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#collapsible_if
+help: collapse nested if block
+   |
+77 ~                     if let Some(backup) = backup
+78 ~                         && let Err(error) = assets.release_unreferenced(
+79 |                             old,
+...
+85 |                             eprintln!("asset cleanup deferred: {error}");
+86 ~                         }
+   |
+
+error: this `if` statement can be collapsed
+   --> crates/veyra-desktop/src/services.rs:126:13
+    |
+126 | /             if let (Some(current), Some(backup)) = (read("state.json"), read("state.json.bak")) {
+127 | |                 if let Err(error) = assets.collect_orphans(&[
+128 | |                     current.app_config.visual.background,
+129 | |                     backup.app_config.visual.background,
+...   |
+134 | |             }
+    | |_____________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#collapsible_if
+help: collapse nested if block
+    |
+126 ~             if let (Some(current), Some(backup)) = (read("state.json"), read("state.json.bak"))
+127 ~                 && let Err(error) = assets.collect_orphans(&[
+128 |                     current.app_config.visual.background,
+...
+132 |                     eprintln!("orphan cleanup deferred: {error}");
+133 ~                 }
+    |
+
+error: useless use of `format!`
+   --> crates/veyra-desktop/src/ui/panel.rs:279:28
+    |
+279 |                       .child(format!(
+    |  ____________________________^
+280 | |                         "{}",
+281 | |                         match &self.draft.background {
+282 | |                             DesktopBackground::None => "None".into(),
+...   |
+285 | |                     )),
+    | |_____________________^
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#useless_format
+    = note: `-D clippy::useless-format` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::useless_format)]`
+help: consider using `.to_string()`
+    |
+279 ~                     .child((match &self.draft.background {
+280 +                             DesktopBackground::None => "None".into(),
+281 ~                             DesktopBackground::ManagedAsset(id) => format!("{}…", &id.0[..8]),
+282 ~                         }).to_string()),
+    |
+
+error: could not compile `veyra-desktop` (bin "veyra-desktop" test) due to 4 previous errors
+warning: build failed, waiting for other jobs to finish...
+error: could not compile `veyra-desktop` (bin "veyra-desktop") due to 4 previous errors

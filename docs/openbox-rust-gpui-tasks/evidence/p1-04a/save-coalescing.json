@@ -1,0 +1,115 @@
+{
+  "debounce_ms": 400,
+  "automated": {
+    "sequence": [
+      10,
+      20,
+      30,
+      40
+    ],
+    "change_events": 4,
+    "persistence_submissions": 1,
+    "final_authoritative_opacity": 40,
+    "config_revision_delta": 1,
+    "stale_completion": "ignored; newer draft 50 retained; duplicate result rejected",
+    "result": "PASS"
+  },
+  "actual_GUI": {
+    "rapid_tool_track_clicks": "10→20→30→40, 4 change events / 3 submissions (last30/40 coalesced); final40 verified",
+    "another_coalesced_edit": "opacity38 and blur20: 2 changes / 1 submission",
+    "continuous_drag": "PASS via explicit Human Interaction Evidence; native tool attempts alone not proof",
+    "failed_save": "draft13 saved14 retained; Retry13 converges",
+    "human_continuous_drag": {
+      "result": "PASS, user reports all normal",
+      "run_change_events": 397,
+      "run_save_submissions": 10,
+      "accepted_submissions": [
+        {
+          "generation": 1,
+          "ordinal": 1,
+          "opacity": 38,
+          "blur": 20
+        },
+        {
+          "generation": 2,
+          "ordinal": 2,
+          "opacity": 38,
+          "blur": 20
+        },
+        {
+          "generation": 3,
+          "ordinal": 3,
+          "opacity": 38,
+          "blur": 20
+        },
+        {
+          "generation": 4,
+          "ordinal": 4,
+          "opacity": 38,
+          "blur": 20
+        },
+        {
+          "generation": 5,
+          "ordinal": 5,
+          "opacity": 38,
+          "blur": 20
+        },
+        {
+          "generation": 6,
+          "ordinal": 6,
+          "opacity": 38,
+          "blur": 20
+        },
+        {
+          "generation": 225,
+          "ordinal": 7,
+          "opacity": 20,
+          "blur": 20
+        },
+        {
+          "generation": 396,
+          "ordinal": 8,
+          "opacity": 20,
+          "blur": 38
+        },
+        {
+          "generation": 397,
+          "ordinal": 9,
+          "opacity": 20,
+          "blur": 38
+        },
+        {
+          "generation": 398,
+          "ordinal": 10,
+          "opacity": 20,
+          "blur": 38
+        }
+      ],
+      "note": "includes 4 setup edits, a retry and two same-background drops; revisions advance only for changed facts",
+      "final_opacity": 20,
+      "final_blur": 38,
+      "isolated_slider_segment": {
+        "generation_range": [
+          7,
+          396
+        ],
+        "change_events": 390,
+        "submissions": 2,
+        "submitted_generations": [
+          225,
+          396
+        ],
+        "final_opacity": 20,
+        "final_blur": 38
+      }
+    },
+    "human_additional_actions": {
+      "run_change_events": 607,
+      "run_submissions": 17,
+      "final_theme": "system",
+      "final_opacity": 20,
+      "final_blur": 0,
+      "note": "later user edits after first response; final restart uses current persisted values, not earlier20/38"
+    }
+  }
+}

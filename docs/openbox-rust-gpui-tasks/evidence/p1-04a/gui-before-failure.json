@@ -1,0 +1,37 @@
+{
+  "state_epoch": [
+    123,
+    4,
+    59,
+    214,
+    82,
+    144,
+    223,
+    249,
+    69,
+    255,
+    87,
+    118,
+    155,
+    86,
+    191,
+    156
+  ],
+  "config_revision": 8,
+  "selection_revision": 0,
+  "app_config": {
+    "check_updates_on_start": true,
+    "visual": {
+      "language": "zh-CN",
+      "theme_mode": "dark",
+      "background": {
+        "kind": "managed_asset",
+        "id": "4a1eb51443319405c2fb6751fbe49c8e5a55608612f513bfcdef4d879a19e5aa"
+      },
+      "background_opacity": 40,
+      "background_blur": 10,
+      "global_radius": 16,
+      "sidebar_collapsed": false
+    }
+  }
+}

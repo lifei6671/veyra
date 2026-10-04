@@ -1,0 +1,876 @@
+P1-04A injected temporary state root: /private/tmp/veyra-p1-04a-state
+sandbox_extension_issue_file_to_process failed for /tmp/veyra-p1-04a.app: 1 (Operation not permitted)
+logical content 1280x720; scale factor 2
+bridge request=1 generation=0 busy
+bridge request=1 generation=0 Accepted
+navigate settings entity=EntityId(17v1)
+2026-10-04 11:16:14.458 veyra-desktop[30817:5433945] TSM AdjustCapsLockLEDForKeyTransitionHandling - _ISSetPhysicalKeyboardCapsLockLED Inhibit
+visual change generation=1 changes=1
+visual submit generation=1 commits=1 opacity=90 blur=10
+visual completion generation=1 accepted=true result=Ok(())
+P1-04A injected temporary state root: /private/tmp/veyra-p1-04a-state
+sandbox_extension_issue_file_to_process failed for /tmp/veyra-p1-04a.app: 1 (Operation not permitted)
+logical content 1280x720; scale factor 2
+bridge request=1 generation=0 busy
+bridge request=1 generation=0 Accepted
+navigate settings entity=EntityId(17v1)
+P1-04A injected temporary state root: /private/tmp/veyra-p1-04a-state
+sandbox_extension_issue_file_to_process failed for /tmp/veyra-p1-04a.app: 1 (Operation not permitted)
+logical content 1280x720; scale factor 2
+bridge request=1 generation=0 busy
+bridge request=1 generation=0 Accepted
+navigate settings entity=EntityId(17v1)
+P1-04A injected temporary state root: /private/tmp/veyra-p1-04a-state
+sandbox_extension_issue_file_to_process failed for /tmp/veyra-p1-04a.app: 1 (Operation not permitted)
+logical content 1280x720; scale factor 2
+bridge request=1 generation=0 busy
+bridge request=1 generation=0 Accepted
+navigate settings entity=EntityId(17v1)
+shell scroll evidence max=Point { x: 35px, y: 155px } bounds=Bounds { origin: Point { x: 270px, y: 87px }, size: Size { 996px × 577.5px } }
+navigate overview entity=EntityId(2v1)
+navigate proxies entity=EntityId(5v1)
+navigate connections entity=EntityId(8v1)
+navigate logs entity=EntityId(11v1)
+navigate rules entity=EntityId(14v1)
+navigate settings entity=EntityId(17v1)
+entity-evidence: 3 PASS: six identities, filter retained, category/draft retained
+2026-10-04 11:26:39.579 veyra-desktop[32020:5443605] TSM AdjustCapsLockLEDForKeyTransitionHandling - _ISSetPhysicalKeyboardCapsLockLED Inhibit
+2026-10-04 11:26:39.604 veyra-desktop[32020:5443605] error messaging the mach port for IMKCFRunLoopWakeUpReliable
+overlay modal opened; initial focus=input
+overlay dropdown dismissed; modal remains=true
+overlay modal closed; trigger focus returned=true
+visual submit generation=1 commits=1 opacity=90 blur=10
+visual completion generation=1 accepted=true result=Ok(())
+asset prepared id=4a1eb51443319405c2fb6751fbe49c8e5a55608612f513bfcdef4d879a19e5aa
+visual change generation=2 changes=1
+visual submit generation=2 commits=2 opacity=90 blur=10
+background image blur=10 cache prepared duration_ms=3148
+visual completion generation=2 accepted=true result=Ok(())
+visual change generation=3 changes=2
+visual submit generation=3 commits=3 opacity=50 blur=10
+visual completion generation=3 accepted=true result=Ok(())
+visual change generation=4 changes=3
+visual submit generation=4 commits=4 opacity=28 blur=10
+visual completion generation=4 accepted=true result=Ok(())
+visual change generation=5 changes=4
+visual submit generation=5 commits=5 opacity=5 blur=10
+visual completion generation=5 accepted=true result=Ok(())
+visual change generation=6 changes=5
+visual submit generation=6 commits=6 opacity=10 blur=10
+visual completion generation=6 accepted=true result=Ok(())
+visual change generation=7 changes=6
+visual submit generation=7 commits=7 opacity=20 blur=10
+visual completion generation=7 accepted=true result=Ok(())
+visual change generation=8 changes=7
+visual change generation=9 changes=8
+visual submit generation=9 commits=8 opacity=40 blur=10
+visual completion generation=9 accepted=true result=Ok(())
+asset prepared id=e4dac3a39ba40d43d179c397b9d1a42d1e4643fd18876fc7832d2926ce2edade
+visual change generation=10 changes=9
+visual submit generation=10 commits=9 opacity=40 blur=10
+background image blur=10 cache prepared duration_ms=3153
+visual completion generation=10 accepted=true result=Err(AppError { code: StorageFailed, message: "数据未能保存或读取", field: None, detail: Some(Write) })
+visual submit generation=11 commits=10 opacity=40 blur=10
+visual completion generation=11 accepted=true result=Ok(())
+overlay modal opened; initial focus=input
+overlay modal closed; trigger focus returned=true
+overlay dropdown dismissed; modal remains=false
+overlay modal opened; initial focus=input
+overlay dropdown dismissed; modal remains=true
+overlay dropdown dismissed; modal remains=true
+overlay modal closed; trigger focus returned=true
+P1-04A injected temporary state root: /private/tmp/veyra-p1-04a-state
+sandbox_extension_issue_file_to_process failed for /tmp/veyra-p1-04a.app: 1 (Operation not permitted)
+logical content 1280x720; scale factor 2
+bridge request=1 generation=0 busy
+bridge request=1 generation=0 Accepted
+navigate settings entity=EntityId(17v1)
+overlay modal opened; initial focus=input
+2026-10-04 11:34:36.777 veyra-desktop[37594:5472821] TSM AdjustCapsLockLEDForKeyTransitionHandling - _ISSetPhysicalKeyboardCapsLockLED Inhibit
+overlay modal closed; trigger focus returned=true
+visual change generation=1 changes=1
+visual submit generation=1 commits=1 opacity=40 blur=10
+visual completion generation=1 accepted=true result=Ok(())
+visual change generation=2 changes=2
+visual submit generation=2 commits=2 opacity=40 blur=10
+visual completion generation=2 accepted=true result=Ok(())
+visual change generation=3 changes=3
+visual submit generation=3 commits=3 opacity=40 blur=10
+visual completion generation=3 accepted=true result=Ok(())
+visual change generation=4 changes=4
+visual submit generation=4 commits=4 opacity=40 blur=10
+visual completion generation=4 accepted=true result=Ok(())
+visual change generation=5 changes=5
+visual submit generation=5 commits=5 opacity=40 blur=10
+visual completion generation=5 accepted=true result=Ok(())
+P1-04A injected temporary state root: /private/tmp/veyra-p1-04a-state
+sandbox_extension_issue_file_to_process failed for /tmp/veyra-p1-04a.app: 1 (Operation not permitted)
+logical content 1280x720; scale factor 2
+bridge request=1 generation=0 busy
+bridge request=1 generation=0 Accepted
+navigate settings entity=EntityId(17v1)
+overlay modal opened; initial focus=input
+2026-10-04 11:35:58.088 veyra-desktop[37997:5475940] TSM AdjustCapsLockLEDForKeyTransitionHandling - _ISSetPhysicalKeyboardCapsLockLED Inhibit
+overlay modal closed; trigger focus returned=true
+overlay modal opened; initial focus=input
+overlay dropdown dismissed; modal remains=true
+overlay dropdown dismissed; modal remains=true
+overlay modal closed; trigger focus returned=true
+overlay modal opened; initial focus=input
+overlay modal closed; trigger focus returned=true
+visual change generation=1 changes=1
+visual submit generation=1 commits=1 opacity=40 blur=0
+visual completion generation=1 accepted=true result=Ok(())
+visual change generation=2 changes=2
+visual submit generation=2 commits=2 opacity=1 blur=0
+visual completion generation=2 accepted=true result=Ok(())
+visual change generation=3 changes=3
+visual change generation=4 changes=4
+visual submit generation=4 commits=3 opacity=38 blur=20
+background image blur=20 cache prepared duration_ms=6157
+visual completion generation=4 accepted=true result=Ok(())
+navigate overview entity=EntityId(2v1)
+navigate settings entity=EntityId(17v1)
+visual change generation=5 changes=5
+visual submit generation=5 commits=4 opacity=38 blur=20
+visual completion generation=5 accepted=true result=Ok(())
+visual change generation=6 changes=6
+visual submit generation=6 commits=5 opacity=38 blur=20
+visual completion generation=6 accepted=true result=Ok(())
+visual change generation=7 changes=7
+visual submit generation=7 commits=6 opacity=38 blur=20
+visual completion generation=7 accepted=true result=Ok(())
+visual change generation=8 changes=8
+visual submit generation=8 commits=7 opacity=38 blur=20
+visual completion generation=8 accepted=true result=Ok(())
+visual change generation=9 changes=9
+visual submit generation=9 commits=8 opacity=38 blur=20
+visual completion generation=9 accepted=true result=Ok(())
+visual change generation=10 changes=10
+visual submit generation=10 commits=9 opacity=38 blur=20
+visual completion generation=10 accepted=true result=Ok(())
+visual change generation=11 changes=11
+visual submit generation=11 commits=10 opacity=38 blur=20
+visual completion generation=11 accepted=true result=Ok(())
+visual change generation=12 changes=12
+visual submit generation=12 commits=11 opacity=38 blur=20
+visual completion generation=12 accepted=true result=Ok(())
+visual change generation=13 changes=13
+visual submit generation=13 commits=12 opacity=38 blur=20
+visual completion generation=13 accepted=true result=Ok(())
+P1-04A injected temporary state root: /private/tmp/veyra-p1-04a-state
+sandbox_extension_issue_file_to_process failed for /tmp/veyra-p1-04a.app: 1 (Operation not permitted)
+logical content 1280x720; scale factor 2
+bridge request=1 generation=0 busy
+bridge request=1 generation=0 Accepted
+navigate settings entity=EntityId(17v1)
+2026-10-04 11:38:48.330 veyra-desktop[38714:5481777] TSM AdjustCapsLockLEDForKeyTransitionHandling - _ISSetPhysicalKeyboardCapsLockLED Inhibit
+visual change generation=1 changes=1
+visual submit generation=1 commits=1 opacity=38 blur=20
+visual completion generation=1 accepted=true result=Ok(())
+asset prepared id=e4dac3a39ba40d43d179c397b9d1a42d1e4643fd18876fc7832d2926ce2edade
+visual change generation=2 changes=2
+visual submit generation=2 commits=2 opacity=38 blur=20
+background image blur=20 cache prepared duration_ms=838
+visual completion generation=2 accepted=true result=Ok(())
+visual change generation=3 changes=3
+visual submit generation=3 commits=3 opacity=38 blur=20
+visual completion generation=3 accepted=true result=Ok(())
+visual change generation=4 changes=4
+visual submit generation=4 commits=4 opacity=38 blur=20
+visual completion generation=4 accepted=true result=Err(AppError { code: StorageFailed, message: "数据未能保存或读取", field: None, detail: Some(Write) })
+visual submit generation=5 commits=5 opacity=38 blur=20
+visual completion generation=5 accepted=true result=Ok(())
+visual change generation=6 changes=5
+visual submit generation=6 commits=6 opacity=38 blur=20
+visual completion generation=6 accepted=true result=Ok(())
+overlay modal opened; initial focus=input
+2026-10-04 11:40:21.705 veyra-desktop[38714:5481777] error messaging the mach port for IMKCFRunLoopWakeUpReliable
+overlay modal closed; trigger focus returned=true
+visual change generation=7 changes=6
+visual change generation=8 changes=7
+visual change generation=9 changes=8
+visual change generation=10 changes=9
+visual change generation=11 changes=10
+visual change generation=12 changes=11
+visual change generation=13 changes=12
+visual change generation=14 changes=13
+visual change generation=15 changes=14
+visual change generation=16 changes=15
+visual change generation=17 changes=16
+visual change generation=18 changes=17
+visual change generation=19 changes=18
+visual change generation=20 changes=19
+visual change generation=21 changes=20
+visual change generation=22 changes=21
+visual change generation=23 changes=22
+visual change generation=24 changes=23
+visual change generation=25 changes=24
+visual change generation=26 changes=25
+visual change generation=27 changes=26
+visual change generation=28 changes=27
+visual change generation=29 changes=28
+visual change generation=30 changes=29
+visual change generation=31 changes=30
+visual change generation=32 changes=31
+visual change generation=33 changes=32
+visual change generation=34 changes=33
+visual change generation=35 changes=34
+visual change generation=36 changes=35
+visual change generation=37 changes=36
+visual change generation=38 changes=37
+visual change generation=39 changes=38
+visual change generation=40 changes=39
+visual change generation=41 changes=40
+visual change generation=42 changes=41
+visual change generation=43 changes=42
+visual change generation=44 changes=43
+visual change generation=45 changes=44
+visual change generation=46 changes=45
+visual change generation=47 changes=46
+visual change generation=48 changes=47
+visual change generation=49 changes=48
+visual change generation=50 changes=49
+visual change generation=51 changes=50
+visual change generation=52 changes=51
+visual change generation=53 changes=52
+visual change generation=54 changes=53
+visual change generation=55 changes=54
+visual change generation=56 changes=55
+visual change generation=57 changes=56
+visual change generation=58 changes=57
+visual change generation=59 changes=58
+visual change generation=60 changes=59
+visual change generation=61 changes=60
+visual change generation=62 changes=61
+visual change generation=63 changes=62
+visual change generation=64 changes=63
+visual change generation=65 changes=64
+visual change generation=66 changes=65
+visual change generation=67 changes=66
+visual change generation=68 changes=67
+visual change generation=69 changes=68
+visual change generation=70 changes=69
+visual change generation=71 changes=70
+visual change generation=72 changes=71
+visual change generation=73 changes=72
+visual change generation=74 changes=73
+visual change generation=75 changes=74
+visual change generation=76 changes=75
+visual change generation=77 changes=76
+visual change generation=78 changes=77
+visual change generation=79 changes=78
+visual change generation=80 changes=79
+visual change generation=81 changes=80
+visual change generation=82 changes=81
+visual change generation=83 changes=82
+visual change generation=84 changes=83
+visual change generation=85 changes=84
+visual change generation=86 changes=85
+visual change generation=87 changes=86
+visual change generation=88 changes=87
+visual change generation=89 changes=88
+visual change generation=90 changes=89
+visual change generation=91 changes=90
+visual change generation=92 changes=91
+visual change generation=93 changes=92
+visual change generation=94 changes=93
+visual change generation=95 changes=94
+visual change generation=96 changes=95
+visual change generation=97 changes=96
+visual change generation=98 changes=97
+visual change generation=99 changes=98
+visual change generation=100 changes=99
+visual change generation=101 changes=100
+visual change generation=102 changes=101
+visual change generation=103 changes=102
+visual change generation=104 changes=103
+visual change generation=105 changes=104
+visual change generation=106 changes=105
+visual change generation=107 changes=106
+visual change generation=108 changes=107
+visual change generation=109 changes=108
+visual change generation=110 changes=109
+visual change generation=111 changes=110
+visual change generation=112 changes=111
+visual change generation=113 changes=112
+visual change generation=114 changes=113
+visual change generation=115 changes=114
+visual change generation=116 changes=115
+visual change generation=117 changes=116
+visual change generation=118 changes=117
+visual change generation=119 changes=118
+visual change generation=120 changes=119
+visual change generation=121 changes=120
+visual change generation=122 changes=121
+visual change generation=123 changes=122
+visual change generation=124 changes=123
+visual change generation=125 changes=124
+visual change generation=126 changes=125
+visual change generation=127 changes=126
+visual change generation=128 changes=127
+visual change generation=129 changes=128
+visual change generation=130 changes=129
+visual change generation=131 changes=130
+visual change generation=132 changes=131
+visual change generation=133 changes=132
+visual change generation=134 changes=133
+visual change generation=135 changes=134
+visual change generation=136 changes=135
+visual change generation=137 changes=136
+visual change generation=138 changes=137
+visual change generation=139 changes=138
+visual change generation=140 changes=139
+visual change generation=141 changes=140
+visual change generation=142 changes=141
+visual change generation=143 changes=142
+visual change generation=144 changes=143
+visual change generation=145 changes=144
+visual change generation=146 changes=145
+visual change generation=147 changes=146
+visual change generation=148 changes=147
+visual change generation=149 changes=148
+visual change generation=150 changes=149
+visual change generation=151 changes=150
+visual change generation=152 changes=151
+visual change generation=153 changes=152
+visual change generation=154 changes=153
+visual change generation=155 changes=154
+visual change generation=156 changes=155
+visual change generation=157 changes=156
+visual change generation=158 changes=157
+visual change generation=159 changes=158
+visual change generation=160 changes=159
+visual change generation=161 changes=160
+visual change generation=162 changes=161
+visual change generation=163 changes=162
+visual change generation=164 changes=163
+visual change generation=165 changes=164
+visual change generation=166 changes=165
+visual change generation=167 changes=166
+visual change generation=168 changes=167
+visual change generation=169 changes=168
+visual change generation=170 changes=169
+visual change generation=171 changes=170
+visual change generation=172 changes=171
+visual change generation=173 changes=172
+visual change generation=174 changes=173
+visual change generation=175 changes=174
+visual change generation=176 changes=175
+visual change generation=177 changes=176
+visual change generation=178 changes=177
+visual change generation=179 changes=178
+visual change generation=180 changes=179
+visual change generation=181 changes=180
+visual change generation=182 changes=181
+visual change generation=183 changes=182
+visual change generation=184 changes=183
+visual change generation=185 changes=184
+visual change generation=186 changes=185
+visual change generation=187 changes=186
+visual change generation=188 changes=187
+visual change generation=189 changes=188
+visual change generation=190 changes=189
+visual change generation=191 changes=190
+visual change generation=192 changes=191
+visual change generation=193 changes=192
+visual change generation=194 changes=193
+visual change generation=195 changes=194
+visual change generation=196 changes=195
+visual change generation=197 changes=196
+visual change generation=198 changes=197
+visual change generation=199 changes=198
+visual change generation=200 changes=199
+visual change generation=201 changes=200
+visual change generation=202 changes=201
+visual change generation=203 changes=202
+visual change generation=204 changes=203
+visual change generation=205 changes=204
+visual change generation=206 changes=205
+visual change generation=207 changes=206
+visual change generation=208 changes=207
+visual change generation=209 changes=208
+visual change generation=210 changes=209
+visual change generation=211 changes=210
+visual change generation=212 changes=211
+visual change generation=213 changes=212
+visual change generation=214 changes=213
+visual change generation=215 changes=214
+visual change generation=216 changes=215
+visual change generation=217 changes=216
+visual change generation=218 changes=217
+visual change generation=219 changes=218
+visual change generation=220 changes=219
+visual change generation=221 changes=220
+visual change generation=222 changes=221
+visual change generation=223 changes=222
+visual change generation=224 changes=223
+visual change generation=225 changes=224
+visual submit generation=225 commits=7 opacity=20 blur=20
+visual completion generation=225 accepted=true result=Ok(())
+visual change generation=226 changes=225
+visual change generation=227 changes=226
+visual change generation=228 changes=227
+visual change generation=229 changes=228
+visual change generation=230 changes=229
+visual change generation=231 changes=230
+visual change generation=232 changes=231
+visual change generation=233 changes=232
+visual change generation=234 changes=233
+visual change generation=235 changes=234
+visual change generation=236 changes=235
+visual change generation=237 changes=236
+visual change generation=238 changes=237
+visual change generation=239 changes=238
+visual change generation=240 changes=239
+visual change generation=241 changes=240
+visual change generation=242 changes=241
+visual change generation=243 changes=242
+visual change generation=244 changes=243
+visual change generation=245 changes=244
+visual change generation=246 changes=245
+visual change generation=247 changes=246
+visual change generation=248 changes=247
+visual change generation=249 changes=248
+visual change generation=250 changes=249
+visual change generation=251 changes=250
+visual change generation=252 changes=251
+visual change generation=253 changes=252
+visual change generation=254 changes=253
+visual change generation=255 changes=254
+visual change generation=256 changes=255
+visual change generation=257 changes=256
+visual change generation=258 changes=257
+visual change generation=259 changes=258
+visual change generation=260 changes=259
+visual change generation=261 changes=260
+visual change generation=262 changes=261
+visual change generation=263 changes=262
+visual change generation=264 changes=263
+visual change generation=265 changes=264
+visual change generation=266 changes=265
+visual change generation=267 changes=266
+visual change generation=268 changes=267
+visual change generation=269 changes=268
+visual change generation=270 changes=269
+visual change generation=271 changes=270
+visual change generation=272 changes=271
+visual change generation=273 changes=272
+visual change generation=274 changes=273
+visual change generation=275 changes=274
+visual change generation=276 changes=275
+visual change generation=277 changes=276
+visual change generation=278 changes=277
+visual change generation=279 changes=278
+visual change generation=280 changes=279
+visual change generation=281 changes=280
+visual change generation=282 changes=281
+visual change generation=283 changes=282
+visual change generation=284 changes=283
+visual change generation=285 changes=284
+visual change generation=286 changes=285
+visual change generation=287 changes=286
+visual change generation=288 changes=287
+visual change generation=289 changes=288
+visual change generation=290 changes=289
+visual change generation=291 changes=290
+visual change generation=292 changes=291
+visual change generation=293 changes=292
+visual change generation=294 changes=293
+visual change generation=295 changes=294
+visual change generation=296 changes=295
+visual change generation=297 changes=296
+visual change generation=298 changes=297
+visual change generation=299 changes=298
+visual change generation=300 changes=299
+visual change generation=301 changes=300
+visual change generation=302 changes=301
+visual change generation=303 changes=302
+visual change generation=304 changes=303
+visual change generation=305 changes=304
+visual change generation=306 changes=305
+visual change generation=307 changes=306
+visual change generation=308 changes=307
+visual change generation=309 changes=308
+visual change generation=310 changes=309
+visual change generation=311 changes=310
+visual change generation=312 changes=311
+visual change generation=313 changes=312
+visual change generation=314 changes=313
+visual change generation=315 changes=314
+visual change generation=316 changes=315
+visual change generation=317 changes=316
+visual change generation=318 changes=317
+visual change generation=319 changes=318
+visual change generation=320 changes=319
+visual change generation=321 changes=320
+visual change generation=322 changes=321
+visual change generation=323 changes=322
+visual change generation=324 changes=323
+visual change generation=325 changes=324
+visual change generation=326 changes=325
+visual change generation=327 changes=326
+visual change generation=328 changes=327
+visual change generation=329 changes=328
+visual change generation=330 changes=329
+visual change generation=331 changes=330
+visual change generation=332 changes=331
+visual change generation=333 changes=332
+visual change generation=334 changes=333
+visual change generation=335 changes=334
+visual change generation=336 changes=335
+visual change generation=337 changes=336
+visual change generation=338 changes=337
+visual change generation=339 changes=338
+visual change generation=340 changes=339
+visual change generation=341 changes=340
+visual change generation=342 changes=341
+visual change generation=343 changes=342
+visual change generation=344 changes=343
+visual change generation=345 changes=344
+visual change generation=346 changes=345
+visual change generation=347 changes=346
+visual change generation=348 changes=347
+visual change generation=349 changes=348
+visual change generation=350 changes=349
+visual change generation=351 changes=350
+visual change generation=352 changes=351
+visual change generation=353 changes=352
+visual change generation=354 changes=353
+visual change generation=355 changes=354
+visual change generation=356 changes=355
+visual change generation=357 changes=356
+visual change generation=358 changes=357
+visual change generation=359 changes=358
+visual change generation=360 changes=359
+visual change generation=361 changes=360
+visual change generation=362 changes=361
+visual change generation=363 changes=362
+visual change generation=364 changes=363
+visual change generation=365 changes=364
+visual change generation=366 changes=365
+visual change generation=367 changes=366
+visual change generation=368 changes=367
+visual change generation=369 changes=368
+visual change generation=370 changes=369
+visual change generation=371 changes=370
+visual change generation=372 changes=371
+visual change generation=373 changes=372
+visual change generation=374 changes=373
+visual change generation=375 changes=374
+visual change generation=376 changes=375
+visual change generation=377 changes=376
+visual change generation=378 changes=377
+visual change generation=379 changes=378
+visual change generation=380 changes=379
+visual change generation=381 changes=380
+visual change generation=382 changes=381
+visual change generation=383 changes=382
+visual change generation=384 changes=383
+visual change generation=385 changes=384
+visual change generation=386 changes=385
+visual change generation=387 changes=386
+visual change generation=388 changes=387
+visual change generation=389 changes=388
+visual change generation=390 changes=389
+visual change generation=391 changes=390
+visual change generation=392 changes=391
+visual change generation=393 changes=392
+visual change generation=394 changes=393
+visual change generation=395 changes=394
+visual change generation=396 changes=395
+visual submit generation=396 commits=8 opacity=20 blur=38
+background image blur=38 cache prepared duration_ms=853
+visual completion generation=396 accepted=true result=Ok(())
+asset prepared id=e4dac3a39ba40d43d179c397b9d1a42d1e4643fd18876fc7832d2926ce2edade
+visual change generation=397 changes=396
+visual submit generation=397 commits=9 opacity=20 blur=38
+visual completion generation=397 accepted=true result=Ok(())
+asset prepared id=e4dac3a39ba40d43d179c397b9d1a42d1e4643fd18876fc7832d2926ce2edade
+visual change generation=398 changes=397
+visual submit generation=398 commits=10 opacity=20 blur=38
+visual completion generation=398 accepted=true result=Ok(())
+asset prepared id=e4dac3a39ba40d43d179c397b9d1a42d1e4643fd18876fc7832d2926ce2edade
+visual change generation=399 changes=398
+visual submit generation=399 commits=11 opacity=20 blur=38
+visual completion generation=399 accepted=true result=Ok(())
+overlay modal opened; initial focus=input
+overlay modal closed; trigger focus returned=true
+visual change generation=400 changes=399
+visual submit generation=400 commits=12 opacity=20 blur=9
+visual change generation=401 changes=400
+visual change generation=402 changes=401
+visual change generation=403 changes=402
+visual change generation=404 changes=403
+visual change generation=405 changes=404
+visual change generation=406 changes=405
+visual change generation=407 changes=406
+visual change generation=408 changes=407
+visual change generation=409 changes=408
+visual change generation=410 changes=409
+visual change generation=411 changes=410
+visual change generation=412 changes=411
+visual change generation=413 changes=412
+visual change generation=414 changes=413
+visual change generation=415 changes=414
+visual change generation=416 changes=415
+background image blur=9 cache prepared duration_ms=727
+visual change generation=417 changes=416
+visual completion generation=400 accepted=false result=Ok(())
+visual change generation=418 changes=417
+visual change generation=419 changes=418
+visual change generation=420 changes=419
+visual change generation=421 changes=420
+visual change generation=422 changes=421
+visual change generation=423 changes=422
+visual change generation=424 changes=423
+visual change generation=425 changes=424
+visual change generation=426 changes=425
+visual change generation=427 changes=426
+visual change generation=428 changes=427
+visual change generation=429 changes=428
+visual change generation=430 changes=429
+visual change generation=431 changes=430
+visual change generation=432 changes=431
+visual change generation=433 changes=432
+visual change generation=434 changes=433
+visual change generation=435 changes=434
+visual change generation=436 changes=435
+visual change generation=437 changes=436
+visual change generation=438 changes=437
+visual change generation=439 changes=438
+visual change generation=440 changes=439
+visual change generation=441 changes=440
+visual change generation=442 changes=441
+visual change generation=443 changes=442
+visual change generation=444 changes=443
+visual change generation=445 changes=444
+visual change generation=446 changes=445
+visual change generation=447 changes=446
+visual change generation=448 changes=447
+visual change generation=449 changes=448
+visual change generation=450 changes=449
+visual change generation=451 changes=450
+visual change generation=452 changes=451
+visual change generation=453 changes=452
+visual change generation=454 changes=453
+visual change generation=455 changes=454
+visual change generation=456 changes=455
+visual change generation=457 changes=456
+visual change generation=458 changes=457
+visual change generation=459 changes=458
+visual change generation=460 changes=459
+visual change generation=461 changes=460
+visual change generation=462 changes=461
+visual change generation=463 changes=462
+visual change generation=464 changes=463
+visual change generation=465 changes=464
+visual change generation=466 changes=465
+visual change generation=467 changes=466
+visual change generation=468 changes=467
+visual change generation=469 changes=468
+visual change generation=470 changes=469
+visual change generation=471 changes=470
+visual change generation=472 changes=471
+visual change generation=473 changes=472
+visual change generation=474 changes=473
+visual change generation=475 changes=474
+visual change generation=476 changes=475
+visual change generation=477 changes=476
+visual change generation=478 changes=477
+visual change generation=479 changes=478
+visual change generation=480 changes=479
+visual change generation=481 changes=480
+visual change generation=482 changes=481
+visual change generation=483 changes=482
+visual change generation=484 changes=483
+visual change generation=485 changes=484
+visual change generation=486 changes=485
+visual change generation=487 changes=486
+visual change generation=488 changes=487
+visual change generation=489 changes=488
+visual change generation=490 changes=489
+visual change generation=491 changes=490
+visual change generation=492 changes=491
+visual change generation=493 changes=492
+visual change generation=494 changes=493
+visual change generation=495 changes=494
+visual change generation=496 changes=495
+visual change generation=497 changes=496
+visual change generation=498 changes=497
+visual change generation=499 changes=498
+visual change generation=500 changes=499
+visual change generation=501 changes=500
+visual change generation=502 changes=501
+visual change generation=503 changes=502
+visual change generation=504 changes=503
+visual change generation=505 changes=504
+visual change generation=506 changes=505
+visual change generation=507 changes=506
+visual change generation=508 changes=507
+visual change generation=509 changes=508
+visual change generation=510 changes=509
+visual change generation=511 changes=510
+visual change generation=512 changes=511
+visual change generation=513 changes=512
+visual change generation=514 changes=513
+visual change generation=515 changes=514
+visual change generation=516 changes=515
+visual change generation=517 changes=516
+visual change generation=518 changes=517
+visual change generation=519 changes=518
+visual change generation=520 changes=519
+visual change generation=521 changes=520
+visual change generation=522 changes=521
+visual change generation=523 changes=522
+visual change generation=524 changes=523
+visual change generation=525 changes=524
+visual change generation=526 changes=525
+visual change generation=527 changes=526
+visual change generation=528 changes=527
+visual change generation=529 changes=528
+visual change generation=530 changes=529
+visual change generation=531 changes=530
+visual change generation=532 changes=531
+visual change generation=533 changes=532
+visual change generation=534 changes=533
+visual change generation=535 changes=534
+visual change generation=536 changes=535
+visual change generation=537 changes=536
+visual change generation=538 changes=537
+visual change generation=539 changes=538
+visual change generation=540 changes=539
+visual change generation=541 changes=540
+visual change generation=542 changes=541
+visual change generation=543 changes=542
+visual change generation=544 changes=543
+visual change generation=545 changes=544
+visual change generation=546 changes=545
+visual change generation=547 changes=546
+visual change generation=548 changes=547
+visual change generation=549 changes=548
+visual change generation=550 changes=549
+visual change generation=551 changes=550
+visual change generation=552 changes=551
+visual change generation=553 changes=552
+visual change generation=554 changes=553
+visual change generation=555 changes=554
+visual change generation=556 changes=555
+visual change generation=557 changes=556
+visual change generation=558 changes=557
+visual change generation=559 changes=558
+visual change generation=560 changes=559
+visual change generation=561 changes=560
+visual change generation=562 changes=561
+visual change generation=563 changes=562
+visual change generation=564 changes=563
+visual change generation=565 changes=564
+visual change generation=566 changes=565
+visual change generation=567 changes=566
+visual change generation=568 changes=567
+visual change generation=569 changes=568
+visual change generation=570 changes=569
+visual change generation=571 changes=570
+visual change generation=572 changes=571
+visual change generation=573 changes=572
+visual change generation=574 changes=573
+visual change generation=575 changes=574
+visual change generation=576 changes=575
+visual change generation=577 changes=576
+visual change generation=578 changes=577
+visual change generation=579 changes=578
+visual change generation=580 changes=579
+visual change generation=581 changes=580
+visual change generation=582 changes=581
+visual change generation=583 changes=582
+visual change generation=584 changes=583
+visual change generation=585 changes=584
+visual change generation=586 changes=585
+visual change generation=587 changes=586
+visual change generation=588 changes=587
+visual change generation=589 changes=588
+visual change generation=590 changes=589
+visual change generation=591 changes=590
+visual change generation=592 changes=591
+visual change generation=593 changes=592
+visual change generation=594 changes=593
+visual change generation=595 changes=594
+visual change generation=596 changes=595
+visual change generation=597 changes=596
+visual change generation=598 changes=597
+visual change generation=599 changes=598
+visual change generation=600 changes=599
+visual change generation=601 changes=600
+visual change generation=602 changes=601
+visual change generation=603 changes=602
+visual change generation=604 changes=603
+visual change generation=605 changes=604
+visual submit generation=605 commits=13 opacity=20 blur=0
+visual completion generation=605 accepted=true result=Ok(())
+visual change generation=606 changes=605
+visual submit generation=606 commits=14 opacity=20 blur=0
+visual completion generation=606 accepted=true result=Ok(())
+visual change generation=607 changes=606
+visual submit generation=607 commits=15 opacity=20 blur=0
+visual completion generation=607 accepted=true result=Ok(())
+bridge request=2 generation=15 busy
+bridge request=2 generation=15 Accepted
+visual submit generation=608 commits=16 opacity=20 blur=0
+visual completion generation=608 accepted=true result=Ok(())
+bridge request=3 generation=16 busy
+bridge request=4 generation=16 busy
+bridge request=4 generation=16 Accepted
+bridge request=3 generation=16 StaleRequest
+bridge request=5 generation=16 busy
+bridge synthetic instance=A generation=1 OldInstance
+bridge synthetic instance=B generation=2 Accepted
+visual change generation=609 changes=607
+bridge request=5 generation=16 Accepted
+visual submit generation=609 commits=17 opacity=20 blur=0
+visual completion generation=609 accepted=true result=Ok(())
+P1-04A injected temporary state root: /private/tmp/veyra-p1-04a-state
+sandbox_extension_issue_file_to_process failed for /tmp/veyra-p1-04a.app: 1 (Operation not permitted)
+logical content 1280x720; scale factor 2
+bridge request=1 generation=0 busy
+bridge request=1 generation=0 Accepted
+navigate settings entity=EntityId(17v1)
+P1-04A injected temporary state root: /private/tmp/veyra-p1-04a-state
+sandbox_extension_issue_file_to_process failed for /tmp/veyra-p1-04a.app: 1 (Operation not permitted)
+logical content 1280x720; scale factor 2
+bridge request=1 generation=0 busy
+bridge request=1 generation=0 Accepted
+navigate settings entity=EntityId(17v1)
+overlay modal opened; initial focus=input
+2026-10-04 11:47:04.174 veyra-desktop[41594:5500104] TSM AdjustCapsLockLEDForKeyTransitionHandling - _ISSetPhysicalKeyboardCapsLockLED Inhibit
+overlay dropdown dismissed; modal remains=true
+overlay modal closed; trigger focus returned=true
+overlay modal opened; initial focus=input
+overlay modal closed; trigger focus returned=true
+navigate proxies entity=EntityId(5v1)
+P1-04A injected temporary state root: /private/tmp/veyra-p1-04a-state
+sandbox_extension_issue_file_to_process failed for /tmp/veyra-p1-04a.app: 1 (Operation not permitted)
+logical content 1280x720; scale factor 2
+bridge request=1 generation=0 busy
+bridge request=1 generation=0 Accepted
+navigate settings entity=EntityId(17v1)
+visual change generation=1 changes=1
+visual submit generation=1 commits=1 opacity=20 blur=0
+visual completion generation=1 accepted=true result=Ok(())
+2026-10-04 11:50:35.786 veyra-desktop[42906:5510675] TSM AdjustCapsLockLEDForKeyTransitionHandling - _ISSetPhysicalKeyboardCapsLockLED Inhibit
+visual change generation=2 changes=2
+visual submit generation=2 commits=2 opacity=20 blur=0
+visual completion generation=2 accepted=true result=Ok(())
+visual change generation=3 changes=3
+visual submit generation=3 commits=3 opacity=20 blur=0
+visual completion generation=3 accepted=true result=Ok(())
+overlay modal opened; initial focus=input
+overlay dropdown dismissed; modal remains=true
+overlay modal closed; trigger focus returned=true
+navigate proxies entity=EntityId(5v1)
+navigate settings entity=EntityId(17v1)
+P1-04A injected temporary state root: /private/tmp/veyra-p1-04a-state
+sandbox_extension_issue_file_to_process failed for /tmp/veyra-p1-04a.app: 1 (Operation not permitted)
+logical content 1280x720; scale factor 2
+bridge request=1 generation=0 busy
+bridge request=1 generation=0 Accepted
+navigate settings entity=EntityId(17v1)

@@ -1,0 +1,22 @@
+{
+  "type": "author self-review; Host Review pending outside this task",
+  "skill": ".agents/skills/code-delivery-review/SKILL.md",
+  "scope": "OBG-P1-04A only",
+  "checked": [
+    "AppConfig owns visual truth, explicit migration8, CAS/noop/versions",
+    "draft/generation/coalescing and error/Retry",
+    "asset staging/state failure/reference-protected cleanup",
+    "single Tokio and no GPUI in Send tasks",
+    "actual GUI focus/keyboard/IME boundaries, visual source/dimensions/hashes",
+    "dependency/DAG and clean owned process/resources"
+  ],
+  "resolved_findings": [
+    "pointer Modal focus captured prior Input; explicit persistent trigger binding",
+    "single-line Input32px with Medium padding clipped text; Styled height32 padding4 line20",
+    "small unicode navigation; bundled SVG22/20",
+    "short low-contrast footer; fixed64px bordered surface and green outlined controls",
+    "shared scroll offset clipped next page heading; reset when route changes"
+  ],
+  "remaining_task_defects": [],
+  "limits": "Human candidate and drag confirmed; no independent screenshot/telemetry for those overlays; no full internationalization/card backdrop/MiSans or macOS15 hardware claim"
+}

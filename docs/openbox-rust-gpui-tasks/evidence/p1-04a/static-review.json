@@ -1,0 +1,12 @@
+{
+  "runtime_composition_roots": 1,
+  "runtime_location": "services.rs AppServices::new",
+  "tokio_captures": "Core Arc services, StateAccessGate, PathBuf, typed requests/events only",
+  "gpui_foreground": "AppView receiver updates weak Entity in GPUI foreground, cx.notify",
+  "render_click_block_on": false,
+  "core_depends_on_gpui": false,
+  "desktop_depends_on_prototype_helper_tauri": false,
+  "second_UI_loop": false,
+  "state_truth": "AppState.app_config.visual in existing JsonStateStore; draft only in UI coordinator",
+  "cleanup_references": "Gate-protected current + backup + pending draft before releasing managed asset"
+}

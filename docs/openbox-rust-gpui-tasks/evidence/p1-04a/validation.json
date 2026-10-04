@@ -1,0 +1,248 @@
+{
+  "core_tests": 280,
+  "desktop_tests": 17,
+  "failed_attempts_preserved": [
+    {
+      "name": "desktop-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "-p",
+        "veyra-desktop",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 101,
+      "seconds": 2.456,
+      "offline": true,
+      "deployment_target": "15.0",
+      "tauri_check_override": false
+    },
+    {
+      "name": "workspace-check",
+      "command": [
+        "cargo",
+        "check",
+        "--workspace",
+        "--locked"
+      ],
+      "exit": 101,
+      "seconds": 3.74,
+      "offline": true,
+      "deployment_target": "15.0",
+      "tauri_check_override": true
+    }
+  ],
+  "latest_commands": {
+    "core-check": {
+      "name": "core-check",
+      "command": [
+        "cargo",
+        "check",
+        "-p",
+        "veyra-core"
+      ],
+      "exit": 0,
+      "seconds": 2.383,
+      "offline": true,
+      "deployment_target": "15.0",
+      "tauri_check_override": false
+    },
+    "core-clippy": {
+      "name": "core-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "-p",
+        "veyra-core",
+        "--lib",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0,
+      "seconds": 0.964,
+      "offline": true,
+      "deployment_target": "15.0",
+      "tauri_check_override": false
+    },
+    "desktop-check": {
+      "name": "desktop-check-final",
+      "command": [
+        "cargo",
+        "check",
+        "-p",
+        "veyra-desktop"
+      ],
+      "exit": 0,
+      "seconds": 0.562,
+      "offline": true,
+      "deployment_target": "15.0",
+      "tauri_check_override": false
+    },
+    "desktop-test": {
+      "name": "desktop-test-final",
+      "command": [
+        "cargo",
+        "test",
+        "-p",
+        "veyra-desktop",
+        "--",
+        "--test-threads=1"
+      ],
+      "exit": 0,
+      "seconds": 2.43,
+      "offline": true,
+      "deployment_target": "15.0",
+      "tauri_check_override": false
+    },
+    "desktop-clippy": {
+      "name": "desktop-clippy-final",
+      "command": [
+        "cargo",
+        "clippy",
+        "-p",
+        "veyra-desktop",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0,
+      "seconds": 0.777,
+      "offline": true,
+      "deployment_target": "15.0",
+      "tauri_check_override": false
+    },
+    "fmt": {
+      "name": "fmt-final",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit": 0,
+      "seconds": 0.343,
+      "offline": true,
+      "deployment_target": "15.0",
+      "tauri_check_override": false
+    },
+    "workspace-check": {
+      "name": "workspace-check-final",
+      "command": [
+        "cargo",
+        "check",
+        "--workspace",
+        "--locked"
+      ],
+      "exit": 0,
+      "seconds": 0.539,
+      "offline": true,
+      "deployment_target": "15.0",
+      "tauri_check_override": true
+    },
+    "desktop-tree": {
+      "name": "desktop-tree",
+      "command": [
+        "cargo",
+        "tree",
+        "-p",
+        "veyra-desktop"
+      ],
+      "exit": 0,
+      "seconds": 0.289,
+      "offline": true,
+      "deployment_target": "15.0",
+      "tauri_check_override": false
+    },
+    "desktop-build": {
+      "name": "desktop-build-final",
+      "command": [
+        "cargo",
+        "build",
+        "-p",
+        "veyra-desktop"
+      ],
+      "exit": 0,
+      "seconds": 1.479,
+      "offline": true,
+      "deployment_target": "15.0",
+      "tauri_check_override": false
+    },
+    "legacy-clippy": {
+      "name": "legacy-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--manifest-path",
+        "src-tauri/Cargo.toml",
+        "--lib",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0,
+      "seconds": 3.6,
+      "offline": true,
+      "deployment_target": "15.0",
+      "tauri_check_override": true
+    },
+    "core-test": {
+      "name": "core-test",
+      "command": [
+        "cargo",
+        "test",
+        "-p",
+        "veyra-core",
+        "--lib",
+        "--",
+        "--test-threads=1"
+      ],
+      "exit": 0,
+      "seconds": 9.736,
+      "offline": true,
+      "deployment_target": "15.0",
+      "tauri_check_override": false
+    }
+  },
+  "check_override": "TAURI_CONFIG resources=[] applies only to check/clippy build-script validation; does not establish legacy package resource completeness",
+  "network": "Cargo offline; no remote verification or kernel launch",
+  "self_review": "implementation author only; no independent Host Review claim",
+  "required_UI_status": "PASS actual Codex Desktop interactions plus explicit Human Interaction Evidence; all three task acceptance items satisfied",
+  "task_status": "DONE",
+  "screenshots": 27,
+  "cleanup": "PASS cleanup.json",
+  "feedback_fixes": [
+    "Input single-line text clipping",
+    "navigation SVG22px and collapse arrow20px",
+    "64px footer and contrasting button borders",
+    "shared scroll reset on route change"
+  ],
+  "test_counts": {
+    "core": 280,
+    "core_added": 5,
+    "desktop": 17,
+    "desktop_added": 6,
+    "native_entity_assertions": 3
+  },
+  "earlier_fmt_attempt": "FAIL formatting after first Input patch; cargo fmt applied, final check PASS",
+  "retained_limits": [
+    "macOS27 arm64 tested; minos15 build, no macOS15 hardware run",
+    "system fonts; MiSans desktop TTF/OTF not locked",
+    "background image cached blur, not card CSS backdrop filter",
+    "translation limited to shell/Panel; business placeholders remain"
+  ],
+  "document_evidence_checks": {
+    "json_files": 24,
+    "png_sha_dimensions": 27,
+    "local_link_paths": 142,
+    "DAG": "68 actual card dependencies/table/acyclic/state/READY PASS",
+    "diff_check": "PASS",
+    "owned_process_temp_cleanup": "PASS",
+    "local_anchors": 92
+  }
+}

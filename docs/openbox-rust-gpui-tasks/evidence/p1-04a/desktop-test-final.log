@@ -1,0 +1,26 @@
+   Compiling veyra-desktop v0.1.0 (/Users/lifeilin/wx_lifeilin/github.com/lifei6671/veyra/crates/veyra-desktop)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1.05s
+warning: the following packages contain code that will be rejected by a future version of Rust: block v0.1.6
+note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+     Running unittests src/main.rs (target/debug/deps/veyra_desktop-e9fd19621978a165)
+
+running 17 tests
+test navigation::tests::nine_categories_match_openbox ... ok
+test navigation::tests::six_routes_match_openbox ... ok
+test preferences::tests::coalesces_last_value_and_ignores_stale_completion ... ok
+test preferences::tests::failure_retains_draft_retry_converges ... ok
+test services::tests::real_store_empty_error_retry_and_late_delivery ... ok
+test services::visual_tests::prepared_background_failed_commit_retry_and_backup_reference_are_atomic ... ok
+test services::visual_tests::rapid_slider_coalesces_real_commit_and_restart_projection ... ok
+test state_bridge::tests::busy_error_retry_ready ... ok
+test state_bridge::tests::instance_and_epoch_gate ... ok
+test state_bridge::tests::latest_request_wins ... ok
+test state_bridge::tests::leaving_page_invalidates_generation ... ok
+test state_bridge::tests::replaced_epoch_rejects_old_read ... ok
+test state_bridge::tests::stale_failure_cannot_clear_new_busy ... ok
+test ui::components::overlay::tests::topmost_escape_and_focus_return_across_reopen ... ok
+test ui::pages::tests::page_identity_and_filter_survive_round_trip ... ok
+test ui::pages::tests::settings_category_and_draft_survive_all_routes ... ok
+test visual_assets::tests::valid_import_atomic_identity_type_and_size_boundary ... ok
+
+test result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.65s

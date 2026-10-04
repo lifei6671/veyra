@@ -18,6 +18,17 @@ pub struct AppView {
     pub pages: Pages,
     pub bridge: StateBridge,
     pub services: Arc<AppServices>,
+    pub visual: crate::preferences::SaveCoordinator,
+    pub panel: Entity<crate::ui::panel::PanelView>,
+    pub page_scroll: ScrollHandle,
+    pub background_preview: Option<std::path::PathBuf>,
+    preview_key: Option<(veyra_core::domain::VisualAssetId, u8)>,
+    preview_generation: u64,
+    save_timer: Option<Task<()>>,
+    started: std::time::Instant,
+    asset_generation: u64,
+    _panel_subscription: Subscription,
+    _appearance: Subscription,
     _receiver: Task<()>,
 }
 impl AppView {
@@ -28,12 +39,35 @@ impl AppView {
         cx: &mut Context<Self>,
     ) -> Self {
         let pages = Pages::new(window, cx);
+        let panel = cx.new(|cx| crate::ui::panel::PanelView::new(window, cx));
+        pages
+            .get(Route::Settings)
+            .update(cx, |p, _| p.panel = Some(panel.clone()));
+        let panel_subscription = cx.subscribe_in(&panel, window, |this, _, event, window, cx| {
+            use crate::ui::panel::PanelEvent;
+            match event {
+                PanelEvent::Edit(value) => this.edit_visual(value.clone(), window, cx),
+                PanelEvent::Import(path) => {
+                    this.asset_generation += 1;
+                    this.services
+                        .import_background(this.asset_generation, path.clone());
+                }
+                PanelEvent::Retry => {
+                    this.visual.retry(this.now_ms());
+                    this.submit_visual(window, cx);
+                }
+            }
+        });
+        let appearance = cx.observe_window_appearance(window, |this, window, cx| {
+            this.apply_theme(window, cx);
+            cx.notify();
+        });
         // Weak UI reference and receiver live only in the GPUI foreground future.
-        let foreground = cx.spawn(async move |view, cx| {
+        let foreground = cx.spawn_in(window, async move |view, cx| {
             while let Some(event) = receiver.recv().await {
                 if view
-                    .update(cx, |view, cx| {
-                        view.bridge.receive(event);
+                    .update_in(cx, |view, window, cx| {
+                        view.receive_event(event, window, cx);
                         cx.notify();
                     })
                     .is_err()
@@ -48,10 +82,190 @@ impl AppView {
             pages,
             bridge: StateBridge::default(),
             services,
+            visual: Default::default(),
+            panel,
+            page_scroll: ScrollHandle::new(),
+            background_preview: None,
+            preview_key: None,
+            preview_generation: 0,
+            save_timer: None,
+            started: std::time::Instant::now(),
+            asset_generation: 0,
+            _panel_subscription: panel_subscription,
+            _appearance: appearance,
             _receiver: foreground,
         };
         view.refresh(cx);
         view
+    }
+    fn now_ms(&self) -> u64 {
+        self.started.elapsed().as_millis() as u64
+    }
+    pub fn apply_theme(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        self.dark = crate::ui::theme::apply(
+            &self.visual.draft,
+            self.route == Route::Settings,
+            window,
+            cx,
+        );
+    }
+    pub fn edit_visual(
+        &mut self,
+        value: veyra_core::domain::DesktopVisualPreferences,
+        window: &mut Window,
+        cx: &mut Context<Self>,
+    ) {
+        let generation = self.visual.edit(value, self.now_ms());
+        eprintln!(
+            "visual change generation={generation} changes={}",
+            self.visual.changes
+        );
+        self.panel
+            .update(cx, |p, cx| p.project(&self.visual.draft, window, cx));
+        self.apply_theme(window, cx);
+        self.save_timer = Some(cx.spawn_in(window, async move |view, cx| {
+            cx.background_executor()
+                .timer(std::time::Duration::from_millis(
+                    crate::preferences::DEBOUNCE_MS,
+                ))
+                .await;
+            let _ = view.update_in(cx, |view, window, cx| view.submit_visual(window, cx));
+        }));
+        cx.notify();
+    }
+    fn request_preview(&mut self) {
+        use veyra_core::domain::DesktopBackground;
+        if let DesktopBackground::ManagedAsset(id) = &self.visual.draft.background {
+            let key = (id.clone(), self.visual.draft.background_blur);
+            if self.preview_key.as_ref() != Some(&key) {
+                self.preview_generation += 1;
+                self.background_preview = None;
+                self.preview_key = Some(key.clone());
+                self.services
+                    .background_preview(self.preview_generation, key.0, key.1);
+            }
+        } else {
+            self.preview_generation += 1;
+            self.preview_key = None;
+            self.background_preview = None;
+        }
+    }
+    fn submit_visual(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        self.request_preview();
+        let Some(state) = &self.bridge.snapshot else {
+            return;
+        };
+        if let Some(request) = self.visual.take_due(self.now_ms(), state.config_version()) {
+            eprintln!(
+                "visual submit generation={} commits={} opacity={} blur={}",
+                request.generation,
+                self.visual.submissions,
+                request.draft.background_opacity,
+                request.draft.background_blur
+            );
+            crate::ui::components::notify(
+                crate::ui::components::Notice::Saving,
+                "正在保存 / Saving",
+                window,
+                cx,
+            );
+            self.services.save_visual(request);
+        }
+        cx.notify();
+    }
+    fn receive_event(&mut self, event: AppEvent, window: &mut Window, cx: &mut Context<Self>) {
+        use crate::ui::components::{Notice, notify};
+        match event {
+            AppEvent::BackgroundPreview { generation, result } => {
+                if generation == self.preview_generation {
+                    match result {
+                        Ok(path) => self.background_preview = Some(path),
+                        Err(error) => {
+                            notify(Notice::Error, format!("背景预览失败 · {error}"), window, cx)
+                        }
+                    }
+                }
+            }
+            AppEvent::VisualSaved { generation, result } => {
+                if !self.visual.accepts_completion(generation) {
+                    eprintln!(
+                        "visual completion generation={generation} discarded: no matching in-flight request"
+                    );
+                    return;
+                }
+                // Version/epoch authority stays in Core. Do not adopt an old epoch completion.
+                let same_epoch = result.as_ref().ok().is_none_or(|state| {
+                    self.bridge.snapshot.as_ref().is_some_and(|current| {
+                        current.state_epoch == state.state_epoch
+                            && current.config_revision <= state.config_revision
+                    })
+                });
+                if !same_epoch {
+                    eprintln!("visual generation={generation} discard old epoch");
+                    self.visual.complete(
+                        generation,
+                        Err(veyra_core::domain::AppError::new(
+                            veyra_core::domain::AppErrorCode::RevisionConflict,
+                        )),
+                    );
+                    return;
+                }
+                let completion = result.as_ref().map(|_| ()).map_err(Clone::clone);
+                if let Ok(saved) = result {
+                    self.bridge.leave_page();
+                    self.bridge.snapshot = Some(saved);
+                }
+                let accepted = self.visual.complete(generation, completion.clone());
+                eprintln!(
+                    "visual completion generation={generation} accepted={accepted} result={completion:?}"
+                );
+                if accepted {
+                    match completion {
+                        Ok(()) => notify(Notice::Success, "视觉偏好已保存 / Saved", window, cx),
+                        Err(error) => notify(
+                            Notice::Error,
+                            format!("保存失败 · draft 保留 · {error}"),
+                            window,
+                            cx,
+                        ),
+                    }
+                }
+                self.services
+                    .collect_asset_orphans(self.visual.draft.background.clone());
+                self.submit_visual(window, cx);
+            }
+            AppEvent::AssetPrepared { generation, result } => {
+                if generation != self.asset_generation {
+                    eprintln!(
+                        "asset generation={generation} discarded; unreferenced asset retained in managed orphan set until cleanup"
+                    );
+                    return;
+                }
+                match result {
+                    Ok(id) => {
+                        eprintln!("asset prepared id={}", id.0);
+                        let mut draft = self.visual.draft.clone();
+                        draft.background = veyra_core::domain::DesktopBackground::ManagedAsset(id);
+                        self.edit_visual(draft, window, cx);
+                    }
+                    Err(error) => {
+                        notify(Notice::Error, format!("图片导入失败 · {error}"), window, cx)
+                    }
+                }
+            }
+            event => {
+                self.bridge.receive(event);
+                if let Some(state) = &self.bridge.snapshot {
+                    self.visual.restore(&state.app_config.visual);
+                }
+                if self.visual.generation == 0 {
+                    self.panel
+                        .update(cx, |p, cx| p.project(&self.visual.draft, window, cx));
+                }
+                self.apply_theme(window, cx);
+                self.request_preview();
+            }
+        }
     }
     pub fn refresh(&mut self, cx: &mut Context<Self>) {
         let request = self.bridge.begin();
@@ -64,6 +278,9 @@ impl AppView {
         }
         self.bridge.leave_page();
         self.route = route;
+        // The shell viewport is shared; a long Settings page must not leave
+        // the next page's heading above the viewport.
+        self.page_scroll.set_offset(point(px(0.), px(0.)));
         eprintln!(
             "navigate {} entity={:?}",
             route.id(),
@@ -116,6 +333,11 @@ impl AppView {
     #[cfg(debug_assertions)]
     pub fn evidence_retention(&mut self, window: &mut Window, cx: &mut Context<Self>) {
         use crate::navigation::Category;
+        eprintln!(
+            "shell scroll evidence max={:?} bounds={:?}",
+            self.page_scroll.max_offset(),
+            self.page_scroll.bounds()
+        );
         let route = self.route;
         let identities = Route::ALL.map(|r| self.pages.get(r).entity_id());
         let proxies = self.pages.get(Route::Proxies);

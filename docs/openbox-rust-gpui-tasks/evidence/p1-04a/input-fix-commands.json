@@ -1,0 +1,93 @@
+[
+  {
+    "name": "desktop-build-input-fix",
+    "command": [
+      "cargo",
+      "build",
+      "-p",
+      "veyra-desktop"
+    ],
+    "exit": 0,
+    "seconds": 5.052,
+    "offline": true,
+    "deployment_target": "15.0",
+    "tauri_check_override": false
+  },
+  {
+    "name": "desktop-test-input-fix",
+    "command": [
+      "cargo",
+      "test",
+      "-p",
+      "veyra-desktop",
+      "--",
+      "--test-threads=1"
+    ],
+    "exit": 0,
+    "seconds": 2.478,
+    "offline": true,
+    "deployment_target": "15.0",
+    "tauri_check_override": false
+  },
+  {
+    "name": "desktop-clippy-input-fix",
+    "command": [
+      "cargo",
+      "clippy",
+      "-p",
+      "veyra-desktop",
+      "--all-targets",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "exit": 0,
+    "seconds": 1.918,
+    "offline": true,
+    "deployment_target": "15.0",
+    "tauri_check_override": false
+  },
+  {
+    "name": "desktop-check-input-fix",
+    "command": [
+      "cargo",
+      "check",
+      "-p",
+      "veyra-desktop"
+    ],
+    "exit": 0,
+    "seconds": 0.666,
+    "offline": true,
+    "deployment_target": "15.0",
+    "tauri_check_override": false
+  },
+  {
+    "name": "workspace-check-input-fix",
+    "command": [
+      "cargo",
+      "check",
+      "--workspace",
+      "--locked"
+    ],
+    "exit": 0,
+    "seconds": 0.927,
+    "offline": true,
+    "deployment_target": "15.0",
+    "tauri_check_override": true
+  },
+  {
+    "name": "fmt-input-fix",
+    "command": [
+      "cargo",
+      "fmt",
+      "--all",
+      "--",
+      "--check"
+    ],
+    "exit": 0,
+    "seconds": 0.399,
+    "offline": true,
+    "deployment_target": "15.0",
+    "tauri_check_override": false
+  }
+]

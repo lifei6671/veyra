@@ -1,0 +1,117 @@
+{
+  "date": "2026-10-04",
+  "app": "actual veyra-desktop GPUI; isolated roots only",
+  "items": [
+    {
+      "action": "无配置启动与 Panel Settings",
+      "result": "PASS",
+      "evidence": "gui-keyboard.log fresh root; state config0/selection0; no HTTP/login"
+    },
+    {
+      "action": "Light/Dark/System",
+      "result": "PASS",
+      "evidence": "actual Select; system follows observed macOS appearance; no OS appearance mutation"
+    },
+    {
+      "action": "Sidebar256/64px + icon/active route",
+      "result": "PASS",
+      "evidence": "final four expanded/collapsed PNG; bundled SVG22px/arrow20px; labels/tooltips retained"
+    },
+    {
+      "action": "Radius",
+      "result": "PASS",
+      "evidence": "actual +/- change; failure saved14 draft13; Retry13"
+    },
+    {
+      "action": "Background import A/B",
+      "result": "PASS",
+      "evidence": "asset-atomicity.json; managed PNG/JPEG only"
+    },
+    {
+      "action": "Opacity/blur continuous slider",
+      "result": "PASS",
+      "evidence": "human-interaction.json + save-coalescing.json; 390 changes /2 slider submissions"
+    },
+    {
+      "action": "Background image blur",
+      "result": "PASS within stated capability",
+      "evidence": "fast three-box approximation cache20/38; window blur boolean only; no card backdrop claim"
+    },
+    {
+      "action": "System and Dark restart restore",
+      "result": "PASS",
+      "evidence": "preferences.json; all7 fields + epoch/revisions equal before/after; final config41 selection0"
+    },
+    {
+      "action": "Ordinary/Modal Chinese composition/candidate commit",
+      "result": "PASS HUMAN",
+      "evidence": "direct user reply 全部正常; candidate overlay not independently captured"
+    },
+    {
+      "action": "Tab/Shift+Tab Select Up/Down/Enter",
+      "result": "PASS",
+      "evidence": "Down opens; Up/Down moves; Enter Beta; remains in Modal"
+    },
+    {
+      "action": "Switch Space/Enter",
+      "result": "PASS",
+      "evidence": "final isolated native test off→on→off with AX state and focus ring"
+    },
+    {
+      "action": "Button Enter/Space",
+      "result": "PASS",
+      "evidence": "persistent trigger reopens Modal using each key"
+    },
+    {
+      "action": "Modal initial focus + nested Select Escape",
+      "result": "PASS",
+      "evidence": "Input initial focus; first Escape list only, second Modal"
+    },
+    {
+      "action": "Focus return/reopen",
+      "result": "PASS",
+      "evidence": "explicit persistent trigger focus; ring and keyboard reopening"
+    },
+    {
+      "action": "Chinese selection/Copy/Paste/Undo/Redo/Backspace",
+      "result": "PASS",
+      "evidence": "focus-overlay.json final native-key observed values; paste used for editing sample only"
+    },
+    {
+      "action": "Saving/success/error Toast + retained draft + Retry",
+      "result": "PASS",
+      "evidence": "real state.tmp directory commit failure in isolated root; success/error screenshots"
+    },
+    {
+      "action": "Stable-ID drag/drop/cancel",
+      "result": "PASS HUMAN",
+      "evidence": "user explicitly confirms requested stable item→drop target and outside cancel; native tool attempts alone unproven; internal drag telemetry not captured"
+    },
+    {
+      "action": "Font/Emoji/mixed text/weights",
+      "result": "PASS within stated differences",
+      "evidence": "system fallback actual Chinese/English/digits/emoji/flags; body14/20 and semibold heading"
+    },
+    {
+      "action": "Entity/filter/category/session draft retention",
+      "result": "PASS",
+      "evidence": "gui.log native entity3 assertions; session draft never written as Profile"
+    },
+    {
+      "action": "Busy/navigation/late request/synthetic instance isolation",
+      "result": "PASS",
+      "evidence": "gui.log request4 accepted/request3 stale; syntheticA OldInstance/B Accepted; not real Runtime"
+    },
+    {
+      "action": "Final Input clipping + sidebar icons + footer fixes",
+      "result": "PASS",
+      "evidence": "final actual light/dark/Input/Modal PNG; no crop; shared viewport reset prevents next heading clipping"
+    }
+  ],
+  "not_implemented": [
+    "P1-04B behavior fields",
+    "P1-05 formal directory/native picker/single instance",
+    "tray/Runtime/helper/updater",
+    "business content of remaining pages/settings categories"
+  ]
+}

@@ -1,0 +1,93 @@
+[
+  {
+    "name": "desktop-build-final",
+    "command": [
+      "cargo",
+      "build",
+      "-p",
+      "veyra-desktop"
+    ],
+    "exit": 0,
+    "seconds": 1.479,
+    "offline": true,
+    "deployment_target": "15.0",
+    "tauri_check_override": false
+  },
+  {
+    "name": "desktop-test-final",
+    "command": [
+      "cargo",
+      "test",
+      "-p",
+      "veyra-desktop",
+      "--",
+      "--test-threads=1"
+    ],
+    "exit": 0,
+    "seconds": 2.43,
+    "offline": true,
+    "deployment_target": "15.0",
+    "tauri_check_override": false
+  },
+  {
+    "name": "desktop-clippy-final",
+    "command": [
+      "cargo",
+      "clippy",
+      "-p",
+      "veyra-desktop",
+      "--all-targets",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "exit": 0,
+    "seconds": 0.777,
+    "offline": true,
+    "deployment_target": "15.0",
+    "tauri_check_override": false
+  },
+  {
+    "name": "desktop-check-final",
+    "command": [
+      "cargo",
+      "check",
+      "-p",
+      "veyra-desktop"
+    ],
+    "exit": 0,
+    "seconds": 0.562,
+    "offline": true,
+    "deployment_target": "15.0",
+    "tauri_check_override": false
+  },
+  {
+    "name": "workspace-check-final",
+    "command": [
+      "cargo",
+      "check",
+      "--workspace",
+      "--locked"
+    ],
+    "exit": 0,
+    "seconds": 0.539,
+    "offline": true,
+    "deployment_target": "15.0",
+    "tauri_check_override": true
+  },
+  {
+    "name": "fmt-final",
+    "command": [
+      "cargo",
+      "fmt",
+      "--all",
+      "--",
+      "--check"
+    ],
+    "exit": 0,
+    "seconds": 0.343,
+    "offline": true,
+    "deployment_target": "15.0",
+    "tauri_check_override": false
+  }
+]
