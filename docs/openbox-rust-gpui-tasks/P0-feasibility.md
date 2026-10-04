@@ -106,10 +106,10 @@
 
 **验收**：
 
-- [ ] 区分速率、区间增量和累计值，给出转换示例及重置行为。
-- [ ] DNS 三项能力分别有支持证据或缺口说明；连接流不冒充 DNS 查询流。
-- [ ] 诊断只展示实际关联成功的字段；缺失路径明确为不完整。
-- [ ] 无能力时提出可审查的首期差异，不自动扩大为自建 DNS 内核；统计索引/容量留到 P3。
+- [x] 区分速率、区间增量和累计值，给出转换示例及重置行为。
+- [x] DNS 三项能力分别有支持证据或缺口说明；连接流不冒充 DNS 查询流。
+- [x] 诊断只展示实际关联成功的字段；缺失路径明确为不完整。
+- [x] 无能力时提出可审查的首期差异，不自动扩大为自建 DNS 内核；统计索引/容量留到 P3。
 
 <a id="obg-p0-08"></a>
 ## OBG-P0-08 更新与分发路线
@@ -200,3 +200,14 @@ Codex /root，Runtime/Platform；起始 HEAD `19696abde8a27a36c4eb490a4236006fcd
 完整证据、前期两次 check FAIL、试探 config hash 未捕获的限制、复跑步骤及实现者自查见 [README](evidence/p0-04/README.md)；[验证](evidence/p0-04/validation.json)记录 JSON/脱敏/68-card DAG/links/core check/diff 和清理。四个正式 child 均 SIGTERM/exit 0、wait/group empty、listener 释放、writer 关闭；前期 child 也正常退出，所有本任务临时 archive/binary/config/cache 清理。未访问 UI 远端、未改系统代理/DNS、TUN 只 check、未修改 Compiler 或实施 P2/P1-03/其他原型，无 commit/push。
 
 按实际 68 卡依赖重算，P0-05/P0-07/P1-03 READY，P0-06 等待 P0-05；仅记录队列，不启动下游。Runtime/Platform 临时资源 owner 已释放。
+
+<a id="p0-07-delivery"></a>
+## P0-07 本地 Observation 能力交付（2026-10-04）
+
+Codex /root，Observation 泳道；起始 HEAD `fac6f12`、工作树干净，P0-01/P0-04 DONE 后领取本卡 DOING。只拥有本任务独立 child/controller/origin/UDP DNS fixture/temp；没有与 P0-05 helper 共用实例，没有访问 UI 参考远端或公网协议测试，没有系统代理/TUN/系统 DNS/管理员操作，没有产品 Rust 或公共契约改动。
+
+四项验收均 PASS，P0-07 DONE：官方 1.14.0 source/tag/commit、archive digest 与 binary Revision 核对；四 WS 多帧；traffic 区间 bytes/约 1 秒/两 burst/重连缺口；跨快照长连接与未被 snapshot 捕获的短请求；DNS records UNSUPPORTED、实例 response cache flush SUPPORTED、hot rewrite UNSUPPORTED；受管 HTTP 200 诊断只展示实际关联字段，日志规则 index 仅限本配置，DNS event/resolver chain/process/filter hit 不完整。DNS 重写首期 `RestartRequired`；不自建 DNS/内核扩展，SQLite 索引/容量等留 P3。
+
+脚本：[p0-07-observation-probe.py](../../tools/p0-07-observation-probe.py)。完整证据/边界/复跑与实现者自查：[README](evidence/p0-07/README.md)；[validation](evidence/p0-07/validation.json)记录源码身份、真实原型、JSON/脱敏/AST/core check、68-card DAG、Markdown links/anchors、diff 与资源清理。首轮 port checker 的 FAIL 保留；自查修复默认 interface 日志脱敏后又完整重跑，最终正常 SIGTERM/exit 0、wait/group empty、全部 streams/fixture threads 关闭、4 个 listener 释放和 temp 删除，不用强杀冒充正常停止。
+
+按 68 张任务卡重算，READY 为 P0-05/P1-03；P0-09、P3-01、P5-01 等仍缺其他依赖，无新增 READY。只释放本任务资源和记录下游，不启动下游，不 commit/push。

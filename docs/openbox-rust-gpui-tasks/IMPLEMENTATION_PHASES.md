@@ -6,7 +6,7 @@
 
 ## 1 当前基线与范围
 
-- 新路线共 **61 个 macOS 任务、7 个 Windows 后续任务**，包括各阶段验收任务。当前完成 6 项（P0-01、P0-02、P0-03、P0-04、P1-01、P1-02）；基线、核心抽取和 GPUI 原型验收通过，P0-03 于 2026-10-04 经用户人工确认收口；P0-04 的真实 macOS 内核/controller/cache 验收通过；helper 原型未开始。
+- 新路线共 **61 个 macOS 任务、7 个 Windows 后续任务**，包括各阶段验收任务。当前完成 7 项（P0-01、P0-02、P0-03、P0-04、P0-07、P1-01、P1-02）；基线、核心抽取和 GPUI 原型验收通过，P0-03 于 2026-10-04 经用户人工确认收口；P0-04 的真实 macOS 内核/controller/cache 验收通过；P0-07 的本地 Observation/DNS/诊断能力核实完成；helper 原型未开始。
 - 已有 React UI 和旧 Rust 模块是迁移输入，不直接算 GPUI 新路线完成。P0-02 的完成仅指本次明确要求的范围/规则调整，该历史文档动作不计功能实现；现 P1-01 已完成核心抽取，P1-02 已完成类型/原子快照与版本。
 - 当前已建立根 Cargo workspace、单一 Cargo.lock 与 `crates/veyra-core/`；旧入口接共享核心。实际构建/纯测试见 P1-01 记录，不表示原型或真实设备验收完成。
 - 旧 SDLC 状态与 UI 门禁已按用户要求退役；不恢复缺失文件，不补办历史 DCR/UI Contract。当前进度以本目录为准。
@@ -87,7 +87,7 @@ Task：OBG-Px-xx
 
 ## 4 任务状态总表
 
-“估算”在 P0 出口回填人日及假设；当前的 `—` 表示尚未估算。“证据”为空表示尚未提交完成证据。当前 macOS 61 项（DONE 5、ACCEPTANCE 0、READY 2、DOING 0、TODO 54），Windows 7 项 DEFERRED，共 68 项。原 P1-04/P2-02/P4-05 由后缀子任务替代，不重复计数。
+“估算”在 P0 出口回填人日及假设；当前的 `—` 表示尚未估算。“证据”为空表示尚未提交完成证据。当前 macOS 61 项（DONE 7、ACCEPTANCE 0、READY 2、DOING 0、TODO 52），Windows 7 项 DEFERRED，共 68 项。原 P1-04/P2-02/P4-05 由后缀子任务替代，不重复计数。
 
 ### P0 基线与可行性（9 项）
 
@@ -99,7 +99,7 @@ Task：OBG-Px-xx
 | [OBG-P0-04 内核/控制器/缓存原型](P0-feasibility.md#obg-p0-04) | P0-01 | DONE | Codex /root | — | [真实内核验收](P0-feasibility.md#p0-04-delivery) |
 | [OBG-P0-05 本地 helper 原型](P0-feasibility.md#obg-p0-05) | P0-03、P0-04 | READY | — | — | — |
 | [OBG-P0-06 自身出站原型](P0-feasibility.md#obg-p0-06) | P0-04、P0-05 | TODO | — | — | — |
-| [OBG-P0-07 观测/DNS/诊断能力](P0-feasibility.md#obg-p0-07) | P0-01、P0-04 | READY | — | — | — |
+| [OBG-P0-07 观测/DNS/诊断能力](P0-feasibility.md#obg-p0-07) | P0-01、P0-04 | DONE | Codex /root | — | [能力核实](P0-feasibility.md#p0-07-delivery) |
 | [OBG-P0-08 更新与分发路线](P0-feasibility.md#obg-p0-08) | P0-03、P0-05 | TODO | — | — | — |
 | [OBG-P0-09 出口与重新估算](P0-feasibility.md#obg-p0-09) | P0-01、P0-02、P0-03、P0-04、P0-05、P0-06、P0-07、P0-08 | TODO | — | — | — |
 

@@ -558,11 +558,15 @@ DNS 拆成三件事处理：配置生成、过滤资源管理、查询观测。�
 
 **运行配置**使用已锁定 sing-box 版本支持的规则和预定义响应实现过滤与重写；不把浏览器过滤语法直接放进 sing-box JSON。应用时以资源版本和配置 revision 一起确认。
 
-**热更新**是明确的验证项。当前“只改重写目标不提示重启”来自 `rewriteNeedsRestart`，但它没有证明本地标准内核有对应热更 API。P0 应验证：固定版本能否通过受管资源更新完成此行为。若不能，macOS 第一版统一返回 `RestartRequired` 并说明这一已知差异；不承诺虚假的热更新，也不因此实现独立 DNS 协议栈。
+**固定内核能力已核实**：P0-07 用官方 v1.14.0 darwin-arm64（源码 tag/commit 与 binary Revision 一致），标准 controller 和自有 loopback 资源分别验证三项能力，见 [能力证据](openbox-rust-gpui-tasks/evidence/p0-07/dns-capabilities.json)。
 
-**查询记录**只能来自可核对的内核事件或已验证日志格式，记录域名、类型、结果、时间及实际可获得的来源。连接流不等于 DNS 查询流；不能由连接记录补造过滤命中、耗时或终端身份。若锁定内核没有可靠事件，`dns_query_records` 返回不可用及原因，页面保留明确状态。完整查询审计与即时重写若被要求完全对等，需要另行完成一个有稳定事件接口的内核扩展交付；在此之前不把它们列为已完成。
+| 能力 | 1.14.0 结果 | macOS 首期语义 |
+| --- | --- | --- |
+| 查询记录/历史 | UNSUPPORTED；`/dns/query` 是主动工具；普通日志无稳定 query ID/source/elapsed；connections 是连接快照 | `dns_query_records` unavailable，显示原因；不由连接或日志补造耗时/来源/过滤命中 |
+| DNS response cache flush | SUPPORTED；鉴权 `POST /cache/dns/flush` 调用受管 DNSRouter.ClearCache；真实 204 与旧缓存→新自有上游答案验证通过 | 只清受管实例 DNS 缓存；与 UI 历史清空、FakeIP mapping reset、系统 DNS 分开 |
+| DNS rewrite/rule/hosts/predefined hot update | UNSUPPORTED；无受控 mutation route；`/configs` PUT 为 no-op，PATCH 仅 mode；传 DNS 字段返回 204 但映射未变化 | 重写配置保存后 `RestartRequired`；不延续目标/备注修改可直接运行生效的承诺 |
 
-**缓存清理**只作用于受管实例，结果与查询历史清空独立。上游测试走相应直连/代理路径，内核未启动且无法完成代理路径时直接报告前置条件不足。
+`POST /cache/fakeip/flush` 是另一个 route，调用 optional CacheFile.FakeIPReset；P0-07 没有运行 FakeIP reset，不以它替代 DNS response cache flush。普通 DNS 日志可作文本调试，不充当稳定查询记录流。完整查询审计与即时重写若要求对等，需另行交付稳定内核接口；首期不自建 DNS 协议栈、不 patch sing-box。上游测试按相应直连/代理路径执行，内核未启动且无法完成代理路径时报告前置条件不足。
 
 ### 8.7 服务控制和诊断
 
@@ -579,6 +583,8 @@ Runtime 是统一的运行管理入口。按 §11 的平台与模式选择唯一
 GET、HEAD、TCP、TLS 是不同探测动作。成功 TCP 建连不能展示 HTTP 成功；TLS 探测保留证书和握手失败。实际结果字段只填已观察部分。
 
 诊断关联使用本次请求的入口/连接身份和时间窗口。若无法唯一对应 DNS 事件或连接，不填写确定的规则序号和解析链。内核健康探针的成功也不能替代目标访问成功。
+
+P0-07 的 [本地受管诊断](openbox-rust-gpui-tasks/evidence/p0-07/diagnostic.json) 实际 HTTP 200、唯一 origin path/body marker、source port 与有界时间窗关联到 connection UUID、入口/出口、host/port/start/字节差值；此 debug 日志可关联本配置路由 `match[1]`，不是稳定规则 ID。唯一 DNS query event、完整 resolver chain、process identity、filter hit 仍 absent/unknown，不能展示完整内核路径。
 
 ### 8.8 更新 备份 恢复和重置
 
@@ -716,9 +722,9 @@ Runtime 持有一组控制器连接，采集连接、内存、流量、日志，
 
 ### 10.2 流量单位必须重新确认
 
-当前 `useLiveMetrics.ts:45` 对收到的 `up/down` 再做差分，意味着现有 UI 把包装层帧当累计量处理。但标准 sing-box 1.14.0 的 `/traffic` 实现每秒发送相邻总量的差值。
+P0-07 已于 2026-10-04 核定固定 1.14.0 的标准 controller，双证据见 [source identity/path/关键行语义](openbox-rust-gpui-tasks/evidence/p0-07/kernel-source-evidence.json) 与 [真实 idle/burst/reconnect](openbox-rust-gpui-tasks/evidence/p0-07/traffic-semantics.json)。`/traffic` 的 `up/down` 是**相邻采样区间内的受管 routed I/O bytes 增量**，不是累计量，也没有自行除以时间的速率计算；不代表网卡/IP 报文总字节。handler 在订阅时取 `TrafficManager.Total()` 基线，固定 1 秒 ticker 上取 new-old，发送成功后替换 old。Total 包括 active、closed 与已移出 closed 列表的累计计数；相同口径的 `/connections` uploadTotal/downloadTotal 是累计值。
 
-因此不能把标准控制器帧直接送进现有差分逻辑。Rust 统一输出：
+当前 React `useLiveMetrics.ts:45` 对包装层 `up/down` 再差分，不能接收标准帧。Rust 后续统一输出：
 
 ```text
 TrafficSample
@@ -731,7 +737,11 @@ TrafficSample
   instance_id
 ```
 
-速率由实际采样区间换算，累计量由可确认的累计计数或单次采样增量计算。连接统计使用每个连接的累计计数差分；断连重连、计数回退、实例更换不能重复累计。依据为 [sing-box 1.14.0 控制器实现](https://github.com/SagerNet/sing-box/blob/v1.14.0/experimental/clashapi/server.go)。
+转换为 `bytes_per_second = interval_bytes × 1000 / interval_ms`；例如 524288 bytes / 1002 ms ≈ 523241.5 bytes/s。不再对相邻帧做差分。内核 frame 不携带服务端时间戳/interval，订阅首帧约在建立后 1 秒；客户端 monotonic 到达间隔只在及时消费时近似实际计数间隔，阻塞/缓冲时不能宣称精确速率。traffic 不支持自定义 interval；connections 的 interval 独立，默认 1000 ms，并立即发送首个 active snapshot。
+
+Rust 单一持续 collector 为每个 `(instance_id, stream_generation, sequence)` 的增量累加一次，不能将 lifetime total 再叠加到 interval sum。同实例重连先关闭旧 generation、重建时间基线、保留已确认 session sum 并标明缺口；新订阅不回放断流期 bytes。若选择用同口径 REST 累计差值补缺口，须独立 baseline/对齐窗口且不得与已有 WS 增量重叠。本原型只证明缺口不回放，不实现补计策略。实例替换重置 session/timing/generation，拒绝旧实例迟到帧；累计 counter 回退则重建基线并标记不连续，不产生负速率或重复累计。
+
+两次 burst 分别实测 up/down **131224/524449 bytes** 与 **65687/262305 bytes**，各自 WS sum 等于 REST Total 差值；idle 0→burst 非零→0，重连后两个 idle 帧仍为 0，未回放此前 8192-byte upload 的已知缺口请求。短请求完整发生在两个 connections snapshots 之间，未出现连接明细但 Total 与日志变化；不能声称所有字节可归属。现有 core bridge 单帧订阅/REST totals 与观测 DTO 只作为迁移输入，未修改产品 Rust；持续采集/重连/interval 归一化留 P3。
 
 ### 10.3 历史统计设计
 
