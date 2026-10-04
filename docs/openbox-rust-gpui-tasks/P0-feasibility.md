@@ -43,10 +43,14 @@
 
 **验收**：
 
-- [ ] 中文输入法、选区、粘贴、撤销和 Escape/焦点归还有真实操作记录。
-- [ ] 关闭最后窗口后托盘仍响应，可显示并聚焦窗口、更新菜单、退出；不引入第二个主事件循环。
-- [ ] 浅色/深色、字体/Emoji、透明度与模糊的可实现程度有截图；无法还原的差异明确列出。
-- [ ] 依赖树没有不兼容的 GPUI 类型组合；在锁定的 macOS/架构上可复现构建。
+- [x] 中文输入法、选区、粘贴、撤销和 Escape/焦点归还有真实操作记录。
+- [x] 关闭最后窗口后托盘仍响应，可显示并聚焦窗口、更新菜单、退出；不引入第二个主事件循环。
+- [x] 浅色/深色、字体/Emoji、透明度与模糊的可实现程度有截图；无法还原的差异明确列出。
+- [x] 依赖树没有不兼容的 GPUI 类型组合；在锁定的 macOS/架构上可复现构建。
+
+**当前交付**：DONE（2026-10-04），四项验收 PASS。来源为 [Host/User Manual Acceptance](evidence/p0-03/README.md#host-user-manual-acceptance) 与 [人工确认记录](evidence/p0-03/host-manual-acceptance.json)：用户亲手完成真实中文 Input/Modal Textarea 输入及托盘点击，确认可用并明确批准“就当验收通过了”。真实手工输入补足 composition/candidate 真实性；托盘人工确认结合历史 Host 生命周期操作补足卡验收。视觉以 11 张真实截图、window blur/backend 与差异说明通过；版本/依赖/构建沿用 PASS，追加 resource override workspace check PASS。
+
+**历史与限制**：2026-10-03 ACCEPTANCE 及 interaction-results 的 IME candidate/composition、tray screenshot/focus、controlled blur 等 LIMITATION 保留；本次不补造截图、不声称 card backdrop 已证明。MiSans、nested dropdown、card-level backdrop blur 与 macOS 15 实机作为后续限制，不阻止本卡 DONE。详见[实机原型记录](evidence/p0-03/README.md)。本轮不启动 P0-04/P1-03。
 
 <a id="obg-p0-04"></a>
 ## OBG-P0-04 固定内核、控制器与缓存原型
@@ -177,3 +181,9 @@
 2026-10-03 临时登录例外：仅一次 auth/login POST，返回 403；原 13 GET 与前置/HTTP1.1 确认同为 403，WS 3×401/1×502、无帧。单次浏览器确认仍因 Mach 服务拒绝而失败，视觉 NOT_RUN、P0-01 ACCEPTANCE、READY=0；临时会话/脚本已删除。详见 [临时登录实际结果](P0-01-baseline.md#temporary-auth-observation)。
 
 2026-10-03 最终验收追加：四项 PASS，P0-01 DONE；8 PNG（1280×720/DPR 1/Chromium 149.0.7827.22），54 操作/状态断言、77/4/6/9、脱敏与 DAG 检查通过。登录两次（403 后一次传输修正重试 200）、普通 GET 14 成功/1 失败、四 WS 各有帧，traffic 单位/区间或速率/重置仍 UNKNOWN。P0-03/P0-04/P1-01 READY，P0-07 TODO；没有开始下游实现。完整证据和历史限制见[当前最终验收](P0-01-baseline.md#current-acceptance)。
+
+
+<a id="p0-03-manual-acceptance"></a>
+### OBG-P0-03 人工验收收口（2026-10-04）
+
+Codex /root 仅更新证据与状态，原型功能代码、Cargo workspace/lock 和历史截图不变；用户亲手完成中文输入/托盘操作并明确批准本卡通过，四项 PASS，来源见 [Host/User Manual Acceptance](evidence/p0-03/README.md#host-user-manual-acceptance)。历史缺证据及无资源覆盖 workspace check FAIL 保留，新增人工确认与本次两条 check PASS 不改写历史。JSON、11 PNG hash/dimensions、68-card DAG/主表依赖、Markdown links/anchors 与 diff 检查见 [validation.json](evidence/p0-03/validation.json)。P0-04/P1-03 READY、P0-05 TODO，未启动后续任务，无 commit/push。

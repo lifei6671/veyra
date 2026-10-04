@@ -1,0 +1,10 @@
+[package]
+name = "veyra-gpui-prototype"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.99"
+publish = false
+
+[dependencies]
+gpui-kit = "=0.7.0"
+tray-icon = "=0.24.2"

@@ -6,7 +6,7 @@
 
 ## 1 当前基线与范围
 
-- 新路线共 **61 个 macOS 任务、7 个 Windows 后续任务**，包括各阶段验收任务。当前完成 4 项（P0-01、P0-02、P1-01、P1-02）；基线与核心抽取验收通过，GPUI/helper/内核原型尚未开始。
+- 新路线共 **61 个 macOS 任务、7 个 Windows 后续任务**，包括各阶段验收任务。当前完成 5 项（P0-01、P0-02、P0-03、P1-01、P1-02）；基线、核心抽取和 GPUI 原型验收通过，P0-03 于 2026-10-04 经用户人工确认收口；helper/内核原型尚未开始。
 - 已有 React UI 和旧 Rust 模块是迁移输入，不直接算 GPUI 新路线完成。P0-02 的完成仅指本次明确要求的范围/规则调整，该历史文档动作不计功能实现；现 P1-01 已完成核心抽取，P1-02 已完成类型/原子快照与版本。
 - 当前已建立根 Cargo workspace、单一 Cargo.lock 与 `crates/veyra-core/`；旧入口接共享核心。实际构建/纯测试见 P1-01 记录，不表示原型或真实设备验收完成。
 - 旧 SDLC 状态与 UI 门禁已按用户要求退役；不恢复缺失文件，不补办历史 DCR/UI Contract。当前进度以本目录为准。
@@ -87,7 +87,7 @@ Task：OBG-Px-xx
 
 ## 4 任务状态总表
 
-“估算”在 P0 出口回填人日及假设；当前的 `—` 表示尚未估算。“证据”为空表示尚未提交完成证据。当前 macOS 61 项（DONE 4、ACCEPTANCE 0、READY 2、DOING 0、TODO 55），Windows 7 项 DEFERRED，共 68 项。原 P1-04/P2-02/P4-05 由后缀子任务替代，不重复计数。
+“估算”在 P0 出口回填人日及假设；当前的 `—` 表示尚未估算。“证据”为空表示尚未提交完成证据。当前 macOS 61 项（DONE 5、ACCEPTANCE 0、READY 2、DOING 0、TODO 54），Windows 7 项 DEFERRED，共 68 项。原 P1-04/P2-02/P4-05 由后缀子任务替代，不重复计数。
 
 ### P0 基线与可行性（9 项）
 
@@ -95,7 +95,7 @@ Task：OBG-Px-xx
 | --- | --- | --- | --- | --- | --- |
 | [OBG-P0-01 UI/接口基线](P0-feasibility.md#obg-p0-01) | 无 | DONE | Codex /root | — | [最终验收](P0-01-baseline.md#current-acceptance) |
 | [OBG-P0-02 范围与规则](P0-feasibility.md#obg-p0-02) | 无 | DONE | Codex | 文档调整，不计实现工期 | [清理记录](P0-feasibility.md#cleanup-record) |
-| [OBG-P0-03 GPUI/输入/托盘原型](P0-feasibility.md#obg-p0-03) | P0-01 | READY | — | — | — |
+| [OBG-P0-03 GPUI/输入/托盘原型](P0-feasibility.md#obg-p0-03) | P0-01 | DONE | Codex Desktop | — | [人工验收收口](P0-feasibility.md#p0-03-manual-acceptance) |
 | [OBG-P0-04 内核/控制器/缓存原型](P0-feasibility.md#obg-p0-04) | P0-01 | READY | — | — | — |
 | [OBG-P0-05 本地 helper 原型](P0-feasibility.md#obg-p0-05) | P0-03、P0-04 | TODO | — | — | — |
 | [OBG-P0-06 自身出站原型](P0-feasibility.md#obg-p0-06) | P0-04、P0-05 | TODO | — | — | — |
@@ -109,7 +109,7 @@ Task：OBG-Px-xx
 | --- | --- | --- | --- | --- | --- |
 | [OBG-P1-01 核心抽取](P1-core-and-shell.md#obg-p1-01) | P0-01、P0-02 | DONE | Codex /root | — | [抽取验收](P1-core-and-shell.md#p1-01-delivery) |
 | [OBG-P1-02 类型/持久化/版本](P1-core-and-shell.md#obg-p1-02) | P1-01 | DONE | Codex /root | — | [类型/快照验收](P1-core-and-shell.md#p1-02-delivery) |
-| [OBG-P1-03 GPUI 壳与状态桥](P1-core-and-shell.md#obg-p1-03) | P1-02、P0-03 | TODO | — | — | — |
+| [OBG-P1-03 GPUI 壳与状态桥](P1-core-and-shell.md#obg-p1-03) | P1-02、P0-03 | READY | — | — | — |
 | [OBG-P1-04A 视觉桌面偏好/主题/组件](P1-core-and-shell.md#obg-p1-04a) | P1-02、P1-03 | TODO | — | — | — |
 | [OBG-P1-04B 跨页面行为偏好](P1-core-and-shell.md#obg-p1-04b) | P1-02、P1-03 | TODO | — | — | — |
 | [OBG-P1-05 目录/单实例/文件](P1-core-and-shell.md#obg-p1-05) | P1-02、P1-03 | TODO | — | — | — |
