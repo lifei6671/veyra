@@ -1,0 +1,27 @@
+[package]
+name = "veyra-helper-prototype"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.98"
+license = "GPL-3"
+description = "Isolated OBG-P0-05 macOS feasibility probe; not the production helper"
+
+# The task card reserves crates/veyra-helper. Only this explicit prototype entry
+# exists here; no production helper/library is exported.
+[features]
+default = []
+p0-05-prototype = []
+
+[[bin]]
+name = "veyra-helper-prototype"
+path = "src/p0_05/main.rs"
+required-features = ["p0-05-prototype"]
+
+[dependencies]
+libc = "0.2"
+serde = { version = "=1.0.229", features = ["derive"] }
+serde_json = "1"
+sha2 = "=0.10.9"
+
+[build-dependencies]
+cc = "1"

@@ -71,7 +71,7 @@
 <a id="obg-p0-05"></a>
 ## OBG-P0-05 本地 helper、授权与进程归属原型
 
-**类型**：平台原型；**前置**：OBG-P0-03、OBG-P0-04。**依据**：方案 §11.1–11.3、§14；目标 `crates/veyra-helper/`。
+**类型**：平台原型；**前置**：OBG-P0-03、OBG-P0-04。**依据**：方案 §11.1–11.3、§14；目标 `crates/veyra-helper/`，P0 仅显式 `p0-05-prototype` feature / `src/p0_05/` 入口，不作为正式 P2 helper。
 
 **执行与交付**：验证管理员安装本地 launchd helper、Unix socket 对端身份、安装/取消/卸载；对一个测试 Network Service 写入、回读、恢复；helper 启动普通用户 SystemProxy child 并检测 GUI 实际退出。
 
@@ -211,3 +211,17 @@ Codex /root，Observation 泳道；起始 HEAD `fac6f12`、工作树干净，P0-
 脚本：[p0-07-observation-probe.py](../../tools/p0-07-observation-probe.py)。完整证据/边界/复跑与实现者自查：[README](evidence/p0-07/README.md)；[validation](evidence/p0-07/validation.json)记录源码身份、真实原型、JSON/脱敏/AST/core check、68-card DAG、Markdown links/anchors、diff 与资源清理。首轮 port checker 的 FAIL 保留；自查修复默认 interface 日志脱敏后又完整重跑，最终正常 SIGTERM/exit 0、wait/group empty、全部 streams/fixture threads 关闭、4 个 listener 释放和 temp 删除，不用强杀冒充正常停止。
 
 按 68 张任务卡重算，READY 为 P0-05/P1-03；P0-09、P3-01、P5-01 等仍缺其他依赖，无新增 READY。只释放本任务资源和记录下游，不启动下游，不 commit/push。
+
+
+<a id="p0-05-delivery"></a>
+## P0-05 本地 helper 原型交付与授权缺口（2026-10-04）
+
+Codex /root · Runtime/Platform；起始 HEAD `3111a57`、工作树干净。只领取 P0-05；根 Cargo workspace/lock 本轮单一 owner，core 不依赖 helper/平台 crate，旧产品逻辑无改动。`crates/veyra-helper/` 仅导出显式 `p0-05-prototype` feature 下的隔离二进制；[固定编排](../../tools/p0-05-helper-probe.py)不收集密码，不在 root 阶段下载，不接收任意命令/路径/Network Service/PID。
+
+**状态 ACCEPTANCE，五项未全部满足，不勾选 DONE。** [证据与逐项边界](evidence/p0-05/README.md)：当前 macOS 27 arm64，minos 15.0、adhoc/linker-signed、TeamIdentifier not set、codesign verify PASS；固定 archive/binary digest 匹配；非 root install 拒绝且无受保护写入；无 helper 的真实普通用户 sing-box loopback/controller、继承 FD 兼容性与退出清理 PASS。普通用户 getpeereid/LOCAL_PEERPID、真实 peer PID、IPC EOF 后存活 2 秒、SIGKILL/NOTE_EXIT PASS，仅为 API 可行性，不代替 root helper 网络生命周期。
+
+已尝试标准 `osascript do shell script ... with administrator privileges`。实际退出 1：`com.apple.hiservices-xpcservice` Connection Invalid、`授权失败 (-60008)`；未取得管理员授权、没有管理员测试入口运行或 Network Service 写入。不是用户手动取消证据，不把证书缺失当阻塞，不绕过系统策略。特权安装/保护权限、root peer、不同 UID ACL、降权 child 读取 root-only FD、两轮 SystemConfiguration snapshot/apply/readback/restore、GUI crash 后网络/child 清理及外部改写冲突均 **NOT_RUN**。
+
+实现包含独立 disabled/unassociated service、OS peer 凭据二次校验、root-only config + 降权 child FD、按字段组保留外部改写、写前持久恢复记录、SCPreferences lock 下核对 expected 字段、owner/child NOTE_EXIT 与 RecoveryRequired 保留现场、restore/stop→bootout→delete 的 finally 路径；不能将已编译路径描述为实机通过。5 项纯定向测试保护输入/时限与恢复契约，不启动特权 child 或系统网络；[validation.json](evidence/p0-05/validation.json)区分构建、普通用户实测和 NOT_RUN。
+
+所有本轮普通用户 child 已回收、group/listener 关闭；专用 tmp/staging/archive/config 删除；原型 `/Library` helper/plist/root/socket 与 launchd label 不存在，从未创建测试 Network Service。失败历史保留，未 commit/push。DAG 68 卡不变：DONE 7、ACCEPTANCE 1、READY 1、TODO 52、Windows DEFERRED 7；READY 仅 P1-03，P0-06/P0-08/P0-09 仍 TODO，不启动下游。下一步仅在可安全呈现标准系统管理员 UI 的本机环境，以固定原型入口补特权实测并严格清理。
