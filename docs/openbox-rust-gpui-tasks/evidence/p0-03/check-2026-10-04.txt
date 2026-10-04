@@ -1,0 +1,31 @@
+    Checking objc2 v0.6.4
+    Checking objc2-core-foundation v0.3.2
+    Checking block2 v0.6.2
+    Checking dispatch2 v0.3.1
+    Checking objc2-foundation v0.3.2
+    Checking objc2-core-video v0.3.2
+    Checking objc2-core-graphics v0.3.2
+    Checking objc2-core-text v0.3.2
+    Checking gpui-pre v0.3.7
+    Checking objc2-core-media v0.3.2
+    Checking gpui-pre-apple v0.3.7
+    Checking gpui-kit-assets v0.7.0
+    Checking objc2-quartz-core v0.3.2
+    Checking objc2-cloud-kit v0.3.2
+    Checking objc2-core-image v0.3.2
+    Checking objc2-core-data v0.3.2
+    Checking objc2-core-location v0.3.2
+    Checking objc2-screen-capture-kit v0.3.2
+    Checking objc2-user-notifications v0.3.2
+    Checking objc2-app-kit v0.3.2
+    Checking gpui-base v0.7.0
+    Checking gpui-pre-macos v0.3.7
+    Checking muda v0.19.3
+    Checking tray-icon v0.24.2
+    Checking gpui-pre-platform v0.3.7
+    Checking gpui-component v0.7.0
+    Checking gpui-kit v0.7.0
+    Checking veyra-gpui-prototype v0.1.0 (<workspace>/crates/veyra-gpui-prototype)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 16.95s
+warning: the following packages contain code that will be rejected by a future version of Rust: block v0.1.6
+note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`

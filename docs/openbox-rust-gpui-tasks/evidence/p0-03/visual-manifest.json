@@ -1,0 +1,355 @@
+{
+  "schema_version": 1,
+  "capture_tool": "cua native macOS app.getScreenshot",
+  "capture_scope": "app window including titlebar; no browser/DOM rendering",
+  "source_note": "Initial 9 screenshots before gradient-only refinement; two gradient screenshots from final rebuilt source. Both real native windows; no retouch.",
+  "screenshots": [
+    {
+      "screenshot_file": "visual/dark-list.png",
+      "requested_initial_content_size_points": [
+        1280,
+        720
+      ],
+      "captured_window_frame_points": [
+        1280.0,
+        753.0
+      ],
+      "physical_pixels": [
+        2560,
+        1506
+      ],
+      "scale_factor": 2,
+      "scale_factor_basis": "1280-point requested width -> 2560-pixel native capture; resize preserves 2x",
+      "macos_version": "27.0 (26A428)",
+      "architecture": "arm64",
+      "browser": "N/A",
+      "gpui": "gpui-pre 0.3.7",
+      "gpui_kit": "0.7.0",
+      "source_commit": "029578c81554f2aeef9bb4e0fd6aaa8a19defd55",
+      "source_dirty": true,
+      "capture_time": "2026-10-03T13:21:28.119010+00:00",
+      "state_description": "dark-list; synthetic Chinese pasted text, not proof of IME",
+      "sha256": "198fa97fe6574723a6e6b086d09ccd06590ad4ac2c8a00407a8ae61eb7bebbb5",
+      "native_capture_encoding": "JPEG returned by cua app.getScreenshot; decoded/re-encoded to PNG by sips, no retouch/crop/compositing",
+      "native_capture_sha256": "6734821cf235b20875b1e769b7f775610f44d0c033c791f1bea33c6fa3cf76ee",
+      "prototype_source_sha256": "4258d3b0f2d94ac6a44c56990e70f678c92dc93ab7c0a691cb7b899de6fda7b1",
+      "source_revision": "initial solid-background UI; format-only edit after launch"
+    },
+    {
+      "screenshot_file": "visual/dark-main.png",
+      "requested_initial_content_size_points": [
+        1280,
+        720
+      ],
+      "captured_window_frame_points": [
+        1280.0,
+        753.0
+      ],
+      "physical_pixels": [
+        2560,
+        1506
+      ],
+      "scale_factor": 2,
+      "scale_factor_basis": "1280-point requested width -> 2560-pixel native capture; resize preserves 2x",
+      "macos_version": "27.0 (26A428)",
+      "architecture": "arm64",
+      "browser": "N/A",
+      "gpui": "gpui-pre 0.3.7",
+      "gpui_kit": "0.7.0",
+      "source_commit": "029578c81554f2aeef9bb4e0fd6aaa8a19defd55",
+      "source_dirty": true,
+      "capture_time": "2026-10-03T13:21:27.602323+00:00",
+      "state_description": "dark-main; synthetic Chinese pasted text, not proof of IME",
+      "sha256": "ad38ae2a223f8e1ce64239478801bf3714630eda5f55300f7abf2cf978344c08",
+      "native_capture_encoding": "JPEG returned by cua app.getScreenshot; decoded/re-encoded to PNG by sips, no retouch/crop/compositing",
+      "native_capture_sha256": "2327b496a6622e2ab729b7412297d2a1f4ce8db264d8a1af8e36de3c1d2ddc9e",
+      "prototype_source_sha256": "4258d3b0f2d94ac6a44c56990e70f678c92dc93ab7c0a691cb7b899de6fda7b1",
+      "source_revision": "initial solid-background UI; format-only edit after launch"
+    },
+    {
+      "screenshot_file": "visual/dark-modal.png",
+      "requested_initial_content_size_points": [
+        1280,
+        720
+      ],
+      "captured_window_frame_points": [
+        1280.0,
+        753.0
+      ],
+      "physical_pixels": [
+        2560,
+        1506
+      ],
+      "scale_factor": 2,
+      "scale_factor_basis": "1280-point requested width -> 2560-pixel native capture; resize preserves 2x",
+      "macos_version": "27.0 (26A428)",
+      "architecture": "arm64",
+      "browser": "N/A",
+      "gpui": "gpui-pre 0.3.7",
+      "gpui_kit": "0.7.0",
+      "source_commit": "029578c81554f2aeef9bb4e0fd6aaa8a19defd55",
+      "source_dirty": true,
+      "capture_time": "2026-10-03T13:21:27.481570+00:00",
+      "state_description": "dark-modal; synthetic Chinese pasted text, not proof of IME",
+      "sha256": "e39a3563bcc47cc9cde54e356e3eede2bf2985d2e08c5f9fa29c7b6920f0395b",
+      "native_capture_encoding": "JPEG returned by cua app.getScreenshot; decoded/re-encoded to PNG by sips, no retouch/crop/compositing",
+      "native_capture_sha256": "28ecbeef4d0fcda61583f39bea4e4df5b04000456973d68033674c738b9fefdb",
+      "prototype_source_sha256": "4258d3b0f2d94ac6a44c56990e70f678c92dc93ab7c0a691cb7b899de6fda7b1",
+      "source_revision": "initial solid-background UI; format-only edit after launch"
+    },
+    {
+      "screenshot_file": "visual/light-list.png",
+      "requested_initial_content_size_points": [
+        1280,
+        720
+      ],
+      "captured_window_frame_points": [
+        1280.0,
+        753.0
+      ],
+      "physical_pixels": [
+        2560,
+        1506
+      ],
+      "scale_factor": 2,
+      "scale_factor_basis": "1280-point requested width -> 2560-pixel native capture; resize preserves 2x",
+      "macos_version": "27.0 (26A428)",
+      "architecture": "arm64",
+      "browser": "N/A",
+      "gpui": "gpui-pre 0.3.7",
+      "gpui_kit": "0.7.0",
+      "source_commit": "029578c81554f2aeef9bb4e0fd6aaa8a19defd55",
+      "source_dirty": true,
+      "capture_time": "2026-10-03T13:21:27.855684+00:00",
+      "state_description": "light-list; synthetic Chinese pasted text, not proof of IME",
+      "sha256": "33128399e303aa2e400570d19e63c78eba1579782f6e117a5eb00f00dff3fb81",
+      "native_capture_encoding": "JPEG returned by cua app.getScreenshot; decoded/re-encoded to PNG by sips, no retouch/crop/compositing",
+      "native_capture_sha256": "43e8a993a45a3215ea4a06c8f57abbd6e225e33730a79e6a6cde3ad08314f7f5",
+      "prototype_source_sha256": "4258d3b0f2d94ac6a44c56990e70f678c92dc93ab7c0a691cb7b899de6fda7b1",
+      "source_revision": "initial solid-background UI; format-only edit after launch"
+    },
+    {
+      "screenshot_file": "visual/light-main.png",
+      "requested_initial_content_size_points": [
+        1280,
+        720
+      ],
+      "captured_window_frame_points": [
+        1280.0,
+        753.0
+      ],
+      "physical_pixels": [
+        2560,
+        1506
+      ],
+      "scale_factor": 2,
+      "scale_factor_basis": "1280-point requested width -> 2560-pixel native capture; resize preserves 2x",
+      "macos_version": "27.0 (26A428)",
+      "architecture": "arm64",
+      "browser": "N/A",
+      "gpui": "gpui-pre 0.3.7",
+      "gpui_kit": "0.7.0",
+      "source_commit": "029578c81554f2aeef9bb4e0fd6aaa8a19defd55",
+      "source_dirty": true,
+      "capture_time": "2026-10-03T13:21:28.366534+00:00",
+      "state_description": "light-main; synthetic Chinese pasted text, not proof of IME",
+      "sha256": "f605cb60032b0422e760ba0be0d3186b532ae2431fd467c9fa6fd03c05489374",
+      "native_capture_encoding": "JPEG returned by cua app.getScreenshot; decoded/re-encoded to PNG by sips, no retouch/crop/compositing",
+      "native_capture_sha256": "d4a36abbcebe0ac70bbac9f6f3fcfd1bc82f7ea37654ab613ccae28eeda4cd5e",
+      "prototype_source_sha256": "4258d3b0f2d94ac6a44c56990e70f678c92dc93ab7c0a691cb7b899de6fda7b1",
+      "source_revision": "initial solid-background UI; format-only edit after launch"
+    },
+    {
+      "screenshot_file": "visual/light-modal.png",
+      "requested_initial_content_size_points": [
+        1280,
+        720
+      ],
+      "captured_window_frame_points": [
+        1280.0,
+        753.0
+      ],
+      "physical_pixels": [
+        2560,
+        1506
+      ],
+      "scale_factor": 2,
+      "scale_factor_basis": "1280-point requested width -> 2560-pixel native capture; resize preserves 2x",
+      "macos_version": "27.0 (26A428)",
+      "architecture": "arm64",
+      "browser": "N/A",
+      "gpui": "gpui-pre 0.3.7",
+      "gpui_kit": "0.7.0",
+      "source_commit": "029578c81554f2aeef9bb4e0fd6aaa8a19defd55",
+      "source_dirty": true,
+      "capture_time": "2026-10-03T13:21:27.350203+00:00",
+      "state_description": "light-modal; synthetic Chinese pasted text, not proof of IME",
+      "sha256": "660c83e34b00041029394df10a452dbcadf3c809364e7fb6c891eab1473f8e28",
+      "native_capture_encoding": "JPEG returned by cua app.getScreenshot; decoded/re-encoded to PNG by sips, no retouch/crop/compositing",
+      "native_capture_sha256": "a19b9225b195b8fb0efea9a3726e9ca8a7bd91be57d73208b17e44ea1d01f29f",
+      "prototype_source_sha256": "4258d3b0f2d94ac6a44c56990e70f678c92dc93ab7c0a691cb7b899de6fda7b1",
+      "source_revision": "initial solid-background UI; format-only edit after launch"
+    },
+    {
+      "screenshot_file": "visual/list-resize.png",
+      "requested_initial_content_size_points": [
+        1280,
+        720
+      ],
+      "captured_window_frame_points": [
+        1102.0,
+        693.0
+      ],
+      "physical_pixels": [
+        2204,
+        1386
+      ],
+      "scale_factor": 2,
+      "scale_factor_basis": "1280-point requested width -> 2560-pixel native capture; resize preserves 2x",
+      "macos_version": "27.0 (26A428)",
+      "architecture": "arm64",
+      "browser": "N/A",
+      "gpui": "gpui-pre 0.3.7",
+      "gpui_kit": "0.7.0",
+      "source_commit": "029578c81554f2aeef9bb4e0fd6aaa8a19defd55",
+      "source_dirty": true,
+      "capture_time": "2026-10-03T13:21:28.250602+00:00",
+      "state_description": "list-resize; synthetic Chinese pasted text, not proof of IME",
+      "sha256": "29c76dfa2d8d9ca72df63e5cedf3a01dfd34b495af674800cc8d9a1757b36cde",
+      "native_capture_encoding": "JPEG returned by cua app.getScreenshot; decoded/re-encoded to PNG by sips, no retouch/crop/compositing",
+      "native_capture_sha256": "b2a2ce8c675e5265ff7c1ae649307d1ebb7de564217ff093039891e313b26c71",
+      "prototype_source_sha256": "4258d3b0f2d94ac6a44c56990e70f678c92dc93ab7c0a691cb7b899de6fda7b1",
+      "source_revision": "initial solid-background UI; format-only edit after launch"
+    },
+    {
+      "screenshot_file": "visual/transparency-blur.png",
+      "requested_initial_content_size_points": [
+        1280,
+        720
+      ],
+      "captured_window_frame_points": [
+        1280.0,
+        753.0
+      ],
+      "physical_pixels": [
+        2560,
+        1506
+      ],
+      "scale_factor": 2,
+      "scale_factor_basis": "1280-point requested width -> 2560-pixel native capture; resize preserves 2x",
+      "macos_version": "27.0 (26A428)",
+      "architecture": "arm64",
+      "browser": "N/A",
+      "gpui": "gpui-pre 0.3.7",
+      "gpui_kit": "0.7.0",
+      "source_commit": "029578c81554f2aeef9bb4e0fd6aaa8a19defd55",
+      "source_dirty": true,
+      "capture_time": "2026-10-03T13:21:27.731881+00:00",
+      "state_description": "transparency-blur; synthetic Chinese pasted text, not proof of IME",
+      "sha256": "46838598da01eeac9aaf664587f2cf5dce6983bdeb51cc3211564a4060ea5b6c",
+      "native_capture_encoding": "JPEG returned by cua app.getScreenshot; decoded/re-encoded to PNG by sips, no retouch/crop/compositing",
+      "native_capture_sha256": "056d8be6c02aa632ca22a68b733b8f9149410a48dbb1a0e05b798944703b6897",
+      "prototype_source_sha256": "4258d3b0f2d94ac6a44c56990e70f678c92dc93ab7c0a691cb7b899de6fda7b1",
+      "source_revision": "initial solid-background UI; format-only edit after launch"
+    },
+    {
+      "screenshot_file": "visual/transparency-only.png",
+      "requested_initial_content_size_points": [
+        1280,
+        720
+      ],
+      "captured_window_frame_points": [
+        1280.0,
+        753.0
+      ],
+      "physical_pixels": [
+        2560,
+        1506
+      ],
+      "scale_factor": 2,
+      "scale_factor_basis": "1280-point requested width -> 2560-pixel native capture; resize preserves 2x",
+      "macos_version": "27.0 (26A428)",
+      "architecture": "arm64",
+      "browser": "N/A",
+      "gpui": "gpui-pre 0.3.7",
+      "gpui_kit": "0.7.0",
+      "source_commit": "029578c81554f2aeef9bb4e0fd6aaa8a19defd55",
+      "source_dirty": true,
+      "capture_time": "2026-10-03T13:21:27.982045+00:00",
+      "state_description": "transparency-only; synthetic Chinese pasted text, not proof of IME",
+      "sha256": "e1f301ef590e3ffbcaca5491041e6c0efd15c26e15420334632d3a2eb795270a",
+      "native_capture_encoding": "JPEG returned by cua app.getScreenshot; decoded/re-encoded to PNG by sips, no retouch/crop/compositing",
+      "native_capture_sha256": "e77911ae7588a5b29b03d618a67124d369e962a5407bb3576022afbb372caa58",
+      "prototype_source_sha256": "4258d3b0f2d94ac6a44c56990e70f678c92dc93ab7c0a691cb7b899de6fda7b1",
+      "source_revision": "initial solid-background UI; format-only edit after launch"
+    },
+    {
+      "screenshot_file": "visual/gradient-light.png",
+      "requested_initial_content_size_points": [
+        1280,
+        720
+      ],
+      "captured_window_frame_points": [
+        1280.0,
+        753.0
+      ],
+      "physical_pixels": [
+        2560,
+        1506
+      ],
+      "scale_factor": 2,
+      "scale_factor_basis": "1280-point requested width -> 2560-pixel native capture; resize preserves 2x",
+      "macos_version": "27.0 (26A428)",
+      "architecture": "arm64",
+      "browser": "N/A",
+      "gpui": "gpui-pre 0.3.7",
+      "gpui_kit": "0.7.0",
+      "source_commit": "029578c81554f2aeef9bb4e0fd6aaa8a19defd55",
+      "source_dirty": true,
+      "capture_time": "2026-10-03T13:35:19.060419+00:00",
+      "state_description": "gradient-light; actual GPUI linear_gradient with alpha card; empty input state",
+      "sha256": "eab9b9a82abb56572f294b3d48aa11e61ce626a51998d5ace875b28dc8e9b244",
+      "native_capture_encoding": "JPEG returned by cua app.getScreenshot; decoded/re-encoded to PNG by sips, no retouch/crop/compositing",
+      "native_capture_sha256": "4591ae2ba4c8dac9545f6e8d555dcd61d92b0ab03fa3988f040084feaab29b82",
+      "prototype_source_sha256": "f8f0ec0933a81dfe89d701017397bc3b1237240a1c44712f551ad1501c293ce7",
+      "source_revision": "final gradient-only change, rebuilt and relaunched"
+    },
+    {
+      "screenshot_file": "visual/gradient-dark.png",
+      "requested_initial_content_size_points": [
+        1280,
+        720
+      ],
+      "captured_window_frame_points": [
+        1280.0,
+        753.0
+      ],
+      "physical_pixels": [
+        2560,
+        1506
+      ],
+      "scale_factor": 2,
+      "scale_factor_basis": "1280-point requested width -> 2560-pixel native capture; resize preserves 2x",
+      "macos_version": "27.0 (26A428)",
+      "architecture": "arm64",
+      "browser": "N/A",
+      "gpui": "gpui-pre 0.3.7",
+      "gpui_kit": "0.7.0",
+      "source_commit": "029578c81554f2aeef9bb4e0fd6aaa8a19defd55",
+      "source_dirty": true,
+      "capture_time": "2026-10-03T13:35:19.174602+00:00",
+      "state_description": "gradient-dark; actual GPUI linear_gradient with alpha card; empty input state",
+      "sha256": "b89063fef5a6223467ea0c4671bf9b817a5359b1c064df771848cfae1ff4a1c9",
+      "native_capture_encoding": "JPEG returned by cua app.getScreenshot; decoded/re-encoded to PNG by sips, no retouch/crop/compositing",
+      "native_capture_sha256": "8adac5972f0d302723bda11757642b94e5817507688506b7d020c6711cdba983",
+      "prototype_source_sha256": "f8f0ec0933a81dfe89d701017397bc3b1237240a1c44712f551ad1501c293ce7",
+      "source_revision": "final gradient-only change, rebuilt and relaunched"
+    }
+  ],
+  "missing_required_evidence": [
+    "IME candidate window",
+    "tray-window-hidden.png",
+    "tray-menu.png",
+    "controlled window-behind texture to prove optical blur"
+  ]
+}

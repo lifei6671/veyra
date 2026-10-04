@@ -1,0 +1,134 @@
+   Compiling serde v1.0.229
+   Compiling serde_json v1.0.151
+    Checking objc2-core-foundation v0.3.2
+   Compiling semver v1.0.28
+   Compiling phf_generator v0.13.1
+    Checking futures-channel v0.3.34
+    Checking url v2.5.8
+    Checking uuid v1.26.0
+   Compiling parking_lot_core v0.9.12
+   Compiling derive_more v2.1.1
+   Compiling camino v1.2.5
+    Checking futures-util v0.3.34
+   Compiling phf_codegen v0.13.1
+   Compiling rustc_version v0.4.1
+   Compiling phf_macros v0.13.1
+   Compiling string_cache_codegen v0.6.1
+   Compiling parking_lot v0.12.5
+   Compiling selectors v0.36.1
+   Compiling cfb v0.7.3
+   Compiling embed-resource v3.0.11
+   Compiling toml_datetime v0.6.11
+   Compiling serde_spanned v0.6.9
+   Compiling pathfinder_simd v0.5.6
+   Compiling string_cache v0.9.0
+   Compiling toml_edit v0.22.27
+   Compiling indexmap v1.9.3
+   Compiling web_atoms v0.2.6
+   Compiling cargo-platform v0.1.9
+    Checking objc2-foundation v0.3.2
+    Checking objc2-core-video v0.3.2
+    Checking objc2-core-graphics v0.3.2
+    Checking objc2-core-text v0.3.2
+   Compiling phf v0.13.1
+   Compiling plist v1.10.0
+   Compiling urlpattern v0.3.0
+    Checking accesskit v0.24.1
+   Compiling infer v0.19.0
+   Compiling serde_with v3.22.0
+   Compiling cssparser v0.36.0
+   Compiling serde-untagged v0.1.9
+    Checking pathfinder_geometry v0.5.1
+   Compiling jsonptr v0.6.3
+   Compiling schemars v0.8.22
+   Compiling cargo_metadata v0.19.2
+    Checking futures-executor v0.3.34
+   Compiling gpui-pre-perf v0.3.7
+    Checking futures v0.3.34
+   Compiling swift-rs v1.0.8
+   Compiling json-patch v3.0.1
+   Compiling toml v0.8.23
+   Compiling gpui-pre v0.3.7
+   Compiling toml_datetime v0.7.5+spec-1.1.0
+    Checking gpui-pre-scheduler v0.3.7
+   Compiling toml v0.9.12+spec-1.1.0
+   Compiling markup5ever v0.38.0
+    Checking postage v0.5.0
+    Checking zed-font-kit v0.14.1-zed
+   Compiling html5ever v0.38.0
+    Checking gpui-pre-http-client v0.3.7
+   Compiling gpui-pre-util-macros v0.3.7
+   Compiling generic-array v0.14.7
+   Compiling tempfile v3.27.0
+   Compiling tauri-winres v0.3.6
+   Compiling granit-parser v1.3.0
+   Compiling cargo_toml v0.22.3
+   Compiling cbindgen v0.28.0
+   Compiling block-buffer v0.10.4
+   Compiling crypto-common v0.1.7
+   Compiling digest v0.10.7
+   Compiling triomphe v0.1.16
+   Compiling dom_query v0.27.0
+   Compiling serde-saphyr v1.3.0
+    Checking hyper v1.11.1
+    Checking tower v0.5.3
+   Compiling sha2 v0.10.9
+    Checking accesskit_consumer v0.38.0
+    Checking objc2-core-media v0.3.2
+    Checking core-graphics v0.25.0
+    Checking tauri-utils v2.9.3
+    Checking tungstenite v0.30.0
+    Checking accesskit_macos v0.26.3
+    Checking tower-http v0.6.11
+    Checking serde_yaml_ng v0.10.0
+    Checking hyper-util v0.1.20
+    Checking serialize-to-javascript v0.1.2
+    Checking tokio-tungstenite v0.30.0
+    Checking hyper-rustls v0.27.9
+   Compiling rust-i18n-support v4.2.4
+    Checking reqwest v0.12.28
+   Compiling rust-i18n-macro v4.2.4
+    Checking veyra-core v0.1.0 (<workspace>/crates/veyra-core)
+   Compiling gpui-pre-apple v0.3.7
+    Checking rust-i18n v4.2.4
+   Compiling tauri-build v2.6.3
+   Compiling tauri-codegen v2.6.3
+    Checking objc2-core-data v0.3.2
+    Checking objc2-cloud-kit v0.3.2
+    Checking objc2-core-image v0.3.2
+    Checking objc2-quartz-core v0.3.2
+    Checking objc2-core-location v0.3.2
+    Checking objc2-screen-capture-kit v0.3.2
+    Checking objc2-app-kit v0.3.2
+    Checking objc2-user-notifications v0.3.2
+   Compiling tauri v2.11.5
+   Compiling veyra v0.1.0 (<workspace>/src-tauri)
+   Compiling tauri-macros v2.6.3
+    Checking gpui-kit-assets v0.7.0
+error: failed to run custom build command for `veyra v0.1.0 (<workspace>/src-tauri)`
+
+Caused by:
+  process didn't exit successfully: `<workspace>/target/debug/build/veyra-115a129f3be0aad6/build-script-build` (exit status: 101)
+  --- stdout
+  cargo:rerun-if-env-changed=TAURI_CONFIG
+  cargo:rustc-check-cfg=cfg(desktop)
+  cargo:rustc-cfg=desktop
+  cargo:rustc-check-cfg=cfg(mobile)
+  cargo:rerun-if-changed=<workspace>/src-tauri/tauri.conf.json
+  cargo:rustc-env=TAURI_ANDROID_PACKAGE_NAME_APP_NAME=veyra
+  cargo:rustc-env=TAURI_ANDROID_PACKAGE_NAME_PREFIX=com_lifei6671
+  cargo:rustc-check-cfg=cfg(dev)
+  cargo:rustc-cfg=dev
+  cargo:PERMISSION_FILES_PATH=<workspace>/target/debug/build/veyra-d02f90df12d2803d/out/app-manifest/__app__-permission-files
+  cargo:rerun-if-changed=permissions
+  cargo:PERMISSION_FILES_PATH=<workspace>/target/debug/build/veyra-d02f90df12d2803d/out/app-manifest/__app__-permission-files
+  cargo:rerun-if-changed=capabilities
+  cargo:rerun-if-env-changed=REMOVE_UNUSED_COMMANDS
+  cargo:rustc-env=TAURI_ENV_TARGET_TRIPLE=aarch64-apple-darwin
+
+  --- stderr
+
+  thread 'main' (4995364) panicked at src-tauri/build.rs:25:6:
+  failed to build the Tauri application manifest: resource path `binaries/sing-box-1.14.0-windows-amd64/LICENSE` doesn't exist
+  note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+warning: build failed, waiting for other jobs to finish...

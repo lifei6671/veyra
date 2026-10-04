@@ -1,0 +1,61 @@
+{
+  "observed_at": "2026-10-03T13:26:43.604100+00:00",
+  "source_commit": "029578c81554f2aeef9bb4e0fd6aaa8a19defd55",
+  "source_dirty": true,
+  "rustc_Vv": "rustc 1.99.0 (b940084d7 2026-09-28)\nbinary: rustc\ncommit-hash: b940084d7eb6a299eb4bfeb8e34901bc051e7ac4\ncommit-date: 2026-09-28\nhost: aarch64-apple-darwin\nrelease: 1.99.0\nLLVM version: 23.1.1",
+  "cargo_V": "cargo 1.99.0 (5f94df478 2026-08-27)",
+  "uname_m": "arm64",
+  "sw_vers": "ProductName:\t\tmacOS\nProductVersion:\t\t27.0\nBuildVersion:\t\t26A428",
+  "kit_tag": "v0.7.0",
+  "kit_commit": "0c830f4d257e69fdd17200650533ab4ca9a40cc0",
+  "kit_manifest_url": "https://github.com/longbridge/gpui-kit/blob/v0.7.0/Cargo.toml",
+  "selected_packages": [
+    {
+      "name": "gpui-base",
+      "version": "0.7.0",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "rust_version": null
+    },
+    {
+      "name": "gpui-component",
+      "version": "0.7.0",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "rust_version": null
+    },
+    {
+      "name": "gpui-kit",
+      "version": "0.7.0",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "rust_version": null
+    },
+    {
+      "name": "gpui-pre",
+      "version": "0.3.7",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "rust_version": null
+    },
+    {
+      "name": "gpui-pre-macos",
+      "version": "0.3.7",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "rust_version": null
+    },
+    {
+      "name": "tray-icon",
+      "version": "0.24.2",
+      "source": "registry+https://github.com/rust-lang/crates.io-index",
+      "rust_version": "1.73"
+    }
+  ],
+  "deployment_target": "15.0",
+  "macho_build_version": "target/debug/veyra-gpui-prototype:\nLoad command 11\n      cmd LC_BUILD_VERSION\n  cmdsize 32\n platform MACOS\n    minos 15.0\n      sdk 27.0\n   ntools 1\n     tool LD\n  version 27037.1",
+  "macos_15_runtime_verified": false,
+  "lowest_deployment_target_tested": "15.0",
+  "older_targets_tested": false,
+  "font": "macOS .SystemUIFont plus system fallback; MiSans desktop TTF/OTF not locked",
+  "lock_sha256": "82bb12da34651c020c207b260c0520a0544f2a090dacf0c3cdb7e8a79a897270",
+  "core_versions_changed": [],
+  "prototype_gpui_source_count": 1,
+  "prototype_has_tao_or_winit": false,
+  "core_has_gpui_or_tauri": false
+}

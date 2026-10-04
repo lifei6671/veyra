@@ -1,0 +1,231 @@
+{
+  "task": "OBG-P0-03",
+  "status": "DONE",
+  "validated_at": "2026-10-04T00:07:39.733226+00:00",
+  "task_count": 68,
+  "dag_acyclic": true,
+  "card_dependencies_match_master": true,
+  "counts": {
+    "DONE": 5,
+    "READY": 2,
+    "TODO": 54,
+    "DEFERRED": 7,
+    "ACCEPTANCE": 0,
+    "DOING": 0,
+    "REVIEW": 0,
+    "BLOCKED": 0
+  },
+  "ready_queue": [
+    "P0-04",
+    "P1-03"
+  ],
+  "markdown_local_links_checked": 224,
+  "markdown_errors": [],
+  "json_files_parsed": 6,
+  "interaction_item_count": 41,
+  "png_hash_dimensions_checked": 11,
+  "light_dark_same_dimensions": true,
+  "source_provenance_checked": 7,
+  "single_gpui_source": true,
+  "core_gpui_tauri_absent": true,
+  "prototype_tao_winit_absent": true,
+  "git_diff_check": "PASS",
+  "prototype_check": "PASS",
+  "prototype_build": "PASS",
+  "prototype_clippy": "PASS",
+  "workspace_fmt": "PASS",
+  "default_core_check": "PASS",
+  "workspace_check": "FAIL: legacy Tauri missing Windows sing-box LICENSE resource",
+  "process_cleanup": "PASS: Host tray Quit confirmed and no process; additional gradient capture run cleaned by exact executable/PID SIGTERM",
+  "forbidden_remote_access": false,
+  "commit_push": false,
+  "temporary_files_cleanup": "PASS: /private/tmp/veyra-p003 removed; input sources restored; no prototype process",
+  "acceptance_followup": {
+    "workspace_resource_override": {
+      "date": "2026-10-04",
+      "status": "PASS",
+      "command": "TAURI_CONFIG='{\"bundle\":{\"resources\":[]}}' MACOSX_DEPLOYMENT_TARGET=15.0 cargo +1.99.0 check --workspace --locked",
+      "log": "workspace-check-resource-override.txt",
+      "product_config_modified": false,
+      "packaging_resources_verified": false,
+      "historical_unmodified_check_failure_preserved": true
+    },
+    "host_user_manual_acceptance": {
+      "date": "2026-10-04",
+      "status": "PASS",
+      "record": "host-manual-acceptance.json",
+      "approved_task_status": "DONE"
+    },
+    "host_pre_commit_cleanup": {
+      "date": "2026-10-04",
+      "review": "Host pre-commit review",
+      "evidence_kind": "Host report relayed by user",
+      "pid": 58786,
+      "executable": "target/p0-03/VeyraPrototype.app/Contents/MacOS/veyra-gpui-prototype",
+      "finding": "Host 发现真实 prototype 残留进程；这是历史 Host tray Quit 无进程检查之后再次人工验收运行留下的进程，运行来源为 Host 判断。",
+      "origin_assessment": "Host 推测来自用户本次人工输入/托盘验收后的再次运行。",
+      "cleanup": "Host 已仅对精确 PID 58786 发送 TERM，随后验证该 executable 无任何残留。",
+      "status": "PASS",
+      "historical_boundary": "此前 Host tray Quit 后无进程的记录继续保留；本次为之后另一次运行的清理，不推翻旧检查结果，也不把 TERM 清理计作 tray Quit 验收。"
+    }
+  },
+  "historical_validation_snapshot": {
+    "task": "OBG-P0-03",
+    "status": "ACCEPTANCE",
+    "validated_at": "2026-10-03T13:35:19.380468+00:00",
+    "task_count": 68,
+    "dag_acyclic": true,
+    "card_dependencies_match_master": true,
+    "counts": {
+      "DONE": 4,
+      "ACCEPTANCE": 1,
+      "READY": 1,
+      "TODO": 55,
+      "DEFERRED": 7
+    },
+    "ready_queue": [
+      "P0-04"
+    ],
+    "markdown_local_links_checked": 237,
+    "markdown_errors": [],
+    "json_files_parsed": 5,
+    "interaction_item_count": 41,
+    "png_hash_dimensions_checked": 11,
+    "light_dark_same_dimensions": true,
+    "source_provenance_checked": 7,
+    "single_gpui_source": true,
+    "core_gpui_tauri_absent": true,
+    "prototype_tao_winit_absent": true,
+    "git_diff_check": "PASS",
+    "prototype_check": "PASS",
+    "prototype_build": "PASS",
+    "prototype_clippy": "PASS",
+    "workspace_fmt": "PASS",
+    "default_core_check": "PASS",
+    "workspace_check": "FAIL: legacy Tauri missing Windows sing-box LICENSE resource",
+    "process_cleanup": "PASS: Host tray Quit confirmed and no process; additional gradient capture run cleaned by exact executable/PID SIGTERM",
+    "forbidden_remote_access": false,
+    "commit_push": false,
+    "temporary_files_cleanup": "PASS: /private/tmp/veyra-p003 removed; input sources restored; no prototype process",
+    "acceptance_followup": {
+      "workspace_resource_override": {
+        "date": "2026-10-04",
+        "status": "PASS",
+        "command": "TAURI_CONFIG='{\"bundle\":{\"resources\":[]}}' MACOSX_DEPLOYMENT_TARGET=15.0 cargo +1.99.0 check --workspace --locked",
+        "log": "workspace-check-resource-override.txt",
+        "product_config_modified": false,
+        "packaging_resources_verified": false,
+        "historical_unmodified_check_failure_preserved": true
+      },
+      "host_user_manual_acceptance": {
+        "date": "2026-10-04",
+        "status": "PASS",
+        "record": "host-manual-acceptance.json",
+        "approved_task_status": "DONE"
+      }
+    }
+  },
+  "workspace_check_scope": "Historical unmodified check FAIL; resource override Host check and 2026-10-04 rerun PASS are separate compilation evidence, not packaging verification.",
+  "workspace_resource_override_check": "PASS",
+  "closure_verification": {
+    "date": "2026-10-04",
+    "verification_scope": "manual acceptance evidence/status closure; no prototype function changes or UI/kernel runs",
+    "json_files_parsed": 6,
+    "interaction_item_count": 41,
+    "historical_interaction_entries_unchanged": true,
+    "historical_visual_manifest_unchanged": true,
+    "historical_artifacts_and_prototype_hashes_unchanged": true,
+    "png_hash_dimensions_checked": 11,
+    "light_dark_same_dimensions": true,
+    "source_provenance_checked": 7,
+    "task_count": 68,
+    "dag_acyclic": true,
+    "card_dependencies_match_master": true,
+    "counts": {
+      "DONE": 5,
+      "READY": 2,
+      "TODO": 54,
+      "DEFERRED": 7,
+      "ACCEPTANCE": 0,
+      "DOING": 0,
+      "REVIEW": 0,
+      "BLOCKED": 0
+    },
+    "macos_counts": {
+      "DONE": 5,
+      "READY": 2,
+      "TODO": 54,
+      "ACCEPTANCE": 0,
+      "DOING": 0,
+      "REVIEW": 0,
+      "BLOCKED": 0
+    },
+    "windows_counts": {
+      "DEFERRED": 7
+    },
+    "ready_queue": [
+      "P0-04",
+      "P1-03"
+    ],
+    "p0_05_status": "TODO",
+    "markdown_scope": "all Markdown under docs/openbox-rust-gpui-tasks",
+    "markdown_local_links_checked": 224,
+    "markdown_errors": [],
+    "cargo_checks": [
+      {
+        "command": "cargo +1.99.0 check --locked -p veyra-gpui-prototype",
+        "environment": {},
+        "timeout_seconds": 600,
+        "started_at": "2026-10-04T00:01:45.388764+00:00",
+        "finished_at": "2026-10-04T00:02:02.385977+00:00",
+        "exit_code": 0,
+        "status": "PASS",
+        "log": "check-2026-10-04.txt"
+      },
+      {
+        "command": "cargo +1.99.0 check --workspace --locked",
+        "environment": {
+          "TAURI_CONFIG": "{\"bundle\":{\"resources\":[]}}",
+          "MACOSX_DEPLOYMENT_TARGET": "15.0"
+        },
+        "timeout_seconds": 900,
+        "started_at": "2026-10-04T00:02:02.386025+00:00",
+        "finished_at": "2026-10-04T00:02:02.667219+00:00",
+        "exit_code": 0,
+        "status": "PASS",
+        "log": "workspace-check-resource-override-2026-10-04.txt"
+      }
+    ],
+    "git_diff_check": "PASS",
+    "host_manual_acceptance_record": "host-manual-acceptance.json",
+    "card_acceptance": [
+      {
+        "id": "chinese_ime_editing_focus",
+        "status": "PASS",
+        "basis": "用户真实手工中文输入确认 + 历史选区/粘贴/撤销/多行/Escape/焦点恢复操作；composition/candidate 真实性由人工确认补足。"
+      },
+      {
+        "id": "tray_lifecycle",
+        "status": "PASS",
+        "basis": "用户本次托盘点击确认与明确验收批准 + 历史 Host 生命周期操作报告/进程退出检查 + 单一 GPUI 主循环审查。独立 tray screenshot/focus 证据限制保留。"
+      },
+      {
+        "id": "visual_capability",
+        "status": "PASS",
+        "basis": "现有 11 张真实截图 + window blur 切换/backend 与能力差异说明，足以回答可实现程度与差异；不声称 card backdrop 或受控 window blur 质量已证明。"
+      },
+      {
+        "id": "versions_dependencies_build",
+        "status": "PASS",
+        "basis": "沿用已通过版本/依赖/实机构建证据；Host 已独立验证 resource override workspace check，本次两条指定 check 亦复跑 PASS；原无覆盖 workspace check FAIL 保留。"
+      }
+    ],
+    "new_screenshot_files": [],
+    "next_tasks_started": false,
+    "prototype_function_code_modified": false,
+    "real_sing_box_run": false,
+    "remote_openbox_access": false,
+    "commit_push": false
+  },
+  "retained_checks_scope": "prototype_build/prototype_clippy/workspace_fmt/default_core_check/dependency-tree/process-cleanup fields retain 2026-10-03 evidence; this closure reran only the two cargo checks listed in closure_verification.cargo_checks."
+}

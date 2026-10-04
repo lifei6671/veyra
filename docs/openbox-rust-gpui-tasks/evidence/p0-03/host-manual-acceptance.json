@@ -1,0 +1,83 @@
+{
+  "schema_version": 1,
+  "task": "OBG-P0-03",
+  "date": "2026-10-04",
+  "title": "Host/User Manual Acceptance",
+  "source": "2026-10-04 本轮用户明确指令；用户亲手操作及人工验收报告，不是本轮自动化 UI 复测",
+  "evidence_kind": "direct user manual acceptance",
+  "approval_quote": "就当验收通过了",
+  "approved_status": "DONE",
+  "manual_confirmation": {
+    "chinese_input": {
+      "status": "PASS",
+      "note": "用户亲自完成真实中文输入并确认功能可用；用户确认截图中的单行 Input 与 Modal Textarea 均已出现真实中文内容。以此补足本卡 composition/candidate 输入真实性；不将此前 paste 或自动化候选框缺证据改记为通过。"
+    },
+    "tray_operation": {
+      "status": "PASS",
+      "note": "用户亲自完成托盘点击操作并确认可用；结合此前 Host 三轮显示/隐藏、菜单更新、退出和进程检查，用户明确批准本卡托盘生命周期验收通过。未补造关闭最后窗口、独立前台 focus 或托盘菜单截图证据。"
+    },
+    "card_approval": {
+      "status": "PASS",
+      "note": "用户明确要求“就当验收通过了”，批准 OBG-P0-03 四项卡验收 PASS、状态 DONE。"
+    }
+  },
+  "card_acceptance": [
+    {
+      "id": "chinese_ime_editing_focus",
+      "status": "PASS",
+      "basis": "用户真实手工中文输入确认 + 历史选区/粘贴/撤销/多行/Escape/焦点恢复操作；composition/candidate 真实性由人工确认补足。"
+    },
+    {
+      "id": "tray_lifecycle",
+      "status": "PASS",
+      "basis": "用户本次托盘点击确认与明确验收批准 + 历史 Host 生命周期操作报告/进程退出检查 + 单一 GPUI 主循环审查。独立 tray screenshot/focus 证据限制保留。"
+    },
+    {
+      "id": "visual_capability",
+      "status": "PASS",
+      "basis": "现有 11 张真实截图 + window blur 切换/backend 与能力差异说明，足以回答可实现程度与差异；不声称 card backdrop 或受控 window blur 质量已证明。"
+    },
+    {
+      "id": "versions_dependencies_build",
+      "status": "PASS",
+      "basis": "沿用已通过版本/依赖/实机构建证据；Host 已独立验证 resource override workspace check，本次两条指定 check 亦复跑 PASS；原无覆盖 workspace check FAIL 保留。"
+    }
+  ],
+  "historical_evidence_preserved": {
+    "interaction_results": "interaction-results.json 中既有 41 项及 2026-10-03 Host 报告保持原样，历史 LIMITATION/缺证据不改写。",
+    "visual_manifest": "visual-manifest.json 与现有 11 PNG 保持原样；此前截图里的 paste 来源不改为真人 IME。",
+    "workspace_check": "workspace-check.txt 及无 TAURI_CONFIG 覆盖时旧 Windows LICENSE resource FAIL 保留。"
+  },
+  "screenshot_boundary": {
+    "note": "本次人工确认不等同于补造 candidate-window / tray-menu 截图；用户提及的 Input/Modal 中文截图按用户报告记录，不虚构本地文件名或加入历史截图 manifest。",
+    "new_screenshot_files": [],
+    "historical_missing": [
+      "IME candidate window",
+      "tray-window-hidden.png",
+      "tray-menu.png",
+      "independent tray/frontmost focus evidence",
+      "controlled window-behind texture to prove optical blur"
+    ]
+  },
+  "non_blocking_limitations": [
+    "card-level backdrop blur 未证明",
+    "MiSans 桌面字体资源未锁定",
+    "nested dropdown/Escape 优先级未验证",
+    "macOS 15 实机未验证",
+    "受控 window blur 视觉质量对照缺失",
+    "candidate-window/tray screenshot 与独立 focus 证据缺失"
+  ],
+  "next_tasks_started": false,
+  "host_pre_commit_cleanup": {
+    "date": "2026-10-04",
+    "review": "Host pre-commit review",
+    "evidence_kind": "Host report relayed by user",
+    "pid": 58786,
+    "executable": "target/p0-03/VeyraPrototype.app/Contents/MacOS/veyra-gpui-prototype",
+    "finding": "Host 发现真实 prototype 残留进程；这是历史 Host tray Quit 无进程检查之后再次人工验收运行留下的进程，运行来源为 Host 判断。",
+    "origin_assessment": "Host 推测来自用户本次人工输入/托盘验收后的再次运行。",
+    "cleanup": "Host 已仅对精确 PID 58786 发送 TERM，随后验证该 executable 无任何残留。",
+    "status": "PASS",
+    "historical_boundary": "此前 Host tray Quit 后无进程的记录继续保留；本次为之后另一次运行的清理，不推翻旧检查结果，也不把 TERM 清理计作 tray Quit 验收。"
+  }
+}

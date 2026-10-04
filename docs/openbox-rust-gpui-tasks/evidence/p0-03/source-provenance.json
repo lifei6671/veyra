@@ -1,0 +1,42 @@
+{
+  "source_commit": "029578c81554f2aeef9bb4e0fd6aaa8a19defd55",
+  "files": [
+    {
+      "path": "Cargo.toml",
+      "sha256": "fb46aa2f2bf7d6dcf4efa83a1febd9ff8be3582a13ab9d42db2f48b73615a9ca",
+      "line_count": 4
+    },
+    {
+      "path": "Cargo.lock",
+      "sha256": "82bb12da34651c020c207b260c0520a0544f2a090dacf0c3cdb7e8a79a897270",
+      "line_count": 11210
+    },
+    {
+      "path": "crates/veyra-gpui-prototype/Cargo.toml",
+      "sha256": "53a17b224fa6bb1bbf037da2d5ad0fec52f9e830503f98bb0f22f32e1cd5cd60",
+      "line_count": 10
+    },
+    {
+      "path": "crates/veyra-gpui-prototype/README.md",
+      "sha256": "7eaf28a257b6de314de2bea30c645089be4a3ef65104edae3953afec0770e8a9",
+      "line_count": 31
+    },
+    {
+      "path": "crates/veyra-gpui-prototype/package-macos.sh",
+      "sha256": "d4fb402068998c054240c43d4667ffeae4c1432a8682535826ae4d3bc9685552",
+      "line_count": 23
+    },
+    {
+      "path": "crates/veyra-gpui-prototype/rust-toolchain.toml",
+      "sha256": "2ad6f15416572b4836585087f1d4abc53b8fa2dbd616f8dacfaa587ed6714228",
+      "line_count": 4
+    },
+    {
+      "path": "crates/veyra-gpui-prototype/src/main.rs",
+      "sha256": "f8f0ec0933a81dfe89d701017397bc3b1237240a1c44712f551ad1501c293ce7",
+      "line_count": 370
+    }
+  ],
+  "earlier_capture_source_sha256": "4258d3b0f2d94ac6a44c56990e70f678c92dc93ab7c0a691cb7b899de6fda7b1",
+  "change_after_host_tray_confirmation": "Only main panel background changed from solid RGBA to GPUI linear_gradient; tray/input/modal/list unchanged."
+}

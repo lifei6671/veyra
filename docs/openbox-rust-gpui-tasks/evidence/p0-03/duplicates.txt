@@ -1,0 +1,811 @@
+bitflags v1.3.2
+├── fluent-uri v0.1.4
+│   └── lsp-types v0.97.0
+│       ├── gpui-base v0.7.0
+│       │   ├── gpui-component v0.7.0
+│       │   │   └── gpui-kit v0.7.0
+│       │   │       └── veyra-gpui-prototype v0.1.0 (<workspace>/crates/veyra-gpui-prototype)
+│       │   └── gpui-kit v0.7.0 (*)
+│       └── gpui-component v0.7.0 (*)
+├── globwalk v0.8.1
+│   └── rust-i18n-support v4.2.4
+│       └── rust-i18n-macro v4.2.4 (proc-macro)
+│           └── rust-i18n v4.2.4
+│               └── gpui-component v0.7.0 (*)
+│   [build-dependencies]
+│   └── rust-i18n v4.2.4 (*)
+├── lsp-types v0.97.0 (*)
+└── png v0.17.16
+    └── tiny-skia v0.11.4
+        └── resvg v0.46.0
+            └── gpui-pre v0.3.7
+                ├── gpui-base v0.7.0 (*)
+                ├── gpui-component v0.7.0 (*)
+                ├── gpui-kit v0.7.0 (*)
+                ├── gpui-kit-assets v0.7.0
+                │   ├── gpui-component v0.7.0 (*)
+                │   └── gpui-kit v0.7.0 (*)
+                ├── gpui-pre-apple v0.3.7
+                │   └── gpui-pre-macos v0.3.7
+                │       └── gpui-pre-platform v0.3.7
+                │           └── gpui-kit v0.7.0 (*)
+                ├── gpui-pre-macos v0.3.7 (*)
+                └── gpui-pre-platform v0.3.7 (*)
+
+bitflags v2.13.1
+├── cocoa v0.26.1
+│   ├── gpui-pre-apple v0.3.7 (*)
+│   └── gpui-pre-macos v0.3.7 (*)
+├── cocoa-foundation v0.2.1
+│   └── cocoa v0.26.1 (*)
+├── core-graphics v0.24.0
+│   ├── cocoa v0.26.1 (*)
+│   ├── core-text v21.0.0
+│   │   ├── gpui-component v0.7.0 (*)
+│   │   ├── gpui-pre-macos v0.3.7 (*)
+│   │   └── zed-font-kit v0.14.1-zed
+│   │       ├── gpui-pre v0.3.7 (*)
+│   │       └── gpui-pre-macos v0.3.7 (*)
+│   ├── gpui-pre-macos v0.3.7 (*)
+│   └── zed-font-kit v0.14.1-zed (*)
+├── core-graphics-types v0.2.0
+│   ├── cocoa-foundation v0.2.1 (*)
+│   ├── core-graphics v0.24.0 (*)
+│   └── metal v0.33.0
+│       ├── core-video v0.5.2
+│       │   ├── gpui-pre v0.3.7 (*)
+│       │   └── gpui-pre-apple v0.3.7 (*)
+│       └── gpui-pre-apple v0.3.7 (*)
+├── core-graphics2 v0.5.2
+│   └── core-video v0.5.2 (*)
+├── dispatch2 v0.3.1
+│   ├── gpui-pre-macos v0.3.7 (*)
+│   └── objc2-screen-capture-kit v0.3.2
+│       └── gpui-pre-macos v0.3.7 (*)
+├── gpui-pre v0.3.7 (*)
+├── keyboard-types v0.7.0
+│   └── muda v0.19.3
+│       └── tray-icon v0.24.2
+│           └── veyra-gpui-prototype v0.1.0 (<workspace>/crates/veyra-gpui-prototype)
+├── metal v0.33.0 (*)
+├── notify v7.0.0
+│   └── gpui-component v0.7.0 (*)
+├── objc2-app-kit v0.2.2
+│   └── accesskit_macos v0.26.3
+│       └── gpui-pre-macos v0.3.7 (*)
+├── objc2-app-kit v0.3.2
+│   ├── gpui-base v0.7.0 (*)
+│   ├── gpui-component v0.7.0 (*)
+│   ├── gpui-pre-macos v0.3.7 (*)
+│   ├── muda v0.19.3 (*)
+│   └── tray-icon v0.24.2 (*)
+├── objc2-cloud-kit v0.3.2
+│   └── objc2-app-kit v0.3.2 (*)
+├── objc2-core-data v0.3.2
+│   └── objc2-app-kit v0.3.2 (*)
+├── objc2-core-foundation v0.3.2
+│   ├── gpui-pre v0.3.7 (*)
+│   ├── muda v0.19.3 (*)
+│   ├── objc2-app-kit v0.3.2 (*)
+│   ├── objc2-core-graphics v0.3.2
+│   │   ├── gpui-pre-macos v0.3.7 (*)
+│   │   ├── objc2-app-kit v0.3.2 (*)
+│   │   ├── objc2-screen-capture-kit v0.3.2 (*)
+│   │   └── tray-icon v0.24.2 (*)
+│   ├── objc2-core-media v0.3.2
+│   │   ├── gpui-pre-macos v0.3.7 (*)
+│   │   └── objc2-screen-capture-kit v0.3.2 (*)
+│   ├── objc2-core-text v0.3.2
+│   │   └── objc2-app-kit v0.3.2 (*)
+│   ├── objc2-core-video v0.3.2
+│   │   ├── gpui-pre v0.3.7 (*)
+│   │   ├── objc2-app-kit v0.3.2 (*)
+│   │   └── objc2-core-media v0.3.2 (*)
+│   ├── objc2-foundation v0.3.2
+│   │   ├── gpui-base v0.7.0 (*)
+│   │   ├── gpui-component v0.7.0 (*)
+│   │   ├── gpui-pre-macos v0.3.7 (*)
+│   │   ├── muda v0.19.3 (*)
+│   │   ├── objc2-app-kit v0.3.2 (*)
+│   │   ├── objc2-cloud-kit v0.3.2 (*)
+│   │   ├── objc2-core-data v0.3.2 (*)
+│   │   ├── objc2-core-image v0.3.2
+│   │   │   └── objc2-app-kit v0.3.2 (*)
+│   │   ├── objc2-core-location v0.3.2
+│   │   │   └── objc2-user-notifications v0.3.2
+│   │   │       └── gpui-pre-macos v0.3.7 (*)
+│   │   ├── objc2-quartz-core v0.3.2
+│   │   │   └── objc2-app-kit v0.3.2 (*)
+│   │   ├── objc2-screen-capture-kit v0.3.2 (*)
+│   │   ├── objc2-user-notifications v0.3.2 (*)
+│   │   └── tray-icon v0.24.2 (*)
+│   └── tray-icon v0.24.2 (*)
+├── objc2-core-graphics v0.3.2 (*)
+├── objc2-core-media v0.3.2 (*)
+├── objc2-core-text v0.3.2 (*)
+├── objc2-core-video v0.3.2 (*)
+├── objc2-foundation v0.2.2
+│   ├── accesskit_macos v0.26.3 (*)
+│   └── objc2-app-kit v0.2.2 (*)
+├── objc2-foundation v0.3.2 (*)
+├── objc2-quartz-core v0.3.2 (*)
+├── objc2-user-notifications v0.3.2 (*)
+├── png v0.18.1
+│   ├── image v0.25.10
+│   │   ├── gpui-pre v0.3.7 (*)
+│   │   ├── gpui-pre-apple v0.3.7 (*)
+│   │   └── gpui-pre-macos v0.3.7 (*)
+│   ├── muda v0.19.3 (*)
+│   └── tray-icon v0.24.2 (*)
+├── rustix v1.1.5
+│   ├── async-io v2.6.0
+│   │   ├── async-net v2.0.0
+│   │   │   └── smol v2.0.2
+│   │   │       ├── gpui-base v0.7.0 (*)
+│   │   │       └── gpui-component v0.7.0 (*)
+│   │   ├── async-process v2.5.0
+│   │   │   └── smol v2.0.2 (*)
+│   │   ├── async-signal v0.2.14
+│   │   │   └── async-process v2.5.0 (*)
+│   │   └── smol v2.0.2 (*)
+│   ├── async-process v2.5.0 (*)
+│   ├── async-signal v0.2.14 (*)
+│   └── polling v3.11.0
+│       └── async-io v2.6.0 (*)
+├── rustybuzz v0.20.1
+│   └── usvg v0.46.0
+│       ├── gpui-pre v0.3.7 (*)
+│       └── resvg v0.46.0 (*)
+└── zed-font-kit v0.14.1-zed (*)
+
+bitflags v2.13.1
+├── bindgen v0.72.1
+│   [build-dependencies]
+│   └── gpui-pre v0.3.7 (*)
+└── rustix v1.1.5
+    └── tempfile v3.27.0
+        └── cbindgen v0.28.0
+            [build-dependencies]
+            └── gpui-pre-apple v0.3.7 (*)
+
+dirs v5.0.1
+└── zed-font-kit v0.14.1-zed (*)
+
+dirs v6.0.0
+└── shellexpand v3.1.2
+    └── rust-embed-impl v8.12.0 (proc-macro)
+        └── rust-embed v8.12.0
+            └── gpui-kit-assets v0.7.0 (*)
+
+dirs-sys v0.4.1
+└── dirs v5.0.1 (*)
+
+dirs-sys v0.5.0
+└── dirs v6.0.0 (*)
+
+errno v0.3.14
+├── rustix v1.1.5 (*)
+└── signal-hook-registry v1.4.8
+    └── async-signal v0.2.14 (*)
+
+errno v0.3.14
+└── rustix v1.1.5 (*)
+
+fastrand v2.5.0
+├── async-executor v1.14.0
+│   └── smol v2.0.2 (*)
+├── flume v0.12.0
+│   └── gpui-pre-scheduler v0.3.7
+│       └── gpui-pre v0.3.7 (*)
+├── futures-lite v2.6.1
+│   ├── async-executor v1.14.0 (*)
+│   ├── async-fs v2.2.0
+│   │   └── smol v2.0.2 (*)
+│   ├── async-io v2.6.0 (*)
+│   ├── async-net v2.0.0 (*)
+│   ├── async-process v2.5.0 (*)
+│   ├── blocking v1.7.0
+│   │   ├── async-fs v2.2.0 (*)
+│   │   ├── async-net v2.0.0 (*)
+│   │   └── smol v2.0.2 (*)
+│   ├── futures-concurrency v7.7.1
+│   │   └── gpui-pre v0.3.7 (*)
+│   └── smol v2.0.2 (*)
+└── piper v0.2.5
+    └── blocking v1.7.0 (*)
+
+fastrand v2.5.0
+└── tempfile v3.27.0 (*)
+
+getrandom v0.3.4
+└── rand_core v0.9.5
+    ├── rand v0.9.5
+    │   ├── gpui-pre v0.3.7 (*)
+    │   └── gpui-pre-scheduler v0.3.7 (*)
+    └── rand_chacha v0.9.0
+        └── rand v0.9.5 (*)
+
+getrandom v0.4.3
+├── tempfile v3.27.0 (*)
+└── uuid v1.26.0
+    ├── accesskit v0.24.1
+    │   ├── accesskit_consumer v0.38.0
+    │   │   └── accesskit_macos v0.26.3 (*)
+    │   ├── accesskit_macos v0.26.3 (*)
+    │   ├── gpui-pre v0.3.7 (*)
+    │   └── gpui-pre-macos v0.3.7 (*)
+    ├── gpui-component v0.7.0 (*)
+    ├── gpui-pre v0.3.7 (*)
+    └── gpui-pre-macos v0.3.7 (*)
+
+hashbrown v0.16.1
+├── accesskit_consumer v0.38.0 (*)
+└── accesskit_macos v0.26.3 (*)
+
+hashbrown v0.17.1
+└── indexmap v2.14.1
+    ├── cbindgen v0.28.0 (*)
+    ├── gpui-pre-collections v0.3.7
+    │   ├── gpui-pre v0.3.7 (*)
+    │   ├── gpui-pre-macos v0.3.7 (*)
+    │   ├── gpui-pre-perf v0.3.7
+    │   │   └── gpui-pre-util-macros v0.3.7 (proc-macro)
+    │   │       └── gpui-pre v0.3.7 (*)
+    │   └── gpui-pre-zlog v0.3.7
+    │       └── gpui-pre-ztracing v0.3.7
+    │           └── gpui-pre-sum-tree v0.3.7
+    │               ├── gpui-base v0.7.0 (*)
+    │               ├── gpui-component v0.7.0 (*)
+    │               └── gpui-pre v0.3.7 (*)
+    ├── schemars v1.2.2
+    │   ├── gpui-base v0.7.0 (*)
+    │   ├── gpui-component v0.7.0 (*)
+    │   ├── gpui-pre v0.3.7 (*)
+    │   └── gpui-pre-shared-string v0.3.7
+    │       └── gpui-pre v0.3.7 (*)
+    ├── serde_json v1.0.151
+    │   ├── gpui-base v0.7.0 (*)
+    │   ├── gpui-component v0.7.0 (*)
+    │   ├── gpui-pre v0.3.7 (*)
+    │   ├── gpui-pre-http-client v0.3.7
+    │   │   └── gpui-pre v0.3.7 (*)
+    │   ├── lsp-types v0.97.0 (*)
+    │   └── schemars v1.2.2 (*)
+    ├── serde_json v1.0.151
+    │   ├── cbindgen v0.28.0 (*)
+    │   ├── gpui-pre-perf v0.3.7 (*)
+    │   ├── rust-i18n-macro v4.2.4 (proc-macro) (*)
+    │   └── rust-i18n-support v4.2.4 (*)
+    ├── toml_edit v0.22.27
+    │   └── toml v0.8.23
+    │       ├── cbindgen v0.28.0 (*)
+    │       └── rust-i18n-support v4.2.4 (*)
+    └── toml_edit v0.25.13+spec-1.1.0
+        └── proc-macro-crate v3.5.0
+            ├── gpui-component-macros v0.7.0 (proc-macro)
+            │   └── gpui-component v0.7.0 (*)
+            └── gpui-pre-macros v0.3.7 (proc-macro)
+                ├── gpui-base v0.7.0 (*)
+                ├── gpui-component v0.7.0 (*)
+                └── gpui-pre v0.3.7 (*)
+
+heck v0.4.1
+└── cbindgen v0.28.0 (*)
+
+heck v0.5.0
+├── gpui-pre-macros v0.3.7 (proc-macro) (*)
+└── strum_macros v0.28.0 (proc-macro)
+    └── strum v0.28.0
+        ├── gpui-pre v0.3.7 (*)
+        └── gpui-pre-macos v0.3.7 (*)
+
+itertools v0.11.0
+└── rust-i18n-support v4.2.4 (*)
+
+itertools v0.13.0
+└── bindgen v0.72.1 (*)
+
+itertools v0.13.0
+├── gpui-base v0.7.0 (*)
+└── gpui-component v0.7.0 (*)
+
+itertools v0.14.0
+├── gpui-pre v0.3.7 (*)
+└── gpui-pre-macos v0.3.7 (*)
+
+miniz_oxide v0.8.9
+├── backtrace v0.3.76
+│   └── gpui-pre-scheduler v0.3.7 (*)
+├── exr v1.74.2
+│   └── image v0.25.10 (*)
+├── png v0.17.16 (*)
+└── png v0.18.1 (*)
+
+miniz_oxide v0.9.1
+└── flate2 v1.1.10
+    ├── compression-codecs v0.4.45
+    │   └── async-compression v0.4.50
+    │       └── gpui-pre-http-client v0.3.7 (*)
+    ├── png v0.17.16 (*)
+    ├── png v0.18.1 (*)
+    ├── tiff v0.11.3
+    │   └── image v0.25.10 (*)
+    └── usvg v0.46.0 (*)
+
+num-traits v0.2.19
+├── chrono v0.4.45
+│   ├── gpui-base v0.7.0 (*)
+│   ├── gpui-component v0.7.0 (*)
+│   ├── gpui-pre v0.3.7 (*)
+│   ├── gpui-pre-scheduler v0.3.7 (*)
+│   └── gpui-pre-zlog v0.3.7 (*)
+├── euclid v0.22.14
+│   ├── etagere v0.2.15
+│   │   ├── gpui-pre v0.3.7 (*)
+│   │   └── gpui-pre-apple v0.3.7 (*)
+│   └── lyon_geom v1.0.19
+│       └── lyon_path v1.0.19
+│           ├── lyon_algorithms v1.0.21
+│           │   └── lyon v1.0.19
+│           │       └── gpui-pre v0.3.7 (*)
+│           └── lyon_tessellation v1.0.22
+│               └── lyon v1.0.19 (*)
+├── gpui-base v0.7.0 (*)
+├── gpui-component v0.7.0 (*)
+├── image v0.25.10 (*)
+├── lyon_algorithms v1.0.21 (*)
+├── lyon_geom v1.0.19 (*)
+├── lyon_path v1.0.19 (*)
+├── lyon_tessellation v1.0.22 (*)
+├── moxcms v0.8.1
+│   └── image v0.25.10 (*)
+└── num-complex v0.4.6
+    ├── exr v1.74.2 (*)
+    └── pulp v0.22.3
+        └── exr v1.74.2 (*)
+
+num-traits v0.2.19
+└── serde-saphyr v1.3.0
+    └── rust-i18n-support v4.2.4 (*)
+
+objc2 v0.5.2
+├── accesskit_macos v0.26.3 (*)
+├── objc2-app-kit v0.2.2 (*)
+└── objc2-foundation v0.2.2 (*)
+
+objc2 v0.6.4
+├── block2 v0.6.2
+│   ├── dispatch2 v0.3.1 (*)
+│   ├── gpui-pre-apple v0.3.7 (*)
+│   ├── gpui-pre-macos v0.3.7 (*)
+│   ├── objc2-app-kit v0.3.2 (*)
+│   ├── objc2-foundation v0.3.2 (*)
+│   ├── objc2-screen-capture-kit v0.3.2 (*)
+│   └── objc2-user-notifications v0.3.2 (*)
+├── dispatch2 v0.3.1 (*)
+├── gpui-base v0.7.0 (*)
+├── gpui-component v0.7.0 (*)
+├── gpui-pre-apple v0.3.7 (*)
+├── gpui-pre-macos v0.3.7 (*)
+├── muda v0.19.3 (*)
+├── objc2-app-kit v0.3.2 (*)
+├── objc2-cloud-kit v0.3.2 (*)
+├── objc2-core-data v0.3.2 (*)
+├── objc2-core-foundation v0.3.2 (*)
+├── objc2-core-graphics v0.3.2 (*)
+├── objc2-core-image v0.3.2 (*)
+├── objc2-core-location v0.3.2 (*)
+├── objc2-core-media v0.3.2 (*)
+├── objc2-core-text v0.3.2 (*)
+├── objc2-core-video v0.3.2 (*)
+├── objc2-foundation v0.3.2 (*)
+├── objc2-quartz-core v0.3.2 (*)
+├── objc2-screen-capture-kit v0.3.2 (*)
+├── objc2-user-notifications v0.3.2 (*)
+└── tray-icon v0.24.2 (*)
+
+objc2-app-kit v0.2.2 (*)
+
+objc2-app-kit v0.3.2 (*)
+
+objc2-foundation v0.2.2 (*)
+
+objc2-foundation v0.3.2 (*)
+
+once_cell v1.21.4
+├── gpui-component v0.7.0 (*)
+├── muda v0.19.3 (*)
+├── tracing-core v0.1.36
+│   ├── tracing v0.1.44
+│   │   ├── gpui-base v0.7.0 (*)
+│   │   ├── gpui-component v0.7.0 (*)
+│   │   ├── gpui-pre-sum-tree v0.3.7 (*)
+│   │   └── gpui-pre-ztracing v0.3.7 (*)
+│   ├── tracing-log v0.2.0
+│   │   └── tracing-subscriber v0.3.23
+│   │       └── gpui-pre-ztracing v0.3.7 (*)
+│   └── tracing-subscriber v0.3.23 (*)
+├── tracing-log v0.2.0 (*)
+└── tray-icon v0.24.2 (*)
+
+once_cell v1.21.4
+└── tempfile v3.27.0 (*)
+
+png v0.17.16 (*)
+
+png v0.18.1 (*)
+
+pollster v0.2.5
+└── postage v0.5.0
+    └── gpui-pre v0.3.7 (*)
+
+pollster v0.4.0
+└── gpui-pre v0.3.7 (*)
+
+rand v0.8.8
+└── phf_generator v0.11.3
+    ├── phf_codegen v0.11.3
+    │   [build-dependencies]
+    │   └── markup5ever v0.12.1
+    │       ├── html5ever v0.27.0
+    │       │   ├── gpui-base v0.7.0 (*)
+    │       │   └── markup5ever_rcdom v0.3.0
+    │       │       └── gpui-base v0.7.0 (*)
+    │       ├── markup5ever_rcdom v0.3.0 (*)
+    │       └── xml5ever v0.18.1
+    │           └── markup5ever_rcdom v0.3.0 (*)
+    └── string_cache_codegen v0.5.4
+        [build-dependencies]
+        └── markup5ever v0.12.1 (*)
+
+rand v0.9.5 (*)
+
+rand_core v0.6.4
+└── rand v0.8.8 (*)
+
+rand_core v0.9.5 (*)
+
+rust-i18n-support v4.2.4
+└── rust-i18n v4.2.4 (*)
+
+rust-i18n-support v4.2.4 (*)
+
+rustix v1.1.5 (*)
+
+rustix v1.1.5 (*)
+
+semver v1.0.28
+└── gpui-pre-macos v0.3.7 (*)
+
+semver v1.0.28
+└── rustc_version v0.4.1
+    └── embed-resource v3.0.11
+        [build-dependencies]
+        └── gpui-pre v0.3.7 (*)
+    [build-dependencies]
+    ├── derive_more-impl v2.1.1 (proc-macro)
+    │   └── derive_more v2.1.1
+    │       ├── gpui-pre v0.3.7 (*)
+    │       ├── gpui-pre-apple v0.3.7 (*)
+    │       └── gpui-pre-http-client v0.3.7 (*)
+    └── pathfinder_simd v0.5.6
+        ├── pathfinder_geometry v0.5.1
+        │   ├── gpui-pre-macos v0.3.7 (*)
+        │   └── zed-font-kit v0.14.1-zed (*)
+        └── zed-font-kit v0.14.1-zed (*)
+
+serde v1.0.229
+├── chrono v0.4.45 (*)
+├── gpui-base v0.7.0 (*)
+├── gpui-component v0.7.0 (*)
+├── gpui-pre v0.3.7 (*)
+├── gpui-pre-http-client v0.3.7 (*)
+├── gpui-pre-shared-string v0.3.7 (*)
+├── keyboard-types v0.7.0 (*)
+├── lsp-types v0.97.0 (*)
+├── markdown v1.0.0
+│   ├── gpui-base v0.7.0 (*)
+│   └── gpui-component v0.7.0 (*)
+├── schemars v1.2.2 (*)
+├── serde_urlencoded v0.7.1
+│   └── gpui-pre-http-client v0.3.7 (*)
+└── string_cache v0.8.9
+    └── markup5ever v0.12.1 (*)
+
+serde v1.0.229
+├── cbindgen v0.28.0 (*)
+├── gpui-pre-perf v0.3.7 (*)
+├── rust-i18n-macro v4.2.4 (proc-macro) (*)
+├── rust-i18n-support v4.2.4 (*)
+├── serde_spanned v0.6.9
+│   ├── toml v0.8.23 (*)
+│   └── toml_edit v0.22.27 (*)
+├── toml v0.8.23 (*)
+├── toml_datetime v0.6.11
+│   ├── toml v0.8.23 (*)
+│   └── toml_edit v0.22.27 (*)
+├── toml_edit v0.22.27 (*)
+└── triomphe v0.1.16
+    ├── rust-i18n-support v4.2.4 (*)
+    └── rust-i18n-support v4.2.4 (*)
+
+serde_core v1.0.229
+├── erased-serde v0.4.10
+│   └── value-bag-serde1 v1.14.1
+│       └── value-bag v1.14.1
+│           └── log v0.4.34
+│               ├── bindgen v0.72.1 (*)
+│               ├── cbindgen v0.28.0 (*)
+│               ├── fontdb v0.23.0
+│               │   └── usvg v0.46.0 (*)
+│               ├── globset v0.4.20
+│               │   ├── ignore v0.4.33
+│               │   │   └── globwalk v0.8.1 (*)
+│               │   └── rust-embed-utils v8.12.0
+│               │       ├── rust-embed v8.12.0 (*)
+│               │       └── rust-embed-impl v8.12.0 (proc-macro) (*)
+│               ├── gpui-component v0.7.0 (*)
+│               ├── gpui-kit-assets v0.7.0 (*)
+│               ├── gpui-pre v0.3.7 (*)
+│               ├── gpui-pre-apple v0.3.7 (*)
+│               ├── gpui-pre-http-client v0.3.7 (*)
+│               ├── gpui-pre-macos v0.3.7 (*)
+│               ├── gpui-pre-sum-tree v0.3.7 (*)
+│               ├── gpui-pre-util v0.3.7
+│               │   ├── gpui-pre v0.3.7 (*)
+│               │   ├── gpui-pre-collections v0.3.7 (*)
+│               │   └── gpui-pre-macos v0.3.7 (*)
+│               ├── gpui-pre-zlog v0.3.7 (*)
+│               ├── html5ever v0.27.0 (*)
+│               ├── ignore v0.4.33 (*)
+│               ├── markup5ever v0.12.1 (*)
+│               ├── metal v0.33.0 (*)
+│               ├── notify v7.0.0 (*)
+│               ├── pathfinder_geometry v0.5.1 (*)
+│               ├── postage v0.5.0 (*)
+│               ├── resvg v0.46.0 (*)
+│               ├── rustybuzz v0.20.1 (*)
+│               ├── simplecss v0.2.2
+│               │   └── usvg v0.46.0 (*)
+│               ├── tiny-skia v0.11.4 (*)
+│               ├── tracing-log v0.2.0 (*)
+│               ├── usvg v0.46.0 (*)
+│               ├── xml5ever v0.18.1 (*)
+│               └── zed-font-kit v0.14.1-zed (*)
+├── log v0.4.34 (*)
+├── serde v1.0.229 (*)
+├── serde-saphyr v1.3.0 (*)
+├── serde_fmt v1.1.0
+│   └── value-bag-serde1 v1.14.1 (*)
+├── serde_json v1.0.151 (*)
+├── serde_spanned v1.1.1
+│   └── toml v1.1.5+spec-1.1.0
+│       └── embed-resource v3.0.11 (*)
+├── toml v1.1.5+spec-1.1.0 (*)
+├── toml_datetime v1.1.1+spec-1.1.0
+│   ├── toml v1.1.5+spec-1.1.0 (*)
+│   └── toml_edit v0.25.13+spec-1.1.0 (*)
+└── value-bag-serde1 v1.14.1 (*)
+
+serde_core v1.0.229
+├── bitflags v2.13.1 (*)
+├── indexmap v2.14.1 (*)
+├── semver v1.0.28 (*)
+├── serde v1.0.229 (*)
+├── serde_json v1.0.151 (*)
+└── uuid v1.26.0 (*)
+
+serde_json v1.0.151 (*)
+
+serde_json v1.0.151 (*)
+
+serde_spanned v0.6.9 (*)
+
+serde_spanned v1.1.1 (*)
+
+shlex v1.3.0
+└── bindgen v0.72.1 (*)
+
+shlex v2.0.1
+└── cc v1.4.4
+    └── embed-resource v3.0.11 (*)
+
+smallvec v1.16.0
+├── granit-parser v1.3.0
+│   └── serde-saphyr v1.3.0 (*)
+└── serde-saphyr v1.3.0 (*)
+
+smallvec v1.16.0
+├── exr v1.74.2 (*)
+├── futures-concurrency v7.7.1 (*)
+├── gpui-base v0.7.0 (*)
+├── gpui-component v0.7.0 (*)
+├── gpui-pre v0.3.7 (*)
+├── gpui-pre-macos v0.3.7 (*)
+├── icu_normalizer v2.3.0
+│   └── idna_adapter v1.2.2
+│       └── idna v1.1.0
+│           └── url v2.5.8
+│               ├── gpui-pre v0.3.7 (*)
+│               └── gpui-pre-http-client v0.3.7 (*)
+├── idna v1.1.0 (*)
+├── kurbo v0.13.1
+│   ├── svgtypes v0.16.1
+│   │   ├── resvg v0.46.0 (*)
+│   │   └── usvg v0.46.0 (*)
+│   └── usvg v0.46.0 (*)
+├── parking_lot_core v0.9.12
+│   └── parking_lot v0.12.5
+│       ├── gpui-pre v0.3.7 (*)
+│       ├── gpui-pre-apple v0.3.7 (*)
+│       ├── gpui-pre-http-client v0.3.7 (*)
+│       ├── gpui-pre-macos v0.3.7 (*)
+│       ├── gpui-pre-scheduler v0.3.7 (*)
+│       ├── postage v0.5.0 (*)
+│       └── string_cache v0.8.9 (*)
+├── rust-i18n v4.2.4 (*)
+├── rustybuzz v0.20.1 (*)
+├── taffy v0.13.0
+│   └── gpui-pre v0.3.7 (*)
+└── tracing-subscriber v0.3.23 (*)
+
+spin v0.9.9
+└── flume v0.12.0 (*)
+
+spin v0.10.1
+└── gpui-pre v0.3.7 (*)
+
+syn v2.0.119
+├── bindgen v0.72.1 (*)
+├── cbindgen v0.28.0 (*)
+├── derive_more-impl v2.1.1 (proc-macro) (*)
+├── enum-iterator-derive v1.5.0 (proc-macro)
+│   └── enum-iterator v2.3.0
+│       └── gpui-component v0.7.0 (*)
+├── enumn v0.1.14 (proc-macro)
+│   └── accesskit v0.24.1 (*)
+├── gpui-component-macros v0.7.0 (proc-macro) (*)
+├── gpui-pre-derive-refineable v0.3.7 (proc-macro)
+│   └── gpui-pre-refineable v0.3.7
+│       └── gpui-pre v0.3.7 (*)
+├── gpui-pre-macros v0.3.7 (proc-macro) (*)
+├── gpui-pre-util-macros v0.3.7 (proc-macro) (*)
+├── pin-project-internal v1.1.13 (proc-macro)
+│   └── pin-project v1.1.13
+│       ├── futures-concurrency v7.7.1 (*)
+│       ├── gpui-pre v0.3.7 (*)
+│       └── postage v0.5.0 (*)
+├── prettyplease v0.2.37
+│   └── bindgen v0.72.1 (*)
+├── profiling-procmacros v1.0.18 (proc-macro)
+│   └── profiling v1.0.18
+│       └── gpui-pre v0.3.7 (*)
+├── rust-embed-impl v8.12.0 (proc-macro) (*)
+├── rust-i18n-macro v4.2.4 (proc-macro) (*)
+├── strum_macros v0.28.0 (proc-macro) (*)
+├── synstructure v0.13.2
+│   ├── yoke-derive v0.8.2 (proc-macro)
+│   │   └── yoke v0.8.3
+│   │       ├── icu_collections v2.3.0
+│   │       │   ├── icu_normalizer v2.3.0 (*)
+│   │       │   └── icu_properties v2.3.0
+│   │       │       └── idna_adapter v1.2.2 (*)
+│   │       ├── icu_provider v2.3.1
+│   │       │   ├── icu_normalizer v2.3.0 (*)
+│   │       │   └── icu_properties v2.3.0 (*)
+│   │       ├── zerotrie v0.2.5
+│   │       │   ├── icu_properties v2.3.0 (*)
+│   │       │   └── icu_provider v2.3.1 (*)
+│   │       └── zerovec v0.11.8
+│   │           ├── icu_collections v2.3.0 (*)
+│   │           ├── icu_locale_core v2.3.0
+│   │           │   ├── icu_properties v2.3.0 (*)
+│   │           │   └── icu_provider v2.3.1 (*)
+│   │           ├── icu_normalizer v2.3.0 (*)
+│   │           ├── icu_properties v2.3.0 (*)
+│   │           ├── icu_provider v2.3.1 (*)
+│   │           ├── potential_utf v0.1.6
+│   │           │   └── icu_collections v2.3.0 (*)
+│   │           └── tinystr v0.8.4
+│   │               └── icu_locale_core v2.3.0 (*)
+│   └── zerofrom-derive v0.1.7 (proc-macro)
+│       └── zerofrom v0.1.8
+│           ├── icu_collections v2.3.0 (*)
+│           ├── icu_provider v2.3.1 (*)
+│           ├── yoke v0.8.3 (*)
+│           ├── zerotrie v0.2.5 (*)
+│           └── zerovec v0.11.8 (*)
+├── thiserror-impl v1.0.69 (proc-macro)
+│   └── thiserror v1.0.69
+│       └── postage v0.5.0 (*)
+├── tracing-attributes v0.1.31 (proc-macro)
+│   └── tracing v0.1.44 (*)
+├── yoke-derive v0.8.2 (proc-macro) (*)
+├── zerocopy-derive v0.8.59 (proc-macro)
+│   └── zerocopy v0.8.59
+│       ├── half v2.7.1
+│       │   ├── exr v1.74.2 (*)
+│       │   └── tiff v0.11.3 (*)
+│       └── ppv-lite86 v0.2.21
+│           └── rand_chacha v0.9.0 (*)
+└── zerofrom-derive v0.1.7 (proc-macro) (*)
+[build-dependencies]
+└── html5ever v0.27.0 (*)
+
+syn v3.0.4
+├── displaydoc v0.2.7 (proc-macro)
+│   ├── icu_collections v2.3.0 (*)
+│   ├── icu_locale_core v2.3.0 (*)
+│   ├── icu_properties v2.3.0 (*)
+│   ├── icu_provider v2.3.1 (*)
+│   ├── tinystr v0.8.4 (*)
+│   └── zerotrie v0.2.5 (*)
+├── foreign-types-macros v0.2.4 (proc-macro)
+│   └── foreign-types v0.5.0
+│       ├── cocoa v0.26.1 (*)
+│       ├── core-graphics v0.24.0 (*)
+│       ├── core-text v21.0.0 (*)
+│       ├── gpui-pre-apple v0.3.7 (*)
+│       ├── gpui-pre-macos v0.3.7 (*)
+│       └── metal v0.33.0 (*)
+├── futures-macro v0.3.34 (proc-macro)
+│   └── futures-util v0.3.34
+│       ├── futures v0.3.34
+│       │   ├── gpui-base v0.7.0 (*)
+│       │   ├── gpui-pre v0.3.7 (*)
+│       │   ├── gpui-pre-http-client v0.3.7 (*)
+│       │   ├── gpui-pre-macos v0.3.7 (*)
+│       │   ├── gpui-pre-scheduler v0.3.7 (*)
+│       │   └── postage v0.5.0 (*)
+│       └── futures-executor v0.3.34
+│           └── futures v0.3.34 (*)
+├── ref-cast-impl v1.0.27 (proc-macro)
+│   └── ref-cast v1.0.27
+│       └── schemars v1.2.2 (*)
+├── schemars_derive v1.2.2 (proc-macro)
+│   └── schemars v1.2.2 (*)
+├── serde_derive v1.0.229 (proc-macro)
+│   ├── serde v1.0.229 (*)
+│   └── serde v1.0.229 (*)
+├── serde_derive_internals v0.30.0
+│   └── schemars_derive v1.2.2 (proc-macro) (*)
+├── serde_repr v0.1.21 (proc-macro)
+│   ├── gpui-component v0.7.0 (*)
+│   └── lsp-types v0.97.0 (*)
+├── thiserror-impl v2.0.20 (proc-macro)
+│   └── thiserror v2.0.20
+│       ├── gpui-pre v0.3.7 (*)
+│       ├── muda v0.19.3 (*)
+│       └── tray-icon v0.24.2 (*)
+└── zerovec-derive v0.11.6 (proc-macro)
+    └── zerovec v0.11.8 (*)
+
+thiserror v1.0.69 (*)
+
+thiserror v2.0.20 (*)
+
+thiserror-impl v1.0.69 (proc-macro) (*)
+
+thiserror-impl v2.0.20 (proc-macro) (*)
+
+toml v0.8.23 (*)
+
+toml v1.1.5+spec-1.1.0 (*)
+
+toml_datetime v0.6.11 (*)
+
+toml_datetime v1.1.1+spec-1.1.0 (*)
+
+toml_edit v0.22.27 (*)
+
+toml_edit v0.25.13+spec-1.1.0 (*)
+
+winnow v0.7.15
+└── toml_edit v0.22.27 (*)
+
+winnow v1.0.4
+├── toml v1.1.5+spec-1.1.0 (*)
+├── toml_edit v0.25.13+spec-1.1.0 (*)
+└── toml_parser v1.1.3+spec-1.1.0
+    ├── toml v1.1.5+spec-1.1.0 (*)
+    └── toml_edit v0.25.13+spec-1.1.0 (*)

@@ -1,0 +1,283 @@
+{
+  "schema_version": 1,
+  "task": "OBG-P0-03",
+  "source_commit": "029578c81554f2aeef9bb4e0fd6aaa8a19defd55",
+  "executor": "Codex Desktop / cua native app UI",
+  "recorded_at": "2026-10-03T13:26:43.604100+00:00",
+  "allowed_statuses": [
+    "PASS",
+    "FAIL",
+    "LIMITATION"
+  ],
+  "data": "synthetic only; Chinese text insertion via paste is explicitly separate from IME",
+  "items": [
+    {
+      "group": "Chinese IME",
+      "id": "composition",
+      "status": "LIMITATION",
+      "note": "ctrl+space / ctrl+alt+space 后逐键 n i h a o / n i，仅观察到 Latin 文本，无候选框；已尝试临时添加系统简体拼音。不能据此判定 GPUI IME 不支持。"
+    },
+    {
+      "group": "Chinese IME",
+      "id": "candidate_commit",
+      "status": "LIMITATION",
+      "note": "未观察到候选确认，截图中文通过 paste 插入，不能计作 IME PASS。"
+    },
+    {
+      "group": "Chinese IME",
+      "id": "no_duplicate_or_lost_composition",
+      "status": "LIMITATION",
+      "note": "缺少真实 composition 链路，无法判定。"
+    },
+    {
+      "group": "Chinese text editing",
+      "id": "selection",
+      "status": "PASS",
+      "note": "Cmd+Left 后 Shift+Right 两次选出“中文”，复制粘贴结果验证选区。"
+    },
+    {
+      "group": "Chinese text editing",
+      "id": "copy",
+      "status": "PASS",
+      "note": "Cmd+C 复制选中的“中文”。"
+    },
+    {
+      "group": "Chinese text editing",
+      "id": "paste",
+      "status": "PASS",
+      "note": "Cmd+Right 后 Cmd+V 得到“中文输入测试中文”。"
+    },
+    {
+      "group": "Chinese text editing",
+      "id": "undo",
+      "status": "PASS",
+      "note": "Cmd+Z 恢复“中文输入测试”。"
+    },
+    {
+      "group": "Chinese text editing",
+      "id": "redo",
+      "status": "PASS",
+      "note": "Cmd+Shift+Z 再次得到“中文输入测试中文”。"
+    },
+    {
+      "group": "Chinese text editing",
+      "id": "home_end",
+      "status": "PASS",
+      "note": "Cmd+Left/Right 定位行首/行尾，复制粘贴结果符合预期。"
+    },
+    {
+      "group": "Chinese text editing",
+      "id": "shift_arrow",
+      "status": "PASS",
+      "note": "Shift+Right 两次选择两个汉字，结果由粘贴验证。"
+    },
+    {
+      "group": "Chinese text editing",
+      "id": "multiline",
+      "status": "PASS",
+      "note": "Textarea 粘贴三行中文，Return 换行，Cmd+A/C 跨行复制、Cmd+V 正确粘贴三行，Cmd+Z 撤销该粘贴。"
+    },
+    {
+      "group": "Chinese text editing",
+      "id": "left_right_caret",
+      "status": "LIMITATION",
+      "note": "已发送 Left/Right，但没有单独读取 caret offset；不把发送成功算作精确位置 PASS。"
+    },
+    {
+      "group": "Focus",
+      "id": "modal_focus",
+      "status": "PASS",
+      "note": "打开后直接粘贴不改变底层 Input，点击 Modal textarea 后可以编辑；默认不是 textarea 自动聚焦。"
+    },
+    {
+      "group": "Focus",
+      "id": "modal_selection",
+      "status": "LIMITATION",
+      "note": "在 textarea 中发送行首与 Shift+Right 选择；未单独读取选区内容。"
+    },
+    {
+      "group": "Focus",
+      "id": "escape",
+      "status": "PASS",
+      "note": "Escape 后 Modal textarea 与 Close 从 AX 树移除。"
+    },
+    {
+      "group": "Focus",
+      "id": "focus_return",
+      "status": "PASS",
+      "note": "关闭后 Space 加入先前单行输入“中文输入测试 ”，说明归还先前 Input；不是 mouse-click 按钮自动获取焦点。随后退格恢复。"
+    },
+    {
+      "group": "Focus",
+      "id": "reopen",
+      "status": "PASS",
+      "note": "再次打开保留两行文本，末尾成功追加“ · 再次打开”。"
+    },
+    {
+      "group": "Focus",
+      "id": "modal_ime",
+      "status": "LIMITATION",
+      "note": "中文 paste/edit 已观察；IME 候选未验证。"
+    },
+    {
+      "group": "Focus",
+      "id": "nested_dropdown_escape",
+      "status": "LIMITATION",
+      "note": "本原型 Modal 未包含 dropdown；嵌套 Escape 优先级未验证。"
+    },
+    {
+      "group": "List",
+      "id": "10k_rows",
+      "status": "PASS",
+      "note": "uniform_list(\"synthetic-list\", 10_000, range callback)，仅对 visible range 创建 Div，无每行 Entity。"
+    },
+    {
+      "group": "List",
+      "id": "middle_end",
+      "status": "PASS",
+      "note": "按钮跳到 5001 与 9994–10000，真实截图确认。"
+    },
+    {
+      "group": "List",
+      "id": "scroll",
+      "status": "PASS",
+      "note": "列表区域滚动 8 页，随后 5 页；界面继续响应。非 benchmark。"
+    },
+    {
+      "group": "List",
+      "id": "selection",
+      "status": "PASS",
+      "note": "点击 5002 行后，中段/末尾/缩放后仍显示 Some(5002)。"
+    },
+    {
+      "group": "List",
+      "id": "resize",
+      "status": "PASS",
+      "note": "原生拖动右下角，截图由 2560×1506 变成 2204×1386，随后滚动显示 4649–4653。"
+    },
+    {
+      "group": "Visual",
+      "id": "light_dark",
+      "status": "PASS",
+      "note": "真实点击 Theme 切换，background/card/input/modal/list/text/accent/disabled 均有截图。"
+    },
+    {
+      "group": "Visual",
+      "id": "font_emoji",
+      "status": "PASS",
+      "note": "中文/英文/数字/混排、常见与旗帜 Emoji 可显示；彩色 Emoji 与标题粗体已观察，未做像素级 baseline 测量。"
+    },
+    {
+      "group": "Visual",
+      "id": "alpha_card",
+      "status": "PASS",
+      "note": "最终追加 GPUI linear_gradient 浅深色截图，RGBA card 可透出背景色；不证明 CSS backdrop blur。"
+    },
+    {
+      "group": "Visual",
+      "id": "window_blur",
+      "status": "LIMITATION",
+      "note": "实际切换 Blurred/Transparent 并截图；所截窗口缺少可识别的背后内容，无法单凭截图严格确认模糊视觉质量。macOS backend NSVisualEffectView 仅是源码支持证据。"
+    },
+    {
+      "group": "Visual",
+      "id": "card_backdrop_blur",
+      "status": "LIMITATION",
+      "note": "没有验证 GPUI 卡片级 backdrop blur；不能把 window-level NSVisualEffectView 当 CSS backdrop-filter。"
+    },
+    {
+      "group": "Tray",
+      "id": "icon_visible",
+      "status": "PASS",
+      "note": "Host 对绿色托盘图标及完整操作请求回复“完成”；无状态栏截图。",
+      "evidence_kind": "Host report"
+    },
+    {
+      "group": "Tray",
+      "id": "close_last_window",
+      "status": "LIMITATION",
+      "note": "点击 close 后进程仍在；观察工具仍返回原窗口，不能独立确认隐藏状态。"
+    },
+    {
+      "group": "Tray",
+      "id": "still_alive",
+      "status": "PASS",
+      "note": "点击 close 后精确 executable 进程仍在；不等于托盘可点击。"
+    },
+    {
+      "group": "Tray",
+      "id": "tray_response",
+      "status": "PASS",
+      "note": "Host 确认已完成菜单操作；来源为用户报告。",
+      "evidence_kind": "Host report"
+    },
+    {
+      "group": "Tray",
+      "id": "show",
+      "status": "PASS",
+      "note": "Host 确认已完成显示/隐藏窗口至少3次。",
+      "evidence_kind": "Host report"
+    },
+    {
+      "group": "Tray",
+      "id": "focus",
+      "status": "LIMITATION",
+      "note": "Host 确认三轮显示/隐藏，但没有单独确认 frontmost/key focus；仍 LIMITATION。"
+    },
+    {
+      "group": "Tray",
+      "id": "repeated_hide_show",
+      "status": "PASS",
+      "note": "Host 对至少3次显示/隐藏操作回复“完成”。",
+      "evidence_kind": "Host report"
+    },
+    {
+      "group": "Tray",
+      "id": "update_menu",
+      "status": "PASS",
+      "note": "Host 确认更新状态后查看菜单文字；无菜单截图。",
+      "evidence_kind": "Host report"
+    },
+    {
+      "group": "Tray",
+      "id": "quit",
+      "status": "PASS",
+      "note": "Host 确认点击退出；随后 pgrep 精确 executable 无匹配，未使用 SIGTERM。",
+      "evidence_kind": "Host report + process check"
+    },
+    {
+      "group": "Tray",
+      "id": "icon_disappears",
+      "status": "LIMITATION",
+      "note": "Host 已退出且无残留进程；icon 消失未单独截图或报告。"
+    },
+    {
+      "group": "Architecture",
+      "id": "single_ui_loop",
+      "status": "PASS",
+      "note": "代码自查 + cargo tree：只有 GPUI application().run；tray event channel -> GPUI foreground task；无 tao/winit/Tokio UI loop、Send Entity、block_on。"
+    },
+    {
+      "group": "Cleanup",
+      "id": "extra_gradient_run",
+      "status": "PASS",
+      "note": "Host 托盘 Quit 后进程已无残留；为补渐变另启动最终构建，截图后按精确 executable/PID SIGTERM 清理。此 SIGTERM 不计入 tray Quit。"
+    }
+  ],
+  "input_source_cleanup": "临时系统简体拼音已移除；AX 确认恢复 ABC/微信输入法，Globe 恢复显示表情与符号。",
+  "host_confirmation_received": true,
+  "host_confirmation": {
+    "received_at": "2026-10-03T13:32:25.165006+00:00",
+    "answer": "完成",
+    "question_scope": "绿色托盘图标、显示/隐藏窗口至少3次、更新状态后查看菜单文字、最后点击退出",
+    "evidence_kind": "direct user report; not CUA screenshot"
+  },
+  "host_user_manual_acceptance": {
+    "date": "2026-10-04",
+    "record": "host-manual-acceptance.json",
+    "evidence_kind": "direct user manual acceptance",
+    "approved_card_status": "PASS",
+    "approved_task_status": "DONE",
+    "note": "用户亲手完成真实中文 Input/Modal Textarea 输入及托盘点击并确认可用，明确批准本卡验收通过；新增确认不改写 items、历史 Host 报告或缺失截图/受控 blur/focus 的 LIMITATION。"
+  }
+}
