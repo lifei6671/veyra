@@ -39,6 +39,18 @@ READY 是显式状态：当前范围内尚未开始、全部显式依赖 DONE �
 
 fixture 验证要标明样本来源及模拟边界；截图、编译通过、解析单测都不能代替实际操作或真实集成。只有任务卡要求的真实集成、加载/空/错误/忙碌、必要浅深色/尺寸操作与截图证据齐全，才可 DONE。实现完成但缺真实平台/界面结果用 ACCEPTANCE。
 
+### 3.1 长期 UI 视觉迁移与组件抽象流程
+
+所有后续 UI 切片必须执行 [AGENTS.md 的强制规范](../../AGENTS.md#ui-视觉迁移与组件复用强制规范)与方案 §9.3–9.4。视觉迁移不得变成未经用户明确批准的重新设计；本流程不恢复旧 SDLC/UI Contract 或逐 Task 人工签字门禁。
+
+1. **确认唯一视觉事实来源**：从 `src/openbox/**` React 实现及 `src/openbox/openbox.css` 记录组件、CSS 级联/局部覆盖、浅深色和交互状态的源码锚点及基线身份。明确 macOS 原生标题栏、NSOpenPanel/NSSavePanel、托盘菜单等 OS 绘制且 React 不拥有的区域；其余应用自绘区域全部必须对齐 React。
+2. **先整理 Tokens/Theme 与共享组件**：采用 `Design Tokens/Theme → 基础组件 → 跨页面组合组件 → 页面`；将重复的颜色、固定尺寸、控件高度、圆角、间距、字体、字重、图标尺寸、边框与状态色集中管理，记录 React/CSS 来源，禁止散落 magic numbers。固定值必须按相同逻辑像素、颜色、数值和生效逻辑迁移，保留页面/状态覆盖。GPUI Kit 只提供行为、焦点、输入等基础能力，外观必须包装/覆写，禁止直接使用默认视觉。
+3. **按真实复用抽象**：React 已复用的模式，或 GPUI 两处及以上真实出现的相同/近似视觉交互，必须共享组件。优先 Button/IconButton/Input/Select/Switch/Segmented/Modal/Tooltip/Toast/Surface/Card/FormRow/PageToolbar/EmptyState/Loading/Error/NavigationItem/StatusBadge 等基础与组合语义，名称按现有代码结构；页面以组合为主，禁止同类控件各页重复定义视觉逻辑。一次性布局可局部实现，不为未来假设抽象。图标优先同源 SVG/资源或等价几何，禁止近似 glyph/emoji 替代；字体以 React 为准，优先 MiSans/NotoEmoji，保留来源/许可及格式适配差异。
+4. **逐页面/核心状态视觉验收**：在相同窗口尺寸、缩放、主题、页面状态与尽可能相同数据下取得 React/GPUI 对应截图；禁止用不同状态截图计算整体相似度。记录实际操作及适用的加载/空/错误/忙碌、hover/focus/active/disabled/loading/selected 状态，逐项对照菜单/卡片尺寸、布局、间距、排版、颜色、边框/圆角和图标大小/stroke/几何，保留叠图或测量、差异、修复与复测结果。
+5. **审查一致性与复用后收口**：尽最大可能保持一致，总体视觉至少 95%；95% 是最低工程目标，不是近似额度，不以单一全图像素分数作为唯一 Gate。每个已实现页面/核心状态独立验收，不以全局平均分掩盖局部偏差；明显尺寸/颜色/图标/布局差异为 blocker，必须修复。仅 GPUI/macOS 技术上确实无法等价的差异可保留，证据必须写明技术原因、影响区域和对应截图，不能称完全一致；用户批准的视觉变更另附批准依据。组件复用审查必须确认层级、Tokens 来源、真实重复模式及页面调用关系，不能仅以存在 components 目录作为通过依据。
+
+任务证据必须区分视觉、行为与真实集成结果；历史 DONE 和既有截图不自动证明满足本次新增视觉规范。P1-07 先审查当前已实现的 App Shell、Settings 和基础组件；尚未真正实现的 Proxies/Connections/Logs/Rules 不在该卡冒充完成，后续各页面任务分别执行本流程。不得仅因功能迁移完成退役 React 视觉参考，删除条件见 §8。
+
 ## 4 事实与数据流
 
 ```text
@@ -103,9 +115,9 @@ P1-04A 包含 sidebar 折叠/展开、layout 类纯视觉桌面偏好；proxy co
 
 迁移采用“完成一片，退役一片”，不等待整个 macOS GPUI 版本结束后统一删除旧工程。`src/openbox` 与 `src-tauri` 在对应切片完成前是行为、视觉、业务实现和测试的迁移输入，不因为新目录出现就提前删除。
 
-一个 Legacy 切片只有同时满足以下条件才允许退役：新 Core/Runtime 或 GPUI 实现已经接管该职责；真实服务/运行链路已接通；该 Task 要求的测试和实际 UI/平台验收已通过；仓库内已无生产/测试引用指向旧实现；必要的接口样本、视觉基线和行为差异已留在任务证据或 Git 历史。满足后在同一切片或紧随其后的清理提交中删除旧实现、专用测试/脚本和不再使用的依赖。
+一个 Legacy 切片只有同时满足以下条件才允许退役：新 Core/Runtime 或 GPUI 实现已经接管该职责；真实服务/运行链路已接通；该 Task 要求的测试和实际 UI/平台验收已通过；仓库内已无生产/测试引用指向旧实现；必要的接口样本和行为差异已留在任务证据或 Git 历史。涉及 React 视觉参考的切片还必须先完成对应 GPUI 页面/核心状态的视觉对齐，并在任务证据中留存可追溯的 React 源码/资源基线身份、对应截图、逐项对照及技术差异记录；仅有功能迁移或 Git 中可找回旧源码不能代替视觉验收。满足后在同一切片或紧随其后的清理提交中删除旧实现、专用测试/脚本和不再使用的依赖。
 
-退役必须按功能边界执行，例如 Subscription、Outbound/Group、Runtime、Observation、Routing、DNS 分别清理；禁止提前一次删除整个 React/Tauri 基线。删除前使用仓库搜索确认引用，删除后运行受影响的新链路验证和 `git diff --check`。仍被其他 Legacy 测试/入口消费的 helper、fixture、图标或脚本继续保留，并在消费者迁移后再删。
+退役必须按功能边界执行，例如 Subscription、Outbound/Group、Runtime、Observation、Routing、DNS 分别清理；禁止提前一次删除整个 React/Tauri 基线。删除前使用仓库搜索确认引用，删除后运行受影响的新链路验证和 `git diff --check`。仍被未对齐页面使用的共享 CSS、字体、图标等视觉参考，以及其他 Legacy 测试/入口消费的 helper、fixture 或脚本必须继续保留，并在消费者迁移且满足相应验收后再删。
 
 生成物和本机状态不属于 Legacy 迁移资产：`dist/`、Rust `target/`、Tauri 生成 schema 等可随时清理；`node_modules/` 在仍需运行 React 基线时可保留。本地 Agent/Workspace 状态必须被 Git 忽略，不作为项目源码提交。
 
