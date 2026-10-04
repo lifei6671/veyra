@@ -1,0 +1,98 @@
+{
+  "log": {
+    "level": "info",
+    "timestamp": false
+  },
+  "dns": {
+    "servers": [
+      {
+        "type": "fakeip",
+        "tag": "p004-fakeip",
+        "inet4_range": "198.18.0.0/15"
+      },
+      {
+        "type": "hosts",
+        "tag": "p004-hosts",
+        "predefined": {
+          "p004-fallback.example.invalid": [
+            "192.0.2.1"
+          ]
+        }
+      }
+    ],
+    "rules": [
+      {
+        "domain_suffix": [
+          "invalid"
+        ],
+        "query_type": [
+          "A"
+        ],
+        "action": "route",
+        "server": "p004-fakeip"
+      }
+    ],
+    "final": "p004-hosts",
+    "disable_cache": true
+  },
+  "inbounds": [
+    {
+      "type": "tun",
+      "tag": "p004-tun-check-only",
+      "address": [
+        "192.0.2.1/30"
+      ],
+      "auto_route": false,
+      "stack": "system",
+      "dns_mode": "disabled"
+    }
+  ],
+  "outbounds": [
+    {
+      "type": "selector",
+      "tag": "p004-selector",
+      "outbounds": [
+        "p004-direct-a",
+        "p004-direct-b"
+      ],
+      "default": "p004-direct-a"
+    },
+    {
+      "type": "direct",
+      "tag": "p004-direct-a"
+    },
+    {
+      "type": "direct",
+      "tag": "p004-direct-b"
+    }
+  ],
+  "route": {
+    "default_domain_resolver": "p004-hosts",
+    "rules": [
+      {
+        "ip_cidr": [
+          "127.0.0.0/8"
+        ],
+        "action": "route",
+        "outbound": "p004-selector"
+      },
+      {
+        "action": "reject"
+      }
+    ],
+    "final": "p004-selector"
+  },
+  "experimental": {
+    "cache_file": {
+      "enabled": true,
+      "path": "<tmp>/generation-1/cache.db",
+      "cache_id": "veyra-p004-v114-generation-1",
+      "store_fakeip": true,
+      "store_dns": false
+    },
+    "clash_api": {
+      "external_controller": "127.0.0.1:0",
+      "secret": "<random-temporary-secret>"
+    }
+  }
+}

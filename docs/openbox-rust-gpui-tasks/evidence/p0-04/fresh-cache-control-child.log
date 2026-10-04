@@ -1,0 +1,7 @@
+ERROR[0000] network: listen network update: operation not permitted
+INFO[0000] network: updated default interface en0, index 14
+INFO[0000] network: <host-network-redacted>
+INFO[0000] inbound/mixed[p004-mixed]: tcp server started at 127.0.0.1:64884
+INFO[0000] clash-api: restful api listening at 127.0.0.1:64885
+INFO[0000] sing-box started (0.05s)
+INFO[0000] dns: exchanged A p004.example.invalid. 600 IN A 198.18.0.2

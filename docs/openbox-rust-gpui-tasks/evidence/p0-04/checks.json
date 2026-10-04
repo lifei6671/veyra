@@ -1,0 +1,47 @@
+[
+  {
+    "fixture": "fixtures/loopback-smoke.json",
+    "actual_config_sha256": "67465fcd5466a79f52c58731a78c5fb0ae406dec01e7713f18645b8885ebd140",
+    "command": "sing-box --disable-color check -c <tmp>/loopback-smoke.json",
+    "exit_code": 0,
+    "output": "",
+    "status": "PASS",
+    "timeout_seconds": 20
+  },
+  {
+    "fixture": "fixtures/dns-fakeip.json",
+    "actual_config_sha256": "68bd715a987f1137d65c6b39cdb9787aabb727a5090ff1c04ca1f10f9562b0c9",
+    "command": "sing-box --disable-color check -c <tmp>/dns-fakeip.json",
+    "exit_code": 0,
+    "output": "",
+    "status": "PASS",
+    "timeout_seconds": 20
+  },
+  {
+    "fixture": "fixtures/tun-check-only.json",
+    "actual_config_sha256": "a1feea251602e5f7044bf2e13619ed84ea092e785c061c9aef604cf3724c1169",
+    "command": "sing-box --disable-color check -c <tmp>/tun-check-only.json",
+    "exit_code": 0,
+    "output": "",
+    "status": "PASS",
+    "timeout_seconds": 20
+  },
+  {
+    "fixture": "fixtures/handoff-smoke.json",
+    "actual_config_sha256": "49ffc4a9d993f71b51af8f860699aae9fae759afe7d975a0b75c754608804930",
+    "command": "sing-box --disable-color check -c <tmp>/handoff-smoke.json",
+    "exit_code": 0,
+    "output": "",
+    "status": "PASS",
+    "timeout_seconds": 20
+  },
+  {
+    "fixture": "fixtures/cold-control.json",
+    "actual_config_sha256": "689da26a84f4c40d81a3c65e7aa7f16283e9daf088aeb7423558ea459fbb71da",
+    "command": "sing-box --disable-color check -c <tmp>/cold-control.json",
+    "exit_code": 0,
+    "output": "",
+    "status": "PASS",
+    "timeout_seconds": 20
+  }
+]

@@ -1,0 +1,112 @@
+{
+  "task": "OBG-P0-04",
+  "status": "DONE",
+  "validated_at": "2026-10-04T00:42:12.133075+00:00",
+  "validation_kind": "Host redaction finding fix; full real probe rerun and current validation",
+  "acceptance": [
+    "PASS",
+    "PASS",
+    "PASS",
+    "PASS"
+  ],
+  "kernel_identity": "PASS",
+  "representative_checks": {
+    "status": "PASS",
+    "count": 5
+  },
+  "real_child_runs": 4,
+  "same_config_check_run_restart_hash": "PASS",
+  "controller_dynamic_port": "PASS",
+  "authenticated_ready": "PASS (200; unauthenticated 401)",
+  "selector_restore": "PASS",
+  "fakeip_restore": "PASS (sentinel and fresh-cache negative control)",
+  "closed_writer_handoff": "PASS",
+  "reconcile_windows_ms": [
+    13.433084,
+    13.750209
+  ],
+  "pre_reconcile_traffic_window": true,
+  "normal_stop_and_cleanup": "PASS",
+  "all_owned_process_groups_empty": true,
+  "known_listener_ports_refused_at_final_validation": true,
+  "all_task_temp_directories_removed": true,
+  "trial_cleanup": {
+    "child_wait_exit": 0,
+    "cache_lsof_no_writer": true,
+    "archive_binary_cache_config_pointer_removed": true
+  },
+  "trial_config_hashes": "NOT_RECORDED: exploratory files deleted; final five check hashes recorded",
+  "json_files_parsed": 11,
+  "redaction_files_scanned": 18,
+  "redaction_result": "PASS: current login/UID usernames, actual user/temp paths, emitted authentication headers and secrets absent",
+  "script_ast_parse": "PASS",
+  "script_sha256": "f4a4b3848bde4c4b6e7cb51116f010292e9e812799484a1cea1576d0984e3810",
+  "task_count": 68,
+  "dag_acyclic": true,
+  "card_dependencies_match_master": true,
+  "counts": {
+    "DONE": 6,
+    "READY": 3,
+    "TODO": 52,
+    "DEFERRED": 7
+  },
+  "ready_queue": [
+    "P0-05",
+    "P0-07",
+    "P1-03"
+  ],
+  "p0_06_status": "TODO",
+  "markdown_local_links_checked": 248,
+  "markdown_errors": [],
+  "cargo_check": {
+    "command": "cargo check -p veyra-core",
+    "timeout_seconds": 600,
+    "exit_code": 0,
+    "status": "PASS",
+    "log": "core-check.log"
+  },
+  "git_diff_check": "PASS",
+  "rust_product_code_changed": false,
+  "system_proxy_dns_changed": false,
+  "tun_started": false,
+  "public_protocol_certification": false,
+  "commit_push": false,
+  "evidence_sha256": {
+    "probe-result.json": "e9566aa49f3ee4a6006b8e14ed9205c17dc06a667d8993eb5bdcd0bde3e4b55d",
+    "controller-dynamic-port.json": "dfa56a742b6f7c900bc2d2c19d8f850aa16fb137c553643514c62475d7ef8f6d",
+    "closed-writer-handoff-child.log": "5a1c356ec528927d04dd5d64224c9a17318dbbc9b70d351b5af1c85122b6858e",
+    "cache-recovery.json": "52e26379d434cd8718ce0624e9eb9ed5c38f116de869a5197ef4db168c4874d4",
+    "checks.json": "c84d8d688b13f5666367b71fa73d163e871fc311f11f46310a6fe069302f2754",
+    "restart-same-config-child.log": "c37ed4e1e819919ba871b6d6b733c9aeb2e24f4915ae0b700ee1a5c2373a2a0a",
+    "README.md": "d324a371a09d27774e382be2fe9454392448cacb0362b695af1e3a3b0ae200cb",
+    "core-check.log": "c92508a29848820f033cd2ea015c85dde0953c88b07cc967ce34b7c08f610549",
+    "initial-child.log": "ec32899f12e64e2f67b68349402edd4e596174d62d42527633d396c619f32562",
+    "fresh-cache-control-child.log": "b5c6e305845306e64dcafcde8a0f1c21cc28c52c19d1ce0a68a5eb513acca07d",
+    "kernel-identity.json": "ede08c7fb25a0519f63251c2cd22b4163b1d208d46c06948ed4a712a5b01a566",
+    "fixtures/dns-fakeip.json": "8837775e5511a823f630e45a01e532a328ea1f97f16c7b69d557e0a25c457fb7",
+    "fixtures/loopback-smoke.json": "4bf761988f19590731b07769c11fab0d8a9148ed664328c9faaf3cbf569058b5",
+    "fixtures/tun-check-only.json": "cba78571aba079432abf07369edec86a22b17d7764291ffad4b402f3387f5b49",
+    "fixtures/handoff-smoke.json": "216231b3643004dcd2e4071bd7b6d888ce33c75580703590e984e04f38ba81f3",
+    "fixtures/cold-control.json": "4bf761988f19590731b07769c11fab0d8a9148ed664328c9faaf3cbf569058b5"
+  },
+  "final_process_group_recheck": "PASS",
+  "trial_and_owned_origin_listener_final_recheck": "PASS (new owned origin/listeners checked; previous trial cleanup retained)",
+  "new_file_whitespace": "PASS",
+  "evidence_hashes_rechecked": "PASS",
+  "redaction_scope": "all evidence/p0-04 files plus tools/p0-04-kernel-probe.py",
+  "source_scan_detail": "Source retains protocol identifiers and generic path-matching patterns; no real identity, paths, header values or secrets",
+  "username_redaction_contract": "PASS: current username maps to <user>; USER heading preserved",
+  "outside_scope_files_unchanged": "PASS: all baseline tracked/untracked files outside script/evidence have identical hashes",
+  "redaction_followup": {
+    "reason": "Host independent review found username in previous lsof evidence",
+    "previous_redaction_report": "PASS was incomplete; previous scan did not cover local username",
+    "previous_validated_at": "2026-10-04T00:34:38.465091+00:00",
+    "previous_reconcile_windows_ms": [
+      22.990292,
+      14.466458
+    ],
+    "official_archive_download": "fresh download by probe; digest verified before execution",
+    "full_probe_rerun": "PASS: five checks/four children/all lifecycle-cache contracts",
+    "new_temp_cleanup": "PASS"
+  }
+}

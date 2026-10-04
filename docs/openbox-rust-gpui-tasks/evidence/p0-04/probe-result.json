@@ -1,0 +1,19 @@
+{
+  "task": "OBG-P0-04",
+  "status": "PASS",
+  "completed_at": "2026-10-04T00:39:01.958346+00:00",
+  "cleanup": {
+    "child_count": 4,
+    "all_children_reaped": true,
+    "all_owned_process_groups_empty": true,
+    "forced_kill_pids": [],
+    "origin_closed": true,
+    "temporary_directory_removed": true
+  },
+  "failure": null,
+  "runs_completed": 4,
+  "system_proxy_changed": false,
+  "system_dns_changed": false,
+  "tun_started": false,
+  "public_connectivity_tested": false
+}

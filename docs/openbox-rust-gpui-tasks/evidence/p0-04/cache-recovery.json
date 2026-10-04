@@ -1,0 +1,600 @@
+{
+  "status": "PASS",
+  "selector_restore": "PASS",
+  "fakeip_restore": "PASS",
+  "handoff": "PASS",
+  "cache_id": "veyra-p004-v114-generation-1",
+  "cache_generation": "v1.14.0 / IPv4 198.18.0.0/15 / stable tags",
+  "writer_close_before_copy": true,
+  "old_closed_cache": {
+    "path": "<tmp>/generation-1/cache.db",
+    "size": 131072,
+    "sha256": "a0749679a4b28dd2fbe44bb1d70ce72b3d6170fa9457cefec1c37b640dd5d7f8",
+    "mtime_ns": 1791074340665124974,
+    "writer_closed": true
+  },
+  "handoff_snapshot": {
+    "path": "<tmp>/handoff/cache.db",
+    "size": 131072,
+    "sha256": "a0749679a4b28dd2fbe44bb1d70ce72b3d6170fa9457cefec1c37b640dd5d7f8",
+    "mtime_ns": 1791074340665124974,
+    "copied_at": "2026-10-04T00:39:00.838195+00:00",
+    "old_child_reaped_before_copy": true
+  },
+  "fakeip_evidence": {
+    "sentinel": {
+      "domain": "p004-sentinel.example.invalid",
+      "status": 200,
+      "ip": "198.18.0.2",
+      "response": {
+        "AD": false,
+        "Answer": [
+          {
+            "TTL": 600,
+            "data": "198.18.0.2",
+            "name": "p004-sentinel.example.invalid.",
+            "type": 1
+          }
+        ],
+        "CD": false,
+        "Question": [
+          {
+            "Name": "p004-sentinel.example.invalid.",
+            "Qtype": 1,
+            "Qclass": 1
+          }
+        ],
+        "RA": true,
+        "RD": true,
+        "Server": "internal",
+        "Status": 0,
+        "TC": false
+      }
+    },
+    "target": {
+      "domain": "p004.example.invalid",
+      "status": 200,
+      "ip": "198.18.0.3",
+      "response": {
+        "AD": false,
+        "Answer": [
+          {
+            "TTL": 600,
+            "data": "198.18.0.3",
+            "name": "p004.example.invalid.",
+            "type": 1
+          }
+        ],
+        "CD": false,
+        "Question": [
+          {
+            "Name": "p004.example.invalid.",
+            "Qtype": 1,
+            "Qclass": 1
+          }
+        ],
+        "RA": true,
+        "RD": true,
+        "Server": "internal",
+        "Status": 0,
+        "TC": false
+      }
+    },
+    "repeat": {
+      "domain": "p004.example.invalid",
+      "status": 200,
+      "ip": "198.18.0.3",
+      "response": {
+        "AD": false,
+        "Answer": [
+          {
+            "TTL": 600,
+            "data": "198.18.0.3",
+            "name": "p004.example.invalid.",
+            "type": 1
+          }
+        ],
+        "CD": false,
+        "Question": [
+          {
+            "Name": "p004.example.invalid.",
+            "Qtype": 1,
+            "Qclass": 1
+          }
+        ],
+        "RA": true,
+        "RD": true,
+        "Server": "internal",
+        "Status": 0,
+        "TC": false
+      }
+    },
+    "dns_response_cache_disabled": true,
+    "store_dns": false,
+    "restart_target_is_first_query": true,
+    "fresh_cache_target": {
+      "domain": "p004.example.invalid",
+      "status": 200,
+      "ip": "198.18.0.2",
+      "response": {
+        "AD": false,
+        "Answer": [
+          {
+            "TTL": 600,
+            "data": "198.18.0.2",
+            "name": "p004.example.invalid.",
+            "type": 1
+          }
+        ],
+        "CD": false,
+        "Question": [
+          {
+            "Name": "p004.example.invalid.",
+            "Qtype": 1,
+            "Qclass": 1
+          }
+        ],
+        "RA": true,
+        "RD": true,
+        "Server": "internal",
+        "Status": 0,
+        "TC": false
+      }
+    }
+  },
+  "runs": [
+    {
+      "name": "initial",
+      "pid": 75586,
+      "process_group": 75586,
+      "config_sha256": "67465fcd5466a79f52c58731a78c5fb0ae406dec01e7713f18645b8885ebd140",
+      "started_at": "2026-10-04T00:39:00.229149+00:00",
+      "start_monotonic_ns": 174478692757875,
+      "controller_source": "this Popen child stdout/stderr only",
+      "startup_timeout_seconds": 10,
+      "cache_path": "<tmp>/generation-1/cache.db",
+      "raw_output_log": "initial-child.log",
+      "mixed_port": 64848,
+      "mixed_log_line": "INFO[0000] inbound/mixed[p004-mixed]: tcp server started at 127.0.0.1:64848",
+      "endpoint": "127.0.0.1:64849",
+      "controller_log_line": "INFO[0000] clash-api: restful api listening at 127.0.0.1:64849",
+      "ready_monotonic_ns": 174478770333583,
+      "controller_ready_at": "2026-10-04T00:39:00.304832+00:00",
+      "readiness": {
+        "endpoint": "/version",
+        "status": 200,
+        "body": {
+          "meta": true,
+          "premium": true,
+          "version": "sing-box 1.14.0"
+        }
+      },
+      "unauthenticated_status": 401,
+      "owned_listener_check": {
+        "command": "lsof -nP -a -p <owned-pid> -iTCP -sTCP:LISTEN",
+        "exit_code": 0,
+        "output": "COMMAND    PID     USER   FD   TYPE             DEVICE SIZE/OFF NODE NAME\nsing-box 75586 <user>    7u  IPv4 0x9d056b7373cf3281      0t0  TCP 127.0.0.1:64848 (LISTEN)\nsing-box 75586 <user>    8u  IPv4 0xd98a45f153ea96e1      0t0  TCP 127.0.0.1:64849 (LISTEN)\n"
+      },
+      "cache_open_check": {
+        "exit_code": 0,
+        "output": "COMMAND    PID     USER   FD   TYPE DEVICE SIZE/OFF     NODE NAME\nsing-box 75586 <user>  txt    REG   1,13   131072 31922533 <tmp>/generation-1/cache.db\nsing-box 75586 <user>    6u   REG   1,13   131072 31922533 <tmp>/generation-1/cache.db\n"
+      },
+      "controlled_loopback_access": {
+        "at": "2026-10-04T00:39:00.318134+00:00",
+        "monotonic_ns": 174478783640041,
+        "target": "http://127.0.0.1:<owned-origin-port>/p004",
+        "status": 200,
+        "body": "p004-loopback-only",
+        "public_access": false
+      },
+      "selector_before": {
+        "type": "Selector",
+        "name": "p004-selector",
+        "udp": true,
+        "history": [],
+        "now": "p004-direct-a",
+        "all": [
+          "p004-direct-a",
+          "p004-direct-b"
+        ]
+      },
+      "selector_write_status": 204,
+      "selector_readback": {
+        "type": "Selector",
+        "name": "p004-selector",
+        "udp": true,
+        "history": [],
+        "now": "p004-direct-b",
+        "all": [
+          "p004-direct-a",
+          "p004-direct-b"
+        ]
+      },
+      "fakeip_sentinel": {
+        "domain": "p004-sentinel.example.invalid",
+        "status": 200,
+        "ip": "198.18.0.2",
+        "response": {
+          "AD": false,
+          "Answer": [
+            {
+              "TTL": 600,
+              "data": "198.18.0.2",
+              "name": "p004-sentinel.example.invalid.",
+              "type": 1
+            }
+          ],
+          "CD": false,
+          "Question": [
+            {
+              "Name": "p004-sentinel.example.invalid.",
+              "Qtype": 1,
+              "Qclass": 1
+            }
+          ],
+          "RA": true,
+          "RD": true,
+          "Server": "internal",
+          "Status": 0,
+          "TC": false
+        }
+      },
+      "fakeip_target": {
+        "domain": "p004.example.invalid",
+        "status": 200,
+        "ip": "198.18.0.3",
+        "response": {
+          "AD": false,
+          "Answer": [
+            {
+              "TTL": 600,
+              "data": "198.18.0.3",
+              "name": "p004.example.invalid.",
+              "type": 1
+            }
+          ],
+          "CD": false,
+          "Question": [
+            {
+              "Name": "p004.example.invalid.",
+              "Qtype": 1,
+              "Qclass": 1
+            }
+          ],
+          "RA": true,
+          "RD": true,
+          "Server": "internal",
+          "Status": 0,
+          "TC": false
+        }
+      },
+      "fakeip_repeat": {
+        "domain": "p004.example.invalid",
+        "status": 200,
+        "ip": "198.18.0.3",
+        "response": {
+          "AD": false,
+          "Answer": [
+            {
+              "TTL": 600,
+              "data": "198.18.0.3",
+              "name": "p004.example.invalid.",
+              "type": 1
+            }
+          ],
+          "CD": false,
+          "Question": [
+            {
+              "Name": "p004.example.invalid.",
+              "Qtype": 1,
+              "Qclass": 1
+            }
+          ],
+          "RA": true,
+          "RD": true,
+          "Server": "internal",
+          "Status": 0,
+          "TC": false
+        }
+      },
+      "stop": {
+        "signal": "SIGTERM",
+        "exit_code": 0,
+        "reaped": true,
+        "stopped_at": "2026-10-04T00:39:00.416577+00:00",
+        "timeout_seconds": 10,
+        "process_group_empty": true,
+        "controller_and_mixed_released": true,
+        "cache_writer_closed": true
+      }
+    },
+    {
+      "name": "restart-same-config",
+      "pid": 75593,
+      "process_group": 75593,
+      "config_sha256": "67465fcd5466a79f52c58731a78c5fb0ae406dec01e7713f18645b8885ebd140",
+      "started_at": "2026-10-04T00:39:00.573816+00:00",
+      "start_monotonic_ns": 174479037177250,
+      "controller_source": "this Popen child stdout/stderr only",
+      "startup_timeout_seconds": 10,
+      "cache_path": "<tmp>/generation-1/cache.db",
+      "raw_output_log": "restart-same-config-child.log",
+      "mixed_port": 64864,
+      "mixed_log_line": "INFO[0000] inbound/mixed[p004-mixed]: tcp server started at 127.0.0.1:64864",
+      "endpoint": "127.0.0.1:64865",
+      "controller_log_line": "INFO[0000] clash-api: restful api listening at 127.0.0.1:64865",
+      "ready_monotonic_ns": 174479101809416,
+      "controller_ready_at": "2026-10-04T00:39:00.636323+00:00",
+      "readiness": {
+        "endpoint": "/version",
+        "status": 200,
+        "body": {
+          "meta": true,
+          "premium": true,
+          "version": "sing-box 1.14.0"
+        }
+      },
+      "unauthenticated_status": 401,
+      "owned_listener_check": {
+        "command": "lsof -nP -a -p <owned-pid> -iTCP -sTCP:LISTEN",
+        "exit_code": 0,
+        "output": "COMMAND    PID     USER   FD   TYPE             DEVICE SIZE/OFF NODE NAME\nsing-box 75593 <user>    7u  IPv4 0x907f6af371ff15d3      0t0  TCP 127.0.0.1:64864 (LISTEN)\nsing-box 75593 <user>    8u  IPv4 0x9653946e37a4dfb1      0t0  TCP 127.0.0.1:64865 (LISTEN)\n"
+      },
+      "cache_open_check": {
+        "exit_code": 0,
+        "output": "COMMAND    PID     USER   FD   TYPE DEVICE SIZE/OFF     NODE NAME\nsing-box 75593 <user>  txt    REG   1,13   131072 31922533 <tmp>/generation-1/cache.db\nsing-box 75593 <user>    6u   REG   1,13   131072 31922533 <tmp>/generation-1/cache.db\n"
+      },
+      "pre_reconcile_loopback_access": {
+        "at": "2026-10-04T00:39:00.649081+00:00",
+        "monotonic_ns": 174479114572416,
+        "target": "http://127.0.0.1:<owned-origin-port>/p004",
+        "status": 200,
+        "body": "p004-loopback-only",
+        "public_access": false
+      },
+      "restored_selector": {
+        "type": "Selector",
+        "name": "p004-selector",
+        "udp": true,
+        "history": [],
+        "now": "p004-direct-b",
+        "all": [
+          "p004-direct-a",
+          "p004-direct-b"
+        ]
+      },
+      "restored_fakeip": {
+        "domain": "p004.example.invalid",
+        "status": 200,
+        "ip": "198.18.0.3",
+        "response": {
+          "AD": false,
+          "Answer": [
+            {
+              "TTL": 600,
+              "data": "198.18.0.3",
+              "name": "p004.example.invalid.",
+              "type": 1
+            }
+          ],
+          "CD": false,
+          "Question": [
+            {
+              "Name": "p004.example.invalid.",
+              "Qtype": 1,
+              "Qclass": 1
+            }
+          ],
+          "RA": true,
+          "RD": true,
+          "Server": "internal",
+          "Status": 0,
+          "TC": false
+        }
+      },
+      "reconciled_at": "2026-10-04T00:39:00.649753+00:00",
+      "reconcile_monotonic_ns": 174479115242500,
+      "ready_to_reconcile_ms": 13.433084,
+      "pre_reconcile_traffic_window": true,
+      "stop": {
+        "signal": "SIGTERM",
+        "exit_code": 0,
+        "reaped": true,
+        "stopped_at": "2026-10-04T00:39:00.688863+00:00",
+        "timeout_seconds": 10,
+        "process_group_empty": true,
+        "controller_and_mixed_released": true,
+        "cache_writer_closed": true
+      }
+    },
+    {
+      "name": "closed-writer-handoff",
+      "pid": 75608,
+      "process_group": 75608,
+      "config_sha256": "49ffc4a9d993f71b51af8f860699aae9fae759afe7d975a0b75c754608804930",
+      "started_at": "2026-10-04T00:39:00.865166+00:00",
+      "start_monotonic_ns": 174479328816583,
+      "controller_source": "this Popen child stdout/stderr only",
+      "startup_timeout_seconds": 10,
+      "cache_path": "<tmp>/handoff/cache.db",
+      "raw_output_log": "closed-writer-handoff-child.log",
+      "mixed_port": 64874,
+      "mixed_log_line": "INFO[0000] inbound/mixed[p004-mixed]: tcp server started at 127.0.0.1:64874",
+      "endpoint": "127.0.0.1:64875",
+      "controller_log_line": "INFO[0000] clash-api: restful api listening at 127.0.0.1:64875",
+      "ready_monotonic_ns": 174479392732291,
+      "controller_ready_at": "2026-10-04T00:39:00.927260+00:00",
+      "readiness": {
+        "endpoint": "/version",
+        "status": 200,
+        "body": {
+          "meta": true,
+          "premium": true,
+          "version": "sing-box 1.14.0"
+        }
+      },
+      "unauthenticated_status": 401,
+      "owned_listener_check": {
+        "command": "lsof -nP -a -p <owned-pid> -iTCP -sTCP:LISTEN",
+        "exit_code": 0,
+        "output": "COMMAND    PID     USER   FD   TYPE             DEVICE SIZE/OFF NODE NAME\nsing-box 75608 <user>    7u  IPv4 0x5486cd79dad5dc43      0t0  TCP 127.0.0.1:64874 (LISTEN)\nsing-box 75608 <user>    8u  IPv4 0xbf535aa19c3b0172      0t0  TCP 127.0.0.1:64875 (LISTEN)\n"
+      },
+      "cache_open_check": {
+        "exit_code": 0,
+        "output": "COMMAND    PID     USER   FD   TYPE DEVICE SIZE/OFF     NODE NAME\nsing-box 75608 <user>  txt    REG   1,13   131072 31922535 <tmp>/handoff/cache.db\nsing-box 75608 <user>    6u   REG   1,13   131072 31922535 <tmp>/handoff/cache.db\n"
+      },
+      "pre_reconcile_loopback_access": {
+        "at": "2026-10-04T00:39:00.940319+00:00",
+        "monotonic_ns": 174479405795708,
+        "target": "http://127.0.0.1:<owned-origin-port>/p004",
+        "status": 200,
+        "body": "p004-loopback-only",
+        "public_access": false
+      },
+      "restored_selector": {
+        "type": "Selector",
+        "name": "p004-selector",
+        "udp": true,
+        "history": [],
+        "now": "p004-direct-b",
+        "all": [
+          "p004-direct-a",
+          "p004-direct-b"
+        ]
+      },
+      "restored_fakeip": {
+        "domain": "p004.example.invalid",
+        "status": 200,
+        "ip": "198.18.0.3",
+        "response": {
+          "AD": false,
+          "Answer": [
+            {
+              "TTL": 600,
+              "data": "198.18.0.3",
+              "name": "p004.example.invalid.",
+              "type": 1
+            }
+          ],
+          "CD": false,
+          "Question": [
+            {
+              "Name": "p004.example.invalid.",
+              "Qtype": 1,
+              "Qclass": 1
+            }
+          ],
+          "RA": true,
+          "RD": true,
+          "Server": "internal",
+          "Status": 0,
+          "TC": false
+        }
+      },
+      "reconciled_at": "2026-10-04T00:39:00.941006+00:00",
+      "reconcile_monotonic_ns": 174479406482500,
+      "ready_to_reconcile_ms": 13.750209,
+      "pre_reconcile_traffic_window": true,
+      "stop": {
+        "signal": "SIGTERM",
+        "exit_code": 0,
+        "reaped": true,
+        "stopped_at": "2026-10-04T00:39:00.980138+00:00",
+        "timeout_seconds": 10,
+        "process_group_empty": true,
+        "controller_and_mixed_released": true,
+        "cache_writer_closed": true
+      }
+    },
+    {
+      "name": "fresh-cache-control",
+      "pid": 75616,
+      "process_group": 75616,
+      "config_sha256": "689da26a84f4c40d81a3c65e7aa7f16283e9daf088aeb7423558ea459fbb71da",
+      "started_at": "2026-10-04T00:39:01.154207+00:00",
+      "start_monotonic_ns": 174479617933375,
+      "controller_source": "this Popen child stdout/stderr only",
+      "startup_timeout_seconds": 10,
+      "cache_path": "<tmp>/cold-control.db",
+      "raw_output_log": "fresh-cache-control-child.log",
+      "mixed_port": 64884,
+      "mixed_log_line": "INFO[0000] inbound/mixed[p004-mixed]: tcp server started at 127.0.0.1:64884",
+      "endpoint": "127.0.0.1:64885",
+      "controller_log_line": "INFO[0000] clash-api: restful api listening at 127.0.0.1:64885",
+      "ready_monotonic_ns": 174479692681916,
+      "controller_ready_at": "2026-10-04T00:39:01.227224+00:00",
+      "readiness": {
+        "endpoint": "/version",
+        "status": 200,
+        "body": {
+          "meta": true,
+          "premium": true,
+          "version": "sing-box 1.14.0"
+        }
+      },
+      "unauthenticated_status": 401,
+      "owned_listener_check": {
+        "command": "lsof -nP -a -p <owned-pid> -iTCP -sTCP:LISTEN",
+        "exit_code": 0,
+        "output": "COMMAND    PID     USER   FD   TYPE             DEVICE SIZE/OFF NODE NAME\nsing-box 75616 <user>    7u  IPv4 0x604e6b14d1453f57      0t0  TCP 127.0.0.1:64884 (LISTEN)\nsing-box 75616 <user>    8u  IPv4 0x33b492e61428e891      0t0  TCP 127.0.0.1:64885 (LISTEN)\n"
+      },
+      "cache_open_check": {
+        "exit_code": 0,
+        "output": "COMMAND    PID     USER   FD   TYPE DEVICE SIZE/OFF     NODE NAME\nsing-box 75616 <user>  txt    REG   1,13   131072 31922538 <tmp>/cold-control.db\nsing-box 75616 <user>    6u   REG   1,13   131072 31922538 <tmp>/cold-control.db\n"
+      },
+      "selector": {
+        "type": "Selector",
+        "name": "p004-selector",
+        "udp": true,
+        "history": [],
+        "now": "p004-direct-a",
+        "all": [
+          "p004-direct-a",
+          "p004-direct-b"
+        ]
+      },
+      "fakeip_target_first": {
+        "domain": "p004.example.invalid",
+        "status": 200,
+        "ip": "198.18.0.2",
+        "response": {
+          "AD": false,
+          "Answer": [
+            {
+              "TTL": 600,
+              "data": "198.18.0.2",
+              "name": "p004.example.invalid.",
+              "type": 1
+            }
+          ],
+          "CD": false,
+          "Question": [
+            {
+              "Name": "p004.example.invalid.",
+              "Qtype": 1,
+              "Qclass": 1
+            }
+          ],
+          "RA": true,
+          "RD": true,
+          "Server": "internal",
+          "Status": 0,
+          "TC": false
+        }
+      },
+      "stop": {
+        "signal": "SIGTERM",
+        "exit_code": 0,
+        "reaped": true,
+        "stopped_at": "2026-10-04T00:39:01.299112+00:00",
+        "timeout_seconds": 10,
+        "process_group_empty": true,
+        "controller_and_mixed_released": true,
+        "cache_writer_closed": true
+      }
+    }
+  ],
+  "conclusion": "存在对账前流量窗口",
+  "p2_rule": "selector/cache 对账完成前不报业务 Ready，不打开新的系统代理接管；inbound gate 留给后续 Runtime。",
+  "compatibility": "Only same binary/version, cache_id/generation, outbound tags and pool. No cross-version/owner/changed-tag guarantee."
+}
