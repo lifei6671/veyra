@@ -1,0 +1,530 @@
+{
+  "task_count": 68,
+  "macos_count": 61,
+  "windows_count": 7,
+  "dependencies": {
+    "OBG-P7-01": [
+      "OBG-P1-02",
+      "OBG-P1-04A",
+      "OBG-P1-04B",
+      "OBG-P1-05",
+      "OBG-P3-06",
+      "OBG-P4-01",
+      "OBG-P4-03",
+      "OBG-P4-05B",
+      "OBG-P4-06",
+      "OBG-P5-02",
+      "OBG-P5-04",
+      "OBG-P5-06"
+    ],
+    "OBG-P7-02": [
+      "OBG-P7-01",
+      "OBG-P6-02",
+      "OBG-P6-03",
+      "OBG-P2-07",
+      "OBG-P5-06"
+    ],
+    "OBG-P7-03": [
+      "OBG-P7-01",
+      "OBG-P7-02",
+      "OBG-P6-05"
+    ],
+    "OBG-P7-04": [
+      "OBG-P1-07",
+      "OBG-P2-09",
+      "OBG-P3-08",
+      "OBG-P4-07",
+      "OBG-P5-07",
+      "OBG-P6-05",
+      "OBG-P7-01",
+      "OBG-P7-02"
+    ],
+    "OBG-P7-05": [
+      "OBG-P7-03",
+      "OBG-P7-04",
+      "OBG-P0-09"
+    ],
+    "OBG-P0-01": [],
+    "OBG-P0-02": [],
+    "OBG-P0-03": [
+      "OBG-P0-01"
+    ],
+    "OBG-P0-04": [
+      "OBG-P0-01"
+    ],
+    "OBG-P0-05": [
+      "OBG-P0-03",
+      "OBG-P0-04"
+    ],
+    "OBG-P0-06": [
+      "OBG-P0-04",
+      "OBG-P0-05"
+    ],
+    "OBG-P0-07": [
+      "OBG-P0-01",
+      "OBG-P0-04"
+    ],
+    "OBG-P0-08": [
+      "OBG-P0-03",
+      "OBG-P0-05"
+    ],
+    "OBG-P0-09": [
+      "OBG-P0-01",
+      "OBG-P0-02",
+      "OBG-P0-03",
+      "OBG-P0-04",
+      "OBG-P0-05",
+      "OBG-P0-06",
+      "OBG-P0-07",
+      "OBG-P0-08"
+    ],
+    "OBG-P4-01": [
+      "OBG-P2-01",
+      "OBG-P2-05"
+    ],
+    "OBG-P4-02": [
+      "OBG-P2-01",
+      "OBG-P2-02A",
+      "OBG-P2-02B",
+      "OBG-P1-03",
+      "OBG-P1-04A"
+    ],
+    "OBG-P4-03": [
+      "OBG-P4-02",
+      "OBG-P2-04"
+    ],
+    "OBG-P4-04": [
+      "OBG-P2-02B",
+      "OBG-P2-04",
+      "OBG-P2-05",
+      "OBG-P1-04A"
+    ],
+    "OBG-P4-06": [
+      "OBG-P2-02A",
+      "OBG-P2-02B",
+      "OBG-P2-05",
+      "OBG-P2-08"
+    ],
+    "OBG-P4-05A": [
+      "OBG-P4-03",
+      "OBG-P4-04",
+      "OBG-P4-06"
+    ],
+    "OBG-P4-05B": [
+      "OBG-P4-05A",
+      "OBG-P3-01"
+    ],
+    "OBG-P4-05C": [
+      "OBG-P4-05A",
+      "OBG-P4-05B",
+      "OBG-P1-04B",
+      "OBG-P2-05",
+      "OBG-P3-07"
+    ],
+    "OBG-P4-07": [
+      "OBG-P4-01",
+      "OBG-P4-02",
+      "OBG-P4-03",
+      "OBG-P4-04",
+      "OBG-P4-06",
+      "OBG-P4-05A",
+      "OBG-P4-05B",
+      "OBG-P4-05C"
+    ],
+    "OBG-P5-01": [
+      "OBG-P2-02B",
+      "OBG-P2-03",
+      "OBG-P2-05",
+      "OBG-P0-07",
+      "OBG-P1-04A"
+    ],
+    "OBG-P5-02": [
+      "OBG-P5-01",
+      "OBG-P2-05"
+    ],
+    "OBG-P5-03": [
+      "OBG-P5-02",
+      "OBG-P3-01",
+      "OBG-P4-05C"
+    ],
+    "OBG-P5-04": [
+      "OBG-P2-02B",
+      "OBG-P2-03"
+    ],
+    "OBG-P5-05": [
+      "OBG-P5-04",
+      "OBG-P1-04A",
+      "OBG-P1-05"
+    ],
+    "OBG-P5-06": [
+      "OBG-P2-01",
+      "OBG-P1-05",
+      "OBG-P1-04A"
+    ],
+    "OBG-P5-07": [
+      "OBG-P5-01",
+      "OBG-P5-02",
+      "OBG-P5-03",
+      "OBG-P5-04",
+      "OBG-P5-05",
+      "OBG-P5-06",
+      "OBG-P4-07"
+    ],
+    "OBG-P1-01": [
+      "OBG-P0-01",
+      "OBG-P0-02"
+    ],
+    "OBG-P1-02": [
+      "OBG-P1-01"
+    ],
+    "OBG-P1-03": [
+      "OBG-P1-02",
+      "OBG-P0-03"
+    ],
+    "OBG-P1-04A": [
+      "OBG-P1-02",
+      "OBG-P1-03"
+    ],
+    "OBG-P1-04B": [
+      "OBG-P1-02",
+      "OBG-P1-03"
+    ],
+    "OBG-P1-05": [
+      "OBG-P1-02",
+      "OBG-P1-03"
+    ],
+    "OBG-P1-06": [
+      "OBG-P1-03",
+      "OBG-P1-05"
+    ],
+    "OBG-P1-07": [
+      "OBG-P1-01",
+      "OBG-P1-02",
+      "OBG-P1-03",
+      "OBG-P1-04A",
+      "OBG-P1-04B",
+      "OBG-P1-05",
+      "OBG-P1-06"
+    ],
+    "OBG-P2-01": [
+      "OBG-P1-02",
+      "OBG-P1-03",
+      "OBG-P1-04A",
+      "OBG-P0-06"
+    ],
+    "OBG-P2-02A": [
+      "OBG-P2-01"
+    ],
+    "OBG-P2-02B": [
+      "OBG-P2-02A",
+      "OBG-P0-04"
+    ],
+    "OBG-P2-03": [
+      "OBG-P2-02B",
+      "OBG-P1-03"
+    ],
+    "OBG-P2-04": [
+      "OBG-P2-03"
+    ],
+    "OBG-P2-05": [
+      "OBG-P2-03",
+      "OBG-P0-06"
+    ],
+    "OBG-P2-06": [
+      "OBG-P2-03",
+      "OBG-P2-04",
+      "OBG-P0-05"
+    ],
+    "OBG-P2-07": [
+      "OBG-P2-06",
+      "OBG-P2-05"
+    ],
+    "OBG-P2-08": [
+      "OBG-P2-02A",
+      "OBG-P2-04",
+      "OBG-P2-05",
+      "OBG-P1-04B"
+    ],
+    "OBG-P2-09": [
+      "OBG-P1-07",
+      "OBG-P2-01",
+      "OBG-P2-02A",
+      "OBG-P2-02B",
+      "OBG-P2-03",
+      "OBG-P2-04",
+      "OBG-P2-05",
+      "OBG-P2-06",
+      "OBG-P2-07",
+      "OBG-P2-08"
+    ],
+    "OBG-P6-01": [
+      "OBG-P2-06",
+      "OBG-P2-07",
+      "OBG-P2-04",
+      "OBG-P2-02B",
+      "OBG-P2-05",
+      "OBG-P5-01"
+    ],
+    "OBG-P6-02": [
+      "OBG-P6-01"
+    ],
+    "OBG-P6-03": [
+      "OBG-P6-02",
+      "OBG-P1-06",
+      "OBG-P4-01",
+      "OBG-P5-06"
+    ],
+    "OBG-P6-04": [
+      "OBG-P6-02",
+      "OBG-P0-08",
+      "OBG-P2-05"
+    ],
+    "OBG-P6-05": [
+      "OBG-P6-01",
+      "OBG-P6-02",
+      "OBG-P6-03",
+      "OBG-P6-04"
+    ],
+    "OBG-P3-01": [
+      "OBG-P2-03",
+      "OBG-P0-07"
+    ],
+    "OBG-P3-02": [
+      "OBG-P3-01",
+      "OBG-P2-02A",
+      "OBG-P2-05",
+      "OBG-P2-08",
+      "OBG-P1-04B"
+    ],
+    "OBG-P3-03": [
+      "OBG-P3-01",
+      "OBG-P1-05"
+    ],
+    "OBG-P3-04": [
+      "OBG-P3-01"
+    ],
+    "OBG-P3-05": [
+      "OBG-P3-01",
+      "OBG-P3-04",
+      "OBG-P1-04B",
+      "OBG-P2-05"
+    ],
+    "OBG-P3-06": [
+      "OBG-P3-04",
+      "OBG-P3-05"
+    ],
+    "OBG-P3-07": [
+      "OBG-P3-01",
+      "OBG-P2-02A",
+      "OBG-P2-08",
+      "OBG-P1-04B"
+    ],
+    "OBG-P3-08": [
+      "OBG-P3-01",
+      "OBG-P3-02",
+      "OBG-P3-03",
+      "OBG-P3-04",
+      "OBG-P3-05",
+      "OBG-P3-06",
+      "OBG-P3-07"
+    ],
+    "OBG-W0-01": [
+      "OBG-P1-01",
+      "OBG-P1-03"
+    ],
+    "OBG-W0-02": [
+      "OBG-W0-01",
+      "OBG-P2-03"
+    ],
+    "OBG-W1-01": [
+      "OBG-W0-01",
+      "OBG-P2-01",
+      "OBG-P2-02B",
+      "OBG-P2-04",
+      "OBG-P2-05",
+      "OBG-P2-08"
+    ],
+    "OBG-W2-01": [
+      "OBG-W0-02",
+      "OBG-W1-01",
+      "OBG-P2-06"
+    ],
+    "OBG-W2-02": [
+      "OBG-W2-01",
+      "OBG-P6-01"
+    ],
+    "OBG-W3-01": [
+      "OBG-W2-02",
+      "OBG-P7-01",
+      "OBG-P6-04"
+    ],
+    "OBG-W3-02": [
+      "OBG-W3-01",
+      "OBG-P3-08",
+      "OBG-P4-07",
+      "OBG-P5-07",
+      "OBG-P7-02"
+    ]
+  },
+  "before": {
+    "OBG-P0-01": "DONE",
+    "OBG-P0-02": "DONE",
+    "OBG-P0-03": "DONE",
+    "OBG-P0-04": "DONE",
+    "OBG-P0-05": "ACCEPTANCE",
+    "OBG-P0-06": "TODO",
+    "OBG-P0-07": "DONE",
+    "OBG-P0-08": "TODO",
+    "OBG-P0-09": "TODO",
+    "OBG-P1-01": "DONE",
+    "OBG-P1-02": "DONE",
+    "OBG-P1-03": "DOING",
+    "OBG-P1-04A": "TODO",
+    "OBG-P1-04B": "TODO",
+    "OBG-P1-05": "TODO",
+    "OBG-P1-06": "TODO",
+    "OBG-P1-07": "TODO",
+    "OBG-P2-01": "TODO",
+    "OBG-P2-02A": "TODO",
+    "OBG-P2-02B": "TODO",
+    "OBG-P2-03": "TODO",
+    "OBG-P2-04": "TODO",
+    "OBG-P2-05": "TODO",
+    "OBG-P2-06": "TODO",
+    "OBG-P2-07": "TODO",
+    "OBG-P2-08": "TODO",
+    "OBG-P2-09": "TODO",
+    "OBG-P3-01": "TODO",
+    "OBG-P3-02": "TODO",
+    "OBG-P3-03": "TODO",
+    "OBG-P3-04": "TODO",
+    "OBG-P3-05": "TODO",
+    "OBG-P3-06": "TODO",
+    "OBG-P3-07": "TODO",
+    "OBG-P3-08": "TODO",
+    "OBG-P4-01": "TODO",
+    "OBG-P4-02": "TODO",
+    "OBG-P4-03": "TODO",
+    "OBG-P4-04": "TODO",
+    "OBG-P4-06": "TODO",
+    "OBG-P4-05A": "TODO",
+    "OBG-P4-05B": "TODO",
+    "OBG-P4-05C": "TODO",
+    "OBG-P4-07": "TODO",
+    "OBG-P5-01": "TODO",
+    "OBG-P5-02": "TODO",
+    "OBG-P5-03": "TODO",
+    "OBG-P5-04": "TODO",
+    "OBG-P5-05": "TODO",
+    "OBG-P5-06": "TODO",
+    "OBG-P5-07": "TODO",
+    "OBG-P6-01": "TODO",
+    "OBG-P6-02": "TODO",
+    "OBG-P6-03": "TODO",
+    "OBG-P6-04": "TODO",
+    "OBG-P6-05": "TODO",
+    "OBG-P7-01": "TODO",
+    "OBG-P7-02": "TODO",
+    "OBG-P7-03": "TODO",
+    "OBG-P7-04": "TODO",
+    "OBG-P7-05": "TODO",
+    "OBG-W0-01": "DEFERRED",
+    "OBG-W0-02": "DEFERRED",
+    "OBG-W1-01": "DEFERRED",
+    "OBG-W2-01": "DEFERRED",
+    "OBG-W2-02": "DEFERRED",
+    "OBG-W3-01": "DEFERRED",
+    "OBG-W3-02": "DEFERRED"
+  },
+  "projected_ready_after_p1_03_done": [
+    "OBG-P1-04A",
+    "OBG-P1-04B",
+    "OBG-P1-05"
+  ],
+  "cycle_check": "PASS",
+  "P0-05": "ACCEPTANCE",
+  "P0-06": "TODO",
+  "P0-08": "TODO",
+  "final": {
+    "OBG-P0-01": "DONE",
+    "OBG-P0-02": "DONE",
+    "OBG-P0-03": "DONE",
+    "OBG-P0-04": "DONE",
+    "OBG-P0-05": "ACCEPTANCE",
+    "OBG-P0-06": "TODO",
+    "OBG-P0-07": "DONE",
+    "OBG-P0-08": "TODO",
+    "OBG-P0-09": "TODO",
+    "OBG-P1-01": "DONE",
+    "OBG-P1-02": "DONE",
+    "OBG-P1-03": "DONE",
+    "OBG-P1-04A": "READY",
+    "OBG-P1-04B": "READY",
+    "OBG-P1-05": "READY",
+    "OBG-P1-06": "TODO",
+    "OBG-P1-07": "TODO",
+    "OBG-P2-01": "TODO",
+    "OBG-P2-02A": "TODO",
+    "OBG-P2-02B": "TODO",
+    "OBG-P2-03": "TODO",
+    "OBG-P2-04": "TODO",
+    "OBG-P2-05": "TODO",
+    "OBG-P2-06": "TODO",
+    "OBG-P2-07": "TODO",
+    "OBG-P2-08": "TODO",
+    "OBG-P2-09": "TODO",
+    "OBG-P3-01": "TODO",
+    "OBG-P3-02": "TODO",
+    "OBG-P3-03": "TODO",
+    "OBG-P3-04": "TODO",
+    "OBG-P3-05": "TODO",
+    "OBG-P3-06": "TODO",
+    "OBG-P3-07": "TODO",
+    "OBG-P3-08": "TODO",
+    "OBG-P4-01": "TODO",
+    "OBG-P4-02": "TODO",
+    "OBG-P4-03": "TODO",
+    "OBG-P4-04": "TODO",
+    "OBG-P4-06": "TODO",
+    "OBG-P4-05A": "TODO",
+    "OBG-P4-05B": "TODO",
+    "OBG-P4-05C": "TODO",
+    "OBG-P4-07": "TODO",
+    "OBG-P5-01": "TODO",
+    "OBG-P5-02": "TODO",
+    "OBG-P5-03": "TODO",
+    "OBG-P5-04": "TODO",
+    "OBG-P5-05": "TODO",
+    "OBG-P5-06": "TODO",
+    "OBG-P5-07": "TODO",
+    "OBG-P6-01": "TODO",
+    "OBG-P6-02": "TODO",
+    "OBG-P6-03": "TODO",
+    "OBG-P6-04": "TODO",
+    "OBG-P6-05": "TODO",
+    "OBG-P7-01": "TODO",
+    "OBG-P7-02": "TODO",
+    "OBG-P7-03": "TODO",
+    "OBG-P7-04": "TODO",
+    "OBG-P7-05": "TODO",
+    "OBG-W0-01": "DEFERRED",
+    "OBG-W0-02": "DEFERRED",
+    "OBG-W1-01": "DEFERRED",
+    "OBG-W2-01": "DEFERRED",
+    "OBG-W2-02": "DEFERRED",
+    "OBG-W3-01": "DEFERRED",
+    "OBG-W3-02": "DEFERRED"
+  },
+  "final_ready": [
+    "OBG-P1-04A",
+    "OBG-P1-04B",
+    "OBG-P1-05"
+  ],
+  "counts": {
+    "DONE": 8,
+    "ACCEPTANCE": 1,
+    "READY": 3,
+    "TODO": 49,
+    "DEFERRED": 7
+  }
+}

@@ -1,0 +1,79 @@
+{
+  "owner": "Codex Desktop",
+  "platform": "actual GPUI on macOS 27 arm64",
+  "date": "2026-10-04",
+  "items": [
+    {
+      "id": "empty-start",
+      "result": "PASS",
+      "actual": "全新隔离目录正常进入概览；Core 初始化空快照，无登录"
+    },
+    {
+      "id": "main-routes",
+      "result": "PASS",
+      "actual": "实际点击 Overview/Proxies/Connections/Logs/Rules/Settings"
+    },
+    {
+      "id": "nine-categories",
+      "result": "PASS",
+      "actual": "逐项点击 panel/subscriptions/groups/routing/clients/chain/share/dns/backend；gui.log 记录全部"
+    },
+    {
+      "id": "filter-retention",
+      "result": "PASS",
+      "actual": "输入 p1-03-filter → Overview → Proxies；AX value 保留"
+    },
+    {
+      "id": "draft-retention",
+      "result": "PASS",
+      "actual": "选择 Chain，输入 P1-03 draft retained → Overview → Settings；分类和 AX value 保留"
+    },
+    {
+      "id": "busy-navigation",
+      "result": "PASS",
+      "actual": "Busy 3s 后在结果返回前切 Proxies；输入保留、窗口响应；迟到 request 4 被丢弃"
+    },
+    {
+      "id": "late-result",
+      "result": "PASS",
+      "actual": "request 3 Accepted；request 2 StaleRequest，最终显示 Some(3)"
+    },
+    {
+      "id": "synthetic-instance",
+      "result": "PASS",
+      "actual": "A OldInstance；B Accepted，UI 明示 synthetic bridge evidence"
+    },
+    {
+      "id": "error-retry",
+      "result": "PASS",
+      "actual": "另一个隔离目录预置 {malformed；启动显示 StorageFailed/Retry；删除测试 state.json 后点击 Retry，恢复 Ready"
+    },
+    {
+      "id": "theme",
+      "result": "PASS",
+      "actual": "真实点击 session Light/Dark；概览、设置截图均可读"
+    },
+    {
+      "id": "entity-assertions",
+      "result": "PASS",
+      "actual": "真实 GPUI debug action：六个实体身份、filter、category/draft 三组断言 PASS，恢复原输入"
+    },
+    {
+      "id": "session-controls",
+      "result": "PASS",
+      "actual": "Connections selected marker、Logs level、Rules filter 实际操作"
+    },
+    {
+      "id": "quit",
+      "result": "PASS",
+      "actual": "两次实际点击退出，原 PID 消失"
+    },
+    {
+      "id": "final-build-retention",
+      "result": "PASS",
+      "actual": "User unlocked Mac; re-launched final build; native Entity assertion 3 groups PASS; final-filter retained; DNS category and final P1-03 draft retained across Overview; final-settings-retained.png; normal UI exit PID 20456"
+    }
+  ],
+  "not_kernel_evidence": true,
+  "network_scope": "No task action starts HTTP/sing-box, visits OpenBox or changes system proxy/TUN. All cargo commands offline. lsof/pgrep are scoped observations, not a claim about user TUN/network health."
+}

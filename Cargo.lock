@@ -9297,6 +9297,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "veyra-desktop"
+version = "0.1.0"
+dependencies = [
+ "gpui-kit",
+ "tokio",
+ "veyra-core",
+]
+
+[[package]]
 name = "veyra-gpui-prototype"
 version = "0.1.0"
 dependencies = [

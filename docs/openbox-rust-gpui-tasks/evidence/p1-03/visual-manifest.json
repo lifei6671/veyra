@@ -1,0 +1,144 @@
+{
+  "logical_content_size": [
+    1280,
+    720
+  ],
+  "scale_factor": 2,
+  "titlebar_included": true,
+  "physical_titlebar_height": 66,
+  "screenshots": [
+    {
+      "file": "visual/dark-overview.png",
+      "physical_size": [
+        2560,
+        1506
+      ],
+      "sha256": "e3bb9f422c30ce6464514386fda119e8fc8d0b0ecad44095df7872fb9352d25b",
+      "capture_format": "JPEG",
+      "capture_sha256": "9721d75076cd1104f75c914c712882561af84ed70a4e5d26c3160f5928628a6d",
+      "conversion": "sips JPEG to PNG only; no crop/resize/retouch"
+    },
+    {
+      "file": "visual/dark-settings.png",
+      "physical_size": [
+        2560,
+        1506
+      ],
+      "sha256": "c2d6766fba02fea54488760add7638083d9f11ca6c00f09479352dccb14d1234",
+      "capture_format": "JPEG",
+      "capture_sha256": "adf09bfb41b24fb8354f1bb60c306f310b50b9bed6ce84dec204403468b4ec9a",
+      "conversion": "sips JPEG to PNG only; no crop/resize/retouch"
+    },
+    {
+      "file": "visual/error.png",
+      "physical_size": [
+        2560,
+        1506
+      ],
+      "sha256": "e6746ab3e06eed4284c53e48fb2962bd2dc28d5552c7d4619cb43d1cb9a17770",
+      "capture_format": "JPEG",
+      "capture_sha256": "c6118ab61d3697f77732dc6dcbb4b417401f5008d80578c882f2b9214f605f12",
+      "conversion": "sips JPEG to PNG only; no crop/resize/retouch"
+    },
+    {
+      "file": "visual/late-request.png",
+      "physical_size": [
+        2560,
+        1506
+      ],
+      "sha256": "d1a302aaba52bad8699f200994bfbb18513693a545ad7e22fdce302eb7a59d57",
+      "capture_format": "JPEG",
+      "capture_sha256": "e4946f23fc162b5f46278c584a2fb136a882c40cfadc2700ad417b9432ec8e66",
+      "conversion": "sips JPEG to PNG only; no crop/resize/retouch"
+    },
+    {
+      "file": "visual/light-overview.png",
+      "physical_size": [
+        2560,
+        1506
+      ],
+      "sha256": "7e148ee92ae4ecfd93e00f729b68479accc2ea7a9b8a08b32d4a2a7a42f36028",
+      "capture_format": "JPEG",
+      "capture_sha256": "1f6a8ea5bab5d8422745f51741e2a4e230d7aec3352e93f89d338a6e763adcbd",
+      "conversion": "sips JPEG to PNG only; no crop/resize/retouch"
+    },
+    {
+      "file": "visual/light-settings.png",
+      "physical_size": [
+        2560,
+        1506
+      ],
+      "sha256": "583114e85996e25be6348f4fea864db8f39de918d42c81aa0f9d78b5f32653cd",
+      "capture_format": "JPEG",
+      "capture_sha256": "bcfe75d0cfcaa0bf29205d64602b16a3ab3f86e5fdc2a9c24d157464130bcfa2",
+      "conversion": "sips JPEG to PNG only; no crop/resize/retouch"
+    },
+    {
+      "file": "visual/loading.png",
+      "physical_size": [
+        2560,
+        1506
+      ],
+      "sha256": "5568b8035bcd91fd7aa658b432ecc17fddeda9cfc1fe2656e215486d7b3a6cbc",
+      "capture_format": "JPEG",
+      "capture_sha256": "2701a30d43d64cf61013aff159da6549d5e6e19320d262481cd9bbfd43c101b1",
+      "conversion": "sips JPEG to PNG only; no crop/resize/retouch"
+    },
+    {
+      "file": "visual/proxies-filter-retained.png",
+      "physical_size": [
+        2560,
+        1506
+      ],
+      "sha256": "2527ca6b4f615335703368c1feefa4639e92d7cc81ee49945ce7430d18445671",
+      "capture_format": "JPEG",
+      "capture_sha256": "202f5bde10a84e68b3ea8e820c03423b6ff234bcf6a0666116bf97fc39007e84",
+      "conversion": "sips JPEG to PNG only; no crop/resize/retouch"
+    },
+    {
+      "file": "visual/retry-recovered.png",
+      "physical_size": [
+        2560,
+        1506
+      ],
+      "sha256": "0589956294689f785fd373ef138b338f18b3923c24dba9395d72c2345d28db8f",
+      "capture_format": "JPEG",
+      "capture_sha256": "c81e77672c395c9dc5db7965b14537cfff61cc2afacc234b9608adb91b6f68be",
+      "conversion": "sips JPEG to PNG only; no crop/resize/retouch"
+    },
+    {
+      "file": "visual/settings-draft-retained.png",
+      "physical_size": [
+        2560,
+        1506
+      ],
+      "sha256": "3ec93e84e21d536e497ea68a2167f33718e7e24d20cf220b0a7b9488aa6e21aa",
+      "capture_format": "JPEG",
+      "capture_sha256": "14b5c108ddb0c54135bd47356de1d86f964b4aea1e21fa738ce762fbe70b3fc8",
+      "conversion": "sips JPEG to PNG only; no crop/resize/retouch"
+    },
+    {
+      "file": "visual/synthetic-instance.png",
+      "physical_size": [
+        2560,
+        1506
+      ],
+      "sha256": "acf002bd01b85859d4b689cb474e250d6d489233a51e555b42892c2ad48f27f8",
+      "capture_format": "JPEG",
+      "capture_sha256": "551e29fc876f9b1d5d214dfcf9af680591fb3df0736318eb3d176f94e37b19ba",
+      "conversion": "sips JPEG to PNG only; no crop/resize/retouch"
+    },
+    {
+      "file": "visual/final-settings-retained.png",
+      "physical_size": [
+        2560,
+        1506
+      ],
+      "sha256": "181e96e9284ae938af8887bb9d43de919bdf90d543c13c88c21972223d3c3ab2",
+      "capture_format": "JPEG",
+      "capture_sha256": "e0bfc9783761a0d9dc98ade75500b7360ca4088a0a38ba5d5cf35f6cca80d530",
+      "conversion": "sips JPEG to PNG only; no crop/resize/retouch",
+      "build": "final"
+    }
+  ]
+}

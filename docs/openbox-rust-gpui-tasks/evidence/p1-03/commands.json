@@ -1,0 +1,254 @@
+[
+  {
+    "name": "check",
+    "command": [
+      "cargo",
+      "check",
+      "-p",
+      "veyra-desktop"
+    ],
+    "exit_code": 0,
+    "seconds": 0.88,
+    "tauri_check_override": false
+  },
+  {
+    "name": "build",
+    "command": [
+      "cargo",
+      "build",
+      "-p",
+      "veyra-desktop"
+    ],
+    "exit_code": 0,
+    "seconds": 0.29,
+    "tauri_check_override": false
+  },
+  {
+    "name": "test",
+    "command": [
+      "cargo",
+      "test",
+      "-p",
+      "veyra-desktop"
+    ],
+    "exit_code": 0,
+    "seconds": 1.95,
+    "tauri_check_override": false
+  },
+  {
+    "name": "clippy",
+    "command": [
+      "cargo",
+      "clippy",
+      "-p",
+      "veyra-desktop",
+      "--all-targets",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "exit_code": 101,
+    "seconds": 2.31,
+    "tauri_check_override": false
+  },
+  {
+    "name": "fmt",
+    "command": [
+      "cargo",
+      "fmt",
+      "--all",
+      "--",
+      "--check"
+    ],
+    "exit_code": 0,
+    "seconds": 0.34,
+    "tauri_check_override": false
+  },
+  {
+    "name": "tree",
+    "command": [
+      "cargo",
+      "tree",
+      "-p",
+      "veyra-desktop"
+    ],
+    "exit_code": 0,
+    "seconds": 0.29,
+    "tauri_check_override": false
+  },
+  {
+    "name": "core-tree",
+    "command": [
+      "cargo",
+      "tree",
+      "-p",
+      "veyra-core"
+    ],
+    "exit_code": 0,
+    "seconds": 0.13,
+    "tauri_check_override": false
+  },
+  {
+    "name": "workspace-check",
+    "command": [
+      "cargo",
+      "check",
+      "--workspace",
+      "--locked"
+    ],
+    "exit_code": 0,
+    "seconds": 0.83,
+    "tauri_check_override": true
+  },
+  {
+    "name": "legacy-clippy",
+    "command": [
+      "cargo",
+      "clippy",
+      "--manifest-path",
+      "src-tauri/Cargo.toml",
+      "--lib",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "exit_code": 0,
+    "seconds": 1.92,
+    "tauri_check_override": true
+  },
+  {
+    "name": "test-after-test-lint-fix",
+    "command": [
+      "cargo",
+      "test",
+      "-p",
+      "veyra-desktop"
+    ],
+    "exit_code": 0
+  },
+  {
+    "name": "clippy-after-test-lint-fix",
+    "command": [
+      "cargo",
+      "clippy",
+      "-p",
+      "veyra-desktop",
+      "--all-targets",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "exit_code": 0
+  },
+  {
+    "name": "fmt-after-test-lint-fix",
+    "command": [
+      "cargo",
+      "fmt",
+      "--all",
+      "--",
+      "--check"
+    ],
+    "exit_code": 0
+  },
+  {
+    "name": "check-final-ownership-tests",
+    "command": [
+      "cargo",
+      "check",
+      "-p",
+      "veyra-desktop"
+    ],
+    "exit_code": 0
+  },
+  {
+    "name": "build-final-ownership-tests",
+    "command": [
+      "cargo",
+      "build",
+      "-p",
+      "veyra-desktop"
+    ],
+    "exit_code": 0
+  },
+  {
+    "name": "test-final-ownership-tests",
+    "command": [
+      "cargo",
+      "test",
+      "-p",
+      "veyra-desktop"
+    ],
+    "exit_code": 101
+  },
+  {
+    "name": "clippy-final-ownership-tests",
+    "command": [
+      "cargo",
+      "clippy",
+      "-p",
+      "veyra-desktop",
+      "--all-targets",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "exit_code": 101
+  },
+  {
+    "name": "fmt-final-ownership-tests",
+    "command": [
+      "cargo",
+      "fmt",
+      "--all",
+      "--",
+      "--check"
+    ],
+    "exit_code": 0
+  },
+  {
+    "name": "workspace-check-final-ownership-tests",
+    "command": [
+      "cargo",
+      "check",
+      "--workspace",
+      "--locked"
+    ],
+    "exit_code": 0
+  },
+  {
+    "name": "test-after-macro-import-fix",
+    "command": [
+      "cargo",
+      "test",
+      "-p",
+      "veyra-desktop"
+    ],
+    "exit_code": 0
+  },
+  {
+    "name": "clippy-after-macro-import-fix",
+    "command": [
+      "cargo",
+      "clippy",
+      "-p",
+      "veyra-desktop",
+      "--all-targets",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "exit_code": 0
+  },
+  {
+    "name": "fmt-after-macro-import-fix",
+    "command": [
+      "cargo",
+      "fmt",
+      "--all",
+      "--",
+      "--check"
+    ],
+    "exit_code": 0
+  }
+]

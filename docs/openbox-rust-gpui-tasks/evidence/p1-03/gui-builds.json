@@ -1,0 +1,5 @@
+{
+  "initial_screenshots_binary_sha256": "8e0b772d3026aedcf2a5260b2dd1435ac6b2233f267000ef656070a4b97bf981",
+  "final_binary_sha256": "33b0ca5267ab2959d6847a9456058b941cbe82a3c021d8d027a81d9cbf04580b",
+  "change": "Page ownership table parameterized for two offline pure state-retention tests; same production Entity<PageView>, no visual behavior change. Final native assertions rerun separately."
+}

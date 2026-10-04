@@ -1,0 +1,40 @@
+P1-03 temporary state root: /private/tmp/veyra-p1-03-cobm59s4
+logical content 1280x720; scale factor 2
+bridge request=1 generation=0 busy
+bridge request=1 generation=0 Accepted
+navigate proxies entity=EntityId(5v1)
+navigate overview entity=EntityId(2v1)
+navigate proxies entity=EntityId(5v1)
+navigate connections entity=EntityId(8v1)
+navigate logs entity=EntityId(11v1)
+navigate rules entity=EntityId(14v1)
+navigate settings entity=EntityId(17v1)
+category panel
+category subscriptions
+category groups
+category routing
+category clients
+category chain
+category share
+category dns
+category backend
+category chain
+navigate overview entity=EntityId(2v1)
+navigate settings entity=EntityId(17v1)
+navigate overview entity=EntityId(2v1)
+navigate proxies entity=EntityId(5v1)
+navigate connections entity=EntityId(8v1)
+navigate logs entity=EntityId(11v1)
+navigate rules entity=EntityId(14v1)
+navigate settings entity=EntityId(17v1)
+entity-evidence: 3 PASS: six identities, filter retained, category/draft retained
+navigate overview entity=EntityId(2v1)
+bridge request=2 generation=16 busy
+bridge request=3 generation=16 busy
+bridge request=3 generation=16 Accepted
+bridge request=2 generation=16 StaleRequest
+bridge synthetic instance=A generation=1 OldInstance
+bridge synthetic instance=B generation=2 Accepted
+bridge request=4 generation=16 busy
+navigate proxies entity=EntityId(5v1)
+bridge request=4 generation=16 StaleGeneration

@@ -1,0 +1,40 @@
+{
+  "head": "f460e767957569e9f4a035132e26cc216277e98f",
+  "baseline_clean": true,
+  "uncommitted": true,
+  "owner": "Codex Desktop",
+  "date": "2026-10-04",
+  "rust": "1.99.0 (b940084d7 2026-09-28)",
+  "macos": "27.0 (26A428)",
+  "arch": "arm64",
+  "deployment_target": "15.0",
+  "gpui_kit": "0.7.0",
+  "gpui_pre": "0.3.7",
+  "gpui_source": "crates.io registry; exact Cargo.lock checksum",
+  "source_sha256": {
+    "crates/veyra-desktop/Cargo.toml": "68bfcf5ffbf69ca8e95cb63bb0e507f8952cd22da489d131a771c2c9d0923a47",
+    "crates/veyra-desktop/README.md": "fd75d92358557e2b0a8649b7a8985b4fe43125e1a8985c3cc24068e570612705",
+    "crates/veyra-desktop/rust-toolchain.toml": "2ad6f15416572b4836585087f1d4abc53b8fa2dbd616f8dacfaa587ed6714228",
+    "crates/veyra-desktop/src/app.rs": "97b45ddb916eb466e1bf55ecc3df47cea6bd7168c0305d8a68e6a88bfc9a3778",
+    "crates/veyra-desktop/src/main.rs": "2c702b0946459354aaf41c5780f382e9c951952c90752e400bd6038565cc88c3",
+    "crates/veyra-desktop/src/navigation.rs": "5f146f061876b1f88b892d9b68fe473fd62382f7fffe64d250513dc47ab5df81",
+    "crates/veyra-desktop/src/services.rs": "960bfa51e9d0b005702bc247ab03901f2e6b4a9728ee5494ede374223fda4b6b",
+    "crates/veyra-desktop/src/state_bridge.rs": "f743a0a2de331f3e8c4ae146c97e91c10e3169fbd280a49ea647806d9db985b0",
+    "crates/veyra-desktop/src/ui/mod.rs": "283c64f0c975e11be05345c739166f30e75a431f86a1d7c0a2106017ae6b6d2c",
+    "crates/veyra-desktop/src/ui/pages/mod.rs": "44e3df0ee172ee375a1f4b881274e1bb1f9ba4fb906fcb3c0b30ed4667c153ee",
+    "crates/veyra-desktop/src/ui/shell.rs": "b7778040973b68ef0f4dfc5060a1ea57a2412bf3a1b152ef445f625e2d97d302",
+    "Cargo.toml": "c46d697f20def53ee03c2cc59080fcb8213999727e3fc3a7462ca78748bef23b",
+    "Cargo.lock": "87b2f5f9da09f6327028f78caac42e0d881ff6581d3ea233a0286097400ed43a"
+  },
+  "final_packaged_binary_sha256": "02ef4da70fc9fec492ae25725eb4cca92b714706fea9153ed3700605ef22a53f",
+  "builds": "gui-builds.json",
+  "sources": [
+    "src/openbox/OpenBoxApp.tsx:17",
+    "src/openbox/pages/SettingsPage.tsx:25-35",
+    "crates/veyra-gpui-prototype",
+    "docs/openbox-rust-gpui-tasks/evidence/p0-01/visual/light-shell.png",
+    "docs/openbox-rust-gpui-tasks/evidence/p0-01/visual/dark-shell.png",
+    "docs/openbox-rust-gpui-tasks/evidence/p0-03/visual/light-main.png"
+  ],
+  "core_dto_changes": false
+}

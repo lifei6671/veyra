@@ -1,0 +1,70 @@
+P1-03 temporary state root: /private/tmp/veyra-p1-03-final-n_sflncq
+logical content 1280x720; scale factor 2
+bridge request=1 generation=0 busy
+bridge request=1 generation=0 Accepted
+navigate proxies entity=EntityId(5v1)
+navigate connections entity=EntityId(8v1)
+navigate logs entity=EntityId(11v1)
+navigate rules entity=EntityId(14v1)
+navigate settings entity=EntityId(17v1)
+category subscriptions
+category groups
+category routing
+category clients
+category chain
+category share
+category dns
+category backend
+bridge synthetic instance=A generation=1 OldInstance
+bridge synthetic instance=B generation=2 Accepted
+bridge synthetic instance=A generation=1 OldInstance
+bridge synthetic instance=B generation=2 Accepted
+bridge request=2 generation=5 busy
+bridge request=2 generation=5 Accepted
+bridge request=3 generation=5 busy
+bridge request=3 generation=5 Accepted
+bridge request=4 generation=5 busy
+bridge request=4 generation=5 Accepted
+bridge request=5 generation=5 busy
+bridge request=5 generation=5 Accepted
+bridge request=6 generation=5 busy
+bridge request=6 generation=5 Accepted
+bridge request=7 generation=5 busy
+bridge request=7 generation=5 Accepted
+bridge request=8 generation=5 busy
+bridge request=8 generation=5 Accepted
+bridge request=9 generation=5 busy
+bridge request=9 generation=5 Accepted
+bridge request=10 generation=5 busy
+bridge request=10 generation=5 Accepted
+bridge request=11 generation=5 busy
+bridge request=11 generation=5 Accepted
+bridge request=12 generation=5 busy
+bridge request=12 generation=5 Accepted
+bridge request=13 generation=5 busy
+bridge request=13 generation=5 Accepted
+navigate overview entity=EntityId(2v1)
+navigate proxies entity=EntityId(5v1)
+navigate connections entity=EntityId(8v1)
+navigate logs entity=EntityId(11v1)
+navigate rules entity=EntityId(14v1)
+navigate settings entity=EntityId(17v1)
+entity-evidence: 3 PASS: six identities, filter retained, category/draft retained
+bridge request=14 generation=11 busy
+bridge request=15 generation=11 busy
+bridge request=15 generation=11 Accepted
+bridge request=14 generation=11 StaleRequest
+bridge request=16 generation=11 busy
+bridge request=17 generation=11 busy
+bridge request=17 generation=11 Accepted
+bridge request=18 generation=11 busy
+bridge request=19 generation=11 busy
+bridge request=16 generation=11 StaleRequest
+bridge request=19 generation=11 Accepted
+bridge request=20 generation=11 busy
+bridge request=21 generation=11 busy
+bridge request=21 generation=11 Accepted
+bridge request=18 generation=11 StaleRequest
+bridge request=20 generation=11 StaleRequest
+bridge request=22 generation=11 busy
+bridge request=22 generation=11 Accepted

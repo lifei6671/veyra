@@ -1,0 +1,14 @@
+{
+  "status": "PASS",
+  "gpui_kit": "0.7.0",
+  "gpui_pre": "0.3.7",
+  "source": "registry+https://github.com/rust-lang/crates.io-index",
+  "one_gpui_source": true,
+  "desktop_depends_on_core": true,
+  "core_depends_on_desktop_or_gpui": false,
+  "desktop_depends_on_helper_prototype_tray_tao_winit": false,
+  "default_members": [
+    "crates/veyra-core"
+  ],
+  "lock_change": "one new local package veyra-desktop only; no third party changes"
+}

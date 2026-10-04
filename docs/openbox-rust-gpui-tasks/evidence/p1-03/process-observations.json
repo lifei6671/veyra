@@ -1,0 +1,25 @@
+[
+  {
+    "command": [
+      "lsof",
+      "-nP",
+      "-a",
+      "-p",
+      "16084",
+      "-i"
+    ],
+    "exit_code": 1,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "pgrep",
+      "-P",
+      "16084"
+    ],
+    "exit_code": 1,
+    "stdout": "",
+    "stderr": ""
+  }
+]

@@ -87,7 +87,7 @@ Task：OBG-Px-xx
 
 ## 4 任务状态总表
 
-“估算”在 P0 出口回填人日及假设；当前的 `—` 表示尚未估算。“证据”为空表示尚未提交完成证据。当前 macOS 61 项（DONE 7、ACCEPTANCE 1、READY 1、DOING 0、TODO 52），Windows 7 项 DEFERRED，共 68 项。原 P1-04/P2-02/P4-05 由后缀子任务替代，不重复计数。
+“估算”在 P0 出口回填人日及假设；当前的 `—` 表示尚未估算。“证据”为空表示尚未提交完成证据。当前 macOS 61 项（DONE 8、ACCEPTANCE 1、READY 3、DOING 0、TODO 49），Windows 7 项 DEFERRED，共 68 项。原 P1-04/P2-02/P4-05 由后缀子任务替代，不重复计数。
 
 ### P0 基线与可行性（9 项）
 
@@ -109,10 +109,10 @@ Task：OBG-Px-xx
 | --- | --- | --- | --- | --- | --- |
 | [OBG-P1-01 核心抽取](P1-core-and-shell.md#obg-p1-01) | P0-01、P0-02 | DONE | Codex /root | — | [抽取验收](P1-core-and-shell.md#p1-01-delivery) |
 | [OBG-P1-02 类型/持久化/版本](P1-core-and-shell.md#obg-p1-02) | P1-01 | DONE | Codex /root | — | [类型/快照验收](P1-core-and-shell.md#p1-02-delivery) |
-| [OBG-P1-03 GPUI 壳与状态桥](P1-core-and-shell.md#obg-p1-03) | P1-02、P0-03 | READY | — | — | — |
-| [OBG-P1-04A 视觉桌面偏好/主题/组件](P1-core-and-shell.md#obg-p1-04a) | P1-02、P1-03 | TODO | — | — | — |
-| [OBG-P1-04B 跨页面行为偏好](P1-core-and-shell.md#obg-p1-04b) | P1-02、P1-03 | TODO | — | — | — |
-| [OBG-P1-05 目录/单实例/文件](P1-core-and-shell.md#obg-p1-05) | P1-02、P1-03 | TODO | — | — | — |
+| [OBG-P1-03 GPUI 壳与状态桥](P1-core-and-shell.md#obg-p1-03) | P1-02、P0-03 | DONE | Codex Desktop | — | [壳层/桥与最终复核](evidence/p1-03/README.md) |
+| [OBG-P1-04A 视觉桌面偏好/主题/组件](P1-core-and-shell.md#obg-p1-04a) | P1-02、P1-03 | READY | — | — | — |
+| [OBG-P1-04B 跨页面行为偏好](P1-core-and-shell.md#obg-p1-04b) | P1-02、P1-03 | READY | — | — | — |
+| [OBG-P1-05 目录/单实例/文件](P1-core-and-shell.md#obg-p1-05) | P1-02、P1-03 | READY | — | — | — |
 | [OBG-P1-06 托盘与关闭](P1-core-and-shell.md#obg-p1-06) | P1-03、P1-05 | TODO | — | — | — |
 | [OBG-P1-07 桌面壳验收](P1-core-and-shell.md#obg-p1-07) | P1-01、P1-02、P1-03、P1-04A、P1-04B、P1-05、P1-06 | TODO | — | — | — |
 

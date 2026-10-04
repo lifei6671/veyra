@@ -1,0 +1,76 @@
+{
+  "source": "gui.log, gui-error.log and test.log",
+  "race": {
+    "A": {
+      "id": 2,
+      "generation": 16,
+      "delay_ms": 500,
+      "disposition": "StaleRequest"
+    },
+    "B": {
+      "id": 3,
+      "generation": 16,
+      "delay_ms": 50,
+      "disposition": "Accepted"
+    },
+    "final_accepted_id": 3,
+    "snapshots": "both read actual isolated SnapshotService; delayed delivery after read"
+  },
+  "leave_page": {
+    "id": 4,
+    "generation": 16,
+    "delay_ms": 3000,
+    "disposition": "StaleGeneration"
+  },
+  "instance": {
+    "boundary": "synthetic bridge evidence; no Runtime owner/kernel",
+    "current": {
+      "id": "B",
+      "generation": 2
+    },
+    "A": "OldInstance",
+    "B": "Accepted",
+    "same_id_old_generation": "unit test rejected",
+    "old_epoch": "unit test rejected"
+  },
+  "state_epoch": {
+    "initial_gui": [
+      190,
+      6,
+      214,
+      162,
+      176,
+      231,
+      5,
+      106,
+      237,
+      189,
+      144,
+      84,
+      228,
+      28,
+      229,
+      45
+    ],
+    "error_retry_gui": [
+      29,
+      20,
+      209,
+      41,
+      168,
+      186,
+      75,
+      217,
+      137,
+      152,
+      241,
+      157,
+      141,
+      184,
+      44,
+      211
+    ],
+    "stale_epoch_test": "PASS; pending request captured before adoption of replacement cannot update current snapshot"
+  },
+  "notify": "GPUI foreground task calls Entity update then cx.notify; discarded diagnostic also notifies for evidence visibility"
+}

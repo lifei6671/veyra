@@ -1,0 +1,33 @@
+{
+  "block_on": {
+    "command": [
+      "rg",
+      "-n",
+      "block_on",
+      "crates/veyra-desktop/src"
+    ],
+    "exit_code": 1,
+    "output": ""
+  },
+  "runtime_creation": {
+    "command": [
+      "rg",
+      "-n",
+      "Builder::new_multi_thread|Runtime::new",
+      "crates/veyra-desktop/src"
+    ],
+    "exit_code": 0,
+    "output": "crates/veyra-desktop/src/services.rs:36:            runtime: Builder::new_multi_thread()\n"
+  },
+  "network_or_process_actions": {
+    "command": [
+      "rg",
+      "-n",
+      "reqwest::|TcpListener|TcpStream|Command::|openbox\\.disign\\.me|networksetup|scutil",
+      "crates/veyra-desktop/src"
+    ],
+    "exit_code": 1,
+    "output": ""
+  },
+  "manual_Send_review": "services.rs Tokio captures only Arc<SnapshotService>, Request, sender, runtime Handle and bounded debug delay. No GPUI imports/Entity/Context. app.rs cx.spawn owns weak UI reference/receiver; updates and notify on foreground. Render constructs elements but never page entities."
+}

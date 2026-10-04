@@ -1,0 +1,20 @@
+   Compiling veyra-desktop v0.1.0 (/Users/lifeilin/wx_lifeilin/github.com/lifei6671/veyra/crates/veyra-desktop)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.80s
+warning: the following packages contain code that will be rejected by a future version of Rust: block v0.1.6
+note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+     Running unittests src/main.rs (target/debug/deps/veyra_desktop-9b4d6fef65df4405)
+
+running 11 tests
+test navigation::tests::nine_categories_match_openbox ... ok
+test navigation::tests::six_routes_match_openbox ... ok
+test state_bridge::tests::busy_error_retry_ready ... ok
+test state_bridge::tests::instance_and_epoch_gate ... ok
+test state_bridge::tests::latest_request_wins ... ok
+test state_bridge::tests::replaced_epoch_rejects_old_read ... ok
+test state_bridge::tests::leaving_page_invalidates_generation ... ok
+test ui::pages::tests::page_identity_and_filter_survive_round_trip ... ok
+test ui::pages::tests::settings_category_and_draft_survive_all_routes ... ok
+test state_bridge::tests::stale_failure_cannot_clear_new_busy ... ok
+test services::tests::real_store_empty_error_retry_and_late_delivery ... ok
+
+test result: ok. 11 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.53s

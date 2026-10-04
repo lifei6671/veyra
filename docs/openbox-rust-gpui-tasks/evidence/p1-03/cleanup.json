@@ -1,0 +1,29 @@
+{
+  "status": "PASS",
+  "normal_ui_exits": [
+    14294,
+    16084,
+    20456
+  ],
+  "final_locked_session": {
+    "pid": 17610,
+    "action": "identity-verified SIGTERM because CUA locked",
+    "pid_absent": true,
+    "children_before_exit": []
+  },
+  "desktop_remaining": [],
+  "sing_box_exact_executable_observation": [],
+  "temporary_roots_removed": [
+    "/private/tmp/veyra-p1-03-cobm59s4",
+    "/private/tmp/veyra-p1-03-error-baf7lxag",
+    "/private/tmp/veyra-p1-03-final-n_sflncq",
+    "/private/tmp/veyra-p1-03-verified-fvf014hs"
+  ],
+  "malformed_and_corrupt_copies_removed": true,
+  "temporary_app_bundle_removed": true,
+  "screenshot_staging": "none retained; PNG transcode in evidence paths",
+  "system_proxy_or_TUN_mutating_actions": 0,
+  "user_TUN": "untouched; no health inference",
+  "network_requests_by_task": 0,
+  "final_native_recheck": "PASS after user unlocked; normal UI exit"
+}

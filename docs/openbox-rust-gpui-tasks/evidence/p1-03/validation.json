@@ -1,0 +1,49 @@
+{
+  "task": "OBG-P1-03",
+  "status": "DONE",
+  "checks": {
+    "desktop_check": "PASS",
+    "desktop_build": "PASS",
+    "desktop_tests": {
+      "status": "PASS",
+      "passed": 11,
+      "failed": 0,
+      "ignored": 0,
+      "filtered": 0,
+      "pure_memory_logic": 10,
+      "isolated_local_store_integration": 1
+    },
+    "desktop_clippy_all_targets": "PASS",
+    "fmt_all": "PASS",
+    "workspace_check_locked_resource_override": "PASS",
+    "legacy_lib_clippy_resource_override": "PASS",
+    "dependencies": "PASS",
+    "static_Send_runtime_review": "PASS",
+    "initial_actual_GUI": "PASS",
+    "initial_native_entity_assertion_groups": 3,
+    "final_native_entity_recheck": "PASS after user unlocked; 3 groups + actual filter/category/draft round trips",
+    "screenshots": 12,
+    "DAG_68": "PASS",
+    "document_links_checked": 138,
+    "DAG_68_status_counts_dependencies": "PASS",
+    "cleanup": "PASS",
+    "git_diff_check": "PASS",
+    "source_hashes_and_12_PNG_hashes": "PASS"
+  },
+  "warnings": [
+    "Existing block 0.1.6 future incompatibility notice; no dependency upgrades",
+    "Tauri bundle resources override is check-only; old packaging not certified",
+    "Synthetic instance gating is not Runtime/kernel integration",
+    "macOS 15 physical-device run not performed; current macOS 27 arm64 only"
+  ],
+  "attempts": [
+    "Initial InstanceId domain import corrected to existing application::runtime_snapshot",
+    "GPUI test-support offline resolution missing proptest; dependency withdrawn, no download",
+    "clippy field_reassign_with_default in new test corrected",
+    "GPUI glob test macro recursion in new pure tests corrected with explicit imports",
+    "Final native recheck initially NOT_RUN due to Mac locked; user unlocked, real GPUI recheck PASS in gui-final-verified.log"
+  ],
+  "review": "code-delivery-review, implementation self-review only; Host Review not performed",
+  "commit": false,
+  "push": false
+}
