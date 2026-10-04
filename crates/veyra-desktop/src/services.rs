@@ -53,6 +53,43 @@ impl AppServices {
         };
         Ok((services, receiver))
     }
+    pub fn save_behavior(&self, request: crate::behavior_preferences::BehaviorSave) {
+        let preferences = self.preferences.clone();
+        let sender = self.sender.clone();
+        self.runtime.spawn_blocking(move || {
+            let result = preferences
+                .patch_behavior(request.expected, request.patch)
+                .map(|outcome| Box::new(outcome.value));
+            let _ = sender.send(AppEvent::BehaviorSaved {
+                generation: request.generation,
+                result,
+            });
+        });
+    }
+    #[cfg(debug_assertions)]
+    pub fn evidence_external_preferences(&self) {
+        let preferences = self.preferences.clone();
+        let sender = self.sender.clone();
+        self.runtime.spawn_blocking(move || {
+            let result = preferences.behavior_snapshot().and_then(|current| {
+                preferences
+                    .patch_behavior(
+                        current.version,
+                        veyra_core::domain::DesktopBehaviorPreferencesPatch {
+                            group_columns: Some(if current.value.proxy_view.group_columns == 3 {
+                                1
+                            } else {
+                                3
+                            }),
+                            ..Default::default()
+                        },
+                    )
+                    .map(|saved| saved.version)
+            });
+            // Deliberately do not replace the UI snapshot: this is a real competing writer.
+            let _ = sender.send(AppEvent::ExternalPreferenceWrite { result });
+        });
+    }
     pub fn save_visual(&self, request: crate::preferences::VisualSave) {
         let preferences = self.preferences.clone();
         let sender = self.sender.clone();
@@ -317,6 +354,91 @@ mod visual_tests {
         assert_eq!(projection.draft, saved.app_config.visual);
         assert_eq!(restored.state_epoch, before.state_epoch);
         assert_eq!(restored.selection_revision, before.selection_revision);
+        drop(restarted);
+        std::fs::remove_dir_all(root).unwrap();
+    }
+}
+
+#[cfg(test)]
+mod behavior_integration_tests {
+    use super::*;
+    use crate::behavior_preferences::{BehaviorCoordinator, BehaviorStatus};
+    use veyra_core::domain::*;
+    #[test]
+    fn real_store_failure_conflict_rebase_retry_and_restart() {
+        let root = std::env::temp_dir().join(format!(
+            "veyra-p1-04b-test-{:?}",
+            StateEpoch::fresh().unwrap()
+        ));
+        let (services, mut rx) = AppServices::new(root.clone()).unwrap();
+        let mut c = BehaviorCoordinator::default();
+        let initial = services.snapshots.snapshot().unwrap();
+        c.rebase(&initial);
+        c.edit(DesktopBehaviorPreferencesPatch {
+            timeout_ms: Some(7500),
+            ..Default::default()
+        });
+        std::fs::create_dir(root.join("state.tmp")).unwrap();
+        let save = c.submit().unwrap();
+        services.save_behavior(save);
+        let AppEvent::BehaviorSaved { generation, result } = rx.blocking_recv().unwrap() else {
+            panic!("typed behavior event")
+        };
+        assert_eq!(
+            result.as_ref().unwrap_err().code(),
+            AppErrorCode::StorageFailed
+        );
+        c.complete(generation, result.as_deref().map_err(Clone::clone));
+        assert_eq!(c.draft.latency.timeout_ms, 7500);
+        assert_eq!(
+            services
+                .snapshots
+                .snapshot()
+                .unwrap()
+                .app_config
+                .behavior
+                .latency
+                .timeout_ms,
+            5000
+        );
+        std::fs::remove_dir(root.join("state.tmp")).unwrap();
+        let external = services
+            .preferences
+            .patch_behavior(
+                initial.config_version(),
+                DesktopBehaviorPreferencesPatch {
+                    group_columns: Some(3),
+                    ..Default::default()
+                },
+            )
+            .unwrap();
+        services.save_behavior(c.submit().unwrap());
+        let AppEvent::BehaviorSaved { generation, result } = rx.blocking_recv().unwrap() else {
+            panic!("typed behavior event")
+        };
+        assert_eq!(
+            result.as_ref().unwrap_err().code(),
+            AppErrorCode::RevisionConflict
+        );
+        c.complete(generation, result.as_deref().map_err(Clone::clone));
+        c.rebase(&external.value);
+        services.save_behavior(c.submit().unwrap());
+        let AppEvent::BehaviorSaved { generation, result } = rx.blocking_recv().unwrap() else {
+            panic!("typed behavior event")
+        };
+        c.complete(generation, result.as_deref().map_err(Clone::clone));
+        assert_eq!(c.status, BehaviorStatus::Idle);
+        assert_eq!(
+            (c.draft.latency.timeout_ms, c.draft.proxy_view.group_columns),
+            (7500, 3)
+        );
+        let saved = services.snapshots.snapshot().unwrap();
+        assert_eq!(saved.state_epoch, initial.state_epoch);
+        assert_eq!(saved.selection_revision, initial.selection_revision);
+        assert_eq!(saved.config_revision, initial.config_revision + 2);
+        drop(services);
+        let (restarted, _) = AppServices::new(root.clone()).unwrap();
+        assert_eq!(restarted.snapshots.snapshot().unwrap(), saved);
         drop(restarted);
         std::fs::remove_dir_all(root).unwrap();
     }

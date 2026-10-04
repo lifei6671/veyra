@@ -15,6 +15,13 @@ pub struct InstanceToken {
     pub generation: u64,
 }
 pub enum AppEvent {
+    BehaviorSaved {
+        generation: u64,
+        result: Result<Box<AppState>, AppError>,
+    },
+    ExternalPreferenceWrite {
+        result: Result<veyra_core::domain::ConfigVersion, AppError>,
+    },
     BackgroundPreview {
         generation: u64,
         result: Result<std::path::PathBuf, AppError>,
@@ -102,7 +109,9 @@ impl StateBridge {
     }
     pub fn receive(&mut self, event: AppEvent) -> Disposition {
         match event {
-            AppEvent::VisualSaved { .. }
+            AppEvent::BehaviorSaved { .. }
+            | AppEvent::ExternalPreferenceWrite { .. }
+            | AppEvent::VisualSaved { .. }
             | AppEvent::AssetPrepared { .. }
             | AppEvent::BackgroundPreview { .. } => {
                 unreachable!("composition root owns preference results")

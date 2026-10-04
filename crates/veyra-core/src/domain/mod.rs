@@ -22,3 +22,6 @@ pub use state::{
 
 mod desktop_visual;
 pub use desktop_visual::*;
+
+mod desktop_behavior;
+pub use desktop_behavior::*;

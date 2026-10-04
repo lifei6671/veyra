@@ -2,7 +2,7 @@
 
 最后更新：2026-10-04。
 
-**当前结果：OBG-P0-01、P0-02、P0-03、P0-04、P0-07、P1-01、P1-02 DONE；P0-05 ACCEPTANCE；P1-03、P1-04A DONE。** P0-07 完成标准四流/区间 traffic/短连接/DNS 三能力/本地诊断；DNS records/hot rewrite unsupported，flush supported。P0-04 存在对账前流量窗口。P0-03 人工确认和历史限制保留；helper/TUN 运行未验证。阶段用于里程碑分组及组合验收，READY 只由显式依赖决定。
+**当前结果：OBG-P0-01、P0-02、P0-03、P0-04、P0-07、P1-01、P1-02 DONE；P0-05 ACCEPTANCE；P1-03、P1-04A、P1-04B DONE。** P0-07 完成标准四流/区间 traffic/短连接/DNS 三能力/本地诊断；DNS records/hot rewrite unsupported，flush supported。P0-04 存在对账前流量窗口。P0-03 人工确认和历史限制保留；helper/TUN 运行未验证。阶段用于里程碑分组及组合验收，READY 只由显式依赖决定。
 
 - [长期开发总规范](DEVELOPMENT_WORKFLOW.md)：后续 Veyra Rust/GPUI 默认遵守；四泳道、并行与单一 owner。
 - [技术方案](../openbox-rust-gpui-implementation-plan.md)：架构、行为、接口与平台边界。
@@ -13,7 +13,7 @@
 | 里程碑 | DONE / 任务数 | 当前结果 | 组合验收 |
 | --- | --- | --- | --- |
 | P0 基线与可行性 | 5 / 9 | P0-01/03/04/07 验收通过；固定内核/缓存/观测能力核实完成，历史限制保留 | P0-09 未开始 |
-| P1 核心库与桌面壳 | 4 / 8 | core、类型/快照、正式壳/异步桥、视觉偏好/基础组件通过 | P1-07 未开始 |
+| P1 核心库与桌面壳 | 5 / 8 | core、类型/快照、正式壳/异步桥、视觉组件、行为偏好/消费契约通过 | P1-07 未开始 |
 | P2 本机代理闭环 | 0 / 10 | 未开始，按各卡依赖推进 | P2-09 未开始 |
 | P3 观测与主页面 | 0 / 8 | 未开始，基础能力不计完整 DNS/分流 | P3-08 未开始 |
 | P4 完整配置能力 | 0 / 9 | 未开始，Chain 在 Routing 前交付 | P4-07 未开始 |
@@ -22,7 +22,7 @@
 | P7 数据与发布收尾 | 0 / 5 | 未开始，schema/清理按显式依赖等待 | P7-05 未开始 |
 | Windows W0–W3 | 0 / 7 | 后续排期 DEFERRED | W3-02 未开始 |
 
-macOS：**9 / 61 完成**；READY 2、TODO 49、DOING 0、REVIEW 0、ACCEPTANCE 1、BLOCKED 0。Windows 7 项 DEFERRED 单列，共 68 项。数量不等于工期权重或代码完成百分比；P1-04/P2-02/P4-05 父项被后缀子项替代，不重复计数。
+macOS：**10 / 61 完成**；READY 1、TODO 49、DOING 0、REVIEW 0、ACCEPTANCE 1、BLOCKED 0。Windows 7 项 DEFERRED 单列，共 68 项。数量不等于工期权重或代码完成百分比；P1-04/P2-02/P4-05 父项被后缀子项替代，不重复计数。
 
 ## 2 Active Tasks
 
@@ -30,7 +30,7 @@ macOS：**9 / 61 完成**；READY 2、TODO 49、DOING 0、REVIEW 0、ACCEPTANCE 
 | --- | --- | --- | --- |
 | P0-05 · ACCEPTANCE | Codex /root · Runtime/Platform | `crates/veyra-helper/` 显式 `p0-05-prototype`、固定编排、P0-05 evidence/任务文档；本轮根 Cargo workspace/lock 已整合，core/公共 DTO 不改 | 系统授权 -60008，管理员入口未运行；原型 /Library/launchd/service 从未创建，普通用户 child/temp 已清。待可呈现标准管理员 UI 的本机环境补真实特权验收；不能计 DONE |
 
-P0-05 历史起始 HEAD `3111a57`。历史 P1-03 起始 HEAD `f460e767957569e9f4a035132e26cc216277e98f`，工作树干净；当时只领取 P1-03；本轮 P1-04A 起始 HEAD a71b664，干净，完成后未提交；不启动下游。独立 label/path/socket/service/child/tmp 的现场预约已释放；补验时重新检查身份、版本与无残留。
+P0-05 历史起始 HEAD `3111a57`。历史 P1-03 起始 HEAD `f460e767957569e9f4a035132e26cc216277e98f`，工作树干净；当时只领取 P1-03；历史 P1-04A 起始 HEAD a71b664，干净；现已由 Host 提交 c184325，成为本轮 P1-04B 基线。本轮完成后未提交，不启动下游。独立 label/path/socket/service/child/tmp 的现场预约已释放；补验时重新检查身份、版本与无残留。
 
 ## 3 Ready Queue
 
@@ -38,10 +38,9 @@ P0-05 历史起始 HEAD `3111a57`。历史 P1-03 起始 HEAD `f460e767957569e9f4
 
 | Task | 依赖满足依据 | 候选写范围 / 并行条件 | 下一具体动作 |
 | --- | --- | --- | --- |
-| [P1-04B](P1-core-and-shell.md#obg-p1-04b) | P1-02/P1-03 DONE | 行为偏好/Core DTO；A owner 已释放；后续领取时预约单一 owner | 未领取，不自动启动 |
 | [P1-05](P1-core-and-shell.md#obg-p1-05) | P1-02/P1-03 DONE | 平台目录/单实例/文件桥 | 未领取，不自动启动 |
 
-按 68 张实际任务卡依赖重算：READY 仅 P1-04B/P1-05，未启动下游。P1-06 仍缺 P1-05；P2-01 仍缺 P0-06，P2-03 缺 P2-02B，其余 P2 卡仍按各自依赖 TODO。P0-05 ACCEPTANCE，P0-06/P0-08 不解锁。P1-04A Core visual/workspace/GPUI owner 已释放，本轮修改未提交。
+按 68 张实际任务卡依赖重算：READY 仅 P1-05，未启动下游。P1-06 仍缺 P1-05；P2-01 仍缺 P0-06，P2-03 缺 P2-02B，其余 P2 卡仍按各自依赖 TODO。P0-05 ACCEPTANCE，P0-06/P0-08 不解锁。P1-04B Core behavior/Panel 共享 owner 已释放，本轮修改未提交。
 
 ## 4 Blocked
 
@@ -57,8 +56,8 @@ P0-05 历史起始 HEAD `3111a57`。历史 P1-03 起始 HEAD `f460e767957569e9f4
 
 | 字段 | 当前值 |
 | --- | --- |
-| 当前分支 / HEAD | `codex/dist-react-restore` / `a71b6649`；P1-04A 起始工作树干净，本轮修改未提交 |
-| 新路线实现基线 | 根 workspace/core、schema v7 与正式 desktop 壳/桥已在起始 HEAD；本轮显式 schema v8、AppConfig visual、类型化保存与受管资产、主题/基础组件及 P1-04A 证据 |
+| 当前分支 / HEAD | `codex/dist-react-restore` / `c18432544e63d18cc91011fa40f6cc874f780677`；P1-04B 起始工作树干净，本轮不提交 |
+| 新路线实现基线 | 起始 HEAD 已有 workspace/core、正式 desktop、schema v8/visual；本轮 schema v9/behavior、partial patch/CAS、typed notification、Panel 行为 UI 与 P1-04B 证据 |
 | 方案调查基线 | `bda242a920d471b9598f98b57dde5d7c2505c35e`；只作原调查身份，不能当当前 HEAD |
 | P0-01 交付（历史保留） | [最终验收](P0-01-baseline.md#current-acceptance)：8 当前源码 PNG、18 新真实脱敏 case、视觉数据、manifest/audit；四项 PASS |
 | P0-01 验证（历史保留） | 77 AST（72/5）、4/6/9、54 浏览器操作/状态断言、8 PNG 与来源/脱敏/JSON/links/68 DAG；[最终计数](evidence/p0-01/validation.json) |
@@ -71,6 +70,7 @@ P0-05 历史起始 HEAD `3111a57`。历史 P1-03 起始 HEAD `f460e767957569e9f4
 | P0-07 本次真实验证 | [本地 Observation 交付](P0-feasibility.md#p0-07-delivery)：固定 archive/source、四 WS、traffic 两 burst/reconnect、long/short、DNS records/flush/hot rewrite、局部诊断 PASS；[validation](evidence/p0-07/validation.json)含 JSON/AST/脱敏/core check/68 DAG/links/diff/cleanup；首轮 checker FAIL 保留，无产品 Rust 改动 |
 | 保留的限制 | candidate-window/tray screenshot 与独立前台 focus 缺证据、受控 window blur 对照缺失；card-level backdrop blur、MiSans、nested dropdown、macOS 15 实机未验证，不阻止 P0-03 DONE；Windows 仍 DEFERRED |
 | P0-05 本轮原型 | [授权与平台证据](evidence/p0-05/README.md)：macOS 27 arm64 / minos 15.0 / adhoc，固定内核/manual FD、普通用户 OS peer/NOTE_EXIT PASS；管理员授权失败 -60008，所有 root/network 实测 NOT_RUN，ACCEPTANCE；现场干净 |
+| P1-04B 本次验证 | [行为偏好交付](evidence/p1-04b/README.md)：293 core/24 desktop；规定 check/build/clippy/fmt、resource override workspace check/旧 lib clippy/tree PASS；实际字段编辑/校验、两轮真实冲突 rebase、磁盘失败 Retry、两轮重启和9张图通过；无网络/TUN/内核操作 |
 | 下一里程碑 | P0-09：汇总原型结论、实际范围和重新估算；不阻塞无关已就绪任务 |
 
 ## 6 里程碑记录
@@ -128,3 +128,7 @@ P0-03 Host 追加确认：对绿色托盘图标、三轮显示/隐藏、菜单�
 2026-10-04 P1-04A READY → DOING；owner Codex Desktop · GPUI / Core-Config，公共视觉 DTO 单一 owner。P1-04B/P1-05 保持 READY，不启动下游。
 
 2026-10-04 P1-04A DONE：三项验收通过；schema8 的 v7→v8 显式迁移保留 epoch/双 revision，视觉 CAS/SavedOnly/no-op、合并保存及背景 reference 原子提交完成。280 core（新增5）/17 desktop（新增6）、指定 check/build/clippy/fmt/workspace check PASS；resource override 仅 check，不代表旧包资源齐全。实际 GPUI 重启/保存失败/Retry/键盘/焦点与浅深色27图，用户亲手 IME/连续 Slider/stable drag 回复“全部正常”；Input裁切、侧栏icon、底栏对比三项反馈修复并复测。所有隔离根/资产/app/staging和进程已清；无代理/TUN/公网/内核操作，无 commit/push。68卡实际依赖重算：macOS DONE9、ACCEPTANCE1、READY2、TODO49；Windows DEFERRED7。READY仅P1-04B/P1-05；P0-05仍ACCEPTANCE，下游未启动，owner释放。[完整证据](evidence/p1-04a/README.md)。
+
+2026-10-04 P1-04B READY → DOING：只领取行为 Preferences；P1-05 保持 READY；P0-05 保持 ACCEPTANCE；AppConfig/Panel 共享 owner 由 Codex Desktop · Core/Config + GPUI 预约。
+
+2026-10-04 P1-04B DONE：schema8→9 保留 identity/双 revision/visual/Profile；行为 typed partial patch、SavedOnly/CAS/no-op、三种 URL 与两种 IPv6 独立、四类消费者通知契约完成。293 core（新增13）/24 desktop（新增7）及所有规定构建检查 PASS。实际 Panel 全字段/错误、真实磁盘失败与草稿、两轮冲突仅重放 timeout 并保留外部列数、最终重启 config16/selection0/同 epoch 和9图通过。隔离资源/进程已清，无公网/代理/TUN/sing-box/HTTP/login，未 commit/push。68卡重算：DONE10/ACCEPTANCE1/READY1/TODO49、Windows DEFERRED7；READY仅P1-05，未领取；P0-05仍ACCEPTANCE，下游未启动；共享 owner 释放。[完整证据](evidence/p1-04b/README.md)。

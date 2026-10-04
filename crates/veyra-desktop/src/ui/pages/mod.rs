@@ -12,6 +12,8 @@ pub struct PageView {
     pub category: Category,
     pub alternate: bool,
     pub panel: Option<Entity<super::panel::PanelView>>,
+    pub behavior: Option<Entity<super::behavior_panel::BehaviorPanel>>,
+    behavior_open: bool,
 }
 impl PageView {
     pub fn new(route: Route, window: &mut Window, cx: &mut Context<Self>) -> Self {
@@ -20,6 +22,8 @@ impl PageView {
             category: Category::Panel,
             alternate: false,
             panel: None,
+            behavior: None,
+            behavior_open: false,
             input: cx.new(|cx| {
                 InputState::new(window, cx).placeholder(if route == Route::Settings {
                     "P1-03 evidence draft · 仅此会话，不写入 Profile"
@@ -53,7 +57,34 @@ impl Render for PageView {
                     )))
                     .child(div().text_xl().child(self.category.label()));
             if self.category == Category::Panel {
-                if let Some(panel) = &self.panel {
+                content = content.child(
+                    div()
+                        .flex()
+                        .gap_2()
+                        .child(
+                            Button::new("visual-settings")
+                                .label("视觉偏好")
+                                .when(!self.behavior_open, |b| b.primary())
+                                .on_click(cx.listener(|this, _, _, cx| {
+                                    this.behavior_open = false;
+                                    cx.notify();
+                                })),
+                        )
+                        .child(
+                            Button::new("behavior-settings")
+                                .label("行为偏好")
+                                .when(self.behavior_open, |b| b.primary())
+                                .on_click(cx.listener(|this, _, _, cx| {
+                                    this.behavior_open = true;
+                                    cx.notify();
+                                })),
+                        ),
+                );
+                if self.behavior_open {
+                    if let Some(behavior) = &self.behavior {
+                        content = content.child(behavior.clone());
+                    }
+                } else if let Some(panel) = &self.panel {
                     content = content.child(panel.clone());
                 }
             } else {

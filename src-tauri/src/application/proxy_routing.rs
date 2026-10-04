@@ -946,6 +946,7 @@ fn map_state_validation(error: StateValidationError) -> MutationError {
         | StateValidationError::EmptyPoolMembership
         | StateValidationError::InactivePoolTarget => MutationError::ReferenceConflict,
         StateValidationError::InvalidProfile
+        | StateValidationError::InvalidBehaviorPreferences
         | StateValidationError::InvalidVisualPreferences
         | StateValidationError::InvalidVersion
         | StateValidationError::InvalidIdentifier
