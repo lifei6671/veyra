@@ -1,0 +1,38 @@
+{
+  "config_check": "PASS",
+  "uid": "<authorized-uid>",
+  "gid": "<authorized-gid>",
+  "helper_absent": true,
+  "system_proxy_writes": 0,
+  "kernel_sha256": "973388c3f720e918fc64dff7fd75dde14b31cc1aa6fc15855e2f00c5291dd4f4",
+  "child_pid": 329,
+  "config_input": "/dev/fd/<inherited-fd>",
+  "root_only_resource_read": "NOT_RUN; ordinary-user-owned 0600 compatibility probe",
+  "controller": {
+    "status": 200,
+    "body": {
+      "meta": true,
+      "premium": true,
+      "version": "sing-box 1.14.0"
+    }
+  },
+  "mixed_listener_connect": "PASS",
+  "ports": {
+    "mixed": 61211,
+    "controller": 61212
+  },
+  "process_identity": {
+    "api": "proc_pidinfo PROC_PIDT_SHORTBSDINFO",
+    "pid": 329,
+    "pgid": 329,
+    "uid": "<authorized-uid>",
+    "ruid": "<authorized-uid>",
+    "gid": "<authorized-gid>",
+    "rgid": "<authorized-gid>"
+  },
+  "status": "PASS",
+  "exit_code": 0,
+  "reaped": true,
+  "process_group_empty": true,
+  "listeners_closed": true
+}

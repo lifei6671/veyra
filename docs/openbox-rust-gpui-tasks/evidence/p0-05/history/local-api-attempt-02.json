@@ -1,0 +1,6 @@
+{
+  "command": "target/debug/veyra-helper-prototype local-platform-probe",
+  "code": 1,
+  "stdout": "",
+  "stderr": "Resource temporarily unavailable (os error 35)\n"
+}

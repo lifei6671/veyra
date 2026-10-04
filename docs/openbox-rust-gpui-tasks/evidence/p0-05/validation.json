@@ -1,0 +1,407 @@
+{
+  "task": "OBG-P0-05",
+  "status": "ACCEPTANCE",
+  "baseline_head": "3111a57e0444ad5c8fe4e2ae5707e343e44867f3",
+  "baseline_worktree_clean": true,
+  "owner": "Codex /root Runtime/Platform",
+  "deployment_target": "15.0",
+  "checks": [
+    {
+      "command": [
+        "cargo",
+        "fmt",
+        "-p",
+        "veyra-helper-prototype"
+      ],
+      "code": 0,
+      "stdout": "",
+      "stderr": "",
+      "timeout_seconds": 240,
+      "status": "PASS"
+    },
+    {
+      "command": [
+        "cargo",
+        "fmt",
+        "-p",
+        "veyra-helper-prototype",
+        "--",
+        "--check"
+      ],
+      "code": 0,
+      "stdout": "",
+      "stderr": "",
+      "timeout_seconds": 240,
+      "status": "PASS"
+    },
+    {
+      "command": [
+        "cargo",
+        "check",
+        "-p",
+        "veyra-helper-prototype",
+        "--features",
+        "p0-05-prototype"
+      ],
+      "code": 0,
+      "stdout": "",
+      "stderr": "   Compiling veyra-helper-prototype v0.1.0 (<repo>/crates/veyra-helper)\n    Finished `dev` profile [unoptimized + debuginfo] target(s) in 1.05s\n",
+      "timeout_seconds": 240,
+      "status": "PASS"
+    },
+    {
+      "command": [
+        "cargo",
+        "build",
+        "-p",
+        "veyra-helper-prototype",
+        "--features",
+        "p0-05-prototype"
+      ],
+      "code": 0,
+      "stdout": "",
+      "stderr": "   Compiling veyra-helper-prototype v0.1.0 (<repo>/crates/veyra-helper)\n    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.50s\n",
+      "timeout_seconds": 240,
+      "status": "PASS"
+    },
+    {
+      "command": [
+        "cargo",
+        "test",
+        "-p",
+        "veyra-helper-prototype",
+        "--features",
+        "p0-05-prototype"
+      ],
+      "code": 0,
+      "stdout": "\nrunning 5 tests\ntest tests::rejects_untrusted_extra_fields_and_commands ... ok\ntest tests::preserves_external_pac_and_restores_absent_snapshot_fields ... ok\ntest tests::restores_exact_unconflicted_snapshot ... ok\ntest tests::bounded_message_rejects_excess_bytes ... ok\ntest tests::slow_message_has_total_deadline ... ok\n\ntest result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.56s\n\n",
+      "stderr": "   Compiling veyra-helper-prototype v0.1.0 (<repo>/crates/veyra-helper)\n    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.41s\n     Running unittests src/p0_05/main.rs (target/debug/deps/veyra_helper_prototype-f30575fe7af7f18b)\n",
+      "timeout_seconds": 240,
+      "status": "PASS"
+    },
+    {
+      "command": [
+        "cargo",
+        "clippy",
+        "-p",
+        "veyra-helper-prototype",
+        "--features",
+        "p0-05-prototype",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "code": 0,
+      "stdout": "",
+      "stderr": "   Compiling veyra-helper-prototype v0.1.0 (<repo>/crates/veyra-helper)\n    Finished `dev` profile [unoptimized + debuginfo] target(s) in 1.02s\n",
+      "timeout_seconds": 240,
+      "status": "PASS"
+    },
+    {
+      "command": [
+        "cargo",
+        "check",
+        "-p",
+        "veyra-core"
+      ],
+      "code": 0,
+      "stdout": "",
+      "stderr": "   Compiling ring v0.17.14\n   Compiling rustls v0.23.43\n    Checking rustls-webpki v0.103.15\n    Checking tokio-rustls v0.26.4\n    Checking hyper-rustls v0.27.9\n    Checking reqwest v0.12.28\n    Checking veyra-core v0.1.0 (<repo>/crates/veyra-core)\n    Finished `dev` profile [unoptimized + debuginfo] target(s) in 3.28s\n",
+      "timeout_seconds": 240,
+      "status": "PASS"
+    },
+    {
+      "command": [
+        "cargo",
+        "clippy",
+        "--manifest-path",
+        "src-tauri/Cargo.toml",
+        "--lib",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "code": 101,
+      "stdout": "",
+      "stderr": "    Checking objc2-core-foundation v0.3.2\n    Checking tokio-rustls v0.26.4\n   Compiling veyra v0.1.0 (<repo>/src-tauri)\n    Checking hyper-rustls v0.27.9\n    Checking reqwest v0.12.28\n    Checking objc2-foundation v0.3.2\n    Checking objc2-core-graphics v0.3.2\n    Checking veyra-core v0.1.0 (<repo>/crates/veyra-core)\nerror: failed to run custom build command for `veyra v0.1.0 (<repo>/src-tauri)`\n\nCaused by:\n  process didn't exit successfully: `<repo>/target/debug/build/veyra-289bbab6c2a39cb0/build-script-build` (exit status: 101)\n  --- stdout\n  cargo:rerun-if-env-changed=TAURI_CONFIG\n  cargo:rustc-check-cfg=cfg(desktop)\n  cargo:rustc-cfg=desktop\n  cargo:rustc-check-cfg=cfg(mobile)\n  cargo:rerun-if-changed=<repo>/src-tauri/tauri.conf.json\n  cargo:rustc-env=TAURI_ANDROID_PACKAGE_NAME_APP_NAME=veyra\n  cargo:rustc-env=TAURI_ANDROID_PACKAGE_NAME_PREFIX=com_lifei6671\n  cargo:rustc-check-cfg=cfg(dev)\n  cargo:rustc-cfg=dev\n  cargo:PERMISSION_FILES_PATH=<repo>/target/debug/build/veyra-8db8b68ff60ed097/out/app-manifest/__app__-permission-files\n  cargo:rerun-if-changed=permissions\n  cargo:PERMISSION_FILES_PATH=<repo>/target/debug/build/veyra-8db8b68ff60ed097/out/app-manifest/__app__-permission-files\n  cargo:rerun-if-changed=capabilities\n  cargo:rerun-if-env-changed=REMOVE_UNUSED_COMMANDS\n  cargo:rustc-env=TAURI_ENV_TARGET_TRIPLE=aarch64-apple-darwin\n\n  --- stderr\n\n  thread 'main' (5271352) panicked at src-tauri/build.rs:25:6:\n  failed to build the Tauri application manifest: resource path `binaries/sing-box-1.14.0-windows-amd64/LICENSE` doesn't exist\n  note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace\nwarning: build failed, waiting for other jobs to finish...\n",
+      "timeout_seconds": 240,
+      "status": "FAIL"
+    },
+    {
+      "command": [
+        "cargo",
+        "clippy",
+        "--manifest-path",
+        "src-tauri/Cargo.toml",
+        "--lib",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "env_override": {
+        "TAURI_CONFIG": "{\"bundle\":{\"resources\":[]}}"
+      },
+      "code": 0,
+      "stdout": "",
+      "stderr": "    Checking objc2-app-kit v0.3.2\n   Compiling veyra v0.1.0 (<repo>/src-tauri)\n    Checking objc2-web-kit v0.3.2\n    Checking tao v0.35.3\n    Checking muda v0.19.3\n    Checking window-vibrancy v0.6.0\n    Checking tray-icon v0.24.2\n    Checking tauri-runtime v2.11.3\n    Checking wry v0.55.1\n    Checking tauri-runtime-wry v2.11.4\n    Checking tauri v2.11.5\n    Finished `dev` profile [unoptimized + debuginfo] target(s) in 4.24s\n",
+      "timeout_seconds": 240,
+      "status": "PASS"
+    },
+    {
+      "command": [
+        "cargo",
+        "fmt",
+        "--manifest-path",
+        "src-tauri/Cargo.toml",
+        "--",
+        "--check"
+      ],
+      "env_override": {},
+      "code": 0,
+      "stdout": "",
+      "stderr": "",
+      "timeout_seconds": 240,
+      "status": "PASS"
+    },
+    {
+      "command": [
+        "cargo",
+        "fmt",
+        "-p",
+        "veyra-helper-prototype"
+      ],
+      "code": 0,
+      "stdout": "",
+      "stderr": "",
+      "timeout_seconds": 180,
+      "status": "PASS"
+    },
+    {
+      "command": [
+        "cargo",
+        "check",
+        "-p",
+        "veyra-helper-prototype",
+        "--features",
+        "p0-05-prototype"
+      ],
+      "code": 0,
+      "stdout": "",
+      "stderr": "    Checking veyra-helper-prototype v0.1.0 (<repo>/crates/veyra-helper)\n    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.23s\n",
+      "timeout_seconds": 180,
+      "status": "PASS"
+    },
+    {
+      "command": [
+        "cargo",
+        "build",
+        "-p",
+        "veyra-helper-prototype",
+        "--features",
+        "p0-05-prototype"
+      ],
+      "code": 0,
+      "stdout": "",
+      "stderr": "   Compiling veyra-helper-prototype v0.1.0 (<repo>/crates/veyra-helper)\n    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.40s\n",
+      "timeout_seconds": 180,
+      "status": "PASS"
+    },
+    {
+      "command": [
+        "cargo",
+        "test",
+        "-p",
+        "veyra-helper-prototype",
+        "--features",
+        "p0-05-prototype"
+      ],
+      "code": 0,
+      "stdout": "\nrunning 5 tests\ntest tests::rejects_untrusted_extra_fields_and_commands ... ok\ntest tests::preserves_external_pac_and_restores_absent_snapshot_fields ... ok\ntest tests::restores_exact_unconflicted_snapshot ... ok\ntest tests::bounded_message_rejects_excess_bytes ... ok\ntest tests::slow_message_has_total_deadline ... ok\n\ntest result: ok. 5 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.53s\n\n",
+      "stderr": "   Compiling veyra-helper-prototype v0.1.0 (<repo>/crates/veyra-helper)\n    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.32s\n     Running unittests src/p0_05/main.rs (target/debug/deps/veyra_helper_prototype-f30575fe7af7f18b)\n",
+      "timeout_seconds": 180,
+      "status": "PASS"
+    },
+    {
+      "command": [
+        "cargo",
+        "clippy",
+        "-p",
+        "veyra-helper-prototype",
+        "--features",
+        "p0-05-prototype",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "code": 0,
+      "stdout": "",
+      "stderr": "    Checking veyra-helper-prototype v0.1.0 (<repo>/crates/veyra-helper)\n    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.27s\n",
+      "timeout_seconds": 180,
+      "status": "PASS"
+    },
+    {
+      "command": [
+        "cargo",
+        "fmt",
+        "-p",
+        "veyra-helper-prototype",
+        "--",
+        "--check"
+      ],
+      "code": 0,
+      "stdout": "",
+      "stderr": "",
+      "timeout_seconds": 180,
+      "status": "PASS"
+    }
+  ],
+  "pure_tests": {
+    "executed": 5,
+    "failed": 0,
+    "ignored": 0,
+    "filtered_out": 0,
+    "real_child_or_system_writes": false
+  },
+  "administrator_authorization": {
+    "status": "FAIL",
+    "code": -60008,
+    "privileged_harness_executed": false,
+    "real_user_cancel": "NOT_RUN"
+  },
+  "root_and_network_acceptance": "NOT_RUN",
+  "historical_failures": [
+    {
+      "stage": "initial Rust check",
+      "status": "FAIL",
+      "error": "E0793: reference to packed kevent.data; fixed by local copy"
+    },
+    {
+      "stage": "initial prototype clippy",
+      "status": "FAIL",
+      "error": "collapsible_if; fixed"
+    },
+    {
+      "stage": "manual attempt 01",
+      "status": "FAIL",
+      "error": "ps execution denied by sandbox; replaced with proc_pidinfo"
+    },
+    {
+      "stage": "local API attempt 01",
+      "status": "FAIL",
+      "error": "ENOTCONN after client closed socket before handshake; fixed"
+    },
+    {
+      "stage": "local API attempt 02",
+      "status": "FAIL",
+      "error": "EAGAIN from inherited nonblocking accepted socket; fixed"
+    }
+  ],
+  "review": {
+    "skill": "code-delivery-review",
+    "kind": "implementer self-review",
+    "independent": false,
+    "root_integration_not_verified": true
+  },
+  "git_commit_push": false,
+  "source_sha256": {
+    "Cargo.toml": "6af8f659b23b583a12e49e2e374da6bec76a6d548df609ddc9a8416c012c7b55",
+    "Cargo.lock": "53b1d5b936014f18b5ec2ea5b375383551f120e69581dfd6a9f6b1caf994eb72",
+    "tools/p0-05-helper-probe.py": "539e0083e17129278c8b3eb7d4b6dcaaccc5ecc2fdee103379ea74f0242827c4",
+    "crates/veyra-helper/Cargo.toml": "afa7648526a457599d27eb2ff42a17ed683676c08f2048e1f3cd93519f47af50",
+    "crates/veyra-helper/README.md": "7cc5bdde87a33cc3dfffd6d2da24bb053705426f25281d7e347cb0d970a0edf9",
+    "crates/veyra-helper/build.rs": "ad997a5590d03f6af837391376a86ac9d61e87573f6c1bce0407dd0c08ae3355",
+    "crates/veyra-helper/native/network.m": "e69f8404f3f3701068842080ef710595e95a4bfb3018653cac5fd85ef27e4244",
+    "crates/veyra-helper/src/p0_05/main.rs": "b0ac37766b381f7c0227d1deba563fad8403f565651d4552a431e2815a8b84b1",
+    "crates/veyra-helper/src/p0_05/probe.rs": "2526897a45ed089cb4c4542ff457f61213e3cc63e3b069ec41da64e8df342739"
+  },
+  "artifact_sha256": "c1ba3a804eab57ceced42a376af4d2e3c7a1e49facb9163261855869b69ad4dd",
+  "document_checks": {
+    "status": "PASS",
+    "task_cards": 68,
+    "macOS_cards": 61,
+    "windows_cards": 7,
+    "card_master_dependencies_equal": true,
+    "acyclic": true,
+    "counts": {
+      "DONE": 7,
+      "ACCEPTANCE": 1,
+      "TODO": 52,
+      "READY": 1,
+      "DEFERRED": 7
+    },
+    "READY": [
+      "P1-03"
+    ],
+    "local_links": 230,
+    "anchors": 102,
+    "script_AST": "PASS",
+    "JSON_redaction": "PASS",
+    "historical_checker_error": "delivery headings have no dependency field; excluded from actual card count",
+    "77_API_19_scenario_ownership_unchanged": true
+  },
+  "cleanup": {
+    "status": "PASS",
+    "protected_residual": [],
+    "launchd_exact_label_absent": true,
+    "launchd": {
+      "command": [
+        "/bin/launchctl",
+        "print",
+        "system/com.lifei6671.veyra.p005"
+      ],
+      "code": 113,
+      "stdout": "",
+      "stderr": "Bad request.\nCould not find service \"com.lifei6671.veyra.p005\" in domain for system\n"
+    },
+    "temporary_staging_removed": true,
+    "staging_archive_config_kernel_removed": true,
+    "network_service_absence": {
+      "status": "PASS",
+      "api": "SCNetworkServiceCopyAll + CFEqual fixed P005 service name",
+      "matching_test_services": 0,
+      "export_other_service_names": false
+    },
+    "prototype_executable_residual": {
+      "status": "PASS",
+      "method": "lsof txt paths for exact prototype artifact and unique staging prefix",
+      "exit_code": 0,
+      "matching_records": 0
+    },
+    "all_p005_temporary_resources_absent": true
+  },
+  "script_and_evidence_redaction": {
+    "status": "PASS",
+    "username_home_UID_GID_credentials": "checked; identity fields use placeholders; root 0 retained"
+  },
+  "git_diff_check": {
+    "status": "PASS",
+    "command": "git diff --check",
+    "code": 0,
+    "untracked_whitespace_checked": true
+  },
+  "final_git_status": " M Cargo.lock\n M Cargo.toml\n M docs/openbox-rust-gpui-tasks/IMPLEMENTATION_PHASES.md\n M docs/openbox-rust-gpui-tasks/P0-feasibility.md\n M docs/openbox-rust-gpui-tasks/SESSION.md\n?? crates/veyra-helper/\n?? docs/openbox-rust-gpui-tasks/evidence/p0-05/\n?? tools/p0-05-helper-probe.py\n",
+  "evidence_sha256": {
+    "README.md": "10eae20ad3696c1dec3bc76ee50185c269019f2ce15ced24d6522dc9b3a1b002",
+    "child-identity.json": "b933524ad490888019c094f8c2a65030885f1a59473e8200762a91f34e508a5b",
+    "cleanup.json": "92f594150ce5e3fd59c03781a5217e73b8f2062175f071f0af60f8d2c17593d0",
+    "history/attempt-01/cleanup.json": "6f1b7646ba8ba49a37405266d766d5e9d04770e06d702ba51564071414b7d494",
+    "history/attempt-01/kernel-identity.json": "3b9bcdab626d67c2a6a64d38ae5d8dd4b740f2f9560f9ba8830e4da392c8ec04",
+    "history/attempt-01/platform-identity.json": "8ab01cbbf47db3fc0cd801ea4fc625b6faeb619aa39e136f1580f4d237bf0680",
+    "history/attempt-01/probe-error.json": "4376c7e265820107f0f06a0a9aeb182cb0696bf55ad516e53db63d6b9181603a",
+    "history/build-phase-01.log": "4b853fe356b33be48c771196669ab3435e44735b0420917ec990efd8dd874794",
+    "history/local-api-attempt-01.json": "d904814ade6d56ad51fc47f6fad690ea34c919703421e327171e5f16adc7f005",
+    "history/local-api-attempt-02.json": "7a797c90c146dedc8d641d39e04af11965964a88bd08f7e0c8bc923c0ca79133",
+    "install-uninstall.json": "96bdc867ec2343faa0131331f5f27de6ceeac522d4a829683fd3c01920f16aa9",
+    "ipc-peer-identity.json": "b933524ad490888019c094f8c2a65030885f1a59473e8200762a91f34e508a5b",
+    "kernel-identity.json": "3b9bcdab626d67c2a6a64d38ae5d8dd4b740f2f9560f9ba8830e4da392c8ec04",
+    "local-os-api.json": "70b3a4ff393d412c0aea85f3843e34cc8cc98135c81c60e51badedfe108768d5",
+    "manual-without-helper.json": "10dc511d650e66ba86a25399bd5f47529f003478a32203a3911e05e307251ed1",
+    "network-service.json": "b933524ad490888019c094f8c2a65030885f1a59473e8200762a91f34e508a5b",
+    "owner-lifecycle.json": "b933524ad490888019c094f8c2a65030885f1a59473e8200762a91f34e508a5b",
+    "platform-identity.json": "b12180aaf8a4ca9003c2c3a9cebb7b6b16eafc8391505d8d45e8dccce0493b56"
+  },
+  "evidence_JSON_files": 17,
+  "provenance": "final Rust artifact; administrator attempt is separately bound to attempted_helper_sha256; ordinary fallback fixed kernel digest unchanged"
+}

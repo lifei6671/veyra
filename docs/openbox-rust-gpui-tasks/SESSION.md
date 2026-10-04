@@ -2,7 +2,7 @@
 
 最后更新：2026-10-04。
 
-**当前结果：OBG-P0-01、P0-02、P0-03、P0-04、P0-07、P1-01、P1-02 DONE；P0-05、P1-03 READY。** P0-07 完成标准四流/区间 traffic/短连接/DNS 三能力/本地诊断；DNS records/hot rewrite unsupported，flush supported。P0-04 存在对账前流量窗口。P0-03 人工确认和历史限制保留；helper/TUN 运行未验证。阶段用于里程碑分组及组合验收，READY 只由显式依赖决定。
+**当前结果：OBG-P0-01、P0-02、P0-03、P0-04、P0-07、P1-01、P1-02 DONE；P0-05 ACCEPTANCE；P1-03 READY。** P0-07 完成标准四流/区间 traffic/短连接/DNS 三能力/本地诊断；DNS records/hot rewrite unsupported，flush supported。P0-04 存在对账前流量窗口。P0-03 人工确认和历史限制保留；helper/TUN 运行未验证。阶段用于里程碑分组及组合验收，READY 只由显式依赖决定。
 
 - [长期开发总规范](DEVELOPMENT_WORKFLOW.md)：后续 Veyra Rust/GPUI 默认遵守；四泳道、并行与单一 owner。
 - [技术方案](../openbox-rust-gpui-implementation-plan.md)：架构、行为、接口与平台边界。
@@ -22,13 +22,15 @@
 | P7 数据与发布收尾 | 0 / 5 | 未开始，schema/清理按显式依赖等待 | P7-05 未开始 |
 | Windows W0–W3 | 0 / 7 | 后续排期 DEFERRED | W3-02 未开始 |
 
-macOS：**7 / 61 完成**；READY 2、TODO 52、DOING 0、REVIEW 0、ACCEPTANCE 0、BLOCKED 0。Windows 7 项 DEFERRED 单列，共 68 项。数量不等于工期权重或代码完成百分比；P1-04/P2-02/P4-05 父项被后缀子项替代，不重复计数。
+macOS：**7 / 61 完成**；READY 1、TODO 52、DOING 0、REVIEW 0、ACCEPTANCE 1、BLOCKED 0。Windows 7 项 DEFERRED 单列，共 68 项。数量不等于工期权重或代码完成百分比；P1-04/P2-02/P4-05 父项被后缀子项替代，不重复计数。
 
 ## 2 Active Tasks
 
-当前无 Active Tasks。P0-07 于 2026-10-04 DONE；Observation owner Codex /root 已释放独立 child/controller/origin/DNS/temp。写范围为本任务原型脚本/证据与任务文档、方案 §8.6/8.7/10.2；产品 Rust/Core/DTO/workspace/Runtime 未改。
+| Task | owner / 泳道 | 写范围 / 公共契约 | 实际资源 / 下一动作 |
+| --- | --- | --- | --- |
+| P0-05 · ACCEPTANCE | Codex /root · Runtime/Platform | `crates/veyra-helper/` 显式 `p0-05-prototype`、固定编排、P0-05 evidence/任务文档；本轮根 Cargo workspace/lock 已整合，core/公共 DTO 不改 | 系统授权 -60008，管理员入口未运行；原型 /Library/launchd/service 从未创建，普通用户 child/temp 已清。待可呈现标准管理员 UI 的本机环境补真实特权验收；不能计 DONE |
 
-本轮起始 HEAD `fac6f12`，工作树干净；当前交付未提交。仅领取并完成 P0-07，没有领取 P0-05/P1-03 或下游。
+本轮起始 HEAD `3111a57`，工作树干净；本任务修改未提交。只领取 P0-05，不启动 P1-03 或下游。独立 label/path/socket/service/child/tmp 的现场预约已释放；补验时重新检查身份、版本与无残留。
 
 ## 3 Ready Queue
 
@@ -36,10 +38,9 @@ macOS：**7 / 61 完成**；READY 2、TODO 52、DOING 0、REVIEW 0、ACCEPTANCE 
 
 | Task | 依赖满足依据 | 候选写范围 / 并行条件 | 下一具体动作 |
 | --- | --- | --- | --- |
-| [P0-05](P0-feasibility.md#obg-p0-05) | P0-03 + P0-04 DONE | 本地 helper/授权/进程归属；领取时独立预约真实权限/网络资源 | 读取 helper 原型卡及平台边界，未启动 |
 | [P1-03](P1-core-and-shell.md#obg-p1-03) | P1-02 + P0-03 DONE | GPUI app/navigation/state bridge；公共 DTO/workspace 先预约 owner | 核对核心契约、原型限制及壳层范围，未启动 |
 
-按 68 张实际任务卡依赖重算，READY 为 P0-05/P1-03；P0-06 仍等待 P0-05，P0-09/P3-01/P5-01 仍缺其他依赖，保持 TODO。本轮只交付 P0-07，无新增 READY。
+按 68 张实际任务卡依赖重算，未领取 READY 为 P1-03；P0-05 ACCEPTANCE；P0-06 仍等待 P0-05，P0-09/P3-01/P5-01 仍缺其他依赖，保持 TODO。P0-05 未 DONE，无新增 READY；P0-06/P0-08/P0-09 保持 TODO。
 
 ## 4 Blocked
 
@@ -49,13 +50,13 @@ macOS：**7 / 61 完成**；READY 2、TODO 52、DOING 0、REVIEW 0、ACCEPTANCE 
 | --- | --- | --- | --- |
 | 无 | — | — | — |
 
-后续限制按卡追踪：GPUI 的 MiSans/nested dropdown/card backdrop 在 P1-04A 延续，macOS 15 实机及历史受控 blur/截图缺口保留于 P0-03；P0-04/07 已核实内核/缓存/观测/DNS 边界，出站 P0-06 待办；管理员 helper/首次打开 P0-05/08；新版估算 P0-09。GitHub 无发布签名/公证和旧门禁退役已由 P0-02 记录，无补办流程前置。
+后续限制按卡追踪：GPUI 的 MiSans/nested dropdown/card backdrop 在 P1-04A 延续，macOS 15 实机及历史受控 blur/截图缺口保留于 P0-03；P0-04/07 已核实内核/缓存/观测/DNS 边界，出站 P0-06 待办；管理员 helper P0-05 原型已实现，但标准授权 -60008 待补特权验收；首次打开 P0-08、新版估算 P0-09。GitHub 无发布签名/公证和旧门禁退役已由 P0-02 记录，无补办流程前置。
 
 ## 5 基线与验证记录
 
 | 字段 | 当前值 |
 | --- | --- |
-| 当前分支 / HEAD | `codex/dist-react-restore` / `fac6f12`；P0-07 起始工作树干净，当前仅本任务交付未提交 |
+| 当前分支 / HEAD | `codex/dist-react-restore` / `3111a57`；P0-05 起始工作树干净，当前任务独占原型资源 |
 | 新路线实现基线 | 根 workspace/core、旧入口共享接线、schema v7 与 GPUI 原型已在起始 HEAD；本轮仅新增本地 Observation 原型脚本/证据和能力结论文档 |
 | 方案调查基线 | `bda242a920d471b9598f98b57dde5d7c2505c35e`；只作原调查身份，不能当当前 HEAD |
 | P0-01 交付（历史保留） | [最终验收](P0-01-baseline.md#current-acceptance)：8 当前源码 PNG、18 新真实脱敏 case、视觉数据、manifest/audit；四项 PASS |
@@ -68,6 +69,7 @@ macOS：**7 / 61 完成**；READY 2、TODO 52、DOING 0、REVIEW 0、ACCEPTANCE 
 | P0-04 本次真实验证 | [真实内核交付](P0-feasibility.md#p0-04-delivery)：官方 1.14.0 arm64 digest、5 configs check、4 child 动态 controller/鉴权/SIGTERM 清理、selector/FakeIP restore、关闭 writer handoff PASS；存在对账前窗口；[validation](evidence/p0-04/validation.json)含 core check/脱敏/JSON/DAG/links/diff；仅同版本/cache_id/tag/pool/range |
 | P0-07 本次真实验证 | [本地 Observation 交付](P0-feasibility.md#p0-07-delivery)：固定 archive/source、四 WS、traffic 两 burst/reconnect、long/short、DNS records/flush/hot rewrite、局部诊断 PASS；[validation](evidence/p0-07/validation.json)含 JSON/AST/脱敏/core check/68 DAG/links/diff/cleanup；首轮 checker FAIL 保留，无产品 Rust 改动 |
 | 保留的限制 | candidate-window/tray screenshot 与独立前台 focus 缺证据、受控 window blur 对照缺失；card-level backdrop blur、MiSans、nested dropdown、macOS 15 实机未验证，不阻止 P0-03 DONE；Windows 仍 DEFERRED |
+| P0-05 本轮原型 | [授权与平台证据](evidence/p0-05/README.md)：macOS 27 arm64 / minos 15.0 / adhoc，固定内核/manual FD、普通用户 OS peer/NOTE_EXIT PASS；管理员授权失败 -60008，所有 root/network 实测 NOT_RUN，ACCEPTANCE；现场干净 |
 | 下一里程碑 | P0-09：汇总原型结论、实际范围和重新估算；不阻塞无关已就绪任务 |
 
 ## 6 里程碑记录
@@ -114,3 +116,6 @@ P0-03 Host 追加确认：对绿色托盘图标、三轮显示/隐藏、菜单�
 2026-10-04 P0-04 DONE：固定官方 v1.14.0 macOS arm64 archive digest 匹配后运行；5 config checks / 4 child，动态 controller 从本 child 日志取得，鉴权 200/无鉴权 401；selector/FakeIP 及 closed-writer handoff 全通过、空缓存对照排除假恢复。restart/handoff 对账前窗口 22.990292/14.466458 ms；正式及试探资源已清理。68-card DAG：DONE 6、READY 3、TODO 52、Windows DEFERRED 7；READY P0-05/P0-07/P1-03、P0-06 TODO。前期字段 check FAIL 与试探配置未捕获 hash 的限制保留；sandbox 网络更新监听受限，不声称正式 Runtime/网络监听已实现。无系统设置修改、TUN run、公网协议测试、后续 Task、commit/push；[完整记录](evidence/p0-04/README.md)。
 
 2026-10-04 P0-07 DONE：四项验收 PASS；traffic 区间 bytes、两 burst/reconnect、短连接缺口、DNS records/hot rewrite unsupported、flush supported、真实局部诊断；全部自有资源清理。READY P0-05/P1-03，无新增，未启动下游，未 commit/push；[完整记录](evidence/p0-07/README.md)。
+
+
+2026-10-04 P0-05 ACCEPTANCE：隔离 Rust/原生 adapter、closed IPC、受管配置 FD/身份/恢复逻辑与固定安装/卸载 harness 已实现；普通用户 API/手动代理及 5 定向测试有真实证据。标准系统管理员授权实际失败 -60008 / hiservices-xpcservice Connection Invalid；未创建 daemon、受保护目录或 Network Service，root/network 项 NOT_RUN，无真实用户取消证据。现场已清理，68-card DAG 不变，READY 仅 P1-03，未启动下游、无 commit/push；[完整证据](evidence/p0-05/README.md)。

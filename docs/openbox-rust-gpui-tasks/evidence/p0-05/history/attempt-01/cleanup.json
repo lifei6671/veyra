@@ -1,0 +1,17 @@
+{
+  "status": "PASS",
+  "protected_residual": [],
+  "launchd_exact_label_absent": true,
+  "launchd": {
+    "command": [
+      "/bin/launchctl",
+      "print",
+      "system/com.lifei6671.veyra.p005"
+    ],
+    "code": 113,
+    "stdout": "",
+    "stderr": "Bad request.\nCould not find service \"com.lifei6671.veyra.p005\" in domain for system\n"
+  },
+  "temporary_staging_removed": true,
+  "staging_archive_config_kernel_removed": true
+}

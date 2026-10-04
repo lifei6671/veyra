@@ -1,0 +1,30 @@
+{
+  "status": "PASS",
+  "protected_residual": [],
+  "launchd_exact_label_absent": true,
+  "launchd": {
+    "command": [
+      "/bin/launchctl",
+      "print",
+      "system/com.lifei6671.veyra.p005"
+    ],
+    "code": 113,
+    "stdout": "",
+    "stderr": "Bad request.\nCould not find service \"com.lifei6671.veyra.p005\" in domain for system\n"
+  },
+  "temporary_staging_removed": true,
+  "staging_archive_config_kernel_removed": true,
+  "network_service_absence": {
+    "status": "PASS",
+    "api": "SCNetworkServiceCopyAll + CFEqual fixed P005 service name",
+    "matching_test_services": 0,
+    "export_other_service_names": false
+  },
+  "prototype_executable_residual": {
+    "status": "PASS",
+    "method": "lsof txt paths for exact prototype artifact and unique staging prefix",
+    "exit_code": 0,
+    "matching_records": 0
+  },
+  "all_p005_temporary_resources_absent": true
+}

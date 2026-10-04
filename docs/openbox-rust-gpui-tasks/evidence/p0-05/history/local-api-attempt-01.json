@@ -1,0 +1,6 @@
+{
+  "command": "target/debug/veyra-helper-prototype local-platform-probe",
+  "code": 1,
+  "stdout": "",
+  "stderr": "Socket is not connected (os error 57)\n"
+}

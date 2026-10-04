@@ -1,0 +1,9 @@
+{
+  "command": [
+    "<repo>/target/debug/veyra-helper-prototype",
+    "local-platform-probe"
+  ],
+  "code": 0,
+  "stdout": "{\"IPC_EOF_owner_alive_seconds\": 2, \"SIGKILL_NOTE_EXIT\": true, \"actual_peer_pid_matches_held_child\": true, \"child_reaped\": true, \"exit_api\": \"kqueue EVFILT_PROC NOTE_EXIT\", \"owner_identity_before_SIGKILL\": {\"gid\": \"<authorized-gid>\", \"pgid\": 155, \"pid\": 303, \"rgid\": \"<authorized-gid>\", \"ruid\": \"<authorized-uid>\", \"start_sec\": 1791078823, \"start_usec\": 394620, \"uid\": \"<authorized-uid>\"}, \"peer\": {\"gid\": \"<authorized-gid>\", \"pid\": 303, \"uid\": \"<authorized-uid>\"}, \"scope\": \"ordinary-user OS API feasibility; root helper acceptance NOT_RUN\", \"server_peer_checked_by_client\": true, \"status\": \"PASS\"}",
+  "stderr": ""
+}

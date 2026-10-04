@@ -1,0 +1,38 @@
+{
+  "ordinary_install": {
+    "command": [
+      "<tmp>/helper",
+      "install",
+      "<authorized-uid>"
+    ],
+    "code": 1,
+    "stdout": "",
+    "stderr": "AdministratorRequired: effective UID is not root; no privileged mutation\n"
+  },
+  "protected_resources_created_by_denied_install": false,
+  "real_user_cancel": "NOT_RUN",
+  "cancel_evidence": "non-root installer rejection; not a cancelled authorization dialog",
+  "system_authorization": {
+    "command": [
+      "/usr/bin/osascript",
+      "-e",
+      "do shell script \"<tmp>/helper privileged-probe <authorized-uid>\" with administrator privileges"
+    ],
+    "code": 1,
+    "stdout": "",
+    "stderr": "2026-10-04 09:39:55.845 osascript[94105:5254686] Error received in message reply handler: Connection invalid\n2026-10-04 09:39:55.845 osascript[94105:5254688] Connection Invalid error for service com.apple.hiservices-xpcservice.\n0:108: execution error: 授权失败。 (-60008)\n"
+  },
+  "attempted_helper_sha256": "d9e413185cddcea2d4cfacde6676dca984386a2e81ffade15792263f6d4180c6",
+  "final_artifact_sha256": "c1ba3a804eab57ceced42a376af4d2e3c7a1e49facb9163261855869b69ad4dd",
+  "final_ordinary_install": {
+    "command": [
+      "<tmp>/helper",
+      "install",
+      "<authorized-uid>",
+      "<verified-helper-sha256>"
+    ],
+    "code": 1,
+    "stderr": "AdministratorRequired: effective UID is not root; no privileged mutation\n",
+    "source": "final ordinary replay --no-authorize; assertions passed"
+  }
+}

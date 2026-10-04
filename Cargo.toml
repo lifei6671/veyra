@@ -1,4 +1,4 @@
 [workspace]
-members = ["crates/veyra-core", "crates/veyra-gpui-prototype", "src-tauri"]
+members = ["crates/veyra-core", "crates/veyra-gpui-prototype", "crates/veyra-helper", "src-tauri"]
 default-members = ["crates/veyra-core"]
 resolver = "3"
