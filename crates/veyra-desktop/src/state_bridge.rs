@@ -15,6 +15,10 @@ pub struct InstanceToken {
     pub generation: u64,
 }
 pub enum AppEvent {
+    PlatformSaved {
+        result: Result<(), crate::platform::PlatformError>,
+    },
+
     BehaviorSaved {
         generation: u64,
         result: Result<Box<AppState>, AppError>,
@@ -110,6 +114,7 @@ impl StateBridge {
     pub fn receive(&mut self, event: AppEvent) -> Disposition {
         match event {
             AppEvent::BehaviorSaved { .. }
+            | AppEvent::PlatformSaved { .. }
             | AppEvent::ExternalPreferenceWrite { .. }
             | AppEvent::VisualSaved { .. }
             | AppEvent::AssetPrepared { .. }

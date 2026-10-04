@@ -13,6 +13,11 @@ use tokio::sync::mpsc::UnboundedReceiver;
 use veyra_core::application::runtime_snapshot::InstanceId;
 
 pub struct AppView {
+    // 同一 AppView 持有主线程 TrayIcon；隐藏窗口不释放托盘或页面 Entity。
+    tray: crate::tray::DesktopTray,
+    dialog_open: bool,
+    clipboard_snapshot: Option<crate::platform::macos::ClipboardSnapshot>,
+
     pub route: Route,
     pub dark: bool,
     pub pages: Pages,
@@ -33,11 +38,13 @@ pub struct AppView {
     _panel_subscription: Subscription,
     _appearance: Subscription,
     _receiver: Task<()>,
+    _tray_quit: Subscription,
 }
 impl AppView {
     pub fn new(
         services: Arc<AppServices>,
         mut receiver: UnboundedReceiver<AppEvent>,
+        tray: crate::tray::DesktopTray,
         window: &mut Window,
         cx: &mut Context<Self>,
     ) -> Self {
@@ -73,6 +80,55 @@ impl AppView {
                     this.services
                         .import_background(this.asset_generation, path.clone());
                 }
+                PanelEvent::ChooseImage => {
+                    this.open_platform_dialog(crate::platform::macos::DialogKind::Image, window, cx)
+                }
+                PanelEvent::ExportEvidence => this.open_platform_dialog(
+                    crate::platform::macos::DialogKind::SaveEvidence,
+                    window,
+                    cx,
+                ),
+                PanelEvent::ClipboardWrite => {
+                    let result = (|| {
+                        if this.clipboard_snapshot.is_none() {
+                            this.clipboard_snapshot =
+                                Some(crate::platform::macos::ClipboardSnapshot::capture()?);
+                        }
+                        crate::platform::macos::write_text("veyra-p1-05-clipboard")?;
+                        if crate::platform::macos::read_text()?.as_deref()
+                            != Some("veyra-p1-05-clipboard")
+                        {
+                            return Err(crate::platform::PlatformError::ClipboardUnavailable);
+                        }
+                        Ok(())
+                    })();
+                    this.platform_notice(
+                        result,
+                        "Clipboard marker ready; use Cmd+V, then Restore",
+                        window,
+                        cx,
+                    );
+                }
+                PanelEvent::ClipboardRestore => {
+                    let result = this
+                        .clipboard_snapshot
+                        .as_mut()
+                        .map_or(Ok(()), |snapshot| snapshot.restore());
+                    if result.is_ok() {
+                        this.clipboard_snapshot.take();
+                    }
+                    eprintln!("clipboard restoration result={result:?}; contents not logged");
+                    this.platform_notice(result, "Clipboard restored", window, cx);
+                }
+                PanelEvent::ExternalLink => {
+                    let result =
+                        crate::platform::macos::ExternalUrl::new("http://127.0.0.1:9/veyra-p1-05")
+                            .and_then(|u| u.open());
+                    eprintln!(
+                        "external URL OS handoff result={result:?}; target=loopback evidence"
+                    );
+                    this.platform_notice(result, "OS external link handoff", window, cx);
+                }
                 PanelEvent::Retry => {
                     this.visual.retry(this.now_ms());
                     this.submit_visual(window, cx);
@@ -97,7 +153,18 @@ impl AppView {
                 }
             }
         });
+        let tray_quit = cx.on_app_quit(|view, _| {
+            view.tray.prepare_quit();
+            async {}
+        });
+        eprintln!(
+            "AppView created entity={:?}; pages_created_count=6",
+            cx.entity_id()
+        );
         let mut view = Self {
+            tray,
+            dialog_open: false,
+            clipboard_snapshot: None,
             route: Route::Overview,
             dark: false,
             pages,
@@ -118,9 +185,69 @@ impl AppView {
             _panel_subscription: panel_subscription,
             _appearance: appearance,
             _receiver: foreground,
+            _tray_quit: tray_quit,
         };
         view.refresh(cx);
         view
+    }
+    fn platform_notice(
+        &self,
+        result: Result<(), crate::platform::PlatformError>,
+        success: &str,
+        window: &mut Window,
+        cx: &mut Context<Self>,
+    ) {
+        use crate::ui::components::{Notice, notify};
+        match result {
+            Ok(()) => notify(Notice::Success, success.to_owned(), window, cx),
+            Err(error) => notify(Notice::Error, error.to_string(), window, cx),
+        }
+    }
+    fn open_platform_dialog(
+        &mut self,
+        kind: crate::platform::macos::DialogKind,
+        window: &mut Window,
+        cx: &mut Context<Self>,
+    ) {
+        if self.dialog_open {
+            return;
+        }
+        self.dialog_open = true;
+        let focus = window.focused(cx);
+        let result = crate::platform::macos::begin_dialog(kind);
+        eprintln!("native dialog opened kind={kind:?}");
+        cx.spawn_in(window, async move |view, cx| {
+            let result = result
+                .await
+                .unwrap_or(Err(crate::platform::PlatformError::FileDialogUnavailable));
+            let _ = view.update_in(cx, |this, window, cx| {
+                this.dialog_open = false;
+                window.activate_window();
+                if let Some(focus) = focus {
+                    focus.focus(window, cx);
+                }
+                match result {
+                    Ok(crate::platform::macos::DialogResult::Cancelled) => {
+                        eprintln!("native dialog cancelled kind={kind:?}; no side effect")
+                    }
+                    Ok(crate::platform::macos::DialogResult::Selected(path)) => {
+                        eprintln!("native dialog accepted kind={kind:?}; selected path redacted");
+                        match kind {
+                            crate::platform::macos::DialogKind::Image => {
+                                this.asset_generation += 1;
+                                this.services.import_background(this.asset_generation, path);
+                            }
+                            crate::platform::macos::DialogKind::SaveEvidence => {
+                                this.services.save_platform_evidence(path)
+                            }
+                        }
+                    }
+                    Err(error) => this.platform_notice(Err(error), "", window, cx),
+                }
+                cx.notify();
+            });
+        })
+        .detach();
     }
     fn now_ms(&self) -> u64 {
         self.started.elapsed().as_millis() as u64
@@ -223,6 +350,10 @@ impl AppView {
     fn receive_event(&mut self, event: AppEvent, window: &mut Window, cx: &mut Context<Self>) {
         use crate::ui::components::{Notice, notify};
         match event {
+            AppEvent::PlatformSaved { result } => {
+                eprintln!("platform export complete result={result:?}");
+                self.platform_notice(result, "Platform evidence file saved", window, cx);
+            }
             AppEvent::ExternalPreferenceWrite { result } => {
                 eprintln!(
                     "external preferences writer {result:?}; UI version intentionally unchanged"
@@ -380,6 +511,8 @@ impl AppView {
                 self.request_preview();
             }
         }
+        // 当前 composition root 未绑定 P2 Runtime owner，不从偏好或配置推断运行状态。
+        self.tray.project(self.bridge.snapshot.as_deref(), None);
     }
     pub fn refresh(&mut self, cx: &mut Context<Self>) {
         let request = self.bridge.begin();

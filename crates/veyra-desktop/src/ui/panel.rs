@@ -15,6 +15,11 @@ pub enum PanelEvent {
     Edit(DesktopVisualPreferences),
     Import(PathBuf),
     Retry,
+    ChooseImage,
+    ExportEvidence,
+    ClipboardWrite,
+    ClipboardRestore,
+    ExternalLink,
 }
 pub struct PanelView {
     pub draft: DesktopVisualPreferences,
@@ -247,10 +252,37 @@ impl Render for PanelView {
         div()
             .flex()
             .flex_col()
-            .gap_1()
             .flex_shrink_0()
-            .min_h(px(600.))
+            .gap_1()
+            .min_h(px(680.))
             .w_full()
+            .when(cfg!(debug_assertions), |view| {
+                view.child(
+                    div()
+                        .flex_col()
+                        .gap_2()
+                        .child("Platform evidence · preview namespace · no Runtime/tray")
+                        .child(
+                            div()
+                                .flex()
+                                .gap_2()
+                                .child(button("platform-export", "导出平台测试文件").on_click(
+                                    cx.listener(|_, _, _, cx| cx.emit(PanelEvent::ExportEvidence)),
+                                ))
+                                .child(button("clipboard-write", "Clipboard marker").on_click(
+                                    cx.listener(|_, _, _, cx| cx.emit(PanelEvent::ClipboardWrite)),
+                                ))
+                                .child(button("clipboard-restore", "Restore clipboard").on_click(
+                                    cx.listener(|_, _, _, cx| {
+                                        cx.emit(PanelEvent::ClipboardRestore)
+                                    }),
+                                ))
+                                .child(button("external-link", "OS link handoff").on_click(
+                                    cx.listener(|_, _, _, cx| cx.emit(PanelEvent::ExternalLink)),
+                                )),
+                        ),
+                )
+            })
             .child(
                 div()
                     .text_size(px(16.))
@@ -270,6 +302,13 @@ impl Render for PanelView {
                 div()
                     .flex()
                     .gap_2()
+                    .child(
+                        button(
+                            "choose-background",
+                            l("选择本地图片", "Choose local image", "選擇本地圖片"),
+                        )
+                        .on_click(cx.listener(|_, _, _, cx| cx.emit(PanelEvent::ChooseImage))),
+                    )
                     .child(
                         button("clear-background", l("清除背景", "Clear", "清除背景")).on_click(
                             cx.listener(|this, _, _, cx| {
@@ -341,27 +380,29 @@ impl Render for PanelView {
                 })),
             ))
             .child(div().text_xs().child(l(
-                "行为偏好可切换查看。正式文件选择器由 P1-05 接入。",
-                "Switch to Behaviour settings. Native file picker: P1-05.",
-                "行為偏好可切換查看。正式檔案選擇器由 P1-05 接入。",
+                "行为偏好可切换查看。本地图片通过原生文件选择器导入。",
+                "Switch to Behaviour settings. Native macOS file picker.",
+                "行為偏好可切換查看。原生檔案選擇器已接入。",
             )))
-            .child(
-                div()
-                    .flex()
-                    .gap_2()
-                    .child(text_input(&self.path).w(px(420.)))
-                    .child(
-                        button(
-                            "import-background",
-                            l("导入本地图片", "Import local image", "匯入本地圖片"),
-                        )
-                        .on_click(cx.listener(|this, _, _, cx| {
-                            cx.emit(PanelEvent::Import(PathBuf::from(
-                                this.path.read(cx).value().as_str(),
-                            )))
-                        })),
-                    ),
-            )
+            .when(cfg!(debug_assertions), |view| {
+                view.child(
+                    div()
+                        .flex()
+                        .gap_2()
+                        .child(text_input(&self.path).w(px(420.)))
+                        .child(
+                            button(
+                                "import-background",
+                                l("导入本地图片", "Import local image", "匯入本地圖片"),
+                            )
+                            .on_click(cx.listener(|this, _, _, cx| {
+                                cx.emit(PanelEvent::Import(PathBuf::from(
+                                    this.path.read(cx).value().as_str(),
+                                )))
+                            })),
+                        ),
+                )
+            })
             .child(
                 div()
                     .id("background-drop")

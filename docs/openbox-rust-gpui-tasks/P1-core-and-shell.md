@@ -103,9 +103,20 @@
 
 **验收**：
 
-- [ ] 第二次启动聚焦已有窗口，不能出现第二个业务 writer；占用无法确认时明确报告。
-- [ ] 取消文件对话框无副作用；非法/超大输入在边界失败，含凭据文件权限符合方案。
-- [ ] 不扫描浏览器 profile，不覆盖旧应用目录；文件复制与外部链接真实可操作。
+- [x] 第二次启动聚焦已有窗口，不能出现第二个业务 writer；占用无法确认时明确报告。
+- [x] 取消文件对话框无副作用；非法/超大输入在边界失败，含凭据文件权限符合方案。
+- [x] 不扫描浏览器 profile，不覆盖旧应用目录；文件复制与外部链接真实可操作。
+
+<a id="p1-05-delivery"></a>
+### P1-05 平台交付（2026-10-04）
+
+正式 desktop/platform 使用 Foundation preview 目录、0700/0600 权限、flock + 同 UID 固定 Activate IPC、异步 NSOpenPanel/NSSavePanel、可物化 item/type payload 的内存 pasteboard snapshot/restore（捕获失败不覆盖 pasteboard） 和仅 http/https 的 NSWorkspace handoff。Core 仅修正 portable atomic snapshot 权限，不引入 GPUI/AppKit，schema v9 未变。
+
+真实五次 secondary/active-key、占用不明、SIGKILL/stale socket、native Cancel/Accept、合法/非法/超大图片、managed hash/source 不变、保存文件逐字读回、Cmd+V/恢复、loopback URL OS handoff 通过。正常退出的 socket 残留已由 GPUI on_app_quit 修复，锁 FD 保留到进程结束。首次交付 294 Core / 33 Desktop（新增 1 + 9，含 child harness）、规定构建/检查与脱敏截图通过；旧资源 clippy 原始失败及检查覆盖、TOCTOU 和自动化滚动限制明示保留。
+
+Host Review 修订：Core 恢复 rename 成功即保存成功；preview stale temp 与复用 final cache 显式 0600；无 Veyra flock 的活 socket 不删除/接管。新增 3 Desktop 回归，修复前均复现失败，修复后 294 Core / 36 Desktop、规定 test/check/clippy/fmt/workspace check/diff 均通过；未重跑原生 GUI，历史身份/限制保留。
+
+[完整证据](evidence/p1-05/README.md)、[验证](evidence/p1-05/validation.json)、[交互](evidence/p1-05/interaction-results.json)、[清理](evidence/p1-05/cleanup.json)。本轮不提交；无正式旧目录/browser profile 导入、无 sing-box/系统代理/TUN/公网验证；P1-06 托盘未开始。
 
 <a id="obg-p1-06"></a>
 ## OBG-P1-06 托盘与窗口关闭流程
@@ -118,9 +129,19 @@
 
 **验收**：
 
-- [ ] 关闭最后窗口后可从托盘恢复、聚焦；重复操作不新建额外应用实例。
-- [ ] 菜单状态来自 core，不维护另一套运行真相；无内核时不显示已启动。
-- [ ] 明确退出走统一清理入口，关闭窗口只隐藏；真实 macOS 操作和视觉验收通过。
+- [x] 关闭最后窗口后可从托盘恢复、聚焦；重复操作不新建额外应用实例。
+- [x] 菜单状态来自 core，不维护另一套运行真相；无内核时不显示已启动。
+- [x] 明确退出走统一清理入口，关闭窗口只隐藏；真实 macOS 操作和视觉验收通过。
+
+**本轮交付：DONE（2026-10-04）**。三项验收全部 PASS；Human Visual / Tray interaction 已由当前 Host 会话用户真实操作补足。本次仅更新证据/状态文档，保留基线 f9adda4 上所有 P1-05/P1-06/Host Review 与 AGENTS.md 既有修改，不启动 P1-07/P2。
+
+- AppView 长期持有主线程 TrayIcon；固定 Intent channel → GPUI foreground recv，无 40ms 轮询/第二 UI loop。关闭返回 false 并 hide；Show/Activate 指向已有窗口；窗口 Quit 与 tray Quit 共用唯一 `cx.quit()` 入口。
+- 统一 Core snapshot / optional RuntimeSnapshot 的只读投影；P2 owner 未绑定时显示“内核：未接入（当前不可用）”，Start/Stop disabled。没有第二份运行 bool 或假的内核启停。
+- 41 desktop（原有36+新增5）、294 core 与规定 check/build/clippy/fmt/workspace override/旧 Tauri lib clippy PASS。实际 close/native hidden=true、五次 secondary existing window active/key、writer0、筛选保留与窗口 Quit/socket/flock/tray cleanup PASS。
+- 当前 User/Host manual acceptance：用户看到 macOS 菜单栏 Veyra “V” 图标并展开菜单；菜单显示“显示窗口”、“内核：未接入（当前不可用）”、灰色禁用的“启动（Runtime 未接入）”/“停止（Runtime 未接入）”及“退出”。连续三轮“关闭窗口 → 托盘‘显示窗口’恢复”均正常，最终托盘“退出”正常、无异常。Host 会话已查看用户上传的两张托盘截图，未复制入仓库，不伪造图片/SHA，见[人工证据](evidence/p1-06/host-manual-acceptance.json)。
+- 历史 AX 无托盘入口、SystemUIServer 超时、Ctrl+F8 无变化及当时 NOT_RUN 保留；本次人工 PASS 不改写为自动通过。此前窗口 Quit 的程序化 socket/flock/process 清理与本次托盘 Quit 用户结果分开，后者没有新增程序化 post-check。
+- 用户确认 Host 在本轮此前独立复核并复跑 41 Desktop / 294 Core tests、desktop/core check、clippy、fmt、resource override workspace locked check、旧 Tauri lib clippy、git diff --check，全部 exit 0；本次不重复运行大测试。
+- [证据、检查与截图](evidence/p1-06/README.md)。68 卡重算：DONE12 / ACCEPTANCE1 / READY1 / TODO47 / Windows DEFERRED7；P1-07 七项依赖均 DONE，为唯一 READY，未领取/启动。P0-05 仍 ACCEPTANCE，P0-06/P0-08 仍 TODO，未 commit/push。
 
 <a id="obg-p1-07"></a>
 ## OBG-P1-07 桌面壳阶段验收
