@@ -1,0 +1,189 @@
+{
+  "status": "PASS",
+  "complete_path": false,
+  "request": {
+    "started": {
+      "at": "2026-10-04T01:00:21.937733+00:00",
+      "monotonic_ns": 175760403055083
+    },
+    "ended": {
+      "at": "2026-10-04T01:00:24.349058+00:00",
+      "monotonic_ns": 175762814406708
+    },
+    "path": "/diagnostic-55a51206f65e0a86",
+    "host": "p007.example.invalid",
+    "destination_port": 52168,
+    "source_port": 52221,
+    "status": 200,
+    "response_bytes": 4258,
+    "body_bytes": 4125,
+    "uploaded_body_bytes": 0,
+    "origin_marker_verified": true
+  },
+  "origin_receipt": [
+    {
+      "at": "2026-10-04T01:00:21.938971+00:00",
+      "monotonic_ns": 175760404300958,
+      "path": "/diagnostic-55a51206f65e0a86",
+      "method": "GET",
+      "uploaded_bytes": 0,
+      "completed": {
+        "at": "2026-10-04T01:00:24.343866+00:00",
+        "monotonic_ns": 175762809207458
+      },
+      "response_body_bytes": 4125
+    }
+  ],
+  "association": "Unique public origin path/body marker + sole in-flight request + source port + bounded window; snapshot ID unique across frames. Log numeric context ID is not snapshot UUID.",
+  "associated_fields": {
+    "request_success": true,
+    "http_status": 200,
+    "inbound": "mixed/p007-mixed",
+    "outbound_tags": [
+      "p007-direct"
+    ],
+    "destination_host": "p007.example.invalid",
+    "destination_port": "52168",
+    "connection_id": "3968c73d-349d-4e3f-a453-6f2c6b588c20",
+    "start": "2026-10-04T09:00:21.938227+08:00",
+    "rule_index_from_correlated_debug_log": 1,
+    "source_ip": "127.0.0.1",
+    "source_port": "52221",
+    "connection_upload_bytes_at_snapshot": 130,
+    "connection_download_bytes_at_snapshot": 0,
+    "isolated_window_total_delta_bytes": {
+      "up": 130,
+      "down": 4258
+    }
+  },
+  "raw_controller_rule_text": "ip_cidr=127.0.0.0/8 => route(p007-direct)",
+  "rule_text_is_not_rule_index": true,
+  "rule_index_scope": "Only the actual route match index in correlated debug logs for this request/configuration; snapshot has rule text, no index; not a persistent rule ID/API guarantee.",
+  "absent_unknown": {
+    "dns_event": "unknown; no unique structured event ID",
+    "resolver_chain": "unknown",
+    "process_identity": "absent; processPath empty",
+    "filter_hit": "unknown"
+  },
+  "logs": [
+    {
+      "at": "2026-10-04T01:00:21.938055+00:00",
+      "monotonic_ns": 175760403381500,
+      "sequence": 34,
+      "data": {
+        "type": "info",
+        "payload": "[1084679577 0ms] inbound/mixed[p007-mixed]: inbound connection from 127.0.0.1:52221"
+      }
+    },
+    {
+      "at": "2026-10-04T01:00:21.938185+00:00",
+      "monotonic_ns": 175760403510375,
+      "sequence": 35,
+      "data": {
+        "type": "info",
+        "payload": "[1084679577 0ms] inbound/mixed[p007-mixed]: inbound connection to p007.example.invalid:52168"
+      }
+    },
+    {
+      "at": "2026-10-04T01:00:21.938224+00:00",
+      "monotonic_ns": 175760403546541,
+      "sequence": 36,
+      "data": {
+        "type": "debug",
+        "payload": "[1084679577 0ms] router: match[0] domain=p007.example.invalid => resolve(p007-hosts,ipv4_only)"
+      }
+    },
+    {
+      "at": "2026-10-04T01:00:21.938359+00:00",
+      "monotonic_ns": 175760403683666,
+      "sequence": 37,
+      "data": {
+        "type": "debug",
+        "payload": "[1084679577 0ms] dns: lookup domain p007.example.invalid"
+      }
+    },
+    {
+      "at": "2026-10-04T01:00:21.939126+00:00",
+      "monotonic_ns": 175760404458041,
+      "sequence": 38,
+      "data": {
+        "type": "info",
+        "payload": "[1084679577 0ms] dns: lookup succeed for p007.example.invalid: 127.0.0.1"
+      }
+    },
+    {
+      "at": "2026-10-04T01:00:21.939197+00:00",
+      "monotonic_ns": 175760404524458,
+      "sequence": 39,
+      "data": {
+        "type": "debug",
+        "payload": "[1084679577 0ms] router: resolved [127.0.0.1]"
+      }
+    },
+    {
+      "at": "2026-10-04T01:00:21.939300+00:00",
+      "monotonic_ns": 175760404626416,
+      "sequence": 40,
+      "data": {
+        "type": "debug",
+        "payload": "[1084679577 0ms] router: match[1] ip_cidr=127.0.0.0/8 => route(p007-direct)"
+      }
+    },
+    {
+      "at": "2026-10-04T01:00:21.939381+00:00",
+      "monotonic_ns": 175760404706958,
+      "sequence": 41,
+      "data": {
+        "type": "info",
+        "payload": "[1084679577 0ms] outbound/direct[p007-direct]: outbound connection to p007.example.invalid:52168"
+      }
+    },
+    {
+      "at": "2026-10-04T01:00:24.349565+00:00",
+      "monotonic_ns": 175762814897708,
+      "sequence": 42,
+      "data": {
+        "type": "debug",
+        "payload": "[1084679577 2.40s] inbound/mixed[p007-mixed]: connection closed: read http request: read tcp 127.0.0.1:52169->127.0.0.1:52221: use of closed network connection"
+      }
+    },
+    {
+      "at": "2026-10-04T01:00:24.349728+00:00",
+      "monotonic_ns": 175762815053833,
+      "sequence": 43,
+      "data": {
+        "type": "debug",
+        "payload": "[1084679577 2.40s] connection: connection upload finished"
+      }
+    }
+  ],
+  "traffic_frames_in_window": [
+    {
+      "at": "2026-10-04T01:00:22.936117+00:00",
+      "monotonic_ns": 175761401452750,
+      "sequence": 6,
+      "data": {
+        "up": 130,
+        "down": 0
+      }
+    },
+    {
+      "at": "2026-10-04T01:00:23.936322+00:00",
+      "monotonic_ns": 175762401673458,
+      "sequence": 7,
+      "data": {
+        "up": 0,
+        "down": 0
+      }
+    },
+    {
+      "at": "2026-10-04T01:00:24.936553+00:00",
+      "monotonic_ns": 175763401904458,
+      "sequence": 8,
+      "data": {
+        "up": 0,
+        "down": 4258
+      }
+    }
+  ]
+}

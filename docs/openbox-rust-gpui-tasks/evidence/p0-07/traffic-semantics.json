@@ -1,0 +1,194 @@
+{
+  "status": "PASS",
+  "source": "kernel-source-evidence.json",
+  "kind": "interval_increment",
+  "unit": "bytes of tracked routed I/O; not network wire bytes",
+  "nominal_interval_ms": 1000,
+  "interval_query_supported": false,
+  "interval_constraint": "Kernel does not emit timestamp/interval. Arrival monotonic interval estimates generation interval only under timely delivery; stalls/coalescing are not exact.",
+  "conversion": "bytes_per_second = frame_bytes * 1000 / interval_ms; no second difference",
+  "observed_intervals_ms": [
+    [
+      999.576666,
+      1000.293584,
+      1000.178208,
+      999.611542
+    ],
+    [
+      1000.222667,
+      999.951875,
+      999.893083,
+      999.997584
+    ]
+  ],
+  "example": {
+    "frame_bytes": 524288,
+    "interval_ms": 1002,
+    "bytes_per_second": 523241.51696606784
+  },
+  "session_rule": "Rust single collector adds each unique (instance_id, stream_generation, sequence) interval once; no differencing of frame values.",
+  "reconnect_rule": "Close old generation before opening new; retain same-instance confirmed sum but mark gap; reset timing baseline; first window starts at subscription, never replay lifetime totals.",
+  "instance_change_rule": "New instance resets session totals/timing/generation; reject late old-instance frames. REST total counter rollback starts new baseline and marks discontinuity.",
+  "burst1": {
+    "request": {
+      "started": {
+        "at": "2026-10-04T01:00:10.933000+00:00",
+        "monotonic_ns": 175749398317958
+      },
+      "ended": {
+        "at": "2026-10-04T01:00:10.938850+00:00",
+        "monotonic_ns": 175749404175125
+      },
+      "path": "/burst-1-fc5f26eebdb9a6ed",
+      "host": "p007.example.invalid",
+      "destination_port": 52168,
+      "source_port": 52185,
+      "status": 200,
+      "response_bytes": 524449,
+      "body_bytes": 524314,
+      "uploaded_body_bytes": 131072,
+      "origin_marker_verified": true
+    },
+    "frame_sum_bytes": {
+      "up": 131224,
+      "down": 524449
+    },
+    "rest_total_delta_bytes": {
+      "up": 131224,
+      "down": 524449
+    },
+    "idle_before": [
+      {
+        "at": "2026-10-04T01:00:09.929957+00:00",
+        "monotonic_ns": 175748395276250,
+        "sequence": 0,
+        "data": {
+          "up": 0,
+          "down": 0
+        }
+      },
+      {
+        "at": "2026-10-04T01:00:10.929527+00:00",
+        "monotonic_ns": 175749394852916,
+        "sequence": 1,
+        "data": {
+          "up": 0,
+          "down": 0
+        }
+      }
+    ],
+    "nonzero": [
+      {
+        "at": "2026-10-04T01:00:11.929828+00:00",
+        "monotonic_ns": 175750395146500,
+        "sequence": 2,
+        "data": {
+          "up": 131224,
+          "down": 524449
+        }
+      }
+    ],
+    "idle_after": {
+      "at": "2026-10-04T01:00:13.929593+00:00",
+      "monotonic_ns": 175752394936250,
+      "sequence": 4,
+      "data": {
+        "up": 0,
+        "down": 0
+      }
+    }
+  },
+  "gap_request_excluded_on_reconnect": {
+    "started": {
+      "at": "2026-10-04T01:00:15.930765+00:00",
+      "monotonic_ns": 175754396083166
+    },
+    "ended": {
+      "at": "2026-10-04T01:00:15.933990+00:00",
+      "monotonic_ns": 175754399317291
+    },
+    "path": "/unobserved-gap-aa6dab1f9f0d7782",
+    "host": "p007.example.invalid",
+    "destination_port": 52168,
+    "source_port": 52198,
+    "status": 200,
+    "response_bytes": 4262,
+    "body_bytes": 4129,
+    "uploaded_body_bytes": 8192,
+    "origin_marker_verified": true
+  },
+  "burst2": {
+    "request": {
+      "started": {
+        "at": "2026-10-04T01:00:17.945311+00:00",
+        "monotonic_ns": 175756410632083
+      },
+      "ended": {
+        "at": "2026-10-04T01:00:17.948428+00:00",
+        "monotonic_ns": 175756413756125
+      },
+      "path": "/burst-2-6ea08c4d71be307f",
+      "host": "p007.example.invalid",
+      "destination_port": 52168,
+      "source_port": 52207,
+      "status": 200,
+      "response_bytes": 262305,
+      "body_bytes": 262170,
+      "uploaded_body_bytes": 65536,
+      "origin_marker_verified": true
+    },
+    "frame_sum_bytes": {
+      "up": 65687,
+      "down": 262305
+    },
+    "rest_total_delta_bytes": {
+      "up": 65687,
+      "down": 262305
+    },
+    "idle_before": [
+      {
+        "at": "2026-10-04T01:00:16.936226+00:00",
+        "monotonic_ns": 175755401582166,
+        "sequence": 0,
+        "data": {
+          "up": 0,
+          "down": 0
+        }
+      },
+      {
+        "at": "2026-10-04T01:00:17.936459+00:00",
+        "monotonic_ns": 175756401804833,
+        "sequence": 1,
+        "data": {
+          "up": 0,
+          "down": 0
+        }
+      }
+    ],
+    "nonzero": [
+      {
+        "at": "2026-10-04T01:00:18.936402+00:00",
+        "monotonic_ns": 175757401756708,
+        "sequence": 2,
+        "data": {
+          "up": 65687,
+          "down": 262305
+        }
+      }
+    ],
+    "idle_after": {
+      "at": "2026-10-04T01:00:20.936291+00:00",
+      "monotonic_ns": 175759401647375,
+      "sequence": 4,
+      "data": {
+        "up": 0,
+        "down": 0
+      }
+    }
+  },
+  "rest_lifetime_total_after_burst2": {
+    "up": 205260,
+    "down": 791016
+  },
+  "persistent_stream_required": true
+}

@@ -1,0 +1,176 @@
+{
+  "status": "PASS",
+  "kind": "active snapshots",
+  "default_interval_ms": 1000,
+  "long_request": {
+    "started": {
+      "at": "2026-10-04T01:00:21.937733+00:00",
+      "monotonic_ns": 175760403055083
+    },
+    "ended": {
+      "at": "2026-10-04T01:00:24.349058+00:00",
+      "monotonic_ns": 175762814406708
+    },
+    "path": "/diagnostic-55a51206f65e0a86",
+    "host": "p007.example.invalid",
+    "destination_port": 52168,
+    "source_port": 52221,
+    "status": 200,
+    "response_bytes": 4258,
+    "body_bytes": 4125,
+    "uploaded_body_bytes": 0,
+    "origin_marker_verified": true
+  },
+  "long_frames": [
+    {
+      "frame_sequence": 14,
+      "received": {
+        "at": "2026-10-04T01:00:22.930036+00:00",
+        "monotonic_ns": 175761395367666
+      },
+      "connection": {
+        "chains": [
+          "p007-direct"
+        ],
+        "download": 0,
+        "id": "3968c73d-349d-4e3f-a453-6f2c6b588c20",
+        "metadata": {
+          "destinationIP": "",
+          "destinationPort": "52168",
+          "dnsMode": "normal",
+          "host": "p007.example.invalid",
+          "network": "tcp",
+          "processPath": "",
+          "sourceIP": "127.0.0.1",
+          "sourcePort": "52221",
+          "type": "mixed/p007-mixed"
+        },
+        "rule": "ip_cidr=127.0.0.0/8 => route(p007-direct)",
+        "rulePayload": "",
+        "start": "2026-10-04T09:00:21.938227+08:00",
+        "upload": 130
+      }
+    },
+    {
+      "frame_sequence": 15,
+      "received": {
+        "at": "2026-10-04T01:00:23.929910+00:00",
+        "monotonic_ns": 175762395234916
+      },
+      "connection": {
+        "chains": [
+          "p007-direct"
+        ],
+        "download": 0,
+        "id": "3968c73d-349d-4e3f-a453-6f2c6b588c20",
+        "metadata": {
+          "destinationIP": "",
+          "destinationPort": "52168",
+          "dnsMode": "normal",
+          "host": "p007.example.invalid",
+          "network": "tcp",
+          "processPath": "",
+          "sourceIP": "127.0.0.1",
+          "sourcePort": "52221",
+          "type": "mixed/p007-mixed"
+        },
+        "rule": "ip_cidr=127.0.0.0/8 => route(p007-direct)",
+        "rulePayload": "",
+        "start": "2026-10-04T09:00:21.938227+08:00",
+        "upload": 130
+      }
+    }
+  ],
+  "short_request": {
+    "started": {
+      "at": "2026-10-04T01:00:25.932897+00:00",
+      "monotonic_ns": 175764398226208
+    },
+    "ended": {
+      "at": "2026-10-04T01:00:25.936585+00:00",
+      "monotonic_ns": 175764401914833
+    },
+    "path": "/short-1ab19efd8d25e084",
+    "host": "p007.example.invalid",
+    "destination_port": 52168,
+    "source_port": 52235,
+    "status": 200,
+    "response_bytes": 4253,
+    "body_bytes": 4120,
+    "uploaded_body_bytes": 0,
+    "origin_marker_verified": true
+  },
+  "short_rest_total_delta_bytes": {
+    "up": 125,
+    "down": 4253
+  },
+  "traffic_frames_near_short_window": [
+    {
+      "at": "2026-10-04T01:00:25.935996+00:00",
+      "monotonic_ns": 175764401325916,
+      "sequence": 9,
+      "data": {
+        "up": 125,
+        "down": 0
+      }
+    },
+    {
+      "at": "2026-10-04T01:00:26.936157+00:00",
+      "monotonic_ns": 175765401496708,
+      "sequence": 10,
+      "data": {
+        "up": 0,
+        "down": 4253
+      }
+    }
+  ],
+  "bracketing_frames": [
+    {
+      "at": "2026-10-04T01:00:25.928505+00:00",
+      "monotonic_ns": 175764393849666,
+      "sequence": 17,
+      "data": {
+        "connections": [],
+        "downloadTotal": 795274,
+        "memory": 5873664,
+        "uploadTotal": 205390
+      }
+    },
+    {
+      "at": "2026-10-04T01:00:26.928995+00:00",
+      "monotonic_ns": 175765394361000,
+      "sequence": 18,
+      "data": {
+        "connections": [],
+        "downloadTotal": 799527,
+        "memory": 5873664,
+        "uploadTotal": 205515
+      }
+    }
+  ],
+  "short_fully_between_received_snapshots": true,
+  "short_seen": false,
+  "short_matches": [],
+  "short_logs": [
+    {
+      "at": "2026-10-04T01:00:25.934085+00:00",
+      "monotonic_ns": 175764399422500,
+      "sequence": 44,
+      "data": {
+        "type": "info",
+        "payload": "[1237468515 0ms] inbound/mixed[p007-mixed]: inbound connection from 127.0.0.1:52235"
+      }
+    },
+    {
+      "at": "2026-10-04T01:00:25.936521+00:00",
+      "monotonic_ns": 175764401852500,
+      "sequence": 52,
+      "data": {
+        "type": "debug",
+        "payload": "[1237468515 2ms] inbound/mixed[p007-mixed]: connection closed: read http request: read tcp 127.0.0.1:52169->127.0.0.1:52235: use of closed network connection"
+      }
+    }
+  ],
+  "conclusion": "Short connection missed by standard snapshots; aggregate totals/log still change.",
+  "p3_scope": "Keep unattributed traffic/gap disclosure; bucket/index/retention/capacity choices belong to P3."
+}

@@ -1,0 +1,45 @@
+{
+  "task": "OBG-P0-07",
+  "status": "PASS",
+  "completed": {
+    "at": "2026-10-04T01:00:33.081606+00:00",
+    "monotonic_ns": 175771546940958
+  },
+  "failure": null,
+  "cleanup": {
+    "pid": 82356,
+    "child_exit_code": 0,
+    "child_reaped": true,
+    "process_group_empty": true,
+    "streams_closed_and_joined": true,
+    "released_ports": [
+      {
+        "protocol": "tcp",
+        "port": 52168,
+        "connect_refused_and_rebind": true
+      },
+      {
+        "protocol": "udp",
+        "port": 61472,
+        "rebind": true
+      },
+      {
+        "protocol": "tcp",
+        "port": 52170,
+        "connect_refused_and_rebind": true
+      },
+      {
+        "protocol": "tcp",
+        "port": 52169,
+        "connect_refused_and_rebind": true
+      }
+    ],
+    "temp_directory_removed": true,
+    "errors": []
+  },
+  "system_proxy_changed": false,
+  "tun_started": false,
+  "system_dns_changed": false,
+  "public_protocol_tested": false,
+  "product_rust_changed": false
+}

@@ -1,0 +1,80 @@
+{
+  "log": {
+    "level": "debug",
+    "timestamp": false
+  },
+  "dns": {
+    "servers": [
+      {
+        "type": "hosts",
+        "tag": "p007-hosts",
+        "predefined": {
+          "p007.example.invalid": [
+            "127.0.0.1"
+          ]
+        }
+      },
+      {
+        "type": "udp",
+        "tag": "p007-owned-dns",
+        "server": "127.0.0.1",
+        "server_port": 61472
+      }
+    ],
+    "rules": [
+      {
+        "domain": [
+          "p007-cache.example.invalid"
+        ],
+        "action": "route",
+        "server": "p007-owned-dns"
+      }
+    ],
+    "final": "p007-hosts"
+  },
+  "inbounds": [
+    {
+      "type": "mixed",
+      "tag": "p007-mixed",
+      "listen": "127.0.0.1",
+      "listen_port": 0
+    }
+  ],
+  "outbounds": [
+    {
+      "type": "direct",
+      "tag": "p007-direct"
+    }
+  ],
+  "route": {
+    "default_domain_resolver": {
+      "server": "p007-hosts",
+      "strategy": "ipv4_only"
+    },
+    "rules": [
+      {
+        "domain": [
+          "p007.example.invalid"
+        ],
+        "action": "resolve",
+        "server": "p007-hosts",
+        "strategy": "ipv4_only"
+      },
+      {
+        "ip_cidr": [
+          "127.0.0.0/8"
+        ],
+        "action": "route",
+        "outbound": "p007-direct"
+      },
+      {
+        "action": "reject"
+      }
+    ]
+  },
+  "experimental": {
+    "clash_api": {
+      "external_controller": "127.0.0.1:0"
+    }
+  }
+}

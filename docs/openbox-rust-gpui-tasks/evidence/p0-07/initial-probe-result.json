@@ -1,0 +1,52 @@
+{
+  "task": "OBG-P0-07",
+  "status": "FAIL",
+  "completed": {
+    "at": "2026-10-04T00:56:57.200361+00:00",
+    "monotonic_ns": 175555665558250
+  },
+  "failure": null,
+  "cleanup": {
+    "pid": 81304,
+    "child_exit_code": 0,
+    "child_reaped": true,
+    "process_group_empty": true,
+    "streams_closed_and_joined": true,
+    "released_ports": [
+      {
+        "protocol": "udp",
+        "port": 50520,
+        "rebind": true
+      }
+    ],
+    "temp_directory_removed": true,
+    "errors": [
+      "port release: OSError",
+      "port release: OSError",
+      "port release: OSError"
+    ]
+  },
+  "system_proxy_changed": false,
+  "tun_started": false,
+  "system_dns_changed": false,
+  "public_protocol_tested": false,
+  "product_rust_changed": false,
+  "retrospective_cleanup_checks": [
+    {
+      "port": 51523,
+      "connection_refused": true,
+      "independent_socket_rebind": true
+    },
+    {
+      "port": 51522,
+      "connection_refused": true,
+      "independent_socket_rebind": true
+    },
+    {
+      "port": 51521,
+      "connection_refused": true,
+      "independent_socket_rebind": true
+    }
+  ],
+  "failure_explanation": "Initial port verification incorrectly bound the same socket after connect_ex. Fresh-socket checks now pass. Original FAIL preserved; probe corrected and full rerun required."
+}

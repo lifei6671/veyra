@@ -1,0 +1,575 @@
+{
+  "status": "PASS",
+  "source": "kernel-source-evidence.json",
+  "records": {
+    "capability": "UNSUPPORTED",
+    "product": "dns_query_records unavailable; explicit reason, no synthetic elapsed/source/filter-hit.",
+    "routes": [
+      {
+        "at": "2026-10-04T01:00:28.959372+00:00",
+        "monotonic_ns": 175767424705416,
+        "method": "GET",
+        "endpoint": "/dns/records",
+        "status": 404,
+        "body": "404 page not found\n"
+      },
+      {
+        "at": "2026-10-04T01:00:28.960219+00:00",
+        "monotonic_ns": 175767425556208,
+        "method": "GET",
+        "endpoint": "/dns/history",
+        "status": 404,
+        "body": "404 page not found\n"
+      },
+      {
+        "at": "2026-10-04T01:00:28.961188+00:00",
+        "monotonic_ns": 175767426525500,
+        "method": "GET",
+        "endpoint": "/profile/tracing",
+        "status": 404,
+        "body": {
+          "message": "Resource not found"
+        }
+      }
+    ],
+    "ordinary_dns_logs": [
+      {
+        "at": "2026-10-04T01:00:10.935217+00:00",
+        "monotonic_ns": 175749400533666,
+        "sequence": 3,
+        "data": {
+          "type": "debug",
+          "payload": "[421622832 1ms] dns: lookup domain p007.example.invalid"
+        }
+      },
+      {
+        "at": "2026-10-04T01:00:10.935320+00:00",
+        "monotonic_ns": 175749400639041,
+        "sequence": 4,
+        "data": {
+          "type": "debug",
+          "payload": "[421622832 1ms] dns: exchanged p007.example.invalid NOERROR 600"
+        }
+      },
+      {
+        "at": "2026-10-04T01:00:10.935410+00:00",
+        "monotonic_ns": 175749400730208,
+        "sequence": 5,
+        "data": {
+          "type": "info",
+          "payload": "[421622832 1ms] dns: exchanged A p007.example.invalid. 600 IN A 127.0.0.1"
+        }
+      },
+      {
+        "at": "2026-10-04T01:00:10.935457+00:00",
+        "monotonic_ns": 175749400774000,
+        "sequence": 6,
+        "data": {
+          "type": "info",
+          "payload": "[421622832 1ms] dns: lookup succeed for p007.example.invalid: 127.0.0.1"
+        }
+      },
+      {
+        "at": "2026-10-04T01:00:15.933207+00:00",
+        "monotonic_ns": 175754398528625,
+        "sequence": 16,
+        "data": {
+          "type": "debug",
+          "payload": "[1186927693 0ms] dns: lookup domain p007.example.invalid"
+        }
+      },
+      {
+        "at": "2026-10-04T01:00:15.933253+00:00",
+        "monotonic_ns": 175754398574250,
+        "sequence": 17,
+        "data": {
+          "type": "info",
+          "payload": "[1186927693 0ms] dns: lookup succeed for p007.example.invalid: 127.0.0.1"
+        }
+      },
+      {
+        "at": "2026-10-04T01:00:17.947103+00:00",
+        "monotonic_ns": 175756412426833,
+        "sequence": 26,
+        "data": {
+          "type": "debug",
+          "payload": "[2141679782 0ms] dns: lookup domain p007.example.invalid"
+        }
+      },
+      {
+        "at": "2026-10-04T01:00:17.947359+00:00",
+        "monotonic_ns": 175756412679541,
+        "sequence": 27,
+        "data": {
+          "type": "info",
+          "payload": "[2141679782 0ms] dns: lookup succeed for p007.example.invalid: 127.0.0.1"
+        }
+      },
+      {
+        "at": "2026-10-04T01:00:21.938359+00:00",
+        "monotonic_ns": 175760403683666,
+        "sequence": 37,
+        "data": {
+          "type": "debug",
+          "payload": "[1084679577 0ms] dns: lookup domain p007.example.invalid"
+        }
+      },
+      {
+        "at": "2026-10-04T01:00:21.939126+00:00",
+        "monotonic_ns": 175760404458041,
+        "sequence": 38,
+        "data": {
+          "type": "info",
+          "payload": "[1084679577 0ms] dns: lookup succeed for p007.example.invalid: 127.0.0.1"
+        }
+      },
+      {
+        "at": "2026-10-04T01:00:25.934998+00:00",
+        "monotonic_ns": 175764400329333,
+        "sequence": 47,
+        "data": {
+          "type": "debug",
+          "payload": "[1237468515 0ms] dns: lookup domain p007.example.invalid"
+        }
+      },
+      {
+        "at": "2026-10-04T01:00:25.935073+00:00",
+        "monotonic_ns": 175764400402000,
+        "sequence": 48,
+        "data": {
+          "type": "info",
+          "payload": "[1237468515 0ms] dns: lookup succeed for p007.example.invalid: 127.0.0.1"
+        }
+      },
+      {
+        "at": "2026-10-04T01:00:28.948366+00:00",
+        "monotonic_ns": 175767413719541,
+        "sequence": 54,
+        "data": {
+          "type": "debug",
+          "payload": "dns: exchange p007-cache.example.invalid. IN A"
+        }
+      },
+      {
+        "at": "2026-10-04T01:00:28.948777+00:00",
+        "monotonic_ns": 175767414111708,
+        "sequence": 55,
+        "data": {
+          "type": "debug",
+          "payload": "dns: match[0] domain=p007-cache.example.invalid => route(p007-owned-dns)"
+        }
+      },
+      {
+        "at": "2026-10-04T01:00:28.951314+00:00",
+        "monotonic_ns": 175767416652583,
+        "sequence": 56,
+        "data": {
+          "type": "debug",
+          "payload": "dns: exchanged p007-cache.example.invalid NOERROR 300"
+        }
+      },
+      {
+        "at": "2026-10-04T01:00:28.951387+00:00",
+        "monotonic_ns": 175767416718833,
+        "sequence": 57,
+        "data": {
+          "type": "info",
+          "payload": "dns: exchanged A p007-cache.example.invalid. 300 IN A 192.0.2.10"
+        }
+      },
+      {
+        "at": "2026-10-04T01:00:28.955390+00:00",
+        "monotonic_ns": 175767420728375,
+        "sequence": 58,
+        "data": {
+          "type": "debug",
+          "payload": "dns: exchange p007-cache.example.invalid. IN A"
+        }
+      },
+      {
+        "at": "2026-10-04T01:00:28.955437+00:00",
+        "monotonic_ns": 175767420763291,
+        "sequence": 59,
+        "data": {
+          "type": "debug",
+          "payload": "dns: match[0] domain=p007-cache.example.invalid => route(p007-owned-dns)"
+        }
+      },
+      {
+        "at": "2026-10-04T01:00:28.955457+00:00",
+        "monotonic_ns": 175767420783416,
+        "sequence": 60,
+        "data": {
+          "type": "debug",
+          "payload": "dns: cached p007-cache.example.invalid NOERROR 299"
+        }
+      },
+      {
+        "at": "2026-10-04T01:00:28.955480+00:00",
+        "monotonic_ns": 175767420806166,
+        "sequence": 61,
+        "data": {
+          "type": "info",
+          "payload": "dns: cached A p007-cache.example.invalid. 299 IN A 192.0.2.10"
+        }
+      },
+      {
+        "at": "2026-10-04T01:00:28.956243+00:00",
+        "monotonic_ns": 175767421583041,
+        "sequence": 62,
+        "data": {
+          "type": "debug",
+          "payload": "dns: exchange p007-cache.example.invalid. IN A"
+        }
+      },
+      {
+        "at": "2026-10-04T01:00:28.956619+00:00",
+        "monotonic_ns": 175767422010333,
+        "sequence": 63,
+        "data": {
+          "type": "debug",
+          "payload": "dns: match[0] domain=p007-cache.example.invalid => route(p007-owned-dns)"
+        }
+      },
+      {
+        "at": "2026-10-04T01:00:28.956958+00:00",
+        "monotonic_ns": 175767422289750,
+        "sequence": 64,
+        "data": {
+          "type": "debug",
+          "payload": "dns: exchanged p007-cache.example.invalid NOERROR 300"
+        }
+      },
+      {
+        "at": "2026-10-04T01:00:28.957788+00:00",
+        "monotonic_ns": 175767423120208,
+        "sequence": 65,
+        "data": {
+          "type": "info",
+          "payload": "dns: exchanged A p007-cache.example.invalid. 300 IN A 192.0.2.20"
+        }
+      },
+      {
+        "at": "2026-10-04T01:00:28.965578+00:00",
+        "monotonic_ns": 175767430925291,
+        "sequence": 66,
+        "data": {
+          "type": "debug",
+          "payload": "dns: exchange p007.example.invalid. IN A"
+        }
+      },
+      {
+        "at": "2026-10-04T01:00:28.965716+00:00",
+        "monotonic_ns": 175767431043416,
+        "sequence": 67,
+        "data": {
+          "type": "debug",
+          "payload": "dns: exchanged p007.example.invalid NOERROR 600"
+        }
+      },
+      {
+        "at": "2026-10-04T01:00:28.966152+00:00",
+        "monotonic_ns": 175767431480666,
+        "sequence": 68,
+        "data": {
+          "type": "info",
+          "payload": "dns: exchanged A p007.example.invalid. 600 IN A 127.0.0.1"
+        }
+      },
+      {
+        "at": "2026-10-04T01:00:28.968564+00:00",
+        "monotonic_ns": 175767433894250,
+        "sequence": 69,
+        "data": {
+          "type": "debug",
+          "payload": "dns: exchange p007.example.invalid. IN A"
+        }
+      },
+      {
+        "at": "2026-10-04T01:00:28.968595+00:00",
+        "monotonic_ns": 175767433922375,
+        "sequence": 70,
+        "data": {
+          "type": "debug",
+          "payload": "dns: cached p007.example.invalid NOERROR 599"
+        }
+      },
+      {
+        "at": "2026-10-04T01:00:28.968651+00:00",
+        "monotonic_ns": 175767433979041,
+        "sequence": 71,
+        "data": {
+          "type": "info",
+          "payload": "dns: cached A p007.example.invalid. 599 IN A 127.0.0.1"
+        }
+      }
+    ],
+    "log_fields": {
+      "domain": "text only",
+      "qtype": "RR text on some messages",
+      "result": "RR text on some messages",
+      "time": "collector receive time / optional formatted context, not stable structured query time",
+      "source": "absent",
+      "elapsed": "absent",
+      "filter_hit": "absent"
+    },
+    "active_query_is_history": false,
+    "connections_is_dns_stream": false
+  },
+  "flush": {
+    "capability": "SUPPORTED",
+    "method": "POST",
+    "endpoint": "/cache/dns/flush",
+    "route_inventory": [
+      {
+        "method": "POST",
+        "endpoint": "/cache/dns/flush",
+        "effect": "DNSRouter.ClearCache"
+      },
+      {
+        "method": "POST",
+        "endpoint": "/cache/fakeip/flush",
+        "effect": "optional CacheFile.FakeIPReset; separate mapping reset, not tested/advertised as DNS response flush"
+      }
+    ],
+    "first": {
+      "at": "2026-10-04T01:00:28.951964+00:00",
+      "monotonic_ns": 175767417302791,
+      "method": "GET",
+      "endpoint": "/dns/query?name=p007-cache.example.invalid&type=A",
+      "status": 200,
+      "body": {
+        "AD": false,
+        "Answer": [
+          {
+            "TTL": 300,
+            "data": "192.0.2.10",
+            "name": "p007-cache.example.invalid.",
+            "type": 1
+          }
+        ],
+        "CD": false,
+        "Question": [
+          {
+            "Name": "p007-cache.example.invalid.",
+            "Qtype": 1,
+            "Qclass": 1
+          }
+        ],
+        "RA": true,
+        "RD": true,
+        "Server": "internal",
+        "Status": 0,
+        "TC": false
+      }
+    },
+    "upstream_answer_changed_to": "192.0.2.20",
+    "cached_second": {
+      "at": "2026-10-04T01:00:28.954409+00:00",
+      "monotonic_ns": 175767419749041,
+      "method": "GET",
+      "endpoint": "/dns/query?name=p007-cache.example.invalid&type=A",
+      "status": 200,
+      "body": {
+        "AD": false,
+        "Answer": [
+          {
+            "TTL": 299,
+            "data": "192.0.2.10",
+            "name": "p007-cache.example.invalid.",
+            "type": 1
+          }
+        ],
+        "CD": false,
+        "Question": [
+          {
+            "Name": "p007-cache.example.invalid.",
+            "Qtype": 1,
+            "Qclass": 1
+          }
+        ],
+        "RA": true,
+        "RD": true,
+        "Server": "internal",
+        "Status": 0,
+        "TC": false
+      }
+    },
+    "flush_response": {
+      "at": "2026-10-04T01:00:28.955690+00:00",
+      "monotonic_ns": 175767421018291,
+      "method": "POST",
+      "endpoint": "/cache/dns/flush",
+      "status": 204,
+      "body": null
+    },
+    "third": {
+      "at": "2026-10-04T01:00:28.957367+00:00",
+      "monotonic_ns": 175767422701041,
+      "method": "GET",
+      "endpoint": "/dns/query?name=p007-cache.example.invalid&type=A",
+      "status": 200,
+      "body": {
+        "AD": false,
+        "Answer": [
+          {
+            "TTL": 300,
+            "data": "192.0.2.20",
+            "name": "p007-cache.example.invalid.",
+            "type": 1
+          }
+        ],
+        "CD": false,
+        "Question": [
+          {
+            "Name": "p007-cache.example.invalid.",
+            "Qtype": 1,
+            "Qclass": 1
+          }
+        ],
+        "RA": true,
+        "RD": true,
+        "Server": "internal",
+        "Status": 0,
+        "TC": false
+      }
+    },
+    "upstream_request_count_before_change": 1,
+    "upstream_requests": [
+      {
+        "at": "2026-10-04T01:00:28.950727+00:00",
+        "monotonic_ns": 175767416064208,
+        "domain": "p007-cache.example.invalid",
+        "qtype": "A",
+        "answer": "192.0.2.10"
+      },
+      {
+        "at": "2026-10-04T01:00:28.956561+00:00",
+        "monotonic_ns": 175767421894333,
+        "domain": "p007-cache.example.invalid",
+        "qtype": "A",
+        "answer": "192.0.2.20"
+      }
+    ],
+    "wrong_method_response": {
+      "at": "2026-10-04T01:00:28.964733+00:00",
+      "monotonic_ns": 175767430070958,
+      "method": "GET",
+      "endpoint": "/cache/dns/flush",
+      "status": 405,
+      "body": null
+    },
+    "scope": "Owned CLI instance response cache only; no cache.db deletion, UI history or system DNS operation."
+  },
+  "hot_rewrite": {
+    "capability": "UNSUPPORTED",
+    "product": "macOS first release DNS rewrite save returns RestartRequired; no target-only/remark-only live application promise.",
+    "route_probes": [
+      {
+        "at": "2026-10-04T01:00:28.962089+00:00",
+        "monotonic_ns": 175767427422166,
+        "method": "PUT",
+        "endpoint": "/dns/rewrite",
+        "status": 404,
+        "body": "404 page not found\n"
+      },
+      {
+        "at": "2026-10-04T01:00:28.962734+00:00",
+        "monotonic_ns": 175767428065583,
+        "method": "PUT",
+        "endpoint": "/dns/hosts",
+        "status": 404,
+        "body": "404 page not found\n"
+      },
+      {
+        "at": "2026-10-04T01:00:28.963419+00:00",
+        "monotonic_ns": 175767428751541,
+        "method": "PUT",
+        "endpoint": "/providers/rules/p007-owned",
+        "status": 404,
+        "body": {
+          "message": "Resource not found"
+        }
+      }
+    ],
+    "configs_patch_no_effect": {
+      "at": "2026-10-04T01:00:28.966834+00:00",
+      "monotonic_ns": 175767432169875,
+      "method": "PATCH",
+      "endpoint": "/configs",
+      "status": 204,
+      "body": null
+    },
+    "configs_put_no_effect": {
+      "at": "2026-10-04T01:00:28.967573+00:00",
+      "monotonic_ns": 175767432907500,
+      "method": "PUT",
+      "endpoint": "/configs",
+      "status": 204,
+      "body": null
+    },
+    "hosts_query_before": {
+      "at": "2026-10-04T01:00:28.965945+00:00",
+      "monotonic_ns": 175767431272875,
+      "method": "GET",
+      "endpoint": "/dns/query?name=p007.example.invalid&type=A",
+      "status": 200,
+      "body": {
+        "AD": false,
+        "Answer": [
+          {
+            "TTL": 600,
+            "data": "127.0.0.1",
+            "name": "p007.example.invalid.",
+            "type": 1
+          }
+        ],
+        "CD": false,
+        "Question": [
+          {
+            "Name": "p007.example.invalid.",
+            "Qtype": 1,
+            "Qclass": 1
+          }
+        ],
+        "RA": true,
+        "RD": true,
+        "Server": "internal",
+        "Status": 0,
+        "TC": false
+      }
+    },
+    "hosts_query_after": {
+      "at": "2026-10-04T01:00:28.968477+00:00",
+      "monotonic_ns": 175767433811916,
+      "method": "GET",
+      "endpoint": "/dns/query?name=p007.example.invalid&type=A",
+      "status": 200,
+      "body": {
+        "AD": false,
+        "Answer": [
+          {
+            "TTL": 599,
+            "data": "127.0.0.1",
+            "name": "p007.example.invalid.",
+            "type": 1
+          }
+        ],
+        "CD": false,
+        "Question": [
+          {
+            "Name": "p007.example.invalid.",
+            "Qtype": 1,
+            "Qclass": 1
+          }
+        ],
+        "RA": true,
+        "RD": true,
+        "Server": "internal",
+        "Status": 0,
+        "TC": false
+      }
+    },
+    "source_limit": "configs PATCH changes mode only, PUT is no-op; providers rule update unusable. No runtime DNS rule/hosts/predefined mutation."
+  }
+}

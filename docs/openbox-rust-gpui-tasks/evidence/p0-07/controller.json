@@ -1,0 +1,24 @@
+{
+  "at": "2026-10-04T01:00:08.895542+00:00",
+  "monotonic_ns": 175747360885958,
+  "pid": 82356,
+  "process_group": 82356,
+  "config_sha256": "a4d25f5ba63f2a76b85649af28a49f24a5e7ccd11824e652ef6080f4ef8e527a",
+  "controller_port": 52170,
+  "mixed_port": 52169,
+  "discovery": "owned child stdout only; PID-scoped lsof independent confirmation",
+  "listener_output": "COMMAND    PID     USER   FD   TYPE             DEVICE SIZE/OFF NODE NAME\nsing-box 82356 <user>    6u  IPv4 0x40935921f73b0a23      0t0  TCP 127.0.0.1:52169 (LISTEN)\nsing-box 82356 <user>    7u  IPv4 0x8166940936a7f22c      0t0  TCP 127.0.0.1:52170 (LISTEN)\n",
+  "ready": {
+    "at": "2026-10-04T01:00:08.921335+00:00",
+    "monotonic_ns": 175747386652833,
+    "method": "GET",
+    "endpoint": "/version",
+    "status": 200,
+    "body": {
+      "meta": true,
+      "premium": true,
+      "version": "sing-box 1.14.0"
+    }
+  },
+  "unauthenticated_status": 401
+}

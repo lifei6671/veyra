@@ -1,0 +1,167 @@
+{
+  "task": "OBG-P0-07",
+  "status": "DONE",
+  "validated_at": "2026-10-04T01:08:19.736610+00:00",
+  "source_head": "fac6f12cd7eef708e373d1f6f5db4a5ab92f8e3e",
+  "acceptance": [
+    "PASS",
+    "PASS",
+    "PASS",
+    "PASS"
+  ],
+  "kernel_source_identity_paths": {
+    "status": "PASS",
+    "commit": "0b8995879f29a9b98ee027bc17b75e101445b238",
+    "file_count": 13
+  },
+  "fixed_archive_digest": "PASS",
+  "config_check": "PASS",
+  "four_ws_streams": {
+    "status": "PASS",
+    "frame_counts": {
+      "/traffic": 21,
+      "/memory": 22,
+      "/connections": 21,
+      "/logs?level=debug": 72
+    }
+  },
+  "traffic_two_bursts_reconnect": "PASS; interval bytes; WS sum == REST Total delta; idle returns zero; gap not replayed",
+  "long_short_experiment": "PASS; long ID seen across snapshots; short missed with nonzero total/log evidence",
+  "dns_three_capabilities": {
+    "records": "UNSUPPORTED",
+    "flush": "SUPPORTED",
+    "hot_rewrite": "UNSUPPORTED",
+    "verification": "PASS"
+  },
+  "local_diagnostic": "PASS; real HTTP 200 + unique marker/port/window; partial path; observed debug rule index 1",
+  "product_differences": "records unavailable; rewrite RestartRequired; short-connection attribution incomplete; memory sentinel/oslimit placeholder",
+  "json_files_parsed_before_validation": 13,
+  "json_files_total_including_validation": 14,
+  "redaction": {
+    "status": "PASS",
+    "evidence_files_scanned_before_validation": 17,
+    "script_scanned": true,
+    "username_path_credential_interface_ip": "PASS",
+    "sanitizer_direct_regression": "PASS",
+    "scope": "all evidence strings + actual identity scan in source; protocol identifiers/generic patterns allowed in source only"
+  },
+  "script_ast": "PASS",
+  "script_sha256": "e8b0baeaa05d98a128621492fa5d291dd5da01a5dc3bb44b48c533baaa57d1b5",
+  "cargo_check": {
+    "command": "cargo check -p veyra-core",
+    "outer_timeout_seconds": 180,
+    "exit_code": 0,
+    "status": "PASS",
+    "log": "core-check.log"
+  },
+  "card_count": 68,
+  "platform_counts": {
+    "macOS": 61,
+    "Windows": 7
+  },
+  "dag_acyclic": true,
+  "card_dependencies_match_master": true,
+  "counts": {
+    "DONE": 7,
+    "READY": 2,
+    "TODO": 52,
+    "DEFERRED": 7
+  },
+  "ready_queue": [
+    "P0-05",
+    "P1-03"
+  ],
+  "new_ready_tasks": [],
+  "markdown_files_checked": 19,
+  "markdown_local_links_checked": 310,
+  "markdown_errors": [],
+  "git_diff_check": "PASS",
+  "new_file_whitespace": "PASS",
+  "outside_scope_unchanged": true,
+  "cleanup": {
+    "normal_exit_code": 0,
+    "all_attempt_process_groups_rechecked": [
+      {
+        "pid": 81304,
+        "process_group_empty": true
+      },
+      {
+        "pid": 81809,
+        "process_group_empty": true
+      },
+      {
+        "pid": 82356,
+        "process_group_empty": true
+      }
+    ],
+    "final_ports_rechecked": [
+      {
+        "protocol": "tcp",
+        "port": 52168,
+        "connect_refused_and_rebind": true,
+        "final_recheck": true
+      },
+      {
+        "protocol": "udp",
+        "port": 61472,
+        "rebind": true,
+        "final_recheck": true
+      },
+      {
+        "protocol": "tcp",
+        "port": 52170,
+        "connect_refused_and_rebind": true,
+        "final_recheck": true
+      },
+      {
+        "protocol": "tcp",
+        "port": 52169,
+        "connect_refused_and_rebind": true,
+        "final_recheck": true
+      }
+    ],
+    "probe_stream_fixture_threads_joined": true,
+    "probe_internal_temp_removed": true,
+    "exploration_and_output_temp_directories_removed": [
+      "source",
+      "run",
+      "final",
+      "reviewed"
+    ],
+    "all_task_pointer_files_removed": true,
+    "remaining_owned_child_listener_temp": false
+  },
+  "review": "code-delivery-review implementation self-review; not independent; port checker and interface redaction corrected; full final rerun PASS",
+  "historical_fail_preserved": "initial-probe-result.json and probe-history.json",
+  "not_run": {
+    "UI_visual_alignment": "N/A: explicitly excluded",
+    "system_proxy_tun_system_dns": "N/A: explicitly forbidden",
+    "public_protocol_tests": "N/A: forbidden",
+    "product_unit_tests_clippy_fmt": "N/A: no product Rust changes; requested core check passed",
+    "sqlite_index_capacity": "N/A: P3 scope"
+  },
+  "commit_push": false,
+  "evidence_sha256": {
+    "kernel-source-evidence.json": "f4b7e17e5a6851d4d41f274996a5f7c08cf69e2bb810a42577178c8ef6d830b8",
+    "probe-result.json": "9ce2c798d0253457e3524e626851f68ddb4a931e55c104a749b58e263e47f600",
+    "child.log": "22890372009db529a1a57713411f18f304c2ae65612634cf851a3e1e206b89af",
+    "initial-probe-result.json": "8733ef8c46d944756637e04a504a5278c90337eed3730c7296d9f04fc69560b3",
+    "traffic-semantics.json": "b9956a65bf0345110785f54d533260d2703bcd8a1ed151442ed89a3aa4f4bdbd",
+    "stream-frames.json": "b1da6a76fece23d27fd58c2d21821a480f8a8c6cc2e3ef05ddfb6093efbb6488",
+    "config-check.json": "a6bc5472c5f3f8ab7be48a47b06d6286b0c97633f6c4e4fcdf31abba3495d68d",
+    "probe-history.json": "d1b85b00c85ab10fc72d18cb9bcd480c78bd6eeb572be4f9163498c4190678eb",
+    "controller.json": "7ba264673d00562c8e2930441e4639e9e68007217ff6bc8e1cd643496ed907ee",
+    "README.md": "0141494b01c83d5a8d647ada775d78757aad1a7039b52eb7d1bc8e8ecaa1e36f",
+    "core-check.log": "4cf86278c1e6d659943a46a3d7e3da429ac15be90f0f17742e24ef85228e7d3e",
+    "dns-capabilities.json": "fd582a9d4998bca86fa3d61035e4c0d2fa11c39d9981c49d193f76e4866a8922",
+    "diagnostic.json": "edcf122ec1f39436e0c78f1b54a5cf9c4e04e1665be6e8eb22ccb23f721d3645",
+    "kernel-identity.json": "df176ede29b1e89b88e37387f3e7977a378d31f6e64a96281f22e40fd64d5510",
+    "connections-gap.json": "36ac62fff844deba14a713438c31af0d34b0e3a1a275aca7f838452b29e5b8bd",
+    "config-template.json": "c3dd41b59637c89ae4dbd440891ece370fb8874aa3fdd539f87396128347b56f"
+  },
+  "script_metadata_correction_after_probe": "Only source semantic range for ruleprovider.go corrected from 11-66 to actual 11-58; no experiment/transport/resource behavior changed; AST and source range bounds rechecked.",
+  "byte_unit_real_response_count": "PASS: both burst frame down sums equal actual client HTTP response byte lengths.",
+  "final_json_count": 14,
+  "final_redaction_files_scanned": 17,
+  "final_metadata_json_redaction_ast_links_hashes": "PASS"
+}

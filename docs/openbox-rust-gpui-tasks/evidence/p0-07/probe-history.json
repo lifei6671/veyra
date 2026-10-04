@@ -1,0 +1,67 @@
+{
+  "task": "OBG-P0-07",
+  "attempts": [
+    {
+      "attempt": 1,
+      "result": "FAIL",
+      "evidence": "initial-probe-result.json",
+      "reason": "port checker incorrectly bound the same socket after connect_ex; child normally stopped; independent socket retrospective cleanup passed"
+    },
+    {
+      "attempt": 2,
+      "result": "probe PASS; exported log redaction incomplete",
+      "probe_result": {
+        "task": "OBG-P0-07",
+        "status": "PASS",
+        "completed": {
+          "at": "2026-10-04T00:58:33.568713+00:00",
+          "monotonic_ns": 175652033972916
+        },
+        "failure": null,
+        "cleanup": {
+          "pid": 81809,
+          "child_exit_code": 0,
+          "child_reaped": true,
+          "process_group_empty": true,
+          "streams_closed_and_joined": true,
+          "released_ports": [
+            {
+              "protocol": "tcp",
+              "port": 51810,
+              "connect_refused_and_rebind": true
+            },
+            {
+              "protocol": "udp",
+              "port": 62391,
+              "rebind": true
+            },
+            {
+              "protocol": "tcp",
+              "port": 51812,
+              "connect_refused_and_rebind": true
+            },
+            {
+              "protocol": "tcp",
+              "port": 51811,
+              "connect_refused_and_rebind": true
+            }
+          ],
+          "temp_directory_removed": true,
+          "errors": []
+        },
+        "system_proxy_changed": false,
+        "tun_started": false,
+        "system_dns_changed": false,
+        "public_protocol_tested": false,
+        "product_rust_changed": false
+      },
+      "reason": "review found host default-interface startup line was not masked; original interface-bearing export not retained"
+    },
+    {
+      "attempt": 3,
+      "result": "PASS",
+      "evidence": "probe-result.json",
+      "reason": "full fresh official source/archive/binary/experiment rerun after stricter interface masking and actual debug rule-index association"
+    }
+  ]
+}

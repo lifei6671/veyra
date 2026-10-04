@@ -1,0 +1,491 @@
+{
+  "tag": "v1.14.0",
+  "commit": "0b8995879f29a9b98ee027bc17b75e101445b238",
+  "tag_resolution": "0b8995879f29a9b98ee027bc17b75e101445b238\trefs/tags/v1.14.0",
+  "source_archive_sha256": "faa17ef1634429371401b495f32c498fa35b92e5872dce245ba44a9155f95f14",
+  "files": [
+    {
+      "path": "experimental/clashapi/server.go",
+      "sha256": "1d3d962d2f83731123472d3ace876c1c5e13c3eb944a712268b997e37645b5e8",
+      "line_count": 432,
+      "url": "https://github.com/SagerNet/sing-box/blob/0b8995879f29a9b98ee027bc17b75e101445b238/experimental/clashapi/server.go",
+      "semantic_ranges": [
+        {
+          "start": 123,
+          "end": 139,
+          "meaning": "Authenticated standard controller mounts; no OpenBox wrapper."
+        },
+        {
+          "start": 251,
+          "end": 284,
+          "meaning": "Header credential or browser WS query credential; probe uses header only."
+        },
+        {
+          "start": 298,
+          "end": 353,
+          "meaning": "Per subscription Total baseline, 1 second ticker, new minus old int64 bytes, update old after successful send."
+        },
+        {
+          "start": 355,
+          "end": 427,
+          "meaning": "Logs are level-filtered type/payload strings, event-driven, no structured DNS history."
+        }
+      ]
+    },
+    {
+      "path": "experimental/clashapi/connections.go",
+      "sha256": "880cf54acddcdfa74812766bd11058891822763cbba1c489e6c9ae217f5f6783",
+      "line_count": 179,
+      "url": "https://github.com/SagerNet/sing-box/blob/0b8995879f29a9b98ee027bc17b75e101445b238/experimental/clashapi/connections.go",
+      "semantic_ranges": [
+        {
+          "start": 24,
+          "end": 44,
+          "meaning": "Active connection snapshot plus aggregate totals; excludes DNS outbound."
+        },
+        {
+          "start": 49,
+          "end": 104,
+          "meaning": "id/metadata/upload/download/start/chains/rule; dnsMode constant normal, empty rulePayload."
+        },
+        {
+          "start": 107,
+          "end": 159,
+          "meaning": "Immediate snapshot, then interval default 1000 ms; not event stream."
+        }
+      ]
+    },
+    {
+      "path": "experimental/clashapi/api_meta.go",
+      "sha256": "260c43ccb3ef4538d3315f41753aebc54a56a688fb809077819ce9ba63e1d600",
+      "line_count": 102,
+      "url": "https://github.com/SagerNet/sing-box/blob/0b8995879f29a9b98ee027bc17b75e101445b238/experimental/clashapi/api_meta.go",
+      "semantic_ranges": [
+        {
+          "start": 23,
+          "end": 34,
+          "meaning": "Memory/group/upgrade routes; no connection event or DNS history route."
+        },
+        {
+          "start": 36,
+          "end": 101,
+          "meaning": "Memory 1 second ticker; first inuse zero sentinel; subsequent Go allocation bytes, oslimit zero placeholder."
+        }
+      ]
+    },
+    {
+      "path": "common/trafficcontrol/manager.go",
+      "sha256": "b90e6744372faf9dfb060555dde0aaec048f43be0c785aa71f05078c4a49c8fe",
+      "line_count": 192,
+      "url": "https://github.com/SagerNet/sing-box/blob/0b8995879f29a9b98ee027bc17b75e101445b238/common/trafficcontrol/manager.go",
+      "semantic_ranges": [
+        {
+          "start": 98,
+          "end": 139,
+          "meaning": "Total includes active, retained closed and evicted closed counts; closed traffic remains in aggregate."
+        },
+        {
+          "start": 146,
+          "end": 167,
+          "meaning": "Connections() active only; ClosedConnections() is internal, not exposed by standard Clash route."
+        }
+      ]
+    },
+    {
+      "path": "common/trafficcontrol/tracker.go",
+      "sha256": "9a68512cc49aa253cdb524cc075d5bd02b2a8d4069ccf83ea81da71e9440af86",
+      "line_count": 204,
+      "url": "https://github.com/SagerNet/sing-box/blob/0b8995879f29a9b98ee027bc17b75e101445b238/common/trafficcontrol/tracker.go",
+      "semantic_ranges": [
+        {
+          "start": 36,
+          "end": 54,
+          "meaning": "Counters wrap routed TCP/packet byte I/O."
+        },
+        {
+          "start": 67,
+          "end": 104,
+          "meaning": "UUID, start time and observed outbound chain stored by actual tracker."
+        }
+      ]
+    },
+    {
+      "path": "experimental/clashapi/dns.go",
+      "sha256": "390fd4e3755750597725afb9b904f8d4622c90b747d709fc18c1da3dc055e856",
+      "line_count": 82,
+      "url": "https://github.com/SagerNet/sing-box/blob/0b8995879f29a9b98ee027bc17b75e101445b238/experimental/clashapi/dns.go",
+      "semantic_ranges": [
+        {
+          "start": 16,
+          "end": 19,
+          "meaning": "Only GET /dns/query; active tool, not history/records."
+        },
+        {
+          "start": 37,
+          "end": 80,
+          "meaning": "Active Exchange response; Server internal is fixed string, not resolver chain."
+        }
+      ]
+    },
+    {
+      "path": "experimental/clashapi/cache.go",
+      "sha256": "d50a2b66f3d92d68f318712f3d260da5a76241d41e3337411e4568a6795d2aa8",
+      "line_count": 44,
+      "url": "https://github.com/SagerNet/sing-box/blob/0b8995879f29a9b98ee027bc17b75e101445b238/experimental/clashapi/cache.go",
+      "semantic_ranges": [
+        {
+          "start": 14,
+          "end": 43,
+          "meaning": "POST /cache/dns/flush calls DNSRouter.ClearCache; POST /cache/fakeip/flush calls optional CacheFile.FakeIPReset separately."
+        }
+      ]
+    },
+    {
+      "path": "experimental/clashapi/configs.go",
+      "sha256": "be94e4ac27745eea1bdbee0895f7ba1015c5cdcd950c3938407d5a6c294aea9f",
+      "line_count": 71,
+      "url": "https://github.com/SagerNet/sing-box/blob/0b8995879f29a9b98ee027bc17b75e101445b238/experimental/clashapi/configs.go",
+      "semantic_ranges": [
+        {
+          "start": 12,
+          "end": 17,
+          "meaning": "GET/PUT/PATCH configs routes."
+        },
+        {
+          "start": 53,
+          "end": 70,
+          "meaning": "PATCH only Mode; PUT no-op 204; neither DNS rewrite nor log-level update."
+        }
+      ]
+    },
+    {
+      "path": "experimental/clashapi/ruleprovider.go",
+      "sha256": "ba1b69bd2ca5924f9bf8c94852721f21ec572afb623dfae0f2746ee74a7ffccc",
+      "line_count": 58,
+      "url": "https://github.com/SagerNet/sing-box/blob/0b8995879f29a9b98ee027bc17b75e101445b238/experimental/clashapi/ruleprovider.go",
+      "semantic_ranges": [
+        {
+          "start": 11,
+          "end": 58,
+          "meaning": "No usable rule-provider update: lookup always 404; update body commented out."
+        }
+      ]
+    },
+    {
+      "path": "experimental/clashapi/profile.go",
+      "sha256": "7b3633a5d43bf54b8ff2be88bbe335cee08db9d5bdce0a0fb28701592814d89a",
+      "line_count": 53,
+      "url": "https://github.com/SagerNet/sing-box/blob/0b8995879f29a9b98ee027bc17b75e101445b238/experimental/clashapi/profile.go",
+      "semantic_ranges": [
+        {
+          "start": 16,
+          "end": 23,
+          "meaning": "Tracing route is 404 stub; not DNS events."
+        }
+      ]
+    },
+    {
+      "path": "dns/client_log.go",
+      "sha256": "a6aa4a0d36d7ff3a2e3f56e009eb6a0d5c80b55d1420209cc2e68ffac6d3ac57",
+      "line_count": 95,
+      "url": "https://github.com/SagerNet/sing-box/blob/0b8995879f29a9b98ee027bc17b75e101445b238/dns/client_log.go",
+      "semantic_ranges": [
+        {
+          "start": 12,
+          "end": 72,
+          "meaning": "Cached/exchanged/etc logs include RR strings; debug summaries include domain/rcode/TTL, no elapsed/source stable contract."
+        }
+      ]
+    },
+    {
+      "path": "dns/client.go",
+      "sha256": "91a3a8db95359ee603bb37dc1cdfa39d41d14878b2093b0550bd73c04ba1055e",
+      "line_count": 882,
+      "url": "https://github.com/SagerNet/sing-box/blob/0b8995879f29a9b98ee027bc17b75e101445b238/dns/client.go",
+      "semantic_ranges": [
+        {
+          "start": 464,
+          "end": 474,
+          "meaning": "ClearCache purges memory and optional managed persisted DNS cache."
+        }
+      ]
+    },
+    {
+      "path": "dns/router.go",
+      "sha256": "ae2234c7812609e601548787868c62e4bef45487ced4a093ff2c82ba943071bc",
+      "line_count": 1758,
+      "url": "https://github.com/SagerNet/sing-box/blob/0b8995879f29a9b98ee027bc17b75e101445b238/dns/router.go",
+      "semantic_ranges": [
+        {
+          "start": 1358,
+          "end": 1365,
+          "meaning": "Router clears managed client/reverse cache; no platform interface in this CLI prototype."
+        }
+      ]
+    }
+  ],
+  "route_inventory": [
+    {
+      "path": "experimental/clashapi/api_meta.go",
+      "line": 26,
+      "registration": "r.Put(\"/gc\", func(w http.ResponseWriter, r *http.Request) {"
+    },
+    {
+      "path": "experimental/clashapi/api_meta.go",
+      "line": 29,
+      "registration": "r.Mount(\"/\", middleware.Profiler())"
+    },
+    {
+      "path": "experimental/clashapi/api_meta.go",
+      "line": 31,
+      "registration": "r.Get(\"/memory\", memory(s.ctx))"
+    },
+    {
+      "path": "experimental/clashapi/api_meta.go",
+      "line": 32,
+      "registration": "r.Mount(\"/group\", groupRouter(s))"
+    },
+    {
+      "path": "experimental/clashapi/api_meta.go",
+      "line": 33,
+      "registration": "r.Mount(\"/upgrade\", upgradeRouter(s))"
+    },
+    {
+      "path": "experimental/clashapi/api_meta_group.go",
+      "line": 21,
+      "registration": "r.Get(\"/\", getGroups(server))"
+    },
+    {
+      "path": "experimental/clashapi/api_meta_group.go",
+      "line": 22,
+      "registration": "r.Route(\"/{name}\", func(r chi.Router) {"
+    },
+    {
+      "path": "experimental/clashapi/api_meta_group.go",
+      "line": 24,
+      "registration": "r.Get(\"/\", getGroup(server))"
+    },
+    {
+      "path": "experimental/clashapi/api_meta_group.go",
+      "line": 25,
+      "registration": "r.Get(\"/delay\", getGroupDelay(server))"
+    },
+    {
+      "path": "experimental/clashapi/api_meta_upgrade.go",
+      "line": 14,
+      "registration": "r.Post(\"/ui\", updateExternalUI(server))"
+    },
+    {
+      "path": "experimental/clashapi/cache.go",
+      "line": 16,
+      "registration": "r.Post(\"/fakeip/flush\", flushFakeip(ctx))"
+    },
+    {
+      "path": "experimental/clashapi/cache.go",
+      "line": 17,
+      "registration": "r.Post(\"/dns/flush\", flushDNS(ctx))"
+    },
+    {
+      "path": "experimental/clashapi/configs.go",
+      "line": 14,
+      "registration": "r.Get(\"/\", getConfigs(server, logFactory))"
+    },
+    {
+      "path": "experimental/clashapi/configs.go",
+      "line": 15,
+      "registration": "r.Put(\"/\", updateConfigs)"
+    },
+    {
+      "path": "experimental/clashapi/configs.go",
+      "line": 16,
+      "registration": "r.Patch(\"/\", patchConfigs(server))"
+    },
+    {
+      "path": "experimental/clashapi/connections.go",
+      "line": 26,
+      "registration": "r.Get(\"/\", getConnections(ctx, trafficManager))"
+    },
+    {
+      "path": "experimental/clashapi/connections.go",
+      "line": 27,
+      "registration": "r.Delete(\"/\", closeAllConnections(ctx, network, trafficManager))"
+    },
+    {
+      "path": "experimental/clashapi/connections.go",
+      "line": 28,
+      "registration": "r.Delete(\"/{id}\", closeConnection(trafficManager))"
+    },
+    {
+      "path": "experimental/clashapi/dns.go",
+      "line": 18,
+      "registration": "r.Get(\"/query\", queryDNS(router))"
+    },
+    {
+      "path": "experimental/clashapi/profile.go",
+      "line": 12,
+      "registration": "r.Get(\"/tracing\", subscribeTracing)"
+    },
+    {
+      "path": "experimental/clashapi/provider.go",
+      "line": 13,
+      "registration": "r.Get(\"/\", getProviders)"
+    },
+    {
+      "path": "experimental/clashapi/provider.go",
+      "line": 15,
+      "registration": "r.Route(\"/{name}\", func(r chi.Router) {"
+    },
+    {
+      "path": "experimental/clashapi/provider.go",
+      "line": 17,
+      "registration": "r.Get(\"/\", getProvider)"
+    },
+    {
+      "path": "experimental/clashapi/provider.go",
+      "line": 18,
+      "registration": "r.Put(\"/\", updateProvider)"
+    },
+    {
+      "path": "experimental/clashapi/provider.go",
+      "line": 19,
+      "registration": "r.Get(\"/healthcheck\", healthCheckProvider)"
+    },
+    {
+      "path": "experimental/clashapi/proxies.go",
+      "line": 26,
+      "registration": "r.Get(\"/\", getProxies(server))"
+    },
+    {
+      "path": "experimental/clashapi/proxies.go",
+      "line": 28,
+      "registration": "r.Route(\"/{name}\", func(r chi.Router) {"
+    },
+    {
+      "path": "experimental/clashapi/proxies.go",
+      "line": 30,
+      "registration": "r.Get(\"/\", getProxy(server))"
+    },
+    {
+      "path": "experimental/clashapi/proxies.go",
+      "line": 31,
+      "registration": "r.Get(\"/delay\", getProxyDelay(server))"
+    },
+    {
+      "path": "experimental/clashapi/proxies.go",
+      "line": 32,
+      "registration": "r.Put(\"/\", updateProxy)"
+    },
+    {
+      "path": "experimental/clashapi/ruleprovider.go",
+      "line": 12,
+      "registration": "r.Get(\"/\", getRuleProviders)"
+    },
+    {
+      "path": "experimental/clashapi/ruleprovider.go",
+      "line": 14,
+      "registration": "r.Route(\"/{name}\", func(r chi.Router) {"
+    },
+    {
+      "path": "experimental/clashapi/ruleprovider.go",
+      "line": 16,
+      "registration": "r.Get(\"/\", getRuleProvider)"
+    },
+    {
+      "path": "experimental/clashapi/ruleprovider.go",
+      "line": 17,
+      "registration": "r.Put(\"/\", updateRuleProvider)"
+    },
+    {
+      "path": "experimental/clashapi/rules.go",
+      "line": 14,
+      "registration": "r.Get(\"/\", getRules(router))"
+    },
+    {
+      "path": "experimental/clashapi/script.go",
+      "line": 12,
+      "registration": "r.Post(\"/\", testScript)"
+    },
+    {
+      "path": "experimental/clashapi/script.go",
+      "line": 13,
+      "registration": "r.Patch(\"/\", patchScript)"
+    },
+    {
+      "path": "experimental/clashapi/server.go",
+      "line": 124,
+      "registration": "r.Get(\"/\", hello(options.ExternalUI != \"\"))"
+    },
+    {
+      "path": "experimental/clashapi/server.go",
+      "line": 125,
+      "registration": "r.Get(\"/logs\", getLogs(s.ctx, logFactory))"
+    },
+    {
+      "path": "experimental/clashapi/server.go",
+      "line": 126,
+      "registration": "r.Get(\"/traffic\", traffic(s.ctx, trafficManager))"
+    },
+    {
+      "path": "experimental/clashapi/server.go",
+      "line": 127,
+      "registration": "r.Get(\"/version\", version)"
+    },
+    {
+      "path": "experimental/clashapi/server.go",
+      "line": 128,
+      "registration": "r.Mount(\"/configs\", configRouter(s, logFactory))"
+    },
+    {
+      "path": "experimental/clashapi/server.go",
+      "line": 129,
+      "registration": "r.Mount(\"/proxies\", proxyRouter(s, s.router))"
+    },
+    {
+      "path": "experimental/clashapi/server.go",
+      "line": 130,
+      "registration": "r.Mount(\"/rules\", ruleRouter(s.router))"
+    },
+    {
+      "path": "experimental/clashapi/server.go",
+      "line": 131,
+      "registration": "r.Mount(\"/connections\", connectionRouter(s.ctx, s.network, trafficManager))"
+    },
+    {
+      "path": "experimental/clashapi/server.go",
+      "line": 132,
+      "registration": "r.Mount(\"/providers/proxies\", proxyProviderRouter())"
+    },
+    {
+      "path": "experimental/clashapi/server.go",
+      "line": 133,
+      "registration": "r.Mount(\"/providers/rules\", ruleProviderRouter())"
+    },
+    {
+      "path": "experimental/clashapi/server.go",
+      "line": 134,
+      "registration": "r.Mount(\"/script\", scriptRouter())"
+    },
+    {
+      "path": "experimental/clashapi/server.go",
+      "line": 135,
+      "registration": "r.Mount(\"/profile\", profileRouter())"
+    },
+    {
+      "path": "experimental/clashapi/server.go",
+      "line": 136,
+      "registration": "r.Mount(\"/cache\", cacheRouter(ctx))"
+    },
+    {
+      "path": "experimental/clashapi/server.go",
+      "line": 137,
+      "registration": "r.Mount(\"/dns\", dnsRouter(s.dnsRouter))"
+    },
+    {
+      "path": "experimental/clashapi/server.go",
+      "line": 148,
+      "registration": "r.Get(\"/ui\", http.RedirectHandler(\"/ui/\", http.StatusMovedPermanently).ServeHTTP)"
+    }
+  ],
+  "counter_dependency": "github.com/sagernet/sing v0.9.0-beta.4; NewInt64CounterConn/PacketConn counts routed byte I/O, not wire/IP headers",
+  "reviewed_scope": "All controller routes and handlers; no runtime hosts/predefined/DNS rule mutation or DNS query event/history API."
+}

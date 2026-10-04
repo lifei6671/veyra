@@ -1,0 +1,1418 @@
+{
+  "status": "PASS",
+  "transport": "standard authenticated WS, handshake 101; no wrapper",
+  "streams": [
+    {
+      "endpoint": "/connections",
+      "handshake_status": 101,
+      "opened": {
+        "at": "2026-10-04T01:00:08.927875+00:00",
+        "monotonic_ns": 175747393194500
+      },
+      "ended": {
+        "at": "2026-10-04T01:00:29.122553+00:00",
+        "monotonic_ns": 175767587895375
+      },
+      "frame_count": 21,
+      "errors": [],
+      "frames": [
+        {
+          "at": "2026-10-04T01:00:08.928293+00:00",
+          "monotonic_ns": 175747393608583,
+          "sequence": 0,
+          "data": {
+            "connections": [],
+            "downloadTotal": 0,
+            "memory": 5103616,
+            "uploadTotal": 0
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:09.929909+00:00",
+          "monotonic_ns": 175748395226625,
+          "sequence": 1,
+          "data": {
+            "connections": [],
+            "downloadTotal": 0,
+            "memory": 5128192,
+            "uploadTotal": 0
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:10.928925+00:00",
+          "monotonic_ns": 175749394265583,
+          "sequence": 2,
+          "data": {
+            "connections": [],
+            "downloadTotal": 0,
+            "memory": 5144576,
+            "uploadTotal": 0
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:11.929676+00:00",
+          "monotonic_ns": 175750395022708,
+          "sequence": 3,
+          "data": {
+            "connections": [],
+            "downloadTotal": 524449,
+            "memory": 5603328,
+            "uploadTotal": 131224
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:12.929862+00:00",
+          "monotonic_ns": 175751395185291,
+          "sequence": 4,
+          "data": {
+            "connections": [],
+            "downloadTotal": 524449,
+            "memory": 5603328,
+            "uploadTotal": 131224
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:13.929819+00:00",
+          "monotonic_ns": 175752395141208,
+          "sequence": 5,
+          "data": {
+            "connections": [],
+            "downloadTotal": 524449,
+            "memory": 5603328,
+            "uploadTotal": 131224
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:14.929296+00:00",
+          "monotonic_ns": 175753394630166,
+          "sequence": 6,
+          "data": {
+            "connections": [],
+            "downloadTotal": 524449,
+            "memory": 5611520,
+            "uploadTotal": 131224
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:15.929979+00:00",
+          "monotonic_ns": 175754395308541,
+          "sequence": 7,
+          "data": {
+            "connections": [],
+            "downloadTotal": 524449,
+            "memory": 5611520,
+            "uploadTotal": 131224
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:16.931017+00:00",
+          "monotonic_ns": 175755396367291,
+          "sequence": 8,
+          "data": {
+            "connections": [],
+            "downloadTotal": 528711,
+            "memory": 5693440,
+            "uploadTotal": 139573
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:17.928891+00:00",
+          "monotonic_ns": 175756394230750,
+          "sequence": 9,
+          "data": {
+            "connections": [],
+            "downloadTotal": 528711,
+            "memory": 5693440,
+            "uploadTotal": 139573
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:18.929544+00:00",
+          "monotonic_ns": 175757394868291,
+          "sequence": 10,
+          "data": {
+            "connections": [],
+            "downloadTotal": 791016,
+            "memory": 5857280,
+            "uploadTotal": 205260
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:19.929686+00:00",
+          "monotonic_ns": 175758395047666,
+          "sequence": 11,
+          "data": {
+            "connections": [],
+            "downloadTotal": 791016,
+            "memory": 5857280,
+            "uploadTotal": 205260
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:20.929827+00:00",
+          "monotonic_ns": 175759395151375,
+          "sequence": 12,
+          "data": {
+            "connections": [],
+            "downloadTotal": 791016,
+            "memory": 5857280,
+            "uploadTotal": 205260
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:21.928611+00:00",
+          "monotonic_ns": 175760393957333,
+          "sequence": 13,
+          "data": {
+            "connections": [],
+            "downloadTotal": 791016,
+            "memory": 5857280,
+            "uploadTotal": 205260
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:22.930036+00:00",
+          "monotonic_ns": 175761395367666,
+          "sequence": 14,
+          "data": {
+            "connections": [
+              {
+                "chains": [
+                  "p007-direct"
+                ],
+                "download": 0,
+                "id": "3968c73d-349d-4e3f-a453-6f2c6b588c20",
+                "metadata": {
+                  "destinationIP": "",
+                  "destinationPort": "52168",
+                  "dnsMode": "normal",
+                  "host": "p007.example.invalid",
+                  "network": "tcp",
+                  "processPath": "",
+                  "sourceIP": "127.0.0.1",
+                  "sourcePort": "52221",
+                  "type": "mixed/p007-mixed"
+                },
+                "rule": "ip_cidr=127.0.0.0/8 => route(p007-direct)",
+                "rulePayload": "",
+                "start": "2026-10-04T09:00:21.938227+08:00",
+                "upload": 130
+              }
+            ],
+            "downloadTotal": 791016,
+            "memory": 5873664,
+            "uploadTotal": 205390
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:23.929910+00:00",
+          "monotonic_ns": 175762395234916,
+          "sequence": 15,
+          "data": {
+            "connections": [
+              {
+                "chains": [
+                  "p007-direct"
+                ],
+                "download": 0,
+                "id": "3968c73d-349d-4e3f-a453-6f2c6b588c20",
+                "metadata": {
+                  "destinationIP": "",
+                  "destinationPort": "52168",
+                  "dnsMode": "normal",
+                  "host": "p007.example.invalid",
+                  "network": "tcp",
+                  "processPath": "",
+                  "sourceIP": "127.0.0.1",
+                  "sourcePort": "52221",
+                  "type": "mixed/p007-mixed"
+                },
+                "rule": "ip_cidr=127.0.0.0/8 => route(p007-direct)",
+                "rulePayload": "",
+                "start": "2026-10-04T09:00:21.938227+08:00",
+                "upload": 130
+              }
+            ],
+            "downloadTotal": 791016,
+            "memory": 5873664,
+            "uploadTotal": 205390
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:24.929156+00:00",
+          "monotonic_ns": 175763394520916,
+          "sequence": 16,
+          "data": {
+            "connections": [],
+            "downloadTotal": 795274,
+            "memory": 5873664,
+            "uploadTotal": 205390
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:25.928505+00:00",
+          "monotonic_ns": 175764393849666,
+          "sequence": 17,
+          "data": {
+            "connections": [],
+            "downloadTotal": 795274,
+            "memory": 5873664,
+            "uploadTotal": 205390
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:26.928995+00:00",
+          "monotonic_ns": 175765394361000,
+          "sequence": 18,
+          "data": {
+            "connections": [],
+            "downloadTotal": 799527,
+            "memory": 5873664,
+            "uploadTotal": 205515
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:27.929711+00:00",
+          "monotonic_ns": 175766395048041,
+          "sequence": 19,
+          "data": {
+            "connections": [],
+            "downloadTotal": 799527,
+            "memory": 5873664,
+            "uploadTotal": 205515
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:28.929547+00:00",
+          "monotonic_ns": 175767394876916,
+          "sequence": 20,
+          "data": {
+            "connections": [],
+            "downloadTotal": 799527,
+            "memory": 5873664,
+            "uploadTotal": 205515
+          }
+        }
+      ]
+    },
+    {
+      "endpoint": "/logs?level=debug",
+      "handshake_status": 101,
+      "opened": {
+        "at": "2026-10-04T01:00:08.928439+00:00",
+        "monotonic_ns": 175747393752416
+      },
+      "ended": {
+        "at": "2026-10-04T01:00:30.970174+00:00",
+        "monotonic_ns": 175769435528708
+      },
+      "frame_count": 72,
+      "errors": [],
+      "frames": [
+        {
+          "at": "2026-10-04T01:00:10.933748+00:00",
+          "monotonic_ns": 175749399075208,
+          "sequence": 0,
+          "data": {
+            "type": "info",
+            "payload": "[421622832 0ms] inbound/mixed[p007-mixed]: inbound connection from 127.0.0.1:52185"
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:10.934918+00:00",
+          "monotonic_ns": 175749400254208,
+          "sequence": 1,
+          "data": {
+            "type": "info",
+            "payload": "[421622832 1ms] inbound/mixed[p007-mixed]: inbound connection to p007.example.invalid:52168"
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:10.935141+00:00",
+          "monotonic_ns": 175749400460458,
+          "sequence": 2,
+          "data": {
+            "type": "debug",
+            "payload": "[421622832 1ms] router: match[0] domain=p007.example.invalid => resolve(p007-hosts,ipv4_only)"
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:10.935217+00:00",
+          "monotonic_ns": 175749400533666,
+          "sequence": 3,
+          "data": {
+            "type": "debug",
+            "payload": "[421622832 1ms] dns: lookup domain p007.example.invalid"
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:10.935320+00:00",
+          "monotonic_ns": 175749400639041,
+          "sequence": 4,
+          "data": {
+            "type": "debug",
+            "payload": "[421622832 1ms] dns: exchanged p007.example.invalid NOERROR 600"
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:10.935410+00:00",
+          "monotonic_ns": 175749400730208,
+          "sequence": 5,
+          "data": {
+            "type": "info",
+            "payload": "[421622832 1ms] dns: exchanged A p007.example.invalid. 600 IN A 127.0.0.1"
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:10.935457+00:00",
+          "monotonic_ns": 175749400774000,
+          "sequence": 6,
+          "data": {
+            "type": "info",
+            "payload": "[421622832 1ms] dns: lookup succeed for p007.example.invalid: 127.0.0.1"
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:10.935536+00:00",
+          "monotonic_ns": 175749400853916,
+          "sequence": 7,
+          "data": {
+            "type": "debug",
+            "payload": "[421622832 1ms] router: resolved [127.0.0.1]"
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:10.935573+00:00",
+          "monotonic_ns": 175749400889416,
+          "sequence": 8,
+          "data": {
+            "type": "debug",
+            "payload": "[421622832 1ms] router: match[1] ip_cidr=127.0.0.0/8 => route(p007-direct)"
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:10.935651+00:00",
+          "monotonic_ns": 175749400967416,
+          "sequence": 9,
+          "data": {
+            "type": "info",
+            "payload": "[421622832 2ms] outbound/direct[p007-direct]: outbound connection to p007.example.invalid:52168"
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:10.938961+00:00",
+          "monotonic_ns": 175749404279791,
+          "sequence": 10,
+          "data": {
+            "type": "debug",
+            "payload": "[421622832 5ms] connection: connection upload finished"
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:10.939009+00:00",
+          "monotonic_ns": 175749404325166,
+          "sequence": 11,
+          "data": {
+            "type": "debug",
+            "payload": "[421622832 5ms] connection: connection download finished"
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:10.939112+00:00",
+          "monotonic_ns": 175749404444000,
+          "sequence": 12,
+          "data": {
+            "type": "debug",
+            "payload": "[421622832 5ms] inbound/mixed[p007-mixed]: connection closed: read http request: read tcp 127.0.0.1:52169->127.0.0.1:52185: use of closed network connection"
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:15.931318+00:00",
+          "monotonic_ns": 175754396743541,
+          "sequence": 13,
+          "data": {
+            "type": "info",
+            "payload": "[1186927693 0ms] inbound/mixed[p007-mixed]: inbound connection from 127.0.0.1:52198"
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:15.932079+00:00",
+          "monotonic_ns": 175754397406583,
+          "sequence": 14,
+          "data": {
+            "type": "info",
+            "payload": "[1186927693 0ms] inbound/mixed[p007-mixed]: inbound connection to p007.example.invalid:52168"
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:15.933113+00:00",
+          "monotonic_ns": 175754398468083,
+          "sequence": 15,
+          "data": {
+            "type": "debug",
+            "payload": "[1186927693 0ms] router: match[0] domain=p007.example.invalid => resolve(p007-hosts,ipv4_only)"
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:15.933207+00:00",
+          "monotonic_ns": 175754398528625,
+          "sequence": 16,
+          "data": {
+            "type": "debug",
+            "payload": "[1186927693 0ms] dns: lookup domain p007.example.invalid"
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:15.933253+00:00",
+          "monotonic_ns": 175754398574250,
+          "sequence": 17,
+          "data": {
+            "type": "info",
+            "payload": "[1186927693 0ms] dns: lookup succeed for p007.example.invalid: 127.0.0.1"
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:15.933292+00:00",
+          "monotonic_ns": 175754398613000,
+          "sequence": 18,
+          "data": {
+            "type": "debug",
+            "payload": "[1186927693 0ms] router: resolved [127.0.0.1]"
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:15.933327+00:00",
+          "monotonic_ns": 175754398648333,
+          "sequence": 19,
+          "data": {
+            "type": "debug",
+            "payload": "[1186927693 0ms] router: match[1] ip_cidr=127.0.0.0/8 => route(p007-direct)"
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:15.933436+00:00",
+          "monotonic_ns": 175754398758041,
+          "sequence": 20,
+          "data": {
+            "type": "info",
+            "payload": "[1186927693 0ms] outbound/direct[p007-direct]: outbound connection to p007.example.invalid:52168"
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:15.934172+00:00",
+          "monotonic_ns": 175754399498541,
+          "sequence": 21,
+          "data": {
+            "type": "debug",
+            "payload": "[1186927693 2ms] inbound/mixed[p007-mixed]: connection closed: read http request: read tcp 127.0.0.1:52169->127.0.0.1:52198: use of closed network connection"
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:15.934315+00:00",
+          "monotonic_ns": 175754399637916,
+          "sequence": 22,
+          "data": {
+            "type": "debug",
+            "payload": "[1186927693 2ms] connection: connection upload finished"
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:17.945691+00:00",
+          "monotonic_ns": 175756411019541,
+          "sequence": 23,
+          "data": {
+            "type": "info",
+            "payload": "[2141679782 0ms] inbound/mixed[p007-mixed]: inbound connection from 127.0.0.1:52207"
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:17.946212+00:00",
+          "monotonic_ns": 175756411542708,
+          "sequence": 24,
+          "data": {
+            "type": "info",
+            "payload": "[2141679782 0ms] inbound/mixed[p007-mixed]: inbound connection to p007.example.invalid:52168"
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:17.946284+00:00",
+          "monotonic_ns": 175756411604166,
+          "sequence": 25,
+          "data": {
+            "type": "debug",
+            "payload": "[2141679782 0ms] router: match[0] domain=p007.example.invalid => resolve(p007-hosts,ipv4_only)"
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:17.947103+00:00",
+          "monotonic_ns": 175756412426833,
+          "sequence": 26,
+          "data": {
+            "type": "debug",
+            "payload": "[2141679782 0ms] dns: lookup domain p007.example.invalid"
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:17.947359+00:00",
+          "monotonic_ns": 175756412679541,
+          "sequence": 27,
+          "data": {
+            "type": "info",
+            "payload": "[2141679782 0ms] dns: lookup succeed for p007.example.invalid: 127.0.0.1"
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:17.947447+00:00",
+          "monotonic_ns": 175756412767416,
+          "sequence": 28,
+          "data": {
+            "type": "debug",
+            "payload": "[2141679782 0ms] router: resolved [127.0.0.1]"
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:17.947465+00:00",
+          "monotonic_ns": 175756412784833,
+          "sequence": 29,
+          "data": {
+            "type": "debug",
+            "payload": "[2141679782 0ms] router: match[1] ip_cidr=127.0.0.0/8 => route(p007-direct)"
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:17.947486+00:00",
+          "monotonic_ns": 175756412805791,
+          "sequence": 30,
+          "data": {
+            "type": "info",
+            "payload": "[2141679782 0ms] outbound/direct[p007-direct]: outbound connection to p007.example.invalid:52168"
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:17.948098+00:00",
+          "monotonic_ns": 175756413424041,
+          "sequence": 31,
+          "data": {
+            "type": "debug",
+            "payload": "[2141679782 2ms] connection: connection upload finished"
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:17.948472+00:00",
+          "monotonic_ns": 175756413794291,
+          "sequence": 32,
+          "data": {
+            "type": "debug",
+            "payload": "[2141679782 2ms] inbound/mixed[p007-mixed]: connection closed: read http request: read tcp 127.0.0.1:52169->127.0.0.1:52207: use of closed network connection"
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:17.948553+00:00",
+          "monotonic_ns": 175756413875583,
+          "sequence": 33,
+          "data": {
+            "type": "debug",
+            "payload": "[2141679782 2ms] connection: connection download finished"
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:21.938055+00:00",
+          "monotonic_ns": 175760403381500,
+          "sequence": 34,
+          "data": {
+            "type": "info",
+            "payload": "[1084679577 0ms] inbound/mixed[p007-mixed]: inbound connection from 127.0.0.1:52221"
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:21.938185+00:00",
+          "monotonic_ns": 175760403510375,
+          "sequence": 35,
+          "data": {
+            "type": "info",
+            "payload": "[1084679577 0ms] inbound/mixed[p007-mixed]: inbound connection to p007.example.invalid:52168"
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:21.938224+00:00",
+          "monotonic_ns": 175760403546541,
+          "sequence": 36,
+          "data": {
+            "type": "debug",
+            "payload": "[1084679577 0ms] router: match[0] domain=p007.example.invalid => resolve(p007-hosts,ipv4_only)"
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:21.938359+00:00",
+          "monotonic_ns": 175760403683666,
+          "sequence": 37,
+          "data": {
+            "type": "debug",
+            "payload": "[1084679577 0ms] dns: lookup domain p007.example.invalid"
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:21.939126+00:00",
+          "monotonic_ns": 175760404458041,
+          "sequence": 38,
+          "data": {
+            "type": "info",
+            "payload": "[1084679577 0ms] dns: lookup succeed for p007.example.invalid: 127.0.0.1"
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:21.939197+00:00",
+          "monotonic_ns": 175760404524458,
+          "sequence": 39,
+          "data": {
+            "type": "debug",
+            "payload": "[1084679577 0ms] router: resolved [127.0.0.1]"
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:21.939300+00:00",
+          "monotonic_ns": 175760404626416,
+          "sequence": 40,
+          "data": {
+            "type": "debug",
+            "payload": "[1084679577 0ms] router: match[1] ip_cidr=127.0.0.0/8 => route(p007-direct)"
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:21.939381+00:00",
+          "monotonic_ns": 175760404706958,
+          "sequence": 41,
+          "data": {
+            "type": "info",
+            "payload": "[1084679577 0ms] outbound/direct[p007-direct]: outbound connection to p007.example.invalid:52168"
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:24.349565+00:00",
+          "monotonic_ns": 175762814897708,
+          "sequence": 42,
+          "data": {
+            "type": "debug",
+            "payload": "[1084679577 2.40s] inbound/mixed[p007-mixed]: connection closed: read http request: read tcp 127.0.0.1:52169->127.0.0.1:52221: use of closed network connection"
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:24.349728+00:00",
+          "monotonic_ns": 175762815053833,
+          "sequence": 43,
+          "data": {
+            "type": "debug",
+            "payload": "[1084679577 2.40s] connection: connection upload finished"
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:25.934085+00:00",
+          "monotonic_ns": 175764399422500,
+          "sequence": 44,
+          "data": {
+            "type": "info",
+            "payload": "[1237468515 0ms] inbound/mixed[p007-mixed]: inbound connection from 127.0.0.1:52235"
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:25.934745+00:00",
+          "monotonic_ns": 175764400083166,
+          "sequence": 45,
+          "data": {
+            "type": "info",
+            "payload": "[1237468515 0ms] inbound/mixed[p007-mixed]: inbound connection to p007.example.invalid:52168"
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:25.934840+00:00",
+          "monotonic_ns": 175764400168458,
+          "sequence": 46,
+          "data": {
+            "type": "debug",
+            "payload": "[1237468515 0ms] router: match[0] domain=p007.example.invalid => resolve(p007-hosts,ipv4_only)"
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:25.934998+00:00",
+          "monotonic_ns": 175764400329333,
+          "sequence": 47,
+          "data": {
+            "type": "debug",
+            "payload": "[1237468515 0ms] dns: lookup domain p007.example.invalid"
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:25.935073+00:00",
+          "monotonic_ns": 175764400402000,
+          "sequence": 48,
+          "data": {
+            "type": "info",
+            "payload": "[1237468515 0ms] dns: lookup succeed for p007.example.invalid: 127.0.0.1"
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:25.935913+00:00",
+          "monotonic_ns": 175764401253958,
+          "sequence": 49,
+          "data": {
+            "type": "debug",
+            "payload": "[1237468515 0ms] router: resolved [127.0.0.1]"
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:25.936099+00:00",
+          "monotonic_ns": 175764401426500,
+          "sequence": 50,
+          "data": {
+            "type": "debug",
+            "payload": "[1237468515 0ms] router: match[1] ip_cidr=127.0.0.0/8 => route(p007-direct)"
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:25.936324+00:00",
+          "monotonic_ns": 175764401675583,
+          "sequence": 51,
+          "data": {
+            "type": "info",
+            "payload": "[1237468515 0ms] outbound/direct[p007-direct]: outbound connection to p007.example.invalid:52168"
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:25.936521+00:00",
+          "monotonic_ns": 175764401852500,
+          "sequence": 52,
+          "data": {
+            "type": "debug",
+            "payload": "[1237468515 2ms] inbound/mixed[p007-mixed]: connection closed: read http request: read tcp 127.0.0.1:52169->127.0.0.1:52235: use of closed network connection"
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:25.936740+00:00",
+          "monotonic_ns": 175764402069375,
+          "sequence": 53,
+          "data": {
+            "type": "debug",
+            "payload": "[1237468515 2ms] connection: connection upload finished"
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:28.948366+00:00",
+          "monotonic_ns": 175767413719541,
+          "sequence": 54,
+          "data": {
+            "type": "debug",
+            "payload": "dns: exchange p007-cache.example.invalid. IN A"
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:28.948777+00:00",
+          "monotonic_ns": 175767414111708,
+          "sequence": 55,
+          "data": {
+            "type": "debug",
+            "payload": "dns: match[0] domain=p007-cache.example.invalid => route(p007-owned-dns)"
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:28.951314+00:00",
+          "monotonic_ns": 175767416652583,
+          "sequence": 56,
+          "data": {
+            "type": "debug",
+            "payload": "dns: exchanged p007-cache.example.invalid NOERROR 300"
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:28.951387+00:00",
+          "monotonic_ns": 175767416718833,
+          "sequence": 57,
+          "data": {
+            "type": "info",
+            "payload": "dns: exchanged A p007-cache.example.invalid. 300 IN A 192.0.2.10"
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:28.955390+00:00",
+          "monotonic_ns": 175767420728375,
+          "sequence": 58,
+          "data": {
+            "type": "debug",
+            "payload": "dns: exchange p007-cache.example.invalid. IN A"
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:28.955437+00:00",
+          "monotonic_ns": 175767420763291,
+          "sequence": 59,
+          "data": {
+            "type": "debug",
+            "payload": "dns: match[0] domain=p007-cache.example.invalid => route(p007-owned-dns)"
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:28.955457+00:00",
+          "monotonic_ns": 175767420783416,
+          "sequence": 60,
+          "data": {
+            "type": "debug",
+            "payload": "dns: cached p007-cache.example.invalid NOERROR 299"
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:28.955480+00:00",
+          "monotonic_ns": 175767420806166,
+          "sequence": 61,
+          "data": {
+            "type": "info",
+            "payload": "dns: cached A p007-cache.example.invalid. 299 IN A 192.0.2.10"
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:28.956243+00:00",
+          "monotonic_ns": 175767421583041,
+          "sequence": 62,
+          "data": {
+            "type": "debug",
+            "payload": "dns: exchange p007-cache.example.invalid. IN A"
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:28.956619+00:00",
+          "monotonic_ns": 175767422010333,
+          "sequence": 63,
+          "data": {
+            "type": "debug",
+            "payload": "dns: match[0] domain=p007-cache.example.invalid => route(p007-owned-dns)"
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:28.956958+00:00",
+          "monotonic_ns": 175767422289750,
+          "sequence": 64,
+          "data": {
+            "type": "debug",
+            "payload": "dns: exchanged p007-cache.example.invalid NOERROR 300"
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:28.957788+00:00",
+          "monotonic_ns": 175767423120208,
+          "sequence": 65,
+          "data": {
+            "type": "info",
+            "payload": "dns: exchanged A p007-cache.example.invalid. 300 IN A 192.0.2.20"
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:28.965578+00:00",
+          "monotonic_ns": 175767430925291,
+          "sequence": 66,
+          "data": {
+            "type": "debug",
+            "payload": "dns: exchange p007.example.invalid. IN A"
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:28.965716+00:00",
+          "monotonic_ns": 175767431043416,
+          "sequence": 67,
+          "data": {
+            "type": "debug",
+            "payload": "dns: exchanged p007.example.invalid NOERROR 600"
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:28.966152+00:00",
+          "monotonic_ns": 175767431480666,
+          "sequence": 68,
+          "data": {
+            "type": "info",
+            "payload": "dns: exchanged A p007.example.invalid. 600 IN A 127.0.0.1"
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:28.968564+00:00",
+          "monotonic_ns": 175767433894250,
+          "sequence": 69,
+          "data": {
+            "type": "debug",
+            "payload": "dns: exchange p007.example.invalid. IN A"
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:28.968595+00:00",
+          "monotonic_ns": 175767433922375,
+          "sequence": 70,
+          "data": {
+            "type": "debug",
+            "payload": "dns: cached p007.example.invalid NOERROR 599"
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:28.968651+00:00",
+          "monotonic_ns": 175767433979041,
+          "sequence": 71,
+          "data": {
+            "type": "info",
+            "payload": "dns: cached A p007.example.invalid. 599 IN A 127.0.0.1"
+          }
+        }
+      ]
+    },
+    {
+      "endpoint": "/memory",
+      "handshake_status": 101,
+      "opened": {
+        "at": "2026-10-04T01:00:08.928850+00:00",
+        "monotonic_ns": 175747394164208
+      },
+      "ended": {
+        "at": "2026-10-04T01:00:32.931394+00:00",
+        "monotonic_ns": 175771396889208
+      },
+      "frame_count": 22,
+      "errors": [],
+      "frames": [
+        {
+          "at": "2026-10-04T01:00:09.929782+00:00",
+          "monotonic_ns": 175748395124958,
+          "sequence": 0,
+          "data": {
+            "inuse": 0,
+            "oslimit": 0
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:10.929138+00:00",
+          "monotonic_ns": 175749394460291,
+          "sequence": 1,
+          "data": {
+            "inuse": 5144576,
+            "oslimit": 0
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:11.929859+00:00",
+          "monotonic_ns": 175750395176666,
+          "sequence": 2,
+          "data": {
+            "inuse": 5603328,
+            "oslimit": 0
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:12.929526+00:00",
+          "monotonic_ns": 175751394893458,
+          "sequence": 3,
+          "data": {
+            "inuse": 5603328,
+            "oslimit": 0
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:13.929757+00:00",
+          "monotonic_ns": 175752395085291,
+          "sequence": 4,
+          "data": {
+            "inuse": 5603328,
+            "oslimit": 0
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:14.929452+00:00",
+          "monotonic_ns": 175753394773958,
+          "sequence": 5,
+          "data": {
+            "inuse": 5611520,
+            "oslimit": 0
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:15.929811+00:00",
+          "monotonic_ns": 175754395169875,
+          "sequence": 6,
+          "data": {
+            "inuse": 5611520,
+            "oslimit": 0
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:16.931261+00:00",
+          "monotonic_ns": 175755396584375,
+          "sequence": 7,
+          "data": {
+            "inuse": 5693440,
+            "oslimit": 0
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:17.929063+00:00",
+          "monotonic_ns": 175756394384208,
+          "sequence": 8,
+          "data": {
+            "inuse": 5693440,
+            "oslimit": 0
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:18.929436+00:00",
+          "monotonic_ns": 175757394787750,
+          "sequence": 9,
+          "data": {
+            "inuse": 5857280,
+            "oslimit": 0
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:19.930294+00:00",
+          "monotonic_ns": 175758395652333,
+          "sequence": 10,
+          "data": {
+            "inuse": 5857280,
+            "oslimit": 0
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:20.929735+00:00",
+          "monotonic_ns": 175759395075750,
+          "sequence": 11,
+          "data": {
+            "inuse": 5857280,
+            "oslimit": 0
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:21.929392+00:00",
+          "monotonic_ns": 175760394721625,
+          "sequence": 12,
+          "data": {
+            "inuse": 5857280,
+            "oslimit": 0
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:22.929663+00:00",
+          "monotonic_ns": 175761395017000,
+          "sequence": 13,
+          "data": {
+            "inuse": 5873664,
+            "oslimit": 0
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:23.929809+00:00",
+          "monotonic_ns": 175762395153041,
+          "sequence": 14,
+          "data": {
+            "inuse": 5873664,
+            "oslimit": 0
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:24.929331+00:00",
+          "monotonic_ns": 175763394661000,
+          "sequence": 15,
+          "data": {
+            "inuse": 5873664,
+            "oslimit": 0
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:25.929186+00:00",
+          "monotonic_ns": 175764394520833,
+          "sequence": 16,
+          "data": {
+            "inuse": 5873664,
+            "oslimit": 0
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:26.929557+00:00",
+          "monotonic_ns": 175765394902583,
+          "sequence": 17,
+          "data": {
+            "inuse": 5873664,
+            "oslimit": 0
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:27.929586+00:00",
+          "monotonic_ns": 175766394938291,
+          "sequence": 18,
+          "data": {
+            "inuse": 5873664,
+            "oslimit": 0
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:28.929462+00:00",
+          "monotonic_ns": 175767394806500,
+          "sequence": 19,
+          "data": {
+            "inuse": 5873664,
+            "oslimit": 0
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:29.929585+00:00",
+          "monotonic_ns": 175768394957291,
+          "sequence": 20,
+          "data": {
+            "inuse": 5996544,
+            "oslimit": 0
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:30.930411+00:00",
+          "monotonic_ns": 175769395778041,
+          "sequence": 21,
+          "data": {
+            "inuse": 5996544,
+            "oslimit": 0
+          }
+        }
+      ]
+    },
+    {
+      "endpoint": "/traffic",
+      "handshake_status": 101,
+      "opened": {
+        "at": "2026-10-04T01:00:08.929254+00:00",
+        "monotonic_ns": 175747394569000
+      },
+      "ended": {
+        "at": "2026-10-04T01:00:15.930737+00:00",
+        "monotonic_ns": 175754396062375
+      },
+      "frame_count": 5,
+      "errors": [],
+      "frames": [
+        {
+          "at": "2026-10-04T01:00:09.929957+00:00",
+          "monotonic_ns": 175748395276250,
+          "sequence": 0,
+          "data": {
+            "up": 0,
+            "down": 0
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:10.929527+00:00",
+          "monotonic_ns": 175749394852916,
+          "sequence": 1,
+          "data": {
+            "up": 0,
+            "down": 0
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:11.929828+00:00",
+          "monotonic_ns": 175750395146500,
+          "sequence": 2,
+          "data": {
+            "up": 131224,
+            "down": 524449
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:12.930007+00:00",
+          "monotonic_ns": 175751395324708,
+          "sequence": 3,
+          "data": {
+            "up": 0,
+            "down": 0
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:13.929593+00:00",
+          "monotonic_ns": 175752394936250,
+          "sequence": 4,
+          "data": {
+            "up": 0,
+            "down": 0
+          }
+        }
+      ]
+    },
+    {
+      "endpoint": "/traffic",
+      "handshake_status": 101,
+      "opened": {
+        "at": "2026-10-04T01:00:15.934518+00:00",
+        "monotonic_ns": 175754399846166
+      },
+      "ended": {
+        "at": "2026-10-04T01:00:32.931866+00:00",
+        "monotonic_ns": 175771397200583
+      },
+      "frame_count": 16,
+      "errors": [],
+      "frames": [
+        {
+          "at": "2026-10-04T01:00:16.936226+00:00",
+          "monotonic_ns": 175755401582166,
+          "sequence": 0,
+          "data": {
+            "up": 0,
+            "down": 0
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:17.936459+00:00",
+          "monotonic_ns": 175756401804833,
+          "sequence": 1,
+          "data": {
+            "up": 0,
+            "down": 0
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:18.936402+00:00",
+          "monotonic_ns": 175757401756708,
+          "sequence": 2,
+          "data": {
+            "up": 65687,
+            "down": 262305
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:19.936287+00:00",
+          "monotonic_ns": 175758401649791,
+          "sequence": 3,
+          "data": {
+            "up": 0,
+            "down": 0
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:20.936291+00:00",
+          "monotonic_ns": 175759401647375,
+          "sequence": 4,
+          "data": {
+            "up": 0,
+            "down": 0
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:21.936663+00:00",
+          "monotonic_ns": 175760402003166,
+          "sequence": 5,
+          "data": {
+            "up": 0,
+            "down": 0
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:22.936117+00:00",
+          "monotonic_ns": 175761401452750,
+          "sequence": 6,
+          "data": {
+            "up": 130,
+            "down": 0
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:23.936322+00:00",
+          "monotonic_ns": 175762401673458,
+          "sequence": 7,
+          "data": {
+            "up": 0,
+            "down": 0
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:24.936553+00:00",
+          "monotonic_ns": 175763401904458,
+          "sequence": 8,
+          "data": {
+            "up": 0,
+            "down": 4258
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:25.935996+00:00",
+          "monotonic_ns": 175764401325916,
+          "sequence": 9,
+          "data": {
+            "up": 125,
+            "down": 0
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:26.936157+00:00",
+          "monotonic_ns": 175765401496708,
+          "sequence": 10,
+          "data": {
+            "up": 0,
+            "down": 4253
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:27.936695+00:00",
+          "monotonic_ns": 175766402042208,
+          "sequence": 11,
+          "data": {
+            "up": 0,
+            "down": 0
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:28.935664+00:00",
+          "monotonic_ns": 175767401025583,
+          "sequence": 12,
+          "data": {
+            "up": 0,
+            "down": 0
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:29.936422+00:00",
+          "monotonic_ns": 175768401848000,
+          "sequence": 13,
+          "data": {
+            "up": 0,
+            "down": 0
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:30.936234+00:00",
+          "monotonic_ns": 175769401589791,
+          "sequence": 14,
+          "data": {
+            "up": 0,
+            "down": 0
+          }
+        },
+        {
+          "at": "2026-10-04T01:00:31.936625+00:00",
+          "monotonic_ns": 175770401985208,
+          "sequence": 15,
+          "data": {
+            "up": 0,
+            "down": 0
+          }
+        }
+      ]
+    }
+  ],
+  "shapes": {
+    "connections": {
+      "uploadTotal": "int bytes",
+      "downloadTotal": "int bytes",
+      "memory": "int bytes",
+      "connections": "array or null; active snapshots"
+    },
+    "logs": {
+      "type": "string",
+      "payload": "string"
+    },
+    "memory": {
+      "inuse": "int bytes; first zero sentinel",
+      "oslimit": "int; zero placeholder"
+    },
+    "traffic": {
+      "up": "int interval bytes",
+      "down": "int interval bytes"
+    }
+  }
+}

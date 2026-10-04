@@ -1,0 +1,7 @@
+{
+  "status": "PASS",
+  "exit_code": 0,
+  "output": "",
+  "actual_config_sha256": "a4d25f5ba63f2a76b85649af28a49f24a5e7ccd11824e652ef6080f4ef8e527a",
+  "timeout_seconds": 20
+}
