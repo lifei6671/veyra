@@ -1,0 +1,39 @@
+{
+  "task": "OBG-P1-06",
+  "head": "f9adda4ebe8a836a2f1113747cb672ea8b834c15",
+  "baseline": "P1-05 + Host Review dirty tree preserved",
+  "gpui_kit": "0.7.0",
+  "gpui_pre": "0.3.7",
+  "tray_icon": "0.24.2",
+  "source": "crates.io existing P0 lock",
+  "reference": "crates/veyra-gpui-prototype/src/main.rs",
+  "single_ui_loop": "gpui_kit::application().run",
+  "prototype_dependency": false,
+  "core_modified_this_task": false,
+  "network_actions": "NONE",
+  "legacy_import": "NOT_PERFORMED",
+  "changed_files_this_task": [
+    "Cargo.lock",
+    "crates/veyra-desktop/Cargo.toml",
+    "crates/veyra-desktop/THIRD_PARTY_NOTICES.md",
+    "crates/veyra-desktop/src/app.rs",
+    "crates/veyra-desktop/src/main.rs",
+    "crates/veyra-desktop/src/desktop_lifecycle.rs",
+    "crates/veyra-desktop/src/tray.rs",
+    "crates/veyra-desktop/src/platform/macos.rs",
+    "crates/veyra-desktop/src/ui/shell.rs",
+    "docs/openbox-rust-gpui-tasks/IMPLEMENTATION_PHASES.md",
+    "docs/openbox-rust-gpui-tasks/P1-core-and-shell.md",
+    "docs/openbox-rust-gpui-tasks/SESSION.md",
+    "docs/openbox-rust-gpui-tasks/evidence/p1-06/"
+  ],
+  "hashes": {
+    "crates/veyra-desktop/src/app.rs": "e5456c9c3c9b1eea7ca86bca27f4cbdc888a043ed7c8f6d663422a43791478e9",
+    "crates/veyra-desktop/src/main.rs": "d110682377221050c7a7fbc4467809f3c8573fab1dd14e838190a7c6326f09c6",
+    "crates/veyra-desktop/src/desktop_lifecycle.rs": "725fa8e84414e72dc54c9b832a037d56fdb533a0ce7345487a13605fbb6afe81",
+    "crates/veyra-desktop/src/tray.rs": "ae6673a2af6215c1a53e3b89e5e6c85c7c60ac564d10469bca7d88496d30b0b7",
+    "crates/veyra-desktop/src/platform/macos.rs": "be383b2986f4ee7eded9ca1f01d8c8b9d4a202a7f747926d2467a7bf12db226e",
+    "crates/veyra-desktop/src/ui/shell.rs": "1d3a32356e82d7f8ff5d87813da4038060ce2def21e3519d79eafc24fecce4d8"
+  },
+  "gui_source_identity": "Phase A: images/5 secondary before debug visibility diagnostics; Phase C final executable hash in validation; final-main-window.png captured from final executable"
+}

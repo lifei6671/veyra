@@ -1,0 +1,125 @@
+    Checking veyra-core v0.1.0 (<workspace>/crates/veyra-core)
+    Checking veyra-desktop v0.1.0 (<workspace>/crates/veyra-desktop)
+warning: unused import: `File`
+ --> crates/veyra-desktop/src/visual_assets.rs:5:16
+  |
+5 |     fs::{self, File},
+  |                ^^^^
+  |
+  = note: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+
+error[E0034]: multiple applicable items in scope
+  --> crates/veyra-desktop/src/platform/files.rs:23:44
+   |
+23 | ...   let mut bytes=Vec::new();self.file.by_ref().take(MAX_IMAGE_BYTES+1).read_to_end(&mut bytes).map_err(|_|PlatformError::FileRead...
+   |                                          ^^^^^^ multiple `by_ref` found
+   |
+   = note: candidate #1 is defined in an impl of the trait `std::io::Read` for the type `std::fs::File`
+   = note: candidate #2 is defined in an impl of the trait `std::io::Write` for the type `std::fs::File`
+help: disambiguate the method for candidate #1
+   |
+23 -         let mut bytes=Vec::new();self.file.by_ref().take(MAX_IMAGE_BYTES+1).read_to_end(&mut bytes).map_err(|_|PlatformError::FileReadFailed)?;
+23 +         let mut bytes=Vec::new();std::io::Read::by_ref(&mut self.file).take(MAX_IMAGE_BYTES+1).read_to_end(&mut bytes).map_err(|_|PlatformError::FileReadFailed)?;
+   |
+help: disambiguate the method for candidate #2
+   |
+23 -         let mut bytes=Vec::new();self.file.by_ref().take(MAX_IMAGE_BYTES+1).read_to_end(&mut bytes).map_err(|_|PlatformError::FileReadFailed)?;
+23 +         let mut bytes=Vec::new();std::io::Write::by_ref(&mut self.file).take(MAX_IMAGE_BYTES+1).read_to_end(&mut bytes).map_err(|_|PlatformError::FileReadFailed)?;
+   |
+
+error[E0599]: no method named `as_bytes` found for struct `Retained<NSData>` in the current scope
+  --> crates/veyra-desktop/src/platform/macos.rs:49:284
+   |
+49 | ...;let data=NSData::with_bytes(unsafe{data.as_bytes()});if !copied.setData_forType(&data,&kind){return Err(PlatformError::Clipboard...
+   |                                             ^^^^^^^^ method not found in `Retained<NSData>`
+
+error[E0283]: type annotations needed
+  --> crates/veyra-desktop/src/platform/macos.rs:53:137
+   |
+53 | ...map(|v|ProtocolObject::from_ref(v.as_ref())).collect();p.clearContents();if objects.is_empty() || p.writeObjects(&NSArray::from_s...
+   |           ^^^^^^^^^^^^^^^^^^^^^^^^ ---------- type must be known at this point
+   |           |
+   |           cannot infer type of the type parameter `T` declared on the associated function `from_ref`
+   |
+   = note: the type must implement `objc2::Message`
+   = help: the following types implement trait `objc2::Message`:
+             AnyClass
+             AnyObject
+             AnyProtocol
+             Exception
+             NSATSTypesetter
+             NSAccessibilityCustomAction
+             NSAccessibilityCustomRotor
+             NSAccessibilityCustomRotorItemResult
+           and 686 others
+   = note: the type must also implement `NSPasteboardWriting`
+note: required by a bound in `ProtocolObject::<P>::from_ref`
+  --> <home>/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/objc2-0.6.4/src/runtime/protocol_object.rs:88:33
+   |
+88 |     pub fn from_ref<T: ?Sized + Message>(obj: &T) -> &Self
+   |                                 ^^^^^^^ required by this bound in `ProtocolObject::<P>::from_ref`
+   = note: required for `dyn NSPasteboardWriting` to implement `ImplementedBy<_>`
+note: required by a bound in `ProtocolObject::<P>::from_ref`
+  --> <home>/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/objc2-0.6.4/src/runtime/protocol_object.rs:90:12
+   |
+88 |     pub fn from_ref<T: ?Sized + Message>(obj: &T) -> &Self
+   |            -------- required by a bound in this associated function
+89 |     where
+90 |         P: ImplementedBy<T>,
+   |            ^^^^^^^^^^^^^^^^ required by this bound in `ProtocolObject::<P>::from_ref`
+   = note: the full name for the type has been written to '<workspace>/target/debug/deps/veyra_desktop-8bdbc2fb7c3f5a64.long-type-11021493303058945606.txt'
+   = note: consider using `--verbose` to print the full type name to the console
+help: consider specifying a concrete type for the type parameter `T`
+   |
+53 |   let _=marker();let p=NSPasteboard::generalPasteboard();let objects:Vec<&ProtocolObject<dyn NSPasteboardWriting>>=self.0.iter().map(|v|ProtocolObject::from_ref::</* Type */>(v.as_ref())).collect();p.clearContents();if objects.is_empty() || p.writeObjects(&NSArray::from_slice(&objects)){Ok(())}else{Err(PlatformError::ClipboardUnavailable)}
+   |                                                                                                                                                                 ++++++++++++++
+
+error[E0283]: type annotations needed
+  --> crates/veyra-desktop/src/platform/macos.rs:53:137
+   |
+53 | ...map(|v|ProtocolObject::from_ref(v.as_ref())).collect();p.clearContents();if objects.is_empty() || p.writeObjects(&NSArray::from_s...
+   |           ^^^^^^^^^^^^^^^^^^^^^^^^   ------ type must be known at this point
+   |           |
+   |           cannot infer type of the type parameter `T` declared on the associated function `from_ref`
+   |
+   = note: multiple `impl`s satisfying `NSPasteboardItem: AsRef<_>` found in the `objc2_app_kit` crate:
+           - impl AsRef<AnyObject> for NSPasteboardItem;
+           - impl AsRef<NSObject> for NSPasteboardItem;
+           - impl AsRef<NSPasteboardItem> for NSPasteboardItem;
+   = note: required for `Retained<NSPasteboardItem>` to implement `AsRef<_>`
+help: consider specifying a concrete type for the type parameter `T`
+   |
+53 |   let _=marker();let p=NSPasteboard::generalPasteboard();let objects:Vec<&ProtocolObject<dyn NSPasteboardWriting>>=self.0.iter().map(|v|ProtocolObject::from_ref::</* Type */>(v.as_ref())).collect();p.clearContents();if objects.is_empty() || p.writeObjects(&NSArray::from_slice(&objects)){Ok(())}else{Err(PlatformError::ClipboardUnavailable)}
+   |                                                                                                                                                                 ++++++++++++++
+
+error[E0599]: no method named `update` found for tuple `(AnyWindowHandle, gpui_kit::Entity<AppView>)` in the current scope
+  --> crates/veyra-desktop/src/main.rs:62:39
+   |
+62 |                 let _ = window_handle.update(cx, |_, window, cx| {
+   |                         --------------^^^^^^ method not found in `(AnyWindowHandle, gpui_kit::Entity<AppView>)`
+   |
+help: some of the expressions' fields have a method of the same name
+   |
+62 |                 let _ = window_handle.0.update(cx, |_, window, cx| {
+   |                                       ++
+62 |                 let _ = window_handle.1.update(cx, |_, window, cx| {
+   |                                       ++
+
+warning: unused import: `Write`
+ --> crates/veyra-desktop/src/visual_assets.rs:6:18
+  |
+6 |     io::{Cursor, Write},
+  |                  ^^^^^
+
+warning: unnecessary `unsafe` block
+  --> crates/veyra-desktop/src/platform/macos.rs:39:167
+   |
+39 | ...).ok_or(PlatformError::ExternalUrlRejected)?;if unsafe{NSWorkspace::sharedWorkspace().openURL(&url)}{Ok(())}else{Err(PlatformErro...
+   |                                                    ^^^^^^ unnecessary `unsafe` block
+   |
+   = note: `#[warn(unused_unsafe)]` (part of `#[warn(unused)]`) on by default
+
+Some errors have detailed explanations: E0034, E0283, E0599.
+For more information about an error, try `rustc --explain E0034`.
+warning: `veyra-desktop` (bin "veyra-desktop") generated 3 warnings
+error: could not compile `veyra-desktop` (bin "veyra-desktop") due to 5 previous errors; 3 warnings emitted

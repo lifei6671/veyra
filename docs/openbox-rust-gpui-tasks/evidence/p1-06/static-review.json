@@ -1,0 +1,14 @@
+{
+  "review": "implementation author self-review using code-delivery-review; not independent Host Review",
+  "only_quit_call": "desktop_lifecycle.rs Effect::Quit",
+  "runtime_construction": "services.rs Builder::new_multi_thread (inherited)",
+  "ui_loops": 1,
+  "tray_polling": false,
+  "send_crossing": "MenuEvent IDs -> Intent -> Tokio unbounded channel -> GPUI foreground; no GPUI Entity/Context in Send callback",
+  "tray_owner": "AppView -> DesktopTray -> Option<TrayIcon>; quit subscription explicitly takes/drops TrayIcon on main thread",
+  "core_status": "optional existing RuntimeSnapshot; absent owner is Unavailable, never configuration=>Running",
+  "unavailable_actions": "Start/Stop disabled; P2 Runtime not implemented",
+  "lock_cleanup": "on_app_quit -> PrimaryInstance::prepare_quit; flock FD retained by composition Arc until process exit",
+  "dependency_boundaries": "one GPUI source/version; no tao/winit/prototype/helper/Tauri edge",
+  "known_build_warning": "upstream block 0.1.6 future incompatibility warning; checks pass"
+}

@@ -1,0 +1,17 @@
+{
+  "status": "PASS",
+  "adapter": "NSSavePanel asynchronous sheet / main thread",
+  "cancel": {
+    "file_absent": true,
+    "config_revision": 1
+  },
+  "accept": {
+    "destination": "<selected-file>",
+    "exact_bytes": true,
+    "sha256": "437fead2f37ee1dd4b1614050a49fe05bf1f830fbfbe8e4101a886e0aadee6c3",
+    "mode": "0600",
+    "config_revision": 1
+  },
+  "atomic_failure": "unit test: invalid parent and existing collision preserve original; no partial files",
+  "focus_return": "native sheet closed; existing Veyra window focused"
+}

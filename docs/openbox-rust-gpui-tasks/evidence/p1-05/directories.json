@@ -1,0 +1,27 @@
+{
+  "product_identifier": "com.lifei6671.veyra",
+  "preview_namespace": "com.lifei6671.veyra.gpui-preview",
+  "normal_root_source": "Foundation NSSearchPathForDirectoriesInDomains UserDomainMask; path resolution only",
+  "application_support": "<user-library>/Application Support/com.lifei6671.veyra.gpui-preview",
+  "caches": "<user-library>/Caches/com.lifei6671.veyra.gpui-preview",
+  "logs": "<user-library>/Logs/com.lifei6671.veyra.gpui-preview",
+  "kernel_cache": "<preview-support>/kernel-cache",
+  "managed_paths": [
+    "state.json",
+    "state.json.bak",
+    "assets/",
+    "rulesets/",
+    "runtime/last-applied.json",
+    "runtime/instance.json",
+    "runtime/configs/",
+    "runtime/resources/",
+    "kernel-cache/",
+    "locks/desktop.lock",
+    "runtime/desktop.sock"
+  ],
+  "override": "VEYRA_DESKTOP_ROOT_OVERRIDE; VEYRA_DESKTOP_STATE_ROOT compatibility",
+  "actual_GUI_root": "<preview-support> explicit injected test root",
+  "standard_paths_test": "PASS; never read/create old product directory",
+  "legacy_data_import": "NOT_PERFORMED",
+  "normal_preview_root_created_in_this_task": false
+}

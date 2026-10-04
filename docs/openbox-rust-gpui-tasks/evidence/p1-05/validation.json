@@ -1,0 +1,523 @@
+{
+  "baseline_head": "f9adda4ebe8a836a2f1113747cb672ea8b834c15",
+  "commands": [
+    {
+      "name": "core-check",
+      "command": "cargo check -p veyra-core",
+      "status": "PASS",
+      "exit_code": 0,
+      "elapsed_s": 1.22
+    },
+    {
+      "name": "core-test",
+      "command": "cargo test -p veyra-core --lib -- --test-threads=1",
+      "status": "PASS",
+      "exit_code": 0,
+      "elapsed_s": 11.47
+    },
+    {
+      "name": "core-clippy",
+      "command": "cargo clippy -p veyra-core --lib -- -D warnings",
+      "status": "PASS",
+      "exit_code": 0,
+      "elapsed_s": 0.84
+    },
+    {
+      "name": "desktop-check",
+      "command": "cargo check -p veyra-desktop",
+      "status": "PASS",
+      "exit_code": 0,
+      "elapsed_s": 1.67
+    },
+    {
+      "name": "desktop-build",
+      "command": "cargo build -p veyra-desktop",
+      "status": "PASS",
+      "exit_code": 0,
+      "elapsed_s": 0.25
+    },
+    {
+      "name": "desktop-test",
+      "command": "cargo test -p veyra-desktop -- --test-threads=1",
+      "status": "PASS",
+      "exit_code": 0,
+      "elapsed_s": 4.32
+    },
+    {
+      "name": "desktop-clippy",
+      "command": "cargo clippy -p veyra-desktop --all-targets -- -D warnings",
+      "status": "PASS",
+      "exit_code": 0,
+      "elapsed_s": 0.76
+    },
+    {
+      "name": "fmt",
+      "command": "cargo fmt --all -- --check",
+      "status": "PASS",
+      "exit_code": 0,
+      "elapsed_s": 0.33
+    },
+    {
+      "name": "workspace-check",
+      "command": "cargo check --workspace --locked",
+      "status": "PASS",
+      "exit_code": 0,
+      "elapsed_s": 2.08
+    },
+    {
+      "name": "legacy-clippy",
+      "command": "cargo clippy --manifest-path src-tauri/Cargo.toml --lib -- -D warnings",
+      "status": "FAIL",
+      "exit_code": 101,
+      "elapsed_s": 0.9
+    }
+  ],
+  "workspace_resource_override": "compile check only; does not prove legacy packaging resources",
+  "post_review_commands": [
+    {
+      "name": "desktop-check",
+      "command": "cargo check -p veyra-desktop",
+      "status": "PASS",
+      "exit_code": 0,
+      "elapsed_s": 0.45
+    },
+    {
+      "name": "desktop-build",
+      "command": "cargo build -p veyra-desktop",
+      "status": "PASS",
+      "exit_code": 0,
+      "elapsed_s": 1.42
+    },
+    {
+      "name": "desktop-test",
+      "command": "cargo test -p veyra-desktop -- --test-threads=1",
+      "status": "PASS",
+      "exit_code": 0,
+      "elapsed_s": 4.55
+    },
+    {
+      "name": "desktop-clippy",
+      "command": "cargo clippy -p veyra-desktop --all-targets -- -D warnings",
+      "status": "PASS",
+      "exit_code": 0,
+      "elapsed_s": 0.63
+    },
+    {
+      "name": "fmt",
+      "command": "cargo fmt --all -- --check",
+      "status": "PASS",
+      "exit_code": 0,
+      "elapsed_s": 0.34
+    },
+    {
+      "name": "workspace-check",
+      "command": "cargo check --workspace --locked",
+      "status": "PASS",
+      "exit_code": 0,
+      "elapsed_s": 0.52
+    },
+    {
+      "name": "legacy-clippy-resource-override",
+      "command": "cargo clippy --manifest-path src-tauri/Cargo.toml --lib -- -D warnings",
+      "status": "PASS",
+      "exit_code": 0,
+      "elapsed_s": 1.31
+    },
+    {
+      "name": "dependency-tree",
+      "command": "cargo tree -p veyra-desktop",
+      "status": "PASS",
+      "exit_code": 0,
+      "elapsed_s": 0.24
+    }
+  ],
+  "final_commands": [
+    {
+      "name": "core-check",
+      "command": "cargo check -p veyra-core",
+      "status": "PASS",
+      "exit_code": 0,
+      "elapsed_s": 0.62
+    },
+    {
+      "name": "core-test",
+      "command": "cargo test -p veyra-core --lib -- --test-threads=1",
+      "status": "PASS",
+      "exit_code": 0,
+      "elapsed_s": 10.62
+    },
+    {
+      "name": "core-clippy",
+      "command": "cargo clippy -p veyra-core --lib -- -D warnings",
+      "status": "PASS",
+      "exit_code": 0,
+      "elapsed_s": 0.75
+    },
+    {
+      "name": "desktop-check",
+      "command": "cargo check -p veyra-desktop",
+      "status": "PASS",
+      "exit_code": 0,
+      "elapsed_s": 0.89
+    },
+    {
+      "name": "desktop-build",
+      "command": "cargo build -p veyra-desktop",
+      "status": "PASS",
+      "exit_code": 0,
+      "elapsed_s": 2.15
+    },
+    {
+      "name": "desktop-test",
+      "command": "cargo test -p veyra-desktop -- --test-threads=1",
+      "status": "PASS",
+      "exit_code": 0,
+      "elapsed_s": 4.16
+    },
+    {
+      "name": "desktop-clippy",
+      "command": "cargo clippy -p veyra-desktop --all-targets -- -D warnings",
+      "status": "PASS",
+      "exit_code": 0,
+      "elapsed_s": 1.17
+    },
+    {
+      "name": "fmt",
+      "command": "cargo fmt --all -- --check",
+      "status": "PASS",
+      "exit_code": 0,
+      "elapsed_s": 0.34
+    },
+    {
+      "name": "workspace-check",
+      "command": "cargo check --workspace --locked",
+      "status": "PASS",
+      "exit_code": 0,
+      "elapsed_s": 1.54
+    },
+    {
+      "name": "legacy-clippy-resource-override",
+      "command": "cargo clippy --manifest-path src-tauri/Cargo.toml --lib -- -D warnings",
+      "status": "PASS",
+      "exit_code": 0,
+      "elapsed_s": 1.43
+    }
+  ],
+  "final_result": "PASS",
+  "test_counts": {
+    "core": 294,
+    "desktop": 33,
+    "new_core": 1,
+    "new_desktop": 9,
+    "new_desktop_child_harness_included": 1
+  },
+  "historical_failures": [
+    {
+      "result": "FAIL",
+      "file": "checks/initial-first-check-failed.log",
+      "resolution": "correct objc2 method types and window handle tuple"
+    },
+    {
+      "result": "FAIL",
+      "file": "checks/initial-test2-failed.log",
+      "resolution": "short task test roots satisfy macOS Unix socket path limit"
+    },
+    {
+      "result": "FAIL",
+      "file": "checks/legacy-clippy.log",
+      "resolution": "existing missing legacy packaging resource; separate resource-override clippy PASS"
+    }
+  ],
+  "environment": {
+    "MACOSX_DEPLOYMENT_TARGET": "15.0",
+    "CARGO_NET_OFFLINE": "true",
+    "command_timeout_s": 600
+  },
+  "GUI_and_native": "PASS; see interaction-results.json",
+  "review": "author self-review; Host Review remains separate",
+  "quit_fix_commands": [
+    {
+      "name": "desktop-check",
+      "command": "cargo check -p veyra-desktop",
+      "status": "PASS",
+      "exit_code": 0,
+      "elapsed_s": 1.16
+    },
+    {
+      "name": "desktop-build",
+      "command": "cargo build -p veyra-desktop",
+      "status": "PASS",
+      "exit_code": 0,
+      "elapsed_s": 1.1
+    },
+    {
+      "name": "desktop-test",
+      "command": "cargo test -p veyra-desktop -- --test-threads=1",
+      "status": "PASS",
+      "exit_code": 0,
+      "elapsed_s": 5.9
+    },
+    {
+      "name": "desktop-clippy",
+      "command": "cargo clippy -p veyra-desktop --all-targets -- -D warnings",
+      "status": "PASS",
+      "exit_code": 0,
+      "elapsed_s": 0.88
+    },
+    {
+      "name": "fmt",
+      "command": "cargo fmt --all -- --check",
+      "status": "PASS",
+      "exit_code": 0,
+      "elapsed_s": 0.34
+    },
+    {
+      "name": "workspace-check",
+      "command": "cargo check --workspace --locked",
+      "status": "PASS",
+      "exit_code": 0,
+      "elapsed_s": 0.93
+    }
+  ],
+  "instrumentation_final_commands": [
+    {
+      "name": "desktop-check",
+      "command": "cargo check -p veyra-desktop",
+      "status": "PASS",
+      "exit_code": 0,
+      "elapsed_s": 0.41
+    },
+    {
+      "name": "desktop-build",
+      "command": "cargo build -p veyra-desktop",
+      "status": "PASS",
+      "exit_code": 0,
+      "elapsed_s": 1.48
+    },
+    {
+      "name": "desktop-test",
+      "command": "cargo test -p veyra-desktop -- --test-threads=1",
+      "status": "PASS",
+      "exit_code": 0,
+      "elapsed_s": 5.44
+    },
+    {
+      "name": "desktop-test-parallel",
+      "command": "cargo test -p veyra-desktop",
+      "status": "PASS",
+      "exit_code": 0,
+      "elapsed_s": 1.26
+    },
+    {
+      "name": "desktop-clippy",
+      "command": "cargo clippy -p veyra-desktop --all-targets -- -D warnings",
+      "status": "PASS",
+      "exit_code": 0,
+      "elapsed_s": 0.62
+    },
+    {
+      "name": "fmt",
+      "command": "cargo fmt --all -- --check",
+      "status": "PASS",
+      "exit_code": 0,
+      "elapsed_s": 0.34
+    },
+    {
+      "name": "workspace-check",
+      "command": "cargo check --workspace --locked",
+      "status": "PASS",
+      "exit_code": 0,
+      "elapsed_s": 0.52
+    }
+  ],
+  "task_status": "DONE",
+  "normal_quit_initial_failure": {
+    "result": "FAIL",
+    "reason": "native termination did not unwind Rust main; socket remained",
+    "resolution": "on_app_quit cleanup; actual normal exit now socket absent and OS lock available"
+  },
+  "new_tests_protect": "private state/backup including stale temp; Foundation namespace/layout; actual one constructor, Activate, peer UID, busy/stale/crash/quit FD lifetime; opened-FD input/image bound and atomic save; URL whitelist/cancel",
+  "desktop_default_parallel_tests": 33,
+  "documentation_checks": {
+    "68_card_DAG": "PASS",
+    "READY": [
+      "OBG-P1-06"
+    ],
+    "JSON_files": 15,
+    "PNG_hashes": 5,
+    "privacy": "PASS",
+    "diff_check": "PASS",
+    "cleanup": "PASS"
+  },
+  "host_review_revision": {
+    "date": "2026-10-04",
+    "scope": "Only user-requested three Host Review fixes on existing dirty P1-05 worktree; no P1-06 implementation or commit/push",
+    "environment": {
+      "CARGO_NET_OFFLINE": "true",
+      "MACOSX_DEPLOYMENT_TARGET": "15.0",
+      "command_timeout_s": 600
+    },
+    "commands": [
+      {
+        "name": "desktop-test",
+        "command": "cargo test -p veyra-desktop",
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_s": 3.83,
+        "log": "checks/host-review-desktop-test.log",
+        "test_results": [
+          {
+            "result": "ok",
+            "passed": 36,
+            "failed": 0,
+            "ignored": 0
+          }
+        ]
+      },
+      {
+        "name": "core-test",
+        "command": "cargo test -p veyra-core --lib -- --test-threads=1",
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_s": 10.85,
+        "log": "checks/host-review-core-test.log",
+        "test_results": [
+          {
+            "result": "ok",
+            "passed": 294,
+            "failed": 0,
+            "ignored": 0
+          }
+        ]
+      },
+      {
+        "name": "desktop-check",
+        "command": "cargo check -p veyra-desktop",
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_s": 3.4,
+        "log": "checks/host-review-desktop-check.log"
+      },
+      {
+        "name": "core-check",
+        "command": "cargo check -p veyra-core",
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_s": 1.16,
+        "log": "checks/host-review-core-check.log"
+      },
+      {
+        "name": "fmt",
+        "command": "cargo fmt --all -- --check",
+        "status": "FAIL",
+        "exit_code": 1,
+        "elapsed_s": 0.4,
+        "log": "checks/host-review-fmt.log"
+      },
+      {
+        "name": "desktop-clippy",
+        "command": "cargo clippy -p veyra-desktop --all-targets -- -D warnings",
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_s": 1.48,
+        "log": "checks/host-review-desktop-clippy.log"
+      },
+      {
+        "name": "core-clippy",
+        "command": "cargo clippy -p veyra-core --lib -- -D warnings",
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_s": 0.84,
+        "log": "checks/host-review-core-clippy.log"
+      },
+      {
+        "name": "workspace-check",
+        "command": "TAURI_CONFIG='{\"bundle\":{\"resources\":[]}}' cargo check --workspace --locked",
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_s": 19.69,
+        "log": "checks/host-review-workspace-check.log"
+      },
+      {
+        "name": "fmt-final",
+        "command": "cargo fmt --all -- --check",
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_s": 0.34,
+        "log": "checks/host-review-fmt-final.log"
+      },
+      {
+        "name": "legacy-clippy",
+        "command": "TAURI_CONFIG='{\"bundle\":{\"resources\":[]}}' cargo clippy --manifest-path src-tauri/Cargo.toml --lib -- -D warnings",
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_s": 6.35,
+        "log": "checks/host-review-legacy-clippy.log"
+      },
+      {
+        "name": "fmt-comment-final",
+        "command": "cargo fmt --all -- --check",
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_s": 0.31,
+        "log": "checks/host-review-fmt-comment-final.log"
+      },
+      {
+        "name": "diff-check-final",
+        "command": "git diff --check",
+        "status": "PASS",
+        "exit_code": 0,
+        "elapsed_s": 0.02,
+        "log": "checks/host-review-diff-check-final.log"
+      }
+    ],
+    "test_counts": {
+      "core": 294,
+      "desktop": 36,
+      "new_desktop_regressions": 3,
+      "failed": 0,
+      "ignored": 0
+    },
+    "regression_before": [
+      {
+        "command": "cargo test -p veyra-desktop preview_repairs_world_readable -- --nocapture",
+        "status": "FAIL",
+        "exit_code": 101,
+        "tests": 2,
+        "reason": "Both caches remained 0644 instead of 0600",
+        "log": "checks/host-review-preview-before.log"
+      },
+      {
+        "command": "cargo test -p veyra-desktop live_socket_without_veyra_lock -- --nocapture",
+        "status": "FAIL",
+        "exit_code": 101,
+        "tests": 1,
+        "reason": "Live uncooperative listener was unlinked/taken over",
+        "log": "checks/host-review-live-socket-before.log"
+      }
+    ],
+    "fixes": [
+      "Core atomic_replace returns rename result directly; retains explicit 0600 opened-temp permissions; no post-publication parent fsync or new durability error model",
+      "Preview explicitly chmods opened stale temp to 0600 before write; chmods existing final cache before reuse; preserves bytes/inode and assets 0700",
+      "Primary checks same-UID socket before unlink; only ConnectionRefused permits stale cleanup; live or ambiguous connect result returns InstanceBusyUnconfirmed; Activate/ACK unchanged"
+    ],
+    "existing_regressions": "PASS: Core private state/backup/stale temp and business atomic failure tests; Desktop stale socket, SIGKILL lock release and normal primary/secondary Activate",
+    "clipboard_scope": "In-memory snapshot of materializable item/type payloads; capture/materialization/copy failure leaves original pasteboard unchanged; no universal promise/provider representation guarantee",
+    "review": "Implementation author scoped self-review of requested Host Review revisions; not a new independent Host Review",
+    "GUI_and_native_rerun": "NOT_RUN in this revision; prior evidence retained under prior source/binary identity",
+    "cleanup": "3 exact regression-before failed fixture roots removed; successful suites clean their fixtures and reap owned child; no GUI started",
+    "task_status": "P1-05 DONE retained; P1-06 READY/unstarted; task counts/dependencies unchanged",
+    "public_requests": "NOT_PERFORMED",
+    "sing_box_spawned": false,
+    "system_proxy_operations": "NOT_PERFORMED",
+    "TUN_operations": "NOT_PERFORMED",
+    "limitations": [
+      "No new directory durability guarantee; P1-02 rename success/failure semantics retained",
+      "Existing parent-component/source-inode TOCTOU limits retained",
+      "macOS 15 real-device and new GUI acceptance NOT_RUN; local checks do not substitute for release/platform acceptance",
+      "TAURI_CONFIG resource override proves compile/lint only; legacy packaging resource gap retained",
+      "Existing block 0.1.6 future-incompatibility warning retained"
+    ],
+    "final_source_followup": "Comments only for live AGENTS.md Chinese-comment rule; no behavior change after tests; final fmt/diff rechecked"
+  }
+}

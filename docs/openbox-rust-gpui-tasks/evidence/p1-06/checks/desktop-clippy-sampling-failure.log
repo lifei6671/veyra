@@ -1,0 +1,22 @@
+    Checking veyra-desktop v0.1.0 (<repo>/crates/veyra-desktop)
+error: this let-binding has unit value
+  --> crates/veyra-desktop/src/desktop_lifecycle.rs:49:13
+   |
+49 | /             let _ = cx.update(|_| {
+50 | |                 eprintln!("visibility after {intent:?}");
+51 | |                 crate::platform::macos::log_window_visibility();
+52 | |             });
+   | |_______________^
+   |
+   = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#let_unit_value
+   = note: `-D clippy::let-unit-value` implied by `-D warnings`
+   = help: to override `-D warnings` add `#[allow(clippy::let_unit_value)]`
+help: omit the `let` binding
+   |
+49 -             let _ = cx.update(|_| {
+49 +             cx.update(|_| {
+   |
+
+error: could not compile `veyra-desktop` (bin "veyra-desktop") due to 1 previous error
+warning: build failed, waiting for other jobs to finish...
+error: could not compile `veyra-desktop` (bin "veyra-desktop" test) due to 1 previous error

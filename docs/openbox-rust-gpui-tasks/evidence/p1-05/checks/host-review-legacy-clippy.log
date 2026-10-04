@@ -1,0 +1,18 @@
+    Checking objc2-core-foundation v0.3.2
+    Checking hyper-rustls v0.27.9
+    Checking reqwest v0.12.28
+    Checking objc2-foundation v0.3.2
+    Checking objc2-core-graphics v0.3.2
+    Checking veyra-core v0.1.0 (<repo>/crates/veyra-core)
+    Checking objc2-app-kit v0.3.2
+    Checking objc2-web-kit v0.3.2
+    Checking tao v0.35.3
+    Checking muda v0.19.3
+    Checking window-vibrancy v0.6.0
+    Checking tray-icon v0.24.2
+    Checking tauri-runtime v2.11.3
+    Checking wry v0.55.1
+    Checking tauri-runtime-wry v2.11.4
+    Checking tauri v2.11.5
+    Checking veyra v0.1.0 (<repo>/src-tauri)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 6.28s

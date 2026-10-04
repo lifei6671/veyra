@@ -1,0 +1,37 @@
+[
+  {
+    "launch": 1,
+    "exit": 0,
+    "stderr": "product=com.lifei6671.veyra namespace=com.lifei6671.veyra.gpui-preview\nrole=secondary Activate acknowledged; writer_created_count=0\n",
+    "primary_count": 1,
+    "state_unchanged": true
+  },
+  {
+    "launch": 2,
+    "exit": 0,
+    "stderr": "product=com.lifei6671.veyra namespace=com.lifei6671.veyra.gpui-preview\nrole=secondary Activate acknowledged; writer_created_count=0\n",
+    "primary_count": 1,
+    "state_unchanged": true
+  },
+  {
+    "launch": 3,
+    "exit": 0,
+    "stderr": "product=com.lifei6671.veyra namespace=com.lifei6671.veyra.gpui-preview\nrole=secondary Activate acknowledged; writer_created_count=0\n",
+    "primary_count": 1,
+    "state_unchanged": true
+  },
+  {
+    "launch": 4,
+    "exit": 0,
+    "stderr": "product=com.lifei6671.veyra namespace=com.lifei6671.veyra.gpui-preview\nrole=secondary Activate acknowledged; writer_created_count=0\n",
+    "primary_count": 1,
+    "state_unchanged": true
+  },
+  {
+    "launch": 5,
+    "exit": 0,
+    "stderr": "product=com.lifei6671.veyra namespace=com.lifei6671.veyra.gpui-preview\nrole=secondary Activate acknowledged; writer_created_count=0\n",
+    "primary_count": 1,
+    "state_unchanged": true
+  }
+]

@@ -1,0 +1,58 @@
+    Checking objc2 v0.6.4
+   Compiling ring v0.17.14
+    Checking tower-http v0.6.11
+    Checking objc2-core-foundation v0.3.2
+    Checking block2 v0.6.2
+    Checking dispatch2 v0.3.1
+    Checking objc2-foundation v0.3.2
+    Checking objc2-core-video v0.3.2
+    Checking objc2-core-graphics v0.3.2
+    Checking objc2-core-text v0.3.2
+    Checking gpui-pre v0.3.7
+    Checking objc2-core-media v0.3.2
+   Compiling rustls v0.23.43
+    Checking rustls-webpki v0.103.15
+    Checking tokio-rustls v0.26.4
+    Checking hyper-rustls v0.27.9
+    Checking reqwest v0.12.28
+    Checking veyra-core v0.1.0 (<repo>/crates/veyra-core)
+    Checking gpui-pre-apple v0.3.7
+    Checking gpui-kit-assets v0.7.0
+    Checking objc2-quartz-core v0.3.2
+    Checking objc2-cloud-kit v0.3.2
+    Checking objc2-core-image v0.3.2
+    Checking objc2-core-data v0.3.2
+    Checking objc2-core-location v0.3.2
+    Checking objc2-screen-capture-kit v0.3.2
+    Checking objc2-user-notifications v0.3.2
+    Checking objc2-app-kit v0.3.2
+    Checking gpui-pre-macos v0.3.7
+    Checking gpui-base v0.7.0
+    Checking muda v0.19.3
+    Checking tray-icon v0.24.2
+    Checking gpui-pre-platform v0.3.7
+    Checking gpui-component v0.7.0
+    Checking gpui-kit v0.7.0
+    Checking veyra-desktop v0.1.0 (<repo>/crates/veyra-desktop)
+error[E0308]: mismatched types
+   --> crates/veyra-desktop/src/app.rs:506:27
+    |
+506 |         self.tray.project(self.bridge.snapshot.as_ref(), None);
+    |                   ------- ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ expected `Option<&AppState>`, found `Option<&Box<AppState>>`
+    |                   |
+    |                   arguments to this method are incorrect
+    |
+    = note: expected enum `Option<&AppState>`
+               found enum `Option<&std::boxed::Box<AppState>>`
+note: method defined here
+   --> crates/veyra-desktop/src/tray.rs:83:12
+    |
+ 83 |     pub fn project(&self, state: Option<&AppState>, runtime: Option<&RuntimeSnapshot>) {
+    |            ^^^^^^^        ------------------------
+help: try using `.map(|v| &**v)` to convert `std::option::Option<&std::boxed::Box<veyra_core::domain::AppState>>` to `std::option::Option<&veyra_core::domain::AppState>`
+    |
+506 |         self.tray.project(self.bridge.snapshot.as_ref().map(|v| &**v), None);
+    |                                                        ++++++++++++++
+
+For more information about this error, try `rustc --explain E0308`.
+error: could not compile `veyra-desktop` (bin "veyra-desktop") due to 1 previous error

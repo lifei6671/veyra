@@ -1,0 +1,153 @@
+{
+  "task": "OBG-P1-06",
+  "head": "f9adda4ebe8a836a2f1113747cb672ea8b834c15",
+  "rust": "1.99.0",
+  "macos": "27.0 (26A428)",
+  "arch": "arm64",
+  "deployment_target": "15.0",
+  "offline": true,
+  "desktop_tests": 41,
+  "core_tests": 294,
+  "checks": [
+    {
+      "name": "core-test",
+      "command": [
+        "cargo",
+        "test",
+        "-p",
+        "veyra-core",
+        "--lib",
+        "--",
+        "--test-threads=1"
+      ],
+      "exit": 0,
+      "seconds": 9.79
+    },
+    {
+      "name": "desktop-check",
+      "command": [
+        "cargo",
+        "check",
+        "-p",
+        "veyra-desktop"
+      ],
+      "exit": 0,
+      "seconds": 1.29
+    },
+    {
+      "name": "core-check",
+      "command": [
+        "cargo",
+        "check",
+        "-p",
+        "veyra-core"
+      ],
+      "exit": 0,
+      "seconds": 0.95
+    },
+    {
+      "name": "desktop-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "-p",
+        "veyra-desktop",
+        "--all-targets",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0,
+      "seconds": 2.39
+    },
+    {
+      "name": "core-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "-p",
+        "veyra-core",
+        "--lib",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0,
+      "seconds": 0.71
+    },
+    {
+      "name": "fmt",
+      "command": [
+        "cargo",
+        "fmt",
+        "--all",
+        "--",
+        "--check"
+      ],
+      "exit": 0,
+      "seconds": 0.4
+    },
+    {
+      "name": "workspace-check",
+      "command": [
+        "cargo",
+        "check",
+        "--workspace",
+        "--locked"
+      ],
+      "exit": 0,
+      "seconds": 19.57
+    },
+    {
+      "name": "legacy-clippy",
+      "command": [
+        "cargo",
+        "clippy",
+        "--manifest-path",
+        "src-tauri/Cargo.toml",
+        "--lib",
+        "--",
+        "-D",
+        "warnings"
+      ],
+      "exit": 0,
+      "seconds": 6.53
+    },
+    {
+      "name": "legacy-fmt",
+      "command": [
+        "cargo",
+        "fmt",
+        "--manifest-path",
+        "src-tauri/Cargo.toml",
+        "--",
+        "--check"
+      ],
+      "exit": 0,
+      "seconds": 0.19
+    },
+    {
+      "name": "desktop-tree",
+      "command": [
+        "cargo",
+        "tree",
+        "-p",
+        "veyra-desktop"
+      ],
+      "exit": 0,
+      "seconds": 0.29
+    }
+  ],
+  "desktop_test": "PASS",
+  "desktop_build": "PASS",
+  "initial_check": "FAIL E0308 Option<&Box<AppState>> fixed with as_deref; later check PASS",
+  "tauri_override": "compile check only; does not prove package resources complete",
+  "historical_check_failures": [
+    "E0308 Option<&Box<AppState>> -> as_deref, resolved",
+    "clippy let_unit_value in debug sampling -> omit unit binding, resolved"
+  ],
+  "status": "ACCEPTANCE pending native tray interaction",
+  "final_executable_sha256": "ccfdede883a78ed635338a24be9db7676e03a7c7ea78e8e749ea6d8078246b76",
+  "final_results": "41 desktop / 294 core; all specified commands PASS; GUI tray items NOT_RUN",
+  "git_diff_check": "PASS"
+}

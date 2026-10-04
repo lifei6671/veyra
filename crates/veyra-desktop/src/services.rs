@@ -14,6 +14,11 @@ use veyra_core::{
     storage::JsonStateStore,
 };
 
+#[cfg(test)]
+thread_local! {
+    pub(crate) static WRITERS_CREATED: std::cell::Cell<usize> = const { std::cell::Cell::new(0) };
+}
+
 pub struct AppServices {
     pub snapshots: Arc<SnapshotService>,
     // Composition only: P1-03 has no profile or selection write UI.
@@ -31,15 +36,21 @@ impl AppServices {
         root: PathBuf,
     ) -> Result<(Self, UnboundedReceiver<AppEvent>), Box<dyn std::error::Error>> {
         let gate = StateAccessGate::default();
-        let snapshots =
-            SnapshotService::new(JsonStateStore::new(root.join("state.json"))?, gate.clone());
+        let snapshots = SnapshotService::new(
+            JsonStateStore::new(
+                crate::platform::directories::AppDirectories::injected(root.clone()).state(),
+            )?,
+            gate.clone(),
+        );
+        #[cfg(test)]
+        WRITERS_CREATED.set(WRITERS_CREATED.get() + 1);
         let (sender, receiver) = unbounded_channel();
         let services = Self {
             _profiles: Arc::new(ProfileService::new(snapshots.clone())),
             _selections: Arc::new(SelectionService::new(snapshots.clone())),
             preferences: Arc::new(DesktopPreferencesService::new(snapshots.clone())),
             assets: Arc::new(crate::visual_assets::VisualAssetStore::new(
-                root.join("visual-assets"),
+                root.join("assets"),
             )),
             root,
             gate,
@@ -88,6 +99,15 @@ impl AppServices {
             });
             // Deliberately do not replace the UI snapshot: this is a real competing writer.
             let _ = sender.send(AppEvent::ExternalPreferenceWrite { result });
+        });
+    }
+    pub fn save_platform_evidence(&self, path: PathBuf) {
+        let sender = self.sender.clone();
+        self.runtime.spawn_blocking(move || {
+            let result = crate::platform::macos::DialogResult::Selected(path)
+                .save_fixture()
+                .map(|_| ());
+            let _ = sender.send(AppEvent::PlatformSaved { result });
         });
     }
     pub fn save_visual(&self, request: crate::preferences::VisualSave) {

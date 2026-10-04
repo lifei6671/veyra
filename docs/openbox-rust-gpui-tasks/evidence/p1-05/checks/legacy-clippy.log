@@ -1,0 +1,29 @@
+   Compiling veyra v0.1.0 (<workspace>/src-tauri)
+    Checking veyra-core v0.1.0 (<workspace>/crates/veyra-core)
+error: failed to run custom build command for `veyra v0.1.0 (<workspace>/src-tauri)`
+
+Caused by:
+  process didn't exit successfully: `<workspace>/target/debug/build/veyra-289bbab6c2a39cb0/build-script-build` (exit status: 101)
+  --- stdout
+  cargo:rerun-if-env-changed=TAURI_CONFIG
+  cargo:rustc-check-cfg=cfg(desktop)
+  cargo:rustc-cfg=desktop
+  cargo:rustc-check-cfg=cfg(mobile)
+  cargo:rerun-if-changed=<workspace>/src-tauri/tauri.conf.json
+  cargo:rustc-env=TAURI_ANDROID_PACKAGE_NAME_APP_NAME=veyra
+  cargo:rustc-env=TAURI_ANDROID_PACKAGE_NAME_PREFIX=com_lifei6671
+  cargo:rustc-check-cfg=cfg(dev)
+  cargo:rustc-cfg=dev
+  cargo:PERMISSION_FILES_PATH=<workspace>/target/debug/build/veyra-8db8b68ff60ed097/out/app-manifest/__app__-permission-files
+  cargo:rerun-if-changed=permissions
+  cargo:PERMISSION_FILES_PATH=<workspace>/target/debug/build/veyra-8db8b68ff60ed097/out/app-manifest/__app__-permission-files
+  cargo:rerun-if-changed=capabilities
+  cargo:rerun-if-env-changed=REMOVE_UNUSED_COMMANDS
+  cargo:rustc-env=TAURI_ENV_TARGET_TRIPLE=aarch64-apple-darwin
+
+  --- stderr
+
+  thread 'main' (5685956) panicked at src-tauri/build.rs:25:6:
+  failed to build the Tauri application manifest: resource path `binaries/sing-box-1.14.0-windows-amd64/libcronet.dll` doesn't exist
+  note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+warning: build failed, waiting for other jobs to finish...

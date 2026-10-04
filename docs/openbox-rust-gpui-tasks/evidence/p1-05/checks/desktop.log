@@ -1,0 +1,155 @@
+product=com.lifei6671.veyra namespace=com.lifei6671.veyra.gpui-preview
+role=primary lock acquired; control socket listening
+writer_created_count=1
+sandbox_extension_issue_file_to_process failed for <staging>/Veyra P1-05.app: 1 (Operation not permitted)
+logical content 1280x720; scale factor 2
+bridge request=1 generation=0 busy
+bridge request=1 generation=0 Accepted
+navigate settings entity=EntityId(17v1)
+product=com.lifei6671.veyra namespace=com.lifei6671.veyra.gpui-preview
+role=primary lock acquired; control socket listening
+writer_created_count=1
+sandbox_extension_issue_file_to_process failed for <staging>/Veyra P1-05.app: 1 (Operation not permitted)
+logical content 1280x720; scale factor 2
+bridge request=1 generation=0 busy
+bridge request=1 generation=0 Accepted
+navigate settings entity=EntityId(17v1)
+product=com.lifei6671.veyra namespace=com.lifei6671.veyra.gpui-preview
+role=primary lock acquired; control socket listening
+writer_created_count=1
+sandbox_extension_issue_file_to_process failed for <staging>/Veyra P1-05.app: 1 (Operation not permitted)
+logical content 1280x720; scale factor 2
+bridge request=1 generation=0 busy
+bridge request=1 generation=0 Accepted
+navigate settings entity=EntityId(17v1)
+native dialog opened kind=SaveEvidence
+native dialog cancelled kind=SaveEvidence; no side effect
+native dialog opened kind=SaveEvidence
+native dialog accepted kind=SaveEvidence; selected path redacted
+platform export complete result=Ok(())
+navigate proxies entity=EntityId(5v1)
+navigate settings entity=EntityId(17v1)
+clipboard restoration result=Ok(()); contents not logged
+native dialog opened kind=Image
+native dialog accepted kind=Image; selected path redacted
+overlay modal opened; initial focus=input
+overlay dropdown dismissed; modal remains=true
+overlay modal closed; trigger focus returned=true
+bridge request=2 generation=3 busy
+bridge request=2 generation=3 Accepted
+navigate rules entity=EntityId(14v1)
+navigate logs entity=EntityId(11v1)
+navigate connections entity=EntityId(8v1)
+navigate proxies entity=EntityId(5v1)
+navigate overview entity=EntityId(2v1)
+navigate settings entity=EntityId(17v1)
+category routing
+category groups
+category subscriptions
+category panel
+category clients
+category chain
+category share
+category dns
+category backend
+product=com.lifei6671.veyra namespace=com.lifei6671.veyra.gpui-preview
+role=primary lock acquired; control socket listening
+writer_created_count=1
+sandbox_extension_issue_file_to_process failed for <staging>/Veyra P1-05.app: 1 (Operation not permitted)
+logical content 1280x720; scale factor 2
+bridge request=1 generation=0 busy
+bridge request=1 generation=0 Accepted
+Activate accepted activation_count=1 window focus requested
+activation_count=1 primary_front_key=true
+Activate accepted activation_count=2 window focus requested
+activation_count=2 primary_front_key=true
+Activate accepted activation_count=3 window focus requested
+activation_count=3 primary_front_key=true
+Activate accepted activation_count=4 window focus requested
+activation_count=4 primary_front_key=true
+Activate accepted activation_count=5 window focus requested
+activation_count=5 primary_front_key=true
+product=com.lifei6671.veyra namespace=com.lifei6671.veyra.gpui-preview
+role=primary lock acquired; control socket listening
+writer_created_count=1
+sandbox_extension_issue_file_to_process failed for <staging>/Veyra P1-05.app: 1 (Operation not permitted)
+logical content 1280x720; scale factor 2
+bridge request=1 generation=0 busy
+bridge request=1 generation=0 Accepted
+navigate settings entity=EntityId(17v1)
+native dialog opened kind=Image
+native dialog cancelled kind=Image; no side effect
+native dialog opened kind=Image
+native dialog accepted kind=Image; selected path redacted
+asset prepared id=c01faaa734da356d4f3edca7ef818e938a12d367c391e16fd1a11e72d9098993
+visual change generation=1 changes=1
+visual submit generation=1 commits=1 opacity=90 blur=10
+visual completion generation=1 accepted=true result=Ok(())
+native dialog opened kind=Image
+native dialog accepted kind=Image; selected path redacted
+file selection rejected error=FileTooLarge; selected path redacted
+native dialog opened kind=Image
+native dialog accepted kind=Image; selected path redacted
+file selection rejected error=InvalidFile; selected path redacted
+external URL OS handoff result=Ok(()); target=loopback evidence
+shell scroll evidence max=Point { x: 35px, y: 294.5px } bounds=Bounds { origin: Point { x: 270px, y: 87px }, size: Size { 996px × 545.5px } }
+navigate overview entity=EntityId(2v1)
+navigate proxies entity=EntityId(5v1)
+navigate connections entity=EntityId(8v1)
+navigate logs entity=EntityId(11v1)
+navigate rules entity=EntityId(14v1)
+navigate settings entity=EntityId(17v1)
+entity-evidence: 3 PASS: six identities, filter retained, category/draft retained
+bridge request=2 generation=8 busy
+bridge request=3 generation=8 busy
+bridge request=3 generation=8 Accepted
+bridge request=2 generation=8 StaleRequest
+bridge request=4 generation=8 busy
+bridge synthetic instance=A generation=1 OldInstance
+bridge synthetic instance=B generation=2 Accepted
+shell scroll evidence max=Point { x: 35px, y: 294.5px } bounds=Bounds { origin: Point { x: 270px, y: 87px }, size: Size { 996px × 545.5px } }
+navigate overview entity=EntityId(2v1)
+navigate proxies entity=EntityId(5v1)
+navigate connections entity=EntityId(8v1)
+navigate logs entity=EntityId(11v1)
+navigate rules entity=EntityId(14v1)
+navigate settings entity=EntityId(17v1)
+entity-evidence: 3 PASS: six identities, filter retained, category/draft retained
+bridge request=4 generation=8 StaleGeneration
+file selection rejected error=InvalidFile; selected path redacted
+file selection rejected error=InvalidFile; selected path redacted
+file selection rejected error=InvalidFile; selected path redacted
+native dialog opened kind=Image
+native dialog accepted kind=Image; selected path redacted
+file selection rejected error=InvalidFile; selected path redacted
+native dialog opened kind=Image
+native dialog accepted kind=Image; selected path redacted
+file selection rejected error=FileTooLarge; selected path redacted
+product=com.lifei6671.veyra namespace=com.lifei6671.veyra.gpui-preview
+role=primary lock acquired; control socket listening
+writer_created_count=1
+sandbox_extension_issue_file_to_process failed for <staging>/Veyra P1-05.app: 1 (Operation not permitted)
+logical content 1280x720; scale factor 2
+bridge request=1 generation=0 busy
+bridge request=1 generation=0 Accepted
+navigate settings entity=EntityId(17v1)
+navigate proxies entity=EntityId(5v1)
+navigate settings entity=EntityId(17v1)
+clipboard restoration result=Ok(()); contents not logged
+product=com.lifei6671.veyra namespace=com.lifei6671.veyra.gpui-preview
+role=primary lock acquired; control socket listening
+writer_created_count=1
+sandbox_extension_issue_file_to_process failed for <staging>/Veyra P1-05.app: 1 (Operation not permitted)
+logical content 1280x720; scale factor 2
+bridge request=1 generation=0 busy
+bridge request=1 generation=0 Accepted
+Activate accepted activation_count=1 window focus requested
+activation_count=1 primary_front_key=true
+Activate accepted activation_count=2 window focus requested
+activation_count=2 primary_front_key=true
+Activate accepted activation_count=3 window focus requested
+activation_count=3 primary_front_key=true
+Activate accepted activation_count=4 window focus requested
+activation_count=4 primary_front_key=true
+Activate accepted activation_count=5 window focus requested
+activation_count=5 primary_front_key=true

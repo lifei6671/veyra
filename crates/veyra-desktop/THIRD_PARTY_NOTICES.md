@@ -45,3 +45,11 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+## P1-05 macOS adapters
+
+Direct macOS-only dependencies reuse the registry versions already present in the GPUI lock graph: objc2 0.6.4, objc2-foundation 0.3.2, objc2-app-kit 0.3.2, block2 0.6.2 (MIT), libc 0.2 (MIT OR Apache-2.0). Only required Foundation/AppKit features are enabled. Core gains no AppKit/GPUI dependency. NSOpenPanel extension filtering uses the still-supported, deprecated `allowedFileTypes` API; no new UniformTypeIdentifiers crate is fetched. Panels use native asynchronous sheet/completion APIs.
+
+## P1-06 Tray
+
+tray-icon 0.24.2 (MIT OR Apache-2.0), already locked by P0-03, shares the GPUI macOS main loop. The 18px monochrome V tray template is drawn in source by Veyra; no downloaded assets. No additional tao/winit event loop or direct NSStatusItem adapter.

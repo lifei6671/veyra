@@ -1,0 +1,73 @@
+product=com.lifei6671.veyra namespace=com.lifei6671.veyra.gpui-preview
+role=primary lock acquired; control socket listening
+writer_created_count=1
+sandbox_extension_issue_file_to_process failed for <temporary-app>: 1 (Operation not permitted)
+TrayIcon created main_thread=true; Runtime unavailable; start/stop disabled
+logical content 1280x720; scale factor 2
+AppView created entity=EntityId(1v1); pages_created_count=6
+bridge request=1 generation=0 busy
+bridge request=1 generation=0 Accepted
+navigate proxies entity=EntityId(5v1)
+desktop intent=Close effect=Hide
+desktop intent=Activate effect=RevealExisting
+restore existing window=AnyWindowHandle { id: WindowId(1v1), state_type: TypeId(0x4cf30ea886e5b4671b45ece2585e2dcd), root_entity_type_name: "gpui_base::root::Root" }
+Activate accepted activation_count=1 window focus requested
+activation_count=1 primary_front_key=true
+desktop intent=Close effect=Hide
+desktop intent=Activate effect=RevealExisting
+restore existing window=AnyWindowHandle { id: WindowId(1v1), state_type: TypeId(0x4cf30ea886e5b4671b45ece2585e2dcd), root_entity_type_name: "gpui_base::root::Root" }
+Activate accepted activation_count=2 window focus requested
+activation_count=2 primary_front_key=true
+desktop intent=Close effect=Hide
+desktop intent=Activate effect=RevealExisting
+restore existing window=AnyWindowHandle { id: WindowId(1v1), state_type: TypeId(0x4cf30ea886e5b4671b45ece2585e2dcd), root_entity_type_name: "gpui_base::root::Root" }
+Activate accepted activation_count=3 window focus requested
+activation_count=3 primary_front_key=true
+desktop intent=Close effect=Hide
+desktop intent=Activate effect=RevealExisting
+restore existing window=AnyWindowHandle { id: WindowId(1v1), state_type: TypeId(0x4cf30ea886e5b4671b45ece2585e2dcd), root_entity_type_name: "gpui_base::root::Root" }
+Activate accepted activation_count=4 window focus requested
+activation_count=4 primary_front_key=true
+desktop intent=Close effect=Hide
+desktop intent=Activate effect=RevealExisting
+restore existing window=AnyWindowHandle { id: WindowId(1v1), state_type: TypeId(0x4cf30ea886e5b4671b45ece2585e2dcd), root_entity_type_name: "gpui_base::root::Root" }
+Activate accepted activation_count=5 window focus requested
+activation_count=5 primary_front_key=true
+desktop intent=Quit effect=Quit
+quit cleanup: listener stopped; socket removed; flock retained until exit
+TrayIcon released on main thread
+product=com.lifei6671.veyra namespace=com.lifei6671.veyra.gpui-preview
+role=primary lock acquired; control socket listening
+writer_created_count=1
+sandbox_extension_issue_file_to_process failed for <temporary-app>: 1 (Operation not permitted)
+TrayIcon created main_thread=true; Runtime unavailable; start/stop disabled
+logical content 1280x720; scale factor 2
+AppView created entity=EntityId(1v1); pages_created_count=6
+bridge request=1 generation=0 busy
+bridge request=1 generation=0 Accepted
+desktop intent=Close effect=Hide
+native hidden=false window_count=3 active_key=true
+desktop intent=Quit effect=Quit
+quit cleanup: listener stopped; socket removed; flock retained until exit
+TrayIcon released on main thread
+product=com.lifei6671.veyra namespace=com.lifei6671.veyra.gpui-preview
+role=primary lock acquired; control socket listening
+writer_created_count=1
+sandbox_extension_issue_file_to_process failed for <temporary-app>: 1 (Operation not permitted)
+TrayIcon created main_thread=true; Runtime unavailable; start/stop disabled
+logical content 1280x720; scale factor 2
+AppView created entity=EntityId(1v1); pages_created_count=6
+bridge request=1 generation=0 busy
+bridge request=1 generation=0 Accepted
+desktop intent=Close effect=Hide
+visibility after Close
+native hidden=true window_count=3 active_key=false
+desktop intent=Activate effect=RevealExisting
+restore existing window=AnyWindowHandle { id: WindowId(1v1), state_type: TypeId(0x4cf30ea886e5b4671b45ece2585e2dcd), root_entity_type_name: "gpui_base::root::Root" }
+Activate accepted activation_count=1 window focus requested
+activation_count=1 primary_front_key=true
+visibility after Activate
+native hidden=false window_count=3 active_key=true
+desktop intent=Quit effect=Quit
+quit cleanup: listener stopped; socket removed; flock retained until exit
+TrayIcon released on main thread

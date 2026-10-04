@@ -1,0 +1,10 @@
+Diff in <repo>/crates/veyra-desktop/src/visual_assets.rs:79:
+         let directory = self.root.join("cache").join(&id.0);
+         let path = directory.join(format!("fast-{blur}.png"));
+         if path.exists() {
+-            fs::set_permissions(&path, fs::Permissions::from_mode(0o600))
+-                .map_err(|_| failure())?;
++            fs::set_permissions(&path, fs::Permissions::from_mode(0o600)).map_err(|_| failure())?;
+             return Ok(path);
+         }
+         let started = std::time::Instant::now();

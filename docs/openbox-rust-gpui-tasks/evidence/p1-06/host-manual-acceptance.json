@@ -1,0 +1,119 @@
+{
+  "task": "OBG-P1-06",
+  "date": "2026-10-04",
+  "source": "User/Host manual acceptance",
+  "recorded_by": "Codex documentation closeout",
+  "source_detail": "当前用户明确提供的当前 Host 会话人工结果；本次收口未重新操作 GUI 或查看本地托盘截图。",
+  "status": "PASS",
+  "task_status": "DONE",
+  "human_visual": "PASS",
+  "tray_interaction": "PASS",
+  "observations": [
+    {
+      "operation": "观察 macOS 菜单栏",
+      "result": "PASS",
+      "actual": "用户看到 Veyra “V” 托盘图标。"
+    },
+    {
+      "operation": "用户真实展开托盘菜单",
+      "result": "PASS",
+      "actual": "Host 会话已查看用户菜单截图。",
+      "menu_items": [
+        {
+          "label": "显示窗口"
+        },
+        {
+          "label": "内核：未接入（当前不可用）"
+        },
+        {
+          "label": "启动（Runtime 未接入）",
+          "enabled": false,
+          "appearance": "灰色禁用"
+        },
+        {
+          "label": "停止（Runtime 未接入）",
+          "enabled": false,
+          "appearance": "灰色禁用"
+        },
+        {
+          "label": "退出"
+        }
+      ]
+    },
+    {
+      "operation": "连续三轮“关闭窗口 → 托盘‘显示窗口’恢复”",
+      "rounds": 3,
+      "result": "PASS",
+      "actual": "三轮均正常，无异常。"
+    },
+    {
+      "operation": "最终通过托盘菜单“退出”",
+      "result": "PASS",
+      "actual": "正常，无异常。",
+      "programmatic_post_check": "NOT_RUN"
+    }
+  ],
+  "screenshots": {
+    "count": 2,
+    "source": "用户上传到当前 Host 会话",
+    "host_viewed": true,
+    "copied_into_repository": false,
+    "evidence": "Host 会话已查看用户截图，未复制入仓库；以用户确认作为 Human Acceptance Evidence。",
+    "local_files_or_sha": "未生成本地图片文件、路径或 SHA。"
+  },
+  "prior_host_verification": {
+    "source": "当前用户确认 Host 在本轮此前独立复核实现并复跑自动验证",
+    "independent_implementation_review": "COMPLETED per User/Host report",
+    "desktop_tests": {
+      "passed": 41,
+      "exit_code": 0
+    },
+    "core_tests": {
+      "passed": 294,
+      "exit_code": 0
+    },
+    "checks": [
+      {
+        "name": "desktop/core check",
+        "exit_code": 0
+      },
+      {
+        "name": "clippy",
+        "exit_code": 0
+      },
+      {
+        "name": "fmt",
+        "exit_code": 0
+      },
+      {
+        "name": "resource override workspace locked check",
+        "exit_code": 0
+      },
+      {
+        "name": "旧 Tauri lib clippy",
+        "exit_code": 0
+      },
+      {
+        "name": "git diff --check",
+        "exit_code": 0
+      }
+    ],
+    "rerun_in_documentation_closeout": false
+  },
+  "cleanup_evidence": {
+    "prior_window_quit": "cleanup.json 与 interaction-results.json 中窗口 Quit 的程序化结果原样保留，属于此前操作。",
+    "current_tray_quit": "仅用户报告正常退出、无异常。",
+    "new_programmatic_post_check": "NOT_RUN；不追加进程=0、socket absent、flock reacquired 断言。"
+  },
+  "acceptance_basis": {
+    "restore_existing_window": "本次用户三轮托盘恢复 PASS；同窗口/聚焦/实例及 writer 归属继续引用此前程序化证据，不扩写人工操作。",
+    "menu_state": "既有 Core 只读投影证据及本次用户菜单观察 PASS。",
+    "quit_and_visual": "既有关闭只隐藏/统一退出入口/窗口 Quit 清理证据，加本次真实 tray Quit 与 Host 截图人工确认 PASS。"
+  },
+  "historical_limits_preserved": [
+    "此前 AX 未提供 status item，三项托盘实机操作当时 NOT_RUN。",
+    "SystemUIServer 超时 -10005；Ctrl+F8 未产生可观察变化。",
+    "此前本机菜单截图缺失；本次截图仅在 Host 会话。"
+  ],
+  "closeout_scope": "只更新证据/任务状态与必要文档；产品功能源码和 AGENTS.md 既有修改保持不动；未 commit/push，未启动 P1-07/P2，未访问公网，未启动 sing-box/System Proxy/TUN。"
+}

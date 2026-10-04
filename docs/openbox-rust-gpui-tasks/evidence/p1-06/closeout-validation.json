@@ -1,0 +1,79 @@
+{
+  "task": "OBG-P1-06",
+  "date": "2026-10-04",
+  "scope": "documentation closeout only",
+  "result": "PASS",
+  "modified_json_parse": {
+    "result": "PASS",
+    "files": [
+      "host-manual-acceptance.json",
+      "interaction-results.json",
+      "dag.json",
+      "closeout-validation.json"
+    ]
+  },
+  "dag": {
+    "result": "PASS",
+    "tasks": 68,
+    "macos_tasks": 61,
+    "windows_tasks": 7,
+    "counts": {
+      "DONE": 12,
+      "ACCEPTANCE": 1,
+      "TODO": 47,
+      "READY": 1,
+      "DEFERRED": 7
+    },
+    "ready": [
+      "P1-07"
+    ],
+    "cards_match_table": true,
+    "acyclic": true,
+    "dependencies_exist": true
+  },
+  "p1_06_acceptance_checked": 3,
+  "session_counts_and_ready": "PASS",
+  "local_markdown_links_anchors": {
+    "result": "PASS",
+    "files": [
+      "docs/openbox-rust-gpui-tasks/IMPLEMENTATION_PHASES.md",
+      "docs/openbox-rust-gpui-tasks/SESSION.md",
+      "docs/openbox-rust-gpui-tasks/P1-core-and-shell.md",
+      "docs/openbox-rust-gpui-tasks/evidence/p1-06/README.md"
+    ],
+    "links": 161,
+    "anchors": 91
+  },
+  "existing_coverage_tables": {
+    "api": 77,
+    "scenarios": 19,
+    "result": "PASS"
+  },
+  "protected_existing_dirty_files": {
+    "result": "PASS",
+    "files": 19
+  },
+  "cleanup_json": "UNCHANGED: prior window Quit programmatic evidence only",
+  "git_diff_check": {
+    "exit_code": 0
+  },
+  "changed_documentation_files": [
+    "docs/openbox-rust-gpui-tasks/IMPLEMENTATION_PHASES.md",
+    "docs/openbox-rust-gpui-tasks/P1-core-and-shell.md",
+    "docs/openbox-rust-gpui-tasks/SESSION.md",
+    "docs/openbox-rust-gpui-tasks/evidence/p1-06/README.md",
+    "docs/openbox-rust-gpui-tasks/evidence/p1-06/closeout-validation.json",
+    "docs/openbox-rust-gpui-tasks/evidence/p1-06/dag.json",
+    "docs/openbox-rust-gpui-tasks/evidence/p1-06/host-manual-acceptance.json",
+    "docs/openbox-rust-gpui-tasks/evidence/p1-06/interaction-results.json"
+  ],
+  "validation_history": "初次临时校验将交付历史标题识别为任务卡而失败；改为按主表任务卡锚点读取后通过，未为校验修改任务依赖或历史交付内容。",
+  "not_run": [
+    "product tests/build/check/clippy/fmt reruns",
+    "GUI or new tray Quit post-check",
+    "P1-07/P2",
+    "public network",
+    "sing-box/System Proxy/TUN",
+    "commit/push"
+  ]
+}

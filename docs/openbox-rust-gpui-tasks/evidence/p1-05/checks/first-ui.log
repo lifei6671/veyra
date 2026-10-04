@@ -1,0 +1,27 @@
+product=com.lifei6671.veyra namespace=com.lifei6671.veyra.gpui-preview
+role=primary lock acquired; control socket listening
+writer_created_count=1
+sandbox_extension_issue_file_to_process failed for <staging>/Veyra P1-05.app: 1 (Operation not permitted)
+logical content 1280x720; scale factor 2
+bridge request=1 generation=0 busy
+bridge request=1 generation=0 Accepted
+Activate accepted activation_count=1 window focus requested
+activation_count=1 primary_front_key=true
+Activate accepted activation_count=2 window focus requested
+activation_count=2 primary_front_key=true
+Activate accepted activation_count=3 window focus requested
+activation_count=3 primary_front_key=true
+Activate accepted activation_count=4 window focus requested
+activation_count=4 primary_front_key=true
+Activate accepted activation_count=5 window focus requested
+activation_count=5 primary_front_key=true
+navigate settings entity=EntityId(17v1)
+native dialog opened kind=Image
+native dialog cancelled kind=Image; no side effect
+native dialog opened kind=Image
+native dialog accepted kind=Image; selected path redacted
+asset prepared id=c01faaa734da356d4f3edca7ef818e938a12d367c391e16fd1a11e72d9098993
+visual change generation=1 changes=1
+visual submit generation=1 commits=1 opacity=90 blur=10
+background image blur=10 cache prepared duration_ms=173
+visual completion generation=1 accepted=true result=Ok(())

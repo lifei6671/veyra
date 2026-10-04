@@ -1,0 +1,11 @@
+{
+  "status": "PASS",
+  "API": "NSWorkspace.openURL",
+  "target": "http://127.0.0.1:9/veyra-p1-05",
+  "OS_handoff_result": "Ok(())",
+  "browser_tab_confirmed": "Edge exact target URL",
+  "browser_result": "ERR_UNSAFE_PORT; deliberately not bypassed; page loading not part of acceptance",
+  "public_request": false,
+  "illegal_schemes": "file/javascript/data/custom rejected by unit tests",
+  "test_tab_closed": true
+}

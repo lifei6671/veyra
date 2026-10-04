@@ -1,0 +1,16 @@
+{
+  "desktop_processes": 0,
+  "test_or_singbox_processes": 0,
+  "socket_absent": true,
+  "flock_reacquired": true,
+  "exit_trigger": "window explicit Quit; tray Quit NOT_RUN",
+  "listener_stopped": true,
+  "tray_released": true,
+  "system_proxy": "NOT_MODIFIED",
+  "TUN": "NOT_MODIFIED",
+  "network_requests": "NONE",
+  "temporary_roots_removed": [
+    "<p1-06-state>",
+    "<p1-06-staging>"
+  ]
+}

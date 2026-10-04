@@ -1,0 +1,94 @@
+{
+  "main_window_logical_content": [
+    1280,
+    720
+  ],
+  "main_window_physical": [
+    2560,
+    1506
+  ],
+  "titlebar_physical_height": 66,
+  "DPR": 2,
+  "screenshots": [
+    {
+      "path": "visual/open-panel.png",
+      "physical_size": [
+        2142,
+        896
+      ],
+      "scale_factor": 2,
+      "logical_size": [
+        1071.0,
+        448.0
+      ],
+      "titlebar_included": false,
+      "target": "native sheet target",
+      "sha256": "f9cc16b614f1f82425f829b5b630cbe803b81c8f0b19ef3613b63e2ef2ddb74b",
+      "processing": "JPEG screenshot converted to PNG only; no crop/resize/redaction/pixel edit"
+    },
+    {
+      "path": "visual/save-panel.png",
+      "physical_size": [
+        1760,
+        896
+      ],
+      "scale_factor": 2,
+      "logical_size": [
+        880.0,
+        448.0
+      ],
+      "titlebar_included": false,
+      "target": "native sheet target",
+      "sha256": "54b718961a13db9730413c04cc8aca048d866be0979758d0478b58f48a304b91",
+      "processing": "JPEG screenshot converted to PNG only; no crop/resize/redaction/pixel edit"
+    },
+    {
+      "path": "visual/background-picked.png",
+      "physical_size": [
+        2560,
+        1506
+      ],
+      "scale_factor": 2,
+      "logical_size": [
+        1280,
+        720
+      ],
+      "titlebar_included": true,
+      "target": "entire main window",
+      "sha256": "0fd64e1cf38c0cc40db9ef9d68b0c3628cdf828885eeed0e844788a2aa4558f9",
+      "processing": "JPEG screenshot converted to PNG only; no crop/resize/redaction/pixel edit"
+    },
+    {
+      "path": "visual/secondary-activated-primary.png",
+      "physical_size": [
+        2560,
+        1506
+      ],
+      "scale_factor": 2,
+      "logical_size": [
+        1280,
+        720
+      ],
+      "titlebar_included": true,
+      "target": "entire main window",
+      "sha256": "ccee68a257d7b59c62c16b0b0c07899e5c04b5727e13abbcc7963b0c396f9619",
+      "processing": "JPEG screenshot converted to PNG only; no crop/resize/redaction/pixel edit"
+    },
+    {
+      "path": "visual/platform-evidence.png",
+      "physical_size": [
+        2560,
+        1506
+      ],
+      "scale_factor": 2,
+      "logical_size": [
+        1280,
+        720
+      ],
+      "titlebar_included": true,
+      "target": "entire main window",
+      "sha256": "53047b9408b6d62ddada250e7b6c3be91d0c6c8715cc0b9088f3a14b718f4381",
+      "processing": "JPEG screenshot converted to PNG only; no crop/resize/redaction/pixel edit"
+    }
+  ]
+}

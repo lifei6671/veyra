@@ -1,0 +1,78 @@
+{
+  "task": "OBG-P1-06",
+  "window_close": "PASS: native hidden=true; executable remains alive",
+  "window_handle": "WindowId(1v1) across 5 secondary activations",
+  "page_entity": "EntityId(5v1) Proxies; filter p1-06-retained",
+  "foreground_key": "PASS: all 5 primary_front_key=true",
+  "secondary_launches": 5,
+  "secondary_exit_codes": [
+    0,
+    0,
+    0,
+    0,
+    0
+  ],
+  "secondary_writers_created": [
+    0,
+    0,
+    0,
+    0,
+    0
+  ],
+  "primary_count": [
+    1,
+    1,
+    1,
+    1,
+    1
+  ],
+  "state_unchanged": true,
+  "tray_show_three_rounds": "PASS: User/Host manual acceptance 2026-10-04; 连续三轮关闭窗口 → 托盘显示窗口恢复，均正常、无异常",
+  "tray_menu_visual": "PASS: 用户看到 V 图标并真实展开菜单；Host 已查看两张用户托盘截图，未复制入仓库",
+  "runtime_menu": "PASS: User/Host 菜单截图显示内核：未接入（当前不可用）；typed projection tests 的此前 PASS 保留",
+  "start_stop": "PASS: User/Host 菜单截图显示启动（Runtime 未接入）/停止（Runtime 未接入）均灰色禁用；未声称点击或启动 Runtime",
+  "window_quit": {
+    "trigger": "window Quit button",
+    "process_count": 0,
+    "socket_absent": true,
+    "flock_reacquired": true
+  },
+  "tray_quit": "PASS: User/Host manual acceptance; 用户最终通过托盘菜单退出，正常、无异常；无新增程序化 post-check",
+  "limitations": [
+    "native screenshot captures hidden offscreen window; not visibility evidence",
+    "SystemUIServer access timeout -10005",
+    "Ctrl+F8 produced no observable AX change",
+    "initial synchronous visibility hidden=false sampled during AppKit transition; later single-shot 100ms after Close hidden=true",
+    "NSApplication window_count=3 includes framework windows; app composition creates only one main WindowId, not three main windows"
+  ],
+  "human_response": "received: 当前用户明确提供当前 Host 会话的人工验收结果，日期 2026-10-04",
+  "final_binary_close_sampling": "native hidden=true window_count=3 active_key=false",
+  "final_binary_activate_sampling": "native hidden=false window_count=3 active_key=true",
+  "final_binary_explicit_quit": {
+    "desktop_processes": 0,
+    "test_or_singbox_processes": 0,
+    "socket_absent": true,
+    "flock_reacquired": true,
+    "exit_trigger": "window explicit Quit; tray Quit NOT_RUN",
+    "listener_stopped": true,
+    "tray_released": true,
+    "system_proxy": "NOT_MODIFIED",
+    "TUN": "NOT_MODIFIED",
+    "network_requests": "NONE",
+    "temporary_roots_removed": [
+      "<p1-06-state>",
+      "<p1-06-staging>"
+    ]
+  },
+  "gui_phases": "A: 5 secondary/restored filter/UI Quit; B: synchronous visibility diagnostic; C: final single-shot 100ms sampling/Activate/UI Quit",
+  "historical_tray_acceptance_before_host_response": {
+    "tray_show_three_rounds": "NOT_RUN: native AX does not expose status item",
+    "tray_menu_visual": "NOT_RUN: pending human opened menu",
+    "runtime_menu": "typed projection tests PASS; actual menu observation NOT_RUN",
+    "start_stop": "disabled by implementation; real menu interaction NOT_RUN",
+    "tray_quit": "NOT_RUN",
+    "human_response": "not received in this run"
+  },
+  "host_manual_acceptance_evidence": "host-manual-acceptance.json",
+  "programmatic_cleanup_scope": "window_quit 与 final_binary_explicit_quit 为此前窗口 Quit 程序化结果；其 tray Quit NOT_RUN 属于历史阶段，不能作为本次托盘退出后的检查。cleanup.json 未改。"
+}

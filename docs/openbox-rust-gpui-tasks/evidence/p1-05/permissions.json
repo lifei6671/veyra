@@ -1,0 +1,113 @@
+{
+  "status": "PASS",
+  "inspection": "lstat/metadata of this task injected root only; uid not serialized",
+  "objects": [
+    {
+      "path": "<preview-support>",
+      "mode": "0700",
+      "owned_by_current_user": true,
+      "identity_token": "40fffe7f39a26844",
+      "object_type": "directory"
+    },
+    {
+      "path": "<preview-support>/state.json",
+      "mode": "0600",
+      "owned_by_current_user": true,
+      "identity_token": "92461fe7d828ac69",
+      "object_type": "regular_file"
+    },
+    {
+      "path": "<preview-support>/state.json.bak",
+      "mode": "0600",
+      "owned_by_current_user": true,
+      "identity_token": "dbf7cd3c393f013e",
+      "object_type": "regular_file"
+    },
+    {
+      "path": "<preview-support>/assets",
+      "mode": "0700",
+      "owned_by_current_user": true,
+      "identity_token": "64ab3e3190473258",
+      "object_type": "directory"
+    },
+    {
+      "path": "<preview-support>/locks",
+      "mode": "0700",
+      "owned_by_current_user": true,
+      "identity_token": "7fb8e7ec6e8a62e2",
+      "object_type": "directory"
+    },
+    {
+      "path": "<preview-support>/locks/desktop.lock",
+      "mode": "0600",
+      "owned_by_current_user": true,
+      "identity_token": "2abd9067881fcfc3",
+      "object_type": "regular_file"
+    },
+    {
+      "path": "<preview-support>/runtime",
+      "mode": "0700",
+      "owned_by_current_user": true,
+      "identity_token": "8fce1c8e0c807ddf",
+      "object_type": "directory"
+    },
+    {
+      "path": "<preview-support>/runtime/desktop.sock",
+      "mode": "0600",
+      "owned_by_current_user": true,
+      "identity_token": "2445c194d82c345e",
+      "object_type": "socket"
+    },
+    {
+      "path": "<preview-support>/runtime/configs",
+      "mode": "0700",
+      "owned_by_current_user": true,
+      "identity_token": "7e9457d820fb1050",
+      "object_type": "directory"
+    },
+    {
+      "path": "<preview-support>/runtime/resources",
+      "mode": "0700",
+      "owned_by_current_user": true,
+      "identity_token": "f06c5a2984b69043",
+      "object_type": "directory"
+    },
+    {
+      "path": "<preview-support>/kernel-cache",
+      "mode": "0700",
+      "owned_by_current_user": true,
+      "identity_token": "1867cd4cc5fc9fd7",
+      "object_type": "directory"
+    },
+    {
+      "path": "<preview-support>/rulesets",
+      "mode": "0700",
+      "owned_by_current_user": true,
+      "identity_token": "8e656742844da928",
+      "object_type": "directory"
+    },
+    {
+      "path": "<preview-support>/caches",
+      "mode": "0700",
+      "owned_by_current_user": true,
+      "identity_token": "79bd0152f053c29b",
+      "object_type": "directory"
+    },
+    {
+      "path": "<preview-support>/logs",
+      "mode": "0700",
+      "owned_by_current_user": true,
+      "identity_token": "310a8457e9684c8b",
+      "object_type": "directory"
+    },
+    {
+      "path": "<preview-support>/veyra-platform-evidence.txt",
+      "mode": "0600",
+      "owned_by_current_user": true,
+      "identity_token": "a1f666caae17b48f",
+      "object_type": "regular_file"
+    }
+  ],
+  "managed_images_and_blur_cache_user_only": true,
+  "runtime_manifests": "reserved paths only; not created by P1-05; future sensitive writes use 0600 atomic file boundary"
+}

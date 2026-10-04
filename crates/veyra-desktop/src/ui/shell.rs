@@ -152,7 +152,13 @@ impl Render for AppView {
             .child(
                 button("quit", if collapsed { "×" } else { "退出 / Quit" })
                     .tooltip("退出 / Quit")
-                    .on_click(|_, _, cx| cx.quit()),
+                    .on_click(|_, window, cx| {
+                        crate::desktop_lifecycle::dispatch(
+                            crate::desktop_lifecycle::Intent::Quit,
+                            Some(window),
+                            cx,
+                        );
+                    }),
             );
         let status = match &self.bridge.load {
             LoadState::Idle => "等待状态".into(),
@@ -303,7 +309,7 @@ impl Render for AppView {
                                         .font_weight(FontWeight::SEMIBOLD)
                                         .child("本地视觉偏好"),
                                 )
-                                .child("P1-05 接管正式目录 / 文件选择器"),
+                                .child("GPUI preview · 平台目录 / 单实例"),
                         )
                         .child(bridge_tools)
                         .child(

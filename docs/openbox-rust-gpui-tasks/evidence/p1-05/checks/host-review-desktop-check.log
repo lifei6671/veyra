@@ -1,0 +1,11 @@
+    Checking ring v0.17.14
+    Checking rustls-webpki v0.103.15
+    Checking rustls v0.23.43
+    Checking tokio-rustls v0.26.4
+    Checking hyper-rustls v0.27.9
+    Checking reqwest v0.12.28
+    Checking veyra-core v0.1.0 (<repo>/crates/veyra-core)
+    Checking veyra-desktop v0.1.0 (<repo>/crates/veyra-desktop)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 3.29s
+warning: the following packages contain code that will be rejected by a future version of Rust: block v0.1.6
+note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`

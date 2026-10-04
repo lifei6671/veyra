@@ -1,0 +1,78 @@
+{
+  "status": "PASS",
+  "GPUI": [
+    {
+      "name": "gpui-kit",
+      "version": "0.7.0",
+      "source": "registry+https://github.com/rust-lang/crates.io-index"
+    },
+    {
+      "name": "gpui-pre",
+      "version": "0.3.7",
+      "source": "registry+https://github.com/rust-lang/crates.io-index"
+    }
+  ],
+  "core_reverse_dependency_absent": true,
+  "desktop_forbidden_dependencies_absent": true,
+  "registry_source": "existing Cargo.lock crates.io; checked offline from cached package manifests",
+  "licenses": "MIT permitted for all new direct platform dependencies; notices updated",
+  "new_direct_macos_dependencies": [
+    {
+      "name": "libc",
+      "version": "0.2.189",
+      "license": "MIT OR Apache-2.0",
+      "source": "registry+https://github.com/rust-lang/crates.io-index"
+    },
+    {
+      "name": "block2",
+      "version": "0.6.2",
+      "license": "MIT",
+      "source": "registry+https://github.com/rust-lang/crates.io-index"
+    },
+    {
+      "name": "objc2-foundation",
+      "version": "0.3.2",
+      "license": "MIT",
+      "source": "registry+https://github.com/rust-lang/crates.io-index"
+    },
+    {
+      "name": "objc2",
+      "version": "0.6.4",
+      "license": "MIT",
+      "source": "registry+https://github.com/rust-lang/crates.io-index"
+    },
+    {
+      "name": "objc2-app-kit",
+      "version": "0.3.2",
+      "license": "Zlib OR Apache-2.0 OR MIT",
+      "source": "registry+https://github.com/rust-lang/crates.io-index"
+    }
+  ],
+  "existing_transitive_other_objc_versions": [
+    {
+      "name": "objc2-foundation",
+      "version": "0.2.2",
+      "license": "MIT",
+      "source": "registry+https://github.com/rust-lang/crates.io-index"
+    },
+    {
+      "name": "objc2",
+      "version": "0.5.2",
+      "license": "MIT",
+      "source": "registry+https://github.com/rust-lang/crates.io-index"
+    },
+    {
+      "name": "block2",
+      "version": "0.5.1",
+      "license": "MIT",
+      "source": "registry+https://github.com/rust-lang/crates.io-index"
+    },
+    {
+      "name": "objc2-app-kit",
+      "version": "0.2.2",
+      "license": "MIT",
+      "source": "registry+https://github.com/rust-lang/crates.io-index"
+    }
+  ],
+  "Cargo_lock_change": "5 desktop dependency edges only; no new package/source/version records"
+}

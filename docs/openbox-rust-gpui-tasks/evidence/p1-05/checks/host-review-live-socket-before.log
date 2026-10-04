@@ -1,0 +1,20 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.62s
+warning: the following packages contain code that will be rejected by a future version of Rust: block v0.1.6
+note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+     Running unittests src/main.rs (target/debug/deps/veyra_desktop-48f23bc4a7082362)
+
+running 1 test
+
+thread 'platform::single_instance::tests::live_socket_without_veyra_lock_is_busy_and_remains_connectable' (5752992) panicked at crates/veyra-desktop/src/platform/single_instance.rs:232:9:
+assertion failed: matches!(acquire(&d), Err(PlatformError::InstanceBusyUnconfirmed))
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test platform::single_instance::tests::live_socket_without_veyra_lock_is_busy_and_remains_connectable ... FAILED
+
+failures:
+
+failures:
+    platform::single_instance::tests::live_socket_without_veyra_lock_is_busy_and_remains_connectable
+
+test result: FAILED. 0 passed; 1 failed; 0 ignored; 0 measured; 35 filtered out; finished in 0.00s
+
+error: test failed, to rerun pass `-p veyra-desktop --bin veyra-desktop`

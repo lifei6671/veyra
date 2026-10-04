@@ -1,0 +1,11 @@
+{
+  "status": "PASS",
+  "API": "NSPasteboard",
+  "marker": "veyra-p1-05-clipboard",
+  "adapter_readback": true,
+  "actual_Cmd_V_to_GPUI_Input": true,
+  "restore": "memory snapshot of materializable item/type payloads; capture/materialization/copy failure does not overwrite pasteboard; restore adapter reported writeObjects success",
+  "original_contents": "memory only; not serialized or logged",
+  "restored_before_crash_test": true,
+  "restoration_code_result": "Ok(())"
+}

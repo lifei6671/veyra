@@ -1,0 +1,64 @@
+   Compiling objc2 v0.6.4
+   Compiling ring v0.17.14
+   Compiling objc2-core-foundation v0.3.2
+   Compiling block2 v0.6.2
+   Compiling dispatch2 v0.3.1
+   Compiling objc2-foundation v0.3.2
+   Compiling objc2-core-video v0.3.2
+   Compiling objc2-core-graphics v0.3.2
+   Compiling objc2-core-text v0.3.2
+   Compiling gpui-pre v0.3.7
+   Compiling objc2-core-media v0.3.2
+   Compiling rustls v0.23.43
+   Compiling rustls-webpki v0.103.15
+   Compiling tokio-rustls v0.26.4
+   Compiling hyper-rustls v0.27.9
+   Compiling reqwest v0.12.28
+   Compiling veyra-core v0.1.0 (<repo>/crates/veyra-core)
+   Compiling objc2-quartz-core v0.3.2
+   Compiling objc2-cloud-kit v0.3.2
+   Compiling objc2-core-image v0.3.2
+   Compiling objc2-core-data v0.3.2
+   Compiling objc2-core-location v0.3.2
+   Compiling objc2-screen-capture-kit v0.3.2
+   Compiling objc2-user-notifications v0.3.2
+   Compiling objc2-app-kit v0.3.2
+   Compiling gpui-pre-apple v0.3.7
+   Compiling gpui-kit-assets v0.7.0
+   Compiling gpui-base v0.7.0
+   Compiling gpui-pre-macos v0.3.7
+   Compiling gpui-pre-platform v0.3.7
+   Compiling gpui-component v0.7.0
+   Compiling gpui-kit v0.7.0
+   Compiling veyra-desktop v0.1.0 (<repo>/crates/veyra-desktop)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 28.16s
+warning: the following packages contain code that will be rejected by a future version of Rust: block v0.1.6
+note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+     Running unittests src/main.rs (target/debug/deps/veyra_desktop-48f23bc4a7082362)
+
+running 2 tests
+background image blur=8 cache prepared duration_ms=5
+
+thread 'visual_assets::tests::preview_repairs_world_readable_stale_temporary_before_publish' (5752940) panicked at crates/veyra-desktop/src/visual_assets.rs:183:9:
+assertion `left == right` failed
+  left: 420
+ right: 384
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+test visual_assets::tests::preview_repairs_world_readable_stale_temporary_before_publish ... FAILED
+background image blur=8 cache prepared duration_ms=13
+
+thread 'visual_assets::tests::preview_repairs_world_readable_final_cache_on_reuse' (5752939) panicked at crates/veyra-desktop/src/visual_assets.rs:210:9:
+assertion `left == right` failed
+  left: 420
+ right: 384
+test visual_assets::tests::preview_repairs_world_readable_final_cache_on_reuse ... FAILED
+
+failures:
+
+failures:
+    visual_assets::tests::preview_repairs_world_readable_final_cache_on_reuse
+    visual_assets::tests::preview_repairs_world_readable_stale_temporary_before_publish
+
+test result: FAILED. 0 passed; 2 failed; 0 ignored; 0 measured; 34 filtered out; finished in 0.05s
+
+error: test failed, to rerun pass `-p veyra-desktop --bin veyra-desktop`

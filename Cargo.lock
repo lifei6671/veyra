@@ -9300,11 +9300,17 @@ dependencies = [
 name = "veyra-desktop"
 version = "0.1.0"
 dependencies = [
+ "block2 0.6.2",
  "gpui-kit",
  "image",
+ "libc",
+ "objc2 0.6.4",
+ "objc2-app-kit 0.3.2",
+ "objc2-foundation 0.3.2",
  "serde_json",
  "sha2 0.10.9",
  "tokio",
+ "tray-icon",
  "veyra-core",
 ]
 

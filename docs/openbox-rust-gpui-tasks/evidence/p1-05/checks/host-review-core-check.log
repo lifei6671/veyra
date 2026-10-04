@@ -1,0 +1,4 @@
+    Checking hyper-rustls v0.27.9
+    Checking reqwest v0.12.28
+    Checking veyra-core v0.1.0 (<repo>/crates/veyra-core)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 1.09s

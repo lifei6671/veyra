@@ -1,0 +1,82 @@
+{
+  "before_cancel": {
+    "state_sha256": "a2ed418b9f9515ef946fe6ee6dc021f5e8a65ffe7509a817eda1c9cf5bbdc391",
+    "config_revision": 0,
+    "selection_revision": 0,
+    "epoch": [
+      94,
+      30,
+      64,
+      225,
+      122,
+      241,
+      237,
+      109,
+      4,
+      175,
+      16,
+      118,
+      210,
+      173,
+      137,
+      242
+    ],
+    "asset_files": []
+  },
+  "fixture_source_sha256": "881900636a584b9e77e23f1cef61adb0e053790c03dc12974a5acd11027266f3",
+  "source_label": "<selected-file>",
+  "format": "PNG",
+  "fixture_dimensions": [
+    640,
+    360
+  ],
+  "after_cancel": {
+    "state_sha256": "a2ed418b9f9515ef946fe6ee6dc021f5e8a65ffe7509a817eda1c9cf5bbdc391",
+    "config_revision": 0,
+    "selection_revision": 0,
+    "epoch": [
+      94,
+      30,
+      64,
+      225,
+      122,
+      241,
+      237,
+      109,
+      4,
+      175,
+      16,
+      118,
+      210,
+      173,
+      137,
+      242
+    ],
+    "asset_files": []
+  },
+  "cancel_result": "PASS",
+  "accept": {
+    "result": "PASS",
+    "config_revision": 1,
+    "reference": {
+      "kind": "managed_asset",
+      "id": "c01faaa734da356d4f3edca7ef818e938a12d367c391e16fd1a11e72d9098993"
+    },
+    "managed_file_sha256": "c01faaa734da356d4f3edca7ef818e938a12d367c391e16fd1a11e72d9098993",
+    "source_unchanged": true,
+    "managed_mode": "0o600",
+    "assets_mode": "0o700"
+  },
+  "final_round": {
+    "cancel_no_effect": true,
+    "duplicate_click_one_sheet": true,
+    "same_image_import_noop_revision": 1,
+    "invalid_image_error": "InvalidFile",
+    "oversize_error": "FileTooLarge",
+    "state_unchanged": true,
+    "symlink": "O_NOFOLLOW rejection verified by unit test",
+    "format_filter": "PNG/JPEG; invalid.txt disabled by NSOpenPanel",
+    "file_boundary": "native picker / drop / debug path all call FileSelection opened once; no path reopen",
+    "TOCTOU_limit": "parent components and in-place concurrent inode modification are not locked; opened FD metadata/size and bounded decoded bytes are validated"
+  }
+}

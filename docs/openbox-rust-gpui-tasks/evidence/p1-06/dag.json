@@ -1,0 +1,100 @@
+{
+  "task_count": 68,
+  "counts": {
+    "DONE": 12,
+    "ACCEPTANCE": 1,
+    "READY": 1,
+    "TODO": 47,
+    "DEFERRED": 7
+  },
+  "ready": [
+    "P1-07"
+  ],
+  "p1_07": {
+    "status": "READY",
+    "deps": [
+      "P1-01",
+      "P1-02",
+      "P1-03",
+      "P1-04A",
+      "P1-04B",
+      "P1-05",
+      "P1-06"
+    ],
+    "started": false
+  },
+  "p0_05": {
+    "status": "ACCEPTANCE",
+    "deps": [
+      "P0-03",
+      "P0-04"
+    ]
+  },
+  "p0_06": {
+    "status": "TODO",
+    "deps": [
+      "P0-04",
+      "P0-05"
+    ]
+  },
+  "p0_08": {
+    "status": "TODO",
+    "deps": [
+      "P0-03",
+      "P0-05"
+    ]
+  },
+  "historical_before_manual_acceptance": {
+    "task_count": 68,
+    "counts": {
+      "DONE": 11,
+      "ACCEPTANCE": 2,
+      "TODO": 48,
+      "DEFERRED": 7
+    },
+    "ready": [],
+    "p1_07": {
+      "status": "TODO",
+      "deps": [
+        "P1-01",
+        "P1-02",
+        "P1-03",
+        "P1-04A",
+        "P1-04B",
+        "P1-05",
+        "P1-06"
+      ]
+    },
+    "p0_05": {
+      "status": "ACCEPTANCE",
+      "deps": [
+        "P0-03",
+        "P0-04"
+      ]
+    },
+    "p0_06": {
+      "status": "TODO",
+      "deps": [
+        "P0-04",
+        "P0-05"
+      ]
+    },
+    "p0_08": {
+      "status": "TODO",
+      "deps": [
+        "P0-03",
+        "P0-05"
+      ]
+    }
+  },
+  "date": "2026-10-04",
+  "p1_06": {
+    "status": "DONE",
+    "deps": [
+      "P1-03",
+      "P1-05"
+    ],
+    "evidence": "host-manual-acceptance.json"
+  },
+  "calculation": "全部 68 张任务卡显式依赖与主表一致、依赖存在且无环；仅 TODO/READY 在全部前置 DONE 时进入 READY，Windows DEFERRED 不进入队列。"
+}

@@ -1,0 +1,101 @@
+{
+  "operator": "Codex Desktop actual GPUI/native app",
+  "human_interaction_required": false,
+  "results": [
+    {
+      "action": "fresh_isolated_start",
+      "result": "PASS",
+      "evidence": "schema9/config0 local default; no login/HTTP"
+    },
+    {
+      "action": "secondary_activate",
+      "result": "PASS",
+      "evidence": "existing window active/key from AppKit and CUA"
+    },
+    {
+      "action": "five_secondary_launches",
+      "result": "PASS",
+      "evidence": "5 exit0, 1 primary, secondary writer0"
+    },
+    {
+      "action": "busy_unconfirmed",
+      "result": "PASS",
+      "evidence": "separate holder process/no socket; desktop exit1, no state"
+    },
+    {
+      "action": "SIGKILL_restart",
+      "result": "PASS",
+      "evidence": "kernel releases lock; stale socket recovered; exact state hash preserved"
+    },
+    {
+      "action": "open_panel_cancel",
+      "result": "PASS",
+      "evidence": "NSOpenPanel Escape; state/config/assets/draft unchanged; no success notification"
+    },
+    {
+      "action": "open_panel_accept",
+      "result": "PASS",
+      "evidence": "chosen fixture copied to content-addressed managed PNG; source unchanged"
+    },
+    {
+      "action": "open_panel_double_click",
+      "result": "PASS",
+      "evidence": "only one native sheet; cancel/reopen/accept works"
+    },
+    {
+      "action": "invalid_image",
+      "result": "PASS",
+      "evidence": "native selected fakePNG -> InvalidFile before managed copy"
+    },
+    {
+      "action": "oversize_image",
+      "result": "PASS",
+      "evidence": "native selected8MiB+1 -> FileTooLarge before managed copy"
+    },
+    {
+      "action": "symlink",
+      "result": "UNIT_PASS",
+      "evidence": "O_NOFOLLOW selected final component rejected; no input-parent scan"
+    },
+    {
+      "action": "save_panel_cancel",
+      "result": "PASS",
+      "evidence": "no destination created"
+    },
+    {
+      "action": "save_panel_accept",
+      "result": "PASS",
+      "evidence": "NSSavePanel Enter; atomic export exact33bytes/0600 readback"
+    },
+    {
+      "action": "atomic_save_failure",
+      "result": "UNIT_PASS",
+      "evidence": "invalid parent/collision; no partial file, old target preserved"
+    },
+    {
+      "action": "clipboard",
+      "result": "PASS",
+      "evidence": "full item/type memory snapshot; fixedmarker readback + actualCmdV; original restored"
+    },
+    {
+      "action": "external_link",
+      "result": "PASS",
+      "evidence": "NSWorkspace accepted; exactloopbackURL tab observed in Edge; closed without pagevalidation"
+    },
+    {
+      "action": "drop_boundary",
+      "result": "STATIC_PASS",
+      "evidence": "ExternalPaths/FileDrag/native selection/debug path converge on FileSelection; P1-04A drag gesture not rerun"
+    },
+    {
+      "action": "final_restart",
+      "result": "PASS",
+      "evidence": "saved managed reference/config1/selection0/epoch unchanged"
+    },
+    {
+      "action": "scroll_tool",
+      "result": "LIMITATION",
+      "evidence": "native scroll did not reach lower debug controls; dragging scrollbar closed native tool pipe; platform controls moved to top; no drag PASS invented"
+    }
+  ]
+}

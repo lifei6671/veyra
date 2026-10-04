@@ -1,0 +1,138 @@
+{
+  "result": "PASS",
+  "primary_identity": "primary-A",
+  "primary_writer_created_count": 1,
+  "repeated_launches": [
+    {
+      "launch": 1,
+      "role": "secondary",
+      "exit_status": 0,
+      "elapsed_ms": 33,
+      "writer_created_count": 0,
+      "primary_count": 1,
+      "primary_identity": "primary-A",
+      "output": "product=com.lifei6671.veyra namespace=com.lifei6671.veyra.gpui-preview\nrole=secondary Activate acknowledged; writer_created_count=0"
+    },
+    {
+      "launch": 2,
+      "role": "secondary",
+      "exit_status": 0,
+      "elapsed_ms": 26,
+      "writer_created_count": 0,
+      "primary_count": 1,
+      "primary_identity": "primary-A",
+      "output": "product=com.lifei6671.veyra namespace=com.lifei6671.veyra.gpui-preview\nrole=secondary Activate acknowledged; writer_created_count=0"
+    },
+    {
+      "launch": 3,
+      "role": "secondary",
+      "exit_status": 0,
+      "elapsed_ms": 30,
+      "writer_created_count": 0,
+      "primary_count": 1,
+      "primary_identity": "primary-A",
+      "output": "product=com.lifei6671.veyra namespace=com.lifei6671.veyra.gpui-preview\nrole=secondary Activate acknowledged; writer_created_count=0"
+    },
+    {
+      "launch": 4,
+      "role": "secondary",
+      "exit_status": 0,
+      "elapsed_ms": 32,
+      "writer_created_count": 0,
+      "primary_count": 1,
+      "primary_identity": "primary-A",
+      "output": "product=com.lifei6671.veyra namespace=com.lifei6671.veyra.gpui-preview\nrole=secondary Activate acknowledged; writer_created_count=0"
+    },
+    {
+      "launch": 5,
+      "role": "secondary",
+      "exit_status": 0,
+      "elapsed_ms": 35,
+      "writer_created_count": 0,
+      "primary_count": 1,
+      "primary_identity": "primary-A",
+      "output": "product=com.lifei6671.veyra namespace=com.lifei6671.veyra.gpui-preview\nrole=secondary Activate acknowledged; writer_created_count=0"
+    }
+  ],
+  "activation_count": 5,
+  "native_front_key_confirmations": 5,
+  "focus_proof": "NSApplication.isActive && keyWindow.isKeyWindow, checked 100ms after GPUI activate_window; actual GUI screenshot also captured",
+  "lock": "flock LOCK_EX|LOCK_NB, lifetime FD",
+  "peer": "getpeereid UID equals current euid on both client/server; no numeric UID recorded",
+  "busy_unconfirmed": {
+    "status": "PASS",
+    "exit_status": 1,
+    "elapsed_ms": 2260,
+    "typed_error": "InstanceBusyUnconfirmed",
+    "writer_created_count": 0,
+    "state_absent": true,
+    "lock_file_preserved": true,
+    "socket_absent": true
+  },
+  "final_build_repeated_launches": [
+    {
+      "launch": 1,
+      "exit_status": 0,
+      "elapsed_ms": 27,
+      "writer_created_count": 0,
+      "primary_count": 1,
+      "activate_acknowledged": true
+    },
+    {
+      "launch": 2,
+      "exit_status": 0,
+      "elapsed_ms": 24,
+      "writer_created_count": 0,
+      "primary_count": 1,
+      "activate_acknowledged": true
+    },
+    {
+      "launch": 3,
+      "exit_status": 0,
+      "elapsed_ms": 26,
+      "writer_created_count": 0,
+      "primary_count": 1,
+      "activate_acknowledged": true
+    },
+    {
+      "launch": 4,
+      "exit_status": 0,
+      "elapsed_ms": 24,
+      "writer_created_count": 0,
+      "primary_count": 1,
+      "activate_acknowledged": true
+    },
+    {
+      "launch": 5,
+      "exit_status": 0,
+      "elapsed_ms": 34,
+      "writer_created_count": 0,
+      "primary_count": 1,
+      "activate_acknowledged": true
+    }
+  ],
+  "crash_recovery": {
+    "status": "PASS",
+    "signal": "SIGKILL",
+    "stale_socket_present_before_restart": true,
+    "OS_lock_released": true,
+    "state_sha256_before": "ca6fc5e970a8384b800c34079f68bc627d74e66b3b87d7271945718bd9ba8710",
+    "state_sha256_after_kill": "ca6fc5e970a8384b800c34079f68bc627d74e66b3b87d7271945718bd9ba8710",
+    "manual_lock_or_socket_cleanup": false,
+    "restart_primary": true,
+    "state_sha256_after_restart": "ca6fc5e970a8384b800c34079f68bc627d74e66b3b87d7271945718bd9ba8710"
+  },
+  "final_primary_focus": {
+    "activation_count": 5,
+    "all_native_active_key_checks": true
+  },
+  "writer_instrumentation": "cfg(test) real AppServices/JsonStateStore construction counter delta = 1 across 5 secondary acquires; live secondary exits before composition",
+  "normal_quit_initial_failure": "native termination did not unwind Rust main, so socket persisted; fixed with GPUI on_app_quit while retaining lock FD until process exit",
+  "normal_quit_final": {
+    "status": "PASS",
+    "desktop_count": 0,
+    "socket_removed": true,
+    "OS_lock_released": true,
+    "lock_FD_lifetime": "retained by composition until actual process exit, including quit cleanup"
+  }
+}

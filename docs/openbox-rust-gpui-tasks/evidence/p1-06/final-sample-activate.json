@@ -1,0 +1,5 @@
+{
+  "exit": 0,
+  "stderr": "product=com.lifei6671.veyra namespace=com.lifei6671.veyra.gpui-preview\nrole=secondary Activate acknowledged; writer_created_count=0\n",
+  "phase": "final executable/native visibility sampling"
+}

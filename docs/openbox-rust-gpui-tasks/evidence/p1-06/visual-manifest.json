@@ -1,0 +1,50 @@
+[
+  {
+    "file": "visual/final-main-window.png",
+    "physical_size": [
+      2560,
+      1506
+    ],
+    "sha256": "8bf68112aa6387163fa9b96559c3334f3a651b23ff7937c68774e28122045378",
+    "logical_content_size": [
+      1280,
+      720
+    ],
+    "scale_factor": 2,
+    "titlebar_included": true,
+    "edited": false,
+    "restoration": null
+  },
+  {
+    "file": "visual/main-window.png",
+    "physical_size": [
+      2560,
+      1506
+    ],
+    "sha256": "8bf68112aa6387163fa9b96559c3334f3a651b23ff7937c68774e28122045378",
+    "logical_content_size": [
+      1280,
+      720
+    ],
+    "scale_factor": 2,
+    "titlebar_included": true,
+    "edited": false,
+    "restoration": null
+  },
+  {
+    "file": "visual/secondary-restored.png",
+    "physical_size": [
+      2560,
+      1506
+    ],
+    "sha256": "5e4e0c8cae612e07cd7509023a406eab39bf0100c6c4691f9333f09add411a9b",
+    "logical_content_size": [
+      1280,
+      720
+    ],
+    "scale_factor": 2,
+    "titlebar_included": true,
+    "edited": false,
+    "restoration": "secondary Activate, not tray"
+  }
+]
