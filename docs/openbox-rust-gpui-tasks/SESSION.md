@@ -2,7 +2,7 @@
 
 最后更新：2026-10-04。
 
-**当前结果：OBG-P0-01、P0-02、P0-03、P1-01、P1-02 DONE；P0-04、P1-03 READY。** P0-03 四项卡验收经 2026-10-04 用户真实中文输入/托盘操作确认及明确批准收口；历史缺证据保留，helper/TUN 未验证。阶段用于里程碑分组及组合验收，READY 只由显式依赖决定。
+**当前结果：OBG-P0-01、P0-02、P0-03、P0-04、P1-01、P1-02 DONE；P0-05、P0-07、P1-03 READY。** P0-04 已完成固定 macOS 内核、动态 controller、selector/FakeIP 恢复与关闭 writer handoff；存在对账前流量窗口。P0-03 人工确认和历史限制保留；helper/TUN 运行未验证。阶段用于里程碑分组及组合验收，READY 只由显式依赖决定。
 
 - [长期开发总规范](DEVELOPMENT_WORKFLOW.md)：后续 Veyra Rust/GPUI 默认遵守；四泳道、并行与单一 owner。
 - [技术方案](../openbox-rust-gpui-implementation-plan.md)：架构、行为、接口与平台边界。
@@ -12,7 +12,7 @@
 
 | 里程碑 | DONE / 任务数 | 当前结果 | 组合验收 |
 | --- | --- | --- | --- |
-| P0 基线与可行性 | 3 / 9 | P0-01、P0-03 四项验收通过；P0-03 人工确认收口，历史限制保留 | P0-09 未开始 |
+| P0 基线与可行性 | 4 / 9 | P0-01/03/04 验收通过；固定内核与缓存真实验证完成，历史限制保留 | P0-09 未开始 |
 | P1 核心库与桌面壳 | 2 / 8 | core 抽取、类型/快照/版本及旧入口接线通过 | P1-07 未开始 |
 | P2 本机代理闭环 | 0 / 10 | 未开始，按各卡依赖推进 | P2-09 未开始 |
 | P3 观测与主页面 | 0 / 8 | 未开始，基础能力不计完整 DNS/分流 | P3-08 未开始 |
@@ -22,13 +22,13 @@
 | P7 数据与发布收尾 | 0 / 5 | 未开始，schema/清理按显式依赖等待 | P7-05 未开始 |
 | Windows W0–W3 | 0 / 7 | 后续排期 DEFERRED | W3-02 未开始 |
 
-macOS：**5 / 61 完成**；READY 2、TODO 54、DOING 0、REVIEW 0、ACCEPTANCE 0、BLOCKED 0。Windows 7 项 DEFERRED 单列，共 68 项。数量不等于工期权重或代码完成百分比；P1-04/P2-02/P4-05 父项被后缀子项替代，不重复计数。
+macOS：**6 / 61 完成**；READY 3、TODO 52、DOING 0、REVIEW 0、ACCEPTANCE 0、BLOCKED 0。Windows 7 项 DEFERRED 单列，共 68 项。数量不等于工期权重或代码完成百分比；P1-04/P2-02/P4-05 父项被后缀子项替代，不重复计数。
 
 ## 2 Active Tasks
 
-当前无 Active Tasks。P0-03 于 2026-10-04 DONE；本轮仅人工验收证据/状态收口，未领取 P0-04/P1-03。原型交付开始 HEAD `029578c81554f2aeef9bb4e0fd6aaa8a19defd55`，当时工作树干净；本轮起始工作树已有原型及证据未提交变更，保持原样。
+当前无 Active Tasks。P0-04 于 2026-10-04 DONE；Runtime/Platform owner Codex /root 已释放本任务临时 child/controller/cache。写范围仅原型脚本、P0-04 证据/fixtures 和任务文档，公共 Core/DTO/workspace/Runtime 契约未修改。
 
-P0-03 原型交付期间的 Cargo workspace/lock 与 GUI 资源 owner Codex Desktop 已释放；本轮 Codex /root 仅维护证据与任务文档，未修改公共契约或占用 GUI/内核/网络资源。P1-01 的 workspace/core 与 P1-02 的 domain/application/storage owner 均已释放。历史交付见各卡与 [P0-03 人工确认](evidence/p0-03/README.md#host-user-manual-acceptance)。
+本轮起始 HEAD `19696abde8a27a36c4eb490a4236006fcd09c9cc`，工作树干净；交付未提交。没有领取 P1-03 或其他下游。P0-03/P1-01/P1-02 owner 均已释放，历史交付见对应卡。
 
 ## 3 Ready Queue
 
@@ -36,10 +36,11 @@ P0-03 原型交付期间的 Cargo workspace/lock 与 GUI 资源 owner Codex Desk
 
 | Task | 依赖满足依据 | 候选写范围 / 并行条件 | 下一具体动作 |
 | --- | --- | --- | --- |
-| [P0-04](P0-feasibility.md#obg-p0-04) | P0-01 DONE | 内核/控制器隔离原型；真实资源预约后执行 | 下一轮领取后核对内核身份 |
-| [P1-03](P1-core-and-shell.md#obg-p1-03) | P1-02 + P0-03 DONE | GPUI desktop app/navigation/state bridge；公共 DTO/workspace 变更先预约 owner | 下一轮领取后核对核心契约、原型限制与壳层范围 |
+| [P0-05](P0-feasibility.md#obg-p0-05) | P0-03 + P0-04 DONE | 本地 helper/授权/进程归属；领取时独立预约真实权限/网络资源 | 读取 helper 原型卡及平台边界，未启动 |
+| [P0-07](P0-feasibility.md#obg-p0-07) | P0-01 + P0-04 DONE | Observation/DNS/诊断契约原型；真实 child 与 helper 资源隔离 | 读取卡与固定 controller 证据，未启动 |
+| [P1-03](P1-core-and-shell.md#obg-p1-03) | P1-02 + P0-03 DONE | GPUI app/navigation/state bridge；公共 DTO/workspace 先预约 owner | 核对核心契约、原型限制及壳层范围，未启动 |
 
-按 68 张任务卡显式依赖重算，READY 仅 P0-04、P1-03。P0-05 虽已有 P0-03 DONE，仍等待 P0-04，保持 TODO；P0-07 同样等待 P0-04。本轮不启动上述 READY 任务。
+按 68 张实际任务卡依赖重算，READY 为 P0-05/P0-07/P1-03；P0-06 仍等待 P0-05，保持 TODO。本轮只交付 P0-04。
 
 ## 4 Blocked
 
@@ -55,8 +56,8 @@ P0-03 原型交付期间的 Cargo workspace/lock 与 GUI 资源 owner Codex Desk
 
 | 字段 | 当前值 |
 | --- | --- |
-| 当前分支 / HEAD | `codex/dist-react-restore` / `029578c81554f2aeef9bb4e0fd6aaa8a19defd55`；P0-03 开始时干净，当前原型/证据未提交 |
-| 新路线实现基线 | 根 workspace/core + 旧入口共享接线 + schema v7/版本/类型服务已在起始 HEAD；本轮新增隔离 GPUI 原型 |
+| 当前分支 / HEAD | `codex/dist-react-restore` / `19696abde8a27a36c4eb490a4236006fcd09c9cc`；P0-04 起始工作树干净，当前仅本任务交付未提交 |
+| 新路线实现基线 | 根 workspace/core、旧入口共享接线、schema v7 与 GPUI 原型已在起始 HEAD；本轮仅新增内核隔离原型脚本/证据 |
 | 方案调查基线 | `bda242a920d471b9598f98b57dde5d7c2505c35e`；只作原调查身份，不能当当前 HEAD |
 | P0-01 交付（历史保留） | [最终验收](P0-01-baseline.md#current-acceptance)：8 当前源码 PNG、18 新真实脱敏 case、视觉数据、manifest/audit；四项 PASS |
 | P0-01 验证（历史保留） | 77 AST（72/5）、4/6/9、54 浏览器操作/状态断言、8 PNG 与来源/脱敏/JSON/links/68 DAG；[最终计数](evidence/p0-01/validation.json) |
@@ -65,6 +66,7 @@ P0-03 原型交付期间的 Cargo workspace/lock 与 GUI 资源 owner Codex Desk
 | P1-02 本次验证 | [类型/快照交付](P1-core-and-shell.md#p1-02-delivery)：275 core（新增 32）、65 旧入口定向回归；四项验收 PASS，check/build/lib clippy/fmt/tree/静态/文档/diff 通过；不调用真实内核 |
 | P0-03 原型验证（历史保留） | [实机原型](evidence/p0-03/README.md)：check/build/clippy/fmt/core/tree 通过；11 截图，中文编辑/Modal/list 真实操作；无资源覆盖 workspace check FAIL（旧 Windows LICENSE 缺失） |
 | P0-03 人工验收收口（2026-10-04） | [人工确认](evidence/p0-03/host-manual-acceptance.json)：用户亲手中文 Input/Modal 输入及托盘点击可用，明确批准四项 PASS/DONE；[验证](evidence/p0-03/validation.json)：两条指定 cargo check 复跑 PASS、JSON/11 PNG/68-card DAG/links/diff 通过；resource override 不代表打包资源完整 |
+| P0-04 本次真实验证 | [真实内核交付](P0-feasibility.md#p0-04-delivery)：官方 1.14.0 arm64 digest、5 configs check、4 child 动态 controller/鉴权/SIGTERM 清理、selector/FakeIP restore、关闭 writer handoff PASS；存在对账前窗口；[validation](evidence/p0-04/validation.json)含 core check/脱敏/JSON/DAG/links/diff；仅同版本/cache_id/tag/pool/range |
 | 保留的限制 | candidate-window/tray screenshot 与独立前台 focus 缺证据、受控 window blur 对照缺失；card-level backdrop blur、MiSans、nested dropdown、macOS 15 实机未验证，不阻止 P0-03 DONE；Windows 仍 DEFERRED |
 | 下一里程碑 | P0-09：汇总原型结论、实际范围和重新估算；不阻塞无关已就绪任务 |
 
@@ -108,3 +110,5 @@ P0-03 Host 追加确认：对绿色托盘图标、三轮显示/隐藏、菜单�
 
 
 2026-10-04 P0-03 Host/User Manual Acceptance：用户亲手完成真实中文输入（单行 Input 与 Modal Textarea）及托盘点击并确认可用，明确要求“就当验收通过了”。四项卡验收 PASS、P0-03 DONE；既有 IME candidate/composition、tray screenshot/focus、controlled blur LIMITATION 和无资源覆盖 workspace check FAIL 保留，不补造截图。两条指定 cargo check 本次复跑 PASS；[完整验证](evidence/p0-03/validation.json)。按 68-card DAG 重算 macOS DONE 5、READY 2、TODO 54、ACCEPTANCE 0；Windows DEFERRED 7。P0-04/P1-03 READY，P0-05 TODO；未启动下游、未改原型功能代码、未访问 OpenBox 远端、未运行真实 sing-box、无 commit/push。
+
+2026-10-04 P0-04 DONE：固定官方 v1.14.0 macOS arm64 archive digest 匹配后运行；5 config checks / 4 child，动态 controller 从本 child 日志取得，鉴权 200/无鉴权 401；selector/FakeIP 及 closed-writer handoff 全通过、空缓存对照排除假恢复。restart/handoff 对账前窗口 22.990292/14.466458 ms；正式及试探资源已清理。68-card DAG：DONE 6、READY 3、TODO 52、Windows DEFERRED 7；READY P0-05/P0-07/P1-03、P0-06 TODO。前期字段 check FAIL 与试探配置未捕获 hash 的限制保留；sandbox 网络更新监听受限，不声称正式 Runtime/网络监听已实现。无系统设置修改、TUN run、公网协议测试、后续 Task、commit/push；[完整记录](evidence/p0-04/README.md)。

@@ -61,10 +61,12 @@
 
 **验收**：
 
-- [ ] 相同配置完成 check、启动、鉴权就绪与停止；使用 macOS 二进制证据。
-- [ ] `127.0.0.1:0` 的实际地址可从本实例输出取得；若不可行，明确选择方案中的有界 bind 冲突处理。
-- [ ] 选择/FakeIP 恢复及关闭 writer 后的缓存交接有最小证据；对账前流量窗口和兼容性限制被记录。
-- [ ] 结果只说明 Veyra 使用的配置/API/生命周期能力，不建立协议认证矩阵。
+- [x] 相同配置完成 check、启动、鉴权就绪与停止；使用 macOS 二进制证据。
+- [x] `127.0.0.1:0` 的实际地址可从本实例输出取得；若不可行，明确选择方案中的有界 bind 冲突处理。
+- [x] 选择/FakeIP 恢复及关闭 writer 后的缓存交接有最小证据；对账前流量窗口和兼容性限制被记录。
+- [x] 结果只说明 Veyra 使用的配置/API/生命周期能力，不建立协议认证矩阵。
+
+**当前状态**：2026-10-04 四项 PASS / DONE；详见[真实内核交付](#p0-04-delivery)。
 
 <a id="obg-p0-05"></a>
 ## OBG-P0-05 本地 helper、授权与进程归属原型
@@ -187,3 +189,14 @@
 ### OBG-P0-03 人工验收收口（2026-10-04）
 
 Codex /root 仅更新证据与状态，原型功能代码、Cargo workspace/lock 和历史截图不变；用户亲手完成中文输入/托盘操作并明确批准本卡通过，四项 PASS，来源见 [Host/User Manual Acceptance](evidence/p0-03/README.md#host-user-manual-acceptance)。历史缺证据及无资源覆盖 workspace check FAIL 保留，新增人工确认与本次两条 check PASS 不改写历史。JSON、11 PNG hash/dimensions、68-card DAG/主表依赖、Markdown links/anchors 与 diff 检查见 [validation.json](evidence/p0-03/validation.json)。P0-04/P1-03 READY、P0-05 TODO，未启动后续任务，无 commit/push。
+
+<a id="p0-04-delivery"></a>
+## P0-04 真实 macOS 内核交付（2026-10-04）
+
+Codex /root，Runtime/Platform；起始 HEAD `19696abde8a27a36c4eb490a4236006fcd09c9cc`，工作树干净。固定官方 v1.14.0 macOS arm64 archive 在执行前匹配 digest；binary 身份/version/build tags、5 份实际配置 check、4 个真实 child 的鉴权动态 controller、同配置 selector/FakeIP 恢复、关闭 writer 后新目录 handoff 均 PASS。目标 FakeIP `.3` 与空缓存对照 `.2` 区分，普通 DNS cache 关闭；没有用 cache 文件存在替代恢复证明。
+
+四项卡验收全满足，P0-04 DONE；存在对账前流量窗口，同配置 restart 22.990292 ms、handoff 14.466458 ms，并通过对账前实际 loopback mixed 请求证明。P2 在对账前不报业务 Ready、不打开新的系统代理接管；不承诺原子无缝切换。仅证明同版本/cache_id/tag/pool/range；sandbox 网络更新监听 operation not permitted 保留，不证明动态网络事件或正式 Runtime。
+
+完整证据、前期两次 check FAIL、试探 config hash 未捕获的限制、复跑步骤及实现者自查见 [README](evidence/p0-04/README.md)；[验证](evidence/p0-04/validation.json)记录 JSON/脱敏/68-card DAG/links/core check/diff 和清理。四个正式 child 均 SIGTERM/exit 0、wait/group empty、listener 释放、writer 关闭；前期 child 也正常退出，所有本任务临时 archive/binary/config/cache 清理。未访问 UI 远端、未改系统代理/DNS、TUN 只 check、未修改 Compiler 或实施 P2/P1-03/其他原型，无 commit/push。
+
+按实际 68 卡依赖重算，P0-05/P0-07/P1-03 READY，P0-06 等待 P0-05；仅记录队列，不启动下游。Runtime/Platform 临时资源 owner 已释放。
