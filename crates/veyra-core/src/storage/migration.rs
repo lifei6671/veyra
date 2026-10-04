@@ -18,6 +18,7 @@ pub fn migrate_to_current(mut document: Value) -> Result<(Value, bool), StateSto
             4 => migrate_v4_to_v5(&mut document),
             5 => migrate_v5_to_v6(&mut document),
             6 => migrate_v6_to_v7(&mut document),
+            7 => migrate_v7_to_v8(&mut document),
             _ => return Err(StateStoreError::UnsupportedSchemaVersion),
         }
         .map_err(|_| StateStoreError::MigrationFailed)?;
@@ -278,4 +279,49 @@ fn migrate_v6_to_v7(document: &mut Value) -> Result<(), StateStoreError> {
     );
     object.insert("schema_version".into(), json!(7));
     Ok(())
+}
+
+fn migrate_v7_to_v8(document: &mut Value) -> Result<(), StateStoreError> {
+    let object = document
+        .as_object_mut()
+        .ok_or(StateStoreError::InvalidStoredState)?;
+    let config = object
+        .get_mut("app_config")
+        .and_then(Value::as_object_mut)
+        .ok_or(StateStoreError::InvalidStoredState)?;
+    config.insert(
+        "visual".into(),
+        serde_json::to_value(crate::domain::DesktopVisualPreferences::default())
+            .map_err(|_| StateStoreError::SerializationFailed)?,
+    );
+    object.insert("schema_version".into(), json!(8));
+    Ok(())
+}
+
+#[cfg(test)]
+mod visual_tests {
+    use super::*;
+    #[test]
+    fn v7_to_v8_preserves_identity_versions_and_config() {
+        let mut state = crate::domain::AppState::empty();
+        state.config_revision = 17;
+        state.selection_revision = 4;
+        let mut old = serde_json::to_value(&state).unwrap();
+        old["schema_version"] = json!(7);
+        old["app_config"].as_object_mut().unwrap().remove("visual");
+        old["app_config"]["check_updates_on_start"] = json!(false);
+        let (value, changed) = migrate_to_current(old).unwrap();
+        assert!(changed);
+        let migrated: crate::domain::AppState = serde_json::from_value(value.clone()).unwrap();
+        assert_eq!(migrated.state_epoch, state.state_epoch);
+        assert_eq!(
+            (migrated.config_revision, migrated.selection_revision),
+            (17, 4)
+        );
+        assert_eq!(migrated.app_config.visual, Default::default());
+        assert!(!migrated.app_config.check_updates_on_start);
+        assert_eq!(migrated.schema_version, 8);
+        assert!(migrated.validate().is_ok());
+        assert!(!migrate_to_current(value).unwrap().1);
+    }
 }

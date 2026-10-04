@@ -1,10 +1,7 @@
 //! Every main route owns one persistent PageView entity and its own input entities.
 use crate::navigation::{Category, Route};
 use gpui_kit::{
-    component::{
-        button::*,
-        input::{Input, InputState},
-    },
+    component::{button::*, input::InputState},
     prelude::*,
     *,
 };
@@ -14,6 +11,7 @@ pub struct PageView {
     pub input: Entity<InputState>,
     pub category: Category,
     pub alternate: bool,
+    pub panel: Option<Entity<super::panel::PanelView>>,
 }
 impl PageView {
     pub fn new(route: Route, window: &mut Window, cx: &mut Context<Self>) -> Self {
@@ -21,6 +19,7 @@ impl PageView {
             route,
             category: Category::Panel,
             alternate: false,
+            panel: None,
             input: cx.new(|cx| {
                 InputState::new(window, cx).placeholder(if route == Route::Settings {
                     "P1-03 evidence draft · 仅此会话，不写入 Profile"
@@ -33,8 +32,11 @@ impl PageView {
 }
 impl Render for PageView {
     fn render(&mut self, _: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
-        let mut content = div().flex().flex_col().gap_5().w_full();
+        let mut content = div().flex().flex_col().flex_shrink_0().gap_3().w_full();
         if self.route == Route::Settings {
+            if self.category == Category::Panel {
+                content = content.min_h(px(680.));
+            }
             content =
                 content
                     .child(div().flex().flex_wrap().gap_2().children(Category::ALL.map(
@@ -49,13 +51,20 @@ impl Render for PageView {
                                 }))
                         },
                     )))
-                    .child(div().text_xl().child(self.category.label()))
+                    .child(div().text_xl().child(self.category.label()));
+            if self.category == Category::Panel {
+                if let Some(panel) = &self.panel {
+                    content = content.child(panel.clone());
+                }
+            } else {
+                content = content
                     .child(format!(
                         "业务能力尚未迁移 · 将在 {} 接入",
                         self.category.task()
                     ))
                     .child("P1-03 evidence draft / session only")
-                    .child(Input::new(&self.input));
+                    .child(super::components::text_input(&self.input));
+            }
         } else {
             content = content
                 .child(div().text_xl().child(format!(
@@ -68,36 +77,38 @@ impl Render for PageView {
                     self.route.task()
                 ));
             if self.route != Route::Overview {
-                content = content.child(Input::new(&self.input)).child(
-                    Button::new("session-choice")
-                        .label(match self.route {
-                            Route::Logs => {
-                                if self.alternate {
-                                    "级别筛选：Error（会话）"
-                                } else {
-                                    "级别筛选：All（会话）"
+                content = content
+                    .child(super::components::text_input(&self.input))
+                    .child(
+                        Button::new("session-choice")
+                            .label(match self.route {
+                                Route::Logs => {
+                                    if self.alternate {
+                                        "级别筛选：Error（会话）"
+                                    } else {
+                                        "级别筛选：All（会话）"
+                                    }
                                 }
-                            }
-                            Route::Connections => {
-                                if self.alternate {
-                                    "选中标记：开启（无连接数据）"
-                                } else {
-                                    "选中标记：关闭"
+                                Route::Connections => {
+                                    if self.alternate {
+                                        "选中标记：开启（无连接数据）"
+                                    } else {
+                                        "选中标记：关闭"
+                                    }
                                 }
-                            }
-                            _ => {
-                                if self.alternate {
-                                    "排序：名称降序（会话）"
-                                } else {
-                                    "排序：名称升序（会话）"
+                                _ => {
+                                    if self.alternate {
+                                        "排序：名称降序（会话）"
+                                    } else {
+                                        "排序：名称升序（会话）"
+                                    }
                                 }
-                            }
-                        })
-                        .on_click(cx.listener(|this, _, _, cx| {
-                            this.alternate = !this.alternate;
-                            cx.notify();
-                        })),
-                );
+                            })
+                            .on_click(cx.listener(|this, _, _, cx| {
+                                this.alternate = !this.alternate;
+                                cx.notify();
+                            })),
+                    );
             } else {
                 content = content
                     .child("本地桌面壳已就绪")

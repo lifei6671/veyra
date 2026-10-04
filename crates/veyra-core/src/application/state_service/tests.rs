@@ -547,7 +547,7 @@ fn v6_migration_preserves_legacy_identity_and_persists_new_epoch_once() {
     fs::write(f.root.join("state.json"), &bytes).unwrap();
     let migrated = f.store.load().unwrap();
     let persisted = f.bytes();
-    assert_eq!(migrated.schema_version, 7);
+    assert_eq!(migrated.schema_version, CURRENT_SCHEMA_VERSION);
     assert_eq!(migrated.config_revision, 0);
     assert_eq!(migrated.selection_revision, 0);
     assert_eq!(migrated.subscriptions, old.subscriptions);
@@ -816,4 +816,70 @@ fn recovering_live_instance_retains_its_applied_identity_without_claiming_ready(
     );
     assert_eq!(snapshot.applied_version, Some(old.config_version()));
     assert_eq!(snapshot.last_successful_version, None);
+}
+
+// Protect visual persistence independently of Runtime/selection facts.
+#[test]
+fn visual_save_reload_conflict_noop_and_versions() {
+    let fixture = Fixture::new();
+    let before = fixture.snapshots.snapshot().unwrap();
+    let service = super::DesktopPreferencesService::new(fixture.snapshots.clone());
+    let visual = crate::domain::DesktopVisualPreferences {
+        theme_mode: crate::domain::DesktopThemeMode::Dark,
+        language: crate::domain::DesktopLanguage::TraditionalChinese,
+        sidebar_collapsed: true,
+        global_radius: 8,
+        background_opacity: 40,
+        background_blur: 20,
+        ..Default::default()
+    };
+    let saved = service
+        .save(before.config_version(), visual.clone())
+        .unwrap();
+    assert_eq!(saved.effect, ApplyEffect::SavedOnly);
+    assert_eq!(saved.value.config_revision, before.config_revision + 1);
+    assert_eq!(saved.value.selection_version(), before.selection_version());
+    assert_eq!(saved.value.state_epoch, before.state_epoch);
+    assert_eq!(
+        fixture.snapshots.snapshot().unwrap().app_config.visual,
+        visual
+    );
+    assert_eq!(
+        service
+            .save(before.config_version(), visual.clone())
+            .unwrap_err()
+            .code(),
+        AppErrorCode::RevisionConflict
+    );
+    let noop = service.save(saved.version.clone(), visual).unwrap();
+    assert_eq!(noop.version, saved.version);
+}
+
+// Protect real v7 file migration without inventing an edit or replacing snapshot identity.
+#[test]
+fn v7_visual_migration_persists_defaults_without_advancing_versions() {
+    let f = Fixture::new();
+    let old = f.seed_pool();
+    let mut doc = serde_json::to_value(&old).unwrap();
+    doc["schema_version"] = 7.into();
+    doc["app_config"].as_object_mut().unwrap().remove("visual");
+    let bytes = serde_json::to_vec(&doc).unwrap();
+    fs::write(f.root.join("state.json"), &bytes).unwrap();
+    let migrated = f.store.load().unwrap();
+    assert_eq!(migrated.schema_version, CURRENT_SCHEMA_VERSION);
+    assert_eq!(migrated.state_epoch, old.state_epoch);
+    assert_eq!(migrated.config_version(), old.config_version());
+    assert_eq!(migrated.selection_version(), old.selection_version());
+    assert_eq!(migrated.pools, old.pools);
+    assert_eq!(
+        migrated.app_config.visual,
+        DesktopVisualPreferences::default()
+    );
+    assert_eq!(
+        fs::read(f.root.join("state.json.pre-migration")).unwrap(),
+        bytes
+    );
+    let persisted = f.bytes();
+    assert_eq!(f.store.load().unwrap(), migrated);
+    assert_eq!(f.bytes(), persisted);
 }

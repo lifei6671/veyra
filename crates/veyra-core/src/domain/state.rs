@@ -3,7 +3,7 @@ use std::fmt;
 
 use serde::{Deserialize, Serialize};
 
-pub const CURRENT_SCHEMA_VERSION: u32 = 7;
+pub const CURRENT_SCHEMA_VERSION: u32 = 8;
 pub const MAX_SAFE_INTEGER: u64 = 9_007_199_254_740_991;
 pub const MAX_SUBSCRIPTION_DOCUMENT_BYTES: usize = 4 * 1024 * 1024;
 
@@ -160,6 +160,10 @@ impl AppState {
             return Err(StateValidationError::UnsupportedSchemaVersion);
         }
 
+        self.app_config
+            .visual
+            .validate()
+            .map_err(|_| StateValidationError::InvalidVisualPreferences)?;
         self.profile
             .validate()
             .map_err(|_| StateValidationError::InvalidProfile)?;
@@ -1002,6 +1006,7 @@ impl RouteTarget {
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum StateValidationError {
     InvalidProfile,
+    InvalidVisualPreferences,
     InvalidVersion,
     InvalidIdentifier,
     DuplicateIdentifier,
@@ -1022,6 +1027,7 @@ pub enum StateValidationError {
 impl fmt::Display for StateValidationError {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         let message = match self {
+            Self::InvalidVisualPreferences => "desktop visual preferences are invalid",
             Self::InvalidProfile => "profile is invalid",
             Self::InvalidVersion => "snapshot version is invalid",
             Self::InvalidIdentifier => "state contains an invalid stable identifier",
@@ -1637,16 +1643,18 @@ mod tests {
     }
 }
 
-/// Desktop update preference only. No updater progress or OS registration belongs in state.json.
+/// Persisted desktop preferences. Transient UI, updater progress and OS registration stay outside state.json.
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 #[serde(deny_unknown_fields)]
 pub struct AppConfig {
     pub check_updates_on_start: bool,
+    pub visual: super::DesktopVisualPreferences,
 }
 impl Default for AppConfig {
     fn default() -> Self {
         Self {
             check_updates_on_start: true,
+            visual: super::DesktopVisualPreferences::default(),
         }
     }
 }

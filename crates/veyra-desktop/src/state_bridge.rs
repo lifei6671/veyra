@@ -15,6 +15,18 @@ pub struct InstanceToken {
     pub generation: u64,
 }
 pub enum AppEvent {
+    BackgroundPreview {
+        generation: u64,
+        result: Result<std::path::PathBuf, AppError>,
+    },
+    VisualSaved {
+        generation: u64,
+        result: Result<Box<AppState>, AppError>,
+    },
+    AssetPrepared {
+        generation: u64,
+        result: Result<veyra_core::domain::VisualAssetId, AppError>,
+    },
     Snapshot {
         request: Request,
         result: Result<Box<AppState>, AppError>,
@@ -90,6 +102,11 @@ impl StateBridge {
     }
     pub fn receive(&mut self, event: AppEvent) -> Disposition {
         match event {
+            AppEvent::VisualSaved { .. }
+            | AppEvent::AssetPrepared { .. }
+            | AppEvent::BackgroundPreview { .. } => {
+                unreachable!("composition root owns preference results")
+            }
             AppEvent::Snapshot { request, result } => {
                 let decision = if request.generation != self.generation {
                     Disposition::StaleGeneration
