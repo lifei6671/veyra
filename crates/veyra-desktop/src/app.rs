@@ -18,6 +18,9 @@ pub struct AppView {
     pub pages: Pages,
     pub bridge: StateBridge,
     pub services: Arc<AppServices>,
+    pub behavior: crate::behavior_preferences::BehaviorCoordinator,
+    pub behavior_panel: Entity<crate::ui::behavior_panel::BehaviorPanel>,
+    _behavior_subscription: Subscription,
     pub visual: crate::preferences::SaveCoordinator,
     pub panel: Entity<crate::ui::panel::PanelView>,
     pub page_scroll: ScrollHandle,
@@ -43,6 +46,24 @@ impl AppView {
         pages
             .get(Route::Settings)
             .update(cx, |p, _| p.panel = Some(panel.clone()));
+        let behavior_panel = cx.new(|cx| crate::ui::behavior_panel::BehaviorPanel::new(window, cx));
+        pages
+            .get(Route::Settings)
+            .update(cx, |p, _| p.behavior = Some(behavior_panel.clone()));
+        let behavior_subscription =
+            cx.subscribe_in(&behavior_panel, window, |this, _, event, window, cx| {
+                use crate::ui::behavior_panel::BehaviorPanelEvent;
+                match event {
+                    BehaviorPanelEvent::Edit(patch) => this.behavior.edit(patch.clone()),
+                    BehaviorPanelEvent::Save => this.submit_behavior(window, cx),
+                    BehaviorPanelEvent::Rebase => this.refresh(cx),
+                    BehaviorPanelEvent::ExternalWrite => {
+                        #[cfg(debug_assertions)]
+                        this.services.evidence_external_preferences();
+                    }
+                }
+                cx.notify();
+            });
         let panel_subscription = cx.subscribe_in(&panel, window, |this, _, event, window, cx| {
             use crate::ui::panel::PanelEvent;
             match event {
@@ -82,6 +103,9 @@ impl AppView {
             pages,
             bridge: StateBridge::default(),
             services,
+            behavior: Default::default(),
+            behavior_panel,
+            _behavior_subscription: behavior_subscription,
             visual: Default::default(),
             panel,
             page_scroll: ScrollHandle::new(),
@@ -150,6 +174,29 @@ impl AppView {
             self.background_preview = None;
         }
     }
+    fn submit_behavior(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        if let Some(request) = self.behavior.submit() {
+            eprintln!(
+                "behavior submit generation={} expected={:?} fields={:?}",
+                request.generation,
+                request.expected,
+                request.patch.changed_fields()
+            );
+            crate::ui::components::notify(
+                crate::ui::components::Notice::Saving,
+                "行为偏好正在保存",
+                window,
+                cx,
+            );
+            self.services.save_behavior(request);
+        }
+        self.project_behavior(window, cx);
+    }
+    fn project_behavior(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        self.behavior_panel.update(cx, |panel, cx| {
+            panel.project(&self.behavior.draft, &self.behavior.status, window, cx)
+        });
+    }
     fn submit_visual(&mut self, window: &mut Window, cx: &mut Context<Self>) {
         self.request_preview();
         let Some(state) = &self.bridge.snapshot else {
@@ -176,6 +223,69 @@ impl AppView {
     fn receive_event(&mut self, event: AppEvent, window: &mut Window, cx: &mut Context<Self>) {
         use crate::ui::components::{Notice, notify};
         match event {
+            AppEvent::ExternalPreferenceWrite { result } => {
+                eprintln!(
+                    "external preferences writer {result:?}; UI version intentionally unchanged"
+                );
+                match result {
+                    Ok(version) => notify(
+                        Notice::Success,
+                        format!(
+                            "Evidence: 外部已写入 {:?}；UI 保持旧 version",
+                            version.0.revision
+                        ),
+                        window,
+                        cx,
+                    ),
+                    Err(error) => {
+                        notify(Notice::Error, format!("外部写入失败 · {error}"), window, cx)
+                    }
+                }
+            }
+            AppEvent::BehaviorSaved {
+                generation,
+                mut result,
+            } => {
+                if !self.behavior.accepts_completion(generation) {
+                    eprintln!("behavior completion {generation} discarded");
+                    return;
+                }
+                if result.as_ref().is_ok_and(|saved| {
+                    self.bridge.snapshot.as_ref().is_none_or(|current| {
+                        saved.state_epoch != current.state_epoch
+                            || saved.config_revision < current.config_revision
+                    })
+                }) {
+                    result = Err(veyra_core::domain::AppError::new(
+                        veyra_core::domain::AppErrorCode::RevisionConflict,
+                    ));
+                }
+                let accepted = self.behavior.complete(
+                    generation,
+                    result.as_ref().map(|s| s.as_ref()).map_err(Clone::clone),
+                );
+                eprintln!(
+                    "behavior completion generation={generation} accepted={accepted} status={:?} pending={:?}",
+                    self.behavior.status,
+                    self.behavior.pending.changed_fields()
+                );
+                match result {
+                    Ok(saved) => {
+                        self.bridge.leave_page();
+                        self.bridge.snapshot = Some(saved);
+                        if accepted {
+                            notify(Notice::Success, "行为偏好已保存 · SavedOnly", window, cx);
+                        }
+                    }
+                    Err(error) => notify(
+                        Notice::Error,
+                        format!("行为保存失败 · draft 保留 · {error}"),
+                        window,
+                        cx,
+                    ),
+                }
+                self.project_behavior(window, cx);
+            }
             AppEvent::BackgroundPreview { generation, result } => {
                 if generation == self.preview_generation {
                     match result {
@@ -213,7 +323,9 @@ impl AppView {
                 let completion = result.as_ref().map(|_| ()).map_err(Clone::clone);
                 if let Ok(saved) = result {
                     self.bridge.leave_page();
+                    self.behavior.rebase(&saved);
                     self.bridge.snapshot = Some(saved);
+                    self.project_behavior(window, cx);
                 }
                 let accepted = self.visual.complete(generation, completion.clone());
                 eprintln!(
@@ -257,7 +369,9 @@ impl AppView {
                 self.bridge.receive(event);
                 if let Some(state) = &self.bridge.snapshot {
                     self.visual.restore(&state.app_config.visual);
+                    self.behavior.rebase(state);
                 }
+                self.project_behavior(window, cx);
                 if self.visual.generation == 0 {
                     self.panel
                         .update(cx, |p, cx| p.project(&self.visual.draft, window, cx));

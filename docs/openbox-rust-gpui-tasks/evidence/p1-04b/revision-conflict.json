@@ -1,0 +1,299 @@
+{
+  "ui_read_before": {
+    "state_epoch": [
+      28,
+      254,
+      138,
+      215,
+      232,
+      49,
+      224,
+      219,
+      29,
+      16,
+      16,
+      51,
+      247,
+      200,
+      105,
+      164
+    ],
+    "config_revision": 9,
+    "selection_revision": 0,
+    "app_config": {
+      "check_updates_on_start": true,
+      "visual": {
+        "language": "zh-CN",
+        "theme_mode": "system",
+        "background": {
+          "kind": "none"
+        },
+        "background_opacity": 90,
+        "background_blur": 10,
+        "global_radius": 16,
+        "sidebar_collapsed": false
+      },
+      "behavior": {
+        "latency": {
+          "test_url": "https://ui.example.invalid/latency",
+          "timeout_ms": 7000,
+          "low_ms": 320,
+          "medium_ms": 650
+        },
+        "proxy_view": {
+          "group_columns": 3,
+          "hide_unavailable": true,
+          "node_sort": "nameDesc",
+          "group_by_provider": false,
+          "node_card_min_width": 180,
+          "strategy_order": [
+            "display-b",
+            "display-a"
+          ]
+        },
+        "diagnostics": {
+          "ipv6_test": true
+        },
+        "ip_info": "ipwho.is",
+        "test_sites": [
+          {
+            "id": "baidu",
+            "name": "百度",
+            "url": "https://www.baidu.com/favicon.ico",
+            "icon_key": "brand:baidu"
+          },
+          {
+            "id": "google",
+            "name": "Evidence Google",
+            "url": "https://site.example.invalid/generate_204",
+            "icon_key": "builtin:globe"
+          },
+          {
+            "id": "openai",
+            "name": "OpenAI",
+            "url": "https://api.openai.com/v1/models",
+            "icon_key": "brand:openai-light"
+          },
+          {
+            "id": "telegram",
+            "name": "Telegram",
+            "url": "https://telegram.org/favicon.ico",
+            "icon_key": "brand:telegram"
+          }
+        ]
+      }
+    }
+  },
+  "user_edited_fields": [
+    "LatencyTimeout"
+  ],
+  "user_draft_timeout_ms": 7600,
+  "external_writer": "debug-only typed DesktopPreferencesService.patch_behavior; fresh ConfigVersion; same JsonStateStore/StateAccessGate; no synthetic error",
+  "external_commit": {
+    "state_epoch": [
+      28,
+      254,
+      138,
+      215,
+      232,
+      49,
+      224,
+      219,
+      29,
+      16,
+      16,
+      51,
+      247,
+      200,
+      105,
+      164
+    ],
+    "config_revision": 10,
+    "selection_revision": 0,
+    "app_config": {
+      "check_updates_on_start": true,
+      "visual": {
+        "language": "zh-CN",
+        "theme_mode": "system",
+        "background": {
+          "kind": "none"
+        },
+        "background_opacity": 90,
+        "background_blur": 10,
+        "global_radius": 16,
+        "sidebar_collapsed": false
+      },
+      "behavior": {
+        "latency": {
+          "test_url": "https://ui.example.invalid/latency",
+          "timeout_ms": 7000,
+          "low_ms": 320,
+          "medium_ms": 650
+        },
+        "proxy_view": {
+          "group_columns": 1,
+          "hide_unavailable": true,
+          "node_sort": "nameDesc",
+          "group_by_provider": false,
+          "node_card_min_width": 180,
+          "strategy_order": [
+            "display-b",
+            "display-a"
+          ]
+        },
+        "diagnostics": {
+          "ipv6_test": true
+        },
+        "ip_info": "ipwho.is",
+        "test_sites": [
+          {
+            "id": "baidu",
+            "name": "百度",
+            "url": "https://www.baidu.com/favicon.ico",
+            "icon_key": "brand:baidu"
+          },
+          {
+            "id": "google",
+            "name": "Evidence Google",
+            "url": "https://site.example.invalid/generate_204",
+            "icon_key": "builtin:globe"
+          },
+          {
+            "id": "openai",
+            "name": "OpenAI",
+            "url": "https://api.openai.com/v1/models",
+            "icon_key": "brand:openai-light"
+          },
+          {
+            "id": "telegram",
+            "name": "Telegram",
+            "url": "https://telegram.org/favicon.ico",
+            "icon_key": "brand:telegram"
+          }
+        ]
+      }
+    }
+  },
+  "after_rebase_retry": {
+    "state_epoch": [
+      28,
+      254,
+      138,
+      215,
+      232,
+      49,
+      224,
+      219,
+      29,
+      16,
+      16,
+      51,
+      247,
+      200,
+      105,
+      164
+    ],
+    "config_revision": 11,
+    "selection_revision": 0,
+    "app_config": {
+      "check_updates_on_start": true,
+      "visual": {
+        "language": "zh-CN",
+        "theme_mode": "system",
+        "background": {
+          "kind": "none"
+        },
+        "background_opacity": 90,
+        "background_blur": 10,
+        "global_radius": 16,
+        "sidebar_collapsed": false
+      },
+      "behavior": {
+        "latency": {
+          "test_url": "https://ui.example.invalid/latency",
+          "timeout_ms": 7600,
+          "low_ms": 320,
+          "medium_ms": 650
+        },
+        "proxy_view": {
+          "group_columns": 1,
+          "hide_unavailable": true,
+          "node_sort": "nameDesc",
+          "group_by_provider": false,
+          "node_card_min_width": 180,
+          "strategy_order": [
+            "display-b",
+            "display-a"
+          ]
+        },
+        "diagnostics": {
+          "ipv6_test": true
+        },
+        "ip_info": "ipwho.is",
+        "test_sites": [
+          {
+            "id": "baidu",
+            "name": "百度",
+            "url": "https://www.baidu.com/favicon.ico",
+            "icon_key": "brand:baidu"
+          },
+          {
+            "id": "google",
+            "name": "Evidence Google",
+            "url": "https://site.example.invalid/generate_204",
+            "icon_key": "builtin:globe"
+          },
+          {
+            "id": "openai",
+            "name": "OpenAI",
+            "url": "https://api.openai.com/v1/models",
+            "icon_key": "brand:openai-light"
+          },
+          {
+            "id": "telegram",
+            "name": "Telegram",
+            "url": "https://telegram.org/favicon.ico",
+            "icon_key": "brand:telegram"
+          }
+        ]
+      }
+    }
+  },
+  "result": "PASS; only LatencyTimeout replayed; external columns preserved",
+  "final_build": {
+    "ui_read": 13,
+    "ui_timeout_draft": 7800,
+    "external_columns": 3,
+    "after_retry": {
+      "config_revision": 15,
+      "timeout_ms": 7800,
+      "group_columns": 3,
+      "epoch": [
+        28,
+        254,
+        138,
+        215,
+        232,
+        49,
+        224,
+        219,
+        29,
+        16,
+        16,
+        51,
+        247,
+        200,
+        105,
+        164
+      ],
+      "selection_revision": 0
+    },
+    "external_revision": 14,
+    "submit_generation": 6,
+    "retry_generation": 7,
+    "replayed_fields": [
+      "LatencyTimeout"
+    ],
+    "draft_retained": true
+  }
+}

@@ -1,0 +1,57 @@
+{
+  "restored_defaults": [
+    {
+      "id": "baidu",
+      "name": "百度",
+      "url": "https://www.baidu.com/favicon.ico",
+      "icon_key": "brand:baidu"
+    },
+    {
+      "id": "google",
+      "name": "Google",
+      "url": "https://www.google.com/generate_204",
+      "icon_key": "brand:google"
+    },
+    {
+      "id": "openai",
+      "name": "OpenAI",
+      "url": "https://api.openai.com/v1/models",
+      "icon_key": "brand:openai-light"
+    },
+    {
+      "id": "telegram",
+      "name": "Telegram",
+      "url": "https://telegram.org/favicon.ico",
+      "icon_key": "brand:telegram"
+    }
+  ],
+  "revision": 8,
+  "network_requests": 0,
+  "icons": "bounded identifiers rendered as local text; no downloads",
+  "final_saved": [
+    {
+      "id": "baidu",
+      "name": "百度",
+      "url": "https://www.baidu.com/favicon.ico",
+      "icon_key": "brand:baidu"
+    },
+    {
+      "id": "google",
+      "name": "Final Evidence Google",
+      "url": "https://site.example.invalid/generate_204",
+      "icon_key": "builtin:globe"
+    },
+    {
+      "id": "openai",
+      "name": "OpenAI",
+      "url": "https://api.openai.com/v1/models",
+      "icon_key": "brand:openai-light"
+    },
+    {
+      "id": "telegram",
+      "name": "Telegram",
+      "url": "https://telegram.org/favicon.ico",
+      "icon_key": "brand:telegram"
+    }
+  ]
+}

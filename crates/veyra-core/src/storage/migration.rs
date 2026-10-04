@@ -19,6 +19,7 @@ pub fn migrate_to_current(mut document: Value) -> Result<(Value, bool), StateSto
             5 => migrate_v5_to_v6(&mut document),
             6 => migrate_v6_to_v7(&mut document),
             7 => migrate_v7_to_v8(&mut document),
+            8 => migrate_v8_to_v9(&mut document),
             _ => return Err(StateStoreError::UnsupportedSchemaVersion),
         }
         .map_err(|_| StateStoreError::MigrationFailed)?;
@@ -320,8 +321,89 @@ mod visual_tests {
         );
         assert_eq!(migrated.app_config.visual, Default::default());
         assert!(!migrated.app_config.check_updates_on_start);
-        assert_eq!(migrated.schema_version, 8);
+        assert_eq!(migrated.schema_version, CURRENT_SCHEMA_VERSION);
         assert!(migrated.validate().is_ok());
         assert!(!migrate_to_current(value).unwrap().1);
+    }
+}
+
+fn migrate_v8_to_v9(document: &mut Value) -> Result<(), StateStoreError> {
+    let object = document
+        .as_object_mut()
+        .ok_or(StateStoreError::InvalidStoredState)?;
+    let config = object
+        .get_mut("app_config")
+        .and_then(Value::as_object_mut)
+        .ok_or(StateStoreError::InvalidStoredState)?;
+    config.insert(
+        "behavior".into(),
+        serde_json::to_value(crate::domain::DesktopBehaviorPreferences::default())
+            .map_err(|_| StateStoreError::SerializationFailed)?,
+    );
+    object.insert("schema_version".into(), json!(9));
+    Ok(())
+}
+
+#[cfg(test)]
+mod behavior_tests {
+    use super::*;
+    #[test]
+    fn v8_to_v9_preserves_all_facts_and_load_is_stable() {
+        let mut original = crate::domain::AppState::empty();
+        original.config_revision = 19;
+        original.selection_revision = 7;
+        original.app_config.visual.theme_mode = crate::domain::DesktopThemeMode::Dark;
+        original.app_config.visual.global_radius = 5;
+        original.app_config.check_updates_on_start = false;
+        original.profile.ipv6 = false;
+        let mut old = serde_json::to_value(&original).unwrap();
+        old["schema_version"] = json!(8);
+        old["app_config"]
+            .as_object_mut()
+            .unwrap()
+            .remove("behavior");
+        let (new, changed) = migrate_to_current(old).unwrap();
+        assert!(changed);
+        assert_eq!(
+            serde_json::from_value::<crate::domain::AppState>(new.clone()).unwrap(),
+            original
+        );
+        assert!(!migrate_to_current(new).unwrap().1);
+    }
+}
+
+#[cfg(test)]
+mod behavior_store_tests {
+    use crate::{
+        application::{state_access::StateAccessGate, state_service::SnapshotService},
+        domain::*,
+        storage::JsonStateStore,
+    };
+    #[test]
+    fn actual_v8_store_migrates_once_without_business_edit() {
+        let mut state = AppState::empty();
+        state.config_revision = 12;
+        state.selection_revision = 3;
+        state.app_config.visual.theme_mode = DesktopThemeMode::Dark;
+        let root = std::env::temp_dir().join(format!("veyra-v8-migration-{:?}", state.state_epoch));
+        std::fs::create_dir_all(&root).unwrap();
+        let mut old = serde_json::to_value(&state).unwrap();
+        old["schema_version"] = 8.into();
+        old["app_config"]
+            .as_object_mut()
+            .unwrap()
+            .remove("behavior");
+        std::fs::write(root.join("state.json"), serde_json::to_vec(&old).unwrap()).unwrap();
+        let service = SnapshotService::new(
+            JsonStateStore::new(root.join("state.json")).unwrap(),
+            StateAccessGate::default(),
+        );
+        assert_eq!(service.snapshot().unwrap(), state);
+        assert_eq!(service.snapshot().unwrap(), state);
+        let disk: AppState =
+            serde_json::from_slice(&std::fs::read(root.join("state.json")).unwrap()).unwrap();
+        assert_eq!(disk, state);
+        assert!(root.join("state.json.pre-migration").exists());
+        std::fs::remove_dir_all(root).unwrap();
     }
 }

@@ -1,0 +1,30 @@
+{
+  "result": "PASS",
+  "test": "application::state_service::behavior_tests::diagnostics_ipv6_and_profile_ipv6_are_independent_in_both_directions",
+  "actual_gui": {
+    "diagnostics_ipv6_test": true,
+    "profile_ipv6": false,
+    "config_revision": 16,
+    "selection_revision": 0,
+    "state_epoch": [
+      28,
+      254,
+      138,
+      215,
+      232,
+      49,
+      224,
+      219,
+      29,
+      16,
+      16,
+      51,
+      247,
+      200,
+      105,
+      164
+    ]
+  },
+  "effect": "SavedOnly",
+  "runtime_apply_restart": false
+}

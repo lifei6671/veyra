@@ -3,7 +3,7 @@ use std::fmt;
 
 use serde::{Deserialize, Serialize};
 
-pub const CURRENT_SCHEMA_VERSION: u32 = 8;
+pub const CURRENT_SCHEMA_VERSION: u32 = 9;
 pub const MAX_SAFE_INTEGER: u64 = 9_007_199_254_740_991;
 pub const MAX_SUBSCRIPTION_DOCUMENT_BYTES: usize = 4 * 1024 * 1024;
 
@@ -164,6 +164,10 @@ impl AppState {
             .visual
             .validate()
             .map_err(|_| StateValidationError::InvalidVisualPreferences)?;
+        self.app_config
+            .behavior
+            .validate()
+            .map_err(|_| StateValidationError::InvalidBehaviorPreferences)?;
         self.profile
             .validate()
             .map_err(|_| StateValidationError::InvalidProfile)?;
@@ -1007,6 +1011,7 @@ impl RouteTarget {
 pub enum StateValidationError {
     InvalidProfile,
     InvalidVisualPreferences,
+    InvalidBehaviorPreferences,
     InvalidVersion,
     InvalidIdentifier,
     DuplicateIdentifier,
@@ -1028,6 +1033,7 @@ impl fmt::Display for StateValidationError {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         let message = match self {
             Self::InvalidVisualPreferences => "desktop visual preferences are invalid",
+            Self::InvalidBehaviorPreferences => "desktop behavior preferences are invalid",
             Self::InvalidProfile => "profile is invalid",
             Self::InvalidVersion => "snapshot version is invalid",
             Self::InvalidIdentifier => "state contains an invalid stable identifier",
@@ -1649,12 +1655,14 @@ mod tests {
 pub struct AppConfig {
     pub check_updates_on_start: bool,
     pub visual: super::DesktopVisualPreferences,
+    pub behavior: super::DesktopBehaviorPreferences,
 }
 impl Default for AppConfig {
     fn default() -> Self {
         Self {
             check_updates_on_start: true,
             visual: super::DesktopVisualPreferences::default(),
+            behavior: super::DesktopBehaviorPreferences::default(),
         }
     }
 }

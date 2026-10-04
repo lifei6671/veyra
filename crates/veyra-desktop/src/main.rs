@@ -1,4 +1,5 @@
 mod app;
+mod behavior_preferences;
 mod navigation;
 mod preferences;
 mod services;
@@ -18,9 +19,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         .or_else(|| std::env::var_os("VEYRA_P1_03_STATE_ROOT"))
         .map(PathBuf::from);
     let root = explicit_root.clone().unwrap_or_else(|| {
-        std::env::temp_dir().join(format!("veyra-p1-04a-{}", std::process::id()))
+        std::env::temp_dir().join(format!("veyra-p1-04b-{}", std::process::id()))
     });
-    eprintln!("P1-04A injected temporary state root: {}", root.display());
+    eprintln!("P1-04B injected temporary state root: {}", root.display());
     let (services, receiver) = services::AppServices::new(root.clone())?;
     let services = Arc::new(services);
     gpui_kit::application().with_assets(Assets).run(move |cx| {

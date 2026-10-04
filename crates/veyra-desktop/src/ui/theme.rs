@@ -98,6 +98,8 @@ pub fn apply(
         t.colors.button_foreground = rgb(p.text).into();
         t.colors.button_primary = rgb(0x70c996).into();
         t.colors.button_primary_foreground = rgb(0x183c29).into();
+        t.colors.button_primary_hover = rgb(0x5ab981).into();
+        t.colors.button_primary_active = rgb(0x4daa74).into();
         t.colors.slider_bar = rgb(0x70c996).into();
         t.colors.slider_thumb = rgb(0x70c996).into();
     });

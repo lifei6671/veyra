@@ -1,0 +1,24 @@
+{
+  "result": "PASS",
+  "transport": "tokio::sync::broadcast; capacity 64; shared DesktopPreferencesService clones; emitted inside same StateAccessGate after successful commit",
+  "read": "DesktopPreferencesService::behavior_snapshot",
+  "payload": [
+    "ConfigVersion",
+    "DesktopBehaviorPreferences",
+    "Vec<BehaviorField>"
+  ],
+  "subscribe": "DesktopPreferencesService::subscribe_behavior",
+  "consumers": [
+    "Proxies",
+    "Overview",
+    "Connections",
+    "Diagnostics"
+  ],
+  "tests": [
+    "behavior_preferences::tests::four_subscriptions_receive_typed_values_without_local_defaults",
+    "application::state_service::behavior_tests::notification_delivers_committed_typed_value_and_noop_is_silent"
+  ],
+  "noop_or_failed_commit_notification": false,
+  "consumer_recovery": "On Lagged, future consumers must re-read behavior_snapshot. Subscribe before initial read and gate by ConfigVersion; no JSON or own fallback defaults.",
+  "actual_downstream_business_integration": "NOT_IMPLEMENTED; tests exercise real service subscriptions, not live nodes, traffic, tests or IP providers."
+}

@@ -1,0 +1,46 @@
+{
+  "result": "PASS",
+  "canonical": {
+    "ui_latency_url": "http://www.gstatic.com/generate_204",
+    "timeout_ms": 5000,
+    "low_ms": 400,
+    "medium_ms": 800,
+    "group_columns": 2,
+    "hide_unavailable": false,
+    "node_sort": "latencyAsc",
+    "group_by_provider": true,
+    "node_card_min_width": 145,
+    "strategy_order": [],
+    "ipv6_test": false,
+    "ip_info": "ip.sb"
+  },
+  "legacy_react_consumer_fallback_discrepancy": {
+    "thresholds": [
+      500,
+      1000
+    ],
+    "group_columns": 1
+  },
+  "decision": "PanelSettings is the user-visible preference definition; PanelSettings.test explicitly identifies 400/800 as original defaults and expects two columns. Rust normalizes these defaults; this is not exact legacy consumer fallback parity.",
+  "sources": [
+    "src/openbox/pages/settings/PanelSettings.tsx",
+    "src/openbox/pages/settings/PanelSettings.test.ts",
+    "src/openbox/pages/ProxiesPage.tsx",
+    "src/openbox/pages/OverviewPage.tsx",
+    "src/openbox/pages/RulesPage.tsx",
+    "src/openbox/pages/ConnectionsPage.tsx",
+    "src/openbox/pages/settings/SubscriptionSettings.tsx",
+    "src/openbox/pages/settings/ChainProxySettings.tsx"
+  ],
+  "observed_fixture_check": {
+    "file": "docs/openbox-rust-gpui-tasks/fixtures/p0-01/observed-current-http.json",
+    "result": "Storage keys/values are redacted fixture placeholders; no recoverable runtime values for thresholds or columns. Visual-data fixture is synthetic and cannot adjudicate these defaults."
+  },
+  "legacy_localStorage_imported": false,
+  "session_only_proxy_tab": [
+    "groups",
+    "nodes",
+    "subscriptions"
+  ],
+  "new_consumer_defaults": "Only DesktopBehaviorPreferences::default; consumers receive typed saved values, no page fallback numbers."
+}

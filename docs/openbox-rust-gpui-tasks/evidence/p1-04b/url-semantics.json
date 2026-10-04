@@ -1,0 +1,21 @@
+{
+  "result": "PASS",
+  "test": "domain::desktop_behavior::tests::ui_runtime_and_group_url_roles_are_separate",
+  "roles": {
+    "UI": "UiLatencyUrl -> AppConfig.behavior.latency.test_url",
+    "Runtime": "RuntimeHealthUrl typed contract only; actual Profile persistence and Runtime consumer left to P2",
+    "Group": "GroupHealthUrl optional typed contract only; actual Group persistence left to P4"
+  },
+  "deliberately_distinct_test_urls": [
+    "https://ui.example.invalid",
+    "https://runtime.example.invalid",
+    "https://group.example.invalid"
+  ],
+  "resolver": "nonempty Group override -> Group; empty/None Group -> Runtime global only; UI URL cannot be passed as RuntimeHealthUrl",
+  "legacy_backend_fields": [
+    "testUrl",
+    "directTestUrl"
+  ],
+  "profile_fields_added": false,
+  "network_requests": 0
+}

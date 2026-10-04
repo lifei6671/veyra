@@ -341,9 +341,9 @@ impl Render for PanelView {
                 })),
             ))
             .child(div().text_xs().child(l(
-                "其他行为设置将在 P1-04B 接入。正式文件选择器由 P1-05 接入。",
-                "Behaviour settings: P1-04B. Native file picker: P1-05.",
-                "其他行為設定將在 P1-04B 接入。正式檔案選擇器由 P1-05 接入。",
+                "行为偏好可切换查看。正式文件选择器由 P1-05 接入。",
+                "Switch to Behaviour settings. Native file picker: P1-05.",
+                "行為偏好可切換查看。正式檔案選擇器由 P1-05 接入。",
             )))
             .child(
                 div()

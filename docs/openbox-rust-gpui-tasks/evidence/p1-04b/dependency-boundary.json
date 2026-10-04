@@ -1,0 +1,12 @@
+{
+  "result": "PASS",
+  "tree_log": "final-check-11.log",
+  "gpui_kit": "0.7.0",
+  "gpui_pre": "0.3.7",
+  "single_gpui_source": true,
+  "cargo_toml_lock_changes": false,
+  "core_depends_on_gpui": false,
+  "desktop_depends_on_tauri_helper_prototype": false,
+  "second_tao_winit_loop": false,
+  "url_parser": "existing reqwest::Url parser only; no new dependency or HTTP call"
+}

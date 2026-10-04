@@ -85,10 +85,12 @@
 
 **验收**：
 
-- [ ] 行为偏好可保存/恢复，非法输入可定位；消费者收到新值而不丢失未编辑字段。
-- [ ] UI latency preference test URL、Runtime health test URL、group health URL 分别建模；group 的空值按现有明确规则使用 Runtime 全局地址，不回落到 UI 测速偏好。
-- [ ] UI diagnostics ipv6-test 与 Runtime profile ipv6 分别保存/消费；修改诊断偏好不改变 Runtime IPv6 配置。
-- [ ] 面板行为字段的实际操作与失败反馈通过；后续页面消费的真实集成分别在 P2-08、P3-02/05/07、P4-05C、P5-03 验收，不在本任务冒充完成。
+- [x] 行为偏好可保存/恢复，非法输入可定位；消费者收到新值而不丢失未编辑字段。
+- [x] UI latency preference test URL、Runtime health test URL、group health URL 分别建模；group 的空值按现有明确规则使用 Runtime 全局地址，不回落到 UI 测速偏好。
+- [x] UI diagnostics ipv6-test 与 Runtime profile ipv6 分别保存/消费；修改诊断偏好不改变 Runtime IPv6 配置。
+- [x] 面板行为字段的实际操作与失败反馈通过；后续页面消费的真实集成分别在 P2-08、P3-02/05/07、P4-05C、P5-03 验收，不在本任务冒充完成。
+
+**当前交付**：DONE；schema9、typed partial patch/CAS/通知与 Panel 行为字段实际验收通过；[完整证据](evidence/p1-04b/README.md)。共享 owner 已释放，后续真实页面/Runtime 消费未实现。
 
 <a id="obg-p1-05"></a>
 ## OBG-P1-05 平台目录、单实例与原生文件操作

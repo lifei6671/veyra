@@ -1,0 +1,124 @@
+{
+  "operator": "Codex Desktop; actual native GPUI UI through cua_repl",
+  "result": "PASS",
+  "steps": [
+    {
+      "id": "empty_startup",
+      "result": "PASS",
+      "observed": "schema 9 local UI; no configuration/login/HTTP requirement"
+    },
+    {
+      "id": "latency",
+      "result": "PASS",
+      "observed": "URL HTTPS fixture, timeout 7000 then 7600/7800, thresholds 300 then 320 / 650 saved"
+    },
+    {
+      "id": "invalid_threshold",
+      "result": "PASS",
+      "observed": "low 900 > medium 650; Validation LatencyMedium; draft retained; fixed and Retry"
+    },
+    {
+      "id": "invalid_url",
+      "result": "PASS",
+      "observed": "file:///tmp/not-http rejected at LatencyUrl; no request; corrected and Retry"
+    },
+    {
+      "id": "proxy_columns",
+      "result": "PASS",
+      "observed": "1 -> 2 -> 3 each saved; conflict external column also preserved"
+    },
+    {
+      "id": "proxy_display",
+      "result": "PASS",
+      "observed": "hide unavailable on; node sort nameDesc; group by provider off; min width 180; display ID deduplication"
+    },
+    {
+      "id": "diagnostics_ip",
+      "result": "PASS",
+      "observed": "ipv6_test on; provider ipwho.is; Profile IPv6 remains false"
+    },
+    {
+      "id": "test_sites",
+      "result": "PASS",
+      "observed": "Google name/URL/icon key edited; ftp URL rejected at TestSiteUrl; four defaults restored then edited again"
+    },
+    {
+      "id": "failure_draft",
+      "result": "PASS",
+      "observed": "real state.tmp directory blocks atomic temporary file create; draft kept through navigation; state unchanged"
+    },
+    {
+      "id": "retry",
+      "result": "PASS",
+      "observed": "fixture removed; Retry commits only edited fields"
+    },
+    {
+      "id": "revision_conflict",
+      "result": "PASS",
+      "observed": "UI 9 vs external Core 10, retry 11; final build UI 13 vs external Core 14, retry 15; only Timeout replayed, external columns retained"
+    },
+    {
+      "id": "family_independence",
+      "result": "PASS",
+      "observed": "Visual dark save -> revision 12, light -> 13; behavior unchanged; coordinators separately generated"
+    },
+    {
+      "id": "light_dark",
+      "result": "PASS",
+      "observed": "final build actual native screenshots; readable inputs, select, switch, errors and Toast; green primary hover fix"
+    },
+    {
+      "id": "restart_restore",
+      "result": "PASS",
+      "observed": "two normal exit/restarts with same injected root; final config16 / selection0 / same epoch and whole AppConfig equality; all four behavior regions inspected"
+    },
+    {
+      "id": "normal_exit",
+      "result": "PASS",
+      "observed": "Quit button; exact desktop process check returns none"
+    }
+  ],
+  "final_restore": {
+    "latency": {
+      "test_url": "https://ui.example.invalid/latency",
+      "timeout_ms": 7800,
+      "low_ms": 320,
+      "medium_ms": 650
+    },
+    "proxy_view": {
+      "group_columns": 3,
+      "hide_unavailable": true,
+      "node_sort": "nameDesc",
+      "group_by_provider": false,
+      "node_card_min_width": 180,
+      "strategy_order": [
+        "display-b",
+        "display-a"
+      ]
+    },
+    "diagnostics": {
+      "ipv6_test": true
+    },
+    "ip_info": "ipwho.is",
+    "edited_site": {
+      "id": "google",
+      "name": "Final Evidence Google",
+      "url": "https://site.example.invalid/generate_204",
+      "icon_key": "builtin:globe"
+    }
+  },
+  "logs": [
+    "gui-initial.log",
+    "gui-final.log",
+    "gui-restart.log"
+  ],
+  "no_network_consumption": true,
+  "ime": "P1-04A existing accepted base Input; no new IME claim in P1-04B",
+  "known_visual_differences": [
+    "Behavior split into four session sections to fit 1280x720; no new full-page visual redesign.",
+    "Long proxy section supports vertical scrolling; no input text clipping observed.",
+    "Bounded icon keys displayed as text; no downloaded site icons.",
+    "Existing system font and mixed zh/en technical labels retained; no complete i18n claim.",
+    "Evidence-only external CAS button is debug only; not Runtime action."
+  ]
+}

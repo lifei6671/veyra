@@ -1,0 +1,44 @@
+P1-04B injected temporary state root: /private/tmp/veyra-p1-04b-gui
+sandbox_extension_issue_file_to_process failed for /tmp/veyra-p1-04b-stage/Veyra P1-04B.app: 1 (Operation not permitted)
+logical content 1280x720; scale factor 2
+bridge request=1 generation=0 busy
+bridge request=1 generation=0 Accepted
+navigate settings entity=EntityId(17v1)
+behavior submit generation=5 expected=ConfigVersion(StateVersion { epoch: StateEpoch([28, 254, 138, 215, 232, 49, 224, 219, 29, 16, 16, 51, 247, 200, 105, 164]), revision: 0 }) fields=[LatencyUrl, LatencyTimeout, LatencyLow, LatencyMedium]
+behavior completion generation=5 accepted=true status=Idle pending=[]
+behavior submit generation=7 expected=ConfigVersion(StateVersion { epoch: StateEpoch([28, 254, 138, 215, 232, 49, 224, 219, 29, 16, 16, 51, 247, 200, 105, 164]), revision: 1 }) fields=[LatencyLow]
+behavior completion generation=7 accepted=true status=Failed(AppError { code: Validation, message: "输入无效，请检查标记的字段", field: Some(LatencyMedium), detail: None }) pending=[LatencyLow]
+behavior submit generation=10 expected=ConfigVersion(StateVersion { epoch: StateEpoch([28, 254, 138, 215, 232, 49, 224, 219, 29, 16, 16, 51, 247, 200, 105, 164]), revision: 1 }) fields=[LatencyUrl, LatencyLow]
+behavior completion generation=10 accepted=true status=Failed(AppError { code: Validation, message: "输入无效，请检查标记的字段", field: Some(LatencyUrl), detail: None }) pending=[LatencyUrl, LatencyLow]
+behavior submit generation=12 expected=ConfigVersion(StateVersion { epoch: StateEpoch([28, 254, 138, 215, 232, 49, 224, 219, 29, 16, 16, 51, 247, 200, 105, 164]), revision: 1 }) fields=[LatencyUrl, LatencyLow]
+behavior completion generation=12 accepted=true status=Idle pending=[]
+behavior submit generation=14 expected=ConfigVersion(StateVersion { epoch: StateEpoch([28, 254, 138, 215, 232, 49, 224, 219, 29, 16, 16, 51, 247, 200, 105, 164]), revision: 2 }) fields=[ProxyColumns]
+behavior completion generation=14 accepted=true status=Idle pending=[]
+behavior submit generation=16 expected=ConfigVersion(StateVersion { epoch: StateEpoch([28, 254, 138, 215, 232, 49, 224, 219, 29, 16, 16, 51, 247, 200, 105, 164]), revision: 3 }) fields=[ProxyColumns]
+behavior completion generation=16 accepted=true status=Idle pending=[]
+behavior submit generation=23 expected=ConfigVersion(StateVersion { epoch: StateEpoch([28, 254, 138, 215, 232, 49, 224, 219, 29, 16, 16, 51, 247, 200, 105, 164]), revision: 4 }) fields=[ProxyColumns, HideUnavailable, NodeSort, GroupByProvider, NodeWidth, StrategyOrder]
+behavior completion generation=23 accepted=true status=Idle pending=[]
+behavior submit generation=26 expected=ConfigVersion(StateVersion { epoch: StateEpoch([28, 254, 138, 215, 232, 49, 224, 219, 29, 16, 16, 51, 247, 200, 105, 164]), revision: 5 }) fields=[Ipv6Test, IpInfo]
+behavior completion generation=26 accepted=true status=Idle pending=[]
+behavior submit generation=30 expected=ConfigVersion(StateVersion { epoch: StateEpoch([28, 254, 138, 215, 232, 49, 224, 219, 29, 16, 16, 51, 247, 200, 105, 164]), revision: 6 }) fields=[TestSites]
+behavior completion generation=30 accepted=true status=Failed(AppError { code: Validation, message: "输入无效，请检查标记的字段", field: Some(TestSiteUrl), detail: None }) pending=[TestSites]
+behavior submit generation=32 expected=ConfigVersion(StateVersion { epoch: StateEpoch([28, 254, 138, 215, 232, 49, 224, 219, 29, 16, 16, 51, 247, 200, 105, 164]), revision: 6 }) fields=[TestSites]
+behavior completion generation=32 accepted=true status=Failed(AppError { code: StorageFailed, message: "数据未能保存或读取", field: None, detail: Some(Write) }) pending=[TestSites]
+navigate overview entity=EntityId(2v1)
+navigate settings entity=EntityId(17v1)
+behavior submit generation=33 expected=ConfigVersion(StateVersion { epoch: StateEpoch([28, 254, 138, 215, 232, 49, 224, 219, 29, 16, 16, 51, 247, 200, 105, 164]), revision: 6 }) fields=[TestSites]
+behavior completion generation=33 accepted=true status=Idle pending=[]
+behavior submit generation=35 expected=ConfigVersion(StateVersion { epoch: StateEpoch([28, 254, 138, 215, 232, 49, 224, 219, 29, 16, 16, 51, 247, 200, 105, 164]), revision: 7 }) fields=[TestSites]
+behavior completion generation=35 accepted=true status=Idle pending=[]
+behavior submit generation=39 expected=ConfigVersion(StateVersion { epoch: StateEpoch([28, 254, 138, 215, 232, 49, 224, 219, 29, 16, 16, 51, 247, 200, 105, 164]), revision: 8 }) fields=[TestSites]
+behavior completion generation=39 accepted=true status=Idle pending=[]
+external preferences writer Ok(ConfigVersion(StateVersion { epoch: StateEpoch([28, 254, 138, 215, 232, 49, 224, 219, 29, 16, 16, 51, 247, 200, 105, 164]), revision: 10 })); UI version intentionally unchanged
+behavior submit generation=41 expected=ConfigVersion(StateVersion { epoch: StateEpoch([28, 254, 138, 215, 232, 49, 224, 219, 29, 16, 16, 51, 247, 200, 105, 164]), revision: 9 }) fields=[LatencyTimeout]
+behavior completion generation=41 accepted=true status=Failed(AppError { code: RevisionConflict, message: "数据已变更，请重新加载后保存", field: None, detail: None }) pending=[LatencyTimeout]
+bridge request=2 generation=12 busy
+bridge request=2 generation=12 Accepted
+behavior submit generation=42 expected=ConfigVersion(StateVersion { epoch: StateEpoch([28, 254, 138, 215, 232, 49, 224, 219, 29, 16, 16, 51, 247, 200, 105, 164]), revision: 10 }) fields=[LatencyTimeout]
+behavior completion generation=42 accepted=true status=Idle pending=[]
+visual change generation=1 changes=1
+visual submit generation=1 commits=1 opacity=90 blur=10
+visual completion generation=1 accepted=true result=Ok(())

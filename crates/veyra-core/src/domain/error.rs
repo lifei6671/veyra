@@ -37,6 +37,34 @@ impl AppErrorCode {
 /// Closed paths prevent user-controlled keys or identifiers from becoming error output.
 #[derive(Clone, Copy, Debug, Eq, PartialEq, Serialize)]
 pub enum FieldPath {
+    #[serde(rename = "app_config.behavior.latency.test_url")]
+    LatencyUrl,
+    #[serde(rename = "app_config.behavior.latency.timeout_ms")]
+    LatencyTimeout,
+    #[serde(rename = "app_config.behavior.latency.low_ms")]
+    LatencyLow,
+    #[serde(rename = "app_config.behavior.latency.medium_ms")]
+    LatencyMedium,
+    #[serde(rename = "app_config.behavior.proxy_view.group_columns")]
+    ProxyColumns,
+    #[serde(rename = "app_config.behavior.proxy_view.node_card_min_width")]
+    ProxyNodeWidth,
+    #[serde(rename = "app_config.behavior.proxy_view.strategy_order")]
+    ProxyStrategyOrder,
+    #[serde(rename = "app_config.behavior.test_sites")]
+    TestSites,
+    #[serde(rename = "app_config.behavior.test_sites.id")]
+    TestSiteId,
+    #[serde(rename = "app_config.behavior.test_sites.name")]
+    TestSiteName,
+    #[serde(rename = "app_config.behavior.test_sites.url")]
+    TestSiteUrl,
+    #[serde(rename = "app_config.behavior.test_sites.icon_key")]
+    TestSiteIcon,
+    #[serde(rename = "runtime.health_url")]
+    RuntimeHealthUrl,
+    #[serde(rename = "group.health_url")]
+    GroupHealthUrl,
     #[serde(rename = "app_config.visual")]
     DesktopVisual,
     #[serde(rename = "profile.ipv6")]

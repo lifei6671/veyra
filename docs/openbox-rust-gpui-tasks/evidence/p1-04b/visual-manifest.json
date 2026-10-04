@@ -1,0 +1,148 @@
+{
+  "screenshots": [
+    {
+      "file": "visual/light-behavior.png",
+      "sha256": "b6b104f0af02625670d59142dd5765a173ed050ff57209bf4df1b98a686dc0e4",
+      "physical_size": [
+        2560,
+        1506
+      ],
+      "logical_content_size": [
+        1280,
+        720
+      ],
+      "scale_factor": 2,
+      "titlebar_included": true,
+      "titlebar_physical_height": 66,
+      "capture": "actual GPUI native window; full screenshot; JPEG-to-PNG encoding only, no crop"
+    },
+    {
+      "file": "visual/dark-behavior.png",
+      "sha256": "dfa6ea00fe16bc65080ce5ecc672fce05041c2393da7f0f48ee99db19525751b",
+      "physical_size": [
+        2560,
+        1506
+      ],
+      "logical_content_size": [
+        1280,
+        720
+      ],
+      "scale_factor": 2,
+      "titlebar_included": true,
+      "titlebar_physical_height": 66,
+      "capture": "actual GPUI native window; full screenshot; JPEG-to-PNG encoding only, no crop"
+    },
+    {
+      "file": "visual/validation-error.png",
+      "sha256": "79aa89f2136506eb94de74adb4273f23433ee50b74dfc33e175d5e758c3d9b76",
+      "physical_size": [
+        2560,
+        1506
+      ],
+      "logical_content_size": [
+        1280,
+        720
+      ],
+      "scale_factor": 2,
+      "titlebar_included": true,
+      "titlebar_physical_height": 66,
+      "capture": "actual GPUI native window; full screenshot; JPEG-to-PNG encoding only, no crop"
+    },
+    {
+      "file": "visual/revision-conflict.png",
+      "sha256": "7bc8d9b828b828a738cf97744f41f5e338004ddedc26028358f9693224581d16",
+      "physical_size": [
+        2560,
+        1506
+      ],
+      "logical_content_size": [
+        1280,
+        720
+      ],
+      "scale_factor": 2,
+      "titlebar_included": true,
+      "titlebar_physical_height": 66,
+      "capture": "actual GPUI native window; full screenshot; JPEG-to-PNG encoding only, no crop"
+    },
+    {
+      "file": "visual/save-failure-draft.png",
+      "sha256": "4a2766ac956e3b1c2a65eee98f4342320eb0bb23be459a8cd277db989746d8fc",
+      "physical_size": [
+        2560,
+        1506
+      ],
+      "logical_content_size": [
+        1280,
+        720
+      ],
+      "scale_factor": 2,
+      "titlebar_included": true,
+      "titlebar_physical_height": 66,
+      "capture": "actual GPUI native window; full screenshot; JPEG-to-PNG encoding only, no crop"
+    },
+    {
+      "file": "visual/test-sites.png",
+      "sha256": "5503a3770ae418e40bcc959880ca9724fec7330e0c37de2d49d33ad1ced1c0e2",
+      "physical_size": [
+        2560,
+        1506
+      ],
+      "logical_content_size": [
+        1280,
+        720
+      ],
+      "scale_factor": 2,
+      "titlebar_included": true,
+      "titlebar_physical_height": 66,
+      "capture": "actual GPUI native window; full screenshot; JPEG-to-PNG encoding only, no crop"
+    },
+    {
+      "file": "visual/proxy-display.png",
+      "sha256": "ac939e2bdce251222fed7c9f23b096face9255b5eaf28966aadcb72757d63f11",
+      "physical_size": [
+        2560,
+        1506
+      ],
+      "logical_content_size": [
+        1280,
+        720
+      ],
+      "scale_factor": 2,
+      "titlebar_included": true,
+      "titlebar_physical_height": 66,
+      "capture": "actual GPUI native window; full screenshot; JPEG-to-PNG encoding only, no crop"
+    },
+    {
+      "file": "visual/diagnostics-ip.png",
+      "sha256": "491cedb8694b03a7c8379765e0258469bdf92fe62360180ffa8c3a6d43f12a4d",
+      "physical_size": [
+        2560,
+        1506
+      ],
+      "logical_content_size": [
+        1280,
+        720
+      ],
+      "scale_factor": 2,
+      "titlebar_included": true,
+      "titlebar_physical_height": 66,
+      "capture": "actual GPUI native window; full screenshot; JPEG-to-PNG encoding only, no crop"
+    },
+    {
+      "file": "visual/restart-restored.png",
+      "sha256": "b656459958146bfa3bb24262ea073ed82899441ade3b9e984c2ccf5b2ee2f0b9",
+      "physical_size": [
+        2560,
+        1506
+      ],
+      "logical_content_size": [
+        1280,
+        720
+      ],
+      "scale_factor": 2,
+      "titlebar_included": true,
+      "titlebar_physical_height": 66,
+      "capture": "actual GPUI native window; full screenshot; JPEG-to-PNG encoding only, no crop"
+    }
+  ]
+}

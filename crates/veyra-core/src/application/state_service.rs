@@ -1,9 +1,9 @@
 use super::state_access::StateAccessGate;
 use crate::{
     domain::{
-        AppError, AppErrorCode, AppState, ConfigVersion, ErrorDetail, FieldPath, NodeId, PoolId,
-        Profile, ProfilePatch, Provider, ProxyNode, SelectionPolicy, SelectionVersion,
-        SnapshotVersion, StateEpoch, Subscription,
+        AppError, AppErrorCode, AppState, BehaviorField, ConfigVersion, ErrorDetail, FieldPath,
+        NodeId, PoolId, Profile, ProfilePatch, Provider, ProxyNode, SelectionPolicy,
+        SelectionVersion, SnapshotVersion, StateEpoch, Subscription,
     },
     storage::{JsonStateStore, StateStore},
 };
@@ -185,10 +185,14 @@ mod tests;
 #[derive(Clone)]
 pub struct DesktopPreferencesService {
     snapshots: SnapshotService,
+    behavior_changes: tokio::sync::broadcast::Sender<BehaviorChange>,
 }
 impl DesktopPreferencesService {
     pub fn new(snapshots: SnapshotService) -> Self {
-        Self { snapshots }
+        Self {
+            snapshots,
+            behavior_changes: tokio::sync::broadcast::channel(64).0,
+        }
     }
     pub fn save(
         &self,
@@ -205,6 +209,278 @@ impl DesktopPreferencesService {
             version: saved.config_version(),
             value: saved,
             effect: ApplyEffect::SavedOnly,
+        })
+    }
+}
+
+/// Latest typed behavior value plus exact changed fields. No JSON or runtime effect.
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct BehaviorChange {
+    pub version: ConfigVersion,
+    pub value: crate::domain::DesktopBehaviorPreferences,
+    pub fields: Vec<crate::domain::BehaviorField>,
+}
+impl DesktopPreferencesService {
+    pub fn behavior_snapshot(&self) -> Result<BehaviorChange, AppError> {
+        let state = self.snapshots.snapshot()?;
+        Ok(BehaviorChange {
+            version: state.config_version(),
+            value: state.app_config.behavior,
+            fields: vec![],
+        })
+    }
+    pub fn subscribe_behavior(&self) -> tokio::sync::broadcast::Receiver<BehaviorChange> {
+        self.behavior_changes.subscribe()
+    }
+    pub fn patch_behavior(
+        &self,
+        expected: ConfigVersion,
+        patch: crate::domain::DesktopBehaviorPreferencesPatch,
+    ) -> Result<SaveOutcome<AppState, ConfigVersion>, AppError> {
+        let _guard = self.snapshots.lock()?;
+        let mut next = self.snapshots.load_or_initialize()?;
+        next.config_version().0.require(&expected.0)?;
+        let previous = next.app_config.behavior.clone();
+        next.app_config.behavior = patch.apply(&previous);
+        next.app_config.behavior.validate()?;
+        let fields = crate::domain::DesktopBehaviorPreferencesPatch::between(
+            &previous,
+            &next.app_config.behavior,
+        )
+        .changed_fields();
+        let saved = self.snapshots.store.commit(&next)?;
+        if !fields.is_empty() {
+            // Under the same gate as commit, so concurrent writers cannot reorder notifications.
+            let _ = self.behavior_changes.send(BehaviorChange {
+                version: saved.config_version(),
+                value: saved.app_config.behavior.clone(),
+                fields,
+            });
+        }
+        Ok(SaveOutcome {
+            version: saved.config_version(),
+            value: saved,
+            effect: ApplyEffect::SavedOnly,
+        })
+    }
+}
+
+#[cfg(test)]
+mod behavior_tests {
+    use super::*;
+    use crate::domain::*;
+    fn services() -> (
+        std::path::PathBuf,
+        SnapshotService,
+        DesktopPreferencesService,
+    ) {
+        let root = std::env::temp_dir().join(format!(
+            "veyra-behavior-{}-{:?}",
+            std::process::id(),
+            StateEpoch::fresh().unwrap()
+        ));
+        let snapshots = SnapshotService::new(
+            JsonStateStore::new(root.join("state.json")).unwrap(),
+            StateAccessGate::default(),
+        );
+        let prefs = DesktopPreferencesService::new(snapshots.clone());
+        (root, snapshots, prefs)
+    }
+    #[test]
+    fn save_reload_versions_noop_and_stale_cas() {
+        let (root, s, p) = services();
+        let before = s.snapshot().unwrap();
+        let out = p
+            .patch_behavior(
+                before.config_version(),
+                DesktopBehaviorPreferencesPatch {
+                    timeout_ms: Some(9000),
+                    ..Default::default()
+                },
+            )
+            .unwrap();
+        assert_eq!(out.effect, ApplyEffect::SavedOnly);
+        assert_eq!(out.value.config_revision, before.config_revision + 1);
+        assert_eq!(out.value.selection_revision, before.selection_revision);
+        assert_eq!(out.value.state_epoch, before.state_epoch);
+        assert_eq!(out.value.profile, before.profile);
+        assert_eq!(out.value.app_config.visual, before.app_config.visual);
+        assert_eq!(
+            out.value.app_config.check_updates_on_start,
+            before.app_config.check_updates_on_start
+        );
+        assert_eq!(s.snapshot().unwrap(), out.value);
+        assert_eq!(
+            p.patch_behavior(
+                out.version.clone(),
+                DesktopBehaviorPreferencesPatch {
+                    timeout_ms: Some(9000),
+                    ..Default::default()
+                }
+            )
+            .unwrap()
+            .version,
+            out.version
+        );
+        assert_eq!(
+            p.patch_behavior(before.config_version(), Default::default())
+                .unwrap_err()
+                .code(),
+            AppErrorCode::RevisionConflict
+        );
+        std::fs::remove_dir_all(root).unwrap();
+    }
+    #[test]
+    fn visual_and_behavior_interleaving_never_overwrites_other_family() {
+        let (root, s, p) = services();
+        let initial = s.snapshot().unwrap();
+        let mut visual = initial.app_config.visual.clone();
+        visual.theme_mode = DesktopThemeMode::Dark;
+        let a = p.save(initial.config_version(), visual).unwrap();
+        let b = p
+            .patch_behavior(
+                a.version,
+                DesktopBehaviorPreferencesPatch {
+                    timeout_ms: Some(8000),
+                    ..Default::default()
+                },
+            )
+            .unwrap();
+        assert_eq!(b.value.app_config.visual.theme_mode, DesktopThemeMode::Dark);
+        let c = p
+            .patch_behavior(
+                b.version.clone(),
+                DesktopBehaviorPreferencesPatch {
+                    group_columns: Some(3),
+                    ..Default::default()
+                },
+            )
+            .unwrap();
+        let mut visual = c.value.app_config.visual;
+        visual.global_radius = 9;
+        assert_eq!(
+            p.save(b.version, visual.clone()).unwrap_err().code(),
+            AppErrorCode::RevisionConflict
+        );
+        let d = p.save(c.version, visual).unwrap();
+        assert_eq!(
+            (
+                d.value.app_config.behavior.latency.timeout_ms,
+                d.value.app_config.behavior.proxy_view.group_columns
+            ),
+            (8000, 3)
+        );
+        std::fs::remove_dir_all(root).unwrap();
+    }
+    #[test]
+    fn diagnostics_ipv6_and_profile_ipv6_are_independent_in_both_directions() {
+        let (root, s, p) = services();
+        let profile = ProfileService::new(s.clone());
+        let a = s.snapshot().unwrap();
+        let a = profile
+            .patch(
+                a.config_version(),
+                ProfilePatch {
+                    ipv6: Patch::Value(false),
+                    ..Default::default()
+                },
+            )
+            .unwrap();
+        let b = p
+            .patch_behavior(
+                a.version,
+                DesktopBehaviorPreferencesPatch {
+                    ipv6_test: Some(true),
+                    ..Default::default()
+                },
+            )
+            .unwrap();
+        assert!(!b.value.profile.ipv6);
+        assert!(b.value.app_config.behavior.diagnostics.ipv6_test);
+        profile
+            .patch(
+                b.version,
+                ProfilePatch {
+                    ipv6: Patch::Value(true),
+                    ..Default::default()
+                },
+            )
+            .unwrap();
+        let c = s.snapshot().unwrap();
+        assert!(c.profile.ipv6);
+        assert!(c.app_config.behavior.diagnostics.ipv6_test);
+        std::fs::remove_dir_all(root).unwrap();
+    }
+    #[test]
+    fn notification_delivers_committed_typed_value_and_noop_is_silent() {
+        let (root, s, p) = services();
+        let a = s.snapshot().unwrap();
+        let mut rx = p.subscribe_behavior();
+        let b = p
+            .patch_behavior(
+                a.config_version(),
+                DesktopBehaviorPreferencesPatch {
+                    group_columns: Some(3),
+                    ..Default::default()
+                },
+            )
+            .unwrap();
+        let event = rx.try_recv().unwrap();
+        assert_eq!(event.version, b.version);
+        assert_eq!(event.value, b.value.app_config.behavior);
+        assert_eq!(event.fields, [BehaviorField::ProxyColumns]);
+        p.patch_behavior(b.version, Default::default()).unwrap();
+        assert!(rx.try_recv().is_err());
+        std::fs::remove_dir_all(root).unwrap();
+    }
+}
+
+/// Future page consumers subscribe to committed typed values, never invent per-page defaults.
+#[derive(Clone, Copy, Debug)]
+pub enum BehaviorConsumer {
+    Proxies,
+    Overview,
+    Connections,
+    Diagnostics,
+}
+impl BehaviorConsumer {
+    pub fn accepts(self, event: &BehaviorChange) -> bool {
+        event.fields.iter().any(|field| match self {
+            Self::Proxies => matches!(
+                field,
+                BehaviorField::LatencyUrl
+                    | BehaviorField::LatencyTimeout
+                    | BehaviorField::LatencyLow
+                    | BehaviorField::LatencyMedium
+                    | BehaviorField::ProxyColumns
+                    | BehaviorField::HideUnavailable
+                    | BehaviorField::NodeSort
+                    | BehaviorField::GroupByProvider
+                    | BehaviorField::NodeWidth
+                    | BehaviorField::StrategyOrder
+            ),
+            Self::Overview => matches!(
+                field,
+                BehaviorField::LatencyLow
+                    | BehaviorField::LatencyMedium
+                    | BehaviorField::TestSites
+                    | BehaviorField::IpInfo
+            ),
+            Self::Connections => matches!(
+                field,
+                BehaviorField::LatencyUrl
+                    | BehaviorField::LatencyTimeout
+                    | BehaviorField::LatencyLow
+                    | BehaviorField::LatencyMedium
+                    | BehaviorField::IpInfo
+            ),
+            Self::Diagnostics => matches!(
+                field,
+                BehaviorField::Ipv6Test
+                    | BehaviorField::LatencyUrl
+                    | BehaviorField::LatencyTimeout
+                    | BehaviorField::IpInfo
+            ),
         })
     }
 }

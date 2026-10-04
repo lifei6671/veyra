@@ -1,0 +1,230 @@
+{
+  "offline": true,
+  "deployment_target": "15.0",
+  "initial_commands": [
+    {
+      "command": "cargo check -p veyra-core",
+      "result": "PASS",
+      "exit_code": 0,
+      "elapsed_seconds": 1.61,
+      "log": "check-01.log",
+      "resource_check_override": false
+    },
+    {
+      "command": "cargo test -p veyra-core --lib -- --test-threads=1",
+      "result": "PASS",
+      "exit_code": 0,
+      "elapsed_seconds": 11.72,
+      "log": "check-02.log",
+      "resource_check_override": false
+    },
+    {
+      "command": "cargo clippy -p veyra-core --lib -- -D warnings",
+      "result": "PASS",
+      "exit_code": 0,
+      "elapsed_seconds": 0.29,
+      "log": "check-03.log",
+      "resource_check_override": false
+    },
+    {
+      "command": "cargo check -p veyra-desktop",
+      "result": "PASS",
+      "exit_code": 0,
+      "elapsed_seconds": 2.96,
+      "log": "check-04.log",
+      "resource_check_override": false
+    },
+    {
+      "command": "cargo build -p veyra-desktop",
+      "result": "PASS",
+      "exit_code": 0,
+      "elapsed_seconds": 6.71,
+      "log": "check-05.log",
+      "resource_check_override": false
+    },
+    {
+      "command": "cargo test -p veyra-desktop -- --test-threads=1",
+      "result": "PASS",
+      "exit_code": 0,
+      "elapsed_seconds": 2.99,
+      "log": "check-06.log",
+      "resource_check_override": false
+    },
+    {
+      "command": "cargo clippy -p veyra-desktop --all-targets -- -D warnings",
+      "result": "PASS",
+      "exit_code": 0,
+      "elapsed_seconds": 0.8,
+      "log": "check-07.log",
+      "resource_check_override": false
+    },
+    {
+      "command": "cargo fmt --all -- --check",
+      "result": "PASS",
+      "exit_code": 0,
+      "elapsed_seconds": 0.33,
+      "log": "check-08.log",
+      "resource_check_override": false
+    },
+    {
+      "command": "cargo check --workspace --locked",
+      "result": "PASS",
+      "exit_code": 0,
+      "elapsed_seconds": 3.59,
+      "log": "check-09.log",
+      "resource_check_override": true
+    },
+    {
+      "command": "cargo clippy --manifest-path src-tauri/Cargo.toml --lib -- -D warnings",
+      "result": "PASS",
+      "exit_code": 0,
+      "elapsed_seconds": 3.23,
+      "log": "check-10.log",
+      "resource_check_override": true
+    },
+    {
+      "command": "cargo tree -p veyra-desktop",
+      "result": "PASS",
+      "exit_code": 0,
+      "elapsed_seconds": 0.26,
+      "log": "check-11.log",
+      "resource_check_override": false
+    }
+  ],
+  "commands": [
+    {
+      "command": "cargo check -p veyra-core",
+      "result": "PASS",
+      "exit_code": 0,
+      "elapsed_seconds": 1.7,
+      "log": "final-check-01.log",
+      "resource_check_override": false
+    },
+    {
+      "command": "cargo test -p veyra-core --lib -- --test-threads=1",
+      "result": "PASS",
+      "exit_code": 0,
+      "elapsed_seconds": 10.15,
+      "log": "final-check-02.log",
+      "resource_check_override": false
+    },
+    {
+      "command": "cargo clippy -p veyra-core --lib -- -D warnings",
+      "result": "PASS",
+      "exit_code": 0,
+      "elapsed_seconds": 0.92,
+      "log": "final-check-03.log",
+      "resource_check_override": false
+    },
+    {
+      "command": "cargo check -p veyra-desktop",
+      "result": "PASS",
+      "exit_code": 0,
+      "elapsed_seconds": 3.39,
+      "log": "final-check-04.log",
+      "resource_check_override": false
+    },
+    {
+      "command": "cargo build -p veyra-desktop",
+      "result": "PASS",
+      "exit_code": 0,
+      "elapsed_seconds": 4.48,
+      "log": "final-check-05.log",
+      "resource_check_override": false
+    },
+    {
+      "command": "cargo test -p veyra-desktop -- --test-threads=1",
+      "result": "PASS",
+      "exit_code": 0,
+      "elapsed_seconds": 2.66,
+      "log": "final-check-06.log",
+      "resource_check_override": false
+    },
+    {
+      "command": "cargo clippy -p veyra-desktop --all-targets -- -D warnings",
+      "result": "PASS",
+      "exit_code": 0,
+      "elapsed_seconds": 1.45,
+      "log": "final-check-07.log",
+      "resource_check_override": false
+    },
+    {
+      "command": "cargo fmt --all -- --check",
+      "result": "PASS",
+      "exit_code": 0,
+      "elapsed_seconds": 0.38,
+      "log": "final-check-08.log",
+      "resource_check_override": false
+    },
+    {
+      "command": "cargo check --workspace --locked",
+      "result": "PASS",
+      "exit_code": 0,
+      "elapsed_seconds": 2.14,
+      "log": "final-check-09.log",
+      "resource_check_override": true
+    },
+    {
+      "command": "cargo clippy --manifest-path src-tauri/Cargo.toml --lib -- -D warnings",
+      "result": "PASS",
+      "exit_code": 0,
+      "elapsed_seconds": 1.71,
+      "log": "final-check-10.log",
+      "resource_check_override": true
+    },
+    {
+      "command": "cargo tree -p veyra-desktop",
+      "result": "PASS",
+      "exit_code": 0,
+      "elapsed_seconds": 0.26,
+      "log": "final-check-11.log",
+      "resource_check_override": false
+    }
+  ],
+  "test_counts": {
+    "core": 293,
+    "desktop": 24,
+    "core_new": 13,
+    "desktop_new": 7
+  },
+  "ui_result": "PASS",
+  "final_restart": "PASS",
+  "notes": [
+    "TAURI_CONFIG bundle.resources=[] only for compile check; not proof of complete legacy package resources.",
+    "Existing dependency future-incompatibility notice block v0.1.6 is retained in command logs."
+  ],
+  "evidence_integrity": {
+    "json_files": 16,
+    "screenshot_hash_dimensions": 9,
+    "modified_document_links_anchors": 149,
+    "dag_tasks": 68,
+    "result": "PASS"
+  },
+  "final_diff_check": "PASS",
+  "final_source_binary_hash_check": "PASS",
+  "modified_files": [
+    "crates/veyra-core/src/application/state_service.rs",
+    "crates/veyra-core/src/domain/error.rs",
+    "crates/veyra-core/src/domain/mod.rs",
+    "crates/veyra-core/src/domain/state.rs",
+    "crates/veyra-core/src/storage/migration.rs",
+    "crates/veyra-core/src/storage/store.rs",
+    "crates/veyra-desktop/src/app.rs",
+    "crates/veyra-desktop/src/main.rs",
+    "crates/veyra-desktop/src/services.rs",
+    "crates/veyra-desktop/src/state_bridge.rs",
+    "crates/veyra-desktop/src/ui/mod.rs",
+    "crates/veyra-desktop/src/ui/pages/mod.rs",
+    "crates/veyra-desktop/src/ui/panel.rs",
+    "crates/veyra-desktop/src/ui/theme.rs",
+    "docs/openbox-rust-gpui-tasks/IMPLEMENTATION_PHASES.md",
+    "docs/openbox-rust-gpui-tasks/P1-core-and-shell.md",
+    "docs/openbox-rust-gpui-tasks/SESSION.md",
+    "src-tauri/src/application/proxy_routing.rs",
+    "crates/veyra-core/src/domain/desktop_behavior.rs",
+    "crates/veyra-desktop/src/behavior_preferences.rs",
+    "crates/veyra-desktop/src/ui/behavior_panel.rs",
+    "docs/openbox-rust-gpui-tasks/evidence/p1-04b"
+  ],
+  "git_status_short": " M crates/veyra-core/src/application/state_service.rs\n M crates/veyra-core/src/domain/error.rs\n M crates/veyra-core/src/domain/mod.rs\n M crates/veyra-core/src/domain/state.rs\n M crates/veyra-core/src/storage/migration.rs\n M crates/veyra-core/src/storage/store.rs\n M crates/veyra-desktop/src/app.rs\n M crates/veyra-desktop/src/main.rs\n M crates/veyra-desktop/src/services.rs\n M crates/veyra-desktop/src/state_bridge.rs\n M crates/veyra-desktop/src/ui/mod.rs\n M crates/veyra-desktop/src/ui/pages/mod.rs\n M crates/veyra-desktop/src/ui/panel.rs\n M crates/veyra-desktop/src/ui/theme.rs\n M docs/openbox-rust-gpui-tasks/IMPLEMENTATION_PHASES.md\n M docs/openbox-rust-gpui-tasks/P1-core-and-shell.md\n M docs/openbox-rust-gpui-tasks/SESSION.md\n M src-tauri/src/application/proxy_routing.rs\n?? crates/veyra-core/src/domain/desktop_behavior.rs\n?? crates/veyra-desktop/src/behavior_preferences.rs\n?? crates/veyra-desktop/src/ui/behavior_panel.rs\n?? docs/openbox-rust-gpui-tasks/evidence/p1-04b/\n"
+}
