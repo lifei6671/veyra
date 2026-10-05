@@ -45,7 +45,7 @@ P1-07 已 DONE 并从 Active Tasks 移除，GPUI owner 与本卡资源预约释�
 
 
 
-当前 68 卡：DONE13 / ACCEPTANCE1 / DOING0 / READY0 / TODO47 / DEFERRED7。按[完整显式依赖 DAG](evidence/p1-07/final-20261005/dag.json)重算无环、Ready Queue 为空。P1-07 DONE；消费它的 P2-09/P7-04 仍缺其他显式依赖，保持 TODO；P0-05 ACCEPTANCE、P0-06/P0-08 TODO、Windows DEFERRED 不变，未启动 P2。当前 HEAD b982e8d，已有 dirty P1-07 实现保留字节不变，不 commit/push。
+当前 68 卡：DONE13 / ACCEPTANCE1 / DOING0 / READY0 / TODO47 / DEFERRED7。按[完整显式依赖 DAG](evidence/p1-07/final-20261005/dag.json)重算无环、Ready Queue 为空。P1-07 DONE；消费它的 P2-09/P7-04 仍缺其他显式依赖，保持 TODO；P0-05 ACCEPTANCE、P0-06/P0-08 TODO、Windows DEFERRED 不变，未启动 P2。P1-07 实现与最终 Evidence 已由 Host 提交为 `25eb020`；其后仅有本交接页元数据更新，工作树干净，未 push。
 
 
 ## 4 Blocked
@@ -62,8 +62,8 @@ P1-07 已 DONE 并从 Active Tasks 移除，GPUI owner 与本卡资源预约释�
 
 | 字段 | 当前值 |
 | --- | --- |
-| 当前分支 / HEAD | `codex/dist-react-restore` / `b982e8d6a8dfa69ee6e5f861e33a3d9366854d7f`；P1-07 实现起始基线，现有 dirty 实现不变，本轮仅文档收口且不提交 |
-| 新路线实现基线 | P1-07 基线 b982e8d；最终 build SHA 8bd7a366d24fa2eff8bf78e22604f461030cedae9d1184c11a28ca8eb4f5c28d；[build identity](evidence/p1-07/final-20261005/build-identity.json) 的 30 个源码文件与当前工作树匹配；本轮产品源码/Cargo/assets/测试不改 |
+| 当前分支 / 提交基线 | `codex/dist-react-restore`；P1-07 Host acceptance commit `25eb020c349fdc8f716bd5a991d37b1eb407aae7`，其后仅有 SESSION 元数据提交；工作树干净，未 push |
+| 新路线实现基线 | P1-07 起始基线 b982e8d；最终 visual build SHA 8bd7a366d24fa2eff8bf78e22604f461030cedae9d1184c11a28ca8eb4f5c28d；Host acceptance commit `25eb020`；[build identity](evidence/p1-07/final-20261005/build-identity.json) 的源码身份与提交内容一致 |
 | 方案调查基线 | `bda242a920d471b9598f98b57dde5d7c2505c35e`；只作原调查身份，不能当当前 HEAD |
 | P0-01 交付（历史保留） | [最终验收](P0-01-baseline.md#current-acceptance)：8 当前源码 PNG、18 新真实脱敏 case、视觉数据、manifest/audit；四项 PASS |
 | P0-01 验证（历史保留） | 77 AST（72/5）、4/6/9、54 浏览器操作/状态断言、8 PNG 与来源/脱敏/JSON/links/68 DAG；[最终计数](evidence/p0-01/validation.json) |
@@ -164,3 +164,4 @@ P0-03 Host 追加确认：对绿色托盘图标、三轮显示/隐藏、菜单�
 2026-10-05 最后构建8bd7a366视觉复核续录：Light/Dark显式1280×720 Shell展开/折叠、Panel及当前组件状态已重采；Tooltip箭头/定位、spinner、IconPicker分类均分/局部focus/trigger已对照React级联和叠图复核，技术差异单列字体fallback/element backdrop blur/UA栅格。最后源码完整11项检查PASS（45 Desktop/294 Core），无新源码改动。实际bundle保存Light/6600ms/IPv6on，用户回报完成三轮与退出；日志仅Show2/Close3，明确不计3次日志PASS。Tray Quit后进程/socket清理、flock可重新获得，重启实际Settings值恢复PASS；已重做视觉/行为保存并隐藏，等待真人明确3Show→Tray Quit补齐。P1-07保持DOING、owner GPUI，其他Task/DAG不变；无commit/push/P2/公网/内核。见[evidence](evidence/p1-07/README.md)。
 
 2026-10-05 P1-07 最终 Host 验收收口 DONE（仅文档/evidence）：同 8bd7a366 build 最终视觉/AX/comparison 与人工查看齐备，无新的可修视觉 blocker，MiSans/NotoEmoji fallback、element-level Card/Modal backdrop blur、少量 UA 栅格差异继续为 TECHNICAL_DIFFERENCE；Tokens/Theme → 基础组件 → NavigationItem/CompactSetting/Section → 页面保留。明确人工 Show #1 → Close → Show #2 → Close → Show #3 → Close → Tray Quit 及 Host post-check PASS，旧 first-launch Show2/Close3 日志不改写。相同 Mach-O bundle/root 重启 PID94362，Light/6600ms/IPv6on、snapshot_loaded、单 primary/writer、state bytes 不变 PASS；用户“最终退出完成”后 Tray Quit，Host PID gone/socket absent/flock free PASS，瞬态 PID96193 不计残留。Host 首跑 Desktop44/1 FAIL 与后续5/5、45/45、45/45 PASS 分别保留，根因未证明；Core294及指定检查 PASS 不覆盖旧日志。六项验收勾选、owner 释放并移出 Active Tasks。68 卡 DONE13 / ACCEPTANCE1 / READY0 / DOING0 / TODO47 / Windows DEFERRED7，无环、无新 READY；P0-05/P0-06/P0-08 与后续业务页状态不变。未修改源码/Cargo/assets/测试/AGENTS.md/长期规范，未删 Legacy 或 Host 复核文件，未 commit/push，未启动 P2/公网/sing-box/System Proxy/TUN。见[最终交付](P1-core-and-shell.md#p1-07-final-closeout)及[文档验证](evidence/p1-07/final-20261005/closeout-validation.json)。
+2026-10-05 P1-07 Host 提交：最终实现、共享组件、Heroicons 资产、完整视觉/交互 Evidence 与 DONE 状态由 Host 提交为 `25eb020c349fdc8f716bd5a991d37b1eb407aae7`；其后仅提交本交接页元数据，不改变 P1-07 实现或验收身份。未 push，P2 未启动。
