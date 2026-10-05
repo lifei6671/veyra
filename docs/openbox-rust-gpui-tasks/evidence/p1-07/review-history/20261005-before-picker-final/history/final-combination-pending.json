@@ -1,0 +1,44 @@
+{
+  "status": "PENDING_HUMAN_TRAY_ROUNDS",
+  "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+  "root": "/tmp/veyra-p107-final-20261005/root",
+  "launch": "actual Mach-O executable inside .app; open -n; same final build as all current screenshots",
+  "seed": "isolated root cloned from previous acceptance state; not a new empty first-run claim",
+  "saved_visual": {
+    "theme_mode": "light",
+    "background_opacity": 90,
+    "background_blur": 10,
+    "sidebar_collapsed": false
+  },
+  "saved_behavior": {
+    "timeout_ms": 6600,
+    "ipv6_test": true
+  },
+  "save": "PASS visual completion accepted=true; Behavior fields LatencyTimeout+Ipv6Test accepted=true/Idle",
+  "close": "PASS actual native close button; hidden=true",
+  "tray_restore_rounds": "PENDING human",
+  "tray_quit": "PENDING human",
+  "restart": "PENDING",
+  "restart_final_quit": "PENDING",
+  "primary": {
+    "primary_processes": [
+      "72400 /private/tmp/veyra-p107-final-20261005/VeyraP107Final.app/Contents/MacOS/VeyraP107NativeAB"
+    ],
+    "primary_count": 1,
+    "flock_busy": true,
+    "socket_exists": true,
+    "secondary_writer": 0,
+    "secondary_activate_not_used": true,
+    "process_lookup_note": "macOS canonical /private/tmp path; exact /tmp anchored lookup was empty, not a missing primary"
+  },
+  "components": {
+    "tooltip": "Final build mouse+keyboard focus+Escape+blur screenshots; correct sidebar arrow and local anchor",
+    "select": "mouse open; Up/Down/Return/Escape; outside dismiss screenshots; mouse select prior actual evidence retained",
+    "input": "focus numeric spinner has Chromium baseline; dark ±1 verified",
+    "switch": "on/off keyboard focus and Space both themes",
+    "modal": "open/Escape/focus return/Return reopen both themes",
+    "notice": "generic actual save notice; close and 4s natural auto dismiss; final AX no close button",
+    "local_validation": "timeout0→Core Validation; abc→invalid draft/Save disabled;6500 restored accepted",
+    "slider": "final90/10 both themes; track10→34→10 with immediately responsive input; drag hover-only attempts not counted as actual modification"
+  }
+}

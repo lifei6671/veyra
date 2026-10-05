@@ -1,0 +1,147 @@
+[
+  {
+    "name": "desktop-test",
+    "command": [
+      "cargo",
+      "test",
+      "-p",
+      "veyra-desktop"
+    ],
+    "exit": 0,
+    "seconds": 3.14,
+    "resource_override": false
+  },
+  {
+    "name": "core-test",
+    "command": [
+      "cargo",
+      "test",
+      "-p",
+      "veyra-core",
+      "--lib",
+      "--",
+      "--test-threads=1"
+    ],
+    "exit": 0,
+    "seconds": 7.15,
+    "resource_override": false
+  },
+  {
+    "name": "desktop-check",
+    "command": [
+      "cargo",
+      "check",
+      "-p",
+      "veyra-desktop"
+    ],
+    "exit": 0,
+    "seconds": 1.31,
+    "resource_override": false
+  },
+  {
+    "name": "core-check",
+    "command": [
+      "cargo",
+      "check",
+      "-p",
+      "veyra-core"
+    ],
+    "exit": 0,
+    "seconds": 0.19,
+    "resource_override": false
+  },
+  {
+    "name": "desktop-build",
+    "command": [
+      "cargo",
+      "build",
+      "-p",
+      "veyra-desktop"
+    ],
+    "exit": 0,
+    "seconds": 0.33,
+    "resource_override": false
+  },
+  {
+    "name": "desktop-clippy",
+    "command": [
+      "cargo",
+      "clippy",
+      "-p",
+      "veyra-desktop",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "exit": 0,
+    "seconds": 1.1,
+    "resource_override": false
+  },
+  {
+    "name": "core-clippy",
+    "command": [
+      "cargo",
+      "clippy",
+      "-p",
+      "veyra-core",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "exit": 0,
+    "seconds": 0.23,
+    "resource_override": false
+  },
+  {
+    "name": "fmt",
+    "command": [
+      "cargo",
+      "fmt",
+      "--all",
+      "--",
+      "--check"
+    ],
+    "exit": 0,
+    "seconds": 0.62,
+    "resource_override": false
+  },
+  {
+    "name": "workspace-check",
+    "command": [
+      "cargo",
+      "check",
+      "--workspace",
+      "--locked"
+    ],
+    "exit": 0,
+    "seconds": 1.19,
+    "resource_override": true
+  },
+  {
+    "name": "legacy-clippy",
+    "command": [
+      "cargo",
+      "clippy",
+      "--manifest-path",
+      "src-tauri/Cargo.toml",
+      "--lib",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "exit": 0,
+    "seconds": 0.4,
+    "resource_override": true
+  },
+  {
+    "name": "diff-check",
+    "command": [
+      "git",
+      "diff",
+      "--check"
+    ],
+    "exit": 0,
+    "seconds": 0.02,
+    "resource_override": false
+  }
+]

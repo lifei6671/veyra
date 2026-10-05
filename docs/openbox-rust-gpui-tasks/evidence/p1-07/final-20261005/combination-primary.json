@@ -1,0 +1,9 @@
+{
+  "primary_count": 1,
+  "processes": [
+    "83955 /private/tmp/veyra-p107-final-20261005/VeyraP107Final.app/Contents/MacOS/VeyraP107NativeAB"
+  ],
+  "flock_busy": true,
+  "socket_exists": true,
+  "second_writer_created": false
+}

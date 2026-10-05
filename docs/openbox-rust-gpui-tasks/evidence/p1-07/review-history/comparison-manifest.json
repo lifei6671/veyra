@@ -1,0 +1,274 @@
+[
+  {
+    "state": "light-shell",
+    "react": "react/light-shell.png",
+    "gpui": "gpui/light-shell.jpg",
+    "content_crop_physical": [
+      0,
+      64,
+      2560,
+      1504
+    ],
+    "logical_size": [
+      1280,
+      720
+    ],
+    "status": "REVIEW_REQUIRED",
+    "note": "Switch image compares control only; React includes save toast. Shell business body and unavailable values excluded."
+  },
+  {
+    "state": "light-collapsed",
+    "react": "react/light-collapsed.png",
+    "gpui": "gpui/light-collapsed.jpg",
+    "content_crop_physical": [
+      0,
+      64,
+      2560,
+      1504
+    ],
+    "logical_size": [
+      1280,
+      720
+    ],
+    "status": "REVIEW_REQUIRED",
+    "note": "Switch image compares control only; React includes save toast. Shell business body and unavailable values excluded."
+  },
+  {
+    "state": "light-panel",
+    "react": "react/light-panel.png",
+    "gpui": "gpui/light-panel.jpg",
+    "content_crop_physical": [
+      0,
+      64,
+      2560,
+      1504
+    ],
+    "logical_size": [
+      1280,
+      720
+    ],
+    "status": "REVIEW_REQUIRED",
+    "note": "Switch image compares control only; React includes save toast. Shell business body and unavailable values excluded."
+  },
+  {
+    "state": "light-select",
+    "react": "react/light-select.png",
+    "gpui": "gpui/light-select.jpg",
+    "content_crop_physical": [
+      0,
+      64,
+      2560,
+      1504
+    ],
+    "logical_size": [
+      1280,
+      720
+    ],
+    "status": "REVIEW_REQUIRED",
+    "note": "Switch image compares control only; React includes save toast. Shell business body and unavailable values excluded."
+  },
+  {
+    "state": "light-switch",
+    "react": "react/light-switch-toast.png",
+    "gpui": "gpui/light-switch.jpg",
+    "content_crop_physical": [
+      0,
+      64,
+      2560,
+      1504
+    ],
+    "logical_size": [
+      1280,
+      720
+    ],
+    "status": "REVIEW_REQUIRED",
+    "note": "Switch image compares control only; React includes save toast. Shell business body and unavailable values excluded."
+  },
+  {
+    "state": "light-modal",
+    "react": "react/light-modal.png",
+    "gpui": "gpui/light-modal.jpg",
+    "content_crop_physical": [
+      0,
+      64,
+      2560,
+      1504
+    ],
+    "logical_size": [
+      1280,
+      720
+    ],
+    "status": "REVIEW_REQUIRED",
+    "note": "Switch image compares control only; React includes save toast. Shell business body and unavailable values excluded."
+  },
+  {
+    "state": "light-icon-picker",
+    "react": "react/light-icon-picker.png",
+    "gpui": "gpui/light-icon-picker.jpg",
+    "content_crop_physical": [
+      0,
+      64,
+      2560,
+      1504
+    ],
+    "logical_size": [
+      1280,
+      720
+    ],
+    "status": "REVIEW_REQUIRED",
+    "note": "Switch image compares control only; React includes save toast. Shell business body and unavailable values excluded."
+  },
+  {
+    "state": "light-slider",
+    "react": "react/light-slider.png",
+    "gpui": "gpui/light-slider.jpg",
+    "content_crop_physical": [
+      0,
+      64,
+      2560,
+      1504
+    ],
+    "logical_size": [
+      1280,
+      720
+    ],
+    "status": "REVIEW_REQUIRED",
+    "note": "Switch image compares control only; React includes save toast. Shell business body and unavailable values excluded."
+  },
+  {
+    "state": "dark-shell",
+    "react": "react/dark-shell.png",
+    "gpui": "gpui/dark-shell.jpg",
+    "content_crop_physical": [
+      0,
+      64,
+      2560,
+      1504
+    ],
+    "logical_size": [
+      1280,
+      720
+    ],
+    "status": "REVIEW_REQUIRED",
+    "note": "Switch image compares control only; React includes save toast. Shell business body and unavailable values excluded."
+  },
+  {
+    "state": "dark-collapsed",
+    "react": "react/dark-collapsed.png",
+    "gpui": "gpui/dark-collapsed.jpg",
+    "content_crop_physical": [
+      0,
+      64,
+      2560,
+      1504
+    ],
+    "logical_size": [
+      1280,
+      720
+    ],
+    "status": "REVIEW_REQUIRED",
+    "note": "Switch image compares control only; React includes save toast. Shell business body and unavailable values excluded."
+  },
+  {
+    "state": "dark-panel",
+    "react": "react/dark-panel.png",
+    "gpui": "gpui/dark-panel.jpg",
+    "content_crop_physical": [
+      0,
+      64,
+      2560,
+      1504
+    ],
+    "logical_size": [
+      1280,
+      720
+    ],
+    "status": "REVIEW_REQUIRED",
+    "note": "Switch image compares control only; React includes save toast. Shell business body and unavailable values excluded."
+  },
+  {
+    "state": "dark-select",
+    "react": "react/dark-select.png",
+    "gpui": "gpui/dark-select.jpg",
+    "content_crop_physical": [
+      0,
+      64,
+      2560,
+      1504
+    ],
+    "logical_size": [
+      1280,
+      720
+    ],
+    "status": "REVIEW_REQUIRED",
+    "note": "Switch image compares control only; React includes save toast. Shell business body and unavailable values excluded."
+  },
+  {
+    "state": "dark-switch",
+    "react": "react/dark-switch-toast.png",
+    "gpui": "gpui/dark-switch.jpg",
+    "content_crop_physical": [
+      0,
+      64,
+      2560,
+      1504
+    ],
+    "logical_size": [
+      1280,
+      720
+    ],
+    "status": "REVIEW_REQUIRED",
+    "note": "Switch image compares control only; React includes save toast. Shell business body and unavailable values excluded."
+  },
+  {
+    "state": "dark-modal",
+    "react": "react/dark-modal.png",
+    "gpui": "gpui/dark-modal.jpg",
+    "content_crop_physical": [
+      0,
+      64,
+      2560,
+      1504
+    ],
+    "logical_size": [
+      1280,
+      720
+    ],
+    "status": "REVIEW_REQUIRED",
+    "note": "Switch image compares control only; React includes save toast. Shell business body and unavailable values excluded."
+  },
+  {
+    "state": "dark-icon-picker",
+    "react": "react/dark-icon-picker.png",
+    "gpui": "gpui/dark-icon-picker.jpg",
+    "content_crop_physical": [
+      0,
+      64,
+      2560,
+      1504
+    ],
+    "logical_size": [
+      1280,
+      720
+    ],
+    "status": "REVIEW_REQUIRED",
+    "note": "Switch image compares control only; React includes save toast. Shell business body and unavailable values excluded."
+  },
+  {
+    "state": "dark-slider",
+    "react": "react/dark-slider.png",
+    "gpui": "gpui/dark-slider.jpg",
+    "content_crop_physical": [
+      0,
+      64,
+      2560,
+      1504
+    ],
+    "logical_size": [
+      1280,
+      720
+    ],
+    "status": "REVIEW_REQUIRED",
+    "note": "Switch image compares control only; React includes save toast. Shell business body and unavailable values excluded."
+  }
+]

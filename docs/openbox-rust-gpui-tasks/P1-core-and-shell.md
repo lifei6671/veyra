@@ -154,16 +154,16 @@ Host Review 修订：Core 恢复 rename 成功即保存成功；preview stale te
 
 **范围边界**：Proxies/Connections/Logs/Rules 业务页面尚未真正实现，不纳入 P1-07 业务完成验收；导航、占位或 fixture 不能冒充页面完成。其各自后续任务必须遵守全局视觉规范并独立留下页面/核心状态证据，不以 P1-07 壳层通过代替。
 
-**当前状态**：READY，未领取/启动；本次仅更新验收规范，不执行实现或 GUI 验收，不改依赖与历史 DONE 记录。
+**当前状态**：DONE（2026-10-05），owner 已释放。最终 binary SHA `8bd7a366d24fa2eff8bf78e22604f461030cedae9d1184c11a28ca8eb4f5c28d`；视觉 PASS_WITH_TECHNICAL_DIFFERENCES，组合验收 PASS。实现起始基线 `b982e8d`；本轮只收口文档/evidence。[最终证据](evidence/p1-07/README.md)。
 
 **验收**：
 
-- [ ] core 独立验证、桌面构建、单实例及偏好恢复全部通过，命令/机器/构建身份有记录。
-- [ ] 当前 App Shell + Settings/基础组件与 `src/openbox/**`、`openbox.css` 在相同窗口尺寸、缩放、主题、页面状态和尽可能相同数据下逐项截图对照，真实交互及适用加载/空/错误/忙碌、hover/focus/active/disabled/loading/selected 状态留证；禁止用不同状态图或全局平均分代替页面/核心状态独立验收。
-- [ ] 固定几何、颜色、字体、图标尺寸/stroke/几何及其生效逻辑精确迁移；95% 为最低视觉目标，不以单一全图像素分数作为唯一 Gate。明显尺寸/颜色/图标/布局差异全部修复；仅确实不可等价的 GPUI/macOS 差异记录技术原因和对应视觉证据，OS 自绘系统区域与应用自绘区域明确分界。
-- [ ] 组件体系审查确认 `Design Tokens/Theme → 基础组件 → 跨页面组合组件 → 页面`、重复值集中及来源可追溯；React 复用模式或 GPUI 两处及以上真实重复交互使用共享组件，同类按钮/设置行/卡片/工具栏/状态标签不各页重写；GPUI Kit 外观已覆写为 React 基线，无近似图标替代，字体/资源来源许可和技术差异有记录。
-- [ ] 未真正实现的 Proxies/Connections/Logs/Rules 未计业务完成；对应页面视觉对齐及基线/证据留存前，Legacy React 视觉参考源码/资源保留，不能以功能已迁移提前退役。
-- [ ] 无本阶段遗留失败，任务总表与 SESSION 更新；P2 各任务按自身依赖就绪，不等待本组合验收统一放行。
+- [x] core 独立验证、桌面构建、单实例及偏好恢复全部通过，命令/机器/构建身份有记录。
+- [x] 当前 App Shell + Settings/基础组件与 `src/openbox/**`、`openbox.css` 在相同窗口尺寸、缩放、主题、页面状态和尽可能相同数据下逐项截图对照，真实交互及适用加载/空/错误/忙碌、hover/focus/active/disabled/loading/selected 状态留证；禁止用不同状态图或全局平均分代替页面/核心状态独立验收。
+- [x] 固定几何、颜色、字体、图标尺寸/stroke/几何及其生效逻辑精确迁移；95% 为最低视觉目标，不以单一全图像素分数作为唯一 Gate。明显尺寸/颜色/图标/布局差异全部修复；仅确实不可等价的 GPUI/macOS 差异记录技术原因和对应视觉证据，OS 自绘系统区域与应用自绘区域明确分界。
+- [x] 组件体系审查确认 `Design Tokens/Theme → 基础组件 → 跨页面组合组件 → 页面`、重复值集中及来源可追溯；React 复用模式或 GPUI 两处及以上真实重复交互使用共享组件，同类按钮/设置行/卡片/工具栏/状态标签不各页重写；GPUI Kit 外观已覆写为 React 基线，无近似图标替代，字体/资源来源许可和技术差异有记录。
+- [x] 未真正实现的 Proxies/Connections/Logs/Rules 未计业务完成；对应页面视觉对齐及基线/证据留存前，Legacy React 视觉参考源码/资源保留，不能以功能已迁移提前退役。
+- [x] 无本阶段未解决 blocker，历史失败保留且复测无稳定回归证据，任务总表与 SESSION 更新；P2 各任务按自身依赖就绪，不等待本组合验收统一放行。
 
 <a id="p1-01-delivery"></a>
 ## OBG-P1-01 交付记录（2026-10-03）
@@ -311,3 +311,28 @@ PY
 **后续边界**：Profile 是批准代表字段基础，完整 P4/P5 能力、OpenBox importer/ID remap、Runtime manifest 和 controller 确认不在本卡；后续写入使用同一 gate 与版本服务，save 只是物理原语。新 v7 数据不承诺旧二进制直读，回退须使用保留的旧 schema 快照。本卡没有待修复阻塞。
 
 **DAG / 下一动作**：P1-02 DONE 后重新计算 68 卡：macOS 4/61 DONE、2 READY、55 TODO；Windows 7 DEFERRED。READY 仅 P0-03/P0-04，均未启动；P1-03 仍等待 P0-03，保持 TODO。共享 owner 已释放；不启动后续 Task，不 commit/push。
+
+## OBG-P1-07 Host Review 修订记录
+
+三项指定blocker逐项复核：Shell错误主题evidence重新采集；默认背景CPU派生移出UI Render，3条回归；相同实际Mach-O bundle下b982e8d/current真人Tray A/B可见，三轮Close→Tray Show及显式Tray Quit/重开值恢复/再次Tray Quit通过。45 Desktop/294 Core与完整自动检查PASS，组件焦点/Tooltip定位最后补验身份分开记录。历史FAIL/INCOMPLETE保留。整卡视觉仍有字体/局部blur技术差异及细节未完成，保持**DOING、owner GPUI**，其他Task状态不变；不commit/push、不启动P2。见[修订证据](evidence/p1-07/README.md)。
+
+## OBG-P1-07 2026-10-05 最终视觉收口续录
+
+保持 **DOING、owner GPUI**。在627728a2同一构建重新采集Shell/Panel/基础组件Light/Dark状态，补sidebar Tooltip箭头、UA spinner/focus颜色/品牌局部级联，45 Desktop/294 Core及完整检查通过；真人三轮Close→Tray Show与Tray Quit、重启亮色/6600ms/IPv6on值恢复已执行。随后补查现有IconPicker展开态发现tab均分与局部input focus差异，做共享Input局部focus覆写及picker直接flex child/space-around的最小修正。新构建8bd7a366完整11项自动验证PASS，但尚未采集新构建GUI；627728a2所有图/操作已归档为中途证据，不计最后源码PASS。当前等待用户完成627728a2重启窗口已请求的Tray Quit，再换入新build重新截图和组合，不能建议DONE。此前FAIL/INCOMPLETE/PENDING保留，字体/局部backdrop blur继续明确技术差异。其他Task状态不变，无commit/push/P2/业务/公网/内核运行。[最新证据状态](evidence/p1-07/README.md)。
+
+2026-10-05 最后构建8bd7a366视觉复核续录：Light/Dark显式1280×720 Shell展开/折叠、Panel及当前组件状态已重采；Tooltip箭头/定位、spinner、IconPicker分类均分/局部focus/trigger已对照React级联和叠图复核，技术差异单列字体fallback/element backdrop blur/UA栅格。最后源码完整11项检查PASS（45 Desktop/294 Core），无新源码改动。实际bundle保存Light/6600ms/IPv6on，用户回报完成三轮与退出；日志仅Show2/Close3，明确不计3次日志PASS。Tray Quit后进程/socket清理、flock可重新获得，重启实际Settings值恢复PASS；已重做视觉/行为保存并隐藏，等待真人明确3Show→Tray Quit补齐。P1-07保持DOING、owner GPUI，其他Task/DAG不变；无commit/push/P2/公网/内核。见[evidence](evidence/p1-07/README.md)。
+
+<a id="p1-07-final-closeout"></a>
+## OBG-P1-07 最终 Host 验收收口（2026-10-05）
+
+**状态：DONE，六项验收全部勾选，owner 已释放。** 最终 `8bd7a366` 的截图、AX、comparison 均在 `evidence/p1-07/final-20261005/`；Host 已查看 Shell、Panel、Select、Tooltip、number spinner、Dark Panel、Modal 代表图。视觉 **PASS_WITH_TECHNICAL_DIFFERENCES**，没有新的可修视觉 blocker；MiSans/NotoEmoji fallback、element-level Card/Modal backdrop blur、少量 UA 栅格差异继续记录技术原因/影响/证据，不冒称完全一致。组件层级保持 Tokens/Theme → 基础组件 → NavigationItem/CompactSetting/Section → 页面。
+
+三项 Host blocker 的最终证据齐备：显式 Light/Dark 同 1280×720、最终 build 截图；默认背景 blocking task + key/generation + ready cache 移出 Render，相关测试保留；Tray baseline/current shell wrapper 均不可见，真实 Mach-O bundle 均真人可见，旧 68×0 不计本卡回归，Tray 架构未重写。
+
+[最终三轮人工操作](evidence/p1-07/final-20261005/human-host-final-three-rounds.json) 为 Show #1 → Close → Show #2 → Close → Show #3 → Close → Tray Quit，Host 独立 process/socket/flock 清理 PASS。历史 first-launch log 只有 Show2/Close3，原样保留，不能写为 3Show。
+
+[最终重启与 Tray Quit](evidence/p1-07/final-20261005/human-host-final-restart-quit.json)：同 binary、真实 Mach-O bundle、同 root 重启 PID94362，snapshot_loaded=true，Settings → Panel Settings 为 Light/6600ms/IPv6on，primary_count=1、writer_created_count=1、secondary_writer_count=0，state bytes 前后 hash 不变。用户随后回复“最终退出完成”，通过托盘 Tray Quit；Host 独立确认 PID94362 gone、socket absent、Python flock free，无自有验收进程残留。瞬态 pgrep PID96193 后续 ps absent，不计残留。原重启等待人工退出的 status/PENDING 字段保留，新增 final_quit/closeout 收口 PASS。
+
+[Host 自动复核](evidence/p1-07/final-20261005/host-final-review.json) 原样记录首跑 Desktop **44 PASS / 1 FAIL**：`platform::single_instance::tests::live_socket_without_veyra_lock_is_busy_and_remains_connectable`，断言 `locked_file(&d).unwrap().is_some()`；随后定向连续 **5/5 PASS**、单线程 **45/45 PASS**、默认并行 **45/45 PASS**。结论仅为“未复现的瞬态测试环境/flock 时序失败，目前无稳定回归证据”，根因未证明。Core **294/294** 及 Host 指定 check/build/clippy/fmt/workspace override/旧 Tauri lib clippy/diff 全部 PASS；Codex 原日志不篡改，override 不代表完整打包验收。本轮没有重跑产品测试/构建/GUI。
+
+**边界与 DAG**：Proxies/Connections/Logs/Rules 业务页面仍未实现，不计 P1-07 业务完成、不改各自任务；Legacy React/CSS/视觉资源保留。完整 [68 卡显式 DAG](evidence/p1-07/final-20261005/dag.json) 为 DONE13 / ACCEPTANCE1 / READY0 / DOING0 / TODO47 / Windows DEFERRED7，无环、READY 为空；P2-09/P7-04 仍缺其他依赖。P0-05 保持 ACCEPTANCE，P0-06/P0-08 仍 TODO，Windows 不变。本轮源码/Cargo/assets/测试字节不变，不改 AGENTS.md/DEVELOPMENT_WORKFLOW.md、不清理 Host 复核文件、不 commit/push、不启动 P2/公网/sing-box/System Proxy/TUN。

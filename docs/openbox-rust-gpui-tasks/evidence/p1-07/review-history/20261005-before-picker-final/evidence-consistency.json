@@ -1,0 +1,39 @@
+{
+  "checks": {
+    "source_sha_match": true,
+    "image_sha_match": true,
+    "react_sha_match": true,
+    "same_final_build": true,
+    "required_states_match": true,
+    "switch_on_off_ax_match": true,
+    "notice_auto_dismiss_ax_match": true
+  },
+  "required_states": [
+    "light-shell",
+    "light-shell-collapsed",
+    "dark-shell",
+    "dark-collapsed",
+    "light-panel",
+    "dark-panel",
+    "light-select",
+    "dark-select",
+    "light-switch-on",
+    "light-switch-off",
+    "light-slider",
+    "dark-slider",
+    "light-modal",
+    "dark-modal",
+    "light-tooltip-hover",
+    "light-tooltip-focus",
+    "dark-tooltip-hover",
+    "dark-tooltip-focus",
+    "light-toast",
+    "dark-toast",
+    "light-input-focus",
+    "dark-input-focus",
+    "light-disabled",
+    "dark-disabled"
+  ],
+  "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+  "history": "First filename assertion used dark-shell-collapsed; actual final capture is dark-collapsed, matrix corrected; no source/build or image change"
+}

@@ -1,0 +1,46 @@
+[
+  {
+    "name": "desktop-test-closeout",
+    "command": [
+      "cargo",
+      "test",
+      "-p",
+      "veyra-desktop"
+    ],
+    "exit": 0
+  },
+  {
+    "name": "desktop-clippy-closeout",
+    "command": [
+      "cargo",
+      "clippy",
+      "-p",
+      "veyra-desktop",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "exit": 0
+  },
+  {
+    "name": "desktop-build-closeout",
+    "command": [
+      "cargo",
+      "build",
+      "-p",
+      "veyra-desktop"
+    ],
+    "exit": 0
+  },
+  {
+    "name": "fmt-closeout",
+    "command": [
+      "cargo",
+      "fmt",
+      "--all",
+      "--",
+      "--check"
+    ],
+    "exit": 0
+  }
+]

@@ -1,0 +1,66 @@
+{
+  "baseline_commit": "b982e8d6a8dfa69ee6e5f861e33a3d9366854d7f",
+  "p0_01_visual_source": "7fab0e47d2a28446e131b7cd737ef4a5a43d55fb",
+  "react_diff_since_p0_01": "",
+  "viewport": {
+    "width": 1280,
+    "height": 720,
+    "unit": "logical content"
+  },
+  "sources": [
+    {
+      "path": "src/openbox/components/AppShell.tsx",
+      "sha256": "298fce70d738e3ab5686e5bad102b262814308fd9f6810f7e56c3518f2eaf875"
+    },
+    {
+      "path": "src/openbox/pages/SettingsPage.tsx",
+      "sha256": "f164b85307937a7c859857f6a262da875e0a90ec35917f020de188c52ab22348"
+    },
+    {
+      "path": "src/openbox/pages/settings/PanelSettings.tsx",
+      "sha256": "d882df4699e9d721b2601fbdac91122299cdf9718bc225873e38381b2ef7ab60"
+    },
+    {
+      "path": "src/openbox/pages/settings/PanelIconPicker.tsx",
+      "sha256": "c7db1988fa50440b7fb4b2e8a26829b5a7223e03f76f25153cba99dd3edde4db"
+    },
+    {
+      "path": "src/openbox/components/shared.tsx",
+      "sha256": "82d0acfd379e3fe67ddc90adb4105e259cbee21ba7087e40c9666f517405948e"
+    },
+    {
+      "path": "src/openbox/ui/controls.tsx",
+      "sha256": "0d76c594887c54d9d5aeb1b602132eb367736d3d1ec9f8d4962e8b8d79bfb255"
+    },
+    {
+      "path": "src/openbox/ui/select.tsx",
+      "sha256": "ac1a7f83e03df113f4da97b9e9716a6c48f0b9e110b0aeebe6628d5a813c96b1"
+    },
+    {
+      "path": "src/openbox/ui/sonner.tsx",
+      "sha256": "3fe54463607e1bf673ff2dc0b018061d13fcfe42304520ce9c704db5a753b973"
+    },
+    {
+      "path": "src/openbox/openbox.css",
+      "sha256": "b0e441729fdd55863036d71cd0c198cdd65d760e139ef8ae973a5b390128cf03"
+    }
+  ],
+  "reference": "local React + observed=false p0-01 visual-data.json; loopback only; API/WS intercepted; animation disabled",
+  "reference_images": [
+    "dark-collapsed.png",
+    "dark-modal.png",
+    "dark-panel.png",
+    "dark-select.png",
+    "dark-shell.png",
+    "dark-switch-toast.png",
+    "light-collapsed.png",
+    "light-modal.png",
+    "light-panel.png",
+    "light-select.png",
+    "light-shell.png",
+    "light-switch-toast.png"
+  ],
+  "reference_count": 16,
+  "local_fixture": "fixtures/background.jpg",
+  "fixture_sha256": "36f69b899181802fe2da664f9ac68ec1e936ea1e0a99178c02ebc8f0b645a6a8"
+}

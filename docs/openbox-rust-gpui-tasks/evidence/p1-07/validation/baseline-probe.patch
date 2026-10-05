@@ -1,0 +1,69 @@
+diff --git a/crates/veyra-desktop/src/app.rs b/crates/veyra-desktop/src/app.rs
+index dc136dc..d2b2d20 100644
+--- a/crates/veyra-desktop/src/app.rs
++++ b/crates/veyra-desktop/src/app.rs
+@@ -153,6 +153,11 @@ impl AppView {
+                 }
+             }
+         });
++        #[cfg(debug_assertions)]
++        cx.spawn_in(window, async |view, cx| {
++            cx.background_executor().timer(std::time::Duration::from_millis(1500)).await;
++            let _ = view.update_in(cx, |view, _, _| view.tray.diagnose());
++        }).detach();
+         let tray_quit = cx.on_app_quit(|view, _| {
+             view.tray.prepare_quit();
+             async {}
+diff --git a/crates/veyra-desktop/src/main.rs b/crates/veyra-desktop/src/main.rs
+index 3eb03ce..bd9f5e8 100644
+--- a/crates/veyra-desktop/src/main.rs
++++ b/crates/veyra-desktop/src/main.rs
+@@ -17,6 +17,16 @@ use gpui_kit::{
+ use std::sync::Arc;
+ 
+ fn main() -> Result<(), Box<dyn std::error::Error>> {
++    // debug 本地证据将 stderr 写入指定文件，实际 bundle 启动也能留存主线程诊断。
++    #[cfg(all(debug_assertions, target_os = "macos"))]
++    if let Some(path) = std::env::var_os("VEYRA_DESKTOP_EVIDENCE_LOG") {
++        use std::os::fd::AsRawFd;
++        let log = std::fs::OpenOptions::new().create(true).append(true).open(path)?;
++        // dup2 复制 FD 所有权；文件在此作用域关闭后 stderr 仍有效。
++        if unsafe { libc::dup2(log.as_raw_fd(), libc::STDERR_FILENO) } < 0 {
++            return Err(std::io::Error::last_os_error().into());
++        }
++    }
+     let directories = platform::directories::AppDirectories::resolve()?;
+     eprintln!(
+         "product={} namespace={}",
+diff --git a/crates/veyra-desktop/src/tray.rs b/crates/veyra-desktop/src/tray.rs
+index 6f1b5ec..a6383ec 100644
+--- a/crates/veyra-desktop/src/tray.rs
++++ b/crates/veyra-desktop/src/tray.rs
+@@ -90,6 +90,27 @@ impl DesktopTray {
+         let projection = Projection::from_core(state, runtime);
+         self.status.set_text(projection.text);
+     }
++    /// 创建后延迟采样原生几何；只观察自有 status item，不扫描其他应用或改系统设置。
++    #[cfg(debug_assertions)]
++    pub fn diagnose(&self) {
++        use objc2_app_kit::{NSApplication, NSStatusBar};
++        let mtm = objc2::MainThreadMarker::new().expect("tray probe main thread");
++        let app = NSApplication::sharedApplication(mtm);
++        let options = app.currentSystemPresentationOptions();
++        eprintln!("tray probe delayed main_thread=true activation_policy={:?} presentation={:?} thickness={}", app.activationPolicy(), options, NSStatusBar::systemStatusBar().thickness());
++        let Some(tray) = &self.tray else { eprintln!("tray probe absent"); return; };
++        let Some(item) = tray.ns_status_item() else { eprintln!("tray probe status item absent"); return; };
++        let button = item.button(mtm);
++        eprintln!("tray probe visible={} button_exists={} rect={:?}", item.isVisible(), button.is_some(), tray.rect());
++        if let Some(button) = button {
++            let window = button.window();
++            eprintln!("tray probe button.frame={:?} window.frame={:?}", button.frame(), window.as_ref().map(|w| w.frame()));
++            if let Some(screen) = window.and_then(|w| w.screen()) {
++                eprintln!("tray probe screen.frame={:?} visibleFrame={:?}", screen.frame(), screen.visibleFrame());
++            }
++        }
++        // 公共 AppKit presentation flags 只反映当前 app。全局自动隐藏/菜单栏展开由真人确认。
++    }
+     /// NSApplication terminate 不展开 main stack，退出 hook 必须显式释放原生托盘。
+     pub fn prepare_quit(&mut self) {
+         self.tray.take();

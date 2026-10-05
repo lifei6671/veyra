@@ -1,0 +1,65 @@
+{
+  "states": [
+    {
+      "theme_mode": "Light",
+      "AppView.dark": false,
+      "Kit": "Light",
+      "snapshot_loaded": true,
+      "route": "Overview",
+      "sidebar": "shell",
+      "logical_content": [
+        1280,
+        720
+      ]
+    },
+    {
+      "theme_mode": "Light",
+      "AppView.dark": false,
+      "Kit": "Light",
+      "snapshot_loaded": true,
+      "route": "Overview",
+      "sidebar": "collapsed",
+      "logical_content": [
+        1280,
+        720
+      ]
+    },
+    {
+      "theme_mode": "Dark",
+      "AppView.dark": true,
+      "Kit": "Dark",
+      "snapshot_loaded": true,
+      "route": "Overview",
+      "sidebar": "shell",
+      "logical_content": [
+        1280,
+        720
+      ]
+    },
+    {
+      "theme_mode": "Dark",
+      "AppView.dark": true,
+      "Kit": "Dark",
+      "snapshot_loaded": true,
+      "route": "Overview",
+      "sidebar": "collapsed",
+      "logical_content": [
+        1280,
+        720
+      ]
+    }
+  ],
+  "log": "validation/review-native-combination.log",
+  "previous_light_evidence": "INVALID_THEME; archived in review-history; System resolved Dark",
+  "color_code_changed": false,
+  "isolated_root": "native-ab-root (absent before first run)",
+  "preferences": {
+    "background": "None",
+    "opacity": 90,
+    "blur": 10,
+    "radius": 16
+  },
+  "fresh_root_binary_sha256": "bf6e6b3ab9c34e7c65230f2c7b76886cc575ebaaaedb426fbff391377b4a332e",
+  "main_shell_screenshot_presentation_binary_sha256": "d48d5866956bf35b8f5d5f8b6fc9d08f53ac6a1027849230833e0ce0f08c6657",
+  "final_presentation_binary_sha256": "bdeaadebb046623cec93b2152b05bc2323e13d20b187aca1a3ea08ec581999d8"
+}

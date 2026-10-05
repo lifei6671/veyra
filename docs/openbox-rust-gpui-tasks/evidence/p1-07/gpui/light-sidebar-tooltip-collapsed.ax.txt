@@ -1,0 +1,22 @@
+Window: "Veyra · Desktop", App: VeyraP107Final.
+0 standard window Veyra · Desktop, Secondary Actions: Raise
+	1 container
+		2 button 折叠/展开侧栏 · Collapse/Expand sidebar
+		3 button 概览
+		4 button 代理
+		5 button 连接
+		6 button 日志
+		7 button 规则
+		8 button 设置
+		9 button 启动内核
+		10 button 停止内核
+		11 button 刷新数据
+		12 button 关闭通知
+	13 close button
+	14 full screen button Help: this button also has an action to zoom the window, Secondary Actions: zoom the window
+	15 minimize button
+	16 text Veyra · Desktop
+17 menu bar
+	18 VeyraP107Final
+
+The focused UI element is 0 standard window Veyra · Desktop, Secondary Actions: Raise

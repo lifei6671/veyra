@@ -1,0 +1,45 @@
+product=com.lifei6671.veyra namespace=com.lifei6671.veyra.gpui-preview
+role=primary lock acquired; control socket listening
+writer_created_count=1
+sandbox_extension_issue_file_to_process failed for /tmp/VeyraP107.app: 1 (Operation not permitted)
+TrayIcon created main_thread=true; Runtime unavailable; start/stop disabled
+AppView created entity=EntityId(1v1); pages_created_count=6
+bridge request=1 generation=0 busy
+bridge request=1 generation=0 Accepted
+logical content Size { 1280px × 720px }; scale factor 2
+visual change generation=1 changes=1
+visual submit generation=1 commits=1 opacity=90 blur=10
+visual completion generation=1 accepted=true result=Ok(())
+visual change generation=2 changes=2
+visual submit generation=2 commits=2 opacity=90 blur=10
+visual completion generation=2 accepted=true result=Ok(())
+navigate settings entity=EntityId(18v1)
+visual change generation=3 changes=3
+visual submit generation=3 commits=3 opacity=90 blur=10
+visual completion generation=3 accepted=true result=Ok(())
+behavior submit generation=2 expected=ConfigVersion(StateVersion { epoch: StateEpoch([5, 255, 193, 191, 164, 229, 185, 58, 215, 217, 243, 100, 29, 179, 80, 110]), revision: 3 }) fields=[Ipv6Test]
+behavior completion generation=2 accepted=true status=Idle pending=[]
+desktop intent=Close effect=Hide
+visibility after Close
+native hidden=true window_count=3 active_key=false
+desktop intent=Activate effect=RevealExisting
+restore existing window=AnyWindowHandle { id: WindowId(1v1), state_type: TypeId(0x4cf30ea886e5b4671b45ece2585e2dcd), root_entity_type_name: "gpui_base::root::Root" }
+Activate accepted activation_count=1 window focus requested
+activation_count=1 primary_front_key=true
+visibility after Activate
+native hidden=false window_count=3 active_key=true
+2026-10-04 18:45:25.240 veyra-desktop[53627:6193457] TSM AdjustCapsLockLEDForKeyTransitionHandling - _ISSetPhysicalKeyboardCapsLockLED Inhibit
+visual change generation=4 changes=4
+visual submit generation=4 commits=4 opacity=90 blur=10
+visual completion generation=4 accepted=true result=Ok(())
+navigate overview entity=EntityId(3v1)
+visual change generation=5 changes=5
+visual submit generation=5 commits=5 opacity=90 blur=10
+visual completion generation=5 accepted=true result=Ok(())
+visual change generation=6 changes=6
+visual submit generation=6 commits=6 opacity=90 blur=10
+visual completion generation=6 accepted=true result=Ok(())
+navigate settings entity=EntityId(18v1)
+visual change generation=7 changes=7
+visual submit generation=7 commits=7 opacity=90 blur=10
+visual completion generation=7 accepted=true result=Ok(())

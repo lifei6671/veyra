@@ -1,0 +1,446 @@
+[
+  {
+    "theme": "light",
+    "state": "ip-select",
+    "rects": {
+      ".panel-ip-tooltip": null,
+      ".ip-info-tooltip": {
+        "x": 857.703125,
+        "y": 211.5,
+        "width": 16,
+        "height": 16,
+        "checked": null
+      },
+      "[aria-label=\"IPv6 测试\"]": {
+        "x": 1216,
+        "y": 371.5,
+        "width": 40,
+        "height": 24,
+        "checked": "false"
+      }
+    }
+  },
+  {
+    "theme": "light",
+    "state": "tooltip-hover",
+    "rects": {
+      ".panel-ip-tooltip": {
+        "x": 725.703125,
+        "y": 233.5,
+        "width": 280,
+        "height": 64,
+        "checked": null
+      },
+      ".ip-info-tooltip": {
+        "x": 857.703125,
+        "y": 211.5,
+        "width": 16,
+        "height": 16,
+        "checked": null
+      },
+      "[aria-label=\"IPv6 测试\"]": {
+        "x": 1216,
+        "y": 371.5,
+        "width": 40,
+        "height": 24,
+        "checked": "false"
+      }
+    }
+  },
+  {
+    "theme": "light",
+    "state": "tooltip-focus",
+    "rects": {
+      ".panel-ip-tooltip": {
+        "x": 725.703125,
+        "y": 233.5,
+        "width": 280,
+        "height": 64,
+        "checked": null
+      },
+      ".ip-info-tooltip": {
+        "x": 857.703125,
+        "y": 211.5,
+        "width": 16,
+        "height": 16,
+        "checked": null
+      },
+      "[aria-label=\"IPv6 测试\"]": {
+        "x": 1216,
+        "y": 371.5,
+        "width": 40,
+        "height": 24,
+        "checked": "false"
+      }
+    }
+  },
+  {
+    "theme": "light",
+    "state": "input-focus",
+    "rects": {
+      ".panel-ip-tooltip": null,
+      ".ip-info-tooltip": {
+        "x": 857.703125,
+        "y": 211.5,
+        "width": 16,
+        "height": 16,
+        "checked": null
+      },
+      "[aria-label=\"IPv6 测试\"]": {
+        "x": 1216,
+        "y": 371.5,
+        "width": 40,
+        "height": 24,
+        "checked": "false"
+      }
+    }
+  },
+  {
+    "theme": "light",
+    "state": "icon-button-hover",
+    "rects": {
+      ".panel-ip-tooltip": null,
+      ".ip-info-tooltip": {
+        "x": 857.703125,
+        "y": 211.5,
+        "width": 16,
+        "height": 16,
+        "checked": null
+      },
+      "[aria-label=\"IPv6 测试\"]": {
+        "x": 1216,
+        "y": 371.5,
+        "width": 40,
+        "height": 24,
+        "checked": "false"
+      }
+    }
+  },
+  {
+    "theme": "light",
+    "state": "modal-open",
+    "rects": {
+      ".panel-ip-tooltip": null,
+      ".ip-info-tooltip": {
+        "x": 857.703125,
+        "y": 211.5,
+        "width": 16,
+        "height": 16,
+        "checked": null
+      },
+      "[aria-label=\"IPv6 测试\"]": {
+        "x": 1216,
+        "y": 371.5,
+        "width": 40,
+        "height": 24,
+        "checked": "false"
+      }
+    }
+  },
+  {
+    "theme": "light",
+    "state": "modal-focus-return",
+    "rects": {
+      ".panel-ip-tooltip": null,
+      ".ip-info-tooltip": {
+        "x": 857.703125,
+        "y": 211.5,
+        "width": 16,
+        "height": 16,
+        "checked": null
+      },
+      "[aria-label=\"IPv6 测试\"]": {
+        "x": 1216,
+        "y": 371.5,
+        "width": 40,
+        "height": 24,
+        "checked": "false"
+      }
+    }
+  },
+  {
+    "theme": "light",
+    "state": "switch-focus-off",
+    "rects": {
+      ".panel-ip-tooltip": null,
+      ".ip-info-tooltip": {
+        "x": 857.703125,
+        "y": 211.5,
+        "width": 16,
+        "height": 16,
+        "checked": null
+      },
+      "[aria-label=\"IPv6 测试\"]": {
+        "x": 1216,
+        "y": 371.5,
+        "width": 40,
+        "height": 24,
+        "checked": "false"
+      }
+    }
+  },
+  {
+    "theme": "light",
+    "state": "switch-focus-on",
+    "rects": {
+      ".panel-ip-tooltip": null,
+      ".ip-info-tooltip": {
+        "x": 857.703125,
+        "y": 211.5,
+        "width": 16,
+        "height": 16,
+        "checked": null
+      },
+      "[aria-label=\"IPv6 测试\"]": {
+        "x": 1216,
+        "y": 371.5,
+        "width": 40,
+        "height": 24,
+        "checked": "true"
+      }
+    }
+  },
+  {
+    "theme": "light",
+    "state": "toast-generic",
+    "rects": {
+      ".panel-ip-tooltip": null,
+      ".ip-info-tooltip": {
+        "x": 857.703125,
+        "y": 211.5,
+        "width": 16,
+        "height": 16,
+        "checked": null
+      },
+      "[aria-label=\"IPv6 测试\"]": {
+        "x": 1216,
+        "y": 371.5,
+        "width": 40,
+        "height": 24,
+        "checked": "true"
+      }
+    }
+  },
+  {
+    "theme": "dark",
+    "state": "ip-select",
+    "rects": {
+      ".panel-ip-tooltip": null,
+      ".ip-info-tooltip": {
+        "x": 857.703125,
+        "y": 211.5,
+        "width": 16,
+        "height": 16,
+        "checked": null
+      },
+      "[aria-label=\"IPv6 测试\"]": {
+        "x": 1216,
+        "y": 371.5,
+        "width": 40,
+        "height": 24,
+        "checked": "false"
+      }
+    }
+  },
+  {
+    "theme": "dark",
+    "state": "tooltip-hover",
+    "rects": {
+      ".panel-ip-tooltip": {
+        "x": 725.703125,
+        "y": 233.5,
+        "width": 280,
+        "height": 64,
+        "checked": null
+      },
+      ".ip-info-tooltip": {
+        "x": 857.703125,
+        "y": 211.5,
+        "width": 16,
+        "height": 16,
+        "checked": null
+      },
+      "[aria-label=\"IPv6 测试\"]": {
+        "x": 1216,
+        "y": 371.5,
+        "width": 40,
+        "height": 24,
+        "checked": "false"
+      }
+    }
+  },
+  {
+    "theme": "dark",
+    "state": "tooltip-focus",
+    "rects": {
+      ".panel-ip-tooltip": {
+        "x": 725.703125,
+        "y": 233.5,
+        "width": 280,
+        "height": 64,
+        "checked": null
+      },
+      ".ip-info-tooltip": {
+        "x": 857.703125,
+        "y": 211.5,
+        "width": 16,
+        "height": 16,
+        "checked": null
+      },
+      "[aria-label=\"IPv6 测试\"]": {
+        "x": 1216,
+        "y": 371.5,
+        "width": 40,
+        "height": 24,
+        "checked": "false"
+      }
+    }
+  },
+  {
+    "theme": "dark",
+    "state": "input-focus",
+    "rects": {
+      ".panel-ip-tooltip": null,
+      ".ip-info-tooltip": {
+        "x": 857.703125,
+        "y": 211.5,
+        "width": 16,
+        "height": 16,
+        "checked": null
+      },
+      "[aria-label=\"IPv6 测试\"]": {
+        "x": 1216,
+        "y": 371.5,
+        "width": 40,
+        "height": 24,
+        "checked": "false"
+      }
+    }
+  },
+  {
+    "theme": "dark",
+    "state": "icon-button-hover",
+    "rects": {
+      ".panel-ip-tooltip": null,
+      ".ip-info-tooltip": {
+        "x": 857.703125,
+        "y": 211.5,
+        "width": 16,
+        "height": 16,
+        "checked": null
+      },
+      "[aria-label=\"IPv6 测试\"]": {
+        "x": 1216,
+        "y": 371.5,
+        "width": 40,
+        "height": 24,
+        "checked": "false"
+      }
+    }
+  },
+  {
+    "theme": "dark",
+    "state": "modal-open",
+    "rects": {
+      ".panel-ip-tooltip": null,
+      ".ip-info-tooltip": {
+        "x": 857.703125,
+        "y": 211.5,
+        "width": 16,
+        "height": 16,
+        "checked": null
+      },
+      "[aria-label=\"IPv6 测试\"]": {
+        "x": 1216,
+        "y": 371.5,
+        "width": 40,
+        "height": 24,
+        "checked": "false"
+      }
+    }
+  },
+  {
+    "theme": "dark",
+    "state": "modal-focus-return",
+    "rects": {
+      ".panel-ip-tooltip": null,
+      ".ip-info-tooltip": {
+        "x": 857.703125,
+        "y": 211.5,
+        "width": 16,
+        "height": 16,
+        "checked": null
+      },
+      "[aria-label=\"IPv6 测试\"]": {
+        "x": 1216,
+        "y": 371.5,
+        "width": 40,
+        "height": 24,
+        "checked": "false"
+      }
+    }
+  },
+  {
+    "theme": "dark",
+    "state": "switch-focus-off",
+    "rects": {
+      ".panel-ip-tooltip": null,
+      ".ip-info-tooltip": {
+        "x": 857.703125,
+        "y": 211.5,
+        "width": 16,
+        "height": 16,
+        "checked": null
+      },
+      "[aria-label=\"IPv6 测试\"]": {
+        "x": 1216,
+        "y": 371.5,
+        "width": 40,
+        "height": 24,
+        "checked": "false"
+      }
+    }
+  },
+  {
+    "theme": "dark",
+    "state": "switch-focus-on",
+    "rects": {
+      ".panel-ip-tooltip": null,
+      ".ip-info-tooltip": {
+        "x": 857.703125,
+        "y": 211.5,
+        "width": 16,
+        "height": 16,
+        "checked": null
+      },
+      "[aria-label=\"IPv6 测试\"]": {
+        "x": 1216,
+        "y": 371.5,
+        "width": 40,
+        "height": 24,
+        "checked": "true"
+      }
+    }
+  },
+  {
+    "theme": "dark",
+    "state": "toast-generic",
+    "rects": {
+      ".panel-ip-tooltip": null,
+      ".ip-info-tooltip": {
+        "x": 857.703125,
+        "y": 211.5,
+        "width": 16,
+        "height": 16,
+        "checked": null
+      },
+      "[aria-label=\"IPv6 测试\"]": {
+        "x": 1216,
+        "y": 371.5,
+        "width": 40,
+        "height": 24,
+        "checked": "true"
+      }
+    }
+  }
+]

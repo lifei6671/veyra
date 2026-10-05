@@ -1,7 +1,7 @@
 //! Every main route owns one persistent PageView entity and its own input entities.
 use crate::navigation::{Category, Route};
 use gpui_kit::{
-    component::{button::*, input::InputState},
+    component::{ActiveTheme, button::*, input::InputState},
     prelude::*,
     *,
 };
@@ -14,6 +14,7 @@ pub struct PageView {
     pub panel: Option<Entity<super::panel::PanelView>>,
     pub behavior: Option<Entity<super::behavior_panel::BehaviorPanel>>,
     behavior_open: bool,
+    settings_scroll: ScrollHandle,
 }
 impl PageView {
     pub fn new(route: Route, window: &mut Window, cx: &mut Context<Self>) -> Self {
@@ -24,6 +25,7 @@ impl PageView {
             panel: None,
             behavior: None,
             behavior_open: false,
+            settings_scroll: ScrollHandle::new(),
             input: cx.new(|cx| {
                 InputState::new(window, cx).placeholder(if route == Route::Settings {
                     "P1-03 evidence draft · 仅此会话，不写入 Profile"
@@ -35,28 +37,91 @@ impl PageView {
     }
 }
 impl Render for PageView {
-    fn render(&mut self, _: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
-        let mut content = div().flex().flex_col().flex_shrink_0().gap_3().w_full();
+    fn render(&mut self, window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
+        if self.route != Route::Settings && !super::components::evidence_visible() {
+            return super::components::unavailable(self.route.task());
+        }
+        let mut content = div()
+            .flex()
+            .flex_col()
+            .gap_0()
+            .w_full()
+            .min_w_0()
+            .overflow_hidden()
+            .when(self.route == Route::Settings, |d| {
+                // Entity 边界上的百分比高度无确定父高度，使用真实内容区约束滚动。
+                d.h(window.viewport_size().height).min_h_0()
+            });
         if self.route == Route::Settings {
-            if self.category == Category::Panel {
-                content = content.min_h(px(680.));
-            }
-            content =
-                content
-                    .child(div().flex().flex_wrap().gap_2().children(Category::ALL.map(
-                        |category| {
-                            Button::new(category.id())
-                                .label(category.label())
-                                .when(self.category == category, |b| b.primary())
-                                .on_click(cx.listener(move |this, _, _, cx| {
-                                    this.category = category;
-                                    eprintln!("category {}", category.id());
-                                    cx.notify();
-                                }))
-                        },
-                    )))
-                    .child(div().text_xl().child(self.category.label()));
-            if self.category == Category::Panel {
+            let dark = matches!(cx.theme().mode, gpui_kit::component::ThemeMode::Dark);
+            content = content.child(
+                div()
+                    .flex()
+                    .h(px(crate::ui::tokens::SETTINGS_NAV_HEIGHT))
+                    .bg(rgba(
+                        (super::theme::Palette::new(dark, true).surface << 8) | 0xbf,
+                    ))
+                    .flex_shrink_0()
+                    .p(px(super::tokens::GAP))
+                    .child(
+                        div()
+                            .id("settings-nav-scroll")
+                            .flex()
+                            .min_w_0()
+                            .gap(px(super::tokens::GAP))
+                            .overflow_x_scroll()
+                            .children(Category::ALL.into_iter().enumerate().map(
+                                |(i, category)| {
+                                    super::components::navigation_item(
+                                        category.id(),
+                                        category.label(),
+                                        [
+                                            "Home",
+                                            "Rss",
+                                            "RectangleStack",
+                                            "Map",
+                                            "DevicePhoneMobile",
+                                            "Link",
+                                            "Share",
+                                            "ServerStack",
+                                            "CpuChip",
+                                        ][i],
+                                        self.category == category,
+                                        super::components::NavigationKind::Category,
+                                        dark,
+                                        cx,
+                                    )
+                                    .on_click(cx.listener(
+                                        move |this, _, _, cx| {
+                                            this.category = category;
+                                            cx.notify();
+                                        },
+                                    ))
+                                },
+                            )),
+                    ),
+            );
+            if self.category == Category::Panel && !super::components::evidence_visible() {
+                let mut panel_content = div()
+                    .id("settings-content")
+                    .track_scroll(&self.settings_scroll)
+                    .min_w_0()
+                    .w_full()
+                    .flex()
+                    .flex_col()
+                    .flex_1()
+                    .min_h_0()
+                    .overflow_y_scroll()
+                    .gap(px(crate::ui::tokens::GAP))
+                    .p(px(crate::ui::tokens::GAP));
+                if let Some(panel) = &self.panel {
+                    panel_content = panel_content.child(panel.clone());
+                }
+                if let Some(behavior) = &self.behavior {
+                    panel_content = panel_content.child(behavior.clone());
+                }
+                content = content.child(panel_content);
+            } else if self.category == Category::Panel {
                 content = content.child(
                     div()
                         .flex()
@@ -88,6 +153,9 @@ impl Render for PageView {
                     content = content.child(panel.clone());
                 }
             } else {
+                if !super::components::evidence_visible() {
+                    return content.child(super::components::unavailable(self.category.task()));
+                }
                 content = content
                     .child(format!(
                         "业务能力尚未迁移 · 将在 {} 接入",

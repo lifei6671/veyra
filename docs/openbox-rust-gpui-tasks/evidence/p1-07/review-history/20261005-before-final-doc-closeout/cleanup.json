@@ -1,0 +1,126 @@
+{
+  "history": {
+    "mode": "explicit task cleanup after incomplete tray test; NOT native quit acceptance",
+    "stopped_owned_pids": [
+      55229,
+      29255
+    ],
+    "roots": [
+      {
+        "root": "/tmp/veyra-p1-07-visual",
+        "stale_socket_manually_removed": true,
+        "socket_remaining": false
+      },
+      {
+        "root": "/tmp/veyra-p1-07-combination",
+        "stale_socket_manually_removed": true,
+        "socket_remaining": false
+      }
+    ],
+    "retained": "isolated test configuration/assets for diagnosis; no active writer",
+    "user_apps": "user Edge tab restored and left open",
+    "remaining_owned_pids": [],
+    "loopback_1427_listening": false
+  },
+  "review": {
+    "explicit_tray_quit_count": 2,
+    "human_reports": [
+      "已退出",
+      "退出了"
+    ],
+    "socket_removed_by_app": true,
+    "flock_available": true,
+    "desktop_processes": "",
+    "diagnostic_focus_windows": "Later debug keyboard Quit, explicitly excluded from Tray acceptance",
+    "retained": "Isolated config, source-only baseline worktree/probe patch and logs for Host inspection; no writer/process/socket"
+  },
+  "final_diagnostic_cleanup": {
+    "time": "2026-10-04T15:16:25.610840+00:00",
+    "method": "debug keyboard Quit only; not counted as Tray Quit",
+    "desktop_processes": [],
+    "roots": [
+      {
+        "root": "/tmp/veyra-p107-review/baseline-native-root",
+        "sockets": [],
+        "locks": [
+          {
+            "path": "/tmp/veyra-p107-review/baseline-native-root/locks/desktop.lock",
+            "flock_available": true
+          }
+        ],
+        "sockets_after_final_cleanup": []
+      },
+      {
+        "root": "/tmp/veyra-p107-review/baseline-root",
+        "sockets": [],
+        "locks": [
+          {
+            "path": "/tmp/veyra-p107-review/baseline-root/locks/desktop.lock",
+            "flock_available": true
+          }
+        ],
+        "sockets_after_final_cleanup": []
+      },
+      {
+        "root": "/tmp/veyra-p107-review/component-native-root",
+        "sockets": [],
+        "locks": [
+          {
+            "path": "/tmp/veyra-p107-review/component-native-root/locks/desktop.lock",
+            "flock_available": true
+          }
+        ],
+        "sockets_after_final_cleanup": []
+      },
+      {
+        "root": "/tmp/veyra-p107-review/current-root",
+        "sockets": [
+          "/tmp/veyra-p107-review/current-root/runtime/desktop.sock"
+        ],
+        "locks": [
+          {
+            "path": "/tmp/veyra-p107-review/current-root/locks/desktop.lock",
+            "flock_available": true
+          }
+        ],
+        "sockets_after_final_cleanup": []
+      },
+      {
+        "root": "/tmp/veyra-p107-review/native-ab-root",
+        "sockets": [],
+        "locks": [
+          {
+            "path": "/tmp/veyra-p107-review/native-ab-root/locks/desktop.lock",
+            "flock_available": true
+          }
+        ],
+        "sockets_after_final_cleanup": []
+      }
+    ],
+    "react_server_pid": 15308,
+    "react_server_stopped": true,
+    "socket_manual_removal_in_this_review": true,
+    "manual_stale_socket_history": {
+      "path": "/tmp/veyra-p107-review/current-root/runtime/desktop.sock",
+      "existed": true,
+      "source": "earlier shell-wrapper diagnostic; explicit Tray Quit native root cleaned itself",
+      "lock_free": true,
+      "desktop_processes": []
+    },
+    "no_remaining_owned_process_or_socket": true
+  },
+  "final_20261005_pending": {
+    "status": "PENDING; active acceptance window intentionally retained for human Tray Quit",
+    "active_native": [
+      "77189 /private/tmp/veyra-p107-final-20261005/VeyraP107Final.app/Contents/MacOS/VeyraP107NativeAB"
+    ],
+    "active_local_react_fixture": [
+      "44412 node /tmp/veyra-p107-review/local-vite.mjs"
+    ],
+    "socket_exists": true,
+    "flock_busy": true,
+    "previous_first_tray_quit_check": "review-history/20261005-before-picker-final/cleanup-first-tray-quit.json",
+    "ds_store_untracked": "",
+    "no_residual_claim": false
+  }
+}

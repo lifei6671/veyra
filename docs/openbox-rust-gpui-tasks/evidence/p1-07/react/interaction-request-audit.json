@@ -1,0 +1,50 @@
+[
+  {
+    "path": "/api/auth/status",
+    "method": "GET"
+  },
+  {
+    "path": "/api/auth/status",
+    "method": "GET"
+  },
+  {
+    "path": "/api/storage",
+    "method": "GET"
+  },
+  {
+    "path": "/api/openbox/service/status",
+    "method": "GET"
+  },
+  {
+    "path": "/api/storage",
+    "method": "PATCH"
+  },
+  {
+    "path": "/api/storage",
+    "method": "GET"
+  },
+  {
+    "path": "/api/auth/status",
+    "method": "GET"
+  },
+  {
+    "path": "/api/auth/status",
+    "method": "GET"
+  },
+  {
+    "path": "/api/storage",
+    "method": "GET"
+  },
+  {
+    "path": "/api/openbox/service/status",
+    "method": "GET"
+  },
+  {
+    "path": "/api/storage",
+    "method": "PATCH"
+  },
+  {
+    "path": "/api/storage",
+    "method": "GET"
+  }
+]

@@ -1,0 +1,749 @@
+[
+  {
+    "name": "light-shell",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:15:37.014Z"
+  },
+  {
+    "name": "light-collapsed",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:15:37.774Z"
+  },
+  {
+    "name": "light-collapsed",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:16:05.247Z"
+  },
+  {
+    "name": "light-panel",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:16:08.204Z"
+  },
+  {
+    "name": "light-input-focus",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:16:08.965Z"
+  },
+  {
+    "name": "light-input-focus",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:17:00.581Z"
+  },
+  {
+    "name": "light-switch-off",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:17:01.956Z"
+  },
+  {
+    "name": "light-switch-on",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:17:02.688Z"
+  },
+  {
+    "name": "light-panel",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:17:30.182Z"
+  },
+  {
+    "name": "light-select",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:17:30.848Z"
+  },
+  {
+    "name": "light-tooltip-hover",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:17:32.714Z"
+  },
+  {
+    "name": "light-tooltip-escape",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:17:33.496Z"
+  },
+  {
+    "name": "light-tooltip-focus",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:17:46.407Z"
+  },
+  {
+    "name": "light-tooltip-blur",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:17:47.133Z"
+  },
+  {
+    "name": "light-disabled",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:17:48.045Z"
+  },
+  {
+    "name": "light-sidebar-tooltip-hover",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:17:49.656Z"
+  },
+  {
+    "name": "light-sidebar-tooltip-focus",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:19:03.062Z"
+  },
+  {
+    "name": "light-sidebar-tooltip-escape",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:19:03.780Z"
+  },
+  {
+    "name": "light-sidebar-tooltip-blur",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:19:04.471Z"
+  },
+  {
+    "name": "light-sidebar-tooltip-collapsed",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:19:08.062Z"
+  },
+  {
+    "name": "light-modal",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:19:10.888Z"
+  },
+  {
+    "name": "light-modal-focus-return",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:19:11.541Z"
+  },
+  {
+    "name": "light-modal-keyboard",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:19:34.771Z"
+  },
+  {
+    "name": "light-toast",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:19:37.798Z"
+  },
+  {
+    "name": "light-toast-close",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:19:38.398Z"
+  },
+  {
+    "name": "dark-shell",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:20:25.437Z"
+  },
+  {
+    "name": "dark-collapsed",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:20:28.920Z"
+  },
+  {
+    "name": "dark-panel",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:20:32.406Z"
+  },
+  {
+    "name": "dark-select",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:21:00.979Z"
+  },
+  {
+    "name": "dark-input-focus",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:21:03.753Z"
+  },
+  {
+    "name": "dark-switch-off",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:21:04.505Z"
+  },
+  {
+    "name": "dark-switch-on",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:21:05.264Z"
+  },
+  {
+    "name": "dark-tooltip-hover",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:21:07.095Z"
+  },
+  {
+    "name": "dark-tooltip-focus",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:24:34.018Z"
+  },
+  {
+    "name": "dark-tooltip-escape",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:24:34.753Z"
+  },
+  {
+    "name": "dark-tooltip-blur",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:24:35.495Z"
+  },
+  {
+    "name": "dark-modal",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:24:37.519Z"
+  },
+  {
+    "name": "dark-modal-focus-return",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:24:38.155Z"
+  },
+  {
+    "name": "dark-toast",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:24:50.469Z"
+  },
+  {
+    "name": "dark-disabled",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:24:52.862Z"
+  },
+  {
+    "name": "dark-toast-auto-dismiss",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:24:52.963Z"
+  },
+  {
+    "name": "dark-sidebar-tooltip-hover",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:24:54.327Z"
+  },
+  {
+    "name": "dark-sidebar-tooltip-collapsed",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:24:56.705Z"
+  },
+  {
+    "name": "dark-slider",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:25:53.529Z"
+  },
+  {
+    "name": "dark-slider",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:26:06.386Z"
+  },
+  {
+    "name": "dark-slider-drag",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:26:09.578Z"
+  },
+  {
+    "name": "light-slider",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:26:11.785Z"
+  },
+  {
+    "name": "light-slider-drag",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:26:39.467Z"
+  },
+  {
+    "name": "light-slider",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:26:54.370Z"
+  },
+  {
+    "name": "light-slider",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:29:02.984Z"
+  },
+  {
+    "name": "light-shell",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:29:50.511Z"
+  },
+  {
+    "name": "light-collapsed",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:29:52.492Z"
+  },
+  {
+    "name": "light-panel",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:29:56.059Z"
+  },
+  {
+    "name": "light-button-focus",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:29:59.474Z"
+  },
+  {
+    "name": "light-save-failure",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:30:19.459Z"
+  },
+  {
+    "name": "light-save-failure-field",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:30:37.294Z"
+  },
+  {
+    "name": "light-invalid-draft",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:30:39.793Z"
+  },
+  {
+    "name": "light-toast",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:30:43.818Z"
+  },
+  {
+    "name": "light-toast-close",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:30:44.409Z"
+  },
+  {
+    "name": "light-select-keyboard-selected",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:31:16.100Z"
+  },
+  {
+    "name": "light-select-keyboard-escape",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:31:17.492Z"
+  },
+  {
+    "name": "light-select-outside-dismiss",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:31:19.017Z"
+  },
+  {
+    "name": "dark-toast",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:31:23.117Z"
+  },
+  {
+    "name": "dark-toast-auto-dismiss",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:31:58.657Z"
+  },
+  {
+    "name": "light-panel",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:32:03.517Z"
+  },
+  {
+    "name": "light-panel",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:32:59.100Z"
+  },
+  {
+    "name": "light-select",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:33:29.685Z"
+  },
+  {
+    "name": "light-tooltip-focus",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:33:31.044Z"
+  },
+  {
+    "name": "light-tooltip-escape",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:33:31.651Z"
+  },
+  {
+    "name": "light-tooltip-blur",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:33:32.434Z"
+  },
+  {
+    "name": "light-input-focus",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:33:32.534Z"
+  },
+  {
+    "name": "light-switch-off",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:33:33.135Z"
+  },
+  {
+    "name": "light-switch-on",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:33:33.869Z"
+  },
+  {
+    "name": "light-tooltip-hover",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:33:35.876Z"
+  },
+  {
+    "name": "light-tooltip-hover",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:33:53.892Z"
+  },
+  {
+    "name": "light-modal",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:33:55.968Z"
+  },
+  {
+    "name": "light-modal-focus-return",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:33:56.626Z"
+  },
+  {
+    "name": "light-modal-keyboard",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:33:57.375Z"
+  },
+  {
+    "name": "light-button-focus",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:33:58.811Z"
+  },
+  {
+    "name": "light-modal",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:34:23.243Z"
+  },
+  {
+    "name": "light-modal-focus-return",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:34:23.895Z"
+  },
+  {
+    "name": "light-modal-keyboard",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:34:24.758Z"
+  },
+  {
+    "name": "light-disabled",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:34:26.186Z"
+  }
+]

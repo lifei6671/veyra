@@ -1,0 +1,26 @@
+ M crates/veyra-desktop/THIRD_PARTY_NOTICES.md
+ M crates/veyra-desktop/src/app.rs
+ M crates/veyra-desktop/src/main.rs
+ M crates/veyra-desktop/src/services.rs
+ M crates/veyra-desktop/src/state_bridge.rs
+ M crates/veyra-desktop/src/tray.rs
+ M crates/veyra-desktop/src/ui/behavior_panel.rs
+ M crates/veyra-desktop/src/ui/components/mod.rs
+ M crates/veyra-desktop/src/ui/mod.rs
+ M crates/veyra-desktop/src/ui/pages/mod.rs
+ M crates/veyra-desktop/src/ui/panel.rs
+ M crates/veyra-desktop/src/ui/shell.rs
+ M crates/veyra-desktop/src/ui/theme.rs
+ M docs/openbox-rust-gpui-tasks/IMPLEMENTATION_PHASES.md
+ M docs/openbox-rust-gpui-tasks/P1-core-and-shell.md
+ M docs/openbox-rust-gpui-tasks/SESSION.md
+?? .DS_Store
+?? crates/veyra-desktop/assets/
+?? crates/veyra-desktop/src/ui/background.rs
+?? crates/veyra-desktop/src/ui/components/icon_picker.rs
+?? crates/veyra-desktop/src/ui/components/notice.rs
+?? crates/veyra-desktop/src/ui/components/select.rs
+?? crates/veyra-desktop/src/ui/components/tooltip.rs
+?? crates/veyra-desktop/src/ui/icons.rs
+?? crates/veyra-desktop/src/ui/tokens.rs
+?? docs/openbox-rust-gpui-tasks/evidence/p1-07/

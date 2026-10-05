@@ -1,0 +1,34 @@
+product=com.lifei6671.veyra namespace=com.lifei6671.veyra.gpui-preview
+role=primary lock acquired; control socket listening
+writer_created_count=1
+TrayIcon created main_thread=true; Runtime unavailable; start/stop disabled
+AppView created entity=EntityId(1v1); pages_created_count=6
+bridge request=1 generation=0 busy
+theme effective preference=System AppView.dark=false Kit=Light route=Overview content=Size { 1280px × 721px } snapshot_loaded=false
+bridge request=1 generation=0 Accepted
+theme effective preference=Light AppView.dark=false Kit=Light route=Overview content=Size { 1280px × 720px } snapshot_loaded=true
+tray native rect=Some(Rect { size: PhysicalSize { width: 68, height: 0 }, position: PhysicalPosition { x: 0.0, y: 1964.0 } }) visible=Some(true)
+logical content Size { 1280px × 720px }; scale factor 2
+tray probe delayed main_thread=true activation_policy=NSApplicationActivationPolicy(0) presentation=NSApplicationPresentationOptions(0) thickness=22
+tray probe visible=true button_exists=true rect=Some(Rect { size: PhysicalSize { width: 68, height: 66 }, position: PhysicalPosition { x: 1924.0, y: 0.0 } })
+tray probe button.frame=CGRect { origin: CGPoint { x: 0.0, y: 0.0 }, size: CGSize { width: 34.0, height: 22.0 } } window.frame=Some(CGRect { origin: CGPoint { x: 962.0, y: 949.0 }, size: CGSize { width: 34.0, height: 33.0 } })
+tray probe screen.frame=CGRect { origin: CGPoint { x: 0.0, y: 0.0 }, size: CGSize { width: 1512.0, height: 982.0 } } visibleFrame=CGRect { origin: CGPoint { x: 54.0, y: 0.0 }, size: CGSize { width: 1458.0, height: 949.0 } }
+default background CPU job generation=1 thread=ThreadId(5) duration_ms=4752
+default background generation=1 accepted=true
+tray native rect=Some(Rect { size: PhysicalSize { width: 68, height: 66 }, position: PhysicalPosition { x: 1924.0, y: 0.0 } }) visible=Some(true)
+navigate settings entity=EntityId(18v1)
+theme effective preference=Light AppView.dark=false Kit=Light route=Settings content=Size { 1280px × 720px } snapshot_loaded=true
+theme effective preference=Light AppView.dark=false Kit=Light route=Settings content=Size { 1280px × 720px } snapshot_loaded=true
+2026-10-05 18:12:13.297 VeyraP107NativeAB[77189:6947341] TSM AdjustCapsLockLEDForKeyTransitionHandling - _ISSetPhysicalKeyboardCapsLockLED Inhibit
+theme effective preference=Light AppView.dark=false Kit=Light route=Settings content=Size { 1280px × 720px } snapshot_loaded=true
+behavior submit generation=3 expected=ConfigVersion(StateVersion { epoch: StateEpoch([76, 181, 112, 253, 3, 109, 251, 112, 8, 216, 219, 103, 220, 156, 171, 238]), revision: 73 }) fields=[IpInfo]
+behavior completion generation=3 accepted=true status=Idle pending=[]
+tray native rect=Some(Rect { size: PhysicalSize { width: 68, height: 66 }, position: PhysicalPosition { x: 1962.0, y: 0.0 } }) visible=Some(true)
+theme effective preference=Light AppView.dark=false Kit=Light route=Settings content=Size { 1280px × 720px } snapshot_loaded=true
+desktop intent=Show effect=RevealExisting
+restore existing window=AnyWindowHandle { id: WindowId(1v1), state_type: TypeId(0x4cf30ea886e5b4671b45ece2585e2dcd), root_entity_type_name: "gpui_base::root::Root" }
+visibility after Show
+native hidden=false window_count=4 active_key=true
+desktop intent=Quit effect=Quit
+quit cleanup: listener stopped; socket removed; flock retained until exit
+TrayIcon released on main thread

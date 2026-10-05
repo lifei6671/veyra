@@ -87,7 +87,7 @@ Task：OBG-Px-xx
 
 ## 4 任务状态总表
 
-“估算”在 P0 出口回填人日及假设；当前的 `—` 表示尚未估算。“证据”为空表示尚未提交完成证据。当前 macOS 61 项（DONE 12、ACCEPTANCE 1、READY 1、DOING 0、TODO 47），Windows 7 项 DEFERRED，共 68 项。READY 仅 P1-07，尚未领取/启动；P0-05 仍 ACCEPTANCE，P0-06/P0-08 仍 TODO。原 P1-04/P2-02/P4-05 由后缀子任务替代，不重复计数。
+“估算”在 P0 出口回填人日及假设；当前的 `—` 表示尚未估算。“证据”为空表示尚未提交完成证据。当前 macOS 61 项（DONE 13、ACCEPTANCE 1、READY 0、DOING 0、TODO 47），Windows 7 项 DEFERRED，共 68 项。P1-07 最终 DONE，owner 已释放，视觉 PASS_WITH_TECHNICAL_DIFFERENCES、组合验收 PASS；逐卡显式依赖重算无新 READY。P0-05 仍 ACCEPTANCE，P0-06/P0-08 仍 TODO。原 P1-04/P2-02/P4-05 由后缀子任务替代，不重复计数。
 
 ### P0 基线与可行性（9 项）
 
@@ -114,7 +114,7 @@ Task：OBG-Px-xx
 | [OBG-P1-04B 跨页面行为偏好](P1-core-and-shell.md#obg-p1-04b) | P1-02、P1-03 | DONE | Codex Desktop · Core/Config + GPUI | — | [行为偏好/消费契约](evidence/p1-04b/README.md) |
 | [OBG-P1-05 目录/单实例/文件](P1-core-and-shell.md#obg-p1-05) | P1-02、P1-03 | DONE | Codex Desktop · Runtime/Platform + GPUI | — | [P1-05 平台验收](evidence/p1-05/README.md) |
 | [OBG-P1-06 托盘与关闭](P1-core-and-shell.md#obg-p1-06) | P1-03、P1-05 | DONE | Codex Desktop | — | [正式托盘/窗口与人工验收收口](evidence/p1-06/README.md) |
-| [OBG-P1-07 桌面壳验收](P1-core-and-shell.md#obg-p1-07) | P1-01、P1-02、P1-03、P1-04A、P1-04B、P1-05、P1-06 | READY | — | — | — |
+| [OBG-P1-07 桌面壳验收](P1-core-and-shell.md#obg-p1-07) | P1-01、P1-02、P1-03、P1-04A、P1-04B、P1-05、P1-06 | DONE | —（owner 已释放） | — | [最终验收](P1-core-and-shell.md#p1-07-final-closeout) |
 
 ### P2 本机代理闭环（10 项）
 

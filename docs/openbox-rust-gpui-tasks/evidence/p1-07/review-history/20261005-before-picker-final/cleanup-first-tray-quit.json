@@ -1,0 +1,10 @@
+{
+  "time": "2026-10-05T10:11:05.366239+00:00",
+  "human": "已完成 (Tray Show核对后Tray退出)",
+  "explicit_tray_quit_log": true,
+  "app_socket_cleanup_log": true,
+  "processes": [],
+  "socket_exists": false,
+  "flock_available": true,
+  "socket_manually_removed": false
+}

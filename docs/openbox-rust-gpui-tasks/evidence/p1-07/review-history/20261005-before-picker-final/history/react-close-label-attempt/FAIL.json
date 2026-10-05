@@ -1,0 +1,4 @@
+{
+  "status": "FAIL",
+  "cause": "capture helper used GPUI aria label instead of Sonner Close toast; no product failure; partial screenshots excluded"
+}

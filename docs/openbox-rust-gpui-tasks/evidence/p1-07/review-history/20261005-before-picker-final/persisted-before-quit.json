@@ -1,0 +1,43 @@
+{
+  "schema_version": 9,
+  "state_epoch": [
+    76,
+    181,
+    112,
+    253,
+    3,
+    109,
+    251,
+    112,
+    8,
+    216,
+    219,
+    103,
+    220,
+    156,
+    171,
+    238
+  ],
+  "config_revision": 73,
+  "selection_revision": 0,
+  "visual": {
+    "language": "zh-CN",
+    "theme_mode": "light",
+    "background": {
+      "kind": "none"
+    },
+    "background_opacity": 90,
+    "background_blur": 10,
+    "global_radius": 16,
+    "sidebar_collapsed": false
+  },
+  "latency": {
+    "test_url": "http://www.gstatic.com/generate_204",
+    "timeout_ms": 6600,
+    "low_ms": 400,
+    "medium_ms": 800
+  },
+  "diagnostics": {
+    "ipv6_test": true
+  }
+}

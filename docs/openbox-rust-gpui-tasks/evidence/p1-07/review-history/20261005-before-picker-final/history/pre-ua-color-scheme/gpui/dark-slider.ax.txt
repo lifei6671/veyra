@@ -1,0 +1,77 @@
+Window: "Veyra · Desktop", App: VeyraP107Final.
+0 standard window Veyra · Desktop, Secondary Actions: Raise
+	1 container
+		2 button 折叠/展开侧栏 · Collapse/Expand sidebar
+		3 button 概览
+		4 button 代理
+		5 button 连接
+		6 button 日志
+		7 button 规则
+		8 button 设置
+		9 button 启动内核
+		10 button 停止内核
+		11 button 刷新数据
+		12 button 面板设置
+		13 button 订阅管理
+		14 button 出站节点
+		15 button 目标分流
+		16 button 终端分流
+		17 button 链式代理
+		18 button 共享网络
+		19 button DNS 设置
+		20 button 后端设置
+		21 pop up button (settable) 面板语言, Value: 简体中文
+			22 button
+		23 button 清空面板背景
+		24 button 上传面板背景
+		25 button 调整面板背景
+		26 slider (settable, float) 90
+		27 slider (settable, float) 10
+		28 button -
+		29 button +
+		30 pop up button (settable) 主题, Value: 暗色
+			31 button
+		32 button 修改密码
+		33 button 此API会用于IP检查中全球节点IP信息查询、连接详情中的IP地理信息查询、面板DNS查询中的IP地理信息查询。
+		34 pop up button (settable) IP信息API, Value: ip.sb
+			35 button
+		36 text field (settable) 6500
+		37 button 增加数值
+		38 button 减少数值
+		39 text field (settable) 400
+		40 button 增加数值
+		41 button 减少数值
+		42 text field (settable) 800
+		43 button 增加数值
+		44 button 减少数值
+		45 switch (settable, boolean) IPv6 测试, Value: off
+		46 switch (settable, boolean) 隐藏不可用节点, Value: off
+		47 pop up button (settable) 代理组分列, Value: 双列
+			48 button
+		49 button 概览里的延时小卡片和规则页右上角的快捷查询共用这四个站点。图标从图标库选;名称空着就用图标的品牌名(没有品牌名就用网址的主机名);网址填 http(s) 地址,延时按内核经当前分流访问这个地址计
+		50 button 选择测试站点图标
+		51 text field (settable) 百度
+		52 text field (settable) https://www.baidu.com/favicon.ico
+		53 button 清空测试地址
+		54 button 选择测试站点图标
+		55 text field (settable) Google
+		56 text field (settable) https://www.google.com/generate_204
+		57 button 清空测试地址
+		58 button 选择测试站点图标
+		59 text field (settable) OpenAI
+		60 text field (settable) https://api.openai.com/v1/models
+		61 button 清空测试地址
+		62 button 选择测试站点图标
+		63 text field (settable) Telegram
+		64 text field (settable) https://telegram.org/favicon.ico
+		65 button 清空测试地址
+		66 button 恢复默认测试站点
+		67 button 保存
+	68 close button
+	69 full screen button Help: this button also has an action to zoom the window, Secondary Actions: zoom the window
+	70 minimize button
+	71 text Veyra · Desktop
+72 menu bar
+	73 VeyraP107Final
+
+The focused UI element is 0 standard window Veyra · Desktop, Secondary Actions: Raise

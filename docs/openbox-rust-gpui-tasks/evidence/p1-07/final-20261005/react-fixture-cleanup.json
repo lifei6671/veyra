@@ -1,0 +1,6 @@
+{
+  "time": "2026-10-05T10:42:30.560703+00:00",
+  "owned_local_react_fixture_pid": 44412,
+  "stop": "SIGTERM only to local Vite fixture; never desktop Tray acceptance",
+  "remaining_fixture_processes": []
+}

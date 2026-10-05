@@ -1,0 +1,2772 @@
+{
+  "final_build": {
+    "baseline": "b982e8d6a8dfa69ee6e5f861e33a3d9366854d7f",
+    "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+    "bundle_binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+    "seed": "isolated root cloned from prior real acceptance state; no running writer; not claimed empty first run",
+    "sources": [
+      {
+        "path": "crates/veyra-desktop/src/app.rs",
+        "sha256": "af9512a11f9fb823ac5dcf178eebc1b7fb20bdd8e73ff2063040b8f6a1a6ac75"
+      },
+      {
+        "path": "crates/veyra-desktop/src/behavior_preferences.rs",
+        "sha256": "82ceb0635a07203dc60e3749bd6bfcf47330642ad8a29de0d57d87d46343b36c"
+      },
+      {
+        "path": "crates/veyra-desktop/src/desktop_lifecycle.rs",
+        "sha256": "725fa8e84414e72dc54c9b832a037d56fdb533a0ce7345487a13605fbb6afe81"
+      },
+      {
+        "path": "crates/veyra-desktop/src/main.rs",
+        "sha256": "133ccfdeb2a6df035b136d392c68bcead8ac6712cb1d70e9f449e49ba3688a6a"
+      },
+      {
+        "path": "crates/veyra-desktop/src/navigation.rs",
+        "sha256": "5f146f061876b1f88b892d9b68fe473fd62382f7fffe64d250513dc47ab5df81"
+      },
+      {
+        "path": "crates/veyra-desktop/src/platform/directories.rs",
+        "sha256": "2ae70304c7ee4ab9321daefc3d4764eb99cf4dd21b21ece6919fdb7f7076eb79"
+      },
+      {
+        "path": "crates/veyra-desktop/src/platform/files.rs",
+        "sha256": "4ec479b9b63d1e7321fcb6141444cc43f7f32a42402638c7e89f52ed5646623c"
+      },
+      {
+        "path": "crates/veyra-desktop/src/platform/macos.rs",
+        "sha256": "be383b2986f4ee7eded9ca1f01d8c8b9d4a202a7f747926d2467a7bf12db226e"
+      },
+      {
+        "path": "crates/veyra-desktop/src/platform/mod.rs",
+        "sha256": "ea63cb9d919eca7501110c7b08fcbb78bbeb51ee50fd8e23ae866c4039ade627"
+      },
+      {
+        "path": "crates/veyra-desktop/src/platform/single_instance.rs",
+        "sha256": "0932d79ef0b10684dc1014324258c050265f772593c29c5b8f31f73170378a1c"
+      },
+      {
+        "path": "crates/veyra-desktop/src/preferences.rs",
+        "sha256": "3a92d8b44b53fcaeeebba01f3258471e713c9491ecdbf40a1cba50f4bc9896bf"
+      },
+      {
+        "path": "crates/veyra-desktop/src/services.rs",
+        "sha256": "79482b8dbe4e27b6247c0bf004a88cb0ace3bbda9d0a1937fe51d6e61d52e29d"
+      },
+      {
+        "path": "crates/veyra-desktop/src/state_bridge.rs",
+        "sha256": "c43e0ad146644fd6c2f3765a18e7628cf1e3a0e59ba79f7dc039a3333df7dcc9"
+      },
+      {
+        "path": "crates/veyra-desktop/src/tray.rs",
+        "sha256": "18270a8b1c5ed902bca2f42d459c75b992e177d4397fe6201a83b40b341a41bf"
+      },
+      {
+        "path": "crates/veyra-desktop/src/ui/background.rs",
+        "sha256": "d2d119e1bb908b392c3bda95310e303e2ebd9ba2a1fd0bba3cd6232fd7caefef"
+      },
+      {
+        "path": "crates/veyra-desktop/src/ui/behavior_panel.rs",
+        "sha256": "90548810cb22fc35b25b31f64933b5263571a2abd5bba033242cbe1e3a4c16ad"
+      },
+      {
+        "path": "crates/veyra-desktop/src/ui/components/icon_picker.rs",
+        "sha256": "fa67f25d339c0661cc0dd68c17e15c60dcbab483890764836f4dd2e24a2bbc11"
+      },
+      {
+        "path": "crates/veyra-desktop/src/ui/components/mod.rs",
+        "sha256": "3bbd9c6ffd4a366f782085a50c35b268e08345f1419df4808561e987f43f0cfe"
+      },
+      {
+        "path": "crates/veyra-desktop/src/ui/components/notice.rs",
+        "sha256": "6b80c8772d12e1f088872a46de07a4ddd3d51c58101a4dfde55e9e8fdb7570c6"
+      },
+      {
+        "path": "crates/veyra-desktop/src/ui/components/overlay.rs",
+        "sha256": "542e046923f330d9142ce42fb74e3578acad75cf7b0de623f3f76223a8122e0c"
+      },
+      {
+        "path": "crates/veyra-desktop/src/ui/components/select.rs",
+        "sha256": "5b80f736c357bfec8cc70060c9b209d22ed0b51d6e1b6db5314683bacce54c98"
+      },
+      {
+        "path": "crates/veyra-desktop/src/ui/components/tooltip.rs",
+        "sha256": "8b0411cf5dfa7855df0ebc6bf34da0a8555f1ae422f559766f2aec1fcd24609e"
+      },
+      {
+        "path": "crates/veyra-desktop/src/ui/icons.rs",
+        "sha256": "0aa9907e202e4a6d07898a23b1b5bcc3f0155417cd9ac877c695b4fb24162e65"
+      },
+      {
+        "path": "crates/veyra-desktop/src/ui/mod.rs",
+        "sha256": "7647da63e81a780462a6e489a49254ee1e6139ff06bd055ced83ef94c965662b"
+      },
+      {
+        "path": "crates/veyra-desktop/src/ui/pages/mod.rs",
+        "sha256": "e147a861227e7700d9ae591be255ccbf3690d6e6f31a52cd7ed79d865459c852"
+      },
+      {
+        "path": "crates/veyra-desktop/src/ui/panel.rs",
+        "sha256": "38b2704ef7a67614c04eee0a37f54bee44279957a001a2339f5db2d3bd94b634"
+      },
+      {
+        "path": "crates/veyra-desktop/src/ui/shell.rs",
+        "sha256": "bbdf92a20e4984e0448a9cbdc80f059a95bb4e660b3533ebc648f4c16543e430"
+      },
+      {
+        "path": "crates/veyra-desktop/src/ui/theme.rs",
+        "sha256": "3ab9ad4f0bf048fe320701990e9f8454773a2b9ddcd89522b2ddd92addc99390"
+      },
+      {
+        "path": "crates/veyra-desktop/src/ui/tokens.rs",
+        "sha256": "87e18d747aa7c5d66b1c20cfe77e45bf2a5e5c9c37e1d883c766a9fb26039725"
+      },
+      {
+        "path": "crates/veyra-desktop/src/visual_assets.rs",
+        "sha256": "49064f50bbea298b2c807e36bc2b2dad387519ebc8f52e2db27df58a3a9381ea"
+      }
+    ],
+    "logical_content": [
+      1280,
+      720
+    ],
+    "built_at": "2026-10-05T09:39:32.338213+00:00"
+  },
+  "react_source_identity": "final-20261005/react-source-identity.json",
+  "historical_manifest": "review-history/20261005-before-final/comparison/manifest.json",
+  "visual_matrix": "visual-matrix.md",
+  "captures": [
+    {
+      "state": "combination-before-close",
+      "gpui": "final-20261005/gpui/combination-before-close.jpg",
+      "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+      "logical_content": [
+        1280,
+        720
+      ],
+      "crop_physical": [
+        0,
+        64,
+        2560,
+        1504
+      ],
+      "icc": "embedded profile → sRGB before crop/resize",
+      "sha256": {
+        "gpui": "b067d29a4949122aa1f58185be86c7f4d825361e67af28a895ad703902a6853a"
+      },
+      "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score",
+      "capture": {
+        "name": "combination-before-close",
+        "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+        "logical_content": [
+          1280,
+          720
+        ],
+        "input_method": "actual UI",
+        "time": "2026-10-05T09:55:37.562Z"
+      },
+      "scope": "implemented Panel/base component region; native UI excluded",
+      "exclusions": [
+        "native title/menu/file panel",
+        "pointer/halo",
+        "unimplemented business body",
+        "unavailable Runtime values",
+        "Veyra authorized product wordmark"
+      ]
+    },
+    {
+      "state": "dark-button-focus",
+      "gpui": "final-20261005/gpui/dark-button-focus.jpg",
+      "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+      "logical_content": [
+        1280,
+        720
+      ],
+      "crop_physical": [
+        0,
+        64,
+        2560,
+        1504
+      ],
+      "icc": "embedded profile → sRGB before crop/resize",
+      "sha256": {
+        "gpui": "d48fab18fc5d7433f3cd24d844bcc19b673d1a3fd37cff218ea6d28435177488"
+      },
+      "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score",
+      "capture": {
+        "name": "dark-button-focus",
+        "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+        "logical_content": [
+          1280,
+          720
+        ],
+        "input_method": "actual UI",
+        "time": "2026-10-05T09:42:46.651Z"
+      },
+      "scope": "implemented Panel/base component region; native UI excluded",
+      "exclusions": [
+        "native title/menu/file panel",
+        "pointer/halo",
+        "unimplemented business body",
+        "unavailable Runtime values",
+        "Veyra authorized product wordmark"
+      ]
+    },
+    {
+      "state": "dark-collapsed",
+      "gpui": "final-20261005/gpui/dark-collapsed.jpg",
+      "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+      "logical_content": [
+        1280,
+        720
+      ],
+      "crop_physical": [
+        0,
+        64,
+        2560,
+        1504
+      ],
+      "icc": "embedded profile → sRGB before crop/resize",
+      "sha256": {
+        "gpui": "5943bed7ea0c35598273896898641450759e2b7989fd88979a678940fbf0a92f",
+        "react": "dcdd91a943dea9bc76140cd535ea012a07aa85d32f4665e3910148d2b4935b99"
+      },
+      "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score",
+      "react": "final-20261005/react/dark-collapsed.png",
+      "capture": {
+        "name": "dark-collapsed",
+        "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+        "logical_content": [
+          1280,
+          720
+        ],
+        "input_method": "actual UI",
+        "time": "2026-10-05T09:41:18.907Z"
+      },
+      "scope": "Shell-owned regions only; business body excluded",
+      "exclusions": [
+        "native title/menu/file panel",
+        "pointer/halo",
+        "unimplemented business body",
+        "unavailable Runtime values",
+        "Veyra authorized product wordmark"
+      ]
+    },
+    {
+      "state": "dark-disabled",
+      "gpui": "final-20261005/gpui/dark-disabled.jpg",
+      "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+      "logical_content": [
+        1280,
+        720
+      ],
+      "crop_physical": [
+        0,
+        64,
+        2560,
+        1504
+      ],
+      "icc": "embedded profile → sRGB before crop/resize",
+      "sha256": {
+        "gpui": "8c3269bef8332c9978b548d1505d1db2c79872d90bfecc1824c648cd00ce0592",
+        "react": "eff7c33484790ead8f4848966dc35165d8bb3fac844c4234ea1a581345580b35"
+      },
+      "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score",
+      "react": "final-20261005/react/dark-panel.png",
+      "capture": {
+        "name": "dark-disabled",
+        "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+        "logical_content": [
+          1280,
+          720
+        ],
+        "input_method": "actual UI",
+        "time": "2026-10-05T09:41:22.855Z"
+      },
+      "scope": "implemented Panel/base component region; native UI excluded",
+      "exclusions": [
+        "native title/menu/file panel",
+        "pointer/halo",
+        "unimplemented business body",
+        "unavailable Runtime values",
+        "Veyra authorized product wordmark"
+      ]
+    },
+    {
+      "state": "dark-icon-button-hover",
+      "gpui": "final-20261005/gpui/dark-icon-button-hover.jpg",
+      "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+      "logical_content": [
+        1280,
+        720
+      ],
+      "crop_physical": [
+        0,
+        64,
+        2560,
+        1504
+      ],
+      "icc": "embedded profile → sRGB before crop/resize",
+      "sha256": {
+        "gpui": "19143a4005bbc6ca9e2b1936229323b2ac5bec4b40fa89d3181071bc76e40855",
+        "react": "d117249a4deb500a597b78a66946296ed88d67bb499d53ff73b78d3abc74a593"
+      },
+      "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score",
+      "react": "final-20261005/react/dark-icon-button-hover.png",
+      "capture": {
+        "name": "dark-icon-button-hover",
+        "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+        "logical_content": [
+          1280,
+          720
+        ],
+        "input_method": "mouse hover",
+        "time": "2026-10-05T09:42:42.090Z"
+      },
+      "scope": "implemented Panel/base component region; native UI excluded",
+      "exclusions": [
+        "native title/menu/file panel",
+        "pointer/halo",
+        "unimplemented business body",
+        "unavailable Runtime values",
+        "Veyra authorized product wordmark"
+      ]
+    },
+    {
+      "state": "dark-input-focus",
+      "gpui": "final-20261005/gpui/dark-input-focus.jpg",
+      "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+      "logical_content": [
+        1280,
+        720
+      ],
+      "crop_physical": [
+        0,
+        64,
+        2560,
+        1504
+      ],
+      "icc": "embedded profile → sRGB before crop/resize",
+      "sha256": {
+        "gpui": "04b937bdcf670b0ac8b68879fe5b7b73f36a235a97436053b72c4b472254c1bb",
+        "react": "9378a1c6c8bda39c02f11069b2c898c2ec6241ca41b738474becc79174a5ff3a"
+      },
+      "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score",
+      "react": "final-20261005/react/dark-input-focus.png",
+      "capture": {
+        "name": "dark-input-focus",
+        "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+        "logical_content": [
+          1280,
+          720
+        ],
+        "input_method": "actual UI",
+        "time": "2026-10-05T09:41:47.764Z"
+      },
+      "scope": "implemented Panel/base component region; native UI excluded",
+      "exclusions": [
+        "native title/menu/file panel",
+        "pointer/halo",
+        "unimplemented business body",
+        "unavailable Runtime values",
+        "Veyra authorized product wordmark"
+      ]
+    },
+    {
+      "state": "dark-invalid-draft",
+      "gpui": "final-20261005/gpui/dark-invalid-draft.jpg",
+      "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+      "logical_content": [
+        1280,
+        720
+      ],
+      "crop_physical": [
+        0,
+        64,
+        2560,
+        1504
+      ],
+      "icc": "embedded profile → sRGB before crop/resize",
+      "sha256": {
+        "gpui": "bdcbad03cadc113da59c55e207460baa42d9d57b66219d2aa3d449909b88a747"
+      },
+      "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score",
+      "capture": {
+        "name": "dark-invalid-draft",
+        "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+        "logical_content": [
+          1280,
+          720
+        ],
+        "input_method": "actual UI",
+        "time": "2026-10-05T09:52:32.900Z"
+      },
+      "scope": "implemented Panel/base component region; native UI excluded",
+      "exclusions": [
+        "native title/menu/file panel",
+        "pointer/halo",
+        "unimplemented business body",
+        "unavailable Runtime values",
+        "Veyra authorized product wordmark"
+      ]
+    },
+    {
+      "state": "dark-modal-focus-return",
+      "gpui": "final-20261005/gpui/dark-modal-focus-return.jpg",
+      "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+      "logical_content": [
+        1280,
+        720
+      ],
+      "crop_physical": [
+        0,
+        64,
+        2560,
+        1504
+      ],
+      "icc": "embedded profile → sRGB before crop/resize",
+      "sha256": {
+        "gpui": "a0b326690b72fa5fef98ea33357d926c37410e8b27189aa4a37725fccfcce7c9",
+        "react": "da49791a2c1d794f033f10de384454b4e3b92a9c64cf2cedf654762cfc437fba"
+      },
+      "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score",
+      "react": "final-20261005/react/dark-modal-focus-return.png",
+      "capture": {
+        "name": "dark-modal-focus-return",
+        "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+        "logical_content": [
+          1280,
+          720
+        ],
+        "input_method": "Escape focus return",
+        "time": "2026-10-05T09:42:43.589Z"
+      },
+      "scope": "implemented Panel/base component region; native UI excluded",
+      "exclusions": [
+        "native title/menu/file panel",
+        "pointer/halo",
+        "unimplemented business body",
+        "unavailable Runtime values",
+        "Veyra authorized product wordmark"
+      ]
+    },
+    {
+      "state": "dark-modal-keyboard",
+      "gpui": "final-20261005/gpui/dark-modal-keyboard.jpg",
+      "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+      "logical_content": [
+        1280,
+        720
+      ],
+      "crop_physical": [
+        0,
+        64,
+        2560,
+        1504
+      ],
+      "icc": "embedded profile → sRGB before crop/resize",
+      "sha256": {
+        "gpui": "a1652ff7a34e0fd2bcff6aad15828f37133baeb23e948cf7b86f14c46e962826"
+      },
+      "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score",
+      "capture": {
+        "name": "dark-modal-keyboard",
+        "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+        "logical_content": [
+          1280,
+          720
+        ],
+        "input_method": "Return from restored focus",
+        "time": "2026-10-05T09:42:44.374Z"
+      },
+      "scope": "implemented Panel/base component region; native UI excluded",
+      "exclusions": [
+        "native title/menu/file panel",
+        "pointer/halo",
+        "unimplemented business body",
+        "unavailable Runtime values",
+        "Veyra authorized product wordmark"
+      ]
+    },
+    {
+      "state": "dark-modal",
+      "gpui": "final-20261005/gpui/dark-modal.jpg",
+      "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+      "logical_content": [
+        1280,
+        720
+      ],
+      "crop_physical": [
+        0,
+        64,
+        2560,
+        1504
+      ],
+      "icc": "embedded profile → sRGB before crop/resize",
+      "sha256": {
+        "gpui": "425f1119e88917daf9168dfe1e2f1ece4740c1cd3ad93e9fde90b6ab966a244a",
+        "react": "11afd7964c2d21c2e2228005ce6e9aca677cdbbba432e38463b0e755973b7318"
+      },
+      "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score",
+      "react": "final-20261005/react/dark-modal.png",
+      "capture": {
+        "name": "dark-modal",
+        "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+        "logical_content": [
+          1280,
+          720
+        ],
+        "input_method": "actual UI",
+        "time": "2026-10-05T09:42:42.931Z"
+      },
+      "scope": "implemented Panel/base component region; native UI excluded",
+      "exclusions": [
+        "native title/menu/file panel",
+        "pointer/halo",
+        "unimplemented business body",
+        "unavailable Runtime values",
+        "Veyra authorized product wordmark"
+      ]
+    },
+    {
+      "state": "dark-panel",
+      "gpui": "final-20261005/gpui/dark-panel.jpg",
+      "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+      "logical_content": [
+        1280,
+        720
+      ],
+      "crop_physical": [
+        0,
+        64,
+        2560,
+        1504
+      ],
+      "icc": "embedded profile → sRGB before crop/resize",
+      "sha256": {
+        "gpui": "b8dfab86b235f38985d2fd9f37ed2ee542b70a43b4691c33d29df9bc10433c34",
+        "react": "eff7c33484790ead8f4848966dc35165d8bb3fac844c4234ea1a581345580b35"
+      },
+      "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score",
+      "react": "final-20261005/react/dark-panel.png",
+      "capture": {
+        "name": "dark-panel",
+        "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+        "logical_content": [
+          1280,
+          720
+        ],
+        "input_method": "actual UI",
+        "time": "2026-10-05T09:41:22.756Z"
+      },
+      "scope": "implemented Panel/base component region; native UI excluded",
+      "exclusions": [
+        "native title/menu/file panel",
+        "pointer/halo",
+        "unimplemented business body",
+        "unavailable Runtime values",
+        "Veyra authorized product wordmark"
+      ]
+    },
+    {
+      "state": "dark-save-failure",
+      "gpui": "final-20261005/gpui/dark-save-failure.jpg",
+      "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+      "logical_content": [
+        1280,
+        720
+      ],
+      "crop_physical": [
+        0,
+        64,
+        2560,
+        1504
+      ],
+      "icc": "embedded profile → sRGB before crop/resize",
+      "sha256": {
+        "gpui": "efa59a0ce71fc93a024ce9be0dae4b4863c87c17a806b18ade982f1bdfcca57d"
+      },
+      "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score",
+      "capture": {
+        "name": "dark-save-failure",
+        "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+        "logical_content": [
+          1280,
+          720
+        ],
+        "input_method": "actual UI",
+        "time": "2026-10-05T09:52:11.583Z"
+      },
+      "scope": "implemented Panel/base component region; native UI excluded",
+      "exclusions": [
+        "native title/menu/file panel",
+        "pointer/halo",
+        "unimplemented business body",
+        "unavailable Runtime values",
+        "Veyra authorized product wordmark"
+      ]
+    },
+    {
+      "state": "dark-select-keyboard-escape",
+      "gpui": "final-20261005/gpui/dark-select-keyboard-escape.jpg",
+      "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+      "logical_content": [
+        1280,
+        720
+      ],
+      "crop_physical": [
+        0,
+        64,
+        2560,
+        1504
+      ],
+      "icc": "embedded profile → sRGB before crop/resize",
+      "sha256": {
+        "gpui": "086ff2f175fd085fa62d2fdbbcb8219590a7aeef69aaffe8c2f3634a6db3d20f"
+      },
+      "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score",
+      "capture": {
+        "name": "dark-select-keyboard-escape",
+        "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+        "logical_content": [
+          1280,
+          720
+        ],
+        "input_method": "Escape",
+        "time": "2026-10-05T09:41:46.165Z"
+      },
+      "scope": "implemented Panel/base component region; native UI excluded",
+      "exclusions": [
+        "native title/menu/file panel",
+        "pointer/halo",
+        "unimplemented business body",
+        "unavailable Runtime values",
+        "Veyra authorized product wordmark"
+      ]
+    },
+    {
+      "state": "dark-select-keyboard-selected",
+      "gpui": "final-20261005/gpui/dark-select-keyboard-selected.jpg",
+      "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+      "logical_content": [
+        1280,
+        720
+      ],
+      "crop_physical": [
+        0,
+        64,
+        2560,
+        1504
+      ],
+      "icc": "embedded profile → sRGB before crop/resize",
+      "sha256": {
+        "gpui": "53a67ad5a68229d95ca22d1c2e62b335e47128eb22b97d680a9765416e71140e"
+      },
+      "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score",
+      "capture": {
+        "name": "dark-select-keyboard-selected",
+        "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+        "logical_content": [
+          1280,
+          720
+        ],
+        "input_method": "Down/Up/Return",
+        "time": "2026-10-05T09:41:44.814Z"
+      },
+      "scope": "implemented Panel/base component region; native UI excluded",
+      "exclusions": [
+        "native title/menu/file panel",
+        "pointer/halo",
+        "unimplemented business body",
+        "unavailable Runtime values",
+        "Veyra authorized product wordmark"
+      ]
+    },
+    {
+      "state": "dark-select-outside-dismiss",
+      "gpui": "final-20261005/gpui/dark-select-outside-dismiss.jpg",
+      "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+      "logical_content": [
+        1280,
+        720
+      ],
+      "crop_physical": [
+        0,
+        64,
+        2560,
+        1504
+      ],
+      "icc": "embedded profile → sRGB before crop/resize",
+      "sha256": {
+        "gpui": "11cff458d33de817f7d70e6f975e36ccfdd49685e0ac5dc330b6667ebb28c3a8"
+      },
+      "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score",
+      "capture": {
+        "name": "dark-select-outside-dismiss",
+        "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+        "logical_content": [
+          1280,
+          720
+        ],
+        "input_method": "outside click",
+        "time": "2026-10-05T09:41:47.666Z"
+      },
+      "scope": "implemented Panel/base component region; native UI excluded",
+      "exclusions": [
+        "native title/menu/file panel",
+        "pointer/halo",
+        "unimplemented business body",
+        "unavailable Runtime values",
+        "Veyra authorized product wordmark"
+      ]
+    },
+    {
+      "state": "dark-select",
+      "gpui": "final-20261005/gpui/dark-select.jpg",
+      "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+      "logical_content": [
+        1280,
+        720
+      ],
+      "crop_physical": [
+        0,
+        64,
+        2560,
+        1504
+      ],
+      "icc": "embedded profile → sRGB before crop/resize",
+      "sha256": {
+        "gpui": "84e5b71c6e3d439cbac0a3b668c39cf337a4c579f2d85da88bdf88a3a10160e8",
+        "react": "65e2035aa9f571176ef7a6aee1b36b30fa15468eb9ce880db49b6aaf2e93eab1"
+      },
+      "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score",
+      "react": "final-20261005/react/dark-select.png",
+      "capture": {
+        "name": "dark-select",
+        "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+        "logical_content": [
+          1280,
+          720
+        ],
+        "input_method": "mouse open",
+        "time": "2026-10-05T09:41:44.089Z"
+      },
+      "scope": "implemented Panel/base component region; native UI excluded",
+      "exclusions": [
+        "native title/menu/file panel",
+        "pointer/halo",
+        "unimplemented business body",
+        "unavailable Runtime values",
+        "Veyra authorized product wordmark"
+      ]
+    },
+    {
+      "state": "dark-shell",
+      "gpui": "final-20261005/gpui/dark-shell.jpg",
+      "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+      "logical_content": [
+        1280,
+        720
+      ],
+      "crop_physical": [
+        0,
+        64,
+        2560,
+        1504
+      ],
+      "icc": "embedded profile → sRGB before crop/resize",
+      "sha256": {
+        "gpui": "12132290814936b6ba6009d33cadce3572dbd2a4db16f455f35bde8e4407b28a",
+        "react": "e559a58be8c24c2892914ec5d12d4ea55987e37e5754d7639122a07bb66527fc"
+      },
+      "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score",
+      "react": "final-20261005/react/dark-shell.png",
+      "capture": {
+        "name": "dark-shell",
+        "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+        "logical_content": [
+          1280,
+          720
+        ],
+        "input_method": "actual UI",
+        "time": "2026-10-05T09:41:13.148Z"
+      },
+      "scope": "Shell-owned regions only; business body excluded",
+      "exclusions": [
+        "native title/menu/file panel",
+        "pointer/halo",
+        "unimplemented business body",
+        "unavailable Runtime values",
+        "Veyra authorized product wordmark"
+      ]
+    },
+    {
+      "state": "dark-sidebar-tooltip-blur",
+      "gpui": "final-20261005/gpui/dark-sidebar-tooltip-blur.jpg",
+      "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+      "logical_content": [
+        1280,
+        720
+      ],
+      "crop_physical": [
+        0,
+        64,
+        2560,
+        1504
+      ],
+      "icc": "embedded profile → sRGB before crop/resize",
+      "sha256": {
+        "gpui": "ff3e8881f4205da35aeac3afd3a726e500077cf87ba95efaaefd7db9822bea7c"
+      },
+      "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score",
+      "capture": {
+        "name": "dark-sidebar-tooltip-blur",
+        "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+        "logical_content": [
+          1280,
+          720
+        ],
+        "input_method": "Tab",
+        "time": "2026-10-05T09:41:15.083Z"
+      },
+      "scope": "Shell-owned regions only; business body excluded",
+      "exclusions": [
+        "native title/menu/file panel",
+        "pointer/halo",
+        "unimplemented business body",
+        "unavailable Runtime values",
+        "Veyra authorized product wordmark"
+      ]
+    },
+    {
+      "state": "dark-sidebar-tooltip-collapsed",
+      "gpui": "final-20261005/gpui/dark-sidebar-tooltip-collapsed.jpg",
+      "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+      "logical_content": [
+        1280,
+        720
+      ],
+      "crop_physical": [
+        0,
+        64,
+        2560,
+        1504
+      ],
+      "icc": "embedded profile → sRGB before crop/resize",
+      "sha256": {
+        "gpui": "e62bd3b8a731f46e55c2d01d0e32a79814f0ed384f190012f1050f9268167e4a",
+        "react": "0007c24e35c91e425ea9ec59dac30cd4785fbe7c05650ade943240695af36795"
+      },
+      "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score",
+      "react": "final-20261005/react/dark-sidebar-tooltip-collapsed.png",
+      "capture": {
+        "name": "dark-sidebar-tooltip-collapsed",
+        "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+        "logical_content": [
+          1280,
+          720
+        ],
+        "input_method": "mouse hover",
+        "time": "2026-10-05T09:41:20.568Z"
+      },
+      "scope": "Shell-owned regions only; business body excluded",
+      "exclusions": [
+        "native title/menu/file panel",
+        "pointer/halo",
+        "unimplemented business body",
+        "unavailable Runtime values",
+        "Veyra authorized product wordmark"
+      ]
+    },
+    {
+      "state": "dark-sidebar-tooltip-escape",
+      "gpui": "final-20261005/gpui/dark-sidebar-tooltip-escape.jpg",
+      "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+      "logical_content": [
+        1280,
+        720
+      ],
+      "crop_physical": [
+        0,
+        64,
+        2560,
+        1504
+      ],
+      "icc": "embedded profile → sRGB before crop/resize",
+      "sha256": {
+        "gpui": "904bd8ad0d175758effb8e29c90a134f354b6e0c7690cc111197f67868db812b"
+      },
+      "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score",
+      "capture": {
+        "name": "dark-sidebar-tooltip-escape",
+        "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+        "logical_content": [
+          1280,
+          720
+        ],
+        "input_method": "Escape",
+        "time": "2026-10-05T09:41:14.441Z"
+      },
+      "scope": "Shell-owned regions only; business body excluded",
+      "exclusions": [
+        "native title/menu/file panel",
+        "pointer/halo",
+        "unimplemented business body",
+        "unavailable Runtime values",
+        "Veyra authorized product wordmark"
+      ]
+    },
+    {
+      "state": "dark-sidebar-tooltip-focus",
+      "gpui": "final-20261005/gpui/dark-sidebar-tooltip-focus.jpg",
+      "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+      "logical_content": [
+        1280,
+        720
+      ],
+      "crop_physical": [
+        0,
+        64,
+        2560,
+        1504
+      ],
+      "icc": "embedded profile → sRGB before crop/resize",
+      "sha256": {
+        "gpui": "3dbf4e5f330f655edaabf5d1c620f047e17f352d67e388b7f3ad1a4a23e4a1ec"
+      },
+      "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score",
+      "capture": {
+        "name": "dark-sidebar-tooltip-focus",
+        "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+        "logical_content": [
+          1280,
+          720
+        ],
+        "input_method": "keyboard Shift+Tab",
+        "time": "2026-10-05T09:41:13.790Z"
+      },
+      "scope": "Shell-owned regions only; business body excluded",
+      "exclusions": [
+        "native title/menu/file panel",
+        "pointer/halo",
+        "unimplemented business body",
+        "unavailable Runtime values",
+        "Veyra authorized product wordmark"
+      ]
+    },
+    {
+      "state": "dark-sidebar-tooltip-hover",
+      "gpui": "final-20261005/gpui/dark-sidebar-tooltip-hover.jpg",
+      "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+      "logical_content": [
+        1280,
+        720
+      ],
+      "crop_physical": [
+        0,
+        64,
+        2560,
+        1504
+      ],
+      "icc": "embedded profile → sRGB before crop/resize",
+      "sha256": {
+        "gpui": "8e1d01fc9526e2368c253daab4fcf172f5d9349e759847acf79f16fd55d59535",
+        "react": "4c5ec70beb88afaf41c1877fb79024426a228be2b2f13ae5114a1af4987cc3b3"
+      },
+      "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score",
+      "react": "final-20261005/react/dark-sidebar-tooltip-hover.png",
+      "capture": {
+        "name": "dark-sidebar-tooltip-hover",
+        "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+        "logical_content": [
+          1280,
+          720
+        ],
+        "input_method": "mouse hover",
+        "time": "2026-10-05T09:41:16.764Z"
+      },
+      "scope": "Shell-owned regions only; business body excluded",
+      "exclusions": [
+        "native title/menu/file panel",
+        "pointer/halo",
+        "unimplemented business body",
+        "unavailable Runtime values",
+        "Veyra authorized product wordmark"
+      ]
+    },
+    {
+      "state": "dark-slider",
+      "gpui": "final-20261005/gpui/dark-slider.jpg",
+      "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+      "logical_content": [
+        1280,
+        720
+      ],
+      "crop_physical": [
+        0,
+        64,
+        2560,
+        1504
+      ],
+      "icc": "embedded profile → sRGB before crop/resize",
+      "sha256": {
+        "gpui": "23788565f8f2ffe4c56ef0e379ee59fdb4daafabe5f497e9c7718e646bc4f866",
+        "react": "461b1dc71d8c33c9ac013f15006228776d55cc231bc9a197b2a5f8f8d3b415c6"
+      },
+      "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score",
+      "react": "final-20261005/react/dark-slider.png",
+      "capture": {
+        "name": "dark-slider",
+        "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+        "logical_content": [
+          1280,
+          720
+        ],
+        "input_method": "actual UI",
+        "time": "2026-10-05T09:52:07.251Z"
+      },
+      "scope": "implemented Panel/base component region; native UI excluded",
+      "exclusions": [
+        "native title/menu/file panel",
+        "pointer/halo",
+        "unimplemented business body",
+        "unavailable Runtime values",
+        "Veyra authorized product wordmark"
+      ]
+    },
+    {
+      "state": "dark-spinner-increment",
+      "gpui": "final-20261005/gpui/dark-spinner-increment.jpg",
+      "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+      "logical_content": [
+        1280,
+        720
+      ],
+      "crop_physical": [
+        0,
+        64,
+        2560,
+        1504
+      ],
+      "icc": "embedded profile → sRGB before crop/resize",
+      "sha256": {
+        "gpui": "25beac6de1b61aa69d428cfcbfc4fdae2e112f61a62710c282b91c5ab3dada9d"
+      },
+      "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score",
+      "capture": {
+        "name": "dark-spinner-increment",
+        "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+        "logical_content": [
+          1280,
+          720
+        ],
+        "input_method": "actual UI",
+        "time": "2026-10-05T09:41:48.390Z"
+      },
+      "scope": "implemented Panel/base component region; native UI excluded",
+      "exclusions": [
+        "native title/menu/file panel",
+        "pointer/halo",
+        "unimplemented business body",
+        "unavailable Runtime values",
+        "Veyra authorized product wordmark"
+      ]
+    },
+    {
+      "state": "dark-switch-off",
+      "gpui": "final-20261005/gpui/dark-switch-off.jpg",
+      "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+      "logical_content": [
+        1280,
+        720
+      ],
+      "crop_physical": [
+        0,
+        64,
+        2560,
+        1504
+      ],
+      "icc": "embedded profile → sRGB before crop/resize",
+      "sha256": {
+        "gpui": "690cea30e3c84b3bf28b0a8cec91c5da8896fcdf182dcf5da8e578315d6bee10",
+        "react": "29d4b17c78bca1adeedb83f079b9fabe915f3307dd5f8903df0e4d6264bd0136"
+      },
+      "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score",
+      "react": "final-20261005/react/dark-switch-off.png",
+      "capture": {
+        "name": "dark-switch-off",
+        "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+        "logical_content": [
+          1280,
+          720
+        ],
+        "input_method": "keyboard focus",
+        "time": "2026-10-05T09:41:49.701Z"
+      },
+      "scope": "implemented Panel/base component region; native UI excluded",
+      "exclusions": [
+        "native title/menu/file panel",
+        "pointer/halo",
+        "unimplemented business body",
+        "unavailable Runtime values",
+        "Veyra authorized product wordmark"
+      ]
+    },
+    {
+      "state": "dark-switch-on",
+      "gpui": "final-20261005/gpui/dark-switch-on.jpg",
+      "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+      "logical_content": [
+        1280,
+        720
+      ],
+      "crop_physical": [
+        0,
+        64,
+        2560,
+        1504
+      ],
+      "icc": "embedded profile → sRGB before crop/resize",
+      "sha256": {
+        "gpui": "f4b9623cf556036a8f2296663d08549d639a73de504e460e00846fa0ea79bc85",
+        "react": "f6d74a15beafb5e85e19119338f0fd96ebf29d4f29ab50d3c40ff000566c6c7e"
+      },
+      "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score",
+      "react": "final-20261005/react/dark-switch-on.png",
+      "capture": {
+        "name": "dark-switch-on",
+        "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+        "logical_content": [
+          1280,
+          720
+        ],
+        "input_method": "Space",
+        "time": "2026-10-05T09:41:50.430Z"
+      },
+      "scope": "implemented Panel/base component region; native UI excluded",
+      "exclusions": [
+        "native title/menu/file panel",
+        "pointer/halo",
+        "unimplemented business body",
+        "unavailable Runtime values",
+        "Veyra authorized product wordmark"
+      ]
+    },
+    {
+      "state": "dark-toast-auto-dismiss",
+      "gpui": "final-20261005/gpui/dark-toast-auto-dismiss.jpg",
+      "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+      "logical_content": [
+        1280,
+        720
+      ],
+      "crop_physical": [
+        0,
+        64,
+        2560,
+        1504
+      ],
+      "icc": "embedded profile → sRGB before crop/resize",
+      "sha256": {
+        "gpui": "b06d116b50e7b4455279da77ac17426eef1296c8eaafc794a1642052ee6ebed5",
+        "react": "eff7c33484790ead8f4848966dc35165d8bb3fac844c4234ea1a581345580b35"
+      },
+      "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score",
+      "react": "final-20261005/react/dark-toast-auto-dismiss.png",
+      "capture": {
+        "name": "dark-toast-auto-dismiss",
+        "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+        "logical_content": [
+          1280,
+          720
+        ],
+        "input_method": "actual UI",
+        "time": "2026-10-05T09:53:02.276Z"
+      },
+      "scope": "implemented Panel/base component region; native UI excluded",
+      "exclusions": [
+        "native title/menu/file panel",
+        "pointer/halo",
+        "unimplemented business body",
+        "unavailable Runtime values",
+        "Veyra authorized product wordmark"
+      ]
+    },
+    {
+      "state": "dark-toast-before-auto-dismiss",
+      "gpui": "final-20261005/gpui/dark-toast-before-auto-dismiss.jpg",
+      "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+      "logical_content": [
+        1280,
+        720
+      ],
+      "crop_physical": [
+        0,
+        64,
+        2560,
+        1504
+      ],
+      "icc": "embedded profile → sRGB before crop/resize",
+      "sha256": {
+        "gpui": "8604ffcc9f08685971b7a7309ab1ecaf2fb822ed0cd3ff0047940f2bd4c8e31a"
+      },
+      "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score",
+      "capture": {
+        "name": "dark-toast-before-auto-dismiss",
+        "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+        "logical_content": [
+          1280,
+          720
+        ],
+        "input_method": "actual UI",
+        "time": "2026-10-05T09:52:36.582Z"
+      },
+      "scope": "implemented Panel/base component region; native UI excluded",
+      "exclusions": [
+        "native title/menu/file panel",
+        "pointer/halo",
+        "unimplemented business body",
+        "unavailable Runtime values",
+        "Veyra authorized product wordmark"
+      ]
+    },
+    {
+      "state": "dark-toast-close",
+      "gpui": "final-20261005/gpui/dark-toast-close.jpg",
+      "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+      "logical_content": [
+        1280,
+        720
+      ],
+      "crop_physical": [
+        0,
+        64,
+        2560,
+        1504
+      ],
+      "icc": "embedded profile → sRGB before crop/resize",
+      "sha256": {
+        "gpui": "8dfbc7d662019613ed779db90201f2a34e324633c8384d4f944287341a4f8d9f",
+        "react": "8625c70445c8324c2448c6d5593eedc1a5cd5b06208096ecc5c2c8a4615c675a"
+      },
+      "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score",
+      "react": "final-20261005/react/dark-toast-close.png",
+      "capture": {
+        "name": "dark-toast-close",
+        "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+        "logical_content": [
+          1280,
+          720
+        ],
+        "input_method": "actual UI",
+        "time": "2026-10-05T09:55:29.328Z"
+      },
+      "scope": "implemented Panel/base component region; native UI excluded",
+      "exclusions": [
+        "native title/menu/file panel",
+        "pointer/halo",
+        "unimplemented business body",
+        "unavailable Runtime values",
+        "Veyra authorized product wordmark"
+      ]
+    },
+    {
+      "state": "dark-toast",
+      "gpui": "final-20261005/gpui/dark-toast.jpg",
+      "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+      "logical_content": [
+        1280,
+        720
+      ],
+      "crop_physical": [
+        0,
+        64,
+        2560,
+        1504
+      ],
+      "icc": "embedded profile → sRGB before crop/resize",
+      "sha256": {
+        "gpui": "d26e4dce3dce45ea4035e3167597144deacb80c70cee921e8e47bab3888b59dc",
+        "react": "f6d74a15beafb5e85e19119338f0fd96ebf29d4f29ab50d3c40ff000566c6c7e"
+      },
+      "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score",
+      "react": "final-20261005/react/dark-toast.png",
+      "capture": {
+        "name": "dark-toast",
+        "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+        "logical_content": [
+          1280,
+          720
+        ],
+        "input_method": "actual UI",
+        "time": "2026-10-05T09:55:28.619Z"
+      },
+      "scope": "implemented Panel/base component region; native UI excluded",
+      "exclusions": [
+        "native title/menu/file panel",
+        "pointer/halo",
+        "unimplemented business body",
+        "unavailable Runtime values",
+        "Veyra authorized product wordmark"
+      ]
+    },
+    {
+      "state": "dark-tooltip-blur",
+      "gpui": "final-20261005/gpui/dark-tooltip-blur.jpg",
+      "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+      "logical_content": [
+        1280,
+        720
+      ],
+      "crop_physical": [
+        0,
+        64,
+        2560,
+        1504
+      ],
+      "icc": "embedded profile → sRGB before crop/resize",
+      "sha256": {
+        "gpui": "59186741d486e6ab8c22d52b16b500febd197862db227933c4d19f9a87baa75a",
+        "react": "2d14f2cf53ce4df266da4d71f99a3cc0fa4b9e581ca8dad10dcbc74d9943b5b7"
+      },
+      "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score",
+      "react": "final-20261005/react/dark-tooltip-blur.png",
+      "capture": {
+        "name": "dark-tooltip-blur",
+        "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+        "logical_content": [
+          1280,
+          720
+        ],
+        "input_method": "Tab",
+        "time": "2026-10-05T09:41:54.648Z"
+      },
+      "scope": "implemented Panel/base component region; native UI excluded",
+      "exclusions": [
+        "native title/menu/file panel",
+        "pointer/halo",
+        "unimplemented business body",
+        "unavailable Runtime values",
+        "Veyra authorized product wordmark"
+      ]
+    },
+    {
+      "state": "dark-tooltip-escape",
+      "gpui": "final-20261005/gpui/dark-tooltip-escape.jpg",
+      "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+      "logical_content": [
+        1280,
+        720
+      ],
+      "crop_physical": [
+        0,
+        64,
+        2560,
+        1504
+      ],
+      "icc": "embedded profile → sRGB before crop/resize",
+      "sha256": {
+        "gpui": "babe7fec19567f0a5ac8cfb6fee55ffffa629777ab65488ba167e135008e41e7",
+        "react": "ef5d066f9b90eed36f932fbdfee78b31e5853666f1272cf806b2e2ea6689df17"
+      },
+      "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score",
+      "react": "final-20261005/react/dark-tooltip-escape.png",
+      "capture": {
+        "name": "dark-tooltip-escape",
+        "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+        "logical_content": [
+          1280,
+          720
+        ],
+        "input_method": "Escape",
+        "time": "2026-10-05T09:41:53.966Z"
+      },
+      "scope": "implemented Panel/base component region; native UI excluded",
+      "exclusions": [
+        "native title/menu/file panel",
+        "pointer/halo",
+        "unimplemented business body",
+        "unavailable Runtime values",
+        "Veyra authorized product wordmark"
+      ]
+    },
+    {
+      "state": "dark-tooltip-focus",
+      "gpui": "final-20261005/gpui/dark-tooltip-focus.jpg",
+      "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+      "logical_content": [
+        1280,
+        720
+      ],
+      "crop_physical": [
+        0,
+        64,
+        2560,
+        1504
+      ],
+      "icc": "embedded profile → sRGB before crop/resize",
+      "sha256": {
+        "gpui": "90057d677cf02de049f3ab970b2af5b7dbe301750f10e69b55f0b6b730deb325",
+        "react": "28005162c9f38e38edbb09b32fd50b271a16014a52cf08b88a5f585bf75e6f5b"
+      },
+      "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score",
+      "react": "final-20261005/react/dark-tooltip-focus.png",
+      "capture": {
+        "name": "dark-tooltip-focus",
+        "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+        "logical_content": [
+          1280,
+          720
+        ],
+        "input_method": "keyboard Tab away then Shift+Tab return",
+        "time": "2026-10-05T09:41:53.275Z"
+      },
+      "scope": "implemented Panel/base component region; native UI excluded",
+      "exclusions": [
+        "native title/menu/file panel",
+        "pointer/halo",
+        "unimplemented business body",
+        "unavailable Runtime values",
+        "Veyra authorized product wordmark"
+      ]
+    },
+    {
+      "state": "dark-tooltip-hover",
+      "gpui": "final-20261005/gpui/dark-tooltip-hover.jpg",
+      "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+      "logical_content": [
+        1280,
+        720
+      ],
+      "crop_physical": [
+        0,
+        64,
+        2560,
+        1504
+      ],
+      "icc": "embedded profile → sRGB before crop/resize",
+      "sha256": {
+        "gpui": "1c2a0ce2792a1ec3caa76a6dc76fe2fc962dc70019db2af1d406c13c875542d5",
+        "react": "8cf4b76e49ee36e41d4372cb8d9dc10e6ca9f740f758cfd0508b785482380c0a"
+      },
+      "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score",
+      "react": "final-20261005/react/dark-tooltip-hover.png",
+      "capture": {
+        "name": "dark-tooltip-hover",
+        "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+        "logical_content": [
+          1280,
+          720
+        ],
+        "input_method": "mouse hover",
+        "time": "2026-10-05T09:41:57.007Z"
+      },
+      "scope": "implemented Panel/base component region; native UI excluded",
+      "exclusions": [
+        "native title/menu/file panel",
+        "pointer/halo",
+        "unimplemented business body",
+        "unavailable Runtime values",
+        "Veyra authorized product wordmark"
+      ]
+    },
+    {
+      "state": "light-button-focus",
+      "gpui": "final-20261005/gpui/light-button-focus.jpg",
+      "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+      "logical_content": [
+        1280,
+        720
+      ],
+      "crop_physical": [
+        0,
+        64,
+        2560,
+        1504
+      ],
+      "icc": "embedded profile → sRGB before crop/resize",
+      "sha256": {
+        "gpui": "cfd39d6ecc1c3de71d5865db9dd5bf386aaa73fe654979d68e3bd5fb18a22e09"
+      },
+      "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score",
+      "capture": {
+        "name": "light-button-focus",
+        "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+        "logical_content": [
+          1280,
+          720
+        ],
+        "input_method": "actual UI",
+        "time": "2026-10-05T09:48:54.735Z"
+      },
+      "scope": "implemented Panel/base component region; native UI excluded",
+      "exclusions": [
+        "native title/menu/file panel",
+        "pointer/halo",
+        "unimplemented business body",
+        "unavailable Runtime values",
+        "Veyra authorized product wordmark"
+      ]
+    },
+    {
+      "state": "light-disabled",
+      "gpui": "final-20261005/gpui/light-disabled.jpg",
+      "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+      "logical_content": [
+        1280,
+        720
+      ],
+      "crop_physical": [
+        0,
+        64,
+        2560,
+        1504
+      ],
+      "icc": "embedded profile → sRGB before crop/resize",
+      "sha256": {
+        "gpui": "17c473dabd58e899f084e7d594ccd28fb0e1584479eb21a1131f16e26446747b",
+        "react": "1e9e546557233d6b5855d595a16ed798a8bea306025001f131ba63062a64f9f2"
+      },
+      "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score",
+      "react": "final-20261005/react/light-panel.png",
+      "capture": {
+        "name": "light-disabled",
+        "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+        "logical_content": [
+          1280,
+          720
+        ],
+        "input_method": "actual UI",
+        "time": "2026-10-05T09:48:02.695Z"
+      },
+      "scope": "implemented Panel/base component region; native UI excluded",
+      "exclusions": [
+        "native title/menu/file panel",
+        "pointer/halo",
+        "unimplemented business body",
+        "unavailable Runtime values",
+        "Veyra authorized product wordmark"
+      ]
+    },
+    {
+      "state": "light-icon-button-hover",
+      "gpui": "final-20261005/gpui/light-icon-button-hover.jpg",
+      "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+      "logical_content": [
+        1280,
+        720
+      ],
+      "crop_physical": [
+        0,
+        64,
+        2560,
+        1504
+      ],
+      "icc": "embedded profile → sRGB before crop/resize",
+      "sha256": {
+        "gpui": "f0340e6b27a4c364435c3c76747b5b8f4e1b16d80a7f75a23238e924e525a12a",
+        "react": "eccfb3faed4e7ccd22b4ba14d0cbde3b0a67e0ae7cb73bdc6db64798caf4853f"
+      },
+      "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score",
+      "react": "final-20261005/react/light-icon-button-hover.png",
+      "capture": {
+        "name": "light-icon-button-hover",
+        "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+        "logical_content": [
+          1280,
+          720
+        ],
+        "input_method": "actual UI",
+        "time": "2026-10-05T09:48:52.427Z"
+      },
+      "scope": "implemented Panel/base component region; native UI excluded",
+      "exclusions": [
+        "native title/menu/file panel",
+        "pointer/halo",
+        "unimplemented business body",
+        "unavailable Runtime values",
+        "Veyra authorized product wordmark"
+      ]
+    },
+    {
+      "state": "light-input-focus",
+      "gpui": "final-20261005/gpui/light-input-focus.jpg",
+      "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+      "logical_content": [
+        1280,
+        720
+      ],
+      "crop_physical": [
+        0,
+        64,
+        2560,
+        1504
+      ],
+      "icc": "embedded profile → sRGB before crop/resize",
+      "sha256": {
+        "gpui": "6d17dcb011b6587c6cc104e73a862c2d9d75a3c43a2799d94b193674d5053ce7",
+        "react": "1b9d3050a2ccf7c5a14ef4e069f5d95340146841e48a6c2f0e74a2a9599d6ae8"
+      },
+      "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score",
+      "react": "final-20261005/react/light-input-focus.png",
+      "capture": {
+        "name": "light-input-focus",
+        "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+        "logical_content": [
+          1280,
+          720
+        ],
+        "input_method": "actual UI",
+        "time": "2026-10-05T09:48:27.760Z"
+      },
+      "scope": "implemented Panel/base component region; native UI excluded",
+      "exclusions": [
+        "native title/menu/file panel",
+        "pointer/halo",
+        "unimplemented business body",
+        "unavailable Runtime values",
+        "Veyra authorized product wordmark"
+      ]
+    },
+    {
+      "state": "light-modal-focus-return",
+      "gpui": "final-20261005/gpui/light-modal-focus-return.jpg",
+      "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+      "logical_content": [
+        1280,
+        720
+      ],
+      "crop_physical": [
+        0,
+        64,
+        2560,
+        1504
+      ],
+      "icc": "embedded profile → sRGB before crop/resize",
+      "sha256": {
+        "gpui": "b76fc6c56b0db3da2851da1154080c53f54ded8c45fe42a0d9346e8b6ebc1f49",
+        "react": "8beb2a1dc1a060b898818f5affa107c42d81953e04cae5c14a99695104716e45"
+      },
+      "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score",
+      "react": "final-20261005/react/light-modal-focus-return.png",
+      "capture": {
+        "name": "light-modal-focus-return",
+        "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+        "logical_content": [
+          1280,
+          720
+        ],
+        "input_method": "actual UI",
+        "time": "2026-10-05T09:48:50.038Z"
+      },
+      "scope": "implemented Panel/base component region; native UI excluded",
+      "exclusions": [
+        "native title/menu/file panel",
+        "pointer/halo",
+        "unimplemented business body",
+        "unavailable Runtime values",
+        "Veyra authorized product wordmark"
+      ]
+    },
+    {
+      "state": "light-modal-keyboard",
+      "gpui": "final-20261005/gpui/light-modal-keyboard.jpg",
+      "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+      "logical_content": [
+        1280,
+        720
+      ],
+      "crop_physical": [
+        0,
+        64,
+        2560,
+        1504
+      ],
+      "icc": "embedded profile → sRGB before crop/resize",
+      "sha256": {
+        "gpui": "4b1c83d0b13a8bc9e633d4a5b2fcb14e042713a943ddda8ac8023d5cd61b4210"
+      },
+      "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score",
+      "capture": {
+        "name": "light-modal-keyboard",
+        "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+        "logical_content": [
+          1280,
+          720
+        ],
+        "input_method": "actual UI",
+        "time": "2026-10-05T09:48:50.961Z"
+      },
+      "scope": "implemented Panel/base component region; native UI excluded",
+      "exclusions": [
+        "native title/menu/file panel",
+        "pointer/halo",
+        "unimplemented business body",
+        "unavailable Runtime values",
+        "Veyra authorized product wordmark"
+      ]
+    },
+    {
+      "state": "light-modal",
+      "gpui": "final-20261005/gpui/light-modal.jpg",
+      "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+      "logical_content": [
+        1280,
+        720
+      ],
+      "crop_physical": [
+        0,
+        64,
+        2560,
+        1504
+      ],
+      "icc": "embedded profile → sRGB before crop/resize",
+      "sha256": {
+        "gpui": "fff3e942fc0c877dc4597d10ae8cb9ab837433d5d427537e156e14e955c2c984",
+        "react": "4b710ab29d230edf486a8ec1123406c286f211902c9ba25a10a2ec2c89dcb7ef"
+      },
+      "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score",
+      "react": "final-20261005/react/light-modal.png",
+      "capture": {
+        "name": "light-modal",
+        "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+        "logical_content": [
+          1280,
+          720
+        ],
+        "input_method": "actual UI",
+        "time": "2026-10-05T09:48:49.253Z"
+      },
+      "scope": "implemented Panel/base component region; native UI excluded",
+      "exclusions": [
+        "native title/menu/file panel",
+        "pointer/halo",
+        "unimplemented business body",
+        "unavailable Runtime values",
+        "Veyra authorized product wordmark"
+      ]
+    },
+    {
+      "state": "light-number-spinner-hover",
+      "gpui": "final-20261005/gpui/light-number-spinner-hover.jpg",
+      "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+      "logical_content": [
+        1280,
+        720
+      ],
+      "crop_physical": [
+        0,
+        64,
+        2560,
+        1504
+      ],
+      "icc": "embedded profile → sRGB before crop/resize",
+      "sha256": {
+        "gpui": "d6564c34d5996395366b40d49e8a02da890a0d94d87c9cc0295a281777879264",
+        "react": "27ed76ac34edf94629da64a8fc20203827d0ddee7929e6dd70a97120130cae9c"
+      },
+      "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score",
+      "react": "final-20261005/react/light-number-spinner-hover.png",
+      "capture": {
+        "name": "light-number-spinner-hover",
+        "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+        "logical_content": [
+          1280,
+          720
+        ],
+        "input_method": "actual UI",
+        "time": "2026-10-05T09:49:19.045Z"
+      },
+      "scope": "implemented Panel/base component region; native UI excluded",
+      "exclusions": [
+        "native title/menu/file panel",
+        "pointer/halo",
+        "unimplemented business body",
+        "unavailable Runtime values",
+        "Veyra authorized product wordmark"
+      ]
+    },
+    {
+      "state": "light-panel",
+      "gpui": "final-20261005/gpui/light-panel.jpg",
+      "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+      "logical_content": [
+        1280,
+        720
+      ],
+      "crop_physical": [
+        0,
+        64,
+        2560,
+        1504
+      ],
+      "icc": "embedded profile → sRGB before crop/resize",
+      "sha256": {
+        "gpui": "0eb3fc29ad81c1e667636a4b5fcf75c21fe5188b494e0c1180867717eef33ed2",
+        "react": "1e9e546557233d6b5855d595a16ed798a8bea306025001f131ba63062a64f9f2"
+      },
+      "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score",
+      "react": "final-20261005/react/light-panel.png",
+      "capture": {
+        "name": "light-panel",
+        "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+        "logical_content": [
+          1280,
+          720
+        ],
+        "input_method": "actual UI",
+        "time": "2026-10-05T09:48:02.596Z"
+      },
+      "scope": "implemented Panel/base component region; native UI excluded",
+      "exclusions": [
+        "native title/menu/file panel",
+        "pointer/halo",
+        "unimplemented business body",
+        "unavailable Runtime values",
+        "Veyra authorized product wordmark"
+      ]
+    },
+    {
+      "state": "light-select-keyboard-escape",
+      "gpui": "final-20261005/gpui/light-select-keyboard-escape.jpg",
+      "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+      "logical_content": [
+        1280,
+        720
+      ],
+      "crop_physical": [
+        0,
+        64,
+        2560,
+        1504
+      ],
+      "icc": "embedded profile → sRGB before crop/resize",
+      "sha256": {
+        "gpui": "d3847f699a965c1d46a87975706cd052fd7bf12949ff27652933200c6e39cf49"
+      },
+      "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score",
+      "capture": {
+        "name": "light-select-keyboard-escape",
+        "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+        "logical_content": [
+          1280,
+          720
+        ],
+        "input_method": "actual UI",
+        "time": "2026-10-05T09:48:25.528Z"
+      },
+      "scope": "implemented Panel/base component region; native UI excluded",
+      "exclusions": [
+        "native title/menu/file panel",
+        "pointer/halo",
+        "unimplemented business body",
+        "unavailable Runtime values",
+        "Veyra authorized product wordmark"
+      ]
+    },
+    {
+      "state": "light-select-keyboard-selected",
+      "gpui": "final-20261005/gpui/light-select-keyboard-selected.jpg",
+      "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+      "logical_content": [
+        1280,
+        720
+      ],
+      "crop_physical": [
+        0,
+        64,
+        2560,
+        1504
+      ],
+      "icc": "embedded profile → sRGB before crop/resize",
+      "sha256": {
+        "gpui": "8d30da76cd60e49f6cf498155e636fe64a035066729f7261cfb17f66ee4c86b8"
+      },
+      "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score",
+      "capture": {
+        "name": "light-select-keyboard-selected",
+        "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+        "logical_content": [
+          1280,
+          720
+        ],
+        "input_method": "actual UI",
+        "time": "2026-10-05T09:48:24.044Z"
+      },
+      "scope": "implemented Panel/base component region; native UI excluded",
+      "exclusions": [
+        "native title/menu/file panel",
+        "pointer/halo",
+        "unimplemented business body",
+        "unavailable Runtime values",
+        "Veyra authorized product wordmark"
+      ]
+    },
+    {
+      "state": "light-select-outside-dismiss",
+      "gpui": "final-20261005/gpui/light-select-outside-dismiss.jpg",
+      "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+      "logical_content": [
+        1280,
+        720
+      ],
+      "crop_physical": [
+        0,
+        64,
+        2560,
+        1504
+      ],
+      "icc": "embedded profile → sRGB before crop/resize",
+      "sha256": {
+        "gpui": "f1821f5aa7af9a1d68cc4284bcd37ee451b57a2d83f2c6af9fbb443de80d9620"
+      },
+      "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score",
+      "capture": {
+        "name": "light-select-outside-dismiss",
+        "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+        "logical_content": [
+          1280,
+          720
+        ],
+        "input_method": "actual UI",
+        "time": "2026-10-05T09:48:26.934Z"
+      },
+      "scope": "implemented Panel/base component region; native UI excluded",
+      "exclusions": [
+        "native title/menu/file panel",
+        "pointer/halo",
+        "unimplemented business body",
+        "unavailable Runtime values",
+        "Veyra authorized product wordmark"
+      ]
+    },
+    {
+      "state": "light-select",
+      "gpui": "final-20261005/gpui/light-select.jpg",
+      "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+      "logical_content": [
+        1280,
+        720
+      ],
+      "crop_physical": [
+        0,
+        64,
+        2560,
+        1504
+      ],
+      "icc": "embedded profile → sRGB before crop/resize",
+      "sha256": {
+        "gpui": "3f0eaf70da57fa704335d5dd60c9483b1504cc6b20e0889181512bd3b1c4dc6f",
+        "react": "077de65ecf724f7ab2adde6cb568f07068be3c11694e2a0425bae854ff73c8fd"
+      },
+      "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score",
+      "react": "final-20261005/react/light-select.png",
+      "capture": {
+        "name": "light-select",
+        "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+        "logical_content": [
+          1280,
+          720
+        ],
+        "input_method": "actual UI",
+        "time": "2026-10-05T09:48:23.296Z"
+      },
+      "scope": "implemented Panel/base component region; native UI excluded",
+      "exclusions": [
+        "native title/menu/file panel",
+        "pointer/halo",
+        "unimplemented business body",
+        "unavailable Runtime values",
+        "Veyra authorized product wordmark"
+      ]
+    },
+    {
+      "state": "light-shell-collapsed",
+      "gpui": "final-20261005/gpui/light-shell-collapsed.jpg",
+      "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+      "logical_content": [
+        1280,
+        720
+      ],
+      "crop_physical": [
+        0,
+        64,
+        2560,
+        1504
+      ],
+      "icc": "embedded profile → sRGB before crop/resize",
+      "sha256": {
+        "gpui": "18cafd733700c09fff6f2f00ab4dd5954f8008d6eea2feca78b56f582283b58f",
+        "react": "85738548e95c205059f2cdc9e8fc939df6be6c50d742ae009d6563e2b5fc04cb"
+      },
+      "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score",
+      "react": "final-20261005/react/light-collapsed.png",
+      "capture": {
+        "name": "light-shell-collapsed",
+        "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+        "logical_content": [
+          1280,
+          720
+        ],
+        "input_method": "actual UI",
+        "time": "2026-10-05T09:47:59.768Z"
+      },
+      "scope": "Shell-owned regions only; business body excluded",
+      "exclusions": [
+        "native title/menu/file panel",
+        "pointer/halo",
+        "unimplemented business body",
+        "unavailable Runtime values",
+        "Veyra authorized product wordmark"
+      ]
+    },
+    {
+      "state": "light-shell",
+      "gpui": "final-20261005/gpui/light-shell.jpg",
+      "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+      "logical_content": [
+        1280,
+        720
+      ],
+      "crop_physical": [
+        0,
+        64,
+        2560,
+        1504
+      ],
+      "icc": "embedded profile → sRGB before crop/resize",
+      "sha256": {
+        "gpui": "b6e7e3d7124ca0586135ce899cc188d40dfcce5fbf3f45ce9f76828b92cff405",
+        "react": "125585f5b9003f4c17bf731764f7003e8c6a545286ce5513bb29b0345ba4ce4e"
+      },
+      "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score",
+      "react": "final-20261005/react/light-shell.png",
+      "capture": {
+        "name": "light-shell",
+        "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+        "logical_content": [
+          1280,
+          720
+        ],
+        "input_method": "actual UI",
+        "time": "2026-10-05T09:47:54.895Z"
+      },
+      "scope": "Shell-owned regions only; business body excluded",
+      "exclusions": [
+        "native title/menu/file panel",
+        "pointer/halo",
+        "unimplemented business body",
+        "unavailable Runtime values",
+        "Veyra authorized product wordmark"
+      ]
+    },
+    {
+      "state": "light-sidebar-tooltip-blur",
+      "gpui": "final-20261005/gpui/light-sidebar-tooltip-blur.jpg",
+      "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+      "logical_content": [
+        1280,
+        720
+      ],
+      "crop_physical": [
+        0,
+        64,
+        2560,
+        1504
+      ],
+      "icc": "embedded profile → sRGB before crop/resize",
+      "sha256": {
+        "gpui": "5addfd4698a384374fa0841a0fecdd203b86a5f892d7c9244a17374b97db3642"
+      },
+      "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score",
+      "capture": {
+        "name": "light-sidebar-tooltip-blur",
+        "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+        "logical_content": [
+          1280,
+          720
+        ],
+        "input_method": "actual UI",
+        "time": "2026-10-05T09:47:57.021Z"
+      },
+      "scope": "Shell-owned regions only; business body excluded",
+      "exclusions": [
+        "native title/menu/file panel",
+        "pointer/halo",
+        "unimplemented business body",
+        "unavailable Runtime values",
+        "Veyra authorized product wordmark"
+      ]
+    },
+    {
+      "state": "light-sidebar-tooltip-collapsed",
+      "gpui": "final-20261005/gpui/light-sidebar-tooltip-collapsed.jpg",
+      "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+      "logical_content": [
+        1280,
+        720
+      ],
+      "crop_physical": [
+        0,
+        64,
+        2560,
+        1504
+      ],
+      "icc": "embedded profile → sRGB before crop/resize",
+      "sha256": {
+        "gpui": "2874001cccb5269cd48606a7e38cb469845f61697aaf272b23bfc7685ed01944",
+        "react": "f6f7342d7310bc8c2331c895f2ccbceae3c9affb94d0b8eda6beff5805434d5d"
+      },
+      "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score",
+      "react": "final-20261005/react/light-sidebar-tooltip-collapsed.png",
+      "capture": {
+        "name": "light-sidebar-tooltip-collapsed",
+        "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+        "logical_content": [
+          1280,
+          720
+        ],
+        "input_method": "actual UI",
+        "time": "2026-10-05T09:48:00.478Z"
+      },
+      "scope": "Shell-owned regions only; business body excluded",
+      "exclusions": [
+        "native title/menu/file panel",
+        "pointer/halo",
+        "unimplemented business body",
+        "unavailable Runtime values",
+        "Veyra authorized product wordmark"
+      ]
+    },
+    {
+      "state": "light-sidebar-tooltip-escape",
+      "gpui": "final-20261005/gpui/light-sidebar-tooltip-escape.jpg",
+      "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+      "logical_content": [
+        1280,
+        720
+      ],
+      "crop_physical": [
+        0,
+        64,
+        2560,
+        1504
+      ],
+      "icc": "embedded profile → sRGB before crop/resize",
+      "sha256": {
+        "gpui": "c2ed4a07171074ff5ea53c0ea4720802aaaedb3255d71594cefb9f5ee3774466"
+      },
+      "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score",
+      "capture": {
+        "name": "light-sidebar-tooltip-escape",
+        "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+        "logical_content": [
+          1280,
+          720
+        ],
+        "input_method": "actual UI",
+        "time": "2026-10-05T09:47:56.296Z"
+      },
+      "scope": "Shell-owned regions only; business body excluded",
+      "exclusions": [
+        "native title/menu/file panel",
+        "pointer/halo",
+        "unimplemented business body",
+        "unavailable Runtime values",
+        "Veyra authorized product wordmark"
+      ]
+    },
+    {
+      "state": "light-sidebar-tooltip-focus",
+      "gpui": "final-20261005/gpui/light-sidebar-tooltip-focus.jpg",
+      "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+      "logical_content": [
+        1280,
+        720
+      ],
+      "crop_physical": [
+        0,
+        64,
+        2560,
+        1504
+      ],
+      "icc": "embedded profile → sRGB before crop/resize",
+      "sha256": {
+        "gpui": "cfeaf41abe27ccf2790ba8b4ed6c5e61fa969b88236ee5423867903a02c594e5"
+      },
+      "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score",
+      "capture": {
+        "name": "light-sidebar-tooltip-focus",
+        "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+        "logical_content": [
+          1280,
+          720
+        ],
+        "input_method": "actual UI",
+        "time": "2026-10-05T09:47:55.585Z"
+      },
+      "scope": "Shell-owned regions only; business body excluded",
+      "exclusions": [
+        "native title/menu/file panel",
+        "pointer/halo",
+        "unimplemented business body",
+        "unavailable Runtime values",
+        "Veyra authorized product wordmark"
+      ]
+    },
+    {
+      "state": "light-sidebar-tooltip-hover",
+      "gpui": "final-20261005/gpui/light-sidebar-tooltip-hover.jpg",
+      "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+      "logical_content": [
+        1280,
+        720
+      ],
+      "crop_physical": [
+        0,
+        64,
+        2560,
+        1504
+      ],
+      "icc": "embedded profile → sRGB before crop/resize",
+      "sha256": {
+        "gpui": "5aebecfd68bfe8ec209477ad2bcf63923549e5d4c20b9763c71c2bcdc578d0d4",
+        "react": "d11367d27e79c351f8b2371f90c6ba484d237d78d44fc1cfcd2d1ffcf5ac4b7f"
+      },
+      "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score",
+      "react": "final-20261005/react/light-sidebar-tooltip-hover.png",
+      "capture": {
+        "name": "light-sidebar-tooltip-hover",
+        "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+        "logical_content": [
+          1280,
+          720
+        ],
+        "input_method": "actual UI",
+        "time": "2026-10-05T09:47:57.736Z"
+      },
+      "scope": "Shell-owned regions only; business body excluded",
+      "exclusions": [
+        "native title/menu/file panel",
+        "pointer/halo",
+        "unimplemented business body",
+        "unavailable Runtime values",
+        "Veyra authorized product wordmark"
+      ]
+    },
+    {
+      "state": "light-slider-drag-settled",
+      "gpui": "final-20261005/gpui/light-slider-drag-settled.jpg",
+      "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+      "logical_content": [
+        1280,
+        720
+      ],
+      "crop_physical": [
+        0,
+        64,
+        2560,
+        1504
+      ],
+      "icc": "embedded profile → sRGB before crop/resize",
+      "sha256": {
+        "gpui": "c17b3f6ba9af3abf169d91bd76a055930efd9c5ebf20f533cb329f864cd54207"
+      },
+      "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score",
+      "capture": {
+        "name": "light-slider-drag-settled",
+        "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+        "logical_content": [
+          1280,
+          720
+        ],
+        "input_method": "actual UI",
+        "time": "2026-10-05T09:50:44.576Z"
+      },
+      "scope": "diagnostic attempt; AX/log is authority for value; hover-only drag is not counted as a modification",
+      "exclusions": [
+        "native title/menu/file panel",
+        "pointer/halo",
+        "unimplemented business body",
+        "unavailable Runtime values",
+        "Veyra authorized product wordmark"
+      ]
+    },
+    {
+      "state": "light-slider-drag",
+      "gpui": "final-20261005/gpui/light-slider-drag.jpg",
+      "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+      "logical_content": [
+        1280,
+        720
+      ],
+      "crop_physical": [
+        0,
+        64,
+        2560,
+        1504
+      ],
+      "icc": "embedded profile → sRGB before crop/resize",
+      "sha256": {
+        "gpui": "9e0493148239dde38cba74d592ce4568d3ec031eb4f92c853953c5f5c187a72e"
+      },
+      "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score",
+      "capture": {
+        "name": "light-slider-drag",
+        "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+        "logical_content": [
+          1280,
+          720
+        ],
+        "input_method": "actual UI",
+        "time": "2026-10-05T09:50:12.245Z"
+      },
+      "scope": "diagnostic attempt; AX/log is authority for value; hover-only drag is not counted as a modification",
+      "exclusions": [
+        "native title/menu/file panel",
+        "pointer/halo",
+        "unimplemented business body",
+        "unavailable Runtime values",
+        "Veyra authorized product wordmark"
+      ]
+    },
+    {
+      "state": "light-slider-responsive-input-settled",
+      "gpui": "final-20261005/gpui/light-slider-responsive-input-settled.jpg",
+      "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+      "logical_content": [
+        1280,
+        720
+      ],
+      "crop_physical": [
+        0,
+        64,
+        2560,
+        1504
+      ],
+      "icc": "embedded profile → sRGB before crop/resize",
+      "sha256": {
+        "gpui": "8d579c05fff017e26f0130fc44fb9b75e84ec38c2ccfcc60bf8e55942c87684d"
+      },
+      "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score",
+      "capture": {
+        "name": "light-slider-responsive-input-settled",
+        "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+        "logical_content": [
+          1280,
+          720
+        ],
+        "input_method": "actual UI",
+        "time": "2026-10-05T09:50:45.302Z"
+      },
+      "scope": "implemented Panel/base component region; native UI excluded",
+      "exclusions": [
+        "native title/menu/file panel",
+        "pointer/halo",
+        "unimplemented business body",
+        "unavailable Runtime values",
+        "Veyra authorized product wordmark"
+      ]
+    },
+    {
+      "state": "light-slider-responsive-input",
+      "gpui": "final-20261005/gpui/light-slider-responsive-input.jpg",
+      "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+      "logical_content": [
+        1280,
+        720
+      ],
+      "crop_physical": [
+        0,
+        64,
+        2560,
+        1504
+      ],
+      "icc": "embedded profile → sRGB before crop/resize",
+      "sha256": {
+        "gpui": "d6730a48936afb524ca3799cd8e706151eb69e083527111eadc1943cb5b67321"
+      },
+      "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score",
+      "capture": {
+        "name": "light-slider-responsive-input",
+        "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+        "logical_content": [
+          1280,
+          720
+        ],
+        "input_method": "actual UI",
+        "time": "2026-10-05T09:50:13.026Z"
+      },
+      "scope": "implemented Panel/base component region; native UI excluded",
+      "exclusions": [
+        "native title/menu/file panel",
+        "pointer/halo",
+        "unimplemented business body",
+        "unavailable Runtime values",
+        "Veyra authorized product wordmark"
+      ]
+    },
+    {
+      "state": "light-slider",
+      "gpui": "final-20261005/gpui/light-slider.jpg",
+      "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+      "logical_content": [
+        1280,
+        720
+      ],
+      "crop_physical": [
+        0,
+        64,
+        2560,
+        1504
+      ],
+      "icc": "embedded profile → sRGB before crop/resize",
+      "sha256": {
+        "gpui": "fb06bf7cd863ae1daaccdc45ed0a543fcdeb9b211d1273efb494cccbfb53a91d",
+        "react": "5972e2b9528d17f7f66ce6860139f5ff7a32eb84b292bed235b8596dd098536f"
+      },
+      "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score",
+      "react": "final-20261005/react/light-slider.png",
+      "capture": {
+        "name": "light-slider",
+        "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+        "logical_content": [
+          1280,
+          720
+        ],
+        "input_method": "actual UI",
+        "time": "2026-10-05T09:51:53.227Z"
+      },
+      "scope": "implemented Panel/base component region; native UI excluded",
+      "exclusions": [
+        "native title/menu/file panel",
+        "pointer/halo",
+        "unimplemented business body",
+        "unavailable Runtime values",
+        "Veyra authorized product wordmark"
+      ]
+    },
+    {
+      "state": "light-switch-off",
+      "gpui": "final-20261005/gpui/light-switch-off.jpg",
+      "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+      "logical_content": [
+        1280,
+        720
+      ],
+      "crop_physical": [
+        0,
+        64,
+        2560,
+        1504
+      ],
+      "icc": "embedded profile → sRGB before crop/resize",
+      "sha256": {
+        "gpui": "999153ab0e06386816d67379eb9605dd4d38883e8d88033ce1a1800d6945e20d",
+        "react": "a1a7cde2e1de90993686cb669bc88956df164235fd085101e5f588be756ce588"
+      },
+      "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score",
+      "react": "final-20261005/react/light-switch-off.png",
+      "capture": {
+        "name": "light-switch-off",
+        "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+        "logical_content": [
+          1280,
+          720
+        ],
+        "input_method": "actual UI",
+        "time": "2026-10-05T09:48:28.411Z"
+      },
+      "scope": "implemented Panel/base component region; native UI excluded",
+      "exclusions": [
+        "native title/menu/file panel",
+        "pointer/halo",
+        "unimplemented business body",
+        "unavailable Runtime values",
+        "Veyra authorized product wordmark"
+      ]
+    },
+    {
+      "state": "light-switch-on",
+      "gpui": "final-20261005/gpui/light-switch-on.jpg",
+      "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+      "logical_content": [
+        1280,
+        720
+      ],
+      "crop_physical": [
+        0,
+        64,
+        2560,
+        1504
+      ],
+      "icc": "embedded profile → sRGB before crop/resize",
+      "sha256": {
+        "gpui": "e5757d005a7737b3baf55e5e9702b2863445232945ff2a2f63817b99a8e47a4c",
+        "react": "2d4e61d51811d1ebd7cef6c4535fff31ef2da125188536f05de8b35bf865eedd"
+      },
+      "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score",
+      "react": "final-20261005/react/light-switch-on.png",
+      "capture": {
+        "name": "light-switch-on",
+        "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+        "logical_content": [
+          1280,
+          720
+        ],
+        "input_method": "actual UI",
+        "time": "2026-10-05T09:48:29.171Z"
+      },
+      "scope": "implemented Panel/base component region; native UI excluded",
+      "exclusions": [
+        "native title/menu/file panel",
+        "pointer/halo",
+        "unimplemented business body",
+        "unavailable Runtime values",
+        "Veyra authorized product wordmark"
+      ]
+    },
+    {
+      "state": "light-toast-close",
+      "gpui": "final-20261005/gpui/light-toast-close.jpg",
+      "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+      "logical_content": [
+        1280,
+        720
+      ],
+      "crop_physical": [
+        0,
+        64,
+        2560,
+        1504
+      ],
+      "icc": "embedded profile → sRGB before crop/resize",
+      "sha256": {
+        "gpui": "b6af67695b6c39c57795d6f9bf3d2d0587ce9eb080894c1133148daad90ad29b",
+        "react": "71cf1abb3d0e959d7332772163701fc6b7970b31a983ad24bce14cd4150dabc4"
+      },
+      "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score",
+      "react": "final-20261005/react/light-toast-close.png",
+      "capture": {
+        "name": "light-toast-close",
+        "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+        "logical_content": [
+          1280,
+          720
+        ],
+        "input_method": "actual UI",
+        "time": "2026-10-05T09:55:37.453Z"
+      },
+      "scope": "implemented Panel/base component region; native UI excluded",
+      "exclusions": [
+        "native title/menu/file panel",
+        "pointer/halo",
+        "unimplemented business body",
+        "unavailable Runtime values",
+        "Veyra authorized product wordmark"
+      ]
+    },
+    {
+      "state": "light-toast",
+      "gpui": "final-20261005/gpui/light-toast.jpg",
+      "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+      "logical_content": [
+        1280,
+        720
+      ],
+      "crop_physical": [
+        0,
+        64,
+        2560,
+        1504
+      ],
+      "icc": "embedded profile → sRGB before crop/resize",
+      "sha256": {
+        "gpui": "10970ddd4def0412bf7f5aebdfd6a2cc0542855f44f38f835e7e6eea5cfc28c6",
+        "react": "e8360420439c44cc22f73027f18f6b6492920f9cb381db109411e09137808186"
+      },
+      "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score",
+      "react": "final-20261005/react/light-toast.png",
+      "capture": {
+        "name": "light-toast",
+        "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+        "logical_content": [
+          1280,
+          720
+        ],
+        "input_method": "actual UI",
+        "time": "2026-10-05T09:55:36.738Z"
+      },
+      "scope": "implemented Panel/base component region; native UI excluded",
+      "data_difference": "Final combination Light6600/IPv6on vs reference6500/IPv6off; compare Notice only (same top page scroll)",
+      "exclusions": [
+        "native title/menu/file panel",
+        "pointer/halo",
+        "unimplemented business body",
+        "unavailable Runtime values",
+        "Veyra authorized product wordmark"
+      ]
+    },
+    {
+      "state": "light-tooltip-blur",
+      "gpui": "final-20261005/gpui/light-tooltip-blur.jpg",
+      "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+      "logical_content": [
+        1280,
+        720
+      ],
+      "crop_physical": [
+        0,
+        64,
+        2560,
+        1504
+      ],
+      "icc": "embedded profile → sRGB before crop/resize",
+      "sha256": {
+        "gpui": "b48d62c04a821f956f8cba5c765086301c0bf1165fa0c885e86511f0133df943",
+        "react": "25c30586aec936c8fe4eef574395438b7c3d9b33998abd8d42333218609d89a6"
+      },
+      "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score",
+      "react": "final-20261005/react/light-tooltip-blur.png",
+      "capture": {
+        "name": "light-tooltip-blur",
+        "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+        "logical_content": [
+          1280,
+          720
+        ],
+        "input_method": "actual UI",
+        "time": "2026-10-05T09:48:33.595Z"
+      },
+      "scope": "implemented Panel/base component region; native UI excluded",
+      "exclusions": [
+        "native title/menu/file panel",
+        "pointer/halo",
+        "unimplemented business body",
+        "unavailable Runtime values",
+        "Veyra authorized product wordmark"
+      ]
+    },
+    {
+      "state": "light-tooltip-escape",
+      "gpui": "final-20261005/gpui/light-tooltip-escape.jpg",
+      "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+      "logical_content": [
+        1280,
+        720
+      ],
+      "crop_physical": [
+        0,
+        64,
+        2560,
+        1504
+      ],
+      "icc": "embedded profile → sRGB before crop/resize",
+      "sha256": {
+        "gpui": "1c6c891c1b1584d967474ce3118c34660f4390ace1efd26db4f17ea4f19a6591",
+        "react": "8c8cb4f8ad85f2365651444aaad48d8fcbc8ea3acf6355596a1e483d56f6fa99"
+      },
+      "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score",
+      "react": "final-20261005/react/light-tooltip-escape.png",
+      "capture": {
+        "name": "light-tooltip-escape",
+        "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+        "logical_content": [
+          1280,
+          720
+        ],
+        "input_method": "actual UI",
+        "time": "2026-10-05T09:48:32.845Z"
+      },
+      "scope": "implemented Panel/base component region; native UI excluded",
+      "exclusions": [
+        "native title/menu/file panel",
+        "pointer/halo",
+        "unimplemented business body",
+        "unavailable Runtime values",
+        "Veyra authorized product wordmark"
+      ]
+    },
+    {
+      "state": "light-tooltip-focus",
+      "gpui": "final-20261005/gpui/light-tooltip-focus.jpg",
+      "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+      "logical_content": [
+        1280,
+        720
+      ],
+      "crop_physical": [
+        0,
+        64,
+        2560,
+        1504
+      ],
+      "icc": "embedded profile → sRGB before crop/resize",
+      "sha256": {
+        "gpui": "cc027cf4d9e1a0d05f664b2a8e7766826770a3dd339e64c92253d61b32de250c",
+        "react": "712213360e835ea1089d30408d94c2367b9eeb12d415e22e36cfd264195f7ce2"
+      },
+      "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score",
+      "react": "final-20261005/react/light-tooltip-focus.png",
+      "capture": {
+        "name": "light-tooltip-focus",
+        "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+        "logical_content": [
+          1280,
+          720
+        ],
+        "input_method": "actual UI",
+        "time": "2026-10-05T09:48:32.180Z"
+      },
+      "scope": "implemented Panel/base component region; native UI excluded",
+      "exclusions": [
+        "native title/menu/file panel",
+        "pointer/halo",
+        "unimplemented business body",
+        "unavailable Runtime values",
+        "Veyra authorized product wordmark"
+      ]
+    },
+    {
+      "state": "light-tooltip-hover",
+      "gpui": "final-20261005/gpui/light-tooltip-hover.jpg",
+      "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+      "logical_content": [
+        1280,
+        720
+      ],
+      "crop_physical": [
+        0,
+        64,
+        2560,
+        1504
+      ],
+      "icc": "embedded profile → sRGB before crop/resize",
+      "sha256": {
+        "gpui": "3d53b01454f10d372229027874a7c1e40cd18f597097ad6288a6ac975ddde3e0",
+        "react": "f6bc55587ed151fe0eb0a3e5070892c7014f4cb2a3f2fe762cd5239380616e7a"
+      },
+      "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score",
+      "react": "final-20261005/react/light-tooltip-hover.png",
+      "capture": {
+        "name": "light-tooltip-hover",
+        "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+        "logical_content": [
+          1280,
+          720
+        ],
+        "input_method": "actual UI",
+        "time": "2026-10-05T09:48:35.004Z"
+      },
+      "scope": "implemented Panel/base component region; native UI excluded",
+      "exclusions": [
+        "native title/menu/file panel",
+        "pointer/halo",
+        "unimplemented business body",
+        "unavailable Runtime values",
+        "Veyra authorized product wordmark"
+      ]
+    }
+  ],
+  "single_global_similarity_score": null
+}

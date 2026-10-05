@@ -1,0 +1,68 @@
+Window: "Veyra · Desktop", App: VeyraP107NativeAB.
+0 standard window Veyra · Desktop, Secondary Actions: Raise
+	1 container
+		2 button 折叠/展开侧栏 · Collapse/Expand sidebar
+		3 button 概览
+		4 button 代理
+		5 button 连接
+		6 button 日志
+		7 button 规则
+		8 button 设置
+		9 button 启动内核
+		10 button 停止内核
+		11 button 刷新数据
+		12 button 面板设置
+		13 button 订阅管理
+		14 button 出站节点
+		15 button 目标分流
+		16 button 终端分流
+		17 button 链式代理
+		18 button 共享网络
+		19 button DNS 设置
+		20 button 后端设置
+		21 pop up button (settable) 面板语言, Value: 简体中文
+			22 button
+		23 button 上传面板背景
+		24 button -
+		25 button +
+		26 pop up button (settable) 主题, Value: 亮色
+			27 button
+		28 button 修改密码
+		29 button 此API会用于IP检查中全球节点IP信息查询、连接详情中的IP地理信息查询、面板DNS查询中的IP地理信息查询。
+		30 pop up button (settable) IP信息API, Value: ip.sb
+			31 button
+		32 text field (settable) 6500
+		33 text field (settable) 400
+		34 text field (settable) 800
+		35 switch (settable, boolean) IPv6 测试, Value: on
+		36 switch (settable, boolean) 隐藏不可用节点, Value: off
+		37 pop up button (settable) 代理组分列, Value: 双列
+			38 button
+		39 button 概览里的延时小卡片和规则页右上角的快捷查询共用这四个站点。图标从图标库选;名称空着就用图标的品牌名(没有品牌名就用网址的主机名);网址填 http(s) 地址,延时按内核经当前分流访问这个地址计
+		40 button 选择测试站点图标
+		41 text field (settable) 百度
+		42 text field (settable) https://www.baidu.com/favicon.ico
+		43 button 清空测试地址
+		44 button 选择测试站点图标
+		45 text field (settable) Google
+		46 text field (settable) https://www.google.com/generate_204
+		47 button 清空测试地址
+		48 button 选择测试站点图标
+		49 text field (settable) OpenAI
+		50 text field (settable) https://api.openai.com/v1/models
+		51 button 清空测试地址
+		52 button 选择测试站点图标
+		53 text field (settable) Telegram
+		54 text field (settable) https://telegram.org/favicon.ico
+		55 button 清空测试地址
+		56 button 恢复默认测试站点
+		57 button 保存
+		58 button 关闭通知
+	59 close button
+	60 full screen button Help: this button also has an action to zoom the window, Secondary Actions: zoom the window
+	61 minimize button
+	62 text Veyra · Desktop
+63 menu bar
+	64 VeyraP107NativeAB
+
+The focused UI element is 0 standard window Veyra · Desktop, Secondary Actions: Raise

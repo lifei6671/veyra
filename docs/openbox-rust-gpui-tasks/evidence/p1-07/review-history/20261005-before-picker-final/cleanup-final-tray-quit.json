@@ -1,0 +1,8 @@
+{
+  "human": "已退出",
+  "processes": [],
+  "socket_exists": false,
+  "flock_available": true,
+  "socket_manually_removed": false,
+  "explicit_tray_quit": true
+}

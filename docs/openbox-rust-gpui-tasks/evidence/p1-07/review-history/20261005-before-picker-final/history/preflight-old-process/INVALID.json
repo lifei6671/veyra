@@ -1,0 +1,4 @@
+{
+  "status": "INVALID_BUILD_CAPTURE",
+  "cause": "old diagnostic process still mapped previous binary; on-disk replacement alone does not update process. Initial captures.json SHA claim revoked. Old process explicitly Quit before new actual bundle launch."
+}

@@ -1,0 +1,114 @@
+{
+  "task": "OBG-P1-07",
+  "scope": "本轮文档/evidence 最小验证；Host 产品结果另见 host-final-review.json，未重跑",
+  "recorded_at": "2026-10-05T11:26:55.511886+00:00",
+  "status": "PASS",
+  "task_status": "DONE",
+  "acceptance_checked": 6,
+  "acceptance_total": 6,
+  "json_parse": {
+    "status": "PASS",
+    "files": [
+      "cleanup.json",
+      "final-20261005/closeout-validation.json",
+      "final-20261005/dag.json",
+      "final-20261005/final-restart-recovery.json",
+      "final-20261005/host-final-review.json",
+      "final-20261005/human-host-final-restart-quit.json",
+      "interaction-results.json"
+    ]
+  },
+  "dag": {
+    "status": "PASS",
+    "evidence": "dag.json",
+    "task_count": 68,
+    "counts": {
+      "DONE": 13,
+      "ACCEPTANCE": 1,
+      "TODO": 47,
+      "DEFERRED": 7,
+      "READY": 0,
+      "DOING": 0,
+      "REVIEW": 0,
+      "BLOCKED": 0
+    },
+    "ready_queue": [],
+    "cycles": [],
+    "card_table_dependency_match": true
+  },
+  "markdown_local_links": {
+    "status": "PASS",
+    "files": [
+      "docs/openbox-rust-gpui-tasks/IMPLEMENTATION_PHASES.md",
+      "docs/openbox-rust-gpui-tasks/P1-core-and-shell.md",
+      "docs/openbox-rust-gpui-tasks/SESSION.md",
+      "docs/openbox-rust-gpui-tasks/evidence/p1-07/README.md",
+      "docs/openbox-rust-gpui-tasks/evidence/p1-07/visual-matrix.md"
+    ],
+    "links_checked": 189,
+    "anchors_checked": 97,
+    "errors": []
+  },
+  "historical_pending_preserved": true,
+  "old_first_launch_log": {
+    "sha256": "3233da734c925e5d866aa1b098466c0fe5f240beebcdf4faaf27ff52d48aac26",
+    "preserved_unchanged": true,
+    "historical_show_count": 2,
+    "historical_close_count": 3
+  },
+  "host_first_test_fail_preserved": true,
+  "source_build_identity_match": {
+    "status": "PASS",
+    "files": 30
+  },
+  "byte_preservation": {
+    "status": "PASS",
+    "baseline_file_count": 3122,
+    "protected_files_checked": 3114,
+    "legacy_files_checked": 246,
+    "existing_evidence_files_checked": 2152,
+    "changed_outside_allowlist": [],
+    "product_source_cargo_assets_tests_unchanged": true,
+    "existing_logs_screenshots_ax_comparison_unchanged": true,
+    "agents_and_workflow_unchanged": true
+  },
+  "modified_this_turn": [
+    "docs/openbox-rust-gpui-tasks/IMPLEMENTATION_PHASES.md",
+    "docs/openbox-rust-gpui-tasks/P1-core-and-shell.md",
+    "docs/openbox-rust-gpui-tasks/SESSION.md",
+    "docs/openbox-rust-gpui-tasks/evidence/p1-07/README.md",
+    "docs/openbox-rust-gpui-tasks/evidence/p1-07/cleanup.json",
+    "docs/openbox-rust-gpui-tasks/evidence/p1-07/final-20261005/final-restart-recovery.json",
+    "docs/openbox-rust-gpui-tasks/evidence/p1-07/interaction-results.json",
+    "docs/openbox-rust-gpui-tasks/evidence/p1-07/visual-matrix.md"
+  ],
+  "added_this_turn": [
+    "docs/openbox-rust-gpui-tasks/evidence/p1-07/final-20261005/closeout-validation.json",
+    "docs/openbox-rust-gpui-tasks/evidence/p1-07/final-20261005/dag.json",
+    "docs/openbox-rust-gpui-tasks/evidence/p1-07/final-20261005/host-final-review.json",
+    "docs/openbox-rust-gpui-tasks/evidence/p1-07/final-20261005/human-host-final-restart-quit.json"
+  ],
+  "git_diff_check": {
+    "status": "PASS",
+    "exit_code": 0
+  },
+  "git_head": "b982e8d6a8dfa69ee6e5f861e33a3d9366854d7f",
+  "git_status_short": " M crates/veyra-desktop/THIRD_PARTY_NOTICES.md\n M crates/veyra-desktop/src/app.rs\n M crates/veyra-desktop/src/main.rs\n M crates/veyra-desktop/src/services.rs\n M crates/veyra-desktop/src/state_bridge.rs\n M crates/veyra-desktop/src/tray.rs\n M crates/veyra-desktop/src/ui/behavior_panel.rs\n M crates/veyra-desktop/src/ui/components/mod.rs\n M crates/veyra-desktop/src/ui/mod.rs\n M crates/veyra-desktop/src/ui/pages/mod.rs\n M crates/veyra-desktop/src/ui/panel.rs\n M crates/veyra-desktop/src/ui/shell.rs\n M crates/veyra-desktop/src/ui/theme.rs\n M docs/openbox-rust-gpui-tasks/IMPLEMENTATION_PHASES.md\n M docs/openbox-rust-gpui-tasks/P1-core-and-shell.md\n M docs/openbox-rust-gpui-tasks/SESSION.md\n?? crates/veyra-desktop/assets/\n?? crates/veyra-desktop/src/ui/background.rs\n?? crates/veyra-desktop/src/ui/components/icon_picker.rs\n?? crates/veyra-desktop/src/ui/components/notice.rs\n?? crates/veyra-desktop/src/ui/components/select.rs\n?? crates/veyra-desktop/src/ui/components/tooltip.rs\n?? crates/veyra-desktop/src/ui/icons.rs\n?? crates/veyra-desktop/src/ui/tokens.rs\n?? docs/openbox-rust-gpui-tasks/evidence/p1-07/\n",
+  "no_commit_push": true,
+  "p2_not_started": true,
+  "no_public_network_or_singbox_systemproxy_tun": true,
+  "validation_attempts": [
+    {
+      "attempt": 1,
+      "status": "FAIL",
+      "step": "Markdown links",
+      "reason": "closeout-validation.json 尚未生成，SESSION/README 的两个自引用链接缺目标文件",
+      "product_failure": false
+    },
+    {
+      "attempt": 2,
+      "status": "PASS",
+      "correction": "先生成 PENDING 报告文件，再执行完整文档校验，写入实际 PASS 结果"
+    }
+  ]
+}

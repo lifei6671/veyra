@@ -1,0 +1,289 @@
+{
+  "status": "PASS_WITH_TECHNICAL_DIFFERENCES; COMBINATION_PASS; P1-07_DONE",
+  "history": {
+    "status": "INCOMPLETE",
+    "first_run_root": "/tmp/veyra-p1-07-combination (absent before start)",
+    "saved_initial": {
+      "theme_mode": "light",
+      "ipv6_test": true
+    },
+    "close": "PASS native hidden=true",
+    "tray_restore": "FAIL Host reports no tray visible",
+    "native_tray_diagnostic": {
+      "visible": true,
+      "physical_size": [
+        68,
+        0
+      ],
+      "position": [
+        0,
+        1964
+      ],
+      "cause": "UNRESOLVED; visible flag does not prove on-screen visibility"
+    },
+    "secondary_activation": "PASS exit0 writer_created_count=0; original Settings/IPv6 retained",
+    "explicit_tray_quit": "NOT_RUN: icon unavailable",
+    "restart": "PASS values recovered after diagnostic SIGTERM/relaunch; NOT equivalent to explicit quit sequence",
+    "background_import": "PASS local managed asset; >4096 source rejected without lowering limit",
+    "select": "mouse, keyboard Up/Down/Return/Escape and outside dismiss exercised",
+    "modal": "opened and cancelled with Escape; no destructive reset claimed",
+    "notice": "real save notice captured; hover pause/stack/focus matrix incomplete",
+    "limitations": [
+      "Production focus/hover/loading/error state screenshot matrix incomplete",
+      "No complete P1-07 combined PASS",
+      "SIGTERM during iteration is never counted as explicit Quit"
+    ]
+  },
+  "review": {
+    "root": "/tmp/veyra-p107-review/native-ab-root (absent before first run)",
+    "saved_visual": {
+      "theme_mode": "light",
+      "opacity": 90,
+      "blur": 10,
+      "sidebar_collapsed": false
+    },
+    "saved_behavior": {
+      "timeout_ms": 6500,
+      "ipv6_test": true
+    },
+    "config_revision": 12,
+    "close": "PASS native hidden=true; first close submitted through actual macOS window close button",
+    "tray_restore_rounds": "PASS human 已完成; log includes initial Close plus 3 human Close→Show pairs, all WindowId(1v1)",
+    "explicit_tray_quit": "PASS human 已退出; typed Quit cleanup + process gone + socket absent + flock free",
+    "same_window_id": "WindowId(1v1)",
+    "primary_writer_count": 1,
+    "secondary_activate_used_for_tray_restore": false,
+    "sigterm_used_for_quit_acceptance": false,
+    "restart": "PASS human Tray Quit→reopen; snapshot Light; Settings timeout6500 IPv6on; same saved root",
+    "restart_final_quit": "PASS human 退出了; process gone socket absent flock free",
+    "combination_binary_sha256": "bf6e6b3ab9c34e7c65230f2c7b76886cc575ebaaaedb426fbff391377b4a332e",
+    "later_focus_fix": "Shared Button/Navigation presentation only; independently rerun relevant validation and final screenshots. Tray/background/CAS unchanged."
+  },
+  "components_review": {
+    "tooltip": "mouse popup; keyboard Select Escape→Shift-Tab while pointer remains over Select; Escape hides; Tab blur. Shared help and restore tooltip; light/dark captures.",
+    "button_icon_button": "Button Save focus verified blue2 outline after Modal Escape→AX settle→Tab; hover captured. Icon restore focus/hover/modal focus-return both themes; password and runtime buttons disabled. Kit focus handle scoped in shared outer wrapper; no clipped focus child.",
+    "input": "real numeric field focus; Kit shadow disabled; Chromium default blue outline captured.",
+    "select": "mouse open/select Dark; keyboard Down/Up/Return chooses Light/ip.sb, Escape preserves selected value; outside Input click dismisses.",
+    "switch": "off/on via Tab from red threshold + Space, both themes; 40x24 thumb18 travel16 and hollow 2px outline with 2px offset.",
+    "slider": "real managed background Blur drag 33→9; immediately open Select; no visible stall. Fixed missing Kit Track/Indicator/Thumb parts; default CPU cache runs only in blocking job.",
+    "modal": "restore opens; Escape closes; Return reopens from returned trigger focus, both themes.",
+    "notice": "real visual/behavior commits; generic appearance for all Notice enum values; explicit close removes; >4 seconds auto dismissal verified.",
+    "invalid_draft": "Executed local Core validation: timeout0 Save→Failed(LatencyTimeout) with draft preserved; integer abc→local input error and Save disabled. Restore6500→Save accepted. No Runtime/network failures invented."
+  },
+  "scope_exclusions": [
+    "Proxies/Connections/Logs/Rules business bodies",
+    "Runtime actions",
+    "System Proxy/TUN",
+    "P2",
+    "no claim of 95% global image PASS"
+  ],
+  "final_presentation_binary_sha256": "bdeaadebb046623cec93b2152b05bc2323e13d20b187aca1a3ea08ec581999d8",
+  "post_tooltip_anchor_capture": "PENDING: macOS locked at final capture attempt; no fabricated post-fix screenshot",
+  "final_20261005": {
+    "status": "PASS_COMBINATION_ON_SUPERSEDED_627728A2",
+    "binary_sha256": "627728a2abb3b8ce3804c7cea69ff12e9c5c10733abd4b9823858d1c3aa511d6",
+    "root": "/tmp/veyra-p107-final-20261005/root",
+    "launch": "actual Mach-O inside .app; superseded627728a2 build; old screenshots archived",
+    "seed": "isolated root cloned from previous acceptance state; not a new empty first-run claim",
+    "saved_visual": {
+      "theme_mode": "light",
+      "background_opacity": 90,
+      "background_blur": 10,
+      "sidebar_collapsed": false
+    },
+    "saved_behavior": {
+      "timeout_ms": 6600,
+      "ipv6_test": true
+    },
+    "save": "PASS visual completion accepted=true; Behavior fields LatencyTimeout+Ipv6Test accepted=true/Idle",
+    "close": "PASS actual native close button; hidden=true",
+    "tray_restore_rounds": "PASS human completed; at least3 actual Close→Show pairs, all WindowId(1v1); user ended with another Close so final Show/Quit requested",
+    "tray_quit": "PASS human 已完成; typed Quit/cleanup, process gone, socket absent, flock free",
+    "restart": "PASS same final SHA; snapshot Light; actual Settings AX6600/IPv6on; same epoch/config73/selection0",
+    "restart_final_quit": "PASS human 已退出; process gone/socket removed/flock free",
+    "primary": {
+      "primary_processes": [
+        "72400 /private/tmp/veyra-p107-final-20261005/VeyraP107Final.app/Contents/MacOS/VeyraP107NativeAB"
+      ],
+      "primary_count": 1,
+      "flock_busy": true,
+      "socket_exists": true,
+      "secondary_writer": 0,
+      "secondary_activate_not_used": true,
+      "process_lookup_note": "macOS canonical /private/tmp path; exact /tmp anchored lookup was empty, not a missing primary"
+    },
+    "components": {
+      "tooltip": "Final build mouse+keyboard focus+Escape+blur screenshots; correct sidebar arrow and local anchor",
+      "select": "Final build mouse open/chooseipwho.is→ip.sb; keyboardUp/Down/Return/Escape; outside dismiss. Final no-op save accepted, config73 unchanged",
+      "input": "focus numeric spinner has Chromium baseline; dark ±1 verified",
+      "switch": "on/off keyboard focus and Space both themes",
+      "modal": "open/Escape/focus return/Return reopen both themes",
+      "notice": "generic actual save notice; close and 4s natural auto dismiss; final AX no close button",
+      "local_validation": "timeout0→Core Validation; abc→invalid draft/Save disabled;6500 restored accepted",
+      "slider": "final90/10 both themes; track10→34→10 with immediately responsive input; drag hover-only attempts not counted as actual modification",
+      "icon_picker": "Final build shared existing picker opened; Escape dismiss; no icon change"
+    },
+    "human_three_rounds": "已完成",
+    "restore_log_count": 5,
+    "close_log_count": 5,
+    "config_revision": 73,
+    "same_window_id": "WindowId(1v1)",
+    "first_tray_quit_cleanup": "review-history/20261005-before-picker-final/cleanup-first-tray-quit.json",
+    "restart_screenshot": "review-history/20261005-before-picker-final/gpui/combination-restart-restored.jpg",
+    "final_cleanup": "review-history/20261005-before-picker-final/cleanup-final-tray-quit.json",
+    "evidence_root": "review-history/20261005-before-picker-final/"
+  },
+  "latest_build_20261005": {
+    "status": "FINAL_VISUAL_PASS_WITH_TECHNICAL_DIFFERENCES_COMBINATION_PASS",
+    "binary_sha256": "8bd7a366d24fa2eff8bf78e22604f461030cedae9d1184c11a28ca8eb4f5c28d",
+    "bundle_binary_sha256": "8bd7a366d24fa2eff8bf78e22604f461030cedae9d1184c11a28ca8eb4f5c28d",
+    "visual_matrix": "visual-matrix.md",
+    "visual_log": "final-20261005/visual-diagnostic.log",
+    "primary": "final-20261005/combination-primary.json",
+    "saved_visual": {
+      "theme_mode": "light"
+    },
+    "saved_behavior": {
+      "timeout_ms": 6600,
+      "ipv6_test": true
+    },
+    "save": "PASS accepted=true/Idle",
+    "human_three_rounds": "PASS",
+    "tray_quit": "PASS",
+    "restart": "PASS",
+    "restart_final_quit": "PASS",
+    "root": "/tmp/veyra-p107-final-20261005/root",
+    "seed": "isolated persisted fixture root; no empty first-run claim",
+    "diagnostic_keyboard_quit_excluded": true,
+    "secondary_activate_used_for_tray_restore": false,
+    "sigterm_used_for_quit_acceptance": false,
+    "first_launch_audit": "历史 final-combination-first-launch.log 仍仅 Show2/Close3，原文件及 SHA 不变；不改写为 3Show。最终三轮 PASS 依据独立人工证据。",
+    "first_launch_cleanup": "final-20261005/cleanup-first-tray-quit.json",
+    "retry": "PASS：最终人工三轮与 Tray Quit 后，使用同一 8bd7a366 / Mach-O bundle / root 重启，Light/6600ms/IPv6on 恢复，用户最终 Tray Quit 及 Host process/socket/flock cleanup PASS",
+    "human_three_rounds_basis": "final-20261005/human-host-final-three-rounds.json；人工明确 Show #1 → Close → Show #2 → Close → Show #3 → Close → Tray Quit，不依赖旧 Show2 日志",
+    "combination": "PASS",
+    "final_cleanup": {
+      "source": "本轮用户提供的已确认 Host 独立 post-check；本轮 Codex 仅记录，不冒称重跑",
+      "pid": 94362,
+      "process_gone": true,
+      "process_status": "PASS",
+      "socket": "/tmp/veyra-p107-final-20261005/root/runtime/desktop.sock",
+      "socket_state": "absent",
+      "socket_status": "PASS",
+      "lock": "/tmp/veyra-p107-final-20261005/root/locks/desktop.lock",
+      "flock_check": "Python fcntl.flock(LOCK_EX|LOCK_NB)",
+      "flock_state": "free",
+      "flock_status": "PASS",
+      "remaining_owned_veyra_acceptance_processes": [],
+      "no_owned_veyra_acceptance_process_remains": true,
+      "transient_pgrep": {
+        "pid": 96193,
+        "subsequent_ps": "absent",
+        "counted_as_residual_veyra": false
+      }
+    },
+    "final_quit_evidence": "final-20261005/human-host-final-restart-quit.json",
+    "restart_evidence": "final-20261005/final-restart-recovery.json",
+    "task_status": "DONE",
+    "owner_released": true
+  },
+  "post_tooltip_anchor_capture_history": "Old bdeaadeb locked/PENDING record retained; superseded by final8bd7a366 actual Tooltip screenshots",
+  "final_human_host_acceptance": "final-20261005/human-host-final-three-rounds.json",
+  "final_restart_recovery": {
+    "status": "PASS; running for final Human Tray Quit",
+    "time": "2026-10-05T11:12:31.100862+00:00",
+    "pid": 94362,
+    "binary_sha256": "8bd7a366d24fa2eff8bf78e22604f461030cedae9d1184c11a28ca8eb4f5c28d",
+    "bundle": "/private/tmp/veyra-p107-final-20261005/VeyraP107Final.app",
+    "launch": "actual Mach-O app bundle through native app launcher; no shell wrapper",
+    "root": "/tmp/veyra-p107-final-20261005/root",
+    "state_sha256_before": "3caa8a2bc4c60591337870084943c7f0d7b36de9a1d3c7234d2976802fa3d846",
+    "state_sha256_after": "3caa8a2bc4c60591337870084943c7f0d7b36de9a1d3c7234d2976802fa3d846",
+    "state_unchanged": true,
+    "snapshot_loaded": true,
+    "page": "Settings → Panel Settings",
+    "theme_mode": "Light",
+    "AppView.dark": false,
+    "Kit": "Light",
+    "timeout_ms": 6600,
+    "ipv6_test": true,
+    "primary_count": 1,
+    "writer_created_count": 1,
+    "secondary_writer_count": 0,
+    "log_scope": "last startup product marker; full appended log contains previous launch writer1 too, not concurrent writer2",
+    "screenshot": "final-restart-recovery.jpg",
+    "screenshot_sha256": "3bbbf3766d5f49edddc95b4872fa662189a27140d86ae997254e237182765822",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "human_final_quit": "PENDING; do not click for user",
+    "task": "P1-07",
+    "task_status": "DOING",
+    "owner": "GPUI",
+    "historical_record_scope": "原顶层 status / human_final_quit / task_status / owner 为重启完成、等待人工退出时的历史记录，保持原值；当前结果见 final_quit / closeout",
+    "final_quit": {
+      "status": "PASS",
+      "action": "user Tray Quit",
+      "user_reply": "最终退出完成",
+      "host_independent_postcheck": {
+        "source": "本轮用户提供的已确认 Host 独立 post-check；本轮 Codex 仅记录，不冒称重跑",
+        "pid": 94362,
+        "process_gone": true,
+        "process_status": "PASS",
+        "socket": "/tmp/veyra-p107-final-20261005/root/runtime/desktop.sock",
+        "socket_state": "absent",
+        "socket_status": "PASS",
+        "lock": "/tmp/veyra-p107-final-20261005/root/locks/desktop.lock",
+        "flock_check": "Python fcntl.flock(LOCK_EX|LOCK_NB)",
+        "flock_state": "free",
+        "flock_status": "PASS",
+        "remaining_owned_veyra_acceptance_processes": [],
+        "no_owned_veyra_acceptance_process_remains": true,
+        "transient_pgrep": {
+          "pid": 96193,
+          "subsequent_ps": "absent",
+          "counted_as_residual_veyra": false
+        }
+      },
+      "evidence": "human-host-final-restart-quit.json"
+    },
+    "closeout": {
+      "status": "PASS",
+      "restart": "PASS",
+      "restart_final_quit": "PASS",
+      "cleanup": "PASS",
+      "task_status": "DONE",
+      "owner_released": true,
+      "evidence": "human-host-final-restart-quit.json"
+    }
+  },
+  "latest_build_20261005_before_final_closeout": {
+    "status": "FINAL_VISUAL_PASS_WITH_TECHNICAL_DIFFERENCES_COMBINATION_IN_PROGRESS",
+    "binary_sha256": "8bd7a366d24fa2eff8bf78e22604f461030cedae9d1184c11a28ca8eb4f5c28d",
+    "bundle_binary_sha256": "8bd7a366d24fa2eff8bf78e22604f461030cedae9d1184c11a28ca8eb4f5c28d",
+    "visual_matrix": "visual-matrix.md",
+    "visual_log": "final-20261005/visual-diagnostic.log",
+    "primary": "final-20261005/combination-primary.json",
+    "saved_visual": {
+      "theme_mode": "light"
+    },
+    "saved_behavior": {
+      "timeout_ms": 6600,
+      "ipv6_test": true
+    },
+    "save": "PASS accepted=true/Idle",
+    "human_three_rounds": "PENDING",
+    "tray_quit": "PENDING",
+    "restart": "PASS actual same-build Settings AX Light/6600/IPv6on; final-combination-restart-restored.jpg",
+    "restart_final_quit": "PENDING",
+    "root": "/tmp/veyra-p107-final-20261005/root",
+    "seed": "isolated persisted fixture root; no empty first-run claim",
+    "diagnostic_keyboard_quit_excluded": true,
+    "secondary_activate_used_for_tray_restore": false,
+    "sigterm_used_for_quit_acceptance": false,
+    "first_launch_audit": "Human 已完成; log Close3/Show2; TrayQuit/process/socket/flockPASS. Do not claim3log-confirmed; retry same final binary/root to obtain explicit3Show.",
+    "first_launch_cleanup": "final-20261005/cleanup-first-tray-quit.json",
+    "retry": "Visual Dark→Light accepted; timeout6600→6500→6600 accepted; hidden=true; human3Show+Quit pending"
+  }
+}

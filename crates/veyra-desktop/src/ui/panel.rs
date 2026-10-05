@@ -1,9 +1,9 @@
+use super::components::select::{SelectEvent, SelectState};
 use super::components::*;
 use gpui_kit::{
     component::{
         IndexPath, WindowExt,
         input::InputState,
-        select::{SelectEvent, SelectState},
         slider::{Slider, SliderEvent, SliderState},
     },
     prelude::*,
@@ -23,15 +23,17 @@ pub enum PanelEvent {
 }
 pub struct PanelView {
     pub draft: DesktopVisualPreferences,
-    language: Entity<SelectState<Vec<&'static str>>>,
-    theme: Entity<SelectState<Vec<&'static str>>>,
+    pub behavior: Option<Entity<super::behavior_panel::BehaviorPanel>>,
+    language: Entity<SelectState>,
+    theme: Entity<SelectState>,
     opacity: Entity<SliderState>,
     blur: Entity<SliderState>,
     pub input: Entity<InputState>,
     path: Entity<InputState>,
+    background_adjust: bool,
     modal_trigger: FocusHandle,
     modal_input: Entity<InputState>,
-    modal_select: Entity<SelectState<Vec<&'static str>>>,
+    modal_select: Entity<SelectState>,
     _subscriptions: Vec<gpui_kit::Subscription>,
 }
 impl EventEmitter<PanelEvent> for PanelView {}
@@ -47,7 +49,7 @@ impl PanelView {
         });
         let theme = cx.new(|cx| {
             SelectState::new(
-                vec!["System / 跟随系统", "Light / 亮色", "Dark / 暗色"],
+                vec!["跟随系统", "亮色", "暗色"],
                 Some(IndexPath::new(0)),
                 window,
                 cx,
@@ -104,9 +106,9 @@ impl PanelView {
             }),
             cx.subscribe(&theme, |this, _, event, cx| {
                 if let SelectEvent::Confirm(Some(value)) = event {
-                    this.draft.theme_mode = if value.starts_with("Dark") {
+                    this.draft.theme_mode = if *value == "暗色" {
                         DesktopThemeMode::Dark
-                    } else if value.starts_with("Light") {
+                    } else if *value == "亮色" {
                         DesktopThemeMode::Light
                     } else {
                         DesktopThemeMode::System
@@ -128,6 +130,7 @@ impl PanelView {
             }),
         ];
         Self {
+            behavior: None,
             draft: Default::default(),
             language,
             theme,
@@ -135,6 +138,7 @@ impl PanelView {
             blur,
             input,
             path,
+            background_adjust: false,
             modal_trigger: cx.focus_handle(),
             modal_input,
             modal_select,
@@ -151,6 +155,9 @@ impl PanelView {
         window: &mut Window,
         cx: &mut Context<Self>,
     ) {
+        if self.draft.background != draft.background {
+            self.background_adjust = matches!(draft.background, DesktopBackground::ManagedAsset(_));
+        }
         self.draft = draft.clone();
         self.language.update(cx, |s, cx| {
             s.set_selected_index(
@@ -244,8 +251,8 @@ fn row(label: &'static str, control: impl IntoElement) -> Div {
         .child(div().flex_1().child(label))
         .child(div().flex_shrink_0().child(control))
 }
-impl Render for PanelView {
-    fn render(&mut self, window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
+impl PanelView {
+    fn render_evidence(&mut self, window: &mut Window, cx: &mut Context<Self>) -> Div {
         let lang = self.draft.language;
         let l = |zh, en, tw| label(lang, zh, en, tw);
         let path = PathBuf::from(self.path.read(cx).value().as_str());
@@ -482,5 +489,165 @@ impl Render for PanelView {
                     "系统字体 · 中文 English 123 · 😀 🌿 🇨🇳 🇺🇸 · Regular / Semibold · 14 / 20",
                 ),
             )
+    }
+}
+
+impl Render for PanelView {
+    fn render(&mut self, window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
+        if evidence_visible() {
+            return self.render_evidence(window, cx);
+        }
+        use super::{icons::icon, tokens as t};
+        use gpui_kit::component::{ActiveTheme, Disableable};
+        let dark = cx.theme().mode.is_dark();
+        // 本地背景只通过系统选择器/拖放导入；展示文件名而非一个没有提交语义的路径输入。
+        let background = div()
+            .id("background-control")
+            .flex()
+            .h(px(t::CONTROL))
+            .gap(px(t::GAP))
+            .on_drop(cx.listener(|_, files: &ExternalPaths, _, cx| {
+                if let Some(path) = files.paths().first() {
+                    cx.emit(PanelEvent::Import(path.clone()));
+                }
+            }))
+            .child(
+                div()
+                    .flex()
+                    .h_full()
+                    .child(
+                        div()
+                            .flex()
+                            .items_center()
+                            .w(px(t::BACKGROUND_WIDTH))
+                            .h_full()
+                            .px(px(t::PAD))
+                            .border_1()
+                            .border_color(cx.theme().border)
+                            .rounded_l(px(t::RADIUS))
+                            .bg(cx.theme().input)
+                            .overflow_hidden()
+                            .child(match &self.draft.background {
+                                DesktopBackground::ManagedAsset(_) => "本地图片",
+                                DesktopBackground::None => "",
+                            })
+                            .when(
+                                matches!(self.draft.background, DesktopBackground::ManagedAsset(_)),
+                                |d| {
+                                    d.child(
+                                        icon_button(
+                                            "clear-background",
+                                            "清空面板背景",
+                                            "XMark",
+                                            16.,
+                                        )
+                                        .on_click(
+                                            cx.listener(|this, _, _, cx| {
+                                                this.draft.background = DesktopBackground::None;
+                                                this.changed(cx);
+                                            }),
+                                        ),
+                                    )
+                                },
+                            ),
+                    )
+                    .child(
+                        button("choose-background", "")
+                            .w(px(t::UPLOAD_WIDTH))
+                            .rounded_l_none()
+                            .child(icon("ArrowUpTray", t::ICON_SMALL))
+                            .accessibility_label("上传面板背景")
+                            .on_click(cx.listener(|_, _, _, cx| cx.emit(PanelEvent::ChooseImage))),
+                    ),
+            )
+            .when(
+                matches!(self.draft.background, DesktopBackground::ManagedAsset(_)),
+                |d| {
+                    d.child(
+                        icon_button(
+                            "adjust-background",
+                            "调整面板背景",
+                            "AdjustmentsHorizontal",
+                            t::CONTROL,
+                        )
+                        .on_click(cx.listener(|this, _, _, cx| {
+                            this.background_adjust = !this.background_adjust;
+                            cx.notify();
+                        })),
+                    )
+                },
+            );
+        let radius = div()
+            .flex()
+            .items_center()
+            .w(px(190.))
+            .h(px(t::CONTROL))
+            .child(
+                button("radius-down", "-")
+                    .rounded_r(px(0.))
+                    .w(px(crate::ui::tokens::COLUMN_GAP))
+                    .disabled(self.draft.global_radius == 0)
+                    .on_click(cx.listener(|this, _, _, cx| {
+                        this.draft.global_radius = this.draft.global_radius.saturating_sub(1);
+                        this.changed(cx);
+                    })),
+            )
+            .child(
+                div()
+                    .w(px(96.))
+                    .flex_shrink_0()
+                    .ml(px(-1.))
+                    .h_full()
+                    .flex()
+                    .items_center()
+                    .justify_center()
+                    .border_1()
+                    .border_color(cx.theme().border)
+                    .bg(cx.theme().input)
+                    .child(format!("{}px", self.draft.global_radius)),
+            )
+            .child(
+                button("radius-up", "+")
+                    .rounded_l(px(0.))
+                    .ml(px(-1.))
+                    .w(px(crate::ui::tokens::COLUMN_GAP))
+                    .disabled(self.draft.global_radius == 24)
+                    .on_click(cx.listener(|this, _, _, cx| {
+                        this.draft.global_radius = (this.draft.global_radius + 1).min(24);
+                        this.changed(cx);
+                    })),
+            );
+        let provider = self
+            .behavior
+            .as_ref()
+            .map(|b| b.read(cx).provider_control());
+        setting_section("通用", dark, self.draft.global_radius as f32)
+            .child(settings_pair(
+                compact_setting("面板语言", select(&self.language, "面板语言")),
+                compact_setting("面板背景", background),
+            ))
+            .when(
+                self.background_adjust
+                    && matches!(self.draft.background, DesktopBackground::ManagedAsset(_)),
+                |section| {
+                    section.child(settings_pair(
+                        compact_setting("透明度", panel_slider(&self.opacity, cx)),
+                        compact_setting("毛玻璃强度", panel_slider(&self.blur, cx)),
+                    ))
+                },
+            )
+            .child(settings_pair(
+                compact_setting("全局圆角", radius),
+                compact_setting("主题", select(&self.theme, "主题")),
+            ))
+            .child(settings_pair(
+                compact_setting(
+                    "修改密码",
+                    button("password-unavailable", "修改密码")
+                        .disabled(true)
+                        .tooltip("本地桌面未提供访问密码服务"),
+                ),
+                compact_setting(super::components::help_label("IP信息API", "ip-api-help", "此API会用于IP检查中全球节点IP信息查询、连接详情中的IP地理信息查询、面板DNS查询中的IP地理信息查询。", cx), div().children(provider)),
+            ))
     }
 }

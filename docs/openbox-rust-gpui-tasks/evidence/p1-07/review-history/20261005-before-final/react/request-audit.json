@@ -1,0 +1,177 @@
+[
+  {
+    "path": "/api/auth/status",
+    "method": "GET",
+    "mapped": true
+  },
+  {
+    "path": "/api/auth/status",
+    "method": "GET",
+    "mapped": true
+  },
+  {
+    "path": "/api/storage",
+    "method": "GET",
+    "mapped": true
+  },
+  {
+    "path": "/api/openbox/service/status",
+    "method": "GET",
+    "mapped": true
+  },
+  {
+    "path": "/api/openbox/site-latency/history",
+    "method": "GET",
+    "mapped": true
+  },
+  {
+    "path": "/api/openbox/traffic/month",
+    "method": "GET",
+    "mapped": true
+  },
+  {
+    "path": "/api/openbox/traffic/day",
+    "method": "GET",
+    "mapped": true
+  },
+  {
+    "path": "/api/openbox/site-latency/history",
+    "method": "GET",
+    "mapped": true
+  },
+  {
+    "path": "/api/openbox/traffic/month",
+    "method": "GET",
+    "mapped": true
+  },
+  {
+    "path": "/api/openbox/traffic/day",
+    "method": "GET",
+    "mapped": true
+  },
+  {
+    "path": "/api/storage",
+    "method": "PATCH",
+    "mapped": true
+  },
+  {
+    "path": "/api/storage",
+    "method": "PATCH",
+    "mapped": true
+  },
+  {
+    "path": "/api/storage",
+    "method": "PATCH",
+    "mapped": true
+  },
+  {
+    "path": "/api/storage",
+    "method": "GET",
+    "mapped": true
+  },
+  {
+    "path": "/api/background-image",
+    "method": "DELETE",
+    "mapped": false
+  },
+  {
+    "path": "/api/storage",
+    "method": "PATCH",
+    "mapped": true
+  },
+  {
+    "path": "/api/storage",
+    "method": "GET",
+    "mapped": true
+  },
+  {
+    "path": "/api/openbox/service/status",
+    "method": "GET",
+    "mapped": true
+  },
+  {
+    "path": "/api/auth/status",
+    "method": "GET",
+    "mapped": true
+  },
+  {
+    "path": "/api/auth/status",
+    "method": "GET",
+    "mapped": true
+  },
+  {
+    "path": "/api/storage",
+    "method": "GET",
+    "mapped": true
+  },
+  {
+    "path": "/api/openbox/service/status",
+    "method": "GET",
+    "mapped": true
+  },
+  {
+    "path": "/api/openbox/site-latency/history",
+    "method": "GET",
+    "mapped": true
+  },
+  {
+    "path": "/api/openbox/traffic/month",
+    "method": "GET",
+    "mapped": true
+  },
+  {
+    "path": "/api/openbox/traffic/day",
+    "method": "GET",
+    "mapped": true
+  },
+  {
+    "path": "/api/openbox/site-latency/history",
+    "method": "GET",
+    "mapped": true
+  },
+  {
+    "path": "/api/openbox/traffic/month",
+    "method": "GET",
+    "mapped": true
+  },
+  {
+    "path": "/api/openbox/traffic/day",
+    "method": "GET",
+    "mapped": true
+  },
+  {
+    "path": "/api/storage",
+    "method": "PATCH",
+    "mapped": true
+  },
+  {
+    "path": "/api/storage",
+    "method": "PATCH",
+    "mapped": true
+  },
+  {
+    "path": "/api/storage",
+    "method": "PATCH",
+    "mapped": true
+  },
+  {
+    "path": "/api/storage",
+    "method": "GET",
+    "mapped": true
+  },
+  {
+    "path": "/api/background-image",
+    "method": "DELETE",
+    "mapped": false
+  },
+  {
+    "path": "/api/storage",
+    "method": "PATCH",
+    "mapped": true
+  },
+  {
+    "path": "/api/storage",
+    "method": "GET",
+    "mapped": true
+  }
+]

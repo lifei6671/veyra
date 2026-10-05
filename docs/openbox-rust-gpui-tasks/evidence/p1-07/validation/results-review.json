@@ -1,0 +1,147 @@
+[
+  {
+    "name": "desktop-test-review",
+    "command": [
+      "cargo",
+      "test",
+      "-p",
+      "veyra-desktop"
+    ],
+    "exit": 0,
+    "duration_seconds": 3.13,
+    "resource_override": false
+  },
+  {
+    "name": "core-test-review",
+    "command": [
+      "cargo",
+      "test",
+      "-p",
+      "veyra-core",
+      "--lib",
+      "--",
+      "--test-threads=1"
+    ],
+    "exit": 0,
+    "duration_seconds": 6.91,
+    "resource_override": false
+  },
+  {
+    "name": "desktop-check-review",
+    "command": [
+      "cargo",
+      "check",
+      "-p",
+      "veyra-desktop"
+    ],
+    "exit": 0,
+    "duration_seconds": 0.68,
+    "resource_override": false
+  },
+  {
+    "name": "core-check-review",
+    "command": [
+      "cargo",
+      "check",
+      "-p",
+      "veyra-core"
+    ],
+    "exit": 0,
+    "duration_seconds": 0.18,
+    "resource_override": false
+  },
+  {
+    "name": "desktop-build-review",
+    "command": [
+      "cargo",
+      "build",
+      "-p",
+      "veyra-desktop"
+    ],
+    "exit": 0,
+    "duration_seconds": 0.35,
+    "resource_override": false
+  },
+  {
+    "name": "desktop-clippy-review",
+    "command": [
+      "cargo",
+      "clippy",
+      "-p",
+      "veyra-desktop",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "exit": 0,
+    "duration_seconds": 0.93,
+    "resource_override": false
+  },
+  {
+    "name": "core-clippy-review",
+    "command": [
+      "cargo",
+      "clippy",
+      "-p",
+      "veyra-core",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "exit": 0,
+    "duration_seconds": 0.19,
+    "resource_override": false
+  },
+  {
+    "name": "fmt-review",
+    "command": [
+      "cargo",
+      "fmt",
+      "--all",
+      "--",
+      "--check"
+    ],
+    "exit": 0,
+    "duration_seconds": 0.56,
+    "resource_override": false
+  },
+  {
+    "name": "workspace-check-review",
+    "command": [
+      "cargo",
+      "check",
+      "--workspace",
+      "--locked"
+    ],
+    "exit": 0,
+    "duration_seconds": 0.98,
+    "resource_override": true
+  },
+  {
+    "name": "legacy-clippy-review",
+    "command": [
+      "cargo",
+      "clippy",
+      "--manifest-path",
+      "src-tauri/Cargo.toml",
+      "--lib",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "exit": 0,
+    "duration_seconds": 0.34,
+    "resource_override": true
+  },
+  {
+    "name": "diff-check-review",
+    "command": [
+      "git",
+      "diff",
+      "--check"
+    ],
+    "exit": 0,
+    "duration_seconds": 0.02,
+    "resource_override": false
+  }
+]

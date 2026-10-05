@@ -1,0 +1,36 @@
+[
+  {
+    "name": "desktop-test-tray",
+    "command": [
+      "cargo",
+      "test",
+      "-p",
+      "veyra-desktop"
+    ],
+    "exit": 0
+  },
+  {
+    "name": "desktop-clippy-tray",
+    "command": [
+      "cargo",
+      "clippy",
+      "-p",
+      "veyra-desktop",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "exit": 0
+  },
+  {
+    "name": "fmt-tray",
+    "command": [
+      "cargo",
+      "fmt",
+      "--all",
+      "--",
+      "--check"
+    ],
+    "exit": 0
+  }
+]

@@ -1,0 +1,77 @@
+[
+  {
+    "name": "desktop-test-tooltip",
+    "command": [
+      "cargo",
+      "test",
+      "-p",
+      "veyra-desktop"
+    ],
+    "exit": 0,
+    "duration_seconds": 3.21,
+    "resource_override": false
+  },
+  {
+    "name": "desktop-check-tooltip",
+    "command": [
+      "cargo",
+      "check",
+      "-p",
+      "veyra-desktop"
+    ],
+    "exit": 0,
+    "duration_seconds": 0.46,
+    "resource_override": false
+  },
+  {
+    "name": "desktop-clippy-tooltip",
+    "command": [
+      "cargo",
+      "clippy",
+      "-p",
+      "veyra-desktop",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "exit": 0,
+    "duration_seconds": 0.62,
+    "resource_override": false
+  },
+  {
+    "name": "fmt-tooltip",
+    "command": [
+      "cargo",
+      "fmt",
+      "--all",
+      "--",
+      "--check"
+    ],
+    "exit": 0,
+    "duration_seconds": 0.51,
+    "resource_override": false
+  },
+  {
+    "name": "workspace-check-tooltip",
+    "command": [
+      "cargo",
+      "check",
+      "--workspace",
+      "--locked"
+    ],
+    "exit": 0,
+    "duration_seconds": 0.57,
+    "resource_override": true
+  },
+  {
+    "name": "diff-tooltip",
+    "command": [
+      "git",
+      "diff",
+      "--check"
+    ],
+    "exit": 0,
+    "duration_seconds": 0.02,
+    "resource_override": false
+  }
+]

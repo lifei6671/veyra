@@ -1,12 +1,12 @@
 //! Panel Settings behavior form. Mature inputs, independent draft and explicit save/rebase.
+use super::components::select::{SelectEvent, SelectState};
 use super::components::{button, select, text_input, toggle};
 use crate::behavior_preferences::BehaviorStatus;
 use gpui_kit::{
     component::{
-        Disableable, IndexPath,
+        Disableable, IndexPath, WindowExt,
         button::{Button, ButtonVariants},
         input::{InputEvent, InputState},
-        select::{SelectEvent, SelectState},
     },
     prelude::*,
     *,
@@ -95,12 +95,16 @@ pub enum BehaviorPanelEvent {
     ExternalWrite,
 }
 pub struct BehaviorPanel {
+    icons: Vec<(
+        Entity<super::components::icon_picker::IconPicker>,
+        gpui_kit::Subscription,
+    )>,
     pub draft: DesktopBehaviorPreferences,
     pub status: BehaviorStatus,
     inputs: Vec<(InputKey, Entity<InputState>)>,
-    columns: Entity<SelectState<Vec<&'static str>>>,
-    sort: Entity<SelectState<Vec<&'static str>>>,
-    provider: Entity<SelectState<Vec<&'static str>>>,
+    columns: Entity<SelectState>,
+    sort: Entity<SelectState>,
+    provider: Entity<SelectState>,
     tab: usize,
     site: usize,
     input_errors: Vec<InputKey>,
@@ -108,6 +112,33 @@ pub struct BehaviorPanel {
 }
 impl EventEmitter<BehaviorPanelEvent> for BehaviorPanel {}
 impl BehaviorPanel {
+    // 领域允许 1–32 个测试站点；picker 与持久化列表一起增减，不能只为默认四项分配。
+    fn site_icon(
+        i: usize,
+        key: String,
+        window: &mut Window,
+        cx: &mut Context<Self>,
+    ) -> (
+        Entity<super::components::icon_picker::IconPicker>,
+        gpui_kit::Subscription,
+    ) {
+        let picker = cx.new(|cx| super::components::icon_picker::IconPicker::new(key, window, cx));
+        let subscription = cx.subscribe(
+            &picker,
+            move |this, _, event: &super::components::icon_picker::IconPicked, cx| {
+                let mut sites = this.draft.test_sites.clone();
+                sites[i].icon_key = event.0.clone();
+                this.edit(
+                    DesktopBehaviorPreferencesPatch {
+                        test_sites: Some(sites),
+                        ..Default::default()
+                    },
+                    cx,
+                );
+            },
+        );
+        (picker, subscription)
+    }
     pub fn new(window: &mut Window, cx: &mut Context<Self>) -> Self {
         let draft = DesktopBehaviorPreferences::default();
         let mut keys = vec![
@@ -134,8 +165,14 @@ impl BehaviorPanel {
                 )
             })
             .collect::<Vec<_>>();
-        let columns =
-            cx.new(|cx| SelectState::new(vec!["1", "2", "3"], Some(IndexPath::new(1)), window, cx));
+        let columns = cx.new(|cx| {
+            SelectState::new(
+                vec!["单列", "双列", "三列"],
+                Some(IndexPath::new(1)),
+                window,
+                cx,
+            )
+        });
         let sort = cx.new(|cx| {
             SelectState::new(
                 vec![
@@ -161,7 +198,11 @@ impl BehaviorPanel {
         let mut subscriptions = vec![
             cx.subscribe(&columns, |this, _, event, cx| {
                 if let SelectEvent::Confirm(Some(value)) = event {
-                    let columns = value.parse().unwrap();
+                    let columns = match *value {
+                        "单列" => 1,
+                        "双列" => 2,
+                        _ => 3,
+                    };
                     if columns != this.draft.proxy_view.group_columns {
                         this.edit(
                             DesktopBehaviorPreferencesPatch {
@@ -230,7 +271,14 @@ impl BehaviorPanel {
                 }),
             );
         }
+        let icons = draft
+            .test_sites
+            .iter()
+            .enumerate()
+            .map(|(i, site)| Self::site_icon(i, site.icon_key.clone(), window, cx))
+            .collect();
         Self {
+            icons,
             draft,
             status: BehaviorStatus::Idle,
             inputs,
@@ -258,6 +306,21 @@ impl BehaviorPanel {
     ) {
         self.draft = draft.clone();
         self.status = status.clone();
+        self.icons.truncate(draft.test_sites.len());
+        for i in self.icons.len()..draft.test_sites.len() {
+            self.icons.push(Self::site_icon(
+                i,
+                draft.test_sites[i].icon_key.clone(),
+                window,
+                cx,
+            ));
+        }
+        for ((picker, _), site) in self.icons.iter().zip(&draft.test_sites) {
+            picker.update(cx, |s, cx| {
+                s.value = site.icon_key.clone();
+                cx.notify();
+            });
+        }
         // Preserve invalid raw numeric input across refresh/rebase as well as save failure.
         self.inputs.retain(|(key, _)| match key {
             InputKey::SiteName(i) | InputKey::SiteUrl(i) | InputKey::SiteIcon(i) => {
@@ -376,8 +439,8 @@ fn row(label: impl Into<SharedString>, control: impl IntoElement) -> Div {
         .child(div().flex_1().child(label.into()))
         .child(div().flex_shrink_0().child(control))
 }
-impl Render for BehaviorPanel {
-    fn render(&mut self, _: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
+impl BehaviorPanel {
+    fn render_evidence(&mut self, _: &mut Window, cx: &mut Context<Self>) -> Div {
         let labels = [
             "延迟 / Latency",
             "代理显示 / Proxy display",
@@ -571,5 +634,222 @@ impl Render for BehaviorPanel {
             .child(div().text_xs().child(
                 "Preferences 消费契约已提供；真实代理、概览、连接与诊断业务将在 P2/P3/P4/P5 接入。",
             ))
+    }
+}
+
+impl BehaviorPanel {
+    pub fn provider_control(&self) -> super::components::select::Select {
+        select(&self.provider, "IP信息API").w(px(super::tokens::PROVIDER_WIDTH))
+    }
+    fn number_setting(&self, label: &'static str, key: InputKey) -> impl IntoElement {
+        super::components::compact_setting(
+            label,
+            div()
+                .flex()
+                .items_center()
+                .gap(px(super::tokens::GAP))
+                .child(
+                    text_input(&self.input(key))
+                        .numeric()
+                        .w(px(super::tokens::NUMBER_WIDTH)),
+                )
+                .child("ms"),
+        )
+    }
+}
+impl Render for BehaviorPanel {
+    fn render(&mut self, window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
+        use super::components::*;
+        use super::tokens as t;
+        use gpui_kit::component::ActiveTheme;
+        if evidence_visible() {
+            return self.render_evidence(window, cx);
+        }
+        let dark = cx.theme().mode.is_dark();
+        let latency = setting_section("延迟", dark, f32::from(cx.theme().radius_lg))
+            .child(settings_pair(
+                self.number_setting("测速超时", InputKey::Timeout),
+                self.number_setting("黄色的阈值", InputKey::Low),
+            ))
+            .child(settings_pair(
+                self.number_setting("红色的阈值", InputKey::Medium),
+                compact_setting(
+                    "IPv6 测试",
+                    toggle(
+                        "diagnostic-ipv6",
+                        self.draft.diagnostics.ipv6_test,
+                        "IPv6 测试",
+                    )
+                    .on_change(cx.listener(|this, value, _, cx| {
+                        this.edit(
+                            DesktopBehaviorPreferencesPatch {
+                                ipv6_test: Some(*value),
+                                ..Default::default()
+                            },
+                            cx,
+                        )
+                    })),
+                ),
+            ))
+            .child(settings_pair(
+                compact_setting(
+                    "隐藏不可用节点",
+                    toggle(
+                        "hide-unavailable",
+                        self.draft.proxy_view.hide_unavailable,
+                        "隐藏不可用节点",
+                    )
+                    .on_change(cx.listener(|this, value, _, cx| {
+                        this.edit(
+                            DesktopBehaviorPreferencesPatch {
+                                hide_unavailable: Some(*value),
+                                ..Default::default()
+                            },
+                            cx,
+                        )
+                    })),
+                ),
+                div(),
+            ))
+            .child(
+                section_heading("布局")
+                    .mt(px(crate::ui::tokens::ROW_GAP))
+                    .mb(px(crate::ui::tokens::ROW_GAP)),
+            )
+            .child(settings_pair(
+                compact_setting(
+                    "代理组分列",
+                    select(&self.columns, "代理组分列").w(px(t::SITE_NAME_WIDTH)),
+                ),
+                div(),
+            ));
+        let mut sites = setting_section(
+            super::components::help_label(
+                "测试站点",
+                "sites-help",
+                "概览里的延时小卡片和规则页右上角的快捷查询共用这四个站点。图标从图标库选;名称空着就用图标的品牌名(没有品牌名就用网址的主机名);网址填 http(s) 地址,延时按内核经当前分流访问这个地址计",
+                cx,
+            ),
+            dark,
+            f32::from(cx.theme().radius_lg),
+        );
+        for indices in (0..self.draft.test_sites.len())
+            .collect::<Vec<_>>()
+            .chunks(2)
+        {
+            let rows = indices
+                .iter()
+                .map(|&i| {
+                    div()
+                        .flex()
+                        .h(px(t::SETTING_HEIGHT))
+                        .items_center()
+                        .gap(px(t::GAP))
+                        .border_b_1()
+                        .border_color(if dark {
+                            rgba(0x110d0dcc)
+                        } else {
+                            rgba(crate::ui::tokens::ROW_BORDER)
+                        })
+                        .child(self.icons[i].0.clone())
+                        .child(
+                            text_input(&self.input(InputKey::SiteName(i)))
+                                .w(px(t::SITE_NAME_WIDTH)),
+                        )
+                        .child(
+                            div()
+                                .flex_1()
+                                .min_w_0()
+                                .relative()
+                                .child(
+                                    text_input(&self.input(InputKey::SiteUrl(i)))
+                                        .pr(px(crate::ui::tokens::CONTROL)),
+                                )
+                                .child(
+                                    icon_button(
+                                        ("clear-site-url", i),
+                                        "清空测试地址",
+                                        "XMark",
+                                        16.,
+                                    )
+                                    .absolute()
+                                    .top(px(crate::ui::tokens::GAP))
+                                    .right(px(crate::ui::tokens::GAP))
+                                    .on_click(cx.listener(
+                                        move |this, _, window, cx| {
+                                            this.input(InputKey::SiteUrl(i))
+                                                .update(cx, |s, cx| s.set_value("", window, cx))
+                                        },
+                                    )),
+                                ),
+                        )
+                })
+                .collect::<Vec<_>>();
+            sites = sites.child(
+                div()
+                    .flex()
+                    .gap(px(t::COLUMN_GAP))
+                    .children(rows.into_iter().map(|r| div().flex_1().min_w_0().child(r)))
+                    .when(indices.len() == 1, |d| d.child(div().flex_1().min_w_0())),
+            );
+        }
+        let entity = cx.entity().downgrade();
+        sites=sites.relative().child(icon_button("restore-sites","恢复默认测试站点","ArrowUturnLeft",t::CONTROL)
+            .bg(if dark { rgb(0x161212) } else { rgba(0xededeeb3) })
+            .on_click(move |_,window,cx|{
+                let entity=entity.clone();
+                window.open_dialog(cx,move |dialog,window,cx| {
+                    let entity=entity.clone();
+                    panel_dialog(dialog,window,cx)
+                        .child(div().flex().flex_col().gap_0()
+                            .child(div().flex().h(px(t::DIALOG_HEADER)).items_center().justify_between().px(px(crate::ui::tokens::SECTION_PADDING)).border_b_1().border_color(rgba(0x4b52631a))
+                                .child("恢复默认").child(icon_button("close-restore","关闭","XMark",24.).on_click(|_,w,cx|w.close_dialog(cx))))
+                            .child(div().p(px(crate::ui::tokens::SECTION_PADDING)).child("四个站点的图标、名称和网址都会覆盖回随包默认。确定吗?"))
+                            .child(div().flex().justify_end().gap(px(10.)).px(px(crate::ui::tokens::SECTION_PADDING)).py(px(crate::ui::tokens::GAP)).border_t_1().border_color(rgba(0x4b52631a))
+                                .child(button("cancel-restore","取消").on_click(|_,w,cx|w.close_dialog(cx)))
+                                .child(button("confirm-restore","确定").bg(rgb(0xff5263)).on_click(move |_,window,cx|{
+                                    let _=entity.update(cx,|this,cx|{
+                                        this.edit(DesktopBehaviorPreferencesPatch{test_sites:Some(DesktopBehaviorPreferences::default().test_sites),..Default::default()},cx);
+                                        let draft=this.draft.clone();let status=this.status.clone();this.project(&draft,&status,window,cx);
+                                    });
+                                    window.close_dialog(cx);
+                                }))))
+                });
+            }).tooltip("restore-sites-tooltip", "恢复默认").absolute().top(px(t::SECTION_PADDING)).right(px(t::SECTION_PADDING)));
+        // P1-04B 显式提交、错误草稿和 CAS rebase 保持有效。内容不可收缩，否则保存按钮被裁切且父级无法滚动。
+        div()
+            .flex_shrink_0()
+            .flex()
+            .flex_col()
+            .gap(px(t::GAP))
+            .child(latency)
+            .child(sites)
+            .child(
+                div()
+                    .flex()
+                    .gap(px(t::GAP))
+                    .child(
+                        button("save-behavior", "保存")
+                            .disabled(
+                                !self.input_errors.is_empty()
+                                    || self.status == BehaviorStatus::Saving,
+                            )
+                            .on_click(cx.listener(|_, _, _, cx| cx.emit(BehaviorPanelEvent::Save))),
+                    )
+                    .when(matches!(self.status, BehaviorStatus::Failed(_)), |d| {
+                        d.child(button("rebase-behavior", "重新加载").on_click(
+                            cx.listener(|_, _, _, cx| cx.emit(BehaviorPanelEvent::Rebase)),
+                        ))
+                    }),
+            )
+            .when(!self.input_errors.is_empty(), |d| {
+                d.child("整数输入无效，请修正对应字段。")
+            })
+            .when(matches!(self.status, BehaviorStatus::Failed(_)), |d| {
+                d.child(match &self.status {
+                    BehaviorStatus::Failed(e) => e.to_string(),
+                    _ => unreachable!(),
+                })
+            })
     }
 }

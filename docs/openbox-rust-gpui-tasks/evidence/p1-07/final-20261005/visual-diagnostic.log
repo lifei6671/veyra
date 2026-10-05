@@ -1,0 +1,106 @@
+product=com.lifei6671.veyra namespace=com.lifei6671.veyra.gpui-preview
+role=primary lock acquired; control socket listening
+writer_created_count=1
+TrayIcon created main_thread=true; Runtime unavailable; start/stop disabled
+AppView created entity=EntityId(1v1); pages_created_count=6
+bridge request=1 generation=0 busy
+theme effective preference=System AppView.dark=true Kit=Dark route=Overview content=Size { 1280px × 721px } snapshot_loaded=false
+bridge request=1 generation=0 Accepted
+theme effective preference=Light AppView.dark=false Kit=Light route=Overview content=Size { 1280px × 720px } snapshot_loaded=true
+tray native rect=Some(Rect { size: PhysicalSize { width: 68, height: 0 }, position: PhysicalPosition { x: 0.0, y: 1964.0 } }) visible=Some(true)
+logical content Size { 1280px × 720px }; scale factor 2
+tray probe delayed main_thread=true activation_policy=NSApplicationActivationPolicy(0) presentation=NSApplicationPresentationOptions(0) thickness=22
+tray probe visible=true button_exists=true rect=Some(Rect { size: PhysicalSize { width: 68, height: 66 }, position: PhysicalPosition { x: 1864.0, y: 0.0 } })
+tray probe button.frame=CGRect { origin: CGPoint { x: 0.0, y: 0.0 }, size: CGSize { width: 34.0, height: 22.0 } } window.frame=Some(CGRect { origin: CGPoint { x: 932.0, y: 949.0 }, size: CGSize { width: 34.0, height: 33.0 } })
+tray probe screen.frame=CGRect { origin: CGPoint { x: 0.0, y: 0.0 }, size: CGSize { width: 1512.0, height: 982.0 } } visibleFrame=CGRect { origin: CGPoint { x: 54.0, y: 0.0 }, size: CGSize { width: 1458.0, height: 949.0 } }
+default background CPU job generation=1 thread=ThreadId(5) duration_ms=4785
+default background generation=1 accepted=true
+tray native rect=Some(Rect { size: PhysicalSize { width: 68, height: 66 }, position: PhysicalPosition { x: 1864.0, y: 0.0 } }) visible=Some(true)
+navigate settings entity=EntityId(18v1)
+theme effective preference=Light AppView.dark=false Kit=Light route=Settings content=Size { 1280px × 720px } snapshot_loaded=true
+theme effective preference=Light AppView.dark=false Kit=Light route=Settings content=Size { 1280px × 720px } snapshot_loaded=true
+behavior submit generation=6 expected=ConfigVersion(StateVersion { epoch: StateEpoch([76, 181, 112, 253, 3, 109, 251, 112, 8, 216, 219, 103, 220, 156, 171, 238]), revision: 73 }) fields=[LatencyTimeout, Ipv6Test]
+behavior completion generation=6 accepted=true status=Idle pending=[]
+tray native rect=Some(Rect { size: PhysicalSize { width: 68, height: 66 }, position: PhysicalPosition { x: 1864.0, y: 0.0 } }) visible=Some(true)
+navigate overview entity=EntityId(3v1)
+theme effective preference=Light AppView.dark=false Kit=Light route=Overview content=Size { 1280px × 720px } snapshot_loaded=true
+2026-10-05 18:26:14.758 VeyraP107NativeAB[81087:6971397] TSM AdjustCapsLockLEDForKeyTransitionHandling - _ISSetPhysicalKeyboardCapsLockLED Inhibit
+visual change generation=1 changes=1
+theme effective preference=Light AppView.dark=false Kit=Light route=Overview content=Size { 1280px × 720px } snapshot_loaded=true
+visual submit generation=1 commits=1 opacity=90 blur=10
+visual completion generation=1 accepted=true result=Ok(())
+tray native rect=Some(Rect { size: PhysicalSize { width: 68, height: 66 }, position: PhysicalPosition { x: 1864.0, y: 0.0 } }) visible=Some(true)
+theme effective preference=Light AppView.dark=false Kit=Light route=Overview content=Size { 1280px × 720px } snapshot_loaded=true
+visual change generation=2 changes=2
+theme effective preference=Light AppView.dark=false Kit=Light route=Overview content=Size { 1280px × 720px } snapshot_loaded=true
+visual submit generation=2 commits=2 opacity=90 blur=10
+visual completion generation=2 accepted=true result=Ok(())
+tray native rect=Some(Rect { size: PhysicalSize { width: 68, height: 66 }, position: PhysicalPosition { x: 1864.0, y: 0.0 } }) visible=Some(true)
+navigate settings entity=EntityId(18v1)
+theme effective preference=Light AppView.dark=false Kit=Light route=Settings content=Size { 1280px × 720px } snapshot_loaded=true
+theme effective preference=Light AppView.dark=false Kit=Light route=Settings content=Size { 1280px × 720px } snapshot_loaded=true
+theme effective preference=Light AppView.dark=false Kit=Light route=Settings content=Size { 1280px × 720px } snapshot_loaded=true
+theme effective preference=Light AppView.dark=false Kit=Light route=Settings content=Size { 1280px × 720px } snapshot_loaded=true
+behavior submit generation=11 expected=ConfigVersion(StateVersion { epoch: StateEpoch([76, 181, 112, 253, 3, 109, 251, 112, 8, 216, 219, 103, 220, 156, 171, 238]), revision: 76 }) fields=[Ipv6Test, IpInfo]
+behavior completion generation=11 accepted=true status=Idle pending=[]
+tray native rect=Some(Rect { size: PhysicalSize { width: 68, height: 66 }, position: PhysicalPosition { x: 1864.0, y: 0.0 } }) visible=Some(true)
+visual change generation=3 changes=3
+theme effective preference=Dark AppView.dark=true Kit=Dark route=Settings content=Size { 1280px × 720px } snapshot_loaded=true
+visual submit generation=3 commits=3 opacity=90 blur=10
+visual completion generation=3 accepted=true result=Ok(())
+tray native rect=Some(Rect { size: PhysicalSize { width: 68, height: 66 }, position: PhysicalPosition { x: 1864.0, y: 0.0 } }) visible=Some(true)
+navigate overview entity=EntityId(3v1)
+theme effective preference=Dark AppView.dark=true Kit=Dark route=Overview content=Size { 1280px × 720px } snapshot_loaded=true
+visual change generation=4 changes=4
+theme effective preference=Dark AppView.dark=true Kit=Dark route=Overview content=Size { 1280px × 720px } snapshot_loaded=true
+visual submit generation=4 commits=4 opacity=90 blur=10
+visual completion generation=4 accepted=true result=Ok(())
+tray native rect=Some(Rect { size: PhysicalSize { width: 68, height: 66 }, position: PhysicalPosition { x: 1864.0, y: 0.0 } }) visible=Some(true)
+theme effective preference=Dark AppView.dark=true Kit=Dark route=Overview content=Size { 1280px × 720px } snapshot_loaded=true
+visual change generation=5 changes=5
+theme effective preference=Dark AppView.dark=true Kit=Dark route=Overview content=Size { 1280px × 720px } snapshot_loaded=true
+visual submit generation=5 commits=5 opacity=90 blur=10
+visual completion generation=5 accepted=true result=Ok(())
+tray native rect=Some(Rect { size: PhysicalSize { width: 68, height: 66 }, position: PhysicalPosition { x: 1864.0, y: 0.0 } }) visible=Some(true)
+navigate settings entity=EntityId(18v1)
+theme effective preference=Dark AppView.dark=true Kit=Dark route=Settings content=Size { 1280px × 720px } snapshot_loaded=true
+theme effective preference=Dark AppView.dark=true Kit=Dark route=Settings content=Size { 1280px × 720px } snapshot_loaded=true
+theme effective preference=Dark AppView.dark=true Kit=Dark route=Settings content=Size { 1280px × 720px } snapshot_loaded=true
+behavior submit generation=14 expected=ConfigVersion(StateVersion { epoch: StateEpoch([76, 181, 112, 253, 3, 109, 251, 112, 8, 216, 219, 103, 220, 156, 171, 238]), revision: 79 }) fields=[Ipv6Test]
+behavior completion generation=14 accepted=true status=Idle pending=[]
+tray native rect=Some(Rect { size: PhysicalSize { width: 68, height: 66 }, position: PhysicalPosition { x: 1864.0, y: 0.0 } }) visible=Some(true)
+behavior submit generation=16 expected=ConfigVersion(StateVersion { epoch: StateEpoch([76, 181, 112, 253, 3, 109, 251, 112, 8, 216, 219, 103, 220, 156, 171, 238]), revision: 79 }) fields=[LatencyTimeout]
+behavior completion generation=16 accepted=true status=Failed(AppError { code: Validation, message: "输入无效，请检查标记的字段", field: Some(LatencyTimeout), detail: None }) pending=[LatencyTimeout]
+tray native rect=Some(Rect { size: PhysicalSize { width: 68, height: 66 }, position: PhysicalPosition { x: 1864.0, y: 0.0 } }) visible=Some(true)
+behavior submit generation=21 expected=ConfigVersion(StateVersion { epoch: StateEpoch([76, 181, 112, 253, 3, 109, 251, 112, 8, 216, 219, 103, 220, 156, 171, 238]), revision: 79 }) fields=[LatencyTimeout]
+behavior completion generation=21 accepted=true status=Idle pending=[]
+tray native rect=Some(Rect { size: PhysicalSize { width: 68, height: 66 }, position: PhysicalPosition { x: 1864.0, y: 0.0 } }) visible=Some(true)
+native dialog opened kind=Image
+native dialog accepted kind=Image; selected path redacted
+asset prepared id=f582cae91914cb46ccc92935ce5abf15e8ae1b7c541d8d655d3b5acdd4deb635
+visual change generation=6 changes=6
+theme effective preference=Dark AppView.dark=true Kit=Dark route=Settings content=Size { 1280px × 720px } snapshot_loaded=true
+tray native rect=Some(Rect { size: PhysicalSize { width: 68, height: 66 }, position: PhysicalPosition { x: 1864.0, y: 0.0 } }) visible=Some(true)
+visual submit generation=6 commits=6 opacity=90 blur=10
+background image blur=10 cache prepared duration_ms=2094
+tray native rect=Some(Rect { size: PhysicalSize { width: 68, height: 66 }, position: PhysicalPosition { x: 1864.0, y: 0.0 } }) visible=Some(true)
+visual completion generation=6 accepted=true result=Ok(())
+tray native rect=Some(Rect { size: PhysicalSize { width: 68, height: 66 }, position: PhysicalPosition { x: 1864.0, y: 0.0 } }) visible=Some(true)
+visual change generation=7 changes=7
+theme effective preference=Light AppView.dark=false Kit=Light route=Settings content=Size { 1280px × 720px } snapshot_loaded=true
+visual submit generation=7 commits=7 opacity=90 blur=10
+visual completion generation=7 accepted=true result=Ok(())
+tray native rect=Some(Rect { size: PhysicalSize { width: 68, height: 66 }, position: PhysicalPosition { x: 1864.0, y: 0.0 } }) visible=Some(true)
+visual change generation=8 changes=8
+theme effective preference=Light AppView.dark=false Kit=Light route=Settings content=Size { 1280px × 720px } snapshot_loaded=true
+visual submit generation=8 commits=8 opacity=90 blur=10
+visual completion generation=8 accepted=true result=Ok(())
+tray native rect=Some(Rect { size: PhysicalSize { width: 68, height: 66 }, position: PhysicalPosition { x: 1864.0, y: 0.0 } }) visible=Some(true)
+visual change generation=9 changes=9
+theme effective preference=Dark AppView.dark=true Kit=Dark route=Settings content=Size { 1280px × 720px } snapshot_loaded=true
+visual submit generation=9 commits=9 opacity=90 blur=10
+visual completion generation=9 accepted=true result=Ok(())
+tray native rect=Some(Rect { size: PhysicalSize { width: 68, height: 66 }, position: PhysicalPosition { x: 1864.0, y: 0.0 } }) visible=Some(true)
+desktop intent=Quit effect=Quit
+quit cleanup: listener stopped; socket removed; flock retained until exit
+TrayIcon released on main thread

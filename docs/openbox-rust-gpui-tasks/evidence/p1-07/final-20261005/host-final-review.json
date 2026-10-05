@@ -1,0 +1,125 @@
+{
+  "task": "OBG-P1-07",
+  "record_date": "2026-10-05",
+  "binary_sha256": "8bd7a366d24fa2eff8bf78e22604f461030cedae9d1184c11a28ca8eb4f5c28d",
+  "source": "本轮用户提供的 Host 独立自动验证与人工复核结果",
+  "recording_scope": "本轮仅文档收口；未重跑产品测试/构建/GUI，不伪造 Host 原始日志、时间、耗时或未提供的参数",
+  "visual": {
+    "status": "PASS_WITH_TECHNICAL_DIFFERENCES",
+    "host_viewed_final_react_gpui_representatives": [
+      "Shell",
+      "Panel",
+      "Select",
+      "Tooltip",
+      "number spinner",
+      "Dark Panel",
+      "Modal"
+    ],
+    "evidence_directory": "final-20261005/",
+    "new_fixable_visual_blocker": false,
+    "technical_differences": [
+      "MiSans/NotoEmoji system fallback",
+      "element-level Card/Modal backdrop blur",
+      "少量 UA 栅格差异"
+    ],
+    "pixel_identical_claim": false,
+    "single_full_image_similarity_gate": false,
+    "component_hierarchy": "Tokens/Theme → 基础组件 → NavigationItem/CompactSetting/Section → 页面"
+  },
+  "three_host_blockers": {
+    "shell_theme_capture": "PASS：显式 Light/Dark，同 1280×720，最终截图来自 8bd7a366",
+    "background_cpu": "PASS：CPU 派生已移出 Render；blocking task + key/generation + ready cache；相关测试存在",
+    "tray_baseline_current_ab": "PASS：shell wrapper 两者都不可见，真实 Mach-O bundle 两者真人可见；wrapper 68×0 不计为 P1-07 回归；Tray 架构未重写"
+  },
+  "desktop_first_run": {
+    "command": "cargo test -p veyra-desktop",
+    "status": "FAIL",
+    "passed": 44,
+    "failed": 1,
+    "failed_test": "platform::single_instance::tests::live_socket_without_veyra_lock_is_busy_and_remains_connectable",
+    "assertion": "locked_file(&d).unwrap().is_some()",
+    "preserved_as_historical_fail": true
+  },
+  "desktop_retests": [
+    {
+      "test": "platform::single_instance::tests::live_socket_without_veyra_lock_is_busy_and_remains_connectable",
+      "mode": "隔离定向连续复测",
+      "status": "PASS",
+      "runs_passed": 5,
+      "runs_total": 5
+    },
+    {
+      "command": "cargo test -p veyra-desktop -- --test-threads=1",
+      "status": "PASS",
+      "passed": 45,
+      "failed": 0
+    },
+    {
+      "command": "cargo test -p veyra-desktop",
+      "mode": "默认并行",
+      "status": "PASS",
+      "passed": 45,
+      "failed": 0
+    }
+  ],
+  "failure_conclusion": "未复现的瞬态测试环境/flock 时序失败，目前无稳定回归证据",
+  "root_cause_proven": false,
+  "remaining_host_checks": [
+    {
+      "command": "cargo test -p veyra-core --lib -- --test-threads=1",
+      "status": "PASS",
+      "passed": 294,
+      "failed": 0
+    },
+    {
+      "command": "cargo check -p veyra-desktop",
+      "status": "PASS"
+    },
+    {
+      "command": "cargo check -p veyra-core",
+      "status": "PASS"
+    },
+    {
+      "command": "cargo build -p veyra-desktop",
+      "status": "PASS"
+    },
+    {
+      "command": "cargo clippy -p veyra-desktop --all-targets -- -D warnings",
+      "status": "PASS"
+    },
+    {
+      "command": "cargo clippy -p veyra-core --lib -- -D warnings",
+      "status": "PASS"
+    },
+    {
+      "command": "cargo fmt --all -- --check",
+      "status": "PASS"
+    },
+    {
+      "command": "cargo check --workspace --locked",
+      "status": "PASS",
+      "resource_override": "TAURI_CONFIG resource override"
+    },
+    {
+      "check": "旧 Tauri lib clippy -D warnings",
+      "status": "PASS",
+      "resource_override": "相同 TAURI_CONFIG resource override"
+    },
+    {
+      "command": "git diff --check",
+      "status": "PASS"
+    }
+  ],
+  "resource_override_boundary": "仅 workspace/旧入口编译检查，不代表完整打包、设备或发布验收",
+  "codex_original_validation": "validation/results.json 及其原日志保持字节不变，不能用其 PASS 覆盖 Host 首跑 FAIL",
+  "combination": "PASS",
+  "human_three_rounds_evidence": "human-host-final-three-rounds.json",
+  "restart_quit_evidence": "human-host-final-restart-quit.json",
+  "scope_exclusions": [
+    "Proxies/Connections/Logs/Rules 业务页面仍未实现，不计入 P1-07 业务完成",
+    "P2",
+    "sing-box/System Proxy/TUN"
+  ],
+  "task_status": "DONE",
+  "owner_released": true
+}

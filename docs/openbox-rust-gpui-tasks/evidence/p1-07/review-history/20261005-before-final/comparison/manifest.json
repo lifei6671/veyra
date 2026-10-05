@@ -1,0 +1,1018 @@
+[
+  {
+    "state": "light-shell",
+    "react": "react/light-shell.png",
+    "gpui": "gpui/light-shell.jpg",
+    "sha256": {
+      "react": "125585f5b9003f4c17bf731764f7003e8c6a545286ce5513bb29b0345ba4ce4e",
+      "gpui": "03cccd9a012411c385297b27d647c373618c96a87631fbfdefc760b709d63adc"
+    },
+    "color_conversion": "embedded macOS Display ICC → sRGB via ImageCms before crop/resize; React sRGB",
+    "content_crop_physical": [
+      0,
+      64,
+      2560,
+      1504
+    ],
+    "logical_size": [
+      1280,
+      720
+    ],
+    "scope": "shell-owned regions only",
+    "status": "REGION_REVIEW; see visual-matrix.md for individual result and retained differences",
+    "exclusions": [
+      "business body",
+      "unavailable Runtime values",
+      "native title/menu/file panel",
+      "font equivalence not claimed"
+    ],
+    "result": "Host theme/geometry region rerun complete; font/product name/unavailable data differences documented"
+  },
+  {
+    "state": "light-collapsed",
+    "react": "react/light-collapsed.png",
+    "gpui": "gpui/light-collapsed.jpg",
+    "sha256": {
+      "react": "f9df7ef18ae1d7c9b4673bc95c8a274a05358cfbce2d593bb245fdb5f3fd9aa8",
+      "gpui": "65e51c9f2582fbaa47434c4e608a6d5ab7b4f89daf82619a72bbfe4e17f76f99"
+    },
+    "color_conversion": "embedded macOS Display ICC → sRGB via ImageCms before crop/resize; React sRGB",
+    "content_crop_physical": [
+      0,
+      64,
+      2560,
+      1504
+    ],
+    "logical_size": [
+      1280,
+      720
+    ],
+    "scope": "shell-owned regions only",
+    "status": "REGION_REVIEW; see visual-matrix.md for individual result and retained differences",
+    "exclusions": [
+      "business body",
+      "unavailable Runtime values",
+      "native title/menu/file panel",
+      "font equivalence not claimed"
+    ],
+    "result": "Host theme/geometry region rerun complete; font/product name/unavailable data differences documented"
+  },
+  {
+    "state": "light-panel",
+    "react": "react/light-panel.png",
+    "gpui": "gpui/light-panel.jpg",
+    "sha256": {
+      "react": "87cb6b89d1c717f196b3aaf0295397c739e1882d6a4b99ad72ef4ac1962fc46d",
+      "gpui": "127afa4f508fa67079dde37e241555d1a6fb4aad69cb7b7416ff0b5f1f64779c"
+    },
+    "color_conversion": "embedded macOS Display ICC → sRGB via ImageCms before crop/resize; React sRGB",
+    "content_crop_physical": [
+      0,
+      64,
+      2560,
+      1504
+    ],
+    "logical_size": [
+      1280,
+      720
+    ],
+    "scope": "current P1 component geometry; body background/font differences retained",
+    "status": "REGION_REVIEW; see visual-matrix.md for individual result and retained differences",
+    "exclusions": [
+      "business body",
+      "unavailable Runtime values",
+      "native title/menu/file panel",
+      "font equivalence not claimed"
+    ]
+  },
+  {
+    "state": "light-select",
+    "react": "react/light-select.png",
+    "gpui": "gpui/light-select.jpg",
+    "sha256": {
+      "react": "ae07c639137c92348f869022d14a78e025f98e172fc98f99d4028f36ccbf081f",
+      "gpui": "ef0ec3c0ae5ece56ebd630f2c23ab9ff7eea8537c7956f346e8bd6d8d6f871c3"
+    },
+    "color_conversion": "embedded macOS Display ICC → sRGB via ImageCms before crop/resize; React sRGB",
+    "content_crop_physical": [
+      0,
+      64,
+      2560,
+      1504
+    ],
+    "logical_size": [
+      1280,
+      720
+    ],
+    "scope": "current P1 component geometry; body background/font differences retained",
+    "status": "REGION_REVIEW; see visual-matrix.md for individual result and retained differences",
+    "exclusions": [
+      "business body",
+      "unavailable Runtime values",
+      "native title/menu/file panel",
+      "font equivalence not claimed"
+    ]
+  },
+  {
+    "state": "light-switch",
+    "react": "react/light-switch-toast.png",
+    "gpui": "gpui/light-switch.jpg",
+    "sha256": {
+      "react": "edc0069971bef37545de60df86a92890e929d392fc1cf3c649e685b4df761876",
+      "gpui": "a1e5a3cc5b388ad7bd3017bd09671222d7ea4965dcff21d37dde98cd19910169"
+    },
+    "color_conversion": "embedded macOS Display ICC → sRGB via ImageCms before crop/resize; React sRGB",
+    "content_crop_physical": [
+      0,
+      64,
+      2560,
+      1504
+    ],
+    "logical_size": [
+      1280,
+      720
+    ],
+    "scope": "current P1 component geometry; body background/font differences retained",
+    "status": "REGION_REVIEW; see visual-matrix.md for individual result and retained differences",
+    "exclusions": [
+      "business body",
+      "unavailable Runtime values",
+      "native title/menu/file panel",
+      "font equivalence not claimed"
+    ]
+  },
+  {
+    "state": "light-modal",
+    "react": "react/light-modal.png",
+    "gpui": "gpui/light-modal.jpg",
+    "sha256": {
+      "react": "6a35343b1d68e8026d4da00728d266ad68b278ef7bec5ceb2abff6997d98114a",
+      "gpui": "43cea6719eaf2667a41f7e2d4d7ba00d4d45f6d89110bff3bca0421bd24dd5d4"
+    },
+    "color_conversion": "embedded macOS Display ICC → sRGB via ImageCms before crop/resize; React sRGB",
+    "content_crop_physical": [
+      0,
+      64,
+      2560,
+      1504
+    ],
+    "logical_size": [
+      1280,
+      720
+    ],
+    "scope": "current P1 component geometry; body background/font differences retained",
+    "status": "REGION_REVIEW; see visual-matrix.md for individual result and retained differences",
+    "exclusions": [
+      "business body",
+      "unavailable Runtime values",
+      "native title/menu/file panel",
+      "font equivalence not claimed"
+    ]
+  },
+  {
+    "state": "light-icon-picker",
+    "react": "react/light-icon-picker.png",
+    "gpui": "gpui/light-icon-picker.jpg",
+    "sha256": {
+      "react": "954be84e53b61484c2d705e8109c4240fd1f77111519f0736aa87553d4f5c227",
+      "gpui": "b49dfd1ecf61e7df6ccfe8005e557748ccff2f275496701b7249b3a59d2e9da3"
+    },
+    "color_conversion": "embedded macOS Display ICC → sRGB via ImageCms before crop/resize; React sRGB",
+    "content_crop_physical": [
+      0,
+      64,
+      2560,
+      1504
+    ],
+    "logical_size": [
+      1280,
+      720
+    ],
+    "scope": "current P1 component geometry; body background/font differences retained",
+    "status": "REGION_REVIEW; see visual-matrix.md for individual result and retained differences",
+    "exclusions": [
+      "business body",
+      "unavailable Runtime values",
+      "native title/menu/file panel",
+      "font equivalence not claimed"
+    ]
+  },
+  {
+    "state": "light-slider",
+    "react": "react/light-slider.png",
+    "gpui": "gpui/light-slider.jpg",
+    "sha256": {
+      "react": "0935dbcb446c1bbbc472328576b80cc5d1e24b7aa905fb03c5eb826584bfe6ed",
+      "gpui": "e3be1fa099bf5db3b703a3264e6f0b35b169ecb82f3848889824f7e3054b8efe"
+    },
+    "color_conversion": "embedded macOS Display ICC → sRGB via ImageCms before crop/resize; React sRGB",
+    "content_crop_physical": [
+      0,
+      64,
+      2560,
+      1504
+    ],
+    "logical_size": [
+      1280,
+      720
+    ],
+    "scope": "current P1 component geometry; body background/font differences retained",
+    "status": "REGION_REVIEW; see visual-matrix.md for individual result and retained differences",
+    "exclusions": [
+      "business body",
+      "unavailable Runtime values",
+      "native title/menu/file panel",
+      "font equivalence not claimed"
+    ]
+  },
+  {
+    "state": "light-tooltip-hover",
+    "react": "react/light-tooltip-hover.png",
+    "gpui": "gpui/interactions/light-tooltip-hover.jpg",
+    "sha256": {
+      "react": "dcee7ffeb1e7c16455eddeca5d6ac072fec111a4a282bda2a7dc64305c18729e",
+      "gpui": "dfccecedf59bd49411c9cb945d633743eb32ab18505783b42e5ab43aa16dd096"
+    },
+    "color_conversion": "embedded macOS Display ICC → sRGB via ImageCms before crop/resize; React sRGB",
+    "content_crop_physical": [
+      0,
+      64,
+      2560,
+      1504
+    ],
+    "logical_size": [
+      1280,
+      720
+    ],
+    "scope": "component only; same None background, opacity90 blur10 radius16; timeout6500; no global PASS",
+    "status": "REGION_REVIEW; see visual-matrix.md for individual result and retained differences",
+    "exclusions": [
+      "business body",
+      "unavailable Runtime values",
+      "native title/menu/file panel",
+      "font equivalence not claimed"
+    ],
+    "post_anchor_fix_capture": "PENDING macOS unlock; current listed SHA is real pre-anchor-fix capture retained for comparison"
+  },
+  {
+    "state": "light-tooltip-focus",
+    "react": "react/light-tooltip-focus.png",
+    "gpui": "gpui/interactions/light-tooltip-keyboard.jpg",
+    "sha256": {
+      "react": "a9b6ff8622af6f93928d6bd64e7381f2e8b6d0300192368954150f32fd579643",
+      "gpui": "a5fd29f0fa9bd475d909f2c28497c6255b4d15291ce98d063d94ae6ee5d43934"
+    },
+    "color_conversion": "embedded macOS Display ICC → sRGB via ImageCms before crop/resize; React sRGB",
+    "content_crop_physical": [
+      0,
+      64,
+      2560,
+      1504
+    ],
+    "logical_size": [
+      1280,
+      720
+    ],
+    "scope": "component only; same None background, opacity90 blur10 radius16; timeout6500; no global PASS",
+    "status": "REGION_REVIEW; see visual-matrix.md for individual result and retained differences",
+    "exclusions": [
+      "business body",
+      "unavailable Runtime values",
+      "native title/menu/file panel",
+      "font equivalence not claimed"
+    ],
+    "post_anchor_fix_capture": "PENDING macOS unlock; current listed SHA is real pre-anchor-fix capture retained for comparison"
+  },
+  {
+    "state": "light-input-focus",
+    "react": "react/light-input-focus.png",
+    "gpui": "gpui/interactions/light-input-focus.jpg",
+    "sha256": {
+      "react": "95ff89b7bed133dae59f1aa6a4d91f629cf83972a998cced6f3504337540b66d",
+      "gpui": "a2ce16cef8a130fa27a606e4041d8b0e0c6f28a4074db19472aa8890d3b4e14d"
+    },
+    "color_conversion": "embedded macOS Display ICC → sRGB via ImageCms before crop/resize; React sRGB",
+    "content_crop_physical": [
+      0,
+      64,
+      2560,
+      1504
+    ],
+    "logical_size": [
+      1280,
+      720
+    ],
+    "scope": "component only; same None background, opacity90 blur10 radius16; timeout6500; no global PASS",
+    "status": "REGION_REVIEW; see visual-matrix.md for individual result and retained differences",
+    "exclusions": [
+      "business body",
+      "unavailable Runtime values",
+      "native title/menu/file panel",
+      "font equivalence not claimed"
+    ]
+  },
+  {
+    "state": "light-icon-button-hover",
+    "react": "react/light-icon-button-hover.png",
+    "gpui": "gpui/interactions/light-icon-button-hover.jpg",
+    "sha256": {
+      "react": "e9747becd0e209eee3ed9891b0598d3b72e055a2f3fece8647086eec69b81a82",
+      "gpui": "5000984d491b79b30c9d2010af7a125904bfff8194d3f46eef0c683d42c005e7"
+    },
+    "color_conversion": "embedded macOS Display ICC → sRGB via ImageCms before crop/resize; React sRGB",
+    "content_crop_physical": [
+      0,
+      64,
+      2560,
+      1504
+    ],
+    "logical_size": [
+      1280,
+      720
+    ],
+    "scope": "component only; same None background, opacity90 blur10 radius16; timeout6500; no global PASS",
+    "status": "REGION_REVIEW; see visual-matrix.md for individual result and retained differences",
+    "exclusions": [
+      "business body",
+      "unavailable Runtime values",
+      "native title/menu/file panel",
+      "font equivalence not claimed"
+    ]
+  },
+  {
+    "state": "light-modal-open",
+    "react": "react/light-modal-open.png",
+    "gpui": "gpui/interactions/light-modal-open.jpg",
+    "sha256": {
+      "react": "2e6bb3313972b4188b9fa87babcb5633060a38ce21fe5275ed60e346d94b848f",
+      "gpui": "4390388fb09cf9231b8118da2e0af97317e3105a9b28278999adf052c31f6d21"
+    },
+    "color_conversion": "embedded macOS Display ICC → sRGB via ImageCms before crop/resize; React sRGB",
+    "content_crop_physical": [
+      0,
+      64,
+      2560,
+      1504
+    ],
+    "logical_size": [
+      1280,
+      720
+    ],
+    "scope": "component only; same None background, opacity90 blur10 radius16; timeout6500; no global PASS",
+    "status": "REGION_REVIEW; see visual-matrix.md for individual result and retained differences",
+    "exclusions": [
+      "business body",
+      "unavailable Runtime values",
+      "native title/menu/file panel",
+      "font equivalence not claimed"
+    ]
+  },
+  {
+    "state": "light-modal-focus-return",
+    "react": "react/light-modal-focus-return.png",
+    "gpui": "gpui/interactions/light-modal-focus-return.jpg",
+    "sha256": {
+      "react": "0c7c26ed9ce7b8b47cf68efa5ce68b62f2253bba8d08199af9584094e6d9c619",
+      "gpui": "480b89d680ab56b6c66c827013aa9535ef480caa0674fce6c47c55e6ec3ac09e"
+    },
+    "color_conversion": "embedded macOS Display ICC → sRGB via ImageCms before crop/resize; React sRGB",
+    "content_crop_physical": [
+      0,
+      64,
+      2560,
+      1504
+    ],
+    "logical_size": [
+      1280,
+      720
+    ],
+    "scope": "component only; same None background, opacity90 blur10 radius16; timeout6500; no global PASS",
+    "status": "REGION_REVIEW; see visual-matrix.md for individual result and retained differences",
+    "exclusions": [
+      "business body",
+      "unavailable Runtime values",
+      "native title/menu/file panel",
+      "font equivalence not claimed"
+    ]
+  },
+  {
+    "state": "light-switch-focus-off",
+    "react": "react/light-switch-focus-off.png",
+    "gpui": "gpui/interactions/light-switch-focus-off.jpg",
+    "sha256": {
+      "react": "a5750789505c206b3386c12a922478aebfd2e4a804c53c61e7df598126c03e8d",
+      "gpui": "e468e253e2962a2aeedda8a79ed8c1d25fa6cd707298b18bf6daa1f72947267d"
+    },
+    "color_conversion": "embedded macOS Display ICC → sRGB via ImageCms before crop/resize; React sRGB",
+    "content_crop_physical": [
+      0,
+      64,
+      2560,
+      1504
+    ],
+    "logical_size": [
+      1280,
+      720
+    ],
+    "scope": "component only; same None background, opacity90 blur10 radius16; timeout6500; no global PASS",
+    "status": "REGION_REVIEW; see visual-matrix.md for individual result and retained differences",
+    "exclusions": [
+      "business body",
+      "unavailable Runtime values",
+      "native title/menu/file panel",
+      "font equivalence not claimed"
+    ]
+  },
+  {
+    "state": "light-switch-focus-on",
+    "react": "react/light-switch-focus-on.png",
+    "gpui": "gpui/interactions/light-switch-focus-on.jpg",
+    "sha256": {
+      "react": "e205663436145814687eaa7880c60037a3dc37a826ccdc07132319fd06501246",
+      "gpui": "d43a272155229842313300d5d2e9cae687570d95be840607259e7c61be2765d4"
+    },
+    "color_conversion": "embedded macOS Display ICC → sRGB via ImageCms before crop/resize; React sRGB",
+    "content_crop_physical": [
+      0,
+      64,
+      2560,
+      1504
+    ],
+    "logical_size": [
+      1280,
+      720
+    ],
+    "scope": "component only; same None background, opacity90 blur10 radius16; timeout6500; no global PASS",
+    "status": "REGION_REVIEW; see visual-matrix.md for individual result and retained differences",
+    "exclusions": [
+      "business body",
+      "unavailable Runtime values",
+      "native title/menu/file panel",
+      "font equivalence not claimed"
+    ]
+  },
+  {
+    "state": "light-toast-generic",
+    "react": "react/light-toast-generic.png",
+    "gpui": "gpui/interactions/light-toast-generic.jpg",
+    "sha256": {
+      "react": "e9a71dd0520d1070e1782bca12f1e49420595049202244a183ef89e7c0b9437b",
+      "gpui": "0eac0ec3f6ce43f885499842bc785bd97860c427a0ad1c87f27eaebf7ea3dda4"
+    },
+    "color_conversion": "embedded macOS Display ICC → sRGB via ImageCms before crop/resize; React sRGB",
+    "content_crop_physical": [
+      0,
+      64,
+      2560,
+      1504
+    ],
+    "logical_size": [
+      1280,
+      720
+    ],
+    "scope": "component only; same None background, opacity90 blur10 radius16; timeout6500; no global PASS",
+    "status": "REGION_REVIEW; see visual-matrix.md for individual result and retained differences",
+    "exclusions": [
+      "business body",
+      "unavailable Runtime values",
+      "native title/menu/file panel",
+      "font equivalence not claimed"
+    ]
+  },
+  {
+    "state": "light-ip-select",
+    "react": "react/light-ip-select.png",
+    "gpui": "gpui/interactions/light-select.jpg",
+    "sha256": {
+      "react": "44ae91c3081b6d339587575a7805900034a610972112ec83e5573207061083a4",
+      "gpui": "8a53404eafe88ba6de68e1b8d3cb830ec1689506c1bb9b15640fdb3800180f36"
+    },
+    "color_conversion": "embedded macOS Display ICC → sRGB via ImageCms before crop/resize; React sRGB",
+    "content_crop_physical": [
+      0,
+      64,
+      2560,
+      1504
+    ],
+    "logical_size": [
+      1280,
+      720
+    ],
+    "scope": "component only; same None background, opacity90 blur10 radius16; timeout6500; no global PASS",
+    "status": "REGION_REVIEW; see visual-matrix.md for individual result and retained differences",
+    "exclusions": [
+      "business body",
+      "unavailable Runtime values",
+      "native title/menu/file panel",
+      "font equivalence not claimed"
+    ]
+  },
+  {
+    "state": "dark-shell",
+    "react": "react/dark-shell.png",
+    "gpui": "gpui/dark-shell.jpg",
+    "sha256": {
+      "react": "e559a58be8c24c2892914ec5d12d4ea55987e37e5754d7639122a07bb66527fc",
+      "gpui": "4ffc9096bb08263e4f3e795c842a385b00e675af1af772186def93466273660c"
+    },
+    "color_conversion": "embedded macOS Display ICC → sRGB via ImageCms before crop/resize; React sRGB",
+    "content_crop_physical": [
+      0,
+      64,
+      2560,
+      1504
+    ],
+    "logical_size": [
+      1280,
+      720
+    ],
+    "scope": "shell-owned regions only",
+    "status": "REGION_REVIEW; see visual-matrix.md for individual result and retained differences",
+    "exclusions": [
+      "business body",
+      "unavailable Runtime values",
+      "native title/menu/file panel",
+      "font equivalence not claimed"
+    ],
+    "result": "Host theme/geometry region rerun complete; font/product name/unavailable data differences documented"
+  },
+  {
+    "state": "dark-collapsed",
+    "react": "react/dark-collapsed.png",
+    "gpui": "gpui/dark-collapsed.jpg",
+    "sha256": {
+      "react": "61eb3bc4a5b2e197aa8637ec4ae8fc5a77537632e5843dad6992b73e2563f31b",
+      "gpui": "3579f64bf885efcddb2df95db0073fad5d582f6a6b9f1149991253a51a801377"
+    },
+    "color_conversion": "embedded macOS Display ICC → sRGB via ImageCms before crop/resize; React sRGB",
+    "content_crop_physical": [
+      0,
+      64,
+      2560,
+      1504
+    ],
+    "logical_size": [
+      1280,
+      720
+    ],
+    "scope": "shell-owned regions only",
+    "status": "REGION_REVIEW; see visual-matrix.md for individual result and retained differences",
+    "exclusions": [
+      "business body",
+      "unavailable Runtime values",
+      "native title/menu/file panel",
+      "font equivalence not claimed"
+    ],
+    "result": "Host theme/geometry region rerun complete; font/product name/unavailable data differences documented"
+  },
+  {
+    "state": "dark-panel",
+    "react": "react/dark-panel.png",
+    "gpui": "gpui/dark-panel.jpg",
+    "sha256": {
+      "react": "5689c486fd63e7c75de20307c7aaaff5c888911ab2208386f9428507f8933dfd",
+      "gpui": "dfd7dff9e254ca656d361272b074ed3d1bdcd987ff0e849ff4d599b52804973d"
+    },
+    "color_conversion": "embedded macOS Display ICC → sRGB via ImageCms before crop/resize; React sRGB",
+    "content_crop_physical": [
+      0,
+      64,
+      2560,
+      1504
+    ],
+    "logical_size": [
+      1280,
+      720
+    ],
+    "scope": "current P1 component geometry; body background/font differences retained",
+    "status": "REGION_REVIEW; see visual-matrix.md for individual result and retained differences",
+    "exclusions": [
+      "business body",
+      "unavailable Runtime values",
+      "native title/menu/file panel",
+      "font equivalence not claimed"
+    ]
+  },
+  {
+    "state": "dark-select",
+    "react": "react/dark-select.png",
+    "gpui": "gpui/dark-select.jpg",
+    "sha256": {
+      "react": "868c28bb787f981ed1a122fd3f516f7826513f11788e91f9e7d96156b6559405",
+      "gpui": "439c526a33b3b76c044a2bffd1a12b1d4e30fbcf239b4a34e8cedd06d6f2ea39"
+    },
+    "color_conversion": "embedded macOS Display ICC → sRGB via ImageCms before crop/resize; React sRGB",
+    "content_crop_physical": [
+      0,
+      64,
+      2560,
+      1504
+    ],
+    "logical_size": [
+      1280,
+      720
+    ],
+    "scope": "current P1 component geometry; body background/font differences retained",
+    "status": "REGION_REVIEW; see visual-matrix.md for individual result and retained differences",
+    "exclusions": [
+      "business body",
+      "unavailable Runtime values",
+      "native title/menu/file panel",
+      "font equivalence not claimed"
+    ]
+  },
+  {
+    "state": "dark-switch",
+    "react": "react/dark-switch-toast.png",
+    "gpui": "gpui/dark-switch.jpg",
+    "sha256": {
+      "react": "7aa740b836448b59f4d3e09a72ae1960b7e8ec6c00828956f568b312ad21381d",
+      "gpui": "9a791cf5bf829f5ef51888f07ee599a26d4edc3ebd3582862720ab2f37552fd7"
+    },
+    "color_conversion": "embedded macOS Display ICC → sRGB via ImageCms before crop/resize; React sRGB",
+    "content_crop_physical": [
+      0,
+      64,
+      2560,
+      1504
+    ],
+    "logical_size": [
+      1280,
+      720
+    ],
+    "scope": "current P1 component geometry; body background/font differences retained",
+    "status": "REGION_REVIEW; see visual-matrix.md for individual result and retained differences",
+    "exclusions": [
+      "business body",
+      "unavailable Runtime values",
+      "native title/menu/file panel",
+      "font equivalence not claimed"
+    ]
+  },
+  {
+    "state": "dark-modal",
+    "react": "react/dark-modal.png",
+    "gpui": "gpui/dark-modal.jpg",
+    "sha256": {
+      "react": "f4beb6417a402e030e7116d1861173c79c8ac53913f7a73a5b5d48b0818a6887",
+      "gpui": "61bfc44354be6ad8f1d4f33cafe2178d9bff0ddb92fd8f76702264fa8c9d8517"
+    },
+    "color_conversion": "embedded macOS Display ICC → sRGB via ImageCms before crop/resize; React sRGB",
+    "content_crop_physical": [
+      0,
+      64,
+      2560,
+      1504
+    ],
+    "logical_size": [
+      1280,
+      720
+    ],
+    "scope": "current P1 component geometry; body background/font differences retained",
+    "status": "REGION_REVIEW; see visual-matrix.md for individual result and retained differences",
+    "exclusions": [
+      "business body",
+      "unavailable Runtime values",
+      "native title/menu/file panel",
+      "font equivalence not claimed"
+    ]
+  },
+  {
+    "state": "dark-icon-picker",
+    "react": "react/dark-icon-picker.png",
+    "gpui": "gpui/dark-icon-picker.jpg",
+    "sha256": {
+      "react": "38c195bc75299e5ed184cd65c66da1acb9bbb9276f2b9a3f0840ac5f6076facf",
+      "gpui": "ff26f0d77e19389c96183630594193dc8c2c6e7988bd84f16ce195197ccb6773"
+    },
+    "color_conversion": "embedded macOS Display ICC → sRGB via ImageCms before crop/resize; React sRGB",
+    "content_crop_physical": [
+      0,
+      64,
+      2560,
+      1504
+    ],
+    "logical_size": [
+      1280,
+      720
+    ],
+    "scope": "current P1 component geometry; body background/font differences retained",
+    "status": "REGION_REVIEW; see visual-matrix.md for individual result and retained differences",
+    "exclusions": [
+      "business body",
+      "unavailable Runtime values",
+      "native title/menu/file panel",
+      "font equivalence not claimed"
+    ]
+  },
+  {
+    "state": "dark-slider",
+    "react": "react/dark-slider.png",
+    "gpui": "gpui/dark-slider.jpg",
+    "sha256": {
+      "react": "55194332c8f98375af68de0f7a67f57a9b04e0be4aeb00e974cd88ac411578b7",
+      "gpui": "e1c797761289a47f452ce854a8843e82e0cc47a7929ed98e77ef81285b3c0dc5"
+    },
+    "color_conversion": "embedded macOS Display ICC → sRGB via ImageCms before crop/resize; React sRGB",
+    "content_crop_physical": [
+      0,
+      64,
+      2560,
+      1504
+    ],
+    "logical_size": [
+      1280,
+      720
+    ],
+    "scope": "current P1 component geometry; body background/font differences retained",
+    "status": "REGION_REVIEW; see visual-matrix.md for individual result and retained differences",
+    "exclusions": [
+      "business body",
+      "unavailable Runtime values",
+      "native title/menu/file panel",
+      "font equivalence not claimed"
+    ]
+  },
+  {
+    "state": "dark-tooltip-hover",
+    "react": "react/dark-tooltip-hover.png",
+    "gpui": "gpui/interactions/dark-tooltip-hover.jpg",
+    "sha256": {
+      "react": "24733691cfc1bc5bcaa90f6c00a9b94c5b9c79fd140b1b9ad00a8e775b575105",
+      "gpui": "65b14ff6a6eb931c1e86a5b270e3a298084281ae2546b4218aa9f8d1ff3b322c"
+    },
+    "color_conversion": "embedded macOS Display ICC → sRGB via ImageCms before crop/resize; React sRGB",
+    "content_crop_physical": [
+      0,
+      64,
+      2560,
+      1504
+    ],
+    "logical_size": [
+      1280,
+      720
+    ],
+    "scope": "component only; same None background, opacity90 blur10 radius16; timeout6500; no global PASS",
+    "status": "REGION_REVIEW; see visual-matrix.md for individual result and retained differences",
+    "exclusions": [
+      "business body",
+      "unavailable Runtime values",
+      "native title/menu/file panel",
+      "font equivalence not claimed"
+    ],
+    "post_anchor_fix_capture": "PENDING macOS unlock; current listed SHA is real pre-anchor-fix capture retained for comparison"
+  },
+  {
+    "state": "dark-tooltip-focus",
+    "react": "react/dark-tooltip-focus.png",
+    "gpui": "gpui/interactions/dark-tooltip-keyboard.jpg",
+    "sha256": {
+      "react": "b678f3bfbfde660e0cb3446c6e1fd17366cd5b29af20cc3adba7d697c49d3d8e",
+      "gpui": "3bd2557b629f38ef602572034c18436c4b0f95665df49ad84328142bcc7d2e99"
+    },
+    "color_conversion": "embedded macOS Display ICC → sRGB via ImageCms before crop/resize; React sRGB",
+    "content_crop_physical": [
+      0,
+      64,
+      2560,
+      1504
+    ],
+    "logical_size": [
+      1280,
+      720
+    ],
+    "scope": "component only; same None background, opacity90 blur10 radius16; timeout6500; no global PASS",
+    "status": "REGION_REVIEW; see visual-matrix.md for individual result and retained differences",
+    "exclusions": [
+      "business body",
+      "unavailable Runtime values",
+      "native title/menu/file panel",
+      "font equivalence not claimed"
+    ],
+    "post_anchor_fix_capture": "PENDING macOS unlock; current listed SHA is real pre-anchor-fix capture retained for comparison"
+  },
+  {
+    "state": "dark-input-focus",
+    "react": "react/dark-input-focus.png",
+    "gpui": "gpui/interactions/dark-input-focus.jpg",
+    "sha256": {
+      "react": "057368e1e065d285e9e9913ab976324d7ffc696b8e55698f32e5892b6023cd15",
+      "gpui": "6745229249e91fb632b6bcfadef7eadee08d29c2fdb3e26e491bba63b15219a9"
+    },
+    "color_conversion": "embedded macOS Display ICC → sRGB via ImageCms before crop/resize; React sRGB",
+    "content_crop_physical": [
+      0,
+      64,
+      2560,
+      1504
+    ],
+    "logical_size": [
+      1280,
+      720
+    ],
+    "scope": "component only; same None background, opacity90 blur10 radius16; timeout6500; no global PASS",
+    "status": "REGION_REVIEW; see visual-matrix.md for individual result and retained differences",
+    "exclusions": [
+      "business body",
+      "unavailable Runtime values",
+      "native title/menu/file panel",
+      "font equivalence not claimed"
+    ]
+  },
+  {
+    "state": "dark-icon-button-hover",
+    "react": "react/dark-icon-button-hover.png",
+    "gpui": "gpui/interactions/dark-icon-button-hover.jpg",
+    "sha256": {
+      "react": "8a73da43b64791bcc7f520bc9c4655bf68327d452dc14079878d784963089014",
+      "gpui": "b88513596d83812a39a495630f1d25a1897b4dfb864a99df0e130931137b6fd7"
+    },
+    "color_conversion": "embedded macOS Display ICC → sRGB via ImageCms before crop/resize; React sRGB",
+    "content_crop_physical": [
+      0,
+      64,
+      2560,
+      1504
+    ],
+    "logical_size": [
+      1280,
+      720
+    ],
+    "scope": "component only; same None background, opacity90 blur10 radius16; timeout6500; no global PASS",
+    "status": "REGION_REVIEW; see visual-matrix.md for individual result and retained differences",
+    "exclusions": [
+      "business body",
+      "unavailable Runtime values",
+      "native title/menu/file panel",
+      "font equivalence not claimed"
+    ]
+  },
+  {
+    "state": "dark-modal-open",
+    "react": "react/dark-modal-open.png",
+    "gpui": "gpui/interactions/dark-modal-open.jpg",
+    "sha256": {
+      "react": "427196f00f8e6b2c326f94aab2182d18abefe66453147a2ae88292bfc42c7890",
+      "gpui": "b44db9945967ded430a4b3e154f59808ec19838887d5048a976a6ec67946db78"
+    },
+    "color_conversion": "embedded macOS Display ICC → sRGB via ImageCms before crop/resize; React sRGB",
+    "content_crop_physical": [
+      0,
+      64,
+      2560,
+      1504
+    ],
+    "logical_size": [
+      1280,
+      720
+    ],
+    "scope": "component only; same None background, opacity90 blur10 radius16; timeout6500; no global PASS",
+    "status": "REGION_REVIEW; see visual-matrix.md for individual result and retained differences",
+    "exclusions": [
+      "business body",
+      "unavailable Runtime values",
+      "native title/menu/file panel",
+      "font equivalence not claimed"
+    ]
+  },
+  {
+    "state": "dark-modal-focus-return",
+    "react": "react/dark-modal-focus-return.png",
+    "gpui": "gpui/interactions/dark-modal-focus-return.jpg",
+    "sha256": {
+      "react": "2d3db084dc8c1f7b8df1b1007963369abbf6d793fded25cb1eb8353749c5d2c6",
+      "gpui": "6ee439e8e96cbeb8104b148b461071b69c88608813ce5507b701c31f90046d03"
+    },
+    "color_conversion": "embedded macOS Display ICC → sRGB via ImageCms before crop/resize; React sRGB",
+    "content_crop_physical": [
+      0,
+      64,
+      2560,
+      1504
+    ],
+    "logical_size": [
+      1280,
+      720
+    ],
+    "scope": "component only; same None background, opacity90 blur10 radius16; timeout6500; no global PASS",
+    "status": "REGION_REVIEW; see visual-matrix.md for individual result and retained differences",
+    "exclusions": [
+      "business body",
+      "unavailable Runtime values",
+      "native title/menu/file panel",
+      "font equivalence not claimed"
+    ]
+  },
+  {
+    "state": "dark-switch-focus-off",
+    "react": "react/dark-switch-focus-off.png",
+    "gpui": "gpui/interactions/dark-switch-focus-off.jpg",
+    "sha256": {
+      "react": "0e3ee0cc6ac3ecaac1415d2898ef50ee72b79921489e11cd75881b6af6bace08",
+      "gpui": "6c2ee8b993e7c83acb4880f7e0ed34606118862ec599314a0c3da38058b36e25"
+    },
+    "color_conversion": "embedded macOS Display ICC → sRGB via ImageCms before crop/resize; React sRGB",
+    "content_crop_physical": [
+      0,
+      64,
+      2560,
+      1504
+    ],
+    "logical_size": [
+      1280,
+      720
+    ],
+    "scope": "component only; same None background, opacity90 blur10 radius16; timeout6500; no global PASS",
+    "status": "REGION_REVIEW; see visual-matrix.md for individual result and retained differences",
+    "exclusions": [
+      "business body",
+      "unavailable Runtime values",
+      "native title/menu/file panel",
+      "font equivalence not claimed"
+    ]
+  },
+  {
+    "state": "dark-switch-focus-on",
+    "react": "react/dark-switch-focus-on.png",
+    "gpui": "gpui/interactions/dark-switch-focus-on.jpg",
+    "sha256": {
+      "react": "f93e458a2d3f76898c9857fb7d446937222bfbb0ca4266d53162e69c72d2c5c9",
+      "gpui": "84488063c4b4d0d4933066255ca56d6b17b9f33ea6ddb1ab14ef84185e763388"
+    },
+    "color_conversion": "embedded macOS Display ICC → sRGB via ImageCms before crop/resize; React sRGB",
+    "content_crop_physical": [
+      0,
+      64,
+      2560,
+      1504
+    ],
+    "logical_size": [
+      1280,
+      720
+    ],
+    "scope": "component only; same None background, opacity90 blur10 radius16; timeout6500; no global PASS",
+    "status": "REGION_REVIEW; see visual-matrix.md for individual result and retained differences",
+    "exclusions": [
+      "business body",
+      "unavailable Runtime values",
+      "native title/menu/file panel",
+      "font equivalence not claimed"
+    ]
+  },
+  {
+    "state": "dark-toast-generic",
+    "react": "react/dark-toast-generic.png",
+    "gpui": "gpui/interactions/dark-toast-generic.jpg",
+    "sha256": {
+      "react": "f93e458a2d3f76898c9857fb7d446937222bfbb0ca4266d53162e69c72d2c5c9",
+      "gpui": "8d9305231ef2be580e0c7437103b9293d96cc8f703d4b3e7cf625f58841e3a2d"
+    },
+    "color_conversion": "embedded macOS Display ICC → sRGB via ImageCms before crop/resize; React sRGB",
+    "content_crop_physical": [
+      0,
+      64,
+      2560,
+      1504
+    ],
+    "logical_size": [
+      1280,
+      720
+    ],
+    "scope": "component only; same None background, opacity90 blur10 radius16; timeout6500; no global PASS",
+    "status": "REGION_REVIEW; see visual-matrix.md for individual result and retained differences",
+    "exclusions": [
+      "business body",
+      "unavailable Runtime values",
+      "native title/menu/file panel",
+      "font equivalence not claimed"
+    ]
+  },
+  {
+    "state": "dark-ip-select",
+    "react": "react/dark-ip-select.png",
+    "gpui": "gpui/interactions/dark-select.jpg",
+    "sha256": {
+      "react": "a705658857d0de85f6c4081f4e280a059eb4340582c05c209f21949de9294767",
+      "gpui": "fc9462b76bdbebea5b8393378eaaac446b472fa09d215bc922427d644f4e7d58"
+    },
+    "color_conversion": "embedded macOS Display ICC → sRGB via ImageCms before crop/resize; React sRGB",
+    "content_crop_physical": [
+      0,
+      64,
+      2560,
+      1504
+    ],
+    "logical_size": [
+      1280,
+      720
+    ],
+    "scope": "component only; same None background, opacity90 blur10 radius16; timeout6500; no global PASS",
+    "status": "REGION_REVIEW; see visual-matrix.md for individual result and retained differences",
+    "exclusions": [
+      "business body",
+      "unavailable Runtime values",
+      "native title/menu/file panel",
+      "font equivalence not claimed"
+    ]
+  }
+]

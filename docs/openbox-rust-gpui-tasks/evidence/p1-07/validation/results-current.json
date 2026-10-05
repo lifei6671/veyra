@@ -1,0 +1,65 @@
+[
+  {
+    "name": "desktop-test-current",
+    "command": [
+      "cargo",
+      "test",
+      "-p",
+      "veyra-desktop"
+    ],
+    "exit": 0
+  },
+  {
+    "name": "desktop-check-current",
+    "command": [
+      "cargo",
+      "check",
+      "-p",
+      "veyra-desktop"
+    ],
+    "exit": 0
+  },
+  {
+    "name": "desktop-clippy-current",
+    "command": [
+      "cargo",
+      "clippy",
+      "-p",
+      "veyra-desktop",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "exit": 0
+  },
+  {
+    "name": "fmt-current",
+    "command": [
+      "cargo",
+      "fmt",
+      "--all",
+      "--",
+      "--check"
+    ],
+    "exit": 0
+  },
+  {
+    "name": "workspace-check-current",
+    "command": [
+      "cargo",
+      "check",
+      "--workspace",
+      "--locked"
+    ],
+    "exit": 0
+  },
+  {
+    "name": "diff-check-current",
+    "command": [
+      "git",
+      "diff",
+      "--check"
+    ],
+    "exit": 0
+  }
+]

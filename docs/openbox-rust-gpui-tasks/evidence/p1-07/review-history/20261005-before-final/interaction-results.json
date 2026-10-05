@@ -1,0 +1,82 @@
+{
+  "status": "REAL_TRAY_COMBINATION_PASS_VISUAL_ACCEPTANCE_OPEN",
+  "history": {
+    "status": "INCOMPLETE",
+    "first_run_root": "/tmp/veyra-p1-07-combination (absent before start)",
+    "saved_initial": {
+      "theme_mode": "light",
+      "ipv6_test": true
+    },
+    "close": "PASS native hidden=true",
+    "tray_restore": "FAIL Host reports no tray visible",
+    "native_tray_diagnostic": {
+      "visible": true,
+      "physical_size": [
+        68,
+        0
+      ],
+      "position": [
+        0,
+        1964
+      ],
+      "cause": "UNRESOLVED; visible flag does not prove on-screen visibility"
+    },
+    "secondary_activation": "PASS exit0 writer_created_count=0; original Settings/IPv6 retained",
+    "explicit_tray_quit": "NOT_RUN: icon unavailable",
+    "restart": "PASS values recovered after diagnostic SIGTERM/relaunch; NOT equivalent to explicit quit sequence",
+    "background_import": "PASS local managed asset; >4096 source rejected without lowering limit",
+    "select": "mouse, keyboard Up/Down/Return/Escape and outside dismiss exercised",
+    "modal": "opened and cancelled with Escape; no destructive reset claimed",
+    "notice": "real save notice captured; hover pause/stack/focus matrix incomplete",
+    "limitations": [
+      "Production focus/hover/loading/error state screenshot matrix incomplete",
+      "No complete P1-07 combined PASS",
+      "SIGTERM during iteration is never counted as explicit Quit"
+    ]
+  },
+  "review": {
+    "root": "/tmp/veyra-p107-review/native-ab-root (absent before first run)",
+    "saved_visual": {
+      "theme_mode": "light",
+      "opacity": 90,
+      "blur": 10,
+      "sidebar_collapsed": false
+    },
+    "saved_behavior": {
+      "timeout_ms": 6500,
+      "ipv6_test": true
+    },
+    "config_revision": 12,
+    "close": "PASS native hidden=true; first close submitted through actual macOS window close button",
+    "tray_restore_rounds": "PASS human 已完成; log includes initial Close plus 3 human Close→Show pairs, all WindowId(1v1)",
+    "explicit_tray_quit": "PASS human 已退出; typed Quit cleanup + process gone + socket absent + flock free",
+    "same_window_id": "WindowId(1v1)",
+    "primary_writer_count": 1,
+    "secondary_activate_used_for_tray_restore": false,
+    "sigterm_used_for_quit_acceptance": false,
+    "restart": "PASS human Tray Quit→reopen; snapshot Light; Settings timeout6500 IPv6on; same saved root",
+    "restart_final_quit": "PASS human 退出了; process gone socket absent flock free",
+    "combination_binary_sha256": "bf6e6b3ab9c34e7c65230f2c7b76886cc575ebaaaedb426fbff391377b4a332e",
+    "later_focus_fix": "Shared Button/Navigation presentation only; independently rerun relevant validation and final screenshots. Tray/background/CAS unchanged."
+  },
+  "components_review": {
+    "tooltip": "mouse popup; keyboard Select Escape→Shift-Tab while pointer remains over Select; Escape hides; Tab blur. Shared help and restore tooltip; light/dark captures.",
+    "button_icon_button": "Button Save focus verified blue2 outline after Modal Escape→AX settle→Tab; hover captured. Icon restore focus/hover/modal focus-return both themes; password and runtime buttons disabled. Kit focus handle scoped in shared outer wrapper; no clipped focus child.",
+    "input": "real numeric field focus; Kit shadow disabled; Chromium default blue outline captured.",
+    "select": "mouse open/select Dark; keyboard Down/Up/Return chooses Light/ip.sb, Escape preserves selected value; outside Input click dismisses.",
+    "switch": "off/on via Tab from red threshold + Space, both themes; 40x24 thumb18 travel16 and hollow 2px outline with 2px offset.",
+    "slider": "real managed background Blur drag 33→9; immediately open Select; no visible stall. Fixed missing Kit Track/Indicator/Thumb parts; default CPU cache runs only in blocking job.",
+    "modal": "restore opens; Escape closes; Return reopens from returned trigger focus, both themes.",
+    "notice": "real visual/behavior commits; generic appearance for all Notice enum values; explicit close removes; >4 seconds auto dismissal verified.",
+    "invalid_draft": "Executed local Core validation: timeout0 Save→Failed(LatencyTimeout) with draft preserved; integer abc→local input error and Save disabled. Restore6500→Save accepted. No Runtime/network failures invented."
+  },
+  "scope_exclusions": [
+    "Proxies/Connections/Logs/Rules business bodies",
+    "Runtime actions",
+    "System Proxy/TUN",
+    "P2",
+    "no claim of 95% global image PASS"
+  ],
+  "final_presentation_binary_sha256": "bdeaadebb046623cec93b2152b05bc2323e13d20b187aca1a3ea08ec581999d8",
+  "post_tooltip_anchor_capture": "PENDING: macOS locked at final capture attempt; no fabricated post-fix screenshot"
+}

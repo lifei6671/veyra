@@ -1,0 +1,1094 @@
+[
+  {
+    "state": "dark-collapsed",
+    "gpui": "gpui/dark-collapsed.jpg",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "crop_physical": [
+      0,
+      64,
+      2560,
+      1504
+    ],
+    "icc": "embedded profile → sRGB before crop/resize",
+    "sha256": {
+      "gpui": "57bd50688cf47aabbed92ec94d63b07d2343e482f0c6b3eba8b3ab17d3f48a23",
+      "react": "4e54b85872dda64d53991d5ff14788212b8f02079e7db702600b11567987bcda"
+    },
+    "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score",
+    "react": "react/dark-collapsed.png"
+  },
+  {
+    "state": "dark-disabled",
+    "gpui": "gpui/dark-disabled.jpg",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "crop_physical": [
+      0,
+      64,
+      2560,
+      1504
+    ],
+    "icc": "embedded profile → sRGB before crop/resize",
+    "sha256": {
+      "gpui": "50d8270a091e43de9ad6968e0ceab5f60dac6743652fc18dcb3755b62d8cde3d"
+    },
+    "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score"
+  },
+  {
+    "state": "dark-input-focus",
+    "gpui": "gpui/dark-input-focus.jpg",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "crop_physical": [
+      0,
+      64,
+      2560,
+      1504
+    ],
+    "icc": "embedded profile → sRGB before crop/resize",
+    "sha256": {
+      "gpui": "46e73246b6b2a8ee424060b29960441b1b218c7d0849b46142314ed57b1f4c6f",
+      "react": "9f8a9386e4192acc5985a78fe7685903fcad86a25bda90cd3c5709090c00b5c8"
+    },
+    "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score",
+    "react": "react/dark-input-focus.png"
+  },
+  {
+    "state": "dark-modal-focus-return",
+    "gpui": "gpui/dark-modal-focus-return.jpg",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "crop_physical": [
+      0,
+      64,
+      2560,
+      1504
+    ],
+    "icc": "embedded profile → sRGB before crop/resize",
+    "sha256": {
+      "gpui": "b2496f01ed01368beac93b7674efe983a4b3d878662d72c9d6fae17db508a89d",
+      "react": "da49791a2c1d794f033f10de384454b4e3b92a9c64cf2cedf654762cfc437fba"
+    },
+    "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score",
+    "react": "react/dark-modal-focus-return.png"
+  },
+  {
+    "state": "dark-modal",
+    "gpui": "gpui/dark-modal.jpg",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "crop_physical": [
+      0,
+      64,
+      2560,
+      1504
+    ],
+    "icc": "embedded profile → sRGB before crop/resize",
+    "sha256": {
+      "gpui": "2eb73ed1fb516ec21cb4088fb761a8f0933e6e96e6966cc237a721faf9117b32",
+      "react": "11afd7964c2d21c2e2228005ce6e9aca677cdbbba432e38463b0e755973b7318"
+    },
+    "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score",
+    "react": "react/dark-modal.png"
+  },
+  {
+    "state": "dark-panel",
+    "gpui": "gpui/dark-panel.jpg",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "crop_physical": [
+      0,
+      64,
+      2560,
+      1504
+    ],
+    "icc": "embedded profile → sRGB before crop/resize",
+    "sha256": {
+      "gpui": "3168cf31f2dff6f379727c3006a75d2571adfbf6d4f7e1ca06698e4973b43092",
+      "react": "5f4aec0936cc27b8f0711bcc1314f50c411dabe54ce28ffccaee8006f7a90b62"
+    },
+    "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score",
+    "react": "react/dark-panel.png"
+  },
+  {
+    "state": "dark-select",
+    "gpui": "gpui/dark-select.jpg",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "crop_physical": [
+      0,
+      64,
+      2560,
+      1504
+    ],
+    "icc": "embedded profile → sRGB before crop/resize",
+    "sha256": {
+      "gpui": "ff739d52c4de9233b7e9d13bc1d7b98fbb34c7107d41c09c22ceb8e89b69acfc",
+      "react": "f149da3ee00985bd6cc32158dbe26d3e93044c9e66240a9f9f0e9bf7e6a4e672"
+    },
+    "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score",
+    "react": "react/dark-select.png"
+  },
+  {
+    "state": "dark-shell",
+    "gpui": "gpui/dark-shell.jpg",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "crop_physical": [
+      0,
+      64,
+      2560,
+      1504
+    ],
+    "icc": "embedded profile → sRGB before crop/resize",
+    "sha256": {
+      "gpui": "da161fdb1e0dd31706927cd0ad14e1ec3a4b12c9897bd2eaf964737baf9d5e60",
+      "react": "b81188d8dc53eb78b137f9c48ad956d68e7a55087d995132f5543fce3bc0f251"
+    },
+    "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score",
+    "react": "react/dark-shell.png"
+  },
+  {
+    "state": "dark-sidebar-tooltip-collapsed",
+    "gpui": "gpui/dark-sidebar-tooltip-collapsed.jpg",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "crop_physical": [
+      0,
+      64,
+      2560,
+      1504
+    ],
+    "icc": "embedded profile → sRGB before crop/resize",
+    "sha256": {
+      "gpui": "8aeb02cd63e9c6604dec8733aecaf3f189efa40d74fa8101d967fc80d2844390",
+      "react": "0007c24e35c91e425ea9ec59dac30cd4785fbe7c05650ade943240695af36795"
+    },
+    "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score",
+    "react": "react/dark-sidebar-tooltip-collapsed.png"
+  },
+  {
+    "state": "dark-sidebar-tooltip-hover",
+    "gpui": "gpui/dark-sidebar-tooltip-hover.jpg",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "crop_physical": [
+      0,
+      64,
+      2560,
+      1504
+    ],
+    "icc": "embedded profile → sRGB before crop/resize",
+    "sha256": {
+      "gpui": "4585935faecab4a1aa3e930166ab1c00409c8f17722ca1ae4fccf7d889bed223",
+      "react": "73c7de23c36a4a253a582a5314dd266f4288cccbc495bdaff26c1990aac47fd6"
+    },
+    "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score",
+    "react": "react/dark-sidebar-tooltip-hover.png"
+  },
+  {
+    "state": "dark-slider-drag",
+    "gpui": "gpui/dark-slider-drag.jpg",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "crop_physical": [
+      0,
+      64,
+      2560,
+      1504
+    ],
+    "icc": "embedded profile → sRGB before crop/resize",
+    "sha256": {
+      "gpui": "061fb5d0f26a8b0e779fc46455c532ab00a5d7eec65f83cc15e9ca1b5a319d1e"
+    },
+    "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score"
+  },
+  {
+    "state": "dark-slider",
+    "gpui": "gpui/dark-slider.jpg",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "crop_physical": [
+      0,
+      64,
+      2560,
+      1504
+    ],
+    "icc": "embedded profile → sRGB before crop/resize",
+    "sha256": {
+      "gpui": "27da7888d0c8d9b09c3f5939ae3a06a7a119132fff3b3d0c9148c8c62c834178",
+      "react": "f05d5f72d655a40efd819c10c412857724d7be136a2214dd84ce301830f04782"
+    },
+    "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score",
+    "react": "react/dark-slider.png"
+  },
+  {
+    "state": "dark-switch-off",
+    "gpui": "gpui/dark-switch-off.jpg",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "crop_physical": [
+      0,
+      64,
+      2560,
+      1504
+    ],
+    "icc": "embedded profile → sRGB before crop/resize",
+    "sha256": {
+      "gpui": "a7c94fc355d41afd19e2cceb33f9cb8af151f9d73fdb96f6ba392c879339a555",
+      "react": "29d4b17c78bca1adeedb83f079b9fabe915f3307dd5f8903df0e4d6264bd0136"
+    },
+    "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score",
+    "react": "react/dark-switch-off.png"
+  },
+  {
+    "state": "dark-switch-on",
+    "gpui": "gpui/dark-switch-on.jpg",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "crop_physical": [
+      0,
+      64,
+      2560,
+      1504
+    ],
+    "icc": "embedded profile → sRGB before crop/resize",
+    "sha256": {
+      "gpui": "1aa8c82f6f946f0ecdb721eff25ac2d110cbc08eca357d3e302ebb01e1c90ae8",
+      "react": "f6d74a15beafb5e85e19119338f0fd96ebf29d4f29ab50d3c40ff000566c6c7e"
+    },
+    "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score",
+    "react": "react/dark-switch-on.png"
+  },
+  {
+    "state": "dark-toast-auto-dismiss",
+    "gpui": "gpui/dark-toast-auto-dismiss.jpg",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "crop_physical": [
+      0,
+      64,
+      2560,
+      1504
+    ],
+    "icc": "embedded profile → sRGB before crop/resize",
+    "sha256": {
+      "gpui": "0b2386fab7bc6ed52e7b57841b77076f10c53093290fd99de638435efe5cf791",
+      "react": "eff7c33484790ead8f4848966dc35165d8bb3fac844c4234ea1a581345580b35"
+    },
+    "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score",
+    "react": "react/dark-toast-auto-dismiss.png"
+  },
+  {
+    "state": "dark-toast",
+    "gpui": "gpui/dark-toast.jpg",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "crop_physical": [
+      0,
+      64,
+      2560,
+      1504
+    ],
+    "icc": "embedded profile → sRGB before crop/resize",
+    "sha256": {
+      "gpui": "49aaa62ab311fa9632298bfee3232c7b4fd36fd396659551d9bf96773e8bb044",
+      "react": "f6d74a15beafb5e85e19119338f0fd96ebf29d4f29ab50d3c40ff000566c6c7e"
+    },
+    "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score",
+    "react": "react/dark-toast.png"
+  },
+  {
+    "state": "dark-tooltip-blur",
+    "gpui": "gpui/dark-tooltip-blur.jpg",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "crop_physical": [
+      0,
+      64,
+      2560,
+      1504
+    ],
+    "icc": "embedded profile → sRGB before crop/resize",
+    "sha256": {
+      "gpui": "5877b214c2472be618d14277d74fe8c45435f46d22dbcd798638963dc8f104b9",
+      "react": "757e7810d79c53e57ee587c69268ed604a893bc6c0df6d36744d1c729e4bf298"
+    },
+    "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score",
+    "react": "react/dark-tooltip-blur.png"
+  },
+  {
+    "state": "dark-tooltip-escape",
+    "gpui": "gpui/dark-tooltip-escape.jpg",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "crop_physical": [
+      0,
+      64,
+      2560,
+      1504
+    ],
+    "icc": "embedded profile → sRGB before crop/resize",
+    "sha256": {
+      "gpui": "be6641b77de9d9e2f9f3b9c1ae13fe87aa362b48064c16d60744992e90ae6d73",
+      "react": "293f19ff1b4abce00969f14ac70e3b48751ee94e3d1e288df2f033f774a06a26"
+    },
+    "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score",
+    "react": "react/dark-tooltip-escape.png"
+  },
+  {
+    "state": "dark-tooltip-focus",
+    "gpui": "gpui/dark-tooltip-focus.jpg",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "crop_physical": [
+      0,
+      64,
+      2560,
+      1504
+    ],
+    "icc": "embedded profile → sRGB before crop/resize",
+    "sha256": {
+      "gpui": "3ca8fcb86681766f11ba889289e2ee34a592e0e8715a50c5eddea0a28d853682",
+      "react": "f15c7d2f1bbefd019224c84e86487020268cdc0f53ebe56f70fb12eab5c9fc71"
+    },
+    "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score",
+    "react": "react/dark-tooltip-focus.png"
+  },
+  {
+    "state": "dark-tooltip-hover",
+    "gpui": "gpui/dark-tooltip-hover.jpg",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "crop_physical": [
+      0,
+      64,
+      2560,
+      1504
+    ],
+    "icc": "embedded profile → sRGB before crop/resize",
+    "sha256": {
+      "gpui": "a9e3e7ffcc0499de4b760f3b673501c7e0c50c153d526ac5e22fe5b6b5d5f6e4",
+      "react": "9566832852f63dae00e3348ebb2107442abf1a28df2e84b81db1cc79313012a5"
+    },
+    "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score",
+    "react": "react/dark-tooltip-hover.png"
+  },
+  {
+    "state": "light-button-focus",
+    "gpui": "gpui/light-button-focus.jpg",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "crop_physical": [
+      0,
+      64,
+      2560,
+      1504
+    ],
+    "icc": "embedded profile → sRGB before crop/resize",
+    "sha256": {
+      "gpui": "fab0ba0d19dfa8119510ad8a3ab2f8091bb4d6c9b82d2e2454d06a7ee13c09c0"
+    },
+    "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score"
+  },
+  {
+    "state": "light-collapsed",
+    "gpui": "gpui/light-collapsed.jpg",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "crop_physical": [
+      0,
+      64,
+      2560,
+      1504
+    ],
+    "icc": "embedded profile → sRGB before crop/resize",
+    "sha256": {
+      "gpui": "7429c2cd318479a72fae85cca0e295b9759a143af76909741c565f08708a945e",
+      "react": "11d1c9f83ee8ba8c1a72ad8a43fb66ec7c2d861a69e44d5df52b776f878a2d7d"
+    },
+    "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score",
+    "react": "react/light-collapsed.png"
+  },
+  {
+    "state": "light-disabled",
+    "gpui": "gpui/light-disabled.jpg",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "crop_physical": [
+      0,
+      64,
+      2560,
+      1504
+    ],
+    "icc": "embedded profile → sRGB before crop/resize",
+    "sha256": {
+      "gpui": "81668cd80f333b3a6bcd33d5196f4fb1db126023b4ee4c4bce826cbe371f96d8"
+    },
+    "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score"
+  },
+  {
+    "state": "light-input-focus",
+    "gpui": "gpui/light-input-focus.jpg",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "crop_physical": [
+      0,
+      64,
+      2560,
+      1504
+    ],
+    "icc": "embedded profile → sRGB before crop/resize",
+    "sha256": {
+      "gpui": "e0a8db776df3f38cbe024a98caeb1198d6707eab0edc013337a970e722b4a292",
+      "react": "34b0f3965c432eda4afa7a8b4ae663809ec49e44c04ab8baece70ddc5c8a93a9"
+    },
+    "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score",
+    "react": "react/light-input-focus.png"
+  },
+  {
+    "state": "light-invalid-draft",
+    "gpui": "gpui/light-invalid-draft.jpg",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "crop_physical": [
+      0,
+      64,
+      2560,
+      1504
+    ],
+    "icc": "embedded profile → sRGB before crop/resize",
+    "sha256": {
+      "gpui": "a4df732c31150948950c9b7ec33e4521ed3b46c47decfc849c60b48056f44e7c"
+    },
+    "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score"
+  },
+  {
+    "state": "light-modal-focus-return",
+    "gpui": "gpui/light-modal-focus-return.jpg",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "crop_physical": [
+      0,
+      64,
+      2560,
+      1504
+    ],
+    "icc": "embedded profile → sRGB before crop/resize",
+    "sha256": {
+      "gpui": "c7b7ed852f6317993b050ac0072574e53280d02c65001f8ad5dcd837563fcab4",
+      "react": "d79c825ca6eb889aff51420412999957b3d5d44811e90b9c2f104a422cb04391"
+    },
+    "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score",
+    "react": "react/light-modal-focus-return.png"
+  },
+  {
+    "state": "light-modal-keyboard",
+    "gpui": "gpui/light-modal-keyboard.jpg",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "crop_physical": [
+      0,
+      64,
+      2560,
+      1504
+    ],
+    "icc": "embedded profile → sRGB before crop/resize",
+    "sha256": {
+      "gpui": "69d910f38eccbc50d4baeb1cd330f995b8056ecb2067f517378a36d56a71fdbb"
+    },
+    "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score"
+  },
+  {
+    "state": "light-modal",
+    "gpui": "gpui/light-modal.jpg",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "crop_physical": [
+      0,
+      64,
+      2560,
+      1504
+    ],
+    "icc": "embedded profile → sRGB before crop/resize",
+    "sha256": {
+      "gpui": "75a2a93fda31f3b01d219c91b061d35ff0f480f30bb28339662ad47cb435b098",
+      "react": "63b395654c41db2802db552e898e6410a0759dc8792850ddaf6e3fa0fbf456ae"
+    },
+    "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score",
+    "react": "react/light-modal.png"
+  },
+  {
+    "state": "light-panel",
+    "gpui": "gpui/light-panel.jpg",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "crop_physical": [
+      0,
+      64,
+      2560,
+      1504
+    ],
+    "icc": "embedded profile → sRGB before crop/resize",
+    "sha256": {
+      "gpui": "518cb215578e932929f5363a3fa4f2ca70a298bb26fa1715016ab47156b3d918",
+      "react": "da2eccd9205f46a506274bb234941ee1973d9f79ea89990e443c91d14ed3f62d"
+    },
+    "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score",
+    "react": "react/light-panel.png"
+  },
+  {
+    "state": "light-save-failure-field",
+    "gpui": "gpui/light-save-failure-field.jpg",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "crop_physical": [
+      0,
+      64,
+      2560,
+      1504
+    ],
+    "icc": "embedded profile → sRGB before crop/resize",
+    "sha256": {
+      "gpui": "266b9a4325a9fdca6819100d8f0a84bf94b2ab25256ef6757e70f8e40455b07c"
+    },
+    "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score"
+  },
+  {
+    "state": "light-save-failure",
+    "gpui": "gpui/light-save-failure.jpg",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "crop_physical": [
+      0,
+      64,
+      2560,
+      1504
+    ],
+    "icc": "embedded profile → sRGB before crop/resize",
+    "sha256": {
+      "gpui": "c6c694dba1263c46773a754eab2a2cc5bd9706ba743e7b110fa93393daf86926"
+    },
+    "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score"
+  },
+  {
+    "state": "light-select-keyboard-escape",
+    "gpui": "gpui/light-select-keyboard-escape.jpg",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "crop_physical": [
+      0,
+      64,
+      2560,
+      1504
+    ],
+    "icc": "embedded profile → sRGB before crop/resize",
+    "sha256": {
+      "gpui": "678b0e4ee91e2bc25ab9d03e006e54a32dd56abeaa42292785b2011f65c9f1ec"
+    },
+    "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score"
+  },
+  {
+    "state": "light-select-keyboard-selected",
+    "gpui": "gpui/light-select-keyboard-selected.jpg",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "crop_physical": [
+      0,
+      64,
+      2560,
+      1504
+    ],
+    "icc": "embedded profile → sRGB before crop/resize",
+    "sha256": {
+      "gpui": "6ac2166f01846342485e8af77fb248e42b488e0762a77cada2a9d738fb2eff4c"
+    },
+    "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score"
+  },
+  {
+    "state": "light-select-outside-dismiss",
+    "gpui": "gpui/light-select-outside-dismiss.jpg",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "crop_physical": [
+      0,
+      64,
+      2560,
+      1504
+    ],
+    "icc": "embedded profile → sRGB before crop/resize",
+    "sha256": {
+      "gpui": "81864d5277d4c06ba47935dc6894d561315855e6229dfecd73a33df11f5f8a63"
+    },
+    "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score"
+  },
+  {
+    "state": "light-select",
+    "gpui": "gpui/light-select.jpg",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "crop_physical": [
+      0,
+      64,
+      2560,
+      1504
+    ],
+    "icc": "embedded profile → sRGB before crop/resize",
+    "sha256": {
+      "gpui": "203b0569d76727a1c6a45cf3313b3297a87b2d984defc59dd3d037fb3c44236f",
+      "react": "6f3f4c8102dbdc305c32bf7d6b3f530c70ff28e8ea2a659ace68e5b186d651b5"
+    },
+    "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score",
+    "react": "react/light-select.png"
+  },
+  {
+    "state": "light-shell",
+    "gpui": "gpui/light-shell.jpg",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "crop_physical": [
+      0,
+      64,
+      2560,
+      1504
+    ],
+    "icc": "embedded profile → sRGB before crop/resize",
+    "sha256": {
+      "gpui": "e2a98e2bd283b73f07449a7e13fa4adaa8f8b7320f40f2ad98ba36f5c0d149dc",
+      "react": "392c843a53053244a9cd7a78822c70a18cee324949be41c40fc36623151b6d32"
+    },
+    "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score",
+    "react": "react/light-shell.png"
+  },
+  {
+    "state": "light-sidebar-tooltip-blur",
+    "gpui": "gpui/light-sidebar-tooltip-blur.jpg",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "crop_physical": [
+      0,
+      64,
+      2560,
+      1504
+    ],
+    "icc": "embedded profile → sRGB before crop/resize",
+    "sha256": {
+      "gpui": "a41fcb0b51a929f493dbbc5f3f8947312ce0c9b8a650f83c518e1562a235d07f"
+    },
+    "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score"
+  },
+  {
+    "state": "light-sidebar-tooltip-collapsed",
+    "gpui": "gpui/light-sidebar-tooltip-collapsed.jpg",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "crop_physical": [
+      0,
+      64,
+      2560,
+      1504
+    ],
+    "icc": "embedded profile → sRGB before crop/resize",
+    "sha256": {
+      "gpui": "1c75cbc81e1b3408cf898c22802d9b17660c605d7aa10c35ab4fc21758c1bc34",
+      "react": "393ac3ee9a92dd21579483ec8a70c4800b7eb9bc8dc0f66564c5d2ed07b00bad"
+    },
+    "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score",
+    "react": "react/light-sidebar-tooltip-collapsed.png"
+  },
+  {
+    "state": "light-sidebar-tooltip-escape",
+    "gpui": "gpui/light-sidebar-tooltip-escape.jpg",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "crop_physical": [
+      0,
+      64,
+      2560,
+      1504
+    ],
+    "icc": "embedded profile → sRGB before crop/resize",
+    "sha256": {
+      "gpui": "661159449c19ff6eef215dff41b3b4e51246bb0cdcdfc1ded0a5e6c7dcfaf8fa"
+    },
+    "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score"
+  },
+  {
+    "state": "light-sidebar-tooltip-focus",
+    "gpui": "gpui/light-sidebar-tooltip-focus.jpg",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "crop_physical": [
+      0,
+      64,
+      2560,
+      1504
+    ],
+    "icc": "embedded profile → sRGB before crop/resize",
+    "sha256": {
+      "gpui": "20c1ad7084edc69b556a3300c43a125f7b6ecaf1320c68ef7fa3a7b3af92cc19"
+    },
+    "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score"
+  },
+  {
+    "state": "light-sidebar-tooltip-hover",
+    "gpui": "gpui/light-sidebar-tooltip-hover.jpg",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "crop_physical": [
+      0,
+      64,
+      2560,
+      1504
+    ],
+    "icc": "embedded profile → sRGB before crop/resize",
+    "sha256": {
+      "gpui": "ce1e09d82480840c2665200ce47d9df1fd05f3e56e32d655804f1e3784b00414",
+      "react": "0597625b0b4bf80d4a8840f06ddbe468f2400f1a2c02eda6d9242ccc70aa97b2"
+    },
+    "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score",
+    "react": "react/light-sidebar-tooltip-hover.png"
+  },
+  {
+    "state": "light-slider-drag",
+    "gpui": "gpui/light-slider-drag.jpg",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "crop_physical": [
+      0,
+      64,
+      2560,
+      1504
+    ],
+    "icc": "embedded profile → sRGB before crop/resize",
+    "sha256": {
+      "gpui": "74f15e9be2771a2a02ae034856dd0fa13ed8023c410ddc42b0fa3bffd487fbfc"
+    },
+    "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score"
+  },
+  {
+    "state": "light-slider",
+    "gpui": "gpui/light-slider.jpg",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "crop_physical": [
+      0,
+      64,
+      2560,
+      1504
+    ],
+    "icc": "embedded profile → sRGB before crop/resize",
+    "sha256": {
+      "gpui": "a7265c803e0674d7d8d00c64639872bcbe3f8ec0cd055677f9dba38e2c446b92",
+      "react": "99a79b752eee589fa4afb950c346d2915f98f2bbc8fc39799537ae1d4c469502"
+    },
+    "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score",
+    "react": "react/light-slider-11.png"
+  },
+  {
+    "state": "light-switch-off",
+    "gpui": "gpui/light-switch-off.jpg",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "crop_physical": [
+      0,
+      64,
+      2560,
+      1504
+    ],
+    "icc": "embedded profile → sRGB before crop/resize",
+    "sha256": {
+      "gpui": "cad8f618aef7a1ad30af10a0b982971d7c2e7980ea4b8278802e4cfc5fd78fc9",
+      "react": "5d4334171038f54f3d5bd0a0c1d1be57f49d5983c287e249060ae2d39f5b6003"
+    },
+    "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score",
+    "react": "react/light-switch-off.png"
+  },
+  {
+    "state": "light-switch-on",
+    "gpui": "gpui/light-switch-on.jpg",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "crop_physical": [
+      0,
+      64,
+      2560,
+      1504
+    ],
+    "icc": "embedded profile → sRGB before crop/resize",
+    "sha256": {
+      "gpui": "502626531d424ffaf7b93527f871ef6d3e5c59c9bca53dea7d92bf199493a768",
+      "react": "523b1e0b36507ad0c570b8004ba5ab4790425a998282793d0c53318b654325fa"
+    },
+    "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score",
+    "react": "react/light-switch-on.png"
+  },
+  {
+    "state": "light-toast-close",
+    "gpui": "gpui/light-toast-close.jpg",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "crop_physical": [
+      0,
+      64,
+      2560,
+      1504
+    ],
+    "icc": "embedded profile → sRGB before crop/resize",
+    "sha256": {
+      "gpui": "c1b5e7f8e4183bface025f6bdd60961880503e8a16fa188c2f80d5970360bbc5",
+      "react": "a3d0adea8bca4f60d2ccc564eacd5ff0d19e54242bc2072a13fbf2c854e17046"
+    },
+    "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score",
+    "react": "react/light-toast-close.png"
+  },
+  {
+    "state": "light-toast",
+    "gpui": "gpui/light-toast.jpg",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "crop_physical": [
+      0,
+      64,
+      2560,
+      1504
+    ],
+    "icc": "embedded profile → sRGB before crop/resize",
+    "sha256": {
+      "gpui": "145f7f106292a2414873356507fdf5cb46e7ec6a061ca6da6e690b1fb761667d",
+      "react": "4a6124805a9ac5deadbf5c2db199bea71e9e8f1bbc1844655b95e3e548444fd8"
+    },
+    "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score",
+    "react": "react/light-toast.png"
+  },
+  {
+    "state": "light-tooltip-blur",
+    "gpui": "gpui/light-tooltip-blur.jpg",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "crop_physical": [
+      0,
+      64,
+      2560,
+      1504
+    ],
+    "icc": "embedded profile → sRGB before crop/resize",
+    "sha256": {
+      "gpui": "f0bbaac2eae5227f5bef3f9cd35a9564de534087a851e48606c3ee7984518e22",
+      "react": "69f62090f237ff2dcc1a03136ca516e41d9bd6e0ddee96600e62eb1dbea5369a"
+    },
+    "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score",
+    "react": "react/light-tooltip-blur.png"
+  },
+  {
+    "state": "light-tooltip-escape",
+    "gpui": "gpui/light-tooltip-escape.jpg",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "crop_physical": [
+      0,
+      64,
+      2560,
+      1504
+    ],
+    "icc": "embedded profile → sRGB before crop/resize",
+    "sha256": {
+      "gpui": "4171fd49c0933bdfdbbe7cc15f181e88b1be0473235bb13e59db44d38a39e406",
+      "react": "833631d06852684ba22502d97d18713c182f4fc476acb7b368b1e36d149fb142"
+    },
+    "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score",
+    "react": "react/light-tooltip-escape.png"
+  },
+  {
+    "state": "light-tooltip-focus",
+    "gpui": "gpui/light-tooltip-focus.jpg",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "crop_physical": [
+      0,
+      64,
+      2560,
+      1504
+    ],
+    "icc": "embedded profile → sRGB before crop/resize",
+    "sha256": {
+      "gpui": "71714fc0f65fb1ad3ce09856f5a04e366e7ed0d27a572c9124a9ce1fc7c34109",
+      "react": "bc08c5443d399901db28e8fd4a58b5a4c9f1ea0e2a48164d1bf9af69269dd210"
+    },
+    "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score",
+    "react": "react/light-tooltip-focus.png"
+  },
+  {
+    "state": "light-tooltip-hover",
+    "gpui": "gpui/light-tooltip-hover.jpg",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "crop_physical": [
+      0,
+      64,
+      2560,
+      1504
+    ],
+    "icc": "embedded profile → sRGB before crop/resize",
+    "sha256": {
+      "gpui": "213c6f1852756fc4f3125c87a087513f8e64375ac45364747b99ac24f94f3f1d",
+      "react": "046257a0bb80bec578b9034795ce46e5b7672085ff3409b6276b95f20b3d024d"
+    },
+    "verdict": "REGION_REVIEW; see visual-matrix.md; no global similarity score",
+    "react": "react/light-tooltip-hover.png"
+  }
+]

@@ -1,0 +1,662 @@
+[
+  {
+    "name": "light-shell",
+    "binary_sha256": "8bd7a366d24fa2eff8bf78e22604f461030cedae9d1184c11a28ca8eb4f5c28d",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "input_method": "actual UI",
+    "time": "2026-10-05T10:26:14.748Z"
+  },
+  {
+    "name": "light-sidebar-tooltip-focus",
+    "binary_sha256": "8bd7a366d24fa2eff8bf78e22604f461030cedae9d1184c11a28ca8eb4f5c28d",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "input_method": "actual UI",
+    "time": "2026-10-05T10:26:15.283Z"
+  },
+  {
+    "name": "light-sidebar-tooltip-escape",
+    "binary_sha256": "8bd7a366d24fa2eff8bf78e22604f461030cedae9d1184c11a28ca8eb4f5c28d",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "input_method": "actual UI",
+    "time": "2026-10-05T10:26:15.807Z"
+  },
+  {
+    "name": "light-sidebar-tooltip-blur",
+    "binary_sha256": "8bd7a366d24fa2eff8bf78e22604f461030cedae9d1184c11a28ca8eb4f5c28d",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "input_method": "actual UI",
+    "time": "2026-10-05T10:26:16.340Z"
+  },
+  {
+    "name": "light-sidebar-tooltip-hover",
+    "binary_sha256": "8bd7a366d24fa2eff8bf78e22604f461030cedae9d1184c11a28ca8eb4f5c28d",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "input_method": "actual UI",
+    "time": "2026-10-05T10:26:16.939Z"
+  },
+  {
+    "name": "light-shell-collapsed",
+    "binary_sha256": "8bd7a366d24fa2eff8bf78e22604f461030cedae9d1184c11a28ca8eb4f5c28d",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "input_method": "actual UI",
+    "time": "2026-10-05T10:26:18.032Z"
+  },
+  {
+    "name": "light-sidebar-tooltip-collapsed",
+    "binary_sha256": "8bd7a366d24fa2eff8bf78e22604f461030cedae9d1184c11a28ca8eb4f5c28d",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "input_method": "actual UI",
+    "time": "2026-10-05T10:26:18.649Z"
+  },
+  {
+    "name": "light-panel",
+    "binary_sha256": "8bd7a366d24fa2eff8bf78e22604f461030cedae9d1184c11a28ca8eb4f5c28d",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "input_method": "actual UI",
+    "time": "2026-10-05T10:26:20.316Z"
+  },
+  {
+    "name": "light-disabled",
+    "binary_sha256": "8bd7a366d24fa2eff8bf78e22604f461030cedae9d1184c11a28ca8eb4f5c28d",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "input_method": "actual UI",
+    "time": "2026-10-05T10:26:20.416Z"
+  },
+  {
+    "name": "light-icon-picker",
+    "binary_sha256": "8bd7a366d24fa2eff8bf78e22604f461030cedae9d1184c11a28ca8eb4f5c28d",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "input_method": "actual UI",
+    "time": "2026-10-05T10:26:21.681Z"
+  },
+  {
+    "name": "light-select",
+    "binary_sha256": "8bd7a366d24fa2eff8bf78e22604f461030cedae9d1184c11a28ca8eb4f5c28d",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "input_method": "actual UI",
+    "time": "2026-10-05T10:26:53.940Z"
+  },
+  {
+    "name": "light-select-mouse-selected",
+    "binary_sha256": "8bd7a366d24fa2eff8bf78e22604f461030cedae9d1184c11a28ca8eb4f5c28d",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "input_method": "actual UI",
+    "time": "2026-10-05T10:26:54.532Z"
+  },
+  {
+    "name": "light-select-keyboard-selected",
+    "binary_sha256": "8bd7a366d24fa2eff8bf78e22604f461030cedae9d1184c11a28ca8eb4f5c28d",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "input_method": "actual UI",
+    "time": "2026-10-05T10:26:56.688Z"
+  },
+  {
+    "name": "light-select-keyboard-escape",
+    "binary_sha256": "8bd7a366d24fa2eff8bf78e22604f461030cedae9d1184c11a28ca8eb4f5c28d",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "input_method": "actual UI",
+    "time": "2026-10-05T10:26:57.740Z"
+  },
+  {
+    "name": "light-select-outside-dismiss",
+    "binary_sha256": "8bd7a366d24fa2eff8bf78e22604f461030cedae9d1184c11a28ca8eb4f5c28d",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "input_method": "actual UI",
+    "time": "2026-10-05T10:26:58.907Z"
+  },
+  {
+    "name": "light-input-focus",
+    "binary_sha256": "8bd7a366d24fa2eff8bf78e22604f461030cedae9d1184c11a28ca8eb4f5c28d",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "input_method": "actual UI",
+    "time": "2026-10-05T10:26:59.572Z"
+  },
+  {
+    "name": "light-switch-off",
+    "binary_sha256": "8bd7a366d24fa2eff8bf78e22604f461030cedae9d1184c11a28ca8eb4f5c28d",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "input_method": "actual UI",
+    "time": "2026-10-05T10:27:00.223Z"
+  },
+  {
+    "name": "light-switch-on",
+    "binary_sha256": "8bd7a366d24fa2eff8bf78e22604f461030cedae9d1184c11a28ca8eb4f5c28d",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "input_method": "actual UI",
+    "time": "2026-10-05T10:27:00.775Z"
+  },
+  {
+    "name": "light-tooltip-focus",
+    "binary_sha256": "8bd7a366d24fa2eff8bf78e22604f461030cedae9d1184c11a28ca8eb4f5c28d",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "input_method": "actual UI",
+    "time": "2026-10-05T10:27:02.858Z"
+  },
+  {
+    "name": "light-tooltip-escape",
+    "binary_sha256": "8bd7a366d24fa2eff8bf78e22604f461030cedae9d1184c11a28ca8eb4f5c28d",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "input_method": "actual UI",
+    "time": "2026-10-05T10:27:03.423Z"
+  },
+  {
+    "name": "light-tooltip-blur",
+    "binary_sha256": "8bd7a366d24fa2eff8bf78e22604f461030cedae9d1184c11a28ca8eb4f5c28d",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "input_method": "actual UI",
+    "time": "2026-10-05T10:27:03.975Z"
+  },
+  {
+    "name": "light-tooltip-hover",
+    "binary_sha256": "8bd7a366d24fa2eff8bf78e22604f461030cedae9d1184c11a28ca8eb4f5c28d",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "input_method": "actual UI",
+    "time": "2026-10-05T10:27:05.123Z"
+  },
+  {
+    "name": "light-number-spinner-hover",
+    "binary_sha256": "8bd7a366d24fa2eff8bf78e22604f461030cedae9d1184c11a28ca8eb4f5c28d",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "input_method": "actual UI",
+    "time": "2026-10-05T10:27:23.348Z"
+  },
+  {
+    "name": "light-modal",
+    "binary_sha256": "8bd7a366d24fa2eff8bf78e22604f461030cedae9d1184c11a28ca8eb4f5c28d",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "input_method": "actual UI",
+    "time": "2026-10-05T10:27:23.989Z"
+  },
+  {
+    "name": "light-modal-focus-return",
+    "binary_sha256": "8bd7a366d24fa2eff8bf78e22604f461030cedae9d1184c11a28ca8eb4f5c28d",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "input_method": "actual UI",
+    "time": "2026-10-05T10:27:24.539Z"
+  },
+  {
+    "name": "light-modal-keyboard",
+    "binary_sha256": "8bd7a366d24fa2eff8bf78e22604f461030cedae9d1184c11a28ca8eb4f5c28d",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "input_method": "actual UI",
+    "time": "2026-10-05T10:27:25.332Z"
+  },
+  {
+    "name": "light-icon-button-hover",
+    "binary_sha256": "8bd7a366d24fa2eff8bf78e22604f461030cedae9d1184c11a28ca8eb4f5c28d",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "input_method": "actual UI",
+    "time": "2026-10-05T10:27:26.432Z"
+  },
+  {
+    "name": "light-button-focus",
+    "binary_sha256": "8bd7a366d24fa2eff8bf78e22604f461030cedae9d1184c11a28ca8eb4f5c28d",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "input_method": "actual UI",
+    "time": "2026-10-05T10:27:28.329Z"
+  },
+  {
+    "name": "light-toast",
+    "binary_sha256": "8bd7a366d24fa2eff8bf78e22604f461030cedae9d1184c11a28ca8eb4f5c28d",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "input_method": "actual UI",
+    "time": "2026-10-05T10:27:29.591Z"
+  },
+  {
+    "name": "light-toast-close",
+    "binary_sha256": "8bd7a366d24fa2eff8bf78e22604f461030cedae9d1184c11a28ca8eb4f5c28d",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "input_method": "actual UI",
+    "time": "2026-10-05T10:27:30.206Z"
+  },
+  {
+    "name": "dark-shell",
+    "binary_sha256": "8bd7a366d24fa2eff8bf78e22604f461030cedae9d1184c11a28ca8eb4f5c28d",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "input_method": "actual UI",
+    "time": "2026-10-05T10:28:10.589Z"
+  },
+  {
+    "name": "dark-sidebar-tooltip-focus",
+    "binary_sha256": "8bd7a366d24fa2eff8bf78e22604f461030cedae9d1184c11a28ca8eb4f5c28d",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "input_method": "actual UI",
+    "time": "2026-10-05T10:28:11.140Z"
+  },
+  {
+    "name": "dark-sidebar-tooltip-escape",
+    "binary_sha256": "8bd7a366d24fa2eff8bf78e22604f461030cedae9d1184c11a28ca8eb4f5c28d",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "input_method": "actual UI",
+    "time": "2026-10-05T10:28:11.682Z"
+  },
+  {
+    "name": "dark-sidebar-tooltip-blur",
+    "binary_sha256": "8bd7a366d24fa2eff8bf78e22604f461030cedae9d1184c11a28ca8eb4f5c28d",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "input_method": "actual UI",
+    "time": "2026-10-05T10:28:12.216Z"
+  },
+  {
+    "name": "dark-sidebar-tooltip-hover",
+    "binary_sha256": "8bd7a366d24fa2eff8bf78e22604f461030cedae9d1184c11a28ca8eb4f5c28d",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "input_method": "actual UI",
+    "time": "2026-10-05T10:28:12.832Z"
+  },
+  {
+    "name": "dark-shell-collapsed",
+    "binary_sha256": "8bd7a366d24fa2eff8bf78e22604f461030cedae9d1184c11a28ca8eb4f5c28d",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "input_method": "actual UI",
+    "time": "2026-10-05T10:28:14.332Z"
+  },
+  {
+    "name": "dark-sidebar-tooltip-collapsed",
+    "binary_sha256": "8bd7a366d24fa2eff8bf78e22604f461030cedae9d1184c11a28ca8eb4f5c28d",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "input_method": "actual UI",
+    "time": "2026-10-05T10:28:14.924Z"
+  },
+  {
+    "name": "dark-panel",
+    "binary_sha256": "8bd7a366d24fa2eff8bf78e22604f461030cedae9d1184c11a28ca8eb4f5c28d",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "input_method": "actual UI",
+    "time": "2026-10-05T10:28:16.547Z"
+  },
+  {
+    "name": "dark-disabled",
+    "binary_sha256": "8bd7a366d24fa2eff8bf78e22604f461030cedae9d1184c11a28ca8eb4f5c28d",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "input_method": "actual UI",
+    "time": "2026-10-05T10:28:16.648Z"
+  },
+  {
+    "name": "dark-icon-picker",
+    "binary_sha256": "8bd7a366d24fa2eff8bf78e22604f461030cedae9d1184c11a28ca8eb4f5c28d",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "input_method": "actual UI",
+    "time": "2026-10-05T10:28:17.907Z"
+  },
+  {
+    "name": "dark-select",
+    "binary_sha256": "8bd7a366d24fa2eff8bf78e22604f461030cedae9d1184c11a28ca8eb4f5c28d",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "input_method": "actual UI",
+    "time": "2026-10-05T10:28:19.655Z"
+  },
+  {
+    "name": "dark-select-keyboard-selected",
+    "binary_sha256": "8bd7a366d24fa2eff8bf78e22604f461030cedae9d1184c11a28ca8eb4f5c28d",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "input_method": "actual UI",
+    "time": "2026-10-05T10:28:20.282Z"
+  },
+  {
+    "name": "dark-select-keyboard-escape",
+    "binary_sha256": "8bd7a366d24fa2eff8bf78e22604f461030cedae9d1184c11a28ca8eb4f5c28d",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "input_method": "actual UI",
+    "time": "2026-10-05T10:28:21.338Z"
+  },
+  {
+    "name": "dark-select-outside-dismiss",
+    "binary_sha256": "8bd7a366d24fa2eff8bf78e22604f461030cedae9d1184c11a28ca8eb4f5c28d",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "input_method": "actual UI",
+    "time": "2026-10-05T10:28:22.531Z"
+  },
+  {
+    "name": "dark-input-focus",
+    "binary_sha256": "8bd7a366d24fa2eff8bf78e22604f461030cedae9d1184c11a28ca8eb4f5c28d",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "input_method": "actual UI",
+    "time": "2026-10-05T10:28:59.041Z"
+  },
+  {
+    "name": "dark-spinner-increment",
+    "binary_sha256": "8bd7a366d24fa2eff8bf78e22604f461030cedae9d1184c11a28ca8eb4f5c28d",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "input_method": "actual UI",
+    "time": "2026-10-05T10:28:59.638Z"
+  },
+  {
+    "name": "dark-switch-off",
+    "binary_sha256": "8bd7a366d24fa2eff8bf78e22604f461030cedae9d1184c11a28ca8eb4f5c28d",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "input_method": "actual UI",
+    "time": "2026-10-05T10:29:00.780Z"
+  },
+  {
+    "name": "dark-switch-on",
+    "binary_sha256": "8bd7a366d24fa2eff8bf78e22604f461030cedae9d1184c11a28ca8eb4f5c28d",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "input_method": "actual UI",
+    "time": "2026-10-05T10:29:01.321Z"
+  },
+  {
+    "name": "dark-tooltip-focus",
+    "binary_sha256": "8bd7a366d24fa2eff8bf78e22604f461030cedae9d1184c11a28ca8eb4f5c28d",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "input_method": "actual UI",
+    "time": "2026-10-05T10:29:03.265Z"
+  },
+  {
+    "name": "dark-tooltip-escape",
+    "binary_sha256": "8bd7a366d24fa2eff8bf78e22604f461030cedae9d1184c11a28ca8eb4f5c28d",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "input_method": "actual UI",
+    "time": "2026-10-05T10:29:03.796Z"
+  },
+  {
+    "name": "dark-tooltip-blur",
+    "binary_sha256": "8bd7a366d24fa2eff8bf78e22604f461030cedae9d1184c11a28ca8eb4f5c28d",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "input_method": "actual UI",
+    "time": "2026-10-05T10:29:04.321Z"
+  },
+  {
+    "name": "dark-tooltip-hover",
+    "binary_sha256": "8bd7a366d24fa2eff8bf78e22604f461030cedae9d1184c11a28ca8eb4f5c28d",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "input_method": "actual UI",
+    "time": "2026-10-05T10:29:05.432Z"
+  },
+  {
+    "name": "dark-modal",
+    "binary_sha256": "8bd7a366d24fa2eff8bf78e22604f461030cedae9d1184c11a28ca8eb4f5c28d",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "input_method": "actual UI",
+    "time": "2026-10-05T10:29:06.171Z"
+  },
+  {
+    "name": "dark-modal-focus-return",
+    "binary_sha256": "8bd7a366d24fa2eff8bf78e22604f461030cedae9d1184c11a28ca8eb4f5c28d",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "input_method": "actual UI",
+    "time": "2026-10-05T10:29:06.722Z"
+  },
+  {
+    "name": "dark-modal-keyboard",
+    "binary_sha256": "8bd7a366d24fa2eff8bf78e22604f461030cedae9d1184c11a28ca8eb4f5c28d",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "input_method": "actual UI",
+    "time": "2026-10-05T10:29:07.513Z"
+  },
+  {
+    "name": "dark-icon-button-hover",
+    "binary_sha256": "8bd7a366d24fa2eff8bf78e22604f461030cedae9d1184c11a28ca8eb4f5c28d",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "input_method": "actual UI",
+    "time": "2026-10-05T10:29:08.638Z"
+  },
+  {
+    "name": "dark-button-focus",
+    "binary_sha256": "8bd7a366d24fa2eff8bf78e22604f461030cedae9d1184c11a28ca8eb4f5c28d",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "input_method": "actual UI",
+    "time": "2026-10-05T10:29:10.521Z"
+  },
+  {
+    "name": "dark-toast",
+    "binary_sha256": "8bd7a366d24fa2eff8bf78e22604f461030cedae9d1184c11a28ca8eb4f5c28d",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "input_method": "actual UI",
+    "time": "2026-10-05T10:29:11.754Z"
+  },
+  {
+    "name": "dark-toast-close",
+    "binary_sha256": "8bd7a366d24fa2eff8bf78e22604f461030cedae9d1184c11a28ca8eb4f5c28d",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "input_method": "actual UI",
+    "time": "2026-10-05T10:29:12.373Z"
+  },
+  {
+    "name": "dark-save-failure",
+    "binary_sha256": "8bd7a366d24fa2eff8bf78e22604f461030cedae9d1184c11a28ca8eb4f5c28d",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "input_method": "actual UI",
+    "time": "2026-10-05T10:29:36.564Z"
+  },
+  {
+    "name": "dark-invalid-draft",
+    "binary_sha256": "8bd7a366d24fa2eff8bf78e22604f461030cedae9d1184c11a28ca8eb4f5c28d",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "input_method": "actual UI",
+    "time": "2026-10-05T10:29:39.663Z"
+  },
+  {
+    "name": "dark-toast-before-auto-dismiss",
+    "binary_sha256": "8bd7a366d24fa2eff8bf78e22604f461030cedae9d1184c11a28ca8eb4f5c28d",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "input_method": "actual UI",
+    "time": "2026-10-05T10:29:43.396Z"
+  },
+  {
+    "name": "dark-toast-auto-dismiss",
+    "binary_sha256": "8bd7a366d24fa2eff8bf78e22604f461030cedae9d1184c11a28ca8eb4f5c28d",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "input_method": "actual UI",
+    "time": "2026-10-05T10:30:17.323Z"
+  },
+  {
+    "name": "dark-slider",
+    "binary_sha256": "8bd7a366d24fa2eff8bf78e22604f461030cedae9d1184c11a28ca8eb4f5c28d",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "input_method": "actual UI",
+    "time": "2026-10-05T10:35:05.855Z"
+  },
+  {
+    "name": "light-slider",
+    "binary_sha256": "8bd7a366d24fa2eff8bf78e22604f461030cedae9d1184c11a28ca8eb4f5c28d",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "input_method": "actual UI",
+    "time": "2026-10-05T10:35:29.966Z"
+  },
+  {
+    "name": "final-combination-before-close",
+    "binary_sha256": "8bd7a366d24fa2eff8bf78e22604f461030cedae9d1184c11a28ca8eb4f5c28d",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "input_method": "actual UI",
+    "time": "2026-10-05T10:37:19.052Z"
+  }
+]

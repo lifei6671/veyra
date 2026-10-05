@@ -1,0 +1,34 @@
+{
+  "status": "INCOMPLETE",
+  "first_run_root": "/tmp/veyra-p1-07-combination (absent before start)",
+  "saved_initial": {
+    "theme_mode": "light",
+    "ipv6_test": true
+  },
+  "close": "PASS native hidden=true",
+  "tray_restore": "FAIL Host reports no tray visible",
+  "native_tray_diagnostic": {
+    "visible": true,
+    "physical_size": [
+      68,
+      0
+    ],
+    "position": [
+      0,
+      1964
+    ],
+    "cause": "UNRESOLVED; visible flag does not prove on-screen visibility"
+  },
+  "secondary_activation": "PASS exit0 writer_created_count=0; original Settings/IPv6 retained",
+  "explicit_tray_quit": "NOT_RUN: icon unavailable",
+  "restart": "PASS values recovered after diagnostic SIGTERM/relaunch; NOT equivalent to explicit quit sequence",
+  "background_import": "PASS local managed asset; >4096 source rejected without lowering limit",
+  "select": "mouse, keyboard Up/Down/Return/Escape and outside dismiss exercised",
+  "modal": "opened and cancelled with Escape; no destructive reset claimed",
+  "notice": "real save notice captured; hover pause/stack/focus matrix incomplete",
+  "limitations": [
+    "Production focus/hover/loading/error state screenshot matrix incomplete",
+    "No complete P1-07 combined PASS",
+    "SIGTERM during iteration is never counted as explicit Quit"
+  ]
+}

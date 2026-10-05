@@ -1,0 +1,11 @@
+{
+  "primary_processes": [
+    "72400 /private/tmp/veyra-p107-final-20261005/VeyraP107Final.app/Contents/MacOS/VeyraP107NativeAB"
+  ],
+  "primary_count": 1,
+  "flock_busy": true,
+  "socket_exists": true,
+  "secondary_writer": 0,
+  "secondary_activate_not_used": true,
+  "process_lookup_note": "macOS canonical /private/tmp path; exact /tmp anchored lookup was empty, not a missing primary"
+}

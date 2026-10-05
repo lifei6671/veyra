@@ -1,0 +1,4 @@
+{
+  "status": "SUPERSEDED",
+  "reason": "Final source additionally fixes brand ink inherited from Dark theme; captures cc471 are preserved but excluded from final build acceptance"
+}

@@ -1,0 +1,1157 @@
+{
+  "task": "OBG-P1-07",
+  "date": "2026-10-05",
+  "source": "当前任务卡显式依赖定义与 IMPLEMENTATION_PHASES.md 主表；非历史计数推断",
+  "task_count": 68,
+  "macos_count": 61,
+  "windows_count": 7,
+  "counts": {
+    "DONE": 13,
+    "ACCEPTANCE": 1,
+    "TODO": 47,
+    "DEFERRED": 7,
+    "READY": 0,
+    "DOING": 0,
+    "REVIEW": 0,
+    "BLOCKED": 0
+  },
+  "ready_queue": [],
+  "cycles": [],
+  "card_and_table_dependencies_match": true,
+  "ready_strictly_matches_dependencies": true,
+  "owner_released": "OBG-P1-07",
+  "p1_07_direct_dependants": [
+    "OBG-P2-09",
+    "OBG-P7-04"
+  ],
+  "topological_order": [
+    "OBG-P0-01",
+    "OBG-P0-02",
+    "OBG-P0-03",
+    "OBG-P0-04",
+    "OBG-P0-05",
+    "OBG-P0-06",
+    "OBG-P0-07",
+    "OBG-P0-08",
+    "OBG-P0-09",
+    "OBG-P1-01",
+    "OBG-P1-02",
+    "OBG-P1-03",
+    "OBG-P1-04A",
+    "OBG-P1-04B",
+    "OBG-P1-05",
+    "OBG-P1-06",
+    "OBG-P1-07",
+    "OBG-P2-01",
+    "OBG-P2-02A",
+    "OBG-P2-02B",
+    "OBG-P2-03",
+    "OBG-P2-04",
+    "OBG-P2-05",
+    "OBG-P2-06",
+    "OBG-P2-07",
+    "OBG-P2-08",
+    "OBG-P2-09",
+    "OBG-P3-01",
+    "OBG-P3-02",
+    "OBG-P3-03",
+    "OBG-P3-04",
+    "OBG-P3-05",
+    "OBG-P3-06",
+    "OBG-P3-07",
+    "OBG-P3-08",
+    "OBG-P4-01",
+    "OBG-P4-02",
+    "OBG-P4-03",
+    "OBG-P4-04",
+    "OBG-P4-06",
+    "OBG-P4-05A",
+    "OBG-P4-05B",
+    "OBG-P4-05C",
+    "OBG-P4-07",
+    "OBG-P5-01",
+    "OBG-P5-02",
+    "OBG-P5-03",
+    "OBG-P5-04",
+    "OBG-P5-05",
+    "OBG-P5-06",
+    "OBG-P5-07",
+    "OBG-P6-01",
+    "OBG-P6-02",
+    "OBG-P6-03",
+    "OBG-P6-04",
+    "OBG-P6-05",
+    "OBG-P7-01",
+    "OBG-P7-02",
+    "OBG-P7-03",
+    "OBG-P7-04",
+    "OBG-P7-05",
+    "OBG-W0-01",
+    "OBG-W0-02",
+    "OBG-W1-01",
+    "OBG-W2-01",
+    "OBG-W2-02",
+    "OBG-W3-01",
+    "OBG-W3-02"
+  ],
+  "tasks": [
+    {
+      "id": "OBG-P0-01",
+      "card": "P0-feasibility.md#obg-p0-01",
+      "status": "DONE",
+      "dependencies": [],
+      "external_prerequisites": [],
+      "unmet_dependencies": []
+    },
+    {
+      "id": "OBG-P0-02",
+      "card": "P0-feasibility.md#obg-p0-02",
+      "status": "DONE",
+      "dependencies": [],
+      "external_prerequisites": [],
+      "unmet_dependencies": []
+    },
+    {
+      "id": "OBG-P0-03",
+      "card": "P0-feasibility.md#obg-p0-03",
+      "status": "DONE",
+      "dependencies": [
+        "OBG-P0-01"
+      ],
+      "external_prerequisites": [],
+      "unmet_dependencies": []
+    },
+    {
+      "id": "OBG-P0-04",
+      "card": "P0-feasibility.md#obg-p0-04",
+      "status": "DONE",
+      "dependencies": [
+        "OBG-P0-01"
+      ],
+      "external_prerequisites": [],
+      "unmet_dependencies": []
+    },
+    {
+      "id": "OBG-P0-05",
+      "card": "P0-feasibility.md#obg-p0-05",
+      "status": "ACCEPTANCE",
+      "dependencies": [
+        "OBG-P0-03",
+        "OBG-P0-04"
+      ],
+      "external_prerequisites": [],
+      "unmet_dependencies": []
+    },
+    {
+      "id": "OBG-P0-06",
+      "card": "P0-feasibility.md#obg-p0-06",
+      "status": "TODO",
+      "dependencies": [
+        "OBG-P0-04",
+        "OBG-P0-05"
+      ],
+      "external_prerequisites": [],
+      "unmet_dependencies": [
+        "OBG-P0-05"
+      ]
+    },
+    {
+      "id": "OBG-P0-07",
+      "card": "P0-feasibility.md#obg-p0-07",
+      "status": "DONE",
+      "dependencies": [
+        "OBG-P0-01",
+        "OBG-P0-04"
+      ],
+      "external_prerequisites": [],
+      "unmet_dependencies": []
+    },
+    {
+      "id": "OBG-P0-08",
+      "card": "P0-feasibility.md#obg-p0-08",
+      "status": "TODO",
+      "dependencies": [
+        "OBG-P0-03",
+        "OBG-P0-05"
+      ],
+      "external_prerequisites": [],
+      "unmet_dependencies": [
+        "OBG-P0-05"
+      ]
+    },
+    {
+      "id": "OBG-P0-09",
+      "card": "P0-feasibility.md#obg-p0-09",
+      "status": "TODO",
+      "dependencies": [
+        "OBG-P0-01",
+        "OBG-P0-02",
+        "OBG-P0-03",
+        "OBG-P0-04",
+        "OBG-P0-05",
+        "OBG-P0-06",
+        "OBG-P0-07",
+        "OBG-P0-08"
+      ],
+      "external_prerequisites": [],
+      "unmet_dependencies": [
+        "OBG-P0-05",
+        "OBG-P0-06",
+        "OBG-P0-08"
+      ]
+    },
+    {
+      "id": "OBG-P1-01",
+      "card": "P1-core-and-shell.md#obg-p1-01",
+      "status": "DONE",
+      "dependencies": [
+        "OBG-P0-01",
+        "OBG-P0-02"
+      ],
+      "external_prerequisites": [],
+      "unmet_dependencies": []
+    },
+    {
+      "id": "OBG-P1-02",
+      "card": "P1-core-and-shell.md#obg-p1-02",
+      "status": "DONE",
+      "dependencies": [
+        "OBG-P1-01"
+      ],
+      "external_prerequisites": [],
+      "unmet_dependencies": []
+    },
+    {
+      "id": "OBG-P1-03",
+      "card": "P1-core-and-shell.md#obg-p1-03",
+      "status": "DONE",
+      "dependencies": [
+        "OBG-P1-02",
+        "OBG-P0-03"
+      ],
+      "external_prerequisites": [],
+      "unmet_dependencies": []
+    },
+    {
+      "id": "OBG-P1-04A",
+      "card": "P1-core-and-shell.md#obg-p1-04a",
+      "status": "DONE",
+      "dependencies": [
+        "OBG-P1-02",
+        "OBG-P1-03"
+      ],
+      "external_prerequisites": [],
+      "unmet_dependencies": []
+    },
+    {
+      "id": "OBG-P1-04B",
+      "card": "P1-core-and-shell.md#obg-p1-04b",
+      "status": "DONE",
+      "dependencies": [
+        "OBG-P1-02",
+        "OBG-P1-03"
+      ],
+      "external_prerequisites": [],
+      "unmet_dependencies": []
+    },
+    {
+      "id": "OBG-P1-05",
+      "card": "P1-core-and-shell.md#obg-p1-05",
+      "status": "DONE",
+      "dependencies": [
+        "OBG-P1-02",
+        "OBG-P1-03"
+      ],
+      "external_prerequisites": [],
+      "unmet_dependencies": []
+    },
+    {
+      "id": "OBG-P1-06",
+      "card": "P1-core-and-shell.md#obg-p1-06",
+      "status": "DONE",
+      "dependencies": [
+        "OBG-P1-03",
+        "OBG-P1-05"
+      ],
+      "external_prerequisites": [],
+      "unmet_dependencies": []
+    },
+    {
+      "id": "OBG-P1-07",
+      "card": "P1-core-and-shell.md#obg-p1-07",
+      "status": "DONE",
+      "dependencies": [
+        "OBG-P1-01",
+        "OBG-P1-02",
+        "OBG-P1-03",
+        "OBG-P1-04A",
+        "OBG-P1-04B",
+        "OBG-P1-05",
+        "OBG-P1-06"
+      ],
+      "external_prerequisites": [],
+      "unmet_dependencies": []
+    },
+    {
+      "id": "OBG-P2-01",
+      "card": "P2-local-proxy.md#obg-p2-01",
+      "status": "TODO",
+      "dependencies": [
+        "OBG-P1-02",
+        "OBG-P1-03",
+        "OBG-P1-04A",
+        "OBG-P0-06"
+      ],
+      "external_prerequisites": [],
+      "unmet_dependencies": [
+        "OBG-P0-06"
+      ]
+    },
+    {
+      "id": "OBG-P2-02A",
+      "card": "P2-local-proxy.md#obg-p2-02a",
+      "status": "TODO",
+      "dependencies": [
+        "OBG-P2-01"
+      ],
+      "external_prerequisites": [],
+      "unmet_dependencies": [
+        "OBG-P2-01"
+      ]
+    },
+    {
+      "id": "OBG-P2-02B",
+      "card": "P2-local-proxy.md#obg-p2-02b",
+      "status": "TODO",
+      "dependencies": [
+        "OBG-P2-02A",
+        "OBG-P0-04"
+      ],
+      "external_prerequisites": [],
+      "unmet_dependencies": [
+        "OBG-P2-02A"
+      ]
+    },
+    {
+      "id": "OBG-P2-03",
+      "card": "P2-local-proxy.md#obg-p2-03",
+      "status": "TODO",
+      "dependencies": [
+        "OBG-P2-02B",
+        "OBG-P1-03"
+      ],
+      "external_prerequisites": [],
+      "unmet_dependencies": [
+        "OBG-P2-02B"
+      ]
+    },
+    {
+      "id": "OBG-P2-04",
+      "card": "P2-local-proxy.md#obg-p2-04",
+      "status": "TODO",
+      "dependencies": [
+        "OBG-P2-03"
+      ],
+      "external_prerequisites": [],
+      "unmet_dependencies": [
+        "OBG-P2-03"
+      ]
+    },
+    {
+      "id": "OBG-P2-05",
+      "card": "P2-local-proxy.md#obg-p2-05",
+      "status": "TODO",
+      "dependencies": [
+        "OBG-P2-03",
+        "OBG-P0-06"
+      ],
+      "external_prerequisites": [],
+      "unmet_dependencies": [
+        "OBG-P2-03",
+        "OBG-P0-06"
+      ]
+    },
+    {
+      "id": "OBG-P2-06",
+      "card": "P2-local-proxy.md#obg-p2-06",
+      "status": "TODO",
+      "dependencies": [
+        "OBG-P2-03",
+        "OBG-P2-04",
+        "OBG-P0-05"
+      ],
+      "external_prerequisites": [],
+      "unmet_dependencies": [
+        "OBG-P2-03",
+        "OBG-P2-04",
+        "OBG-P0-05"
+      ]
+    },
+    {
+      "id": "OBG-P2-07",
+      "card": "P2-local-proxy.md#obg-p2-07",
+      "status": "TODO",
+      "dependencies": [
+        "OBG-P2-06",
+        "OBG-P2-05"
+      ],
+      "external_prerequisites": [],
+      "unmet_dependencies": [
+        "OBG-P2-06",
+        "OBG-P2-05"
+      ]
+    },
+    {
+      "id": "OBG-P2-08",
+      "card": "P2-local-proxy.md#obg-p2-08",
+      "status": "TODO",
+      "dependencies": [
+        "OBG-P2-02A",
+        "OBG-P2-04",
+        "OBG-P2-05",
+        "OBG-P1-04B"
+      ],
+      "external_prerequisites": [],
+      "unmet_dependencies": [
+        "OBG-P2-02A",
+        "OBG-P2-04",
+        "OBG-P2-05"
+      ]
+    },
+    {
+      "id": "OBG-P2-09",
+      "card": "P2-local-proxy.md#obg-p2-09",
+      "status": "TODO",
+      "dependencies": [
+        "OBG-P1-07",
+        "OBG-P2-01",
+        "OBG-P2-02A",
+        "OBG-P2-02B",
+        "OBG-P2-03",
+        "OBG-P2-04",
+        "OBG-P2-05",
+        "OBG-P2-06",
+        "OBG-P2-07",
+        "OBG-P2-08"
+      ],
+      "external_prerequisites": [],
+      "unmet_dependencies": [
+        "OBG-P2-01",
+        "OBG-P2-02A",
+        "OBG-P2-02B",
+        "OBG-P2-03",
+        "OBG-P2-04",
+        "OBG-P2-05",
+        "OBG-P2-06",
+        "OBG-P2-07",
+        "OBG-P2-08"
+      ]
+    },
+    {
+      "id": "OBG-P3-01",
+      "card": "P3-observability.md#obg-p3-01",
+      "status": "TODO",
+      "dependencies": [
+        "OBG-P2-03",
+        "OBG-P0-07"
+      ],
+      "external_prerequisites": [],
+      "unmet_dependencies": [
+        "OBG-P2-03"
+      ]
+    },
+    {
+      "id": "OBG-P3-02",
+      "card": "P3-observability.md#obg-p3-02",
+      "status": "TODO",
+      "dependencies": [
+        "OBG-P3-01",
+        "OBG-P2-02A",
+        "OBG-P2-05",
+        "OBG-P2-08",
+        "OBG-P1-04B"
+      ],
+      "external_prerequisites": [],
+      "unmet_dependencies": [
+        "OBG-P3-01",
+        "OBG-P2-02A",
+        "OBG-P2-05",
+        "OBG-P2-08"
+      ]
+    },
+    {
+      "id": "OBG-P3-03",
+      "card": "P3-observability.md#obg-p3-03",
+      "status": "TODO",
+      "dependencies": [
+        "OBG-P3-01",
+        "OBG-P1-05"
+      ],
+      "external_prerequisites": [],
+      "unmet_dependencies": [
+        "OBG-P3-01"
+      ]
+    },
+    {
+      "id": "OBG-P3-04",
+      "card": "P3-observability.md#obg-p3-04",
+      "status": "TODO",
+      "dependencies": [
+        "OBG-P3-01"
+      ],
+      "external_prerequisites": [],
+      "unmet_dependencies": [
+        "OBG-P3-01"
+      ]
+    },
+    {
+      "id": "OBG-P3-05",
+      "card": "P3-observability.md#obg-p3-05",
+      "status": "TODO",
+      "dependencies": [
+        "OBG-P3-01",
+        "OBG-P3-04",
+        "OBG-P1-04B",
+        "OBG-P2-05"
+      ],
+      "external_prerequisites": [],
+      "unmet_dependencies": [
+        "OBG-P3-01",
+        "OBG-P3-04",
+        "OBG-P2-05"
+      ]
+    },
+    {
+      "id": "OBG-P3-06",
+      "card": "P3-observability.md#obg-p3-06",
+      "status": "TODO",
+      "dependencies": [
+        "OBG-P3-04",
+        "OBG-P3-05"
+      ],
+      "external_prerequisites": [],
+      "unmet_dependencies": [
+        "OBG-P3-04",
+        "OBG-P3-05"
+      ]
+    },
+    {
+      "id": "OBG-P3-07",
+      "card": "P3-observability.md#obg-p3-07",
+      "status": "TODO",
+      "dependencies": [
+        "OBG-P3-01",
+        "OBG-P2-02A",
+        "OBG-P2-08",
+        "OBG-P1-04B"
+      ],
+      "external_prerequisites": [],
+      "unmet_dependencies": [
+        "OBG-P3-01",
+        "OBG-P2-02A",
+        "OBG-P2-08"
+      ]
+    },
+    {
+      "id": "OBG-P3-08",
+      "card": "P3-observability.md#obg-p3-08",
+      "status": "TODO",
+      "dependencies": [
+        "OBG-P3-01",
+        "OBG-P3-02",
+        "OBG-P3-03",
+        "OBG-P3-04",
+        "OBG-P3-05",
+        "OBG-P3-06",
+        "OBG-P3-07"
+      ],
+      "external_prerequisites": [],
+      "unmet_dependencies": [
+        "OBG-P3-01",
+        "OBG-P3-02",
+        "OBG-P3-03",
+        "OBG-P3-04",
+        "OBG-P3-05",
+        "OBG-P3-06",
+        "OBG-P3-07"
+      ]
+    },
+    {
+      "id": "OBG-P4-01",
+      "card": "P4-configuration.md#obg-p4-01",
+      "status": "TODO",
+      "dependencies": [
+        "OBG-P2-01",
+        "OBG-P2-05"
+      ],
+      "external_prerequisites": [],
+      "unmet_dependencies": [
+        "OBG-P2-01",
+        "OBG-P2-05"
+      ]
+    },
+    {
+      "id": "OBG-P4-02",
+      "card": "P4-configuration.md#obg-p4-02",
+      "status": "TODO",
+      "dependencies": [
+        "OBG-P2-01",
+        "OBG-P2-02A",
+        "OBG-P2-02B",
+        "OBG-P1-03",
+        "OBG-P1-04A"
+      ],
+      "external_prerequisites": [],
+      "unmet_dependencies": [
+        "OBG-P2-01",
+        "OBG-P2-02A",
+        "OBG-P2-02B"
+      ]
+    },
+    {
+      "id": "OBG-P4-03",
+      "card": "P4-configuration.md#obg-p4-03",
+      "status": "TODO",
+      "dependencies": [
+        "OBG-P4-02",
+        "OBG-P2-04"
+      ],
+      "external_prerequisites": [],
+      "unmet_dependencies": [
+        "OBG-P4-02",
+        "OBG-P2-04"
+      ]
+    },
+    {
+      "id": "OBG-P4-04",
+      "card": "P4-configuration.md#obg-p4-04",
+      "status": "TODO",
+      "dependencies": [
+        "OBG-P2-02B",
+        "OBG-P2-04",
+        "OBG-P2-05",
+        "OBG-P1-04A"
+      ],
+      "external_prerequisites": [],
+      "unmet_dependencies": [
+        "OBG-P2-02B",
+        "OBG-P2-04",
+        "OBG-P2-05"
+      ]
+    },
+    {
+      "id": "OBG-P4-06",
+      "card": "P4-configuration.md#obg-p4-06",
+      "status": "TODO",
+      "dependencies": [
+        "OBG-P2-02A",
+        "OBG-P2-02B",
+        "OBG-P2-05",
+        "OBG-P2-08"
+      ],
+      "external_prerequisites": [],
+      "unmet_dependencies": [
+        "OBG-P2-02A",
+        "OBG-P2-02B",
+        "OBG-P2-05",
+        "OBG-P2-08"
+      ]
+    },
+    {
+      "id": "OBG-P4-05A",
+      "card": "P4-configuration.md#obg-p4-05a",
+      "status": "TODO",
+      "dependencies": [
+        "OBG-P4-03",
+        "OBG-P4-04",
+        "OBG-P4-06"
+      ],
+      "external_prerequisites": [],
+      "unmet_dependencies": [
+        "OBG-P4-03",
+        "OBG-P4-04",
+        "OBG-P4-06"
+      ]
+    },
+    {
+      "id": "OBG-P4-05B",
+      "card": "P4-configuration.md#obg-p4-05b",
+      "status": "TODO",
+      "dependencies": [
+        "OBG-P4-05A",
+        "OBG-P3-01"
+      ],
+      "external_prerequisites": [],
+      "unmet_dependencies": [
+        "OBG-P4-05A",
+        "OBG-P3-01"
+      ]
+    },
+    {
+      "id": "OBG-P4-05C",
+      "card": "P4-configuration.md#obg-p4-05c",
+      "status": "TODO",
+      "dependencies": [
+        "OBG-P4-05A",
+        "OBG-P4-05B",
+        "OBG-P1-04B",
+        "OBG-P2-05",
+        "OBG-P3-07"
+      ],
+      "external_prerequisites": [],
+      "unmet_dependencies": [
+        "OBG-P4-05A",
+        "OBG-P4-05B",
+        "OBG-P2-05",
+        "OBG-P3-07"
+      ]
+    },
+    {
+      "id": "OBG-P4-07",
+      "card": "P4-configuration.md#obg-p4-07",
+      "status": "TODO",
+      "dependencies": [
+        "OBG-P4-01",
+        "OBG-P4-02",
+        "OBG-P4-03",
+        "OBG-P4-04",
+        "OBG-P4-06",
+        "OBG-P4-05A",
+        "OBG-P4-05B",
+        "OBG-P4-05C"
+      ],
+      "external_prerequisites": [],
+      "unmet_dependencies": [
+        "OBG-P4-01",
+        "OBG-P4-02",
+        "OBG-P4-03",
+        "OBG-P4-04",
+        "OBG-P4-06",
+        "OBG-P4-05A",
+        "OBG-P4-05B",
+        "OBG-P4-05C"
+      ]
+    },
+    {
+      "id": "OBG-P5-01",
+      "card": "P5-dns-and-sharing.md#obg-p5-01",
+      "status": "TODO",
+      "dependencies": [
+        "OBG-P2-02B",
+        "OBG-P2-03",
+        "OBG-P2-05",
+        "OBG-P0-07",
+        "OBG-P1-04A"
+      ],
+      "external_prerequisites": [],
+      "unmet_dependencies": [
+        "OBG-P2-02B",
+        "OBG-P2-03",
+        "OBG-P2-05"
+      ]
+    },
+    {
+      "id": "OBG-P5-02",
+      "card": "P5-dns-and-sharing.md#obg-p5-02",
+      "status": "TODO",
+      "dependencies": [
+        "OBG-P5-01",
+        "OBG-P2-05"
+      ],
+      "external_prerequisites": [],
+      "unmet_dependencies": [
+        "OBG-P5-01",
+        "OBG-P2-05"
+      ]
+    },
+    {
+      "id": "OBG-P5-03",
+      "card": "P5-dns-and-sharing.md#obg-p5-03",
+      "status": "TODO",
+      "dependencies": [
+        "OBG-P5-02",
+        "OBG-P3-01",
+        "OBG-P4-05C"
+      ],
+      "external_prerequisites": [],
+      "unmet_dependencies": [
+        "OBG-P5-02",
+        "OBG-P3-01",
+        "OBG-P4-05C"
+      ]
+    },
+    {
+      "id": "OBG-P5-04",
+      "card": "P5-dns-and-sharing.md#obg-p5-04",
+      "status": "TODO",
+      "dependencies": [
+        "OBG-P2-02B",
+        "OBG-P2-03"
+      ],
+      "external_prerequisites": [],
+      "unmet_dependencies": [
+        "OBG-P2-02B",
+        "OBG-P2-03"
+      ]
+    },
+    {
+      "id": "OBG-P5-05",
+      "card": "P5-dns-and-sharing.md#obg-p5-05",
+      "status": "TODO",
+      "dependencies": [
+        "OBG-P5-04",
+        "OBG-P1-04A",
+        "OBG-P1-05"
+      ],
+      "external_prerequisites": [],
+      "unmet_dependencies": [
+        "OBG-P5-04"
+      ]
+    },
+    {
+      "id": "OBG-P5-06",
+      "card": "P5-dns-and-sharing.md#obg-p5-06",
+      "status": "TODO",
+      "dependencies": [
+        "OBG-P2-01",
+        "OBG-P1-05",
+        "OBG-P1-04A"
+      ],
+      "external_prerequisites": [],
+      "unmet_dependencies": [
+        "OBG-P2-01"
+      ]
+    },
+    {
+      "id": "OBG-P5-07",
+      "card": "P5-dns-and-sharing.md#obg-p5-07",
+      "status": "TODO",
+      "dependencies": [
+        "OBG-P5-01",
+        "OBG-P5-02",
+        "OBG-P5-03",
+        "OBG-P5-04",
+        "OBG-P5-05",
+        "OBG-P5-06",
+        "OBG-P4-07"
+      ],
+      "external_prerequisites": [],
+      "unmet_dependencies": [
+        "OBG-P5-01",
+        "OBG-P5-02",
+        "OBG-P5-03",
+        "OBG-P5-04",
+        "OBG-P5-05",
+        "OBG-P5-06",
+        "OBG-P4-07"
+      ]
+    },
+    {
+      "id": "OBG-P6-01",
+      "card": "P6-macos-lifecycle.md#obg-p6-01",
+      "status": "TODO",
+      "dependencies": [
+        "OBG-P2-06",
+        "OBG-P2-07",
+        "OBG-P2-04",
+        "OBG-P2-02B",
+        "OBG-P2-05",
+        "OBG-P5-01"
+      ],
+      "external_prerequisites": [],
+      "unmet_dependencies": [
+        "OBG-P2-06",
+        "OBG-P2-07",
+        "OBG-P2-04",
+        "OBG-P2-02B",
+        "OBG-P2-05",
+        "OBG-P5-01"
+      ]
+    },
+    {
+      "id": "OBG-P6-02",
+      "card": "P6-macos-lifecycle.md#obg-p6-02",
+      "status": "TODO",
+      "dependencies": [
+        "OBG-P6-01"
+      ],
+      "external_prerequisites": [],
+      "unmet_dependencies": [
+        "OBG-P6-01"
+      ]
+    },
+    {
+      "id": "OBG-P6-03",
+      "card": "P6-macos-lifecycle.md#obg-p6-03",
+      "status": "TODO",
+      "dependencies": [
+        "OBG-P6-02",
+        "OBG-P1-06",
+        "OBG-P4-01",
+        "OBG-P5-06"
+      ],
+      "external_prerequisites": [],
+      "unmet_dependencies": [
+        "OBG-P6-02",
+        "OBG-P4-01",
+        "OBG-P5-06"
+      ]
+    },
+    {
+      "id": "OBG-P6-04",
+      "card": "P6-macos-lifecycle.md#obg-p6-04",
+      "status": "TODO",
+      "dependencies": [
+        "OBG-P6-02",
+        "OBG-P0-08",
+        "OBG-P2-05"
+      ],
+      "external_prerequisites": [],
+      "unmet_dependencies": [
+        "OBG-P6-02",
+        "OBG-P0-08",
+        "OBG-P2-05"
+      ]
+    },
+    {
+      "id": "OBG-P6-05",
+      "card": "P6-macos-lifecycle.md#obg-p6-05",
+      "status": "TODO",
+      "dependencies": [
+        "OBG-P6-01",
+        "OBG-P6-02",
+        "OBG-P6-03",
+        "OBG-P6-04"
+      ],
+      "external_prerequisites": [],
+      "unmet_dependencies": [
+        "OBG-P6-01",
+        "OBG-P6-02",
+        "OBG-P6-03",
+        "OBG-P6-04"
+      ]
+    },
+    {
+      "id": "OBG-P7-01",
+      "card": "P7-data-and-release.md#obg-p7-01",
+      "status": "TODO",
+      "dependencies": [
+        "OBG-P1-02",
+        "OBG-P1-04A",
+        "OBG-P1-04B",
+        "OBG-P1-05",
+        "OBG-P3-06",
+        "OBG-P4-01",
+        "OBG-P4-03",
+        "OBG-P4-05B",
+        "OBG-P4-06",
+        "OBG-P5-02",
+        "OBG-P5-04",
+        "OBG-P5-06"
+      ],
+      "external_prerequisites": [],
+      "unmet_dependencies": [
+        "OBG-P3-06",
+        "OBG-P4-01",
+        "OBG-P4-03",
+        "OBG-P4-05B",
+        "OBG-P4-06",
+        "OBG-P5-02",
+        "OBG-P5-04",
+        "OBG-P5-06"
+      ]
+    },
+    {
+      "id": "OBG-P7-02",
+      "card": "P7-data-and-release.md#obg-p7-02",
+      "status": "TODO",
+      "dependencies": [
+        "OBG-P7-01",
+        "OBG-P6-02",
+        "OBG-P6-03",
+        "OBG-P2-07",
+        "OBG-P5-06"
+      ],
+      "external_prerequisites": [],
+      "unmet_dependencies": [
+        "OBG-P7-01",
+        "OBG-P6-02",
+        "OBG-P6-03",
+        "OBG-P2-07",
+        "OBG-P5-06"
+      ]
+    },
+    {
+      "id": "OBG-P7-03",
+      "card": "P7-data-and-release.md#obg-p7-03",
+      "status": "TODO",
+      "dependencies": [
+        "OBG-P7-01",
+        "OBG-P7-02",
+        "OBG-P6-05"
+      ],
+      "external_prerequisites": [],
+      "unmet_dependencies": [
+        "OBG-P7-01",
+        "OBG-P7-02",
+        "OBG-P6-05"
+      ]
+    },
+    {
+      "id": "OBG-P7-04",
+      "card": "P7-data-and-release.md#obg-p7-04",
+      "status": "TODO",
+      "dependencies": [
+        "OBG-P1-07",
+        "OBG-P2-09",
+        "OBG-P3-08",
+        "OBG-P4-07",
+        "OBG-P5-07",
+        "OBG-P6-05",
+        "OBG-P7-01",
+        "OBG-P7-02"
+      ],
+      "external_prerequisites": [],
+      "unmet_dependencies": [
+        "OBG-P2-09",
+        "OBG-P3-08",
+        "OBG-P4-07",
+        "OBG-P5-07",
+        "OBG-P6-05",
+        "OBG-P7-01",
+        "OBG-P7-02"
+      ]
+    },
+    {
+      "id": "OBG-P7-05",
+      "card": "P7-data-and-release.md#obg-p7-05",
+      "status": "TODO",
+      "dependencies": [
+        "OBG-P7-03",
+        "OBG-P7-04",
+        "OBG-P0-09"
+      ],
+      "external_prerequisites": [],
+      "unmet_dependencies": [
+        "OBG-P7-03",
+        "OBG-P7-04",
+        "OBG-P0-09"
+      ]
+    },
+    {
+      "id": "OBG-W0-01",
+      "card": "WINDOWS.md#obg-w0-01",
+      "status": "DEFERRED",
+      "dependencies": [
+        "OBG-P1-01",
+        "OBG-P1-03"
+      ],
+      "external_prerequisites": [
+        "Windows 范围排期确认"
+      ],
+      "unmet_dependencies": []
+    },
+    {
+      "id": "OBG-W0-02",
+      "card": "WINDOWS.md#obg-w0-02",
+      "status": "DEFERRED",
+      "dependencies": [
+        "OBG-W0-01",
+        "OBG-P2-03"
+      ],
+      "external_prerequisites": [],
+      "unmet_dependencies": [
+        "OBG-W0-01",
+        "OBG-P2-03"
+      ]
+    },
+    {
+      "id": "OBG-W1-01",
+      "card": "WINDOWS.md#obg-w1-01",
+      "status": "DEFERRED",
+      "dependencies": [
+        "OBG-W0-01",
+        "OBG-P2-01",
+        "OBG-P2-02B",
+        "OBG-P2-04",
+        "OBG-P2-05",
+        "OBG-P2-08"
+      ],
+      "external_prerequisites": [],
+      "unmet_dependencies": [
+        "OBG-W0-01",
+        "OBG-P2-01",
+        "OBG-P2-02B",
+        "OBG-P2-04",
+        "OBG-P2-05",
+        "OBG-P2-08"
+      ]
+    },
+    {
+      "id": "OBG-W2-01",
+      "card": "WINDOWS.md#obg-w2-01",
+      "status": "DEFERRED",
+      "dependencies": [
+        "OBG-W0-02",
+        "OBG-W1-01",
+        "OBG-P2-06"
+      ],
+      "external_prerequisites": [],
+      "unmet_dependencies": [
+        "OBG-W0-02",
+        "OBG-W1-01",
+        "OBG-P2-06"
+      ]
+    },
+    {
+      "id": "OBG-W2-02",
+      "card": "WINDOWS.md#obg-w2-02",
+      "status": "DEFERRED",
+      "dependencies": [
+        "OBG-W2-01",
+        "OBG-P6-01"
+      ],
+      "external_prerequisites": [],
+      "unmet_dependencies": [
+        "OBG-W2-01",
+        "OBG-P6-01"
+      ]
+    },
+    {
+      "id": "OBG-W3-01",
+      "card": "WINDOWS.md#obg-w3-01",
+      "status": "DEFERRED",
+      "dependencies": [
+        "OBG-W2-02",
+        "OBG-P7-01",
+        "OBG-P6-04"
+      ],
+      "external_prerequisites": [],
+      "unmet_dependencies": [
+        "OBG-W2-02",
+        "OBG-P7-01",
+        "OBG-P6-04"
+      ]
+    },
+    {
+      "id": "OBG-W3-02",
+      "card": "WINDOWS.md#obg-w3-02",
+      "status": "DEFERRED",
+      "dependencies": [
+        "OBG-W3-01",
+        "OBG-P3-08",
+        "OBG-P4-07",
+        "OBG-P5-07",
+        "OBG-P7-02"
+      ],
+      "external_prerequisites": [],
+      "unmet_dependencies": [
+        "OBG-W3-01",
+        "OBG-P3-08",
+        "OBG-P4-07",
+        "OBG-P5-07",
+        "OBG-P7-02"
+      ]
+    }
+  ]
+}

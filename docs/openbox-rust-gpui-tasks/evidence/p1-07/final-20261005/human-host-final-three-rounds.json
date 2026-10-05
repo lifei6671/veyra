@@ -1,0 +1,39 @@
+{
+  "recorded_at": "2026-10-05T11:10:32.194056+00:00",
+  "binary_sha256": "8bd7a366d24fa2eff8bf78e22604f461030cedae9d1184c11a28ca8eb4f5c28d",
+  "bundle": "/private/tmp/veyra-p107-final-20261005/VeyraP107Final.app",
+  "root": "/tmp/veyra-p107-final-20261005/root",
+  "source": "direct Human/Host report in current user message",
+  "human": {
+    "sequence": [
+      "Show #1",
+      "Close",
+      "Show #2",
+      "Close",
+      "Show #3",
+      "Close",
+      "Tray Quit"
+    ],
+    "three_rounds": "PASS",
+    "tray_quit": "PASS"
+  },
+  "host_independent_postcheck": {
+    "process_gone": true,
+    "socket_absent": true,
+    "flock_free": true,
+    "source": "Host independently confirmed; not inferred from old log"
+  },
+  "agent_current_postcheck": {
+    "process_gone": true,
+    "socket_absent": true,
+    "flock_free": true
+  },
+  "old_log": {
+    "path": "final-combination-first-launch.log",
+    "sha256": "3233da734c925e5d866aa1b098466c0fe5f240beebcdf4faaf27ff52d48aac26",
+    "status": "historical Show2/Close3 preserved unchanged; not rewritten or relabeled as current3Show"
+  },
+  "acceptance_basis": "Human3Show + Host independent cleanup; no claim that historical first-launch log contains3Show",
+  "task_status": "DOING",
+  "owner": "GPUI"
+}

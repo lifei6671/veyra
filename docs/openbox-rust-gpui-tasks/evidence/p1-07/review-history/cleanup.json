@@ -1,0 +1,23 @@
+{
+  "mode": "explicit task cleanup after incomplete tray test; NOT native quit acceptance",
+  "stopped_owned_pids": [
+    55229,
+    29255
+  ],
+  "roots": [
+    {
+      "root": "/tmp/veyra-p1-07-visual",
+      "stale_socket_manually_removed": true,
+      "socket_remaining": false
+    },
+    {
+      "root": "/tmp/veyra-p1-07-combination",
+      "stale_socket_manually_removed": true,
+      "socket_remaining": false
+    }
+  ],
+  "retained": "isolated test configuration/assets for diagnosis; no active writer",
+  "user_apps": "user Edge tab restored and left open",
+  "remaining_owned_pids": [],
+  "loopback_1427_listening": false
+}

@@ -1,0 +1,46 @@
+[
+  {
+    "theme": "light",
+    "kind": "react",
+    "tooltip_color_interior_bbox": [
+      726,
+      234,
+      1006,
+      298
+    ],
+    "note": "color interior excludes rounded corners, text, shadow; bbox not DOM bounds"
+  },
+  {
+    "theme": "light",
+    "kind": "gpui",
+    "tooltip_color_interior_bbox": [
+      731,
+      252,
+      1009,
+      311
+    ],
+    "note": "color interior excludes rounded corners, text, shadow; bbox not DOM bounds"
+  },
+  {
+    "theme": "dark",
+    "kind": "react",
+    "tooltip_color_interior_bbox": [
+      726,
+      234,
+      1006,
+      298
+    ],
+    "note": "color interior excludes rounded corners, text, shadow; bbox not DOM bounds"
+  },
+  {
+    "theme": "dark",
+    "kind": "gpui",
+    "tooltip_color_interior_bbox": [
+      730,
+      251,
+      1010,
+      312
+    ],
+    "note": "color interior excludes rounded corners, text, shadow; bbox not DOM bounds"
+  }
+]

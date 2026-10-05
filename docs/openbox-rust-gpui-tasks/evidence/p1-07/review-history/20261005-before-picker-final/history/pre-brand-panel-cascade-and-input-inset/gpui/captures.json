@@ -1,0 +1,542 @@
+[
+  {
+    "name": "light-shell",
+    "binary_sha256": "2f1ef55be73ea84277e8828427d38617ce4f57f29f0c91883c028c12121ae5dc",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:38:59.120Z"
+  },
+  {
+    "name": "light-sidebar-tooltip-focus",
+    "binary_sha256": "2f1ef55be73ea84277e8828427d38617ce4f57f29f0c91883c028c12121ae5dc",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:38:59.770Z"
+  },
+  {
+    "name": "light-sidebar-tooltip-escape",
+    "binary_sha256": "2f1ef55be73ea84277e8828427d38617ce4f57f29f0c91883c028c12121ae5dc",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:39:00.530Z"
+  },
+  {
+    "name": "light-sidebar-tooltip-blur",
+    "binary_sha256": "2f1ef55be73ea84277e8828427d38617ce4f57f29f0c91883c028c12121ae5dc",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:39:01.228Z"
+  },
+  {
+    "name": "light-sidebar-tooltip-hover",
+    "binary_sha256": "2f1ef55be73ea84277e8828427d38617ce4f57f29f0c91883c028c12121ae5dc",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:39:02.902Z"
+  },
+  {
+    "name": "light-collapsed",
+    "binary_sha256": "2f1ef55be73ea84277e8828427d38617ce4f57f29f0c91883c028c12121ae5dc",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:39:05.014Z"
+  },
+  {
+    "name": "light-sidebar-tooltip-collapsed",
+    "binary_sha256": "2f1ef55be73ea84277e8828427d38617ce4f57f29f0c91883c028c12121ae5dc",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:39:06.694Z"
+  },
+  {
+    "name": "light-panel",
+    "binary_sha256": "2f1ef55be73ea84277e8828427d38617ce4f57f29f0c91883c028c12121ae5dc",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:39:08.889Z"
+  },
+  {
+    "name": "light-disabled",
+    "binary_sha256": "2f1ef55be73ea84277e8828427d38617ce4f57f29f0c91883c028c12121ae5dc",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:39:08.998Z"
+  },
+  {
+    "name": "light-select",
+    "binary_sha256": "2f1ef55be73ea84277e8828427d38617ce4f57f29f0c91883c028c12121ae5dc",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:39:21.987Z"
+  },
+  {
+    "name": "light-select-keyboard-selected",
+    "binary_sha256": "2f1ef55be73ea84277e8828427d38617ce4f57f29f0c91883c028c12121ae5dc",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:39:22.729Z"
+  },
+  {
+    "name": "light-select-keyboard-escape",
+    "binary_sha256": "2f1ef55be73ea84277e8828427d38617ce4f57f29f0c91883c028c12121ae5dc",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:39:24.136Z"
+  },
+  {
+    "name": "light-select-outside-dismiss",
+    "binary_sha256": "2f1ef55be73ea84277e8828427d38617ce4f57f29f0c91883c028c12121ae5dc",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:39:25.705Z"
+  },
+  {
+    "name": "light-input-focus",
+    "binary_sha256": "2f1ef55be73ea84277e8828427d38617ce4f57f29f0c91883c028c12121ae5dc",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:39:25.812Z"
+  },
+  {
+    "name": "light-switch-off",
+    "binary_sha256": "2f1ef55be73ea84277e8828427d38617ce4f57f29f0c91883c028c12121ae5dc",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:39:26.423Z"
+  },
+  {
+    "name": "light-switch-on",
+    "binary_sha256": "2f1ef55be73ea84277e8828427d38617ce4f57f29f0c91883c028c12121ae5dc",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:39:27.171Z"
+  },
+  {
+    "name": "light-tooltip-focus",
+    "binary_sha256": "2f1ef55be73ea84277e8828427d38617ce4f57f29f0c91883c028c12121ae5dc",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:39:28.673Z"
+  },
+  {
+    "name": "light-tooltip-escape",
+    "binary_sha256": "2f1ef55be73ea84277e8828427d38617ce4f57f29f0c91883c028c12121ae5dc",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:39:29.410Z"
+  },
+  {
+    "name": "light-tooltip-blur",
+    "binary_sha256": "2f1ef55be73ea84277e8828427d38617ce4f57f29f0c91883c028c12121ae5dc",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:39:30.181Z"
+  },
+  {
+    "name": "light-tooltip-hover",
+    "binary_sha256": "2f1ef55be73ea84277e8828427d38617ce4f57f29f0c91883c028c12121ae5dc",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:39:32.461Z"
+  },
+  {
+    "name": "light-select-mouse-selected",
+    "binary_sha256": "2f1ef55be73ea84277e8828427d38617ce4f57f29f0c91883c028c12121ae5dc",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:39:54.063Z"
+  },
+  {
+    "name": "light-modal",
+    "binary_sha256": "2f1ef55be73ea84277e8828427d38617ce4f57f29f0c91883c028c12121ae5dc",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:39:56.219Z"
+  },
+  {
+    "name": "light-modal-focus-return",
+    "binary_sha256": "2f1ef55be73ea84277e8828427d38617ce4f57f29f0c91883c028c12121ae5dc",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:39:57.095Z"
+  },
+  {
+    "name": "light-modal-keyboard",
+    "binary_sha256": "2f1ef55be73ea84277e8828427d38617ce4f57f29f0c91883c028c12121ae5dc",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:39:57.761Z"
+  },
+  {
+    "name": "light-button-focus",
+    "binary_sha256": "2f1ef55be73ea84277e8828427d38617ce4f57f29f0c91883c028c12121ae5dc",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:39:59.211Z"
+  },
+  {
+    "name": "light-toast",
+    "binary_sha256": "2f1ef55be73ea84277e8828427d38617ce4f57f29f0c91883c028c12121ae5dc",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:40:01.477Z"
+  },
+  {
+    "name": "light-toast-close",
+    "binary_sha256": "2f1ef55be73ea84277e8828427d38617ce4f57f29f0c91883c028c12121ae5dc",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:40:02.205Z"
+  },
+  {
+    "name": "light-slider",
+    "binary_sha256": "2f1ef55be73ea84277e8828427d38617ce4f57f29f0c91883c028c12121ae5dc",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:41:30.420Z"
+  },
+  {
+    "name": "light-slider-drag",
+    "binary_sha256": "2f1ef55be73ea84277e8828427d38617ce4f57f29f0c91883c028c12121ae5dc",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:41:34.379Z"
+  },
+  {
+    "name": "dark-slider",
+    "binary_sha256": "2f1ef55be73ea84277e8828427d38617ce4f57f29f0c91883c028c12121ae5dc",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:42:04.504Z"
+  },
+  {
+    "name": "dark-shell",
+    "binary_sha256": "2f1ef55be73ea84277e8828427d38617ce4f57f29f0c91883c028c12121ae5dc",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:42:59.021Z"
+  },
+  {
+    "name": "dark-collapsed",
+    "binary_sha256": "2f1ef55be73ea84277e8828427d38617ce4f57f29f0c91883c028c12121ae5dc",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:43:01.011Z"
+  },
+  {
+    "name": "dark-sidebar-tooltip-collapsed",
+    "binary_sha256": "2f1ef55be73ea84277e8828427d38617ce4f57f29f0c91883c028c12121ae5dc",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:43:02.653Z"
+  },
+  {
+    "name": "dark-sidebar-tooltip-focus",
+    "binary_sha256": "2f1ef55be73ea84277e8828427d38617ce4f57f29f0c91883c028c12121ae5dc",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:43:05.452Z"
+  },
+  {
+    "name": "dark-sidebar-tooltip-escape",
+    "binary_sha256": "2f1ef55be73ea84277e8828427d38617ce4f57f29f0c91883c028c12121ae5dc",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:43:06.110Z"
+  },
+  {
+    "name": "dark-sidebar-tooltip-blur",
+    "binary_sha256": "2f1ef55be73ea84277e8828427d38617ce4f57f29f0c91883c028c12121ae5dc",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:43:06.770Z"
+  },
+  {
+    "name": "dark-sidebar-tooltip-hover",
+    "binary_sha256": "2f1ef55be73ea84277e8828427d38617ce4f57f29f0c91883c028c12121ae5dc",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:43:08.421Z"
+  },
+  {
+    "name": "dark-panel",
+    "binary_sha256": "2f1ef55be73ea84277e8828427d38617ce4f57f29f0c91883c028c12121ae5dc",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:43:09.138Z"
+  },
+  {
+    "name": "dark-disabled",
+    "binary_sha256": "2f1ef55be73ea84277e8828427d38617ce4f57f29f0c91883c028c12121ae5dc",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:43:09.236Z"
+  },
+  {
+    "name": "dark-select",
+    "binary_sha256": "2f1ef55be73ea84277e8828427d38617ce4f57f29f0c91883c028c12121ae5dc",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:43:23.652Z"
+  },
+  {
+    "name": "dark-select-keyboard-selected",
+    "binary_sha256": "2f1ef55be73ea84277e8828427d38617ce4f57f29f0c91883c028c12121ae5dc",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:43:24.363Z"
+  },
+  {
+    "name": "dark-select-keyboard-escape",
+    "binary_sha256": "2f1ef55be73ea84277e8828427d38617ce4f57f29f0c91883c028c12121ae5dc",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:43:25.760Z"
+  },
+  {
+    "name": "dark-select-outside-dismiss",
+    "binary_sha256": "2f1ef55be73ea84277e8828427d38617ce4f57f29f0c91883c028c12121ae5dc",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:43:27.305Z"
+  },
+  {
+    "name": "dark-input-focus",
+    "binary_sha256": "2f1ef55be73ea84277e8828427d38617ce4f57f29f0c91883c028c12121ae5dc",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:43:27.402Z"
+  },
+  {
+    "name": "dark-switch-off",
+    "binary_sha256": "2f1ef55be73ea84277e8828427d38617ce4f57f29f0c91883c028c12121ae5dc",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:43:27.977Z"
+  },
+  {
+    "name": "dark-switch-on",
+    "binary_sha256": "2f1ef55be73ea84277e8828427d38617ce4f57f29f0c91883c028c12121ae5dc",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:43:28.719Z"
+  },
+  {
+    "name": "dark-tooltip-focus",
+    "binary_sha256": "2f1ef55be73ea84277e8828427d38617ce4f57f29f0c91883c028c12121ae5dc",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:43:30.092Z"
+  },
+  {
+    "name": "dark-tooltip-escape",
+    "binary_sha256": "2f1ef55be73ea84277e8828427d38617ce4f57f29f0c91883c028c12121ae5dc",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:43:30.812Z"
+  },
+  {
+    "name": "dark-tooltip-blur",
+    "binary_sha256": "2f1ef55be73ea84277e8828427d38617ce4f57f29f0c91883c028c12121ae5dc",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:43:31.570Z"
+  },
+  {
+    "name": "dark-tooltip-hover",
+    "binary_sha256": "2f1ef55be73ea84277e8828427d38617ce4f57f29f0c91883c028c12121ae5dc",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:43:33.852Z"
+  },
+  {
+    "name": "dark-modal",
+    "binary_sha256": "2f1ef55be73ea84277e8828427d38617ce4f57f29f0c91883c028c12121ae5dc",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:43:34.730Z"
+  },
+  {
+    "name": "dark-modal-focus-return",
+    "binary_sha256": "2f1ef55be73ea84277e8828427d38617ce4f57f29f0c91883c028c12121ae5dc",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:43:35.486Z"
+  },
+  {
+    "name": "dark-icon-button-hover",
+    "binary_sha256": "2f1ef55be73ea84277e8828427d38617ce4f57f29f0c91883c028c12121ae5dc",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:44:43.619Z"
+  },
+  {
+    "name": "dark-toast",
+    "binary_sha256": "2f1ef55be73ea84277e8828427d38617ce4f57f29f0c91883c028c12121ae5dc",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:44:45.759Z"
+  },
+  {
+    "name": "dark-save-failure",
+    "binary_sha256": "2f1ef55be73ea84277e8828427d38617ce4f57f29f0c91883c028c12121ae5dc",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:44:50.319Z"
+  },
+  {
+    "name": "dark-save-failure-field",
+    "binary_sha256": "2f1ef55be73ea84277e8828427d38617ce4f57f29f0c91883c028c12121ae5dc",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:44:51.685Z"
+  },
+  {
+    "name": "dark-invalid-draft",
+    "binary_sha256": "2f1ef55be73ea84277e8828427d38617ce4f57f29f0c91883c028c12121ae5dc",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:45:11.217Z"
+  },
+  {
+    "name": "dark-toast",
+    "binary_sha256": "2f1ef55be73ea84277e8828427d38617ce4f57f29f0c91883c028c12121ae5dc",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:45:15.126Z"
+  },
+  {
+    "name": "dark-toast-close",
+    "binary_sha256": "2f1ef55be73ea84277e8828427d38617ce4f57f29f0c91883c028c12121ae5dc",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:45:15.851Z"
+  },
+  {
+    "name": "dark-toast-before-auto-dismiss",
+    "binary_sha256": "2f1ef55be73ea84277e8828427d38617ce4f57f29f0c91883c028c12121ae5dc",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:45:16.510Z"
+  }
+]

@@ -1,0 +1,73 @@
+# 最终截图索引
+
+所有 GPUI 当前图来自同一最终 build `627728a2...`，1280×720 logical content；历史图不在本索引。判定见 [visual-matrix.md](../visual-matrix.md)。
+
+| 状态 | GPUI 原图 | React 当前参考 | 叠图 |
+|---|---|---|---|
+| combination-before-close | [jpg](gpui/combination-before-close.jpg) | 来源/状态说明见矩阵 | — |
+| dark-button-focus | [jpg](gpui/dark-button-focus.jpg) | 来源/状态说明见矩阵 | — |
+| dark-collapsed | [jpg](gpui/dark-collapsed.jpg) | [png](react/dark-collapsed.png) | [overlay](comparison/dark-collapsed-overlay.png) |
+| dark-disabled | [jpg](gpui/dark-disabled.jpg) | [png](react/dark-panel.png) | [overlay](comparison/dark-disabled-overlay.png) |
+| dark-icon-button-hover | [jpg](gpui/dark-icon-button-hover.jpg) | [png](react/dark-icon-button-hover.png) | [overlay](comparison/dark-icon-button-hover-overlay.png) |
+| dark-input-focus | [jpg](gpui/dark-input-focus.jpg) | [png](react/dark-input-focus.png) | [overlay](comparison/dark-input-focus-overlay.png) |
+| dark-invalid-draft | [jpg](gpui/dark-invalid-draft.jpg) | 来源/状态说明见矩阵 | — |
+| dark-modal-focus-return | [jpg](gpui/dark-modal-focus-return.jpg) | [png](react/dark-modal-focus-return.png) | [overlay](comparison/dark-modal-focus-return-overlay.png) |
+| dark-modal-keyboard | [jpg](gpui/dark-modal-keyboard.jpg) | 来源/状态说明见矩阵 | — |
+| dark-modal | [jpg](gpui/dark-modal.jpg) | [png](react/dark-modal.png) | [overlay](comparison/dark-modal-overlay.png) |
+| dark-panel | [jpg](gpui/dark-panel.jpg) | [png](react/dark-panel.png) | [overlay](comparison/dark-panel-overlay.png) |
+| dark-save-failure | [jpg](gpui/dark-save-failure.jpg) | 来源/状态说明见矩阵 | — |
+| dark-select-keyboard-escape | [jpg](gpui/dark-select-keyboard-escape.jpg) | 来源/状态说明见矩阵 | — |
+| dark-select-keyboard-selected | [jpg](gpui/dark-select-keyboard-selected.jpg) | 来源/状态说明见矩阵 | — |
+| dark-select-outside-dismiss | [jpg](gpui/dark-select-outside-dismiss.jpg) | 来源/状态说明见矩阵 | — |
+| dark-select | [jpg](gpui/dark-select.jpg) | [png](react/dark-select.png) | [overlay](comparison/dark-select-overlay.png) |
+| dark-shell | [jpg](gpui/dark-shell.jpg) | [png](react/dark-shell.png) | [overlay](comparison/dark-shell-overlay.png) |
+| dark-sidebar-tooltip-blur | [jpg](gpui/dark-sidebar-tooltip-blur.jpg) | 来源/状态说明见矩阵 | — |
+| dark-sidebar-tooltip-collapsed | [jpg](gpui/dark-sidebar-tooltip-collapsed.jpg) | [png](react/dark-sidebar-tooltip-collapsed.png) | [overlay](comparison/dark-sidebar-tooltip-collapsed-overlay.png) |
+| dark-sidebar-tooltip-escape | [jpg](gpui/dark-sidebar-tooltip-escape.jpg) | 来源/状态说明见矩阵 | — |
+| dark-sidebar-tooltip-focus | [jpg](gpui/dark-sidebar-tooltip-focus.jpg) | 来源/状态说明见矩阵 | — |
+| dark-sidebar-tooltip-hover | [jpg](gpui/dark-sidebar-tooltip-hover.jpg) | [png](react/dark-sidebar-tooltip-hover.png) | [overlay](comparison/dark-sidebar-tooltip-hover-overlay.png) |
+| dark-slider | [jpg](gpui/dark-slider.jpg) | [png](react/dark-slider.png) | [overlay](comparison/dark-slider-overlay.png) |
+| dark-spinner-increment | [jpg](gpui/dark-spinner-increment.jpg) | 来源/状态说明见矩阵 | — |
+| dark-switch-off | [jpg](gpui/dark-switch-off.jpg) | [png](react/dark-switch-off.png) | [overlay](comparison/dark-switch-off-overlay.png) |
+| dark-switch-on | [jpg](gpui/dark-switch-on.jpg) | [png](react/dark-switch-on.png) | [overlay](comparison/dark-switch-on-overlay.png) |
+| dark-toast-auto-dismiss | [jpg](gpui/dark-toast-auto-dismiss.jpg) | [png](react/dark-toast-auto-dismiss.png) | [overlay](comparison/dark-toast-auto-dismiss-overlay.png) |
+| dark-toast-before-auto-dismiss | [jpg](gpui/dark-toast-before-auto-dismiss.jpg) | 来源/状态说明见矩阵 | — |
+| dark-toast-close | [jpg](gpui/dark-toast-close.jpg) | [png](react/dark-toast-close.png) | [overlay](comparison/dark-toast-close-overlay.png) |
+| dark-toast | [jpg](gpui/dark-toast.jpg) | [png](react/dark-toast.png) | [overlay](comparison/dark-toast-overlay.png) |
+| dark-tooltip-blur | [jpg](gpui/dark-tooltip-blur.jpg) | [png](react/dark-tooltip-blur.png) | [overlay](comparison/dark-tooltip-blur-overlay.png) |
+| dark-tooltip-escape | [jpg](gpui/dark-tooltip-escape.jpg) | [png](react/dark-tooltip-escape.png) | [overlay](comparison/dark-tooltip-escape-overlay.png) |
+| dark-tooltip-focus | [jpg](gpui/dark-tooltip-focus.jpg) | [png](react/dark-tooltip-focus.png) | [overlay](comparison/dark-tooltip-focus-overlay.png) |
+| dark-tooltip-hover | [jpg](gpui/dark-tooltip-hover.jpg) | [png](react/dark-tooltip-hover.png) | [overlay](comparison/dark-tooltip-hover-overlay.png) |
+| light-button-focus | [jpg](gpui/light-button-focus.jpg) | 来源/状态说明见矩阵 | — |
+| light-disabled | [jpg](gpui/light-disabled.jpg) | [png](react/light-panel.png) | [overlay](comparison/light-disabled-overlay.png) |
+| light-icon-button-hover | [jpg](gpui/light-icon-button-hover.jpg) | [png](react/light-icon-button-hover.png) | [overlay](comparison/light-icon-button-hover-overlay.png) |
+| light-input-focus | [jpg](gpui/light-input-focus.jpg) | [png](react/light-input-focus.png) | [overlay](comparison/light-input-focus-overlay.png) |
+| light-modal-focus-return | [jpg](gpui/light-modal-focus-return.jpg) | [png](react/light-modal-focus-return.png) | [overlay](comparison/light-modal-focus-return-overlay.png) |
+| light-modal-keyboard | [jpg](gpui/light-modal-keyboard.jpg) | 来源/状态说明见矩阵 | — |
+| light-modal | [jpg](gpui/light-modal.jpg) | [png](react/light-modal.png) | [overlay](comparison/light-modal-overlay.png) |
+| light-number-spinner-hover | [jpg](gpui/light-number-spinner-hover.jpg) | [png](react/light-number-spinner-hover.png) | [overlay](comparison/light-number-spinner-hover-overlay.png) |
+| light-panel | [jpg](gpui/light-panel.jpg) | [png](react/light-panel.png) | [overlay](comparison/light-panel-overlay.png) |
+| light-select-keyboard-escape | [jpg](gpui/light-select-keyboard-escape.jpg) | 来源/状态说明见矩阵 | — |
+| light-select-keyboard-selected | [jpg](gpui/light-select-keyboard-selected.jpg) | 来源/状态说明见矩阵 | — |
+| light-select-outside-dismiss | [jpg](gpui/light-select-outside-dismiss.jpg) | 来源/状态说明见矩阵 | — |
+| light-select | [jpg](gpui/light-select.jpg) | [png](react/light-select.png) | [overlay](comparison/light-select-overlay.png) |
+| light-shell-collapsed | [jpg](gpui/light-shell-collapsed.jpg) | [png](react/light-collapsed.png) | [overlay](comparison/light-shell-collapsed-overlay.png) |
+| light-shell | [jpg](gpui/light-shell.jpg) | [png](react/light-shell.png) | [overlay](comparison/light-shell-overlay.png) |
+| light-sidebar-tooltip-blur | [jpg](gpui/light-sidebar-tooltip-blur.jpg) | 来源/状态说明见矩阵 | — |
+| light-sidebar-tooltip-collapsed | [jpg](gpui/light-sidebar-tooltip-collapsed.jpg) | [png](react/light-sidebar-tooltip-collapsed.png) | [overlay](comparison/light-sidebar-tooltip-collapsed-overlay.png) |
+| light-sidebar-tooltip-escape | [jpg](gpui/light-sidebar-tooltip-escape.jpg) | 来源/状态说明见矩阵 | — |
+| light-sidebar-tooltip-focus | [jpg](gpui/light-sidebar-tooltip-focus.jpg) | 来源/状态说明见矩阵 | — |
+| light-sidebar-tooltip-hover | [jpg](gpui/light-sidebar-tooltip-hover.jpg) | [png](react/light-sidebar-tooltip-hover.png) | [overlay](comparison/light-sidebar-tooltip-hover-overlay.png) |
+| light-slider-drag-settled | [jpg](gpui/light-slider-drag-settled.jpg) | 来源/状态说明见矩阵 | — |
+| light-slider-drag | [jpg](gpui/light-slider-drag.jpg) | 来源/状态说明见矩阵 | — |
+| light-slider-responsive-input-settled | [jpg](gpui/light-slider-responsive-input-settled.jpg) | 来源/状态说明见矩阵 | — |
+| light-slider-responsive-input | [jpg](gpui/light-slider-responsive-input.jpg) | 来源/状态说明见矩阵 | — |
+| light-slider | [jpg](gpui/light-slider.jpg) | [png](react/light-slider.png) | [overlay](comparison/light-slider-overlay.png) |
+| light-switch-off | [jpg](gpui/light-switch-off.jpg) | [png](react/light-switch-off.png) | [overlay](comparison/light-switch-off-overlay.png) |
+| light-switch-on | [jpg](gpui/light-switch-on.jpg) | [png](react/light-switch-on.png) | [overlay](comparison/light-switch-on-overlay.png) |
+| light-toast-close | [jpg](gpui/light-toast-close.jpg) | [png](react/light-toast-close.png) | [overlay](comparison/light-toast-close-overlay.png) |
+| light-toast | [jpg](gpui/light-toast.jpg) | [png](react/light-toast.png) | [overlay](comparison/light-toast-overlay.png) |
+| light-tooltip-blur | [jpg](gpui/light-tooltip-blur.jpg) | [png](react/light-tooltip-blur.png) | [overlay](comparison/light-tooltip-blur-overlay.png) |
+| light-tooltip-escape | [jpg](gpui/light-tooltip-escape.jpg) | [png](react/light-tooltip-escape.png) | [overlay](comparison/light-tooltip-escape-overlay.png) |
+| light-tooltip-focus | [jpg](gpui/light-tooltip-focus.jpg) | [png](react/light-tooltip-focus.png) | [overlay](comparison/light-tooltip-focus-overlay.png) |
+| light-tooltip-hover | [jpg](gpui/light-tooltip-hover.jpg) | [png](react/light-tooltip-hover.png) | [overlay](comparison/light-tooltip-hover-overlay.png) |

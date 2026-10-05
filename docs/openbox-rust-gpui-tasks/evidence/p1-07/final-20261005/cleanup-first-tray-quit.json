@@ -1,0 +1,14 @@
+{
+  "time": "2026-10-05T10:40:18.328580+00:00",
+  "human": "已完成：三轮托盘恢复并Tray Quit",
+  "close_count": 3,
+  "show_count": 2,
+  "restore_window_ids": [
+    "WindowId(1v1)"
+  ],
+  "round_audit": "Human reports3; log records2Show; do not claim3log-confirmed in this launch",
+  "quit_intent": true,
+  "socket_removed_by_app": true,
+  "flock_available": true,
+  "remaining_native_processes": []
+}

@@ -1,0 +1,11 @@
+{
+  "schema_epoch_revisions_unchanged": true,
+  "visual_unchanged": true,
+  "latency_unchanged": true,
+  "diagnostics_unchanged": true,
+  "config_revision": 73,
+  "selection_revision": 0,
+  "actual_ui_ax": "gpui/combination-restart-restored.ax.txt",
+  "secondary_activate_used": false,
+  "sigterm_used": false
+}

@@ -1,0 +1,31 @@
+    Checking veyra-desktop v0.1.0 (/Users/lifeilin/wx_lifeilin/github.com/lifei6671/veyra/crates/veyra-desktop)
+error: inconsistent casing in hexadecimal literal
+   --> crates/veyra-desktop/src/ui/behavior_panel.rs:786:62
+    |
+786 | ...   .bg(if dark { rgb(0x161212).into() } else { rgba(0xededeeB3) }).absolute().top(px(t::SECTION_PADDING)).right(px(t::SECTION_PA...
+    |                                                        ^^^^^^^^^^
+    |
+    = help: consider using `0xededeeb3` or `0xEDEDEEB3`
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#mixed_case_hex_literals
+    = note: `-D clippy::mixed-case-hex-literals` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::mixed_case_hex_literals)]`
+
+error: useless conversion to the same type: `gpui_kit::Rgba`
+   --> crates/veyra-desktop/src/ui/components/icon_picker.rs:157:37
+    |
+157 | ...                   rgb(0x151111).into()
+    |                       ^^^^^^^^^^^^^^^^^^^^ help: consider removing `.into()`: `rgb(0x151111)`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#useless_conversion
+    = note: `-D clippy::useless-conversion` implied by `-D warnings`
+    = help: to override `-D warnings` add `#[allow(clippy::useless_conversion)]`
+
+error: useless conversion to the same type: `gpui_kit::Rgba`
+   --> crates/veyra-desktop/src/ui/behavior_panel.rs:786:27
+    |
+786 | ...   .bg(if dark { rgb(0x161212).into() } else { rgba(0xededeeB3) }).absolute().top(px(t::SECTION_PADDING)).right(px(t::SECTION_PA...
+    |                     ^^^^^^^^^^^^^^^^^^^^ help: consider removing `.into()`: `rgb(0x161212)`
+    |
+    = help: for further information visit https://rust-lang.github.io/rust-clippy/rust-1.99.0/index.html#useless_conversion
+
+error: could not compile `veyra-desktop` (bin "veyra-desktop") due to 3 previous errors

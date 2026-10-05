@@ -1,0 +1,67 @@
+{
+  "task": "OBG-P1-07",
+  "record_date": "2026-10-05",
+  "source": "本轮用户提供的已确认事实；人工操作与 Host 独立 post-check 分别记录",
+  "binary_sha256": "8bd7a366d24fa2eff8bf78e22604f461030cedae9d1184c11a28ca8eb4f5c28d",
+  "bundle": "/private/tmp/veyra-p107-final-20261005/VeyraP107Final.app",
+  "root": "/tmp/veyra-p107-final-20261005/root",
+  "three_rounds_evidence": "human-host-final-three-rounds.json",
+  "restart_evidence": "final-restart-recovery.json",
+  "restart": {
+    "status": "PASS",
+    "pid": 94362,
+    "launch": "相同 binary、真实 Mach-O app bundle、同一 root",
+    "snapshot_loaded": true,
+    "page": "Settings → Panel Settings",
+    "theme_mode": "Light",
+    "timeout_ms": 6600,
+    "ipv6_test": true,
+    "primary_count": 1,
+    "writer_created_count": 1,
+    "secondary_writer_count": 0,
+    "state_bytes_hash_unchanged": true
+  },
+  "human_final_quit": {
+    "status": "PASS",
+    "user_reply": "最终退出完成",
+    "action": "Tray Quit",
+    "actor": "用户",
+    "basis": "用户明确回复，按已确认事实通过托盘菜单退出"
+  },
+  "host_independent_postcheck": {
+    "source": "本轮用户提供的已确认 Host 独立 post-check；本轮 Codex 仅记录，不冒称重跑",
+    "pid": 94362,
+    "process_gone": true,
+    "process_status": "PASS",
+    "socket": "/tmp/veyra-p107-final-20261005/root/runtime/desktop.sock",
+    "socket_state": "absent",
+    "socket_status": "PASS",
+    "lock": "/tmp/veyra-p107-final-20261005/root/locks/desktop.lock",
+    "flock_check": "Python fcntl.flock(LOCK_EX|LOCK_NB)",
+    "flock_state": "free",
+    "flock_status": "PASS",
+    "remaining_owned_veyra_acceptance_processes": [],
+    "no_owned_veyra_acceptance_process_remains": true,
+    "transient_pgrep": {
+      "pid": 96193,
+      "subsequent_ps": "absent",
+      "counted_as_residual_veyra": false
+    }
+  },
+  "closeout": {
+    "restart_final_quit": "PASS",
+    "process_socket_flock_cleanup": "PASS",
+    "combination": "PASS",
+    "task_status": "DONE",
+    "owner_released": true
+  },
+  "historical_pending_preserved": "final-restart-recovery.json 原 status / human_final_quit / task_status / owner 保留为当时记录；新增 final_quit / closeout 给出最终结果",
+  "old_first_launch_log": {
+    "path": "final-combination-first-launch.log",
+    "show_count": 2,
+    "close_count": 3,
+    "sha256": "3233da734c925e5d866aa1b098466c0fe5f240beebcdf4faaf27ff52d48aac26",
+    "preserved_unchanged": true,
+    "basis_for_three_rounds": false
+  }
+}

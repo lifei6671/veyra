@@ -1,0 +1,66 @@
+{
+  "head": "b982e8d6a8dfa69ee6e5f861e33a3d9366854d7f",
+  "react_changed_since_baseline": false,
+  "logical_content": [
+    1280,
+    720
+  ],
+  "theme": [
+    "Light",
+    "Dark"
+  ],
+  "storage_fixture": {
+    "timeout": 6500,
+    "ipv6": false,
+    "opacity": 90,
+    "blur": 10,
+    "radius": 16
+  },
+  "files": [
+    {
+      "path": "src/openbox/openbox.css",
+      "sha256": "b0e441729fdd55863036d71cd0c198cdd65d760e139ef8ae973a5b390128cf03"
+    },
+    {
+      "path": "src/openbox/components/AppShell.tsx",
+      "sha256": "298fce70d738e3ab5686e5bad102b262814308fd9f6810f7e56c3518f2eaf875"
+    },
+    {
+      "path": "src/openbox/pages/SettingsPage.tsx",
+      "sha256": "f164b85307937a7c859857f6a262da875e0a90ec35917f020de188c52ab22348"
+    },
+    {
+      "path": "src/openbox/pages/settings/PanelSettings.tsx",
+      "sha256": "d882df4699e9d721b2601fbdac91122299cdf9718bc225873e38381b2ef7ab60"
+    },
+    {
+      "path": "src/openbox/components/shared.tsx",
+      "sha256": "82d0acfd379e3fe67ddc90adb4105e259cbee21ba7087e40c9666f517405948e"
+    },
+    {
+      "path": "src/openbox/ui/controls.tsx",
+      "sha256": "0d76c594887c54d9d5aeb1b602132eb367736d3d1ec9f8d4962e8b8d79bfb255"
+    },
+    {
+      "path": "src/openbox/ui/select.tsx",
+      "sha256": "ac1a7f83e03df113f4da97b9e9716a6c48f0b9e110b0aeebe6628d5a813c96b1"
+    },
+    {
+      "path": "src/openbox/ui/sonner.tsx",
+      "sha256": "3fe54463607e1bf673ff2dc0b018061d13fcfe42304520ce9c704db5a753b973"
+    },
+    {
+      "path": "src/openbox/assets/openbox-logo.png",
+      "sha256": "6797eef5155c20cb2cbaaa1e53f3c12beee8c92a8e836855497ca21ac17ab0df"
+    },
+    {
+      "path": "src/openbox/assets/sidebar-toggle.svg",
+      "sha256": "aa9a30b19b25b0433e3b02183fe052fb41703c5a4841f7c7d2a8aa7790ecce25"
+    },
+    {
+      "path": "src/openbox/assets/panel-background.jpg",
+      "sha256": "c186487334799882b37272366603c93d7acae154df8f029f2bcd50742d45785c"
+    }
+  ],
+  "capture": "local Vite 127.0.0.1:1427; cached Chromium 1226; API/WS fixture; all non-loopback requests aborted"
+}

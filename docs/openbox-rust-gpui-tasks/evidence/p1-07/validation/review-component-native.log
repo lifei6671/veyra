@@ -1,0 +1,433 @@
+product=com.lifei6671.veyra namespace=com.lifei6671.veyra.gpui-preview
+role=primary lock acquired; control socket listening
+writer_created_count=1
+TrayIcon created main_thread=true; Runtime unavailable; start/stop disabled
+AppView created entity=EntityId(1v1); pages_created_count=6
+bridge request=1 generation=0 busy
+theme effective preference=System AppView.dark=true Kit=Dark route=Overview content=Size { 1280px × 721px } snapshot_loaded=false
+logical content Size { 1280px × 720px }; scale factor 2
+tray probe delayed main_thread=true activation_policy=NSApplicationActivationPolicy(0) presentation=NSApplicationPresentationOptions(0) thickness=22
+tray probe visible=true button_exists=true rect=Some(Rect { size: PhysicalSize { width: 68, height: 66 }, position: PhysicalPosition { x: 1752.0, y: 0.0 } })
+tray probe button.frame=CGRect { origin: CGPoint { x: 0.0, y: 0.0 }, size: CGSize { width: 34.0, height: 22.0 } } window.frame=Some(CGRect { origin: CGPoint { x: 876.0, y: 949.0 }, size: CGSize { width: 34.0, height: 33.0 } })
+tray probe screen.frame=CGRect { origin: CGPoint { x: 0.0, y: 0.0 }, size: CGSize { width: 1512.0, height: 982.0 } } visibleFrame=CGRect { origin: CGPoint { x: 54.0, y: 0.0 }, size: CGSize { width: 1458.0, height: 949.0 } }
+default background CPU job generation=1 thread=ThreadId(5) duration_ms=4888
+default background generation=1 accepted=false
+tray native rect=Some(Rect { size: PhysicalSize { width: 68, height: 66 }, position: PhysicalPosition { x: 1752.0, y: 0.0 } }) visible=Some(true)
+bridge request=1 generation=0 Accepted
+theme effective preference=System AppView.dark=true Kit=Dark route=Overview content=Size { 1280px × 720px } snapshot_loaded=true
+tray native rect=Some(Rect { size: PhysicalSize { width: 68, height: 66 }, position: PhysicalPosition { x: 1752.0, y: 0.0 } }) visible=Some(true)
+default background CPU job generation=2 thread=ThreadId(5) duration_ms=4182
+default background generation=2 accepted=true
+tray native rect=Some(Rect { size: PhysicalSize { width: 68, height: 66 }, position: PhysicalPosition { x: 1752.0, y: 0.0 } }) visible=Some(true)
+navigate settings entity=EntityId(18v1)
+theme effective preference=System AppView.dark=true Kit=Dark route=Settings content=Size { 1280px × 720px } snapshot_loaded=true
+desktop intent=Show effect=RevealExisting
+restore existing window=AnyWindowHandle { id: WindowId(1v1), state_type: TypeId(0x4cf30ea886e5b4671b45ece2585e2dcd), root_entity_type_name: "gpui_base::root::Root" }
+visibility after Show
+native hidden=false window_count=4 active_key=true
+desktop intent=Show effect=RevealExisting
+restore existing window=AnyWindowHandle { id: WindowId(1v1), state_type: TypeId(0x4cf30ea886e5b4671b45ece2585e2dcd), root_entity_type_name: "gpui_base::root::Root" }
+visibility after Show
+native hidden=false window_count=4 active_key=true
+visual change generation=1 changes=1
+theme effective preference=Light AppView.dark=false Kit=Light route=Settings content=Size { 1280px × 720px } snapshot_loaded=true
+visual submit generation=1 commits=1 opacity=90 blur=10
+visual completion generation=1 accepted=true result=Ok(())
+tray native rect=Some(Rect { size: PhysicalSize { width: 68, height: 66 }, position: PhysicalPosition { x: 1752.0, y: 0.0 } }) visible=Some(true)
+navigate overview entity=EntityId(3v1)
+theme effective preference=Light AppView.dark=false Kit=Light route=Overview content=Size { 1280px × 720px } snapshot_loaded=true
+visual change generation=2 changes=2
+theme effective preference=Light AppView.dark=false Kit=Light route=Overview content=Size { 1280px × 720px } snapshot_loaded=true
+visual submit generation=2 commits=2 opacity=90 blur=10
+visual completion generation=2 accepted=true result=Ok(())
+tray native rect=Some(Rect { size: PhysicalSize { width: 68, height: 66 }, position: PhysicalPosition { x: 1752.0, y: 0.0 } }) visible=Some(true)
+visual change generation=3 changes=3
+theme effective preference=Light AppView.dark=false Kit=Light route=Overview content=Size { 1280px × 720px } snapshot_loaded=true
+visual submit generation=3 commits=3 opacity=90 blur=10
+visual completion generation=3 accepted=true result=Ok(())
+tray native rect=Some(Rect { size: PhysicalSize { width: 68, height: 66 }, position: PhysicalPosition { x: 1752.0, y: 0.0 } }) visible=Some(true)
+navigate settings entity=EntityId(18v1)
+theme effective preference=Light AppView.dark=false Kit=Light route=Settings content=Size { 1280px × 720px } snapshot_loaded=true
+visual change generation=4 changes=4
+theme effective preference=Dark AppView.dark=true Kit=Dark route=Settings content=Size { 1280px × 720px } snapshot_loaded=true
+visual submit generation=4 commits=4 opacity=90 blur=10
+visual completion generation=4 accepted=true result=Ok(())
+tray native rect=Some(Rect { size: PhysicalSize { width: 68, height: 66 }, position: PhysicalPosition { x: 1752.0, y: 0.0 } }) visible=Some(true)
+navigate overview entity=EntityId(3v1)
+theme effective preference=Dark AppView.dark=true Kit=Dark route=Overview content=Size { 1280px × 720px } snapshot_loaded=true
+visual change generation=5 changes=5
+theme effective preference=Dark AppView.dark=true Kit=Dark route=Overview content=Size { 1280px × 720px } snapshot_loaded=true
+visual submit generation=5 commits=5 opacity=90 blur=10
+visual completion generation=5 accepted=true result=Ok(())
+tray native rect=Some(Rect { size: PhysicalSize { width: 68, height: 66 }, position: PhysicalPosition { x: 1752.0, y: 0.0 } }) visible=Some(true)
+visual change generation=6 changes=6
+theme effective preference=Dark AppView.dark=true Kit=Dark route=Overview content=Size { 1280px × 720px } snapshot_loaded=true
+visual submit generation=6 commits=6 opacity=90 blur=10
+visual completion generation=6 accepted=true result=Ok(())
+tray native rect=Some(Rect { size: PhysicalSize { width: 68, height: 66 }, position: PhysicalPosition { x: 1752.0, y: 0.0 } }) visible=Some(true)
+navigate settings entity=EntityId(18v1)
+theme effective preference=Dark AppView.dark=true Kit=Dark route=Settings content=Size { 1280px × 720px } snapshot_loaded=true
+2026-10-04 21:20:21.489 VeyraP107NativeAB[83181:6384519] TSM AdjustCapsLockLEDForKeyTransitionHandling - _ISSetPhysicalKeyboardCapsLockLED Inhibit
+visual change generation=7 changes=7
+theme effective preference=Light AppView.dark=false Kit=Light route=Settings content=Size { 1280px × 720px } snapshot_loaded=true
+visual submit generation=7 commits=7 opacity=90 blur=10
+visual completion generation=7 accepted=true result=Ok(())
+tray native rect=Some(Rect { size: PhysicalSize { width: 68, height: 66 }, position: PhysicalPosition { x: 1752.0, y: 0.0 } }) visible=Some(true)
+desktop intent=Quit effect=Quit
+quit cleanup: listener stopped; socket removed; flock retained until exit
+TrayIcon released on main thread
+product=com.lifei6671.veyra namespace=com.lifei6671.veyra.gpui-preview
+role=primary lock acquired; control socket listening
+writer_created_count=1
+TrayIcon created main_thread=true; Runtime unavailable; start/stop disabled
+AppView created entity=EntityId(1v1); pages_created_count=6
+bridge request=1 generation=0 busy
+theme effective preference=System AppView.dark=true Kit=Dark route=Overview content=Size { 1280px × 721px } snapshot_loaded=false
+logical content Size { 1280px × 720px }; scale factor 2
+tray probe delayed main_thread=true activation_policy=NSApplicationActivationPolicy(0) presentation=NSApplicationPresentationOptions(0) thickness=22
+tray probe visible=true button_exists=true rect=Some(Rect { size: PhysicalSize { width: 68, height: 66 }, position: PhysicalPosition { x: 1752.0, y: 0.0 } })
+tray probe button.frame=CGRect { origin: CGPoint { x: 0.0, y: 0.0 }, size: CGSize { width: 34.0, height: 22.0 } } window.frame=Some(CGRect { origin: CGPoint { x: 876.0, y: 949.0 }, size: CGSize { width: 34.0, height: 33.0 } })
+tray probe screen.frame=CGRect { origin: CGPoint { x: 0.0, y: 0.0 }, size: CGSize { width: 1512.0, height: 982.0 } } visibleFrame=CGRect { origin: CGPoint { x: 54.0, y: 0.0 }, size: CGSize { width: 1458.0, height: 949.0 } }
+default background CPU job generation=1 thread=ThreadId(5) duration_ms=4787
+default background generation=1 accepted=false
+tray native rect=Some(Rect { size: PhysicalSize { width: 68, height: 66 }, position: PhysicalPosition { x: 1752.0, y: 0.0 } }) visible=Some(true)
+bridge request=1 generation=0 Accepted
+theme effective preference=Light AppView.dark=false Kit=Light route=Overview content=Size { 1280px × 720px } snapshot_loaded=true
+tray native rect=Some(Rect { size: PhysicalSize { width: 68, height: 66 }, position: PhysicalPosition { x: 1752.0, y: 0.0 } }) visible=Some(true)
+navigate settings entity=EntityId(18v1)
+theme effective preference=Light AppView.dark=false Kit=Light route=Settings content=Size { 1280px × 720px } snapshot_loaded=true
+settings wheel delta=Pixels(Point { x: 0px, y: 0px }) offset=Point { x: 0px, y: 0px } max=Point { x: 0px, y: 44px }
+settings wheel delta=Pixels(Point { x: 0px, y: 695px }) offset=Point { x: 0px, y: 695px } max=Point { x: 0px, y: 44px }
+settings wheel delta=Pixels(Point { x: 0px, y: 4061px }) offset=Point { x: 0px, y: 4061px } max=Point { x: 0px, y: 44px }
+settings wheel delta=Pixels(Point { x: 0px, y: 3112px }) offset=Point { x: 0px, y: 3112px } max=Point { x: 0px, y: 44px }
+settings wheel delta=Pixels(Point { x: 0px, y: 2879px }) offset=Point { x: 0px, y: 2879px } max=Point { x: 0px, y: 44px }
+settings wheel delta=Pixels(Point { x: 0px, y: 1294px }) offset=Point { x: 0px, y: 4173px } max=Point { x: 0px, y: 44px }
+settings wheel delta=Pixels(Point { x: 0px, y: 3239px }) offset=Point { x: 0px, y: 3239px } max=Point { x: 0px, y: 44px }
+settings wheel delta=Pixels(Point { x: 0px, y: 1652px }) offset=Point { x: 0px, y: 1652px } max=Point { x: 0px, y: 44px }
+settings wheel delta=Pixels(Point { x: 0px, y: 1307px }) offset=Point { x: 0px, y: 1307px } max=Point { x: 0px, y: 44px }
+settings wheel delta=Pixels(Point { x: 0px, y: 1019px }) offset=Point { x: 0px, y: 1019px } max=Point { x: 0px, y: 44px }
+settings wheel delta=Pixels(Point { x: 0px, y: 1111px }) offset=Point { x: 0px, y: 1111px } max=Point { x: 0px, y: 44px }
+settings wheel delta=Pixels(Point { x: 0px, y: 528px }) offset=Point { x: 0px, y: 528px } max=Point { x: 0px, y: 44px }
+settings wheel delta=Pixels(Point { x: 0px, y: 566px }) offset=Point { x: 0px, y: 566px } max=Point { x: 0px, y: 44px }
+settings wheel delta=Pixels(Point { x: 0px, y: 266px }) offset=Point { x: 0px, y: 266px } max=Point { x: 0px, y: 44px }
+settings wheel delta=Pixels(Point { x: 0px, y: 281px }) offset=Point { x: 0px, y: 281px } max=Point { x: 0px, y: 44px }
+settings wheel delta=Pixels(Point { x: 0px, y: 184px }) offset=Point { x: 0px, y: 184px } max=Point { x: 0px, y: 44px }
+settings wheel delta=Pixels(Point { x: 0px, y: 120px }) offset=Point { x: 0px, y: 120px } max=Point { x: 0px, y: 44px }
+settings wheel delta=Pixels(Point { x: 0px, y: 56px }) offset=Point { x: 0px, y: 56px } max=Point { x: 0px, y: 44px }
+settings wheel delta=Pixels(Point { x: 0px, y: 58px }) offset=Point { x: 0px, y: 58px } max=Point { x: 0px, y: 44px }
+settings wheel delta=Pixels(Point { x: 0px, y: 37px }) offset=Point { x: 0px, y: 37px } max=Point { x: 0px, y: 44px }
+settings wheel delta=Pixels(Point { x: 0px, y: 17px }) offset=Point { x: 0px, y: 17px } max=Point { x: 0px, y: 44px }
+settings wheel delta=Pixels(Point { x: 0px, y: 13px }) offset=Point { x: 0px, y: 13px } max=Point { x: 0px, y: 44px }
+settings wheel delta=Pixels(Point { x: 0px, y: 9px }) offset=Point { x: 0px, y: 9px } max=Point { x: 0px, y: 44px }
+settings wheel delta=Pixels(Point { x: 0px, y: 10px }) offset=Point { x: 0px, y: 10px } max=Point { x: 0px, y: 44px }
+settings wheel delta=Pixels(Point { x: 0px, y: 4px }) offset=Point { x: 0px, y: 4px } max=Point { x: 0px, y: 44px }
+settings wheel delta=Pixels(Point { x: 0px, y: 2px }) offset=Point { x: 0px, y: 2px } max=Point { x: 0px, y: 44px }
+settings wheel delta=Pixels(Point { x: 0px, y: 2px }) offset=Point { x: 0px, y: 2px } max=Point { x: 0px, y: 44px }
+settings wheel delta=Pixels(Point { x: 0px, y: 1px }) offset=Point { x: 0px, y: 1px } max=Point { x: 0px, y: 44px }
+default background CPU job generation=2 thread=ThreadId(5) duration_ms=4157
+default background generation=2 accepted=true
+tray native rect=Some(Rect { size: PhysicalSize { width: 68, height: 66 }, position: PhysicalPosition { x: 1752.0, y: 0.0 } }) visible=Some(true)
+settings wheel delta=Pixels(Point { x: 0px, y: 0px }) offset=Point { x: 0px, y: 0px } max=Point { x: 0px, y: 44px }
+settings wheel delta=Pixels(Point { x: 0px, y: -695px }) offset=Point { x: 0px, y: -695px } max=Point { x: 0px, y: 44px }
+settings wheel delta=Pixels(Point { x: 0px, y: -5628px }) offset=Point { x: 0px, y: -5672px } max=Point { x: 0px, y: 44px }
+settings wheel delta=Pixels(Point { x: 0px, y: -4424px }) offset=Point { x: 0px, y: -4468px } max=Point { x: 0px, y: 44px }
+settings wheel delta=Pixels(Point { x: 0px, y: -3560px }) offset=Point { x: 0px, y: -3604px } max=Point { x: 0px, y: 44px }
+settings wheel delta=Pixels(Point { x: 0px, y: -1846px }) offset=Point { x: 0px, y: -1890px } max=Point { x: 0px, y: 44px }
+settings wheel delta=Pixels(Point { x: 0px, y: -1472px }) offset=Point { x: 0px, y: -1516px } max=Point { x: 0px, y: 44px }
+settings wheel delta=Pixels(Point { x: 0px, y: -1156px }) offset=Point { x: 0px, y: -1200px } max=Point { x: 0px, y: 44px }
+settings wheel delta=Pixels(Point { x: 0px, y: -1265px }) offset=Point { x: 0px, y: -1309px } max=Point { x: 0px, y: 44px }
+settings wheel delta=Pixels(Point { x: 0px, y: -605px }) offset=Point { x: 0px, y: -649px } max=Point { x: 0px, y: 44px }
+settings wheel delta=Pixels(Point { x: 0px, y: -461px }) offset=Point { x: 0px, y: -505px } max=Point { x: 0px, y: 44px }
+settings wheel delta=Pixels(Point { x: 0px, y: -493px }) offset=Point { x: 0px, y: -537px } max=Point { x: 0px, y: 44px }
+settings wheel delta=Pixels(Point { x: 0px, y: -231px }) offset=Point { x: 0px, y: -275px } max=Point { x: 0px, y: 44px }
+settings wheel delta=Pixels(Point { x: 0px, y: -174px }) offset=Point { x: 0px, y: -218px } max=Point { x: 0px, y: 44px }
+settings wheel delta=Pixels(Point { x: 0px, y: -131px }) offset=Point { x: 0px, y: -175px } max=Point { x: 0px, y: 44px }
+settings wheel delta=Pixels(Point { x: 0px, y: -139px }) offset=Point { x: 0px, y: -183px } max=Point { x: 0px, y: 44px }
+settings wheel delta=Pixels(Point { x: 0px, y: -64px }) offset=Point { x: 0px, y: -108px } max=Point { x: 0px, y: 44px }
+settings wheel delta=Pixels(Point { x: 0px, y: -48px }) offset=Point { x: 0px, y: -92px } max=Point { x: 0px, y: 44px }
+settings wheel delta=Pixels(Point { x: 0px, y: -62px }) offset=Point { x: 0px, y: -106px } max=Point { x: 0px, y: 44px }
+settings wheel delta=Pixels(Point { x: 0px, y: -28px }) offset=Point { x: 0px, y: -72px } max=Point { x: 0px, y: 44px }
+settings wheel delta=Pixels(Point { x: 0px, y: -13px }) offset=Point { x: 0px, y: -57px } max=Point { x: 0px, y: 44px }
+settings wheel delta=Pixels(Point { x: 0px, y: -9px }) offset=Point { x: 0px, y: -53px } max=Point { x: 0px, y: 44px }
+settings wheel delta=Pixels(Point { x: 0px, y: -10px }) offset=Point { x: 0px, y: -54px } max=Point { x: 0px, y: 44px }
+settings wheel delta=Pixels(Point { x: 0px, y: -4px }) offset=Point { x: 0px, y: -48px } max=Point { x: 0px, y: 44px }
+settings wheel delta=Pixels(Point { x: 0px, y: -2px }) offset=Point { x: 0px, y: -46px } max=Point { x: 0px, y: 44px }
+settings wheel delta=Pixels(Point { x: 0px, y: -2px }) offset=Point { x: 0px, y: -46px } max=Point { x: 0px, y: 44px }
+settings wheel delta=Pixels(Point { x: 0px, y: -1px }) offset=Point { x: 0px, y: -45px } max=Point { x: 0px, y: 44px }
+settings wheel delta=Pixels(Point { x: 0px, y: 0px }) offset=Point { x: 0px, y: -44px } max=Point { x: 0px, y: 44px }
+settings wheel delta=Pixels(Point { x: 0px, y: -695px }) offset=Point { x: 0px, y: -739px } max=Point { x: 0px, y: 44px }
+settings wheel delta=Pixels(Point { x: 0px, y: -5628px }) offset=Point { x: 0px, y: -5672px } max=Point { x: 0px, y: 44px }
+settings wheel delta=Pixels(Point { x: 0px, y: -3028px }) offset=Point { x: 0px, y: -3072px } max=Point { x: 0px, y: 44px }
+settings wheel delta=Pixels(Point { x: 0px, y: -4956px }) offset=Point { x: 0px, y: -5000px } max=Point { x: 0px, y: 44px }
+settings wheel delta=Pixels(Point { x: 0px, y: -1846px }) offset=Point { x: 0px, y: -1890px } max=Point { x: 0px, y: 44px }
+settings wheel delta=Pixels(Point { x: 0px, y: -3105px }) offset=Point { x: 0px, y: -3149px } max=Point { x: 0px, y: 44px }
+settings wheel delta=Pixels(Point { x: 0px, y: -788px }) offset=Point { x: 0px, y: -832px } max=Point { x: 0px, y: 44px }
+settings wheel delta=Pixels(Point { x: 0px, y: -605px }) offset=Point { x: 0px, y: -649px } max=Point { x: 0px, y: 44px }
+settings wheel delta=Pixels(Point { x: 0px, y: -649px }) offset=Point { x: 0px, y: -693px } max=Point { x: 0px, y: 44px }
+settings wheel delta=Pixels(Point { x: 0px, y: -305px }) offset=Point { x: 0px, y: -349px } max=Point { x: 0px, y: 44px }
+settings wheel delta=Pixels(Point { x: 0px, y: -124px }) offset=Point { x: 0px, y: -473px } max=Point { x: 0px, y: 44px }
+settings wheel delta=Pixels(Point { x: 0px, y: -281px }) offset=Point { x: 0px, y: -325px } max=Point { x: 0px, y: 44px }
+settings wheel delta=Pixels(Point { x: 0px, y: -131px }) offset=Point { x: 0px, y: -175px } max=Point { x: 0px, y: 44px }
+settings wheel delta=Pixels(Point { x: 0px, y: -139px }) offset=Point { x: 0px, y: -183px } max=Point { x: 0px, y: 44px }
+settings wheel delta=Pixels(Point { x: 0px, y: -64px }) offset=Point { x: 0px, y: -108px } max=Point { x: 0px, y: 44px }
+settings wheel delta=Pixels(Point { x: 0px, y: -48px }) offset=Point { x: 0px, y: -92px } max=Point { x: 0px, y: 44px }
+settings wheel delta=Pixels(Point { x: 0px, y: -50px }) offset=Point { x: 0px, y: -94px } max=Point { x: 0px, y: 44px }
+settings wheel delta=Pixels(Point { x: 0px, y: -23px }) offset=Point { x: 0px, y: -67px } max=Point { x: 0px, y: 44px }
+settings wheel delta=Pixels(Point { x: 0px, y: -17px }) offset=Point { x: 0px, y: -61px } max=Point { x: 0px, y: 44px }
+settings wheel delta=Pixels(Point { x: 0px, y: -13px }) offset=Point { x: 0px, y: -57px } max=Point { x: 0px, y: 44px }
+settings wheel delta=Pixels(Point { x: 0px, y: -13px }) offset=Point { x: 0px, y: -57px } max=Point { x: 0px, y: 44px }
+settings wheel delta=Pixels(Point { x: 0px, y: -6px }) offset=Point { x: 0px, y: -50px } max=Point { x: 0px, y: 44px }
+settings wheel delta=Pixels(Point { x: 0px, y: -4px }) offset=Point { x: 0px, y: -48px } max=Point { x: 0px, y: 44px }
+settings wheel delta=Pixels(Point { x: 0px, y: -3px }) offset=Point { x: 0px, y: -47px } max=Point { x: 0px, y: 44px }
+settings wheel delta=Pixels(Point { x: 0px, y: -2px }) offset=Point { x: 0px, y: -46px } max=Point { x: 0px, y: 44px }
+behavior submit generation=7 expected=ConfigVersion(StateVersion { epoch: StateEpoch([71, 244, 40, 128, 16, 26, 121, 188, 150, 48, 204, 140, 68, 130, 68, 31]), revision: 7 }) fields=[LatencyTimeout, Ipv6Test]
+behavior completion generation=7 accepted=true status=Idle pending=[]
+tray native rect=Some(Rect { size: PhysicalSize { width: 68, height: 66 }, position: PhysicalPosition { x: 1752.0, y: 0.0 } }) visible=Some(true)
+behavior submit generation=8 expected=ConfigVersion(StateVersion { epoch: StateEpoch([71, 244, 40, 128, 16, 26, 121, 188, 150, 48, 204, 140, 68, 130, 68, 31]), revision: 8 }) fields=[]
+behavior completion generation=8 accepted=true status=Idle pending=[]
+tray native rect=Some(Rect { size: PhysicalSize { width: 68, height: 66 }, position: PhysicalPosition { x: 1752.0, y: 0.0 } }) visible=Some(true)
+settings wheel delta=Pixels(Point { x: 0px, y: 0px }) offset=Point { x: 0px, y: -44px } max=Point { x: 0px, y: 44px }
+settings wheel delta=Pixels(Point { x: 0px, y: 695px }) offset=Point { x: 0px, y: 651px } max=Point { x: 0px, y: 44px }
+settings wheel delta=Pixels(Point { x: 0px, y: 5628px }) offset=Point { x: 0px, y: 5628px } max=Point { x: 0px, y: 44px }
+settings wheel delta=Pixels(Point { x: 0px, y: 4424px }) offset=Point { x: 0px, y: 4424px } max=Point { x: 0px, y: 44px }
+settings wheel delta=Pixels(Point { x: 0px, y: 3560px }) offset=Point { x: 0px, y: 3560px } max=Point { x: 0px, y: 44px }
+settings wheel delta=Pixels(Point { x: 0px, y: 1846px }) offset=Point { x: 0px, y: 1846px } max=Point { x: 0px, y: 44px }
+settings wheel delta=Pixels(Point { x: 0px, y: 779px }) offset=Point { x: 0px, y: 2625px } max=Point { x: 0px, y: 44px }
+settings wheel delta=Pixels(Point { x: 0px, y: 1849px }) offset=Point { x: 0px, y: 1849px } max=Point { x: 0px, y: 44px }
+settings wheel delta=Pixels(Point { x: 0px, y: 897px }) offset=Point { x: 0px, y: 897px } max=Point { x: 0px, y: 44px }
+settings wheel delta=Pixels(Point { x: 0px, y: 691px }) offset=Point { x: 0px, y: 691px } max=Point { x: 0px, y: 44px }
+settings wheel delta=Pixels(Point { x: 0px, y: 743px }) offset=Point { x: 0px, y: 743px } max=Point { x: 0px, y: 44px }
+settings wheel delta=Pixels(Point { x: 0px, y: 351px }) offset=Point { x: 0px, y: 351px } max=Point { x: 0px, y: 44px }
+settings wheel delta=Pixels(Point { x: 0px, y: 266px }) offset=Point { x: 0px, y: 266px } max=Point { x: 0px, y: 44px }
+settings wheel delta=Pixels(Point { x: 0px, y: 281px }) offset=Point { x: 0px, y: 281px } max=Point { x: 0px, y: 44px }
+settings wheel delta=Pixels(Point { x: 0px, y: 131px }) offset=Point { x: 0px, y: 131px } max=Point { x: 0px, y: 44px }
+settings wheel delta=Pixels(Point { x: 0px, y: 99px }) offset=Point { x: 0px, y: 99px } max=Point { x: 0px, y: 44px }
+settings wheel delta=Pixels(Point { x: 0px, y: 74px }) offset=Point { x: 0px, y: 74px } max=Point { x: 0px, y: 44px }
+settings wheel delta=Pixels(Point { x: 0px, y: 78px }) offset=Point { x: 0px, y: 78px } max=Point { x: 0px, y: 44px }
+settings wheel delta=Pixels(Point { x: 0px, y: 36px }) offset=Point { x: 0px, y: 36px } max=Point { x: 0px, y: 44px }
+settings wheel delta=Pixels(Point { x: 0px, y: 26px }) offset=Point { x: 0px, y: 26px } max=Point { x: 0px, y: 44px }
+settings wheel delta=Pixels(Point { x: 0px, y: 28px }) offset=Point { x: 0px, y: 28px } max=Point { x: 0px, y: 44px }
+settings wheel delta=Pixels(Point { x: 0px, y: 7px }) offset=Point { x: 0px, y: 35px } max=Point { x: 0px, y: 44px }
+settings wheel delta=Pixels(Point { x: 0px, y: 15px }) offset=Point { x: 0px, y: 15px } max=Point { x: 0px, y: 44px }
+settings wheel delta=Pixels(Point { x: 0px, y: 7px }) offset=Point { x: 0px, y: 7px } max=Point { x: 0px, y: 44px }
+settings wheel delta=Pixels(Point { x: 0px, y: 5px }) offset=Point { x: 0px, y: 5px } max=Point { x: 0px, y: 44px }
+settings wheel delta=Pixels(Point { x: 0px, y: 4px }) offset=Point { x: 0px, y: 4px } max=Point { x: 0px, y: 44px }
+settings wheel delta=Pixels(Point { x: 0px, y: 3px }) offset=Point { x: 0px, y: 3px } max=Point { x: 0px, y: 44px }
+2026-10-04 21:31:00.014 VeyraP107NativeAB[87299:6405452] TSM AdjustCapsLockLEDForKeyTransitionHandling - _ISSetPhysicalKeyboardCapsLockLED Inhibit
+visual change generation=1 changes=1
+theme effective preference=Light AppView.dark=false Kit=Light route=Settings content=Size { 1280px × 720px } snapshot_loaded=true
+visual submit generation=1 commits=1 opacity=90 blur=10
+visual completion generation=1 accepted=true result=Ok(())
+tray native rect=Some(Rect { size: PhysicalSize { width: 68, height: 66 }, position: PhysicalPosition { x: 1752.0, y: 0.0 } }) visible=Some(true)
+native dialog opened kind=Image
+native dialog accepted kind=Image; selected path redacted
+asset prepared id=f582cae91914cb46ccc92935ce5abf15e8ae1b7c541d8d655d3b5acdd4deb635
+visual change generation=2 changes=2
+theme effective preference=Light AppView.dark=false Kit=Light route=Settings content=Size { 1280px × 720px } snapshot_loaded=true
+tray native rect=Some(Rect { size: PhysicalSize { width: 68, height: 66 }, position: PhysicalPosition { x: 1752.0, y: 0.0 } }) visible=Some(true)
+visual submit generation=2 commits=2 opacity=90 blur=10
+background image blur=10 cache prepared duration_ms=2049
+tray native rect=Some(Rect { size: PhysicalSize { width: 68, height: 66 }, position: PhysicalPosition { x: 1752.0, y: 0.0 } }) visible=Some(true)
+visual completion generation=2 accepted=true result=Ok(())
+tray native rect=Some(Rect { size: PhysicalSize { width: 68, height: 66 }, position: PhysicalPosition { x: 1752.0, y: 0.0 } }) visible=Some(true)
+desktop intent=Quit effect=Quit
+quit cleanup: listener stopped; socket removed; flock retained until exit
+TrayIcon released on main thread
+product=com.lifei6671.veyra namespace=com.lifei6671.veyra.gpui-preview
+role=primary lock acquired; control socket listening
+writer_created_count=1
+TrayIcon created main_thread=true; Runtime unavailable; start/stop disabled
+AppView created entity=EntityId(1v1); pages_created_count=6
+bridge request=1 generation=0 busy
+theme effective preference=System AppView.dark=true Kit=Dark route=Overview content=Size { 1280px × 721px } snapshot_loaded=false
+logical content Size { 1280px × 720px }; scale factor 2
+navigate settings entity=EntityId(18v1)
+bridge request=2 generation=1 busy
+theme effective preference=System AppView.dark=true Kit=Dark route=Settings content=Size { 1280px × 720px } snapshot_loaded=false
+tray probe delayed main_thread=true activation_policy=NSApplicationActivationPolicy(0) presentation=NSApplicationPresentationOptions(0) thickness=22
+tray probe visible=true button_exists=true rect=Some(Rect { size: PhysicalSize { width: 68, height: 66 }, position: PhysicalPosition { x: 1752.0, y: 0.0 } })
+tray probe button.frame=CGRect { origin: CGPoint { x: 0.0, y: 0.0 }, size: CGSize { width: 34.0, height: 22.0 } } window.frame=Some(CGRect { origin: CGPoint { x: 876.0, y: 949.0 }, size: CGSize { width: 34.0, height: 33.0 } })
+tray probe screen.frame=CGRect { origin: CGPoint { x: 0.0, y: 0.0 }, size: CGSize { width: 1512.0, height: 982.0 } } visibleFrame=CGRect { origin: CGPoint { x: 54.0, y: 0.0 }, size: CGSize { width: 1458.0, height: 949.0 } }
+default background CPU job generation=1 thread=ThreadId(5) duration_ms=4950
+default background generation=1 accepted=false
+tray native rect=Some(Rect { size: PhysicalSize { width: 68, height: 66 }, position: PhysicalPosition { x: 1752.0, y: 0.0 } }) visible=Some(true)
+bridge request=2 generation=1 Accepted
+theme effective preference=Light AppView.dark=false Kit=Light route=Settings content=Size { 1280px × 720px } snapshot_loaded=true
+tray native rect=Some(Rect { size: PhysicalSize { width: 68, height: 66 }, position: PhysicalPosition { x: 1752.0, y: 0.0 } }) visible=Some(true)
+bridge request=1 generation=0 StaleGeneration
+theme effective preference=Light AppView.dark=false Kit=Light route=Settings content=Size { 1280px × 720px } snapshot_loaded=true
+tray native rect=Some(Rect { size: PhysicalSize { width: 68, height: 66 }, position: PhysicalPosition { x: 1752.0, y: 0.0 } }) visible=Some(true)
+default background CPU job generation=2 thread=ThreadId(5) duration_ms=4189
+default background generation=2 accepted=true
+tray native rect=Some(Rect { size: PhysicalSize { width: 68, height: 66 }, position: PhysicalPosition { x: 1752.0, y: 0.0 } }) visible=Some(true)
+tray native rect=Some(Rect { size: PhysicalSize { width: 68, height: 66 }, position: PhysicalPosition { x: 1752.0, y: 0.0 } }) visible=Some(true)
+2026-10-04 21:39:09.082 VeyraP107NativeAB[89783:6419176] TSM AdjustCapsLockLEDForKeyTransitionHandling - _ISSetPhysicalKeyboardCapsLockLED Inhibit
+desktop intent=Quit effect=Quit
+quit cleanup: listener stopped; socket removed; flock retained until exit
+TrayIcon released on main thread
+product=com.lifei6671.veyra namespace=com.lifei6671.veyra.gpui-preview
+role=primary lock acquired; control socket listening
+writer_created_count=1
+TrayIcon created main_thread=true; Runtime unavailable; start/stop disabled
+AppView created entity=EntityId(1v1); pages_created_count=6
+bridge request=1 generation=0 busy
+theme effective preference=System AppView.dark=true Kit=Dark route=Overview content=Size { 1280px × 721px } snapshot_loaded=false
+logical content Size { 1280px × 720px }; scale factor 2
+tray probe delayed main_thread=true activation_policy=NSApplicationActivationPolicy(0) presentation=NSApplicationPresentationOptions(0) thickness=22
+tray probe visible=true button_exists=true rect=Some(Rect { size: PhysicalSize { width: 68, height: 66 }, position: PhysicalPosition { x: 1752.0, y: 0.0 } })
+tray probe button.frame=CGRect { origin: CGPoint { x: 0.0, y: 0.0 }, size: CGSize { width: 34.0, height: 22.0 } } window.frame=Some(CGRect { origin: CGPoint { x: 876.0, y: 949.0 }, size: CGSize { width: 34.0, height: 33.0 } })
+tray probe screen.frame=CGRect { origin: CGPoint { x: 0.0, y: 0.0 }, size: CGSize { width: 1512.0, height: 982.0 } } visibleFrame=CGRect { origin: CGPoint { x: 54.0, y: 0.0 }, size: CGSize { width: 1458.0, height: 949.0 } }
+default background CPU job generation=1 thread=ThreadId(5) duration_ms=4934
+default background generation=1 accepted=false
+tray native rect=Some(Rect { size: PhysicalSize { width: 68, height: 66 }, position: PhysicalPosition { x: 1752.0, y: 0.0 } }) visible=Some(true)
+bridge request=1 generation=0 Accepted
+theme effective preference=Light AppView.dark=false Kit=Light route=Overview content=Size { 1280px × 720px } snapshot_loaded=true
+tray native rect=Some(Rect { size: PhysicalSize { width: 68, height: 66 }, position: PhysicalPosition { x: 1752.0, y: 0.0 } }) visible=Some(true)
+default background CPU job generation=2 thread=ThreadId(5) duration_ms=4075
+default background generation=2 accepted=true
+tray native rect=Some(Rect { size: PhysicalSize { width: 68, height: 66 }, position: PhysicalPosition { x: 1752.0, y: 0.0 } }) visible=Some(true)
+tray native rect=Some(Rect { size: PhysicalSize { width: 68, height: 66 }, position: PhysicalPosition { x: 1752.0, y: 0.0 } }) visible=Some(true)
+desktop intent=Show effect=RevealExisting
+restore existing window=AnyWindowHandle { id: WindowId(1v1), state_type: TypeId(0x4cf30ea886e5b4671b45ece2585e2dcd), root_entity_type_name: "gpui_base::root::Root" }
+visibility after Show
+native hidden=false window_count=4 active_key=true
+navigate settings entity=EntityId(18v1)
+theme effective preference=Light AppView.dark=false Kit=Light route=Settings content=Size { 1280px × 720px } snapshot_loaded=true
+desktop intent=Quit effect=Quit
+quit cleanup: listener stopped; socket removed; flock retained until exit
+TrayIcon released on main thread
+product=com.lifei6671.veyra namespace=com.lifei6671.veyra.gpui-preview
+role=primary lock acquired; control socket listening
+writer_created_count=1
+TrayIcon created main_thread=true; Runtime unavailable; start/stop disabled
+AppView created entity=EntityId(1v1); pages_created_count=6
+bridge request=1 generation=0 busy
+theme effective preference=System AppView.dark=true Kit=Dark route=Overview content=Size { 1280px × 721px } snapshot_loaded=false
+bridge request=1 generation=0 Accepted
+theme effective preference=Light AppView.dark=false Kit=Light route=Overview content=Size { 1280px × 720px } snapshot_loaded=true
+tray native rect=Some(Rect { size: PhysicalSize { width: 68, height: 0 }, position: PhysicalPosition { x: 0.0, y: 1964.0 } }) visible=Some(true)
+tray native rect=Some(Rect { size: PhysicalSize { width: 68, height: 0 }, position: PhysicalPosition { x: 0.0, y: 1964.0 } }) visible=Some(true)
+logical content Size { 1280px × 720px }; scale factor 2
+tray probe delayed main_thread=true activation_policy=NSApplicationActivationPolicy(0) presentation=NSApplicationPresentationOptions(0) thickness=22
+tray probe visible=true button_exists=true rect=Some(Rect { size: PhysicalSize { width: 68, height: 66 }, position: PhysicalPosition { x: 1752.0, y: 0.0 } })
+tray probe button.frame=CGRect { origin: CGPoint { x: 0.0, y: 0.0 }, size: CGSize { width: 34.0, height: 22.0 } } window.frame=Some(CGRect { origin: CGPoint { x: 876.0, y: 949.0 }, size: CGSize { width: 34.0, height: 33.0 } })
+tray probe screen.frame=CGRect { origin: CGPoint { x: 0.0, y: 0.0 }, size: CGSize { width: 1512.0, height: 982.0 } } visibleFrame=CGRect { origin: CGPoint { x: 54.0, y: 0.0 }, size: CGSize { width: 1458.0, height: 949.0 } }
+navigate settings entity=EntityId(18v1)
+theme effective preference=Light AppView.dark=false Kit=Light route=Settings content=Size { 1280px × 720px } snapshot_loaded=true
+visual change generation=1 changes=1
+theme effective preference=Light AppView.dark=false Kit=Light route=Settings content=Size { 1280px × 720px } snapshot_loaded=true
+visual submit generation=1 commits=1 opacity=90 blur=20
+background image blur=20 cache prepared duration_ms=2045
+tray native rect=Some(Rect { size: PhysicalSize { width: 68, height: 66 }, position: PhysicalPosition { x: 1752.0, y: 0.0 } }) visible=Some(true)
+visual completion generation=1 accepted=true result=Ok(())
+tray native rect=Some(Rect { size: PhysicalSize { width: 68, height: 66 }, position: PhysicalPosition { x: 1752.0, y: 0.0 } }) visible=Some(true)
+visual change generation=2 changes=2
+theme effective preference=Light AppView.dark=false Kit=Light route=Settings content=Size { 1280px × 720px } snapshot_loaded=true
+visual submit generation=2 commits=2 opacity=90 blur=33
+background image blur=33 cache prepared duration_ms=2048
+tray native rect=Some(Rect { size: PhysicalSize { width: 68, height: 66 }, position: PhysicalPosition { x: 1752.0, y: 0.0 } }) visible=Some(true)
+visual completion generation=2 accepted=true result=Ok(())
+tray native rect=Some(Rect { size: PhysicalSize { width: 68, height: 66 }, position: PhysicalPosition { x: 1752.0, y: 0.0 } }) visible=Some(true)
+visual change generation=3 changes=3
+theme effective preference=Light AppView.dark=false Kit=Light route=Settings content=Size { 1280px × 720px } snapshot_loaded=true
+visual submit generation=3 commits=3 opacity=90 blur=9
+background image blur=9 cache prepared duration_ms=2046
+tray native rect=Some(Rect { size: PhysicalSize { width: 68, height: 66 }, position: PhysicalPosition { x: 1752.0, y: 0.0 } }) visible=Some(true)
+visual completion generation=3 accepted=true result=Ok(())
+tray native rect=Some(Rect { size: PhysicalSize { width: 68, height: 66 }, position: PhysicalPosition { x: 1752.0, y: 0.0 } }) visible=Some(true)
+2026-10-04 21:49:18.079 VeyraP107NativeAB[92707:6435660] TSM AdjustCapsLockLEDForKeyTransitionHandling - _ISSetPhysicalKeyboardCapsLockLED Inhibit
+desktop intent=Quit effect=Quit
+quit cleanup: listener stopped; socket removed; flock retained until exit
+TrayIcon released on main thread
+product=com.lifei6671.veyra namespace=com.lifei6671.veyra.gpui-preview
+role=primary lock acquired; control socket listening
+writer_created_count=1
+TrayIcon created main_thread=true; Runtime unavailable; start/stop disabled
+AppView created entity=EntityId(1v1); pages_created_count=6
+bridge request=1 generation=0 busy
+theme effective preference=System AppView.dark=true Kit=Dark route=Overview content=Size { 1280px × 721px } snapshot_loaded=false
+bridge request=1 generation=0 Accepted
+theme effective preference=Light AppView.dark=false Kit=Light route=Overview content=Size { 1280px × 720px } snapshot_loaded=true
+tray native rect=Some(Rect { size: PhysicalSize { width: 68, height: 0 }, position: PhysicalPosition { x: 0.0, y: 1964.0 } }) visible=Some(true)
+tray native rect=Some(Rect { size: PhysicalSize { width: 68, height: 0 }, position: PhysicalPosition { x: 0.0, y: 1964.0 } }) visible=Some(true)
+logical content Size { 1280px × 720px }; scale factor 2
+navigate settings entity=EntityId(18v1)
+theme effective preference=Light AppView.dark=false Kit=Light route=Settings content=Size { 1280px × 720px } snapshot_loaded=true
+tray probe delayed main_thread=true activation_policy=NSApplicationActivationPolicy(0) presentation=NSApplicationPresentationOptions(0) thickness=22
+tray probe visible=true button_exists=true rect=Some(Rect { size: PhysicalSize { width: 68, height: 66 }, position: PhysicalPosition { x: 1752.0, y: 0.0 } })
+tray probe button.frame=CGRect { origin: CGPoint { x: 0.0, y: 0.0 }, size: CGSize { width: 34.0, height: 22.0 } } window.frame=Some(CGRect { origin: CGPoint { x: 876.0, y: 949.0 }, size: CGSize { width: 34.0, height: 33.0 } })
+tray probe screen.frame=CGRect { origin: CGPoint { x: 0.0, y: 0.0 }, size: CGSize { width: 1512.0, height: 982.0 } } visibleFrame=CGRect { origin: CGPoint { x: 54.0, y: 0.0 }, size: CGSize { width: 1458.0, height: 949.0 } }
+visual change generation=1 changes=1
+theme effective preference=Light AppView.dark=false Kit=Light route=Settings content=Size { 1280px × 720px } snapshot_loaded=true
+visual submit generation=1 commits=1 opacity=90 blur=9
+default background CPU job generation=1 thread=ThreadId(10) duration_ms=4963
+default background generation=1 accepted=true
+tray native rect=Some(Rect { size: PhysicalSize { width: 68, height: 66 }, position: PhysicalPosition { x: 1752.0, y: 0.0 } }) visible=Some(true)
+visual completion generation=1 accepted=true result=Ok(())
+tray native rect=Some(Rect { size: PhysicalSize { width: 68, height: 66 }, position: PhysicalPosition { x: 1752.0, y: 0.0 } }) visible=Some(true)
+2026-10-04 21:54:06.203 VeyraP107NativeAB[94577:6444518] TSM AdjustCapsLockLEDForKeyTransitionHandling - _ISSetPhysicalKeyboardCapsLockLED Inhibit
+desktop intent=Quit effect=Quit
+quit cleanup: listener stopped; socket removed; flock retained until exit
+TrayIcon released on main thread
+product=com.lifei6671.veyra namespace=com.lifei6671.veyra.gpui-preview
+role=primary lock acquired; control socket listening
+writer_created_count=1
+TrayIcon created main_thread=true; Runtime unavailable; start/stop disabled
+AppView created entity=EntityId(1v1); pages_created_count=6
+bridge request=1 generation=0 busy
+theme effective preference=System AppView.dark=true Kit=Dark route=Overview content=Size { 1280px × 721px } snapshot_loaded=false
+bridge request=1 generation=0 Accepted
+theme effective preference=Light AppView.dark=false Kit=Light route=Overview content=Size { 1280px × 720px } snapshot_loaded=true
+tray native rect=Some(Rect { size: PhysicalSize { width: 68, height: 0 }, position: PhysicalPosition { x: 0.0, y: 1964.0 } }) visible=Some(true)
+logical content Size { 1280px × 720px }; scale factor 2
+navigate settings entity=EntityId(18v1)
+theme effective preference=Light AppView.dark=false Kit=Light route=Settings content=Size { 1280px × 720px } snapshot_loaded=true
+tray probe delayed main_thread=true activation_policy=NSApplicationActivationPolicy(0) presentation=NSApplicationPresentationOptions(0) thickness=22
+tray probe visible=true button_exists=true rect=Some(Rect { size: PhysicalSize { width: 68, height: 66 }, position: PhysicalPosition { x: 1752.0, y: 0.0 } })
+tray probe button.frame=CGRect { origin: CGPoint { x: 0.0, y: 0.0 }, size: CGSize { width: 34.0, height: 22.0 } } window.frame=Some(CGRect { origin: CGPoint { x: 876.0, y: 949.0 }, size: CGSize { width: 34.0, height: 33.0 } })
+tray probe screen.frame=CGRect { origin: CGPoint { x: 0.0, y: 0.0 }, size: CGSize { width: 1512.0, height: 982.0 } } visibleFrame=CGRect { origin: CGPoint { x: 54.0, y: 0.0 }, size: CGSize { width: 1458.0, height: 949.0 } }
+default background CPU job generation=1 thread=ThreadId(5) duration_ms=4994
+default background generation=1 accepted=true
+tray native rect=Some(Rect { size: PhysicalSize { width: 68, height: 66 }, position: PhysicalPosition { x: 1752.0, y: 0.0 } }) visible=Some(true)
+2026-10-04 22:01:46.516 VeyraP107NativeAB[97054:6457888] TSM AdjustCapsLockLEDForKeyTransitionHandling - _ISSetPhysicalKeyboardCapsLockLED Inhibit
+behavior submit generation=7 expected=ConfigVersion(StateVersion { epoch: StateEpoch([71, 244, 40, 128, 16, 26, 121, 188, 150, 48, 204, 140, 68, 130, 68, 31]), revision: 13 }) fields=[LatencyTimeout, Ipv6Test]
+behavior completion generation=7 accepted=true status=Idle pending=[]
+tray native rect=Some(Rect { size: PhysicalSize { width: 68, height: 66 }, position: PhysicalPosition { x: 1752.0, y: 0.0 } }) visible=Some(true)
+behavior submit generation=8 expected=ConfigVersion(StateVersion { epoch: StateEpoch([71, 244, 40, 128, 16, 26, 121, 188, 150, 48, 204, 140, 68, 130, 68, 31]), revision: 14 }) fields=[]
+behavior completion generation=8 accepted=true status=Idle pending=[]
+tray native rect=Some(Rect { size: PhysicalSize { width: 68, height: 66 }, position: PhysicalPosition { x: 1752.0, y: 0.0 } }) visible=Some(true)
+desktop intent=Quit effect=Quit
+quit cleanup: listener stopped; socket removed; flock retained until exit
+TrayIcon released on main thread
+product=com.lifei6671.veyra namespace=com.lifei6671.veyra.gpui-preview
+role=primary lock acquired; control socket listening
+writer_created_count=1
+TrayIcon created main_thread=true; Runtime unavailable; start/stop disabled
+AppView created entity=EntityId(1v1); pages_created_count=6
+bridge request=1 generation=0 busy
+theme effective preference=System AppView.dark=true Kit=Dark route=Overview content=Size { 1280px × 721px } snapshot_loaded=false
+bridge request=1 generation=0 Accepted
+theme effective preference=Light AppView.dark=false Kit=Light route=Overview content=Size { 1280px × 720px } snapshot_loaded=true
+tray native rect=Some(Rect { size: PhysicalSize { width: 68, height: 0 }, position: PhysicalPosition { x: 0.0, y: 1964.0 } }) visible=Some(true)
+logical content Size { 1280px × 720px }; scale factor 2
+navigate settings entity=EntityId(18v1)
+theme effective preference=Light AppView.dark=false Kit=Light route=Settings content=Size { 1280px × 720px } snapshot_loaded=true
+tray probe delayed main_thread=true activation_policy=NSApplicationActivationPolicy(0) presentation=NSApplicationPresentationOptions(0) thickness=22
+tray probe visible=true button_exists=true rect=Some(Rect { size: PhysicalSize { width: 68, height: 66 }, position: PhysicalPosition { x: 1752.0, y: 0.0 } })
+tray probe button.frame=CGRect { origin: CGPoint { x: 0.0, y: 0.0 }, size: CGSize { width: 34.0, height: 22.0 } } window.frame=Some(CGRect { origin: CGPoint { x: 876.0, y: 949.0 }, size: CGSize { width: 34.0, height: 33.0 } })
+tray probe screen.frame=CGRect { origin: CGPoint { x: 0.0, y: 0.0 }, size: CGSize { width: 1512.0, height: 982.0 } } visibleFrame=CGRect { origin: CGPoint { x: 54.0, y: 0.0 }, size: CGSize { width: 1458.0, height: 949.0 } }
+default background CPU job generation=1 thread=ThreadId(5) duration_ms=5058
+default background generation=1 accepted=true
+tray native rect=Some(Rect { size: PhysicalSize { width: 68, height: 66 }, position: PhysicalPosition { x: 1752.0, y: 0.0 } }) visible=Some(true)
+2026-10-04 22:05:02.922 VeyraP107NativeAB[97771:6464554] TSM AdjustCapsLockLEDForKeyTransitionHandling - _ISSetPhysicalKeyboardCapsLockLED Inhibit
+visual change generation=1 changes=1
+theme effective preference=Dark AppView.dark=true Kit=Dark route=Settings content=Size { 1280px × 720px } snapshot_loaded=true
+visual submit generation=1 commits=1 opacity=90 blur=9
+visual completion generation=1 accepted=true result=Ok(())
+tray native rect=Some(Rect { size: PhysicalSize { width: 68, height: 66 }, position: PhysicalPosition { x: 1752.0, y: 0.0 } }) visible=Some(true)
+behavior submit generation=5 expected=ConfigVersion(StateVersion { epoch: StateEpoch([71, 244, 40, 128, 16, 26, 121, 188, 150, 48, 204, 140, 68, 130, 68, 31]), revision: 15 }) fields=[Ipv6Test]
+behavior completion generation=5 accepted=true status=Idle pending=[]
+tray native rect=Some(Rect { size: PhysicalSize { width: 68, height: 66 }, position: PhysicalPosition { x: 1752.0, y: 0.0 } }) visible=Some(true)
+desktop intent=Quit effect=Quit
+quit cleanup: listener stopped; socket removed; flock retained until exit
+TrayIcon released on main thread

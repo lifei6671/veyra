@@ -1,0 +1,135 @@
+{
+  "baseline": "b982e8d6a8dfa69ee6e5f861e33a3d9366854d7f",
+  "uncommitted": true,
+  "binary_sha256": "bdeaadebb046623cec93b2152b05bc2323e13d20b187aca1a3ea08ec581999d8",
+  "sources": [
+    {
+      "path": "crates/veyra-desktop/src/app.rs",
+      "sha256": "af9512a11f9fb823ac5dcf178eebc1b7fb20bdd8e73ff2063040b8f6a1a6ac75"
+    },
+    {
+      "path": "crates/veyra-desktop/src/behavior_preferences.rs",
+      "sha256": "82ceb0635a07203dc60e3749bd6bfcf47330642ad8a29de0d57d87d46343b36c"
+    },
+    {
+      "path": "crates/veyra-desktop/src/desktop_lifecycle.rs",
+      "sha256": "725fa8e84414e72dc54c9b832a037d56fdb533a0ce7345487a13605fbb6afe81"
+    },
+    {
+      "path": "crates/veyra-desktop/src/main.rs",
+      "sha256": "133ccfdeb2a6df035b136d392c68bcead8ac6712cb1d70e9f449e49ba3688a6a"
+    },
+    {
+      "path": "crates/veyra-desktop/src/navigation.rs",
+      "sha256": "5f146f061876b1f88b892d9b68fe473fd62382f7fffe64d250513dc47ab5df81"
+    },
+    {
+      "path": "crates/veyra-desktop/src/platform/directories.rs",
+      "sha256": "2ae70304c7ee4ab9321daefc3d4764eb99cf4dd21b21ece6919fdb7f7076eb79"
+    },
+    {
+      "path": "crates/veyra-desktop/src/platform/files.rs",
+      "sha256": "4ec479b9b63d1e7321fcb6141444cc43f7f32a42402638c7e89f52ed5646623c"
+    },
+    {
+      "path": "crates/veyra-desktop/src/platform/macos.rs",
+      "sha256": "be383b2986f4ee7eded9ca1f01d8c8b9d4a202a7f747926d2467a7bf12db226e"
+    },
+    {
+      "path": "crates/veyra-desktop/src/platform/mod.rs",
+      "sha256": "ea63cb9d919eca7501110c7b08fcbb78bbeb51ee50fd8e23ae866c4039ade627"
+    },
+    {
+      "path": "crates/veyra-desktop/src/platform/single_instance.rs",
+      "sha256": "0932d79ef0b10684dc1014324258c050265f772593c29c5b8f31f73170378a1c"
+    },
+    {
+      "path": "crates/veyra-desktop/src/preferences.rs",
+      "sha256": "3a92d8b44b53fcaeeebba01f3258471e713c9491ecdbf40a1cba50f4bc9896bf"
+    },
+    {
+      "path": "crates/veyra-desktop/src/services.rs",
+      "sha256": "79482b8dbe4e27b6247c0bf004a88cb0ace3bbda9d0a1937fe51d6e61d52e29d"
+    },
+    {
+      "path": "crates/veyra-desktop/src/state_bridge.rs",
+      "sha256": "c43e0ad146644fd6c2f3765a18e7628cf1e3a0e59ba79f7dc039a3333df7dcc9"
+    },
+    {
+      "path": "crates/veyra-desktop/src/tray.rs",
+      "sha256": "18270a8b1c5ed902bca2f42d459c75b992e177d4397fe6201a83b40b341a41bf"
+    },
+    {
+      "path": "crates/veyra-desktop/src/ui/background.rs",
+      "sha256": "d2d119e1bb908b392c3bda95310e303e2ebd9ba2a1fd0bba3cd6232fd7caefef"
+    },
+    {
+      "path": "crates/veyra-desktop/src/ui/behavior_panel.rs",
+      "sha256": "ac73a437f3da72d3005c948e4f7821c239cb30368bbf882c512b7b5a5e3796eb"
+    },
+    {
+      "path": "crates/veyra-desktop/src/ui/components/icon_picker.rs",
+      "sha256": "fa67f25d339c0661cc0dd68c17e15c60dcbab483890764836f4dd2e24a2bbc11"
+    },
+    {
+      "path": "crates/veyra-desktop/src/ui/components/mod.rs",
+      "sha256": "6589d87a9e57ad624b80e55fe51c950b78309d5bc8d27a955c58adafc06b3228"
+    },
+    {
+      "path": "crates/veyra-desktop/src/ui/components/notice.rs",
+      "sha256": "6b80c8772d12e1f088872a46de07a4ddd3d51c58101a4dfde55e9e8fdb7570c6"
+    },
+    {
+      "path": "crates/veyra-desktop/src/ui/components/overlay.rs",
+      "sha256": "542e046923f330d9142ce42fb74e3578acad75cf7b0de623f3f76223a8122e0c"
+    },
+    {
+      "path": "crates/veyra-desktop/src/ui/components/select.rs",
+      "sha256": "5b80f736c357bfec8cc70060c9b209d22ed0b51d6e1b6db5314683bacce54c98"
+    },
+    {
+      "path": "crates/veyra-desktop/src/ui/components/tooltip.rs",
+      "sha256": "ea771b2a63f37f64549bd0b98322a5d118a2d41b162afaed32afb1b96d14b47f"
+    },
+    {
+      "path": "crates/veyra-desktop/src/ui/icons.rs",
+      "sha256": "0aa9907e202e4a6d07898a23b1b5bcc3f0155417cd9ac877c695b4fb24162e65"
+    },
+    {
+      "path": "crates/veyra-desktop/src/ui/mod.rs",
+      "sha256": "7647da63e81a780462a6e489a49254ee1e6139ff06bd055ced83ef94c965662b"
+    },
+    {
+      "path": "crates/veyra-desktop/src/ui/pages/mod.rs",
+      "sha256": "e147a861227e7700d9ae591be255ccbf3690d6e6f31a52cd7ed79d865459c852"
+    },
+    {
+      "path": "crates/veyra-desktop/src/ui/panel.rs",
+      "sha256": "6c5ab1cc4e16648a9945c6fbe18300a8c32aefb0d6e354b85af1c8c6e242d8ad"
+    },
+    {
+      "path": "crates/veyra-desktop/src/ui/shell.rs",
+      "sha256": "5386beae7b48b7d0156ba0dfd0ea4aeb5e09ba8302b68599e2929cad631af558"
+    },
+    {
+      "path": "crates/veyra-desktop/src/ui/theme.rs",
+      "sha256": "3ab9ad4f0bf048fe320701990e9f8454773a2b9ddcd89522b2ddd92addc99390"
+    },
+    {
+      "path": "crates/veyra-desktop/src/ui/tokens.rs",
+      "sha256": "62d3792f30de1cb8357580e7c584cfc92c7c75650c1215edb28ba95214432710"
+    },
+    {
+      "path": "crates/veyra-desktop/src/visual_assets.rs",
+      "sha256": "49064f50bbea298b2c807e36bc2b2dad387519ebc8f52e2db27df58a3a9381ea"
+    }
+  ],
+  "platform": "ProductName:\t\tmacOS\nProductVersion:\t\t27.0\nBuildVersion:\t\t26A428\n",
+  "rust": "rustc 1.99.0 (b940084d7 2026-09-28)",
+  "cargo_offline": true,
+  "previous_binary_sha256": "fd1e53e2760ea88f0e93f529f0e720973b989027e72dca3ff10f3b533b3337ce",
+  "combination_binary_sha256": "bf6e6b3ab9c34e7c65230f2c7b76886cc575ebaaaedb426fbff391377b4a332e",
+  "presentation_delta_after_combination": "Shared Button/Navigation focus wrapper, Tooltip 16px trigger and focus/anchor; tray/background/CAS unchanged. Final UI Save verified actual submit/notification.",
+  "previous_presentation_binary_sha256": "a6bbc91fde86b86cad027248180ff879517c1f63c66ac8ab2e30909e8185bfa0",
+  "last_delta": "Tooltip Local anchor container moved to trigger origin; validation/results-tooltip-final.json PASS. Post-fix screenshot pending Mac unlock."
+}

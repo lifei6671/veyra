@@ -1,0 +1,29 @@
+[
+  {
+    "name": "light-shell",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:11:59.640Z"
+  },
+  {
+    "name": "light-collapsed",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:12:00.358Z"
+  },
+  {
+    "name": "light-panel",
+    "binary_sha256": "cc47127657faf260d1f60255bdcb1cb85042952d8c7586ca176043fc9e2ab16a",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "time": "2026-10-04T23:12:01.816Z"
+  }
+]

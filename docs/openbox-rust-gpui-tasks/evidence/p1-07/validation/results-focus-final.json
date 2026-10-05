@@ -1,0 +1,72 @@
+[
+  {
+    "name": "desktop-test-focus-final",
+    "command": [
+      "cargo",
+      "test",
+      "-p",
+      "veyra-desktop"
+    ],
+    "exit": 0,
+    "duration_seconds": 3.08
+  },
+  {
+    "name": "desktop-check-focus-final",
+    "command": [
+      "cargo",
+      "check",
+      "-p",
+      "veyra-desktop"
+    ],
+    "exit": 0,
+    "duration_seconds": 0.51
+  },
+  {
+    "name": "desktop-build-focus-final",
+    "command": [
+      "cargo",
+      "build",
+      "-p",
+      "veyra-desktop"
+    ],
+    "exit": 0,
+    "duration_seconds": 0.29
+  },
+  {
+    "name": "desktop-clippy-focus-final",
+    "command": [
+      "cargo",
+      "clippy",
+      "-p",
+      "veyra-desktop",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "exit": 0,
+    "duration_seconds": 0.79
+  },
+  {
+    "name": "fmt-focus-final",
+    "command": [
+      "cargo",
+      "fmt",
+      "--all",
+      "--",
+      "--check"
+    ],
+    "exit": 0,
+    "duration_seconds": 0.6
+  },
+  {
+    "name": "workspace-check-focus-final",
+    "command": [
+      "cargo",
+      "check",
+      "--workspace",
+      "--locked"
+    ],
+    "exit": 0,
+    "duration_seconds": 0.91
+  }
+]

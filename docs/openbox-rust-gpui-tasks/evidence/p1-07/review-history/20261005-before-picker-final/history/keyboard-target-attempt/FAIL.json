@@ -1,0 +1,5 @@
+{
+  "status": "FAIL",
+  "cause": "two Shift+Tab steps from timeout landed on a Select focus target rather than Help; no tooltip visible; excluded from keyboard proof",
+  "corrected_method": "focus Help, Tab away, Shift+Tab return; keyboard outline and visible tooltip inspected"
+}

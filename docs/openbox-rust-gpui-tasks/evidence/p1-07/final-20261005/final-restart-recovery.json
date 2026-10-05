@@ -1,0 +1,69 @@
+{
+  "status": "PASS; running for final Human Tray Quit",
+  "time": "2026-10-05T11:12:31.100862+00:00",
+  "pid": 94362,
+  "binary_sha256": "8bd7a366d24fa2eff8bf78e22604f461030cedae9d1184c11a28ca8eb4f5c28d",
+  "bundle": "/private/tmp/veyra-p107-final-20261005/VeyraP107Final.app",
+  "launch": "actual Mach-O app bundle through native app launcher; no shell wrapper",
+  "root": "/tmp/veyra-p107-final-20261005/root",
+  "state_sha256_before": "3caa8a2bc4c60591337870084943c7f0d7b36de9a1d3c7234d2976802fa3d846",
+  "state_sha256_after": "3caa8a2bc4c60591337870084943c7f0d7b36de9a1d3c7234d2976802fa3d846",
+  "state_unchanged": true,
+  "snapshot_loaded": true,
+  "page": "Settings → Panel Settings",
+  "theme_mode": "Light",
+  "AppView.dark": false,
+  "Kit": "Light",
+  "timeout_ms": 6600,
+  "ipv6_test": true,
+  "primary_count": 1,
+  "writer_created_count": 1,
+  "secondary_writer_count": 0,
+  "log_scope": "last startup product marker; full appended log contains previous launch writer1 too, not concurrent writer2",
+  "screenshot": "final-restart-recovery.jpg",
+  "screenshot_sha256": "3bbbf3766d5f49edddc95b4872fa662189a27140d86ae997254e237182765822",
+  "logical_content": [
+    1280,
+    720
+  ],
+  "human_final_quit": "PENDING; do not click for user",
+  "task": "P1-07",
+  "task_status": "DOING",
+  "owner": "GPUI",
+  "historical_record_scope": "原顶层 status / human_final_quit / task_status / owner 为重启完成、等待人工退出时的历史记录，保持原值；当前结果见 final_quit / closeout",
+  "final_quit": {
+    "status": "PASS",
+    "action": "user Tray Quit",
+    "user_reply": "最终退出完成",
+    "host_independent_postcheck": {
+      "source": "本轮用户提供的已确认 Host 独立 post-check；本轮 Codex 仅记录，不冒称重跑",
+      "pid": 94362,
+      "process_gone": true,
+      "process_status": "PASS",
+      "socket": "/tmp/veyra-p107-final-20261005/root/runtime/desktop.sock",
+      "socket_state": "absent",
+      "socket_status": "PASS",
+      "lock": "/tmp/veyra-p107-final-20261005/root/locks/desktop.lock",
+      "flock_check": "Python fcntl.flock(LOCK_EX|LOCK_NB)",
+      "flock_state": "free",
+      "flock_status": "PASS",
+      "remaining_owned_veyra_acceptance_processes": [],
+      "no_owned_veyra_acceptance_process_remains": true,
+      "transient_pgrep": {
+        "pid": 96193,
+        "subsequent_ps": "absent",
+        "counted_as_residual_veyra": false
+      }
+    },
+    "evidence": "human-host-final-restart-quit.json"
+  },
+  "closeout": {
+    "status": "PASS",
+    "restart": "PASS",
+    "restart_final_quit": "PASS",
+    "cleanup": "PASS",
+    "task_status": "DONE",
+    "owner_released": true,
+    "evidence": "human-host-final-restart-quit.json"
+  }
+}

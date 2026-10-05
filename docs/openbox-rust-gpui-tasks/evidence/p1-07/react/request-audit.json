@@ -1,0 +1,154 @@
+[
+  {
+    "path": "/api/auth/status",
+    "method": "GET"
+  },
+  {
+    "path": "/api/auth/status",
+    "method": "GET"
+  },
+  {
+    "path": "/api/storage",
+    "method": "GET"
+  },
+  {
+    "path": "/api/openbox/service/status",
+    "method": "GET"
+  },
+  {
+    "path": "/api/openbox/site-latency/history",
+    "method": "GET"
+  },
+  {
+    "path": "/api/openbox/traffic/month",
+    "method": "GET"
+  },
+  {
+    "path": "/api/openbox/traffic/day",
+    "method": "GET"
+  },
+  {
+    "path": "/api/openbox/site-latency/history",
+    "method": "GET"
+  },
+  {
+    "path": "/api/openbox/traffic/month",
+    "method": "GET"
+  },
+  {
+    "path": "/api/openbox/traffic/day",
+    "method": "GET"
+  },
+  {
+    "path": "/api/storage",
+    "method": "PATCH"
+  },
+  {
+    "path": "/api/storage",
+    "method": "PATCH"
+  },
+  {
+    "path": "/api/storage",
+    "method": "PATCH"
+  },
+  {
+    "path": "/api/storage",
+    "method": "GET"
+  },
+  {
+    "path": "/api/storage",
+    "method": "PATCH"
+  },
+  {
+    "path": "/api/storage",
+    "method": "GET"
+  },
+  {
+    "path": "/api/background-image",
+    "method": "DELETE"
+  },
+  {
+    "path": "/api/storage",
+    "method": "PATCH"
+  },
+  {
+    "path": "/api/storage",
+    "method": "GET"
+  },
+  {
+    "path": "/api/auth/status",
+    "method": "GET"
+  },
+  {
+    "path": "/api/auth/status",
+    "method": "GET"
+  },
+  {
+    "path": "/api/storage",
+    "method": "GET"
+  },
+  {
+    "path": "/api/openbox/service/status",
+    "method": "GET"
+  },
+  {
+    "path": "/api/openbox/site-latency/history",
+    "method": "GET"
+  },
+  {
+    "path": "/api/openbox/traffic/month",
+    "method": "GET"
+  },
+  {
+    "path": "/api/openbox/traffic/day",
+    "method": "GET"
+  },
+  {
+    "path": "/api/openbox/site-latency/history",
+    "method": "GET"
+  },
+  {
+    "path": "/api/openbox/traffic/month",
+    "method": "GET"
+  },
+  {
+    "path": "/api/openbox/traffic/day",
+    "method": "GET"
+  },
+  {
+    "path": "/api/storage",
+    "method": "PATCH"
+  },
+  {
+    "path": "/api/storage",
+    "method": "PATCH"
+  },
+  {
+    "path": "/api/storage",
+    "method": "PATCH"
+  },
+  {
+    "path": "/api/storage",
+    "method": "GET"
+  },
+  {
+    "path": "/api/storage",
+    "method": "PATCH"
+  },
+  {
+    "path": "/api/storage",
+    "method": "GET"
+  },
+  {
+    "path": "/api/background-image",
+    "method": "DELETE"
+  },
+  {
+    "path": "/api/storage",
+    "method": "PATCH"
+  },
+  {
+    "path": "/api/storage",
+    "method": "GET"
+  }
+]

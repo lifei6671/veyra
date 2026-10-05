@@ -1,0 +1,194 @@
+{
+  "baseline": "b982e8d6a8dfa69ee6e5f861e33a3d9366854d7f",
+  "uncommitted": true,
+  "binary_sha256": "fd1e53e2760ea88f0e93f529f0e720973b989027e72dca3ff10f3b533b3337ce",
+  "sources": [
+    {
+      "path": "crates/veyra-desktop/THIRD_PARTY_NOTICES.md",
+      "sha256": "e7d9dd7f8c916cf378eb4961418197262af241170c26e917ea7b0e4a7850b651"
+    },
+    {
+      "path": "crates/veyra-desktop/src/app.rs",
+      "sha256": "e0b1e4d11a119811016bebff971824bf6c899ade36ef6da603c573aa01b5d53d"
+    },
+    {
+      "path": "crates/veyra-desktop/src/main.rs",
+      "sha256": "3bbeaa19206a2f3c6eb41af58ccba2b7036f80587affcf255ae41a1ace73cda4"
+    },
+    {
+      "path": "crates/veyra-desktop/src/tray.rs",
+      "sha256": "c7e8a0077bfd3107ec33251f637cde85f4da40ac3a8f95b4a3ed101d70cafd06"
+    },
+    {
+      "path": "crates/veyra-desktop/src/ui/behavior_panel.rs",
+      "sha256": "6e46407fb9c8a3cd0528582e0ed45dd79948ea4858c583e43b12329c9a3b92c8"
+    },
+    {
+      "path": "crates/veyra-desktop/src/ui/components/mod.rs",
+      "sha256": "8186e47dc57ce23fe9b995309f027ea0b2e86b774c2bf61f1bded03d8791e7f0"
+    },
+    {
+      "path": "crates/veyra-desktop/src/ui/mod.rs",
+      "sha256": "7647da63e81a780462a6e489a49254ee1e6139ff06bd055ced83ef94c965662b"
+    },
+    {
+      "path": "crates/veyra-desktop/src/ui/pages/mod.rs",
+      "sha256": "e147a861227e7700d9ae591be255ccbf3690d6e6f31a52cd7ed79d865459c852"
+    },
+    {
+      "path": "crates/veyra-desktop/src/ui/panel.rs",
+      "sha256": "6c5ab1cc4e16648a9945c6fbe18300a8c32aefb0d6e354b85af1c8c6e242d8ad"
+    },
+    {
+      "path": "crates/veyra-desktop/src/ui/shell.rs",
+      "sha256": "39b1f2a128e6753e61baf534703326de6300b4e977ea87452326b3c84a0064d2"
+    },
+    {
+      "path": "crates/veyra-desktop/src/ui/theme.rs",
+      "sha256": "3ab9ad4f0bf048fe320701990e9f8454773a2b9ddcd89522b2ddd92addc99390"
+    },
+    {
+      "path": "crates/veyra-desktop/assets/heroicons/AdjustmentsHorizontal.svg",
+      "sha256": "4245789d9ab3eb0d62afb73847564f625cda4061bbbff78d30d60bdc8333ab26"
+    },
+    {
+      "path": "crates/veyra-desktop/assets/heroicons/ArrowPath.svg",
+      "sha256": "bb6b836ad1325ebe71a7db1117ad7cf7eedae8c95151e20fa62da8b4fdfa376d"
+    },
+    {
+      "path": "crates/veyra-desktop/assets/heroicons/ArrowUpTray.svg",
+      "sha256": "195e1081aedf5f47e3109195441788fdc57723cac15dd1cf4e0137a2d69f241b"
+    },
+    {
+      "path": "crates/veyra-desktop/assets/heroicons/ArrowUturnLeft.svg",
+      "sha256": "46b7988406c6356ea675c737d949fa0a93052c41a79545f8b6391d1c7ef03d2a"
+    },
+    {
+      "path": "crates/veyra-desktop/assets/heroicons/ArrowsRightLeft.svg",
+      "sha256": "d199d2e10a23239f1e1b1b74172089e92dd30b1eb52056b707928b87a72e7bdd"
+    },
+    {
+      "path": "crates/veyra-desktop/assets/heroicons/Check.svg",
+      "sha256": "c5f466885f3c3bda8909b0914066c4333fc0ab16722e470ff30907082d14ee18"
+    },
+    {
+      "path": "crates/veyra-desktop/assets/heroicons/CheckCircle.svg",
+      "sha256": "2cb5a348bae45aaa1f9b5f903a5155ebf171d1d63b0570f9ddd29e37045b3dc0"
+    },
+    {
+      "path": "crates/veyra-desktop/assets/heroicons/ChevronDown.svg",
+      "sha256": "602ec7c10936746914d72b008660bd934616b1e29731601abee4657e787ef637"
+    },
+    {
+      "path": "crates/veyra-desktop/assets/heroicons/Cog6Tooth.svg",
+      "sha256": "0e4c41a945dbab0e34d99423665b1c3c2dd2707e277a61b0638b1d31af2663a8"
+    },
+    {
+      "path": "crates/veyra-desktop/assets/heroicons/CpuChip.svg",
+      "sha256": "73034bda396ceebeb2876152a15923331f9daf5aa6af35107cea09865f1e5c8d"
+    },
+    {
+      "path": "crates/veyra-desktop/assets/heroicons/DevicePhoneMobile.svg",
+      "sha256": "96874875bebbf0c240f321ec702a27f4aceb243b943c44fb54f40945fc9a0647"
+    },
+    {
+      "path": "crates/veyra-desktop/assets/heroicons/DocumentText.svg",
+      "sha256": "273d9c08d8fcc4c21b68607c92a833838429c8a939b780e8e0eaea7ea596ed96"
+    },
+    {
+      "path": "crates/veyra-desktop/assets/heroicons/Funnel.svg",
+      "sha256": "a150ee92f634377bf32be7ad9f52b130e96585079efdda4ee25cb402df6a071e"
+    },
+    {
+      "path": "crates/veyra-desktop/assets/heroicons/GlobeAlt.svg",
+      "sha256": "90ad14e2cab76bec580662a3985ea72dc3895406441d238561b54eb27d204ba9"
+    },
+    {
+      "path": "crates/veyra-desktop/assets/heroicons/Home.svg",
+      "sha256": "c801d6ddfa81a914b76754379a6dfad25f703c337cf2aeea52c304238e9f8e31"
+    },
+    {
+      "path": "crates/veyra-desktop/assets/heroicons/InformationCircle.svg",
+      "sha256": "212c84e40fcde612bdc2e303fcc4704ba0e36420e9d748298351719e4e25b0e3"
+    },
+    {
+      "path": "crates/veyra-desktop/assets/heroicons/LICENSE",
+      "sha256": "60e0b68c0f35c078eef3a5d29419d0b03ff84ec1df9c3f9d6e39a519a5ae7985"
+    },
+    {
+      "path": "crates/veyra-desktop/assets/heroicons/Link.svg",
+      "sha256": "edc6368f6e89efa248b92146e33a703f3fd2376b0a4a4d71fcce7ea33b52115f"
+    },
+    {
+      "path": "crates/veyra-desktop/assets/heroicons/Map.svg",
+      "sha256": "7665e9f7540097dc2146f50432f14b4e1536bd09cd1b5a8691ec157079d82906"
+    },
+    {
+      "path": "crates/veyra-desktop/assets/heroicons/Play.svg",
+      "sha256": "5b8c52474f96a64b28086f61de7049d640f3d82a163729adacf62b74879cf73b"
+    },
+    {
+      "path": "crates/veyra-desktop/assets/heroicons/QuestionMarkCircle.svg",
+      "sha256": "f69b5f055e7ace1c39c50dc4124f462cdd591c904d13fc0ad9ad7a78d7dd08bd"
+    },
+    {
+      "path": "crates/veyra-desktop/assets/heroicons/RectangleStack.svg",
+      "sha256": "01484687a39ccbf9886b6282d8aa619c645b980aac093b6d70be198fe8554a09"
+    },
+    {
+      "path": "crates/veyra-desktop/assets/heroicons/Rss.svg",
+      "sha256": "6f41fc242e5f5485270b5f266f73bb86da4f51ca254ff8cf26ae8a0e979a0d08"
+    },
+    {
+      "path": "crates/veyra-desktop/assets/heroicons/ServerStack.svg",
+      "sha256": "22af746021c26d97861ea62130029416124800b17a94f6816201a5c767b0fd0e"
+    },
+    {
+      "path": "crates/veyra-desktop/assets/heroicons/Share.svg",
+      "sha256": "03dde0f958b84742c342c80f029ed1f46090ed4fef845dda91f0da46dd3aa32f"
+    },
+    {
+      "path": "crates/veyra-desktop/assets/heroicons/SidebarToggle.svg",
+      "sha256": "aa9a30b19b25b0433e3b02183fe052fb41703c5a4841f7c7d2a8aa7790ecce25"
+    },
+    {
+      "path": "crates/veyra-desktop/assets/heroicons/Stop.svg",
+      "sha256": "e448926403e64f983842f99b489ec0b3fa2bd1b937fecac60462f531901b5453"
+    },
+    {
+      "path": "crates/veyra-desktop/assets/heroicons/XCircle.svg",
+      "sha256": "85dc1248c75db87be523bbc4723dd4b37a209721995dfe85e2ca00b884378e93"
+    },
+    {
+      "path": "crates/veyra-desktop/assets/heroicons/XMark.svg",
+      "sha256": "6e0653031d8561d29ae656d116511fe9aaccb6a4f950caf55678f08c343828ff"
+    },
+    {
+      "path": "crates/veyra-desktop/src/ui/background.rs",
+      "sha256": "fc5767750d45d09dd91edc697dc05462bd3a86a47665f2be0af461c35637e34f"
+    },
+    {
+      "path": "crates/veyra-desktop/src/ui/components/icon_picker.rs",
+      "sha256": "fa67f25d339c0661cc0dd68c17e15c60dcbab483890764836f4dd2e24a2bbc11"
+    },
+    {
+      "path": "crates/veyra-desktop/src/ui/components/notice.rs",
+      "sha256": "6b80c8772d12e1f088872a46de07a4ddd3d51c58101a4dfde55e9e8fdb7570c6"
+    },
+    {
+      "path": "crates/veyra-desktop/src/ui/components/select.rs",
+      "sha256": "5b80f736c357bfec8cc70060c9b209d22ed0b51d6e1b6db5314683bacce54c98"
+    },
+    {
+      "path": "crates/veyra-desktop/src/ui/icons.rs",
+      "sha256": "0aa9907e202e4a6d07898a23b1b5bcc3f0155417cd9ac877c695b4fb24162e65"
+    },
+    {
+      "path": "crates/veyra-desktop/src/ui/tokens.rs",
+      "sha256": "cbdd052176f151de100a8266b9430fec1cef35b87bb3f55752876768e4fab816"
+    }
+  ],
+  "platform": "ProductName:\t\tmacOS\nProductVersion:\t\t27.0\nBuildVersion:\t\t26A428\n",
+  "rust": "rustc 1.99.0 (b940084d7 2026-09-28)",
+  "cargo_offline": true
+}
