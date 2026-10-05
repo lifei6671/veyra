@@ -131,6 +131,20 @@ impl AppServices {
             let _ = sender.send(AppEvent::AssetPrepared { generation, result });
         });
     }
+    pub fn default_background(&self, request: crate::ui::background::Request) {
+        let sender = self.sender.clone();
+        self.runtime.spawn_blocking(move || {
+            let started = std::time::Instant::now();
+            let bytes = crate::ui::background::derive(request);
+            eprintln!(
+                "default background CPU job generation={} thread={:?} duration_ms={}",
+                request.generation,
+                std::thread::current().id(),
+                started.elapsed().as_millis()
+            );
+            let _ = sender.send(AppEvent::DefaultBackground { request, bytes });
+        });
+    }
     pub fn background_preview(
         &self,
         generation: u64,

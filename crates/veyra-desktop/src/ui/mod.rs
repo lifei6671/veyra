@@ -5,3 +5,8 @@ pub mod shell;
 pub mod theme;
 
 pub mod behavior_panel;
+
+pub mod icons;
+pub mod tokens;
+
+pub mod background;

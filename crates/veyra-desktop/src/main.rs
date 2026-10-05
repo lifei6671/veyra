@@ -17,6 +17,19 @@ use gpui_kit::{
 use std::sync::Arc;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
+    // debug 本地证据将 stderr 写入指定文件，实际 bundle 启动也能留存主线程诊断。
+    #[cfg(all(debug_assertions, target_os = "macos"))]
+    if let Some(path) = std::env::var_os("VEYRA_DESKTOP_EVIDENCE_LOG") {
+        use std::os::fd::AsRawFd;
+        let log = std::fs::OpenOptions::new()
+            .create(true)
+            .append(true)
+            .open(path)?;
+        // dup2 复制 FD 所有权；文件在此作用域关闭后 stderr 仍有效。
+        if unsafe { libc::dup2(log.as_raw_fd(), libc::STDERR_FILENO) } < 0 {
+            return Err(std::io::Error::last_os_error().into());
+        }
+    }
     let directories = platform::directories::AppDirectories::resolve()?;
     eprintln!(
         "product={} namespace={}",
@@ -62,10 +75,17 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                     desktop_lifecycle::dispatch(desktop_lifecycle::Intent::Close, None, cx);
                     false
                 });
-                eprintln!(
-                    "logical content 1280x720; scale factor {}",
-                    window.scale_factor()
-                );
+                // macOS 初始 centered bounds 会包含标题栏取整；明确设置应用内容区。
+                window.resize(size(px(1280.), px(720.)));
+                window.on_next_frame(|window, _| {
+                    window.on_next_frame(|window, _| {
+                        eprintln!(
+                            "logical content {:?}; scale factor {}",
+                            window.viewport_size(),
+                            window.scale_factor()
+                        );
+                    });
+                });
                 cx.new(|cx| app::AppView::new(services, receiver, tray, window, cx))
             },
         )

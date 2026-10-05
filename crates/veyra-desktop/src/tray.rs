@@ -89,6 +89,60 @@ impl DesktopTray {
     pub fn project(&self, state: Option<&AppState>, runtime: Option<&RuntimeSnapshot>) {
         let projection = Projection::from_core(state, runtime);
         self.status.set_text(projection.text);
+        // 仅诊断 OS 托盘可见性；创建成功不能替代用户实际看到菜单栏图标。
+        #[cfg(debug_assertions)]
+        if let Some(tray) = &self.tray {
+            eprintln!(
+                "tray native rect={:?} visible={:?}",
+                tray.rect(),
+                tray.ns_status_item().map(|item| item.isVisible())
+            );
+        }
+    }
+    /// 创建后延迟采样原生几何；只观察自有 status item，不扫描其他应用或改系统设置。
+    #[cfg(debug_assertions)]
+    pub fn diagnose(&self) {
+        use objc2_app_kit::{NSApplication, NSStatusBar};
+        let mtm = objc2::MainThreadMarker::new().expect("tray probe main thread");
+        let app = NSApplication::sharedApplication(mtm);
+        let options = app.currentSystemPresentationOptions();
+        eprintln!(
+            "tray probe delayed main_thread=true activation_policy={:?} presentation={:?} thickness={}",
+            app.activationPolicy(),
+            options,
+            NSStatusBar::systemStatusBar().thickness()
+        );
+        let Some(tray) = &self.tray else {
+            eprintln!("tray probe absent");
+            return;
+        };
+        let Some(item) = tray.ns_status_item() else {
+            eprintln!("tray probe status item absent");
+            return;
+        };
+        let button = item.button(mtm);
+        eprintln!(
+            "tray probe visible={} button_exists={} rect={:?}",
+            item.isVisible(),
+            button.is_some(),
+            tray.rect()
+        );
+        if let Some(button) = button {
+            let window = button.window();
+            eprintln!(
+                "tray probe button.frame={:?} window.frame={:?}",
+                button.frame(),
+                window.as_ref().map(|w| w.frame())
+            );
+            if let Some(screen) = window.and_then(|w| w.screen()) {
+                eprintln!(
+                    "tray probe screen.frame={:?} visibleFrame={:?}",
+                    screen.frame(),
+                    screen.visibleFrame()
+                );
+            }
+        }
+        // 公共 AppKit presentation flags 只反映当前 app。全局自动隐藏/菜单栏展开由真人确认。
     }
     /// NSApplication terminate 不展开 main stack，退出 hook 必须显式释放原生托盘。
     pub fn prepare_quit(&mut self) {

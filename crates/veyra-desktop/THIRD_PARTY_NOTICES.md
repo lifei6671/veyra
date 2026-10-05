@@ -1,6 +1,6 @@
 # Bundled icons
 
-Navigation and component SVG icons are provided by gpui-kit-assets 0.7.0 (Lucide). The library is Apache-2.0; the bundled icons carry the following Lucide/Feather notices. No separate icon download is used.
+Legacy Kit component SVG icons are provided by gpui-kit-assets 0.7.0 (Lucide). The library is Apache-2.0; the bundled icons carry the following Lucide/Feather notices. No separate icon download is used.
 
 ISC License
 
@@ -53,3 +53,7 @@ Direct macOS-only dependencies reuse the registry versions already present in th
 ## P1-06 Tray
 
 tray-icon 0.24.2 (MIT OR Apache-2.0), already locked by P0-03, shares the GPUI macOS main loop. The 18px monochrome V tray template is drawn in source by Veyra; no downloaded assets. No additional tao/winit event loop or direct NSStatusItem adapter.
+
+## P1-07 React navigation icons
+
+Shell and Settings use Heroicons 2.2.0 outline, rendered from the local `@heroicons/react/24/outline` package without changing path geometry or stroke width (1.5). MIT license: `assets/heroicons/LICENSE`. SidebarToggle is copied byte-for-byte from `src/openbox/assets/sidebar-toggle.svg`. The bundled default background continues to use the existing React asset; no remote assets are fetched.

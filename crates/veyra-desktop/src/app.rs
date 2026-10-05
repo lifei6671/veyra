@@ -29,6 +29,9 @@ pub struct AppView {
     pub visual: crate::preferences::SaveCoordinator,
     pub panel: Entity<crate::ui::panel::PanelView>,
     pub page_scroll: ScrollHandle,
+    pub notice_center: Entity<crate::ui::components::notice::NoticeCenter>,
+    pub default_background: crate::ui::background::DefaultBackground,
+    _bounds: Subscription,
     pub background_preview: Option<std::path::PathBuf>,
     preview_key: Option<(veyra_core::domain::VisualAssetId, u8)>,
     preview_generation: u64,
@@ -48,6 +51,7 @@ impl AppView {
         window: &mut Window,
         cx: &mut Context<Self>,
     ) -> Self {
+        let notice_center = crate::ui::components::notice::NoticeCenter::mount(cx);
         let pages = Pages::new(window, cx);
         let panel = cx.new(|cx| crate::ui::panel::PanelView::new(window, cx));
         pages
@@ -57,6 +61,7 @@ impl AppView {
         pages
             .get(Route::Settings)
             .update(cx, |p, _| p.behavior = Some(behavior_panel.clone()));
+        panel.update(cx, |p, _| p.behavior = Some(behavior_panel.clone()));
         let behavior_subscription =
             cx.subscribe_in(&behavior_panel, window, |this, _, event, window, cx| {
                 use crate::ui::behavior_panel::BehaviorPanelEvent;
@@ -130,10 +135,12 @@ impl AppView {
                     this.platform_notice(result, "OS external link handoff", window, cx);
                 }
                 PanelEvent::Retry => {
-                    this.visual.retry(this.now_ms());
-                    this.submit_visual(window, cx);
+                    this.retry_visual(window, cx);
                 }
             }
+        });
+        let bounds = cx.observe_window_bounds(window, |this, window, _| {
+            this.request_default_background(window);
         });
         let appearance = cx.observe_window_appearance(window, |this, window, cx| {
             this.apply_theme(window, cx);
@@ -153,6 +160,14 @@ impl AppView {
                 }
             }
         });
+        #[cfg(debug_assertions)]
+        cx.spawn_in(window, async |view, cx| {
+            cx.background_executor()
+                .timer(std::time::Duration::from_millis(1500))
+                .await;
+            let _ = view.update_in(cx, |view, _, _| view.tray.diagnose());
+        })
+        .detach();
         let tray_quit = cx.on_app_quit(|view, _| {
             view.tray.prepare_quit();
             async {}
@@ -176,6 +191,9 @@ impl AppView {
             visual: Default::default(),
             panel,
             page_scroll: ScrollHandle::new(),
+            notice_center,
+            default_background: Default::default(),
+            _bounds: bounds,
             background_preview: None,
             preview_key: None,
             preview_generation: 0,
@@ -259,6 +277,37 @@ impl AppView {
             window,
             cx,
         );
+        #[cfg(debug_assertions)]
+        {
+            use gpui_kit::component::ActiveTheme;
+            eprintln!(
+                "theme effective preference={:?} AppView.dark={} Kit={:?} route={:?} content={:?} snapshot_loaded={}",
+                self.visual.draft.theme_mode,
+                self.dark,
+                cx.theme().mode,
+                self.route,
+                window.viewport_size(),
+                self.bridge.snapshot.is_some()
+            );
+        }
+    }
+    fn request_default_background(&mut self, window: &Window) {
+        // 等 Core 的真实偏好完成加载；受管背景仍由既有 preview 服务负责。
+        if self.bridge.snapshot.is_none()
+            || !matches!(
+                self.visual.draft.background,
+                veyra_core::domain::DesktopBackground::None
+            )
+        {
+            return;
+        }
+        let key = crate::ui::background::Key::new(
+            window.viewport_size(),
+            self.visual.draft.background_blur,
+        );
+        if let Some(request) = self.default_background.request(key) {
+            self.services.default_background(request);
+        }
     }
     pub fn edit_visual(
         &mut self,
@@ -274,6 +323,7 @@ impl AppView {
         self.panel
             .update(cx, |p, cx| p.project(&self.visual.draft, window, cx));
         self.apply_theme(window, cx);
+        self.request_default_background(window);
         self.save_timer = Some(cx.spawn_in(window, async move |view, cx| {
             cx.background_executor()
                 .timer(std::time::Duration::from_millis(
@@ -324,6 +374,10 @@ impl AppView {
             panel.project(&self.behavior.draft, &self.behavior.status, window, cx)
         });
     }
+    pub fn retry_visual(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        self.visual.retry(self.now_ms());
+        self.submit_visual(window, cx);
+    }
     fn submit_visual(&mut self, window: &mut Window, cx: &mut Context<Self>) {
         self.request_preview();
         let Some(state) = &self.bridge.snapshot else {
@@ -350,6 +404,14 @@ impl AppView {
     fn receive_event(&mut self, event: AppEvent, window: &mut Window, cx: &mut Context<Self>) {
         use crate::ui::components::{Notice, notify};
         match event {
+            AppEvent::DefaultBackground { request, bytes } => {
+                let accepted = self.default_background.complete(request, bytes);
+                eprintln!(
+                    "default background generation={} accepted={accepted}",
+                    request.generation
+                );
+                self.request_default_background(window);
+            }
             AppEvent::PlatformSaved { result } => {
                 eprintln!("platform export complete result={result:?}");
                 self.platform_notice(result, "Platform evidence file saved", window, cx);
@@ -509,6 +571,7 @@ impl AppView {
                 }
                 self.apply_theme(window, cx);
                 self.request_preview();
+                self.request_default_background(window);
             }
         }
         // 当前 composition root 未绑定 P2 Runtime owner，不从偏好或配置推断运行状态。
