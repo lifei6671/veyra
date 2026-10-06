@@ -1,0 +1,17 @@
+{
+  "head": "3ee99dd758e062641bf7d7ca73a8fb5431c61cdf",
+  "binary_sha256": "caa790b5b45eadeb43bc8509f5b99a0be36ec31fb8e07c03893e427bd79ef978",
+  "bundle": "/tmp/veyra-p107-ui-feedback-20261005/VeyraP107Feedback.app",
+  "root": "/tmp/veyra-p107-ui-feedback-20261005/root",
+  "source_sha256": {
+    "crates/veyra-desktop/src/app.rs": "5d887f52e1a95df6415684f1a934b62d979fd3826f61e74fb19133b8c75f1a00",
+    "crates/veyra-desktop/src/ui/behavior_panel.rs": "757c43a9b082ff7e908ac8e5f82872ad1c8fdb89b061bf3efd1fb853c7423caf",
+    "crates/veyra-desktop/src/ui/components/mod.rs": "6b5683dc5f31021b654ed72253a384d220c090e662762cd3414a5bcd20dca728",
+    "crates/veyra-desktop/src/ui/panel.rs": "e3391a21d2da871be98493a7eb697858a93ae695d7ddf69118d6f4ebbc5dccbb",
+    "crates/veyra-desktop/src/ui/tokens.rs": "0b7c101c8c31e295a23f88916bb2eaa44e8e55d1946e0ac574e6d1fd2426bac7",
+    "crates/veyra-desktop/src/ui/shell.rs": "a59c6858122cabe1743c0f7855bfb7b9cc99faf0b223d64c1ef977bf1d95aa5d",
+    "crates/veyra-desktop/src/ui/components/tooltip.rs": "7fd2007335d1b7fdbe076c7aa0963f0d42f6daf44f7b96c5c044fae544ccee4b"
+  },
+  "react_css_sha256": "b0e441729fdd55863036d71cd0c198cdd65d760e139ef8ae973a5b390128cf03",
+  "old_user_pid": 2839
+}

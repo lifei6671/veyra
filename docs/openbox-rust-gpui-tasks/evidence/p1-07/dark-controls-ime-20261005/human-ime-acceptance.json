@@ -1,0 +1,7 @@
+{
+  "answer": "候选时不筛选，提交后筛选正常",
+  "check": "Chinese IME preedit holds previous list; committing 百度 applies search",
+  "status": "PASS",
+  "source": "User reply in current task",
+  "installed_sha256": "1a6726bf3ec120cd956883f4de6d0d21c7b48ddbff198f5f1fde4ff172d0ec0f"
+}

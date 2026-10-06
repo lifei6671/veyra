@@ -1,0 +1,17 @@
+{
+  "captured_at": "2026-10-05T12:55:26.889549+00:00",
+  "head": "3ee99dd758e062641bf7d7ca73a8fb5431c61cdf",
+  "source_state": "dirty, no commit/push",
+  "target_sha256": "8a15e7f31bc5e693f548654a56e7ad8f1381f3fd66c6a99e965b4404aceaca12",
+  "signed_installed_sha256": "c2da74e85cc85e6ad56e6bc58f823d7f504da02bd0bd174fe2889d517d757b6c",
+  "bundle": "/tmp/veyra-p107-ui-feedback-20261005/VeyraP107Feedback.app",
+  "root": "/tmp/veyra-p107-ui-feedback-20261005/root",
+  "pid": 27759,
+  "content_logical": [
+    1280,
+    720
+  ],
+  "scale_factor": 2,
+  "theme": "Dark explicit",
+  "application_left_running": true
+}

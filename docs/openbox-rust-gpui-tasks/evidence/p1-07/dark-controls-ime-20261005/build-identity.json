@@ -1,0 +1,11 @@
+{
+  "target_sha256": "003ccc71f3167b00c12c20dccd39ac6b1d274484a5ad2423017b4b1d89cc67bb",
+  "installed_sha256": "1a6726bf3ec120cd956883f4de6d0d21c7b48ddbff198f5f1fde4ff172d0ec0f",
+  "bundle": "/tmp/veyra-p107-ui-feedback-20261005/VeyraP107Feedback.app",
+  "root": "/tmp/veyra-p107-ui-feedback-20261005/root",
+  "head": "3ee99dd758e062641bf7d7ca73a8fb5431c61cdf",
+  "source_state": "dirty; no commit/push",
+  "process": "40659 /private/tmp/veyra-p107-ui-feedback-20261005/VeyraP107Feedback.app/Contents/MacOS/VeyraP107NativeAB",
+  "application_left_running": true,
+  "installed_hash_still_matches": true
+}

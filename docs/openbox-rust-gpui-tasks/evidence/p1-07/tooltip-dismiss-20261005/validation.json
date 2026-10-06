@@ -1,0 +1,38 @@
+{
+  "scope": "Only shared tooltip visibility policy and two regression tests; previous dirty changes retained",
+  "build_sha256": "dc89d9454347681406c8d2abc512a6a20e2d18d587b5a1bec1a7929085974cf6",
+  "installed_macho_sha256": "afcba351e34d5b3865a6bb056247eae69d8a6ce28a190823f3ab1cf3595718a1",
+  "running_pid": 24127,
+  "gui": {
+    "theme": "Light",
+    "hover": "PASS",
+    "mouse_leave_expanded": "PASS",
+    "mouse_leave_collapsed": "PASS",
+    "keyboard_Tab_focus": "PASS",
+    "Escape": "PASS",
+    "Tab_blur": "PASS",
+    "Dark": "NOT_RUN: visibility policy does not depend on theme"
+  },
+  "validation": {
+    "targeted_tooltip_tests": "2 PASS; 47 other tests filtered",
+    "desktop_check": "PASS",
+    "desktop_clippy_D_warnings": "PASS",
+    "desktop_build": "PASS",
+    "fmt_all": "PASS",
+    "legacy_lib_clippy_resource_override": "PASS (not package acceptance)",
+    "legacy_fmt": "PASS",
+    "git_diff_check": "PASS"
+  },
+  "left_running": true,
+  "screenshots": {
+    "final-escape.jpg": "e5857d36bd97706421e853c10a2912bb66e7ec9e2795ceedd4d24c554f4db581",
+    "final-blur.jpg": "e4b94f51a8a89048cf234a5de75b71db1dd888df5edf652d1ed499dd3bf66cbb",
+    "before-mouse-away.jpg": "a88625e39ae4eb05617cbf2fa4a068444577751109a083765beea4f5b0f37b55",
+    "final-keyboard-focus.jpg": "6d698e55918a454232b2cd0302b0343e6aba223ce4dbe31b3e51b62e0a4d5b45",
+    "final-hover.jpg": "f4cacce57fe344ed1719c9e7f9a7651fa6a44a1070fdd9d4d83e2d71ba875099",
+    "final-collapsed-mouse-away.jpg": "2bc2ef71a6950bf43938b5c7e8919f9a62e2d21496eace1d5592f8c8055bf382",
+    "final-mouse-away.jpg": "9f255693c88740da76e292a5f955b606287fabdf8784632e4ad0f8a44eb6441f",
+    "history-old-process/after-hover.jpg": "5caf2b320ef2aba3dc0468311bf65787c9fa6e9f4ac7a45f01aa260603ce9e21",
+    "history-old-process/after-mouse-away.jpg": "0621d3f2e9f7de674093be08023c2c4c4493a240ad481aa70c941f3495ca319c"
+  }
+}

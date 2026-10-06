@@ -1,0 +1,47 @@
+ M AGENTS.md
+ M Cargo.toml
+ M crates/veyra-desktop/Cargo.toml
+ M crates/veyra-desktop/src/app.rs
+ M crates/veyra-desktop/src/main.rs
+ M crates/veyra-desktop/src/platform/macos.rs
+ M crates/veyra-desktop/src/tray.rs
+ M crates/veyra-desktop/src/ui/behavior_panel.rs
+ M crates/veyra-desktop/src/ui/components/icon_picker.rs
+ M crates/veyra-desktop/src/ui/components/mod.rs
+ M crates/veyra-desktop/src/ui/components/notice.rs
+ M crates/veyra-desktop/src/ui/components/select.rs
+ M crates/veyra-desktop/src/ui/components/tooltip.rs
+ M crates/veyra-desktop/src/ui/mod.rs
+ M crates/veyra-desktop/src/ui/pages/mod.rs
+ M crates/veyra-desktop/src/ui/panel.rs
+ M crates/veyra-desktop/src/ui/shell.rs
+ M crates/veyra-desktop/src/ui/tokens.rs
+ M src-tauri/icons/128x128.png
+ M src-tauri/icons/128x128@2x.png
+A  src-tauri/icons/256x256.png
+ M src-tauri/icons/32x32.png
+A  src-tauri/icons/512x512.png
+A  src-tauri/icons/64x64.png
+ M src-tauri/icons/Square107x107Logo.png
+ M src-tauri/icons/Square142x142Logo.png
+ M src-tauri/icons/Square150x150Logo.png
+ M src-tauri/icons/Square284x284Logo.png
+ M src-tauri/icons/Square30x30Logo.png
+ M src-tauri/icons/Square310x310Logo.png
+ M src-tauri/icons/Square44x44Logo.png
+ M src-tauri/icons/Square71x71Logo.png
+ M src-tauri/icons/Square89x89Logo.png
+ M src-tauri/icons/StoreLogo.png
+ M src-tauri/icons/icon.icns
+ M src-tauri/icons/icon.ico
+ M src-tauri/icons/icon.png
+?? crates/veyra-desktop/src/ui/i18n.rs
+?? docs/openbox-rust-gpui-tasks/evidence/p1-07/app-icon-picker-reset-20261005/
+?? docs/openbox-rust-gpui-tasks/evidence/p1-07/dark-controls-ime-20261005/
+?? docs/openbox-rust-gpui-tasks/evidence/p1-07/feedback-20261005/
+?? docs/openbox-rust-gpui-tasks/evidence/p1-07/global-tooltip-language-20261005/
+?? docs/openbox-rust-gpui-tasks/evidence/p1-07/interaction-performance-20261005/
+?? docs/openbox-rust-gpui-tasks/evidence/p1-07/minimum-width-20261005/
+?? docs/openbox-rust-gpui-tasks/evidence/p1-07/responsive-20261005/
+?? docs/openbox-rust-gpui-tasks/evidence/p1-07/sidebar-animation-20261005/
+?? docs/openbox-rust-gpui-tasks/evidence/p1-07/tooltip-dismiss-20261005/

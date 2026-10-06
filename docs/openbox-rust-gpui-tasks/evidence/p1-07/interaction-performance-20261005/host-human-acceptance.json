@@ -1,0 +1,12 @@
+{
+  "source": "current-session user reply to final-build fluency question",
+  "answer": "两处都已流畅",
+  "sidebar_transition": "PASS (human)",
+  "icon_list_scroll": "PASS (human)",
+  "signed_installed_sha256": "f2c35d5b9b917ed4b60c7b07217a787bb0c4ac7e293e7386b76a8759c33daa4a",
+  "automated_color_evidence": [
+    "dark-picker-all-final.jpg",
+    "dark-picker-other-final.jpg"
+  ],
+  "application_left_running": true
+}

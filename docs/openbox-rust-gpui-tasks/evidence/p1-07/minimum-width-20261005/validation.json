@@ -1,0 +1,31 @@
+{
+  "scope": "Native minimum content width only; existing dirty UI changes preserved",
+  "minimum_content_width_logical_px": 769,
+  "minimum_height_added": false,
+  "build_sha256": "a43988a5fec5a3e9a195f5fe9407d12f90529d35e490bfc17436b034e83b9f49",
+  "bundle": "/tmp/veyra-p107-ui-feedback-20261005/VeyraP107Feedback.app",
+  "checks": {
+    "desktop_check": "PASS",
+    "desktop_clippy_D_warnings": "PASS",
+    "build": "PASS",
+    "fmt_all": "PASS",
+    "legacy_lib_clippy_resources_override": "PASS",
+    "legacy_fmt": "PASS",
+    "git_diff_check": "PASS"
+  },
+  "gui": {
+    "result": "PASS",
+    "operation": "Native right-edge drag from 1280 logical width toward 675; then repeated drag toward 550 with expanded sidebar",
+    "observed_width_logical_px": 769,
+    "capture_width_physical_px": 1538,
+    "scale_factor": 2,
+    "sidebar_states": [
+      "collapsed",
+      "expanded"
+    ],
+    "persisted_values": "Light / 6600ms / IPv6 on",
+    "application_left_running": true
+  },
+  "tests": "NOT_RUN: one native WindowOptions constraint; no application behavior logic changed",
+  "installed_macho_sha256": "b08e22b99736390deda44ffb77b7dd5c562d18ac0342b33ac9c36e3593ce8965"
+}

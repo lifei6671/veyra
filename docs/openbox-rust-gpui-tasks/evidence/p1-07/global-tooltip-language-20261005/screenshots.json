@@ -1,0 +1,106 @@
+[
+  {
+    "file": "english-icon-picker.png",
+    "identity": "initial-identity.json",
+    "content_logical_size": [
+      1280,
+      720
+    ]
+  },
+  {
+    "file": "english-ip-tooltip-dark.png",
+    "identity": "initial-identity.json",
+    "content_logical_size": [
+      1280,
+      720
+    ]
+  },
+  {
+    "file": "english-panel-dark.png",
+    "identity": "initial-identity.json",
+    "content_logical_size": [
+      1280,
+      720
+    ]
+  },
+  {
+    "file": "final-disabled-tooltip-light.png",
+    "identity": "identity.json",
+    "content_logical_size": [
+      1280,
+      720
+    ]
+  },
+  {
+    "file": "final-draft-preserved.png",
+    "identity": "identity.json",
+    "content_logical_size": [
+      1280,
+      720
+    ]
+  },
+  {
+    "file": "final-english-modal.png",
+    "identity": "identity.json",
+    "content_logical_size": [
+      1280,
+      720
+    ]
+  },
+  {
+    "file": "final-english-restored.png",
+    "identity": "identity.json",
+    "content_logical_size": [
+      1280,
+      720
+    ]
+  },
+  {
+    "file": "final-ip-tooltip-dark.png",
+    "identity": "identity.json",
+    "content_logical_size": [
+      1280,
+      720
+    ]
+  },
+  {
+    "file": "final-ip-tooltip-light.png",
+    "identity": "identity.json",
+    "content_logical_size": [
+      1280,
+      720
+    ]
+  },
+  {
+    "file": "final-sidebar-tooltip-dark.png",
+    "identity": "identity.json",
+    "content_logical_size": [
+      1280,
+      720
+    ]
+  },
+  {
+    "file": "final-sites-tooltip-dark.png",
+    "identity": "identity.json",
+    "content_logical_size": [
+      1280,
+      720
+    ]
+  },
+  {
+    "file": "final-tooltip-escape.png",
+    "identity": "identity.json",
+    "content_logical_size": [
+      1280,
+      720
+    ]
+  },
+  {
+    "file": "final-traditional-panel.png",
+    "identity": "identity.json",
+    "content_logical_size": [
+      1280,
+      720
+    ]
+  }
+]

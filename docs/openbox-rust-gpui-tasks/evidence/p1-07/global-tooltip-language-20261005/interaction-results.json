@@ -1,0 +1,16 @@
+{
+  "english_panel_and_restart": "PASS",
+  "traditional_panel": "PASS",
+  "locale_switch_preserves_unsaved_6601": "PASS; restored 6600 afterward",
+  "light_dark_ip_tooltip": "PASS; same shared bubble and final screenshots",
+  "dark_sidebar_keyboard_tooltip": "PASS",
+  "dark_sites_tooltip": "PASS",
+  "english_reset_modal": "PASS; Escape cancelled, no reset",
+  "english_icon_picker": "PASS; labels and search placeholder observed",
+  "disabled_password_tooltip_capture": "NOT_OBSERVED; screenshot contains no popup, not counted as visual PASS",
+  "tray_translations": "implementation/check only; no new human tray menu acceptance",
+  "error_translations": "catalog/render review; not all error paths induced",
+  "final_ui": "Simplified Chinese, Dark, 6600ms, IPv6 on; app kept running",
+  "task_status": "unchanged",
+  "commit_push": false
+}

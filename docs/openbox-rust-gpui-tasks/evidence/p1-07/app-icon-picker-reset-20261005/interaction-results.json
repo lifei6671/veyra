@@ -1,0 +1,45 @@
+{
+  "reopen_after_escape": {
+    "status": "PASS",
+    "observation": "百度 committed filter -> 3 entries; Escape -> reopen: empty textbox, Bilibili/Baidu/WeChat visible, category All",
+    "screenshot": "dark-reopen-reset.png"
+  },
+  "clear_button": {
+    "status": "PASS",
+    "observation": "百度 -> clear-search: empty textbox and full catalog",
+    "screenshot": "dark-clear-reset.png"
+  },
+  "reopen_after_outside_dismiss": {
+    "status": "PASS",
+    "observation": "Company category + 百度 -> click Panel Settings outside popup -> reopen: All category and empty filter/full catalog",
+    "screenshot": "dark-reopen-reset-outside.png"
+  },
+  "dark_selected_tab": {
+    "status": "PASS",
+    "observation": "All/Company selected green with black text; inactive tabs muted gray; selected Company hover/idle preserves colors",
+    "screenshots": [
+      "dark-company-hover.png",
+      "dark-company-idle.png",
+      "dark-reopen-reset.png"
+    ]
+  },
+  "dock_application_icon": {
+    "status": "HUMAN_PASS",
+    "observation": "User: 图标已正确显示",
+    "source": "src-tauri/icons/icon.icns"
+  },
+  "ime_preedit": {
+    "status": "UNCHANGED",
+    "observation": "InputEvent::Change-only committed query path retained; previous-turn human IME acceptance preserved, not claimed re-run"
+  },
+  "final_app": {
+    "status": "RUNNING",
+    "pid": 44260
+  },
+  "own_app_process": {
+    "status": "PASS",
+    "pid": 44260,
+    "matching_app_process_count": 1,
+    "observation": "exact executable PID match only; no new writer/lock acceptance claimed"
+  }
+}

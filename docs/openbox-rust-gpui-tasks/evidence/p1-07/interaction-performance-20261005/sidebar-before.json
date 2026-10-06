@@ -1,0 +1,164 @@
+[
+  [
+    {
+      "elapsed_us": 2469,
+      "width": 64.88958
+    },
+    {
+      "elapsed_us": 36694,
+      "width": 100.75377
+    },
+    {
+      "elapsed_us": 76657,
+      "width": 169.694
+    },
+    {
+      "elapsed_us": 98410,
+      "width": 197.74811
+    },
+    {
+      "elapsed_us": 119289,
+      "width": 217.49336
+    },
+    {
+      "elapsed_us": 140737,
+      "width": 232.14435
+    },
+    {
+      "elapsed_us": 161569,
+      "width": 242.20297
+    },
+    {
+      "elapsed_us": 181609,
+      "width": 248.84691
+    },
+    {
+      "elapsed_us": 202373,
+      "width": 253.21185
+    },
+    {
+      "elapsed_us": 223380,
+      "width": 255.48718
+    },
+    {
+      "elapsed_us": 244231,
+      "width": 256.0
+    }
+  ],
+  [
+    {
+      "elapsed_us": 1298,
+      "width": 255.55734
+    },
+    {
+      "elapsed_us": 19497,
+      "width": 242.9385
+    },
+    {
+      "elapsed_us": 36684,
+      "width": 219.26276
+    },
+    {
+      "elapsed_us": 52876,
+      "width": 190.39445
+    },
+    {
+      "elapsed_us": 69248,
+      "width": 161.84601
+    },
+    {
+      "elapsed_us": 85703,
+      "width": 137.60315
+    },
+    {
+      "elapsed_us": 102108,
+      "width": 118.29071
+    },
+    {
+      "elapsed_us": 118786,
+      "width": 102.91269
+    },
+    {
+      "elapsed_us": 135193,
+      "width": 91.17847
+    },
+    {
+      "elapsed_us": 151372,
+      "width": 82.271576
+    },
+    {
+      "elapsed_us": 167895,
+      "width": 75.410355
+    },
+    {
+      "elapsed_us": 184091,
+      "width": 70.5065
+    },
+    {
+      "elapsed_us": 200511,
+      "width": 67.08768
+    },
+    {
+      "elapsed_us": 217297,
+      "width": 64.972946
+    },
+    {
+      "elapsed_us": 233602,
+      "width": 64.073944
+    },
+    {
+      "elapsed_us": 251195,
+      "width": 64.0
+    }
+  ],
+  [
+    {
+      "elapsed_us": 5163,
+      "width": 66.093735
+    },
+    {
+      "elapsed_us": 27222,
+      "width": 86.37369
+    },
+    {
+      "elapsed_us": 46797,
+      "width": 118.494995
+    },
+    {
+      "elapsed_us": 75858,
+      "width": 168.4978
+    },
+    {
+      "elapsed_us": 98180,
+      "width": 197.49512
+    },
+    {
+      "elapsed_us": 119946,
+      "width": 218.01906
+    },
+    {
+      "elapsed_us": 142237,
+      "width": 232.99329
+    },
+    {
+      "elapsed_us": 165155,
+      "width": 243.5906
+    },
+    {
+      "elapsed_us": 188960,
+      "width": 250.65907
+    },
+    {
+      "elapsed_us": 209710,
+      "width": 254.23099
+    },
+    {
+      "elapsed_us": 230375,
+      "width": 255.8312
+    },
+    {
+      "elapsed_us": 251399,
+      "width": 256.0
+    }
+  ]
+]

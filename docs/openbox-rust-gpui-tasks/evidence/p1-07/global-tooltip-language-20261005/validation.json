@@ -1,0 +1,84 @@
+[
+  {
+    "command": [
+      "cargo",
+      "test",
+      "-p",
+      "veyra-desktop",
+      "--offline"
+    ],
+    "exit_code": 0,
+    "resource_override": false
+  },
+  {
+    "command": [
+      "cargo",
+      "check",
+      "-p",
+      "veyra-desktop",
+      "--offline"
+    ],
+    "exit_code": 0,
+    "resource_override": false
+  },
+  {
+    "command": [
+      "cargo",
+      "clippy",
+      "-p",
+      "veyra-desktop",
+      "--offline",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "exit_code": 0,
+    "resource_override": false
+  },
+  {
+    "command": [
+      "cargo",
+      "fmt",
+      "--all",
+      "--",
+      "--check"
+    ],
+    "exit_code": 0,
+    "resource_override": false
+  },
+  {
+    "command": [
+      "cargo",
+      "clippy",
+      "--manifest-path",
+      "src-tauri/Cargo.toml",
+      "--lib",
+      "--offline",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "exit_code": 0,
+    "resource_override": true
+  },
+  {
+    "command": [
+      "cargo",
+      "check",
+      "--workspace",
+      "--locked",
+      "--offline"
+    ],
+    "exit_code": 0,
+    "resource_override": true
+  },
+  {
+    "command": [
+      "git",
+      "diff",
+      "--check"
+    ],
+    "exit_code": 0,
+    "resource_override": false
+  }
+]

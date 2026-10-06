@@ -1,0 +1,104 @@
+[
+  {
+    "command": [
+      "cargo",
+      "test",
+      "-p",
+      "veyra-desktop",
+      "--offline"
+    ],
+    "exit_code": 0,
+    "seconds": 2.91,
+    "resource_override": false
+  },
+  {
+    "command": [
+      "cargo",
+      "clippy",
+      "-p",
+      "veyra-desktop",
+      "--offline",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "exit_code": 0,
+    "seconds": 0.72,
+    "resource_override": false
+  },
+  {
+    "command": [
+      "cargo",
+      "fmt",
+      "--all",
+      "--",
+      "--check"
+    ],
+    "exit_code": 0,
+    "seconds": 0.61,
+    "resource_override": false
+  },
+  {
+    "command": [
+      "cargo",
+      "build",
+      "-p",
+      "veyra-desktop",
+      "--offline"
+    ],
+    "exit_code": 0,
+    "seconds": 3.47,
+    "resource_override": false
+  },
+  {
+    "command": [
+      "cargo",
+      "clippy",
+      "--manifest-path",
+      "src-tauri/Cargo.toml",
+      "--lib",
+      "--offline",
+      "--",
+      "-D",
+      "warnings"
+    ],
+    "exit_code": 0,
+    "seconds": 0.34,
+    "resource_override": true
+  },
+  {
+    "command": [
+      "cargo",
+      "fmt",
+      "--manifest-path",
+      "src-tauri/Cargo.toml",
+      "--",
+      "--check"
+    ],
+    "exit_code": 0,
+    "seconds": 0.19,
+    "resource_override": false
+  },
+  {
+    "command": [
+      "cargo",
+      "check",
+      "--workspace",
+      "--locked",
+      "--offline"
+    ],
+    "exit_code": 0,
+    "seconds": 0.98,
+    "resource_override": true
+  },
+  {
+    "command": [
+      "git",
+      "diff",
+      "--check"
+    ],
+    "exit_code": 0,
+    "seconds": 0.02,
+    "resource_override": false
+  }
+]

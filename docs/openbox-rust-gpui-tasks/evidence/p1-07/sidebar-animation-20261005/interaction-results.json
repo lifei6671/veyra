@@ -1,0 +1,25 @@
+{
+  "mouse_expand_endpoint": "PASS, 256 logical px",
+  "mouse_collapse_endpoint": "PASS, 64 logical px",
+  "keyboard_toggle_endpoint": "PASS",
+  "rapid_keyboard_toggle": {
+    "status": "PASS for input delivery and stable final layout only",
+    "timestamps_file": "rapid-toggle-times.json",
+    "interval_ms": 120,
+    "log_evidence": "visual change generations 3 and 4; final submission generation 4 accepted=true"
+  },
+  "settings_values_after_toggle": {
+    "theme": "Dark",
+    "timeout_ms": 6600,
+    "ipv6": true
+  },
+  "intermediate_frame_visual_review": "NOT_CAPTURED: native screenshot API waits; keyboard screenshot completed 788ms after Return, longer than the 240ms transition",
+  "animation_fluency_human_acceptance": "NOT_RUN",
+  "light_animation_gui": "NOT_RUN this bounded follow-up; no color/style changes",
+  "unit_regression": [
+    "exact endpoints, intermediate width, completion",
+    "reverse transition starts from current interpolated width"
+  ],
+  "desktop_test_count": 51,
+  "tray_acceptance": "NOT_RUN this follow-up; existing accepted Tray implementation unchanged"
+}

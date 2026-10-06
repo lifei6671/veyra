@@ -1,0 +1,25 @@
+{
+  "baseline_head": "3ee99dd",
+  "binary_sha256": "6d0f104164604ccf94342d73dd7c1c053a82d6fc255722b55028f862e63777c8",
+  "bundle": "/tmp/veyra-p107-ui-feedback-20261005/VeyraP107Feedback.app",
+  "root": "/tmp/veyra-p107-ui-feedback-20261005/root",
+  "sources": [
+    {
+      "path": "crates/veyra-desktop/src/app.rs",
+      "sha256": "6796a92cc425a57305a972795175bddeadb08814daeba73d7c3e7a8d8d4cd2a5"
+    },
+    {
+      "path": "crates/veyra-desktop/src/ui/shell.rs",
+      "sha256": "a59c6858122cabe1743c0f7855bfb7b9cc99faf0b223d64c1ef977bf1d95aa5d"
+    },
+    {
+      "path": "crates/veyra-desktop/src/ui/components/tooltip.rs",
+      "sha256": "7fd2007335d1b7fdbe076c7aa0963f0d42f6daf44f7b96c5c044fae544ccee4b"
+    },
+    {
+      "path": "crates/veyra-desktop/src/ui/tokens.rs",
+      "sha256": "dcb9cac10a832eb7f92baa4799ed44ac47707c4fcdc20dc6fc1643af938629ae"
+    }
+  ],
+  "scope": "Human3UI refinements; historical8bd7a366 acceptance preserved"
+}

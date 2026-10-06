@@ -1,0 +1,131 @@
+{
+  "scope": "3 explicitly requested visual refinements only",
+  "source_build_sha256": "6d0f104164604ccf94342d73dd7c1c053a82d6fc255722b55028f862e63777c8",
+  "sidebar_hover": "PASS expanded Light/Dark, collapsed Light; shared hover style in both states",
+  "tooltip_font": "both12px/18px shared tokens, actual Light/Dark popup screenshots reviewed",
+  "visual_success_toast": "removed",
+  "visual_saving_toast": "removed to avoid remaining4s progress notice",
+  "visual_commits": "4 accepted=true Ok(())",
+  "visual_error_notice": "retained in source; existing persistence/CAS tests unchanged; no synthetic failure invented",
+  "screenshots": [
+    {
+      "name": "dark-save-quiet",
+      "sha256": "6332bdbf510d48a3cc53da47c2006e365361004d6c982d8d6ff6aa3a1f3eef93",
+      "binary_sha256": "6d0f104164604ccf94342d73dd7c1c053a82d6fc255722b55028f862e63777c8",
+      "logical_content": [
+        1280,
+        720
+      ]
+    },
+    {
+      "name": "light-collapse-hover",
+      "sha256": "48ed86821e541178be7c7ee9daf4a06fa5d736ca375e19d06dc8967811e16807",
+      "binary_sha256": "6d0f104164604ccf94342d73dd7c1c053a82d6fc255722b55028f862e63777c8",
+      "logical_content": [
+        1280,
+        720
+      ]
+    },
+    {
+      "name": "light-sites-tooltip",
+      "sha256": "05a48ad52726f3e095cca2940467d9bb19796d4d4464de1df561ae8ff515b81a",
+      "binary_sha256": "6d0f104164604ccf94342d73dd7c1c053a82d6fc255722b55028f862e63777c8",
+      "logical_content": [
+        1280,
+        720
+      ]
+    },
+    {
+      "name": "light-ip-tooltip",
+      "sha256": "ee88ce018ec3a578ec021b8091328470a4294b0f56fae70819589b44496b1fc3",
+      "binary_sha256": "6d0f104164604ccf94342d73dd7c1c053a82d6fc255722b55028f862e63777c8",
+      "logical_content": [
+        1280,
+        720
+      ]
+    },
+    {
+      "name": "light-idle",
+      "sha256": "21e7928fc155d936dd5fdd4fa20669873f17b06f41619f53fdfbddd9ad4fdaa6",
+      "binary_sha256": "6d0f104164604ccf94342d73dd7c1c053a82d6fc255722b55028f862e63777c8",
+      "logical_content": [
+        1280,
+        720
+      ]
+    },
+    {
+      "name": "light-save-quiet",
+      "sha256": "9d876a7e621f4801a3b78e993c40b0a8e35ab88587298871c325327bdeced78f",
+      "binary_sha256": "6d0f104164604ccf94342d73dd7c1c053a82d6fc255722b55028f862e63777c8",
+      "logical_content": [
+        1280,
+        720
+      ]
+    },
+    {
+      "name": "light-collapsed-hover",
+      "sha256": "8782c7d51db01d99bd7da8ad872fd424f30261aaa8b6257c982cc0e77d126120",
+      "binary_sha256": "6d0f104164604ccf94342d73dd7c1c053a82d6fc255722b55028f862e63777c8",
+      "logical_content": [
+        1280,
+        720
+      ]
+    },
+    {
+      "name": "collapsed-save-quiet",
+      "sha256": "8a7de82260c5ebb9735e2c9b2de29428ddd8d42baa0e5ae53c40136989f531c3",
+      "binary_sha256": "6d0f104164604ccf94342d73dd7c1c053a82d6fc255722b55028f862e63777c8",
+      "logical_content": [
+        1280,
+        720
+      ]
+    },
+    {
+      "name": "dark-ip-tooltip",
+      "sha256": "5a6d9737042022a672b94c1ebef52dee93b58983f0add210ecb68635ec368622",
+      "binary_sha256": "6d0f104164604ccf94342d73dd7c1c053a82d6fc255722b55028f862e63777c8",
+      "logical_content": [
+        1280,
+        720
+      ]
+    },
+    {
+      "name": "dark-idle",
+      "sha256": "b49726f0c3ab5622707503876fa232f5acaeae79c55c81dbf35726b947d58717",
+      "binary_sha256": "6d0f104164604ccf94342d73dd7c1c053a82d6fc255722b55028f862e63777c8",
+      "logical_content": [
+        1280,
+        720
+      ]
+    },
+    {
+      "name": "dark-sites-tooltip",
+      "sha256": "5e5bee1a747dde2790044507cfcfea2444a45b504b64a84b8d5f38b5179099f3",
+      "binary_sha256": "6d0f104164604ccf94342d73dd7c1c053a82d6fc255722b55028f862e63777c8",
+      "logical_content": [
+        1280,
+        720
+      ]
+    },
+    {
+      "name": "dark-collapse-hover",
+      "sha256": "7e55195a0df57fb9f9c9da224139d6bb63202de3359c7db1ac16f7461be2060d",
+      "binary_sha256": "6d0f104164604ccf94342d73dd7c1c053a82d6fc255722b55028f862e63777c8",
+      "logical_content": [
+        1280,
+        720
+      ]
+    }
+  ],
+  "validation": "validation.json",
+  "test_count": 45,
+  "cleanup": {
+    "feedback_process_gone": true,
+    "feedback_socket_absent": true,
+    "feedback_flock_free": true,
+    "original_user_process_retained": [
+      "2839 /private/tmp/veyra-p107-final-20261005/VeyraP107Final.app/Contents/MacOS/VeyraP107NativeAB"
+    ]
+  },
+  "history": "history-before-saving-toast-removal retains transient Saving notice and failed no-notice assertion; not passed off as final"
+}

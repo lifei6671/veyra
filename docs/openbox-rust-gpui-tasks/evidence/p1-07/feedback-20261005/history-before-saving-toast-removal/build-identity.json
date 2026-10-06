@@ -1,0 +1,13 @@
+{
+  "baseline_head": "3ee99dd",
+  "binary_sha256": "9a011b2891067cccdf6c8873de8e6457e389fab9ff6bc5c3ffb8b33cff9edb83",
+  "bundle": "/tmp/veyra-p107-ui-feedback-20261005/VeyraP107Feedback.app",
+  "root": "/tmp/veyra-p107-ui-feedback-20261005/root",
+  "source_files": [
+    "crates/veyra-desktop/src/app.rs",
+    "crates/veyra-desktop/src/ui/shell.rs",
+    "crates/veyra-desktop/src/ui/components/tooltip.rs",
+    "crates/veyra-desktop/src/ui/tokens.rs"
+  ],
+  "scope": "3 Human requested UI refinements; historical8bd7a366 acceptance preserved"
+}

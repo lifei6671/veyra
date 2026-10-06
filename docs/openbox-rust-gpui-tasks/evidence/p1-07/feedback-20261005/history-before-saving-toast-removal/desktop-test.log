@@ -1,0 +1,55 @@
+   Compiling veyra-desktop v0.1.0 (/Users/lifeilin/wx_lifeilin/github.com/lifei6671/veyra/crates/veyra-desktop)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 2.65s
+warning: the following packages contain code that will be rejected by a future version of Rust: block v0.1.6
+note: to see what the problems were, use the option `--future-incompat-report`, or run `cargo report future-incompatibilities --id 1`
+     Running unittests src/main.rs (target/debug/deps/veyra_desktop-455651215e2dd116)
+
+running 45 tests
+test desktop_lifecycle::tests::reveal_intents_target_existing_window ... ok
+test desktop_lifecycle::tests::close_hides_and_only_explicit_quit_enters_cleanup ... ok
+test navigation::tests::nine_categories_match_openbox ... ok
+test navigation::tests::six_routes_match_openbox ... ok
+test platform::directories::tests::namespace_and_state_layout_are_separate_from_legacy_and_evictable_cache ... ok
+test platform::macos::tests::cancelled_save_and_invalid_parent_never_publish_file ... ok
+test behavior_preferences::tests::restart_projection_and_visual_namespace_are_independent ... ok
+test behavior_preferences::tests::stale_completion_preserves_newer_edits ... ok
+test behavior_preferences::tests::replacement_epoch_completion_cannot_acknowledge_current_draft ... ok
+test platform::single_instance::tests::lock_child ... ok
+test behavior_preferences::tests::failed_save_retains_draft_and_retry_success ... ok
+test behavior_preferences::tests::conflict_rebase_replays_only_edited_fields ... ok
+test preferences::tests::failure_retains_draft_retry_converges ... ok
+test platform::macos::tests::external_url_closed_schemes_without_handoff ... ok
+test preferences::tests::coalesces_last_value_and_ignores_stale_completion ... ok
+test platform::directories::tests::foundation_resolves_standard_roots_without_reading_legacy_data ... ok
+test state_bridge::tests::busy_error_retry_ready ... ok
+test platform::single_instance::tests::live_socket_without_veyra_lock_is_busy_and_remains_connectable ... ok
+test state_bridge::tests::instance_and_epoch_gate ... ok
+test state_bridge::tests::latest_request_wins ... ok
+test state_bridge::tests::leaving_page_invalidates_generation ... ok
+test state_bridge::tests::replaced_epoch_rejects_old_read ... ok
+test state_bridge::tests::stale_failure_cannot_clear_new_busy ... ok
+test tray::tests::menu_projects_core_snapshot_and_does_not_infer_ready_from_history ... ok
+test tray::tests::no_runtime_owner_never_projects_running_even_with_saved_configuration ... ok
+test ui::background::tests::identical_in_flight_or_ready_key_does_not_derive_again ... ok
+test ui::background::tests::render_reads_ready_cache_and_derivation_stays_in_blocking_service ... ok
+test ui::background::tests::stale_size_and_blur_are_discarded_and_latest_request_is_coalesced ... ok
+test ui::components::overlay::tests::topmost_escape_and_focus_return_across_reopen ... ok
+test ui::pages::tests::page_identity_and_filter_survive_round_trip ... ok
+test ui::pages::tests::settings_category_and_draft_survive_all_routes ... ok
+test ui::components::icon_picker::tests::bundled_picker_catalog_decodes ... ok
+test behavior_preferences::tests::four_subscriptions_receive_typed_values_without_local_defaults ... ok
+test platform::files::tests::selected_file_boundary_and_atomic_save_preserve_source_and_existing_target ... ok
+test services::visual_tests::rapid_slider_coalesces_real_commit_and_restart_projection ... ok
+test visual_assets::tests::preview_repairs_world_readable_final_cache_on_reuse ... ok
+test visual_assets::tests::preview_repairs_world_readable_stale_temporary_before_publish ... ok
+test services::behavior_integration_tests::real_store_failure_conflict_rebase_retry_and_restart ... ok
+test visual_assets::tests::valid_import_atomic_identity_type_and_size_boundary ... ok
+test services::visual_tests::prepared_background_failed_commit_retry_and_backup_reference_are_atomic ... ok
+test services::tests::real_store_empty_error_retry_and_late_delivery ... ok
+test platform::single_instance::tests::stale_socket_and_busy_without_confirmed_control_never_take_writer ... ok
+test platform::single_instance::tests::crash_process_releases_kernel_lock_without_pid_file_cleanup ... ok
+test desktop_lifecycle::tests::repeated_visibility_intents_retain_single_writer_and_ownership_until_quit ... ok
+test platform::single_instance::tests::primary_secondary_fixed_activate_and_one_services_writer ... ok
+
+test result: ok. 45 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.93s
+

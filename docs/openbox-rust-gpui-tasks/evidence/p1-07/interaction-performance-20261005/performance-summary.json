@@ -1,0 +1,77 @@
+{
+  "method": "temporary Render entry elapsed_us logger; CPU sample of own process; not GPU present FPS",
+  "before": [
+    {
+      "frames": 11,
+      "last_elapsed_ms": 244.231,
+      "width_from": 64.88958,
+      "width_last": 256.0,
+      "median_interval_ms": 20.943,
+      "max_interval_ms": 39.963,
+      "reached_240ms": true
+    },
+    {
+      "frames": 16,
+      "last_elapsed_ms": 251.195,
+      "width_from": 255.55734,
+      "width_last": 64.0,
+      "median_interval_ms": 16.42,
+      "max_interval_ms": 18.199,
+      "reached_240ms": true
+    },
+    {
+      "frames": 12,
+      "last_elapsed_ms": 251.399,
+      "width_from": 66.093735,
+      "width_last": 256.0,
+      "median_interval_ms": 22.059,
+      "max_interval_ms": 29.061,
+      "reached_240ms": true
+    }
+  ],
+  "optimized_diagnostic_candidate": [
+    {
+      "frames": 13,
+      "last_elapsed_ms": 135.159,
+      "width_from": 66.085,
+      "width_last": 228.80011,
+      "median_interval_ms": 8.2635,
+      "max_interval_ms": 37.797,
+      "reached_240ms": false
+    },
+    {
+      "frames": 10,
+      "last_elapsed_ms": 67.501,
+      "width_from": 234.70854,
+      "width_last": 153.68414,
+      "median_interval_ms": 8.169,
+      "max_interval_ms": 8.509,
+      "reached_240ms": false
+    },
+    {
+      "frames": 8,
+      "last_elapsed_ms": 57.384,
+      "width_from": 140.5296,
+      "width_last": 184.79678,
+      "median_interval_ms": 8.294,
+      "max_interval_ms": 8.682,
+      "reached_240ms": false
+    },
+    {
+      "frames": 30,
+      "last_elapsed_ms": 240.928,
+      "width_from": 194.0468,
+      "width_last": 64.0,
+      "median_interval_ms": 8.346,
+      "max_interval_ms": 11.111,
+      "reached_240ms": true
+    }
+  ],
+  "candidate_limit": "per-frame logger removed and Tab normal background corrected before final build; final binary identity recorded separately; candidate binary hash was not recorded",
+  "virtualization": {
+    "catalog_items": 896,
+    "observed_accessible_option_buttons": 9,
+    "fixed_row_height_logical": 32
+  },
+  "human_fluency": "PASS: user explicitly reported both sidebar and icon list fluent on final running build"
+}

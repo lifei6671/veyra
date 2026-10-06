@@ -1,0 +1,11 @@
+{
+  "radius_right_border": "PASS: final screenshot shows both center edges; right seam repainted after the overlapping plus button",
+  "spinner_mouse": "PASS: focused numeric input 800 -> coordinate mouse up button -> 801 -> coordinate mouse down button -> 800; arrow cursor in stepper hitbox",
+  "tooltip_dark": "PASS: black final popup, user requested override of local React #30394c; Light unchanged",
+  "selected_tab_hover": "PASS: final hover/idle captures retain #70c996 and panel foreground; no new tab source edit because previous fix already covers normal/hover/active",
+  "search_committed_chinese": "PASS: paste 百度 yields three corresponding icon variants; clear restores full catalog",
+  "ime_preedit": "HUMAN PASS: 用户确认“候选时不筛选，提交后筛选正常”；与工具粘贴提交验证分开记录",
+  "snapshot": "1280x720 logical content, 2x; explicit Dark; Settings/Panel; same existing test root",
+  "scope": "No core/state/CAS/Tray/sidebar animation changes; no commit/push, P2 or network operations; previous evidence retained",
+  "light_regression": "PASS: explicit Light, center right edge visible, focused mouse spinner 800 -> 801 -> 800; tooltip remains #30394c. Restored explicit Dark afterwards."
+}

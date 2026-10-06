@@ -1,0 +1,12 @@
+{
+  "url": "https://openbox.disign.me/#/settings",
+  "method": "用户明确授权的内置浏览器 DOM / CSS 只读检查",
+  "font_size_px": 14,
+  "line_height_px": 19.6,
+  "font_family": "MiSans-VF, NotoEmoji, system-ui",
+  "background_css": "oklch(30.698% .039 171.364)",
+  "background_srgb": "#19362D",
+  "text_css": "oklch(86.139% .007 171.364)",
+  "text_srgb": "#CDD3D1",
+  "scope": "本轮用户明确覆盖：两种主题全部应用 tooltip 统一。在线实现为 Vue/Tippy，与本地 React 不同；其他视觉仍以本地 React 为准。"
+}

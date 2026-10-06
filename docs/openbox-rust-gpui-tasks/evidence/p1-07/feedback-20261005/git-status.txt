@@ -1,0 +1,5 @@
+ M crates/veyra-desktop/src/app.rs
+ M crates/veyra-desktop/src/ui/components/tooltip.rs
+ M crates/veyra-desktop/src/ui/shell.rs
+ M crates/veyra-desktop/src/ui/tokens.rs
+?? docs/openbox-rust-gpui-tasks/evidence/p1-07/feedback-20261005/

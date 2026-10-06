@@ -1,0 +1,90 @@
+[
+  {
+    "name": "light-wide-expanded",
+    "logical_content": [
+      1280,
+      720
+    ],
+    "content_png": "light-wide-expanded.png",
+    "status": "PASS",
+    "binary_sha256": "caa790b5b45eadeb43bc8509f5b99a0be36ec31fb8e07c03893e427bd79ef978"
+  },
+  {
+    "name": "light-900-expanded-top",
+    "logical_content": [
+      900,
+      720
+    ],
+    "content_png": "light-900-expanded-top.png",
+    "status": "PASS",
+    "binary_sha256": "caa790b5b45eadeb43bc8509f5b99a0be36ec31fb8e07c03893e427bd79ef978"
+  },
+  {
+    "name": "light-900-expanded-bottom",
+    "logical_content": [
+      900,
+      720
+    ],
+    "content_png": "light-900-expanded-bottom.png",
+    "status": "PASS",
+    "binary_sha256": "caa790b5b45eadeb43bc8509f5b99a0be36ec31fb8e07c03893e427bd79ef978"
+  },
+  {
+    "name": "light-746-expanded-top",
+    "logical_content": [
+      746,
+      720
+    ],
+    "content_png": "light-746-expanded-top.png",
+    "status": "PASS",
+    "binary_sha256": "caa790b5b45eadeb43bc8509f5b99a0be36ec31fb8e07c03893e427bd79ef978"
+  },
+  {
+    "name": "light-746-expanded-bottom",
+    "logical_content": [
+      746,
+      720
+    ],
+    "content_png": "light-746-expanded-bottom.png",
+    "status": "PASS",
+    "binary_sha256": "caa790b5b45eadeb43bc8509f5b99a0be36ec31fb8e07c03893e427bd79ef978"
+  },
+  {
+    "name": "light-746-collapsed-top",
+    "logical_content": [
+      746,
+      720
+    ],
+    "content_png": "light-746-collapsed-top.png",
+    "status": "PASS",
+    "binary_sha256": "caa790b5b45eadeb43bc8509f5b99a0be36ec31fb8e07c03893e427bd79ef978"
+  },
+  {
+    "name": "light-746-collapsed-bottom",
+    "logical_content": [
+      746,
+      720
+    ],
+    "content_png": "light-746-collapsed-bottom.png",
+    "status": "PASS",
+    "binary_sha256": "caa790b5b45eadeb43bc8509f5b99a0be36ec31fb8e07c03893e427bd79ef978"
+  },
+  {
+    "name": "light-768-collapsed-top",
+    "actual_logical_content": [
+      746,
+      720
+    ],
+    "status": "NOT_RUN",
+    "note": "Resize attempt did not change window size; filename is intended size, not observed. Not acceptance evidence."
+  },
+  {
+    "name": "light-768-collapsed-verified",
+    "actual_logical_content": [
+      1280,
+      720
+    ],
+    "status": "NOT_RUN",
+    "note": "Resize attempt did not change window size; filename is intended size, not observed. Not acceptance evidence."
+  }
+]

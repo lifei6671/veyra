@@ -1,0 +1,114 @@
+{
+  "schema_version": 9,
+  "state_epoch": [
+    167,
+    212,
+    100,
+    200,
+    150,
+    140,
+    54,
+    216,
+    197,
+    239,
+    158,
+    198,
+    196,
+    76,
+    138,
+    36
+  ],
+  "config_revision": 5,
+  "selection_revision": 0,
+  "profile": {
+    "ipv6": false,
+    "dns": {
+      "split": false,
+      "direct": "1.1.1.1",
+      "directPort": 53,
+      "directExtras": [],
+      "proxy": "1.1.1.1",
+      "proxyPort": 53,
+      "proxyExtras": []
+    },
+    "routing": {
+      "custom": null
+    },
+    "tun": {
+      "autoRedirect": false,
+      "stack": "system",
+      "mtu": 1500,
+      "tcpMss": 0
+    }
+  },
+  "app_config": {
+    "check_updates_on_start": true,
+    "visual": {
+      "language": "zh-CN",
+      "theme_mode": "system",
+      "background": {
+        "kind": "none"
+      },
+      "background_opacity": 90,
+      "background_blur": 10,
+      "global_radius": 18,
+      "sidebar_collapsed": true
+    },
+    "behavior": {
+      "latency": {
+        "test_url": "http://www.gstatic.com/generate_204",
+        "timeout_ms": 801,
+        "low_ms": 400,
+        "medium_ms": 800
+      },
+      "proxy_view": {
+        "group_columns": 2,
+        "hide_unavailable": false,
+        "node_sort": "latencyAsc",
+        "group_by_provider": true,
+        "node_card_min_width": 145,
+        "strategy_order": []
+      },
+      "diagnostics": {
+        "ipv6_test": false
+      },
+      "ip_info": "ipapi.is",
+      "test_sites": [
+        {
+          "id": "baidu",
+          "name": "百度",
+          "url": "https://www.baidu.com/favicon.ico",
+          "icon_key": "brand:baidu"
+        },
+        {
+          "id": "google",
+          "name": "Google",
+          "url": "https://www.google.com/generate_204",
+          "icon_key": "brand:google"
+        },
+        {
+          "id": "openai",
+          "name": "OpenAI",
+          "url": "https://api.openai.com/v1/models",
+          "icon_key": "brand:openai-light"
+        },
+        {
+          "id": "telegram",
+          "name": "Telegram",
+          "url": "https://telegram.org/favicon.ico",
+          "icon_key": "brand:telegram"
+        }
+      ]
+    }
+  },
+  "default_target": {
+    "kind": "unconfigured"
+  },
+  "active_subscription_id": null,
+  "active_configuration_generation": 0,
+  "subscriptions": [],
+  "providers": [],
+  "nodes": [],
+  "pools": [],
+  "routes": []
+}

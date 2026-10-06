@@ -1,0 +1,106 @@
+{
+  "active_descendant_transitions": [
+    {
+      "element_id": "NamedInteger(\"option\", 0)",
+      "aria": {
+        "role": "ListBoxOption",
+        "on_action": [
+          "Click"
+        ],
+        "label": "ip.sb",
+        "selected": true
+      }
+    },
+    {
+      "element_id": "NamedInteger(\"option\", 1)",
+      "aria": {
+        "role": "ListBoxOption",
+        "on_action": [
+          "Click"
+        ],
+        "label": "ipwho.is",
+        "selected": false
+      }
+    },
+    {
+      "element_id": "NamedInteger(\"option\", 0)",
+      "aria": {
+        "role": "ListBoxOption",
+        "on_action": [
+          "Click"
+        ],
+        "label": "ip.sb",
+        "selected": true
+      }
+    },
+    {
+      "element_id": "NamedInteger(\"option\", 1)",
+      "aria": {
+        "role": "ListBoxOption",
+        "on_action": [
+          "Click"
+        ],
+        "label": "ipwho.is",
+        "selected": false
+      }
+    },
+    {
+      "element_id": "NamedInteger(\"option\", 2)",
+      "aria": {
+        "role": "ListBoxOption",
+        "on_action": [
+          "Click"
+        ],
+        "label": "ipapi.is",
+        "selected": false
+      }
+    },
+    {
+      "element_id": "NamedInteger(\"option\", 2)",
+      "aria": {
+        "role": "ListBoxOption",
+        "on_action": [
+          "Click"
+        ],
+        "label": "ipapi.is",
+        "selected": true
+      }
+    }
+  ],
+  "combobox_focus": [
+    {
+      "element_id": "Name(\"select\")",
+      "aria": {
+        "role": "ComboBox",
+        "on_action": [
+          "Click",
+          "Focus"
+        ],
+        "label": "IP信息API",
+        "value": "ip.sb",
+        "expanded": false
+      }
+    },
+    {
+      "element_id": "Name(\"select\")",
+      "aria": {
+        "role": "ComboBox",
+        "on_action": [
+          "Click",
+          "Focus"
+        ],
+        "label": "IP信息API",
+        "value": "ipapi.is",
+        "expanded": false
+      }
+    }
+  ],
+  "final_timeout_ms": 801,
+  "final_ip_info": "ipapi.is",
+  "final_test_site_urls": [
+    "https://www.baidu.com/favicon.ico",
+    "https://www.google.com/generate_204",
+    "https://api.openai.com/v1/models",
+    "https://telegram.org/favicon.ico"
+  ]
+}

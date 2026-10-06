@@ -1,0 +1,20 @@
+{
+  "date": "2026-10-05T13:19:12.795425+00:00",
+  "head": "3ee99dd758e062641bf7d7ca73a8fb5431c61cdf",
+  "source_state": "dirty; no commit/push",
+  "target_sha256": "9261597c53e1d5c7a5f860033d804b732d3f42573dc059506bc06bb973205e35",
+  "signed_installed_sha256": "f2c35d5b9b917ed4b60c7b07217a787bb0c4ac7e293e7386b76a8759c33daa4a",
+  "bundle": "/tmp/veyra-p107-ui-feedback-20261005/VeyraP107Feedback.app",
+  "root": "/tmp/veyra-p107-ui-feedback-20261005/root",
+  "temporary_per_frame_logger_removed": true,
+  "development_optimizations": [
+    "veyra-desktop=1",
+    "gpui-pre=1",
+    "taffy=1"
+  ],
+  "running_processes": [
+    "35791 /private/tmp/veyra-p107-ui-feedback-20261005/VeyraP107Feedback.app/Contents/MacOS/VeyraP107NativeAB"
+  ],
+  "installed_hash_still_matches": true,
+  "application_left_running": true
+}

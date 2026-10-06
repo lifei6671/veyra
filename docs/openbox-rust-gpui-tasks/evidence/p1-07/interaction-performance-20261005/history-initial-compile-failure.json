@@ -1,0 +1,6 @@
+{
+  "status": "FAIL then fixed",
+  "exit_code": 101,
+  "reason": "ButtonCustomVariant import missing in first candidate build",
+  "repair": "explicit import added; later build and all final validation passed"
+}

@@ -1,0 +1,19 @@
+{
+  "head": "3ee99dd758e062641bf7d7ca73a8fb5431c61cdf",
+  "bundle": "/tmp/veyra-p107-ui-feedback-20261005/VeyraP107Feedback.app",
+  "root": "/tmp/veyra-p107-ui-feedback-20261005/root",
+  "binary_sha256": "1d8c8bbb4f30c8cf4e5d6a61979740e96812d8ee03eb45a956a1ba9ffcb9dd5a",
+  "target_before_sign_sha256": "15944185151e55aa67d86f46b35277f8470af1a07b22901a56d4710233ecacab",
+  "icon_source": "src-tauri/icons/icon.icns",
+  "icon_sha256": "afd3a26653d812bf38aef3e1906bbe5b767e169055cb6a57f54f2da0de9e4b80",
+  "CFBundleIconFile": "icon.icns",
+  "codesign_verify": "PASS",
+  "pid": 44260,
+  "source_files_sha256": {
+    "crates/veyra-desktop/Cargo.toml": "d1879dd70c1de5bad3d5f99e9bba8b2afe509797d6e8e230b86df4947ace88d7",
+    "crates/veyra-desktop/src/main.rs": "a649a1e0bb2b05d152f37a96c1673ce574b964b3645da9edaf8518297286f394",
+    "crates/veyra-desktop/src/platform/macos.rs": "ce3962b9b0aea99617d523c8956544a6f4aaf2d6d4f95eccc35ca5c32c0d498d",
+    "crates/veyra-desktop/src/ui/components/icon_picker.rs": "9b6a6d8f66ea327449fde02a9713ab042343596820d709e78d9189739fa8b802",
+    "crates/veyra-desktop/src/ui/tokens.rs": "19613389b18d3df3d07a9992aed659dbe1fb7e4b10396e81d7c76c73eca31d97"
+  }
+}
