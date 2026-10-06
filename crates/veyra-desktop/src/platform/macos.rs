@@ -1,9 +1,9 @@
 //! UI-thread AppKit adapters. Panels use asynchronous completion/sheets, never runModal.
 use super::PlatformError;
 use block2::RcBlock;
-use objc2::{MainThreadMarker, rc::Retained, runtime::ProtocolObject};
+use objc2::{AllocAnyThread, MainThreadMarker, rc::Retained, runtime::ProtocolObject};
 use objc2_app_kit::{
-    NSApplication, NSModalResponseOK, NSOpenPanel, NSPasteboard, NSPasteboardItem,
+    NSApplication, NSImage, NSModalResponseOK, NSOpenPanel, NSPasteboard, NSPasteboardItem,
     NSPasteboardWriting, NSSavePanel, NSWorkspace,
 };
 use objc2_foundation::{NSArray, NSData, NSString, NSURL};
@@ -11,6 +11,18 @@ use std::{cell::Cell, path::PathBuf};
 use tokio::sync::oneshot;
 fn marker() -> MainThreadMarker {
     MainThreadMarker::new().expect("AppKit adapter must run on UI main thread")
+}
+/// 使用仓库既有 macOS 图标；嵌入 binary 后 cargo run 也无需依赖 cwd/临时包路径。
+pub fn set_application_icon() {
+    let app = NSApplication::sharedApplication(marker());
+    let mut png = std::io::Cursor::new(Vec::new());
+    crate::application_icon::image(1024, 864)
+        .write_to(&mut png, image::ImageFormat::Png)
+        .expect("encode bundled Dock icon");
+    let data = NSData::with_bytes(png.get_ref());
+    let image = NSImage::initWithData(NSImage::alloc(), &data).expect("bundled application icon");
+    // 有效的随包 NSImage，主线程同步设置；NSApplication 保留该对象。
+    unsafe { app.setApplicationIconImage(Some(&image)) };
 }
 #[derive(Clone, Copy, Debug)]
 pub enum DialogKind {

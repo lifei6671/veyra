@@ -32,9 +32,38 @@ impl Projection {
     }
 }
 
+/// 托盘展示缓存：project 是投影 key 的唯一写入口，换语言只重译这个 key。
+struct TrayPresentation {
+    key: std::cell::Cell<&'static str>,
+    language: std::cell::Cell<veyra_core::domain::DesktopLanguage>,
+}
+impl Default for TrayPresentation {
+    fn default() -> Self {
+        Self {
+            key: std::cell::Cell::new(Projection::from_core(None, None).text),
+            language: std::cell::Cell::new(Default::default()),
+        }
+    }
+}
+impl TrayPresentation {
+    fn text(&self) -> &'static str {
+        crate::ui::i18n::translate(self.language.get(), self.key.get())
+    }
+    fn set_language(&self, language: veyra_core::domain::DesktopLanguage) -> &'static str {
+        self.language.set(language);
+        self.text()
+    }
+    fn project(&self, state: Option<&AppState>, runtime: Option<&RuntimeSnapshot>) -> &'static str {
+        self.key.set(Projection::from_core(state, runtime).text);
+        self.text()
+    }
+}
+
 pub struct DesktopTray {
     tray: Option<TrayIcon>,
     status: MenuItem,
+    localized_items: [(MenuItem, &'static str); 4],
+    presentation: TrayPresentation,
 }
 impl DesktopTray {
     pub fn new() -> Result<(Self, UnboundedReceiver<Intent>), Box<dyn std::error::Error>> {
@@ -48,20 +77,12 @@ impl DesktopTray {
         let stop = MenuItem::new("停止（Runtime 未接入）", false, None);
         let quit = MenuItem::new("退出", true, None);
         menu.append_items(&[&show, &status, &start, &stop, &quit])?;
-        let mut rgba = vec![0; 18 * 18 * 4];
-        // 自有 V 形单色 template，适应当前菜单栏外观，无第三方图标资源。
-        for y in 3..15 {
-            let inset = (y - 3) / 2;
-            for x in [3 + inset, 14 - inset] {
-                for dx in 0..2 {
-                    rgba[(y * 18 + x + dx) * 4 + 3] = 255;
-                }
-            }
-        }
+        // 同源彩色图案；36px 提供 Retina 像素，tray-icon 以 18pt 显示。
+        let rgba = crate::application_icon::image(36, 36).into_raw();
         let tray = TrayIconBuilder::new()
             .with_menu(Box::new(menu))
-            .with_icon(tray_icon::Icon::from_rgba(rgba, 18, 18)?)
-            .with_icon_as_template(true)
+            .with_icon(tray_icon::Icon::from_rgba(rgba, 36, 36)?)
+            .with_icon_as_template(false)
             .with_tooltip("Veyra · 显示窗口")
             .build()?;
         let show_id = show.id().clone();
@@ -82,13 +103,33 @@ impl DesktopTray {
             Self {
                 tray: Some(tray),
                 status,
+                localized_items: [
+                    (show, "显示窗口"),
+                    (start, "启动（Runtime 未接入）"),
+                    (stop, "停止（Runtime 未接入）"),
+                    (quit, "退出"),
+                ],
+                presentation: TrayPresentation::default(),
             },
             receiver,
         ))
     }
+    pub fn set_language(&self, language: veyra_core::domain::DesktopLanguage) {
+        let status = self.presentation.set_language(language);
+        for (item, key) in &self.localized_items {
+            item.set_text(crate::ui::i18n::translate(language, key));
+        }
+        self.status.set_text(status);
+        if let Some(tray) = &self.tray {
+            let _ = tray.set_tooltip(Some(crate::ui::i18n::translate(
+                language,
+                "Veyra · 显示窗口",
+            )));
+        }
+    }
     pub fn project(&self, state: Option<&AppState>, runtime: Option<&RuntimeSnapshot>) {
-        let projection = Projection::from_core(state, runtime);
-        self.status.set_text(projection.text);
+        self.status
+            .set_text(self.presentation.project(state, runtime));
         // 仅诊断 OS 托盘可见性；创建成功不能替代用户实际看到菜单栏图标。
         #[cfg(debug_assertions)]
         if let Some(tray) = &self.tray {
@@ -157,6 +198,56 @@ mod tests {
     use veyra_core::application::runtime_snapshot::{
         InstanceId, LastSuccessfulVersion, RuntimeFacts, RuntimeState,
     };
+    // 展示缓存只接受 project 的 key；换语言仅翻译缓存，不重新推断运行状态。
+    #[test]
+    fn cached_runtime_projection_keeps_status_across_languages() {
+        use veyra_core::domain::DesktopLanguage;
+        let state = AppState::empty();
+        let id = InstanceId("tray-language-test".into());
+        for (current, zh, en) in [
+            (
+                RuntimeState::Ready {
+                    instance_id: id.clone(),
+                    applied_version: state.config_version(),
+                },
+                "内核：运行中",
+                "Core: running",
+            ),
+            (
+                RuntimeState::Failed { instance_id: None },
+                "内核：失败",
+                "Core: failed",
+            ),
+            (RuntimeState::Stopped, "内核：未运行", "Core: stopped"),
+            (
+                RuntimeState::Starting { instance_id: id },
+                "内核：正在启动",
+                "Core: starting",
+            ),
+            (
+                RuntimeState::Recovering { instance: None },
+                "内核：恢复中",
+                "Core: recovering",
+            ),
+        ] {
+            let runtime = RuntimeSnapshot::from_owner(
+                state.config_version(),
+                &RuntimeFacts {
+                    current,
+                    last_successful: None,
+                },
+            );
+            let cache = TrayPresentation::default();
+            assert_eq!(cache.project(Some(&state), Some(&runtime)), zh);
+            for (lang, expected) in [
+                (DesktopLanguage::SimplifiedChinese, zh),
+                (DesktopLanguage::English, en),
+            ] {
+                assert_eq!(cache.set_language(lang), expected);
+                assert_eq!(cache.key.get(), zh);
+            }
+        }
+    }
     #[test]
     fn no_runtime_owner_never_projects_running_even_with_saved_configuration() {
         let mut state = AppState::try_empty().unwrap();

@@ -1,4 +1,5 @@
 //! 有限选项 Select：Kit base 管理焦点、Escape、弹层生命周期；React CSS 定义外观。
+use crate::ui::i18n::tr;
 use crate::ui::{icons::icon, tokens as t};
 use gpui_kit::{
     base::{Popover, Select as BaseSelect},
@@ -9,10 +10,57 @@ use gpui_kit::{
 pub enum SelectEvent {
     Confirm(Option<&'static str>),
 }
-pub struct SelectState {
+// 选项、已提交值与待确认 cursor 共用一个 presentation state，鼠标不另存 hover 值。
+struct Selection {
     options: Vec<&'static str>,
     selected: Option<usize>,
     cursor: usize,
+}
+impl Selection {
+    fn new(options: Vec<&'static str>, selected: Option<usize>) -> Self {
+        let selected = selected.filter(|&i| i < options.len());
+        Self {
+            options,
+            selected,
+            cursor: selected.unwrap_or(0),
+        }
+    }
+    fn set_selected(&mut self, index: Option<usize>, open: bool) {
+        self.selected = index.filter(|&i| i < self.options.len());
+        if !open {
+            self.cursor = self.selected.unwrap_or(0);
+        }
+    }
+    fn activate(&mut self, index: usize) {
+        if index < self.options.len() {
+            self.cursor = index;
+        }
+    }
+    fn step(&mut self, down: bool) {
+        let len = self.options.len();
+        if len == 0 {
+            return;
+        }
+        self.cursor = if down {
+            (self.cursor + 1) % len
+        } else {
+            (self.cursor + len - 1) % len
+        };
+    }
+    fn confirm(&mut self, index: usize) -> Option<&'static str> {
+        let value = self.options.get(index).copied()?;
+        self.activate(index);
+        self.selected = Some(index);
+        Some(value)
+    }
+    fn selected_value(&self) -> &'static str {
+        self.selected
+            .and_then(|i| self.options.get(i).copied())
+            .unwrap_or("")
+    }
+}
+pub struct SelectState {
+    selection: Selection,
     open: bool,
     trigger: FocusHandle,
     popup: FocusHandle,
@@ -29,9 +77,7 @@ impl SelectState {
         cx: &mut Context<Self>,
     ) -> Self {
         Self {
-            options,
-            selected: selected.map(|i| i.row),
-            cursor: selected.map_or(0, |i| i.row),
+            selection: Selection::new(options, selected.map(|i| i.row)),
             open: false,
             trigger: cx.focus_handle(),
             popup: cx.focus_handle(),
@@ -45,15 +91,52 @@ impl SelectState {
         _: &mut Window,
         cx: &mut Context<Self>,
     ) {
-        self.selected = index.map(|i| i.row);
+        self.selection.set_selected(index.map(|i| i.row), self.open);
+        cx.notify();
+    }
+    fn set_open(&mut self, open: bool, window: &mut Window, cx: &mut Context<Self>) {
+        let open = open && !self.selection.options.is_empty();
+        if open {
+            if !self.open {
+                self.selection.cursor = self.selection.selected.unwrap_or(0);
+            }
+            self.open = true;
+            cx.notify();
+        } else {
+            self.close(false, window, cx);
+        }
+    }
+    /// Confirm/Escape 明确回到 trigger；outside 等本次点击完成后再判断，保留新控件焦点。
+    fn close(&mut self, restore: bool, window: &mut Window, cx: &mut Context<Self>) {
+        if !self.open {
+            return;
+        }
+        self.open = false;
+        if restore {
+            self.trigger.focus(window, cx);
+        } else {
+            cx.defer_in(window, |this, window, cx| {
+                if !this.open
+                    && (window.focused(cx).is_none() || this.popup.contains_focused(window, cx))
+                {
+                    this.trigger.focus(window, cx);
+                }
+            });
+        }
+        cx.emit(DismissEvent);
+        cx.notify();
+    }
+    fn move_cursor(&mut self, down: bool, cx: &mut Context<Self>) {
+        self.selection.step(down);
         cx.notify();
     }
     fn confirm(&mut self, index: usize, window: &mut Window, cx: &mut Context<Self>) {
-        self.selected = Some(index);
-        self.open = false;
-        self.trigger.focus(window, cx);
-        cx.emit(DismissEvent);
-        cx.emit(SelectEvent::Confirm(Some(self.options[index])));
+        let Some(value) = self.selection.confirm(index) else {
+            return;
+        };
+        self.close(true, window, cx);
+        // 展示翻译不进入业务：始终返回 catalog 的稳定原值。
+        cx.emit(SelectEvent::Confirm(Some(value)));
         cx.notify();
     }
 }
@@ -104,37 +187,32 @@ impl Render for SelectState {
         let entity = cx.entity();
         let popup_entity = entity.clone();
         let open_entity = entity.clone();
-        let selected = self.selected.map_or("", |i| self.options[i]);
+        let selected = tr(cx, self.selection.selected_value());
         BaseSelect::new("select")
             .open(self.open)
+            .disabled(self.selection.options.is_empty())
             .focus_handle(&self.trigger)
             .content_focus_handle(&self.popup)
-            .accessibility_label(self.label.clone())
+            .accessibility_label(tr(cx, &self.label).to_owned())
             .accessibility_value(selected)
-            .on_open_change(move |open, _, cx| {
-                open_entity.update(cx, |s, cx| {
-                    s.open = open;
-                    s.cursor = s.selected.unwrap_or(0);
-                    cx.notify();
-                })
+            .on_open_change(move |open, w, cx| {
+                open_entity.update(cx, |s, cx| s.set_open(open, w, cx))
             })
-            .on_confirm(move |w, cx| entity.update(cx, |s, cx| s.confirm(s.cursor, w, cx)))
+            .on_confirm(move |w, cx| {
+                entity.update(cx, |s, cx| s.confirm(s.selection.cursor, w, cx))
+            })
             .child(
                 Popover::new("select-popup")
                     .open(self.open)
                     .offset(px(t::MENU_PADDING))
                     .track_focus(&self.popup)
-                    .on_open_change(cx.listener(|this, open, _, cx| {
-                        this.open = *open;
-                        if *open {
-                            this.cursor = this.selected.unwrap_or(0);
-                        } else {
-                            cx.emit(DismissEvent);
-                        }
-                        cx.notify();
+                    .on_open_change(cx.listener(|this, open, w, cx| {
+                        this.set_open(*open, w, cx);
                     }))
                     .trigger(
                         gpui_kit::base::Button::new("select-trigger")
+                            .disabled(self.selection.options.is_empty())
+                            .tab_stop(false)
                             .flex()
                             .w(self.width)
                             .h(px(t::CONTROL))
@@ -163,9 +241,9 @@ impl Render for SelectState {
                         let highlight_text = if dark { 0x86dcae } else { t::SELECT_TEXT };
                         let s = popup_entity.read(cx);
                         let width = s.width;
-                        let cursor = s.cursor;
-                        let selected = s.selected;
-                        let options = s.options.clone();
+                        let cursor = s.selection.cursor;
+                        let selected = s.selection.selected;
+                        let options = s.selection.options.clone();
                         let focus = s.popup.clone();
                         let keyboard = popup_entity.clone();
                         div()
@@ -200,8 +278,7 @@ impl Render for SelectState {
                                 let entity = keyboard.clone();
                                 move |_: &gpui_kit::base::actions::SelectDown, _, cx| {
                                     entity.update(cx, |s, cx| {
-                                        s.cursor = (s.cursor + 1) % s.options.len();
-                                        cx.notify();
+                                        s.move_cursor(true, cx);
                                     });
                                     cx.stop_propagation();
                                 }
@@ -210,9 +287,7 @@ impl Render for SelectState {
                                 let entity = keyboard.clone();
                                 move |_: &gpui_kit::base::actions::SelectUp, _, cx| {
                                     entity.update(cx, |s, cx| {
-                                        s.cursor =
-                                            (s.cursor + s.options.len() - 1) % s.options.len();
-                                        cx.notify();
+                                        s.move_cursor(false, cx);
                                     });
                                     cx.stop_propagation();
                                 }
@@ -220,26 +295,24 @@ impl Render for SelectState {
                             .on_action({
                                 let entity = keyboard.clone();
                                 move |_: &gpui_kit::base::actions::Confirm, w, cx| {
-                                    entity.update(cx, |s, cx| s.confirm(s.cursor, w, cx));
+                                    entity.update(cx, |s, cx| s.confirm(s.selection.cursor, w, cx));
                                     cx.stop_propagation();
                                 }
                             })
                             .on_action(move |_: &gpui_kit::base::actions::Cancel, w, cx| {
                                 keyboard.update(cx, |s, cx| {
-                                    s.open = false;
-                                    s.trigger.focus(w, cx);
-                                    cx.emit(DismissEvent);
-                                    cx.notify();
+                                    s.close(true, w, cx);
                                 });
                                 cx.stop_propagation();
                             })
                             .children(options.into_iter().enumerate().map(|(i, label)| {
                                 let entity = popup_entity.clone();
+                                let hover_entity = entity.clone();
                                 div()
                                     .id(("option", i))
                                     .role(Role::ListBoxOption)
                                     .aria_selected(selected == Some(i))
-                                    .aria_label(label)
+                                    .aria_label(tr(cx, label))
                                     .flex()
                                     .h(px(t::CONTROL))
                                     .items_center()
@@ -248,14 +321,24 @@ impl Render for SelectState {
                                     .rounded(px(t::OPTION_RADIUS))
                                     .cursor_pointer()
                                     .when(cursor == i, |d| {
-                                        d.bg(rgba(highlight)).text_color(rgb(highlight_text))
+                                        d.aria_active_descendant()
+                                            .bg(rgba(highlight))
+                                            .text_color(rgb(highlight_text))
                                     })
                                     .when(selected == Some(i), |d| {
                                         d.font_weight(FontWeight::SEMIBOLD)
                                             .text_color(rgb(highlight_text))
                                     })
-                                    .hover(|d| d.bg(rgba(highlight)))
-                                    .child(label)
+                                    // hover 与键盘共用 cursor，不另画第二个 active 背景。
+                                    .on_hover(move |hovered, _, cx| {
+                                        if *hovered {
+                                            hover_entity.update(cx, |s, cx| {
+                                                s.selection.activate(i);
+                                                cx.notify();
+                                            });
+                                        }
+                                    })
+                                    .child(tr(cx, label))
                                     .when(selected == Some(i), |d| {
                                         d.child(icon("Check", 14.).text_color(rgb(highlight_text)))
                                     })
@@ -265,5 +348,53 @@ impl Render for SelectState {
                             }))
                     }),
             )
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::Selection;
+    // 保护键盘/鼠标混用：一个 cursor 决定唯一高亮、AX active 与 Enter 的业务原值。
+    #[test]
+    fn hover_replaces_keyboard_cursor_before_confirm() {
+        let mut s = Selection::new(vec!["a", "b", "c"], Some(0));
+        s.step(true);
+        assert_eq!((s.selected, s.cursor), (Some(0), 1));
+        s.activate(2);
+        assert_eq!((s.selected, s.cursor), (Some(0), 2));
+        assert_eq!((0..3).filter(|&i| s.cursor == i).collect::<Vec<_>>(), [2]);
+        assert_eq!(s.confirm(s.cursor), Some("c"));
+        assert_eq!(s.selected, Some(2));
+    }
+    #[test]
+    fn empty_options_and_invalid_selection_are_normalized() {
+        let mut empty = Selection::new(vec![], Some(9));
+        empty.step(true);
+        empty.step(false);
+        empty.activate(9);
+        assert_eq!(
+            (empty.selected, empty.cursor, empty.selected_value()),
+            (None, 0, "")
+        );
+        assert_eq!(empty.confirm(0), None);
+        let mut s = Selection::new(vec!["a", "b"], Some(9));
+        assert_eq!((s.selected, s.cursor), (None, 0));
+        assert_eq!(s.confirm(9), None);
+        s.set_selected(Some(1), false);
+        assert_eq!((s.selected, s.cursor), (Some(1), 1));
+        s.set_selected(Some(9), false);
+        assert_eq!((s.selected, s.cursor), (None, 0));
+    }
+    #[test]
+    fn arrows_wrap_and_projection_does_not_commit_cursor() {
+        let mut s = Selection::new(vec!["简体中文", "繁體中文", "English"], Some(0));
+        s.step(false);
+        assert_eq!((s.selected, s.cursor), (Some(0), 2));
+        s.step(true);
+        assert_eq!(s.cursor, 0);
+        s.step(true);
+        s.set_selected(Some(2), true);
+        assert_eq!((s.selected, s.cursor), (Some(2), 1));
+        assert_eq!(s.confirm(s.cursor), Some("繁體中文"));
     }
 }

@@ -4,13 +4,53 @@ use super::{
     theme::Palette,
     tokens as t,
 };
+use crate::ui::i18n::tr;
 use crate::{app::AppView, navigation::Route, preferences::SaveStatus, state_bridge::LoadState};
 use gpui_kit::{
     component::{Disableable, button::*, scroll::ScrollableElement},
     prelude::*,
     *,
 };
+use std::time::{Duration, Instant};
 use veyra_core::domain::DesktopLanguage;
+
+fn sidebar_width(collapsed: bool) -> f32 {
+    if collapsed {
+        t::SIDEBAR_COLLAPSED
+    } else {
+        t::SIDEBAR
+    }
+}
+
+pub struct SidebarTransition {
+    from: f32,
+    to: f32,
+    started: Instant,
+}
+
+impl SidebarTransition {
+    fn new(from: f32, collapsed: bool, started: Instant) -> Self {
+        Self {
+            from,
+            to: sidebar_width(collapsed),
+            started,
+        }
+    }
+
+    fn finished(&self, now: Instant) -> bool {
+        now.duration_since(self.started) >= Duration::from_millis(t::SIDEBAR_TRANSITION_MS)
+    }
+
+    fn width(&self, now: Instant) -> f32 {
+        let progress = (now.duration_since(self.started).as_secs_f32()
+            / Duration::from_millis(t::SIDEBAR_TRANSITION_MS).as_secs_f32())
+        .min(1.);
+        let [x1, y1, x2, y2] = t::SIDEBAR_EASE;
+        let eased = gpui_kit::component::animation::cubic_bezier(x1, y1, x2, y2)(progress);
+        self.from + (self.to - self.from) * eased
+    }
+}
+
 fn route_label(route: Route, lang: DesktopLanguage) -> &'static str {
     match lang {
         DesktopLanguage::English => [
@@ -29,6 +69,23 @@ fn route_label(route: Route, lang: DesktopLanguage) -> &'static str {
 }
 impl Render for AppView {
     fn render(&mut self, window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
+        let now = Instant::now();
+        if self
+            .sidebar_transition
+            .as_ref()
+            .is_some_and(|a| a.finished(now))
+            || cx.reduce_motion()
+        {
+            self.sidebar_transition = None;
+        }
+        let sidebar_visual_width = self.sidebar_transition.as_ref().map_or_else(
+            || sidebar_width(self.visual.draft.sidebar_collapsed),
+            |animation| {
+                // GPUI 帧回调驱动；没有后台任务，完成后停止请求帧。
+                window.request_animation_frame();
+                animation.width(now)
+            },
+        );
         let prefs = &self.visual.draft;
         let collapsed = prefs.sidebar_collapsed;
         let lang = prefs.language;
@@ -115,11 +172,7 @@ impl Render for AppView {
             .relative()
             .flex()
             .flex_col()
-            .w(px(if collapsed {
-                t::SIDEBAR_COLLAPSED
-            } else {
-                t::SIDEBAR
-            }))
+            .w(px(sidebar_visual_width))
             .flex_shrink_0()
             .h_full()
             .p(px(t::GAP))
@@ -154,17 +207,31 @@ impl Render for AppView {
                             .items_center()
                             .justify_center()
                             .rounded(px(t::RADIUS))
+                            // 用户要求收起/展开按钮在 hover 时显示共享 IconButton 背景。
+                            .hover(|b| b.bg(rgba(t::HOVER)))
                             .child(icon("SidebarToggle", t::ICON).text_color(if self.dark {
                                 hsla(0., 0., 1., t::COLLAPSE_DARK_ALPHA)
                             } else {
                                 rgb(t::COLLAPSE_INK).into()
                             }))
                             .h(px(t::NAV_HEIGHT))
-                            .accessibility_label("折叠/展开侧栏 · Collapse/Expand sidebar")
+                            .accessibility_label(tr(cx, "折叠/展开侧栏 · Collapse/Expand sidebar"))
                             .w(px(t::NAV_HEIGHT))
                             .on_click(cx.listener(|this, _, window, cx| {
                                 let mut draft = this.visual.draft.clone();
+                                let now = Instant::now();
+                                // 反向切换从本帧宽度继续，不跳回上一次的固定端点。
+                                let from =
+                                    this.sidebar_transition.as_ref().map_or(
+                                        sidebar_width(draft.sidebar_collapsed),
+                                        |animation| animation.width(now),
+                                    );
                                 draft.sidebar_collapsed = !draft.sidebar_collapsed;
+                                this.sidebar_transition = Some(SidebarTransition::new(
+                                    from,
+                                    draft.sidebar_collapsed,
+                                    now,
+                                ));
                                 this.edit_visual(draft, window, cx);
                             }))
                             .map(|b| {
@@ -172,9 +239,9 @@ impl Render for AppView {
                                     b,
                                     "collapse-tooltip",
                                     if collapsed {
-                                        "展开侧边栏"
+                                        tr(cx, "展开侧边栏")
                                     } else {
-                                        "收起侧边栏"
+                                        tr(cx, "收起侧边栏")
                                     },
                                     true,
                                 )
@@ -224,9 +291,9 @@ impl Render for AppView {
                                 .bg(rgba((p.surface << 8) | surface_alpha))
                                 .children(
                                     [
-                                        ["连接数", "内存使用"],
-                                        ["进站流量", "进站速率"],
-                                        ["出站流量", "出站速率"],
+                                        [tr(cx, "连接数"), tr(cx, "内存使用")],
+                                        [tr(cx, "进站流量"), tr(cx, "进站速率")],
+                                        [tr(cx, "出站流量"), tr(cx, "出站速率")],
                                     ]
                                     .map(|labels| {
                                         div().flex().gap(px(16.)).children(labels.map(|label| {
@@ -270,10 +337,12 @@ impl Render for AppView {
                                                 .text_size(px(12.))
                                                 .line_height(px(15.))
                                                 .text_color(rgba(p.muted))
-                                                .child("运行时长"),
+                                                .child(tr(cx, "运行时长")),
                                         )
                                         .child(
-                                            div().line_height(px(t::BODY_LINE)).child("当前不可用"),
+                                            div()
+                                                .line_height(px(t::BODY_LINE))
+                                                .child(tr(cx, "当前不可用")),
                                         ),
                                 )
                             })
@@ -285,9 +354,13 @@ impl Render for AppView {
                                     .when(collapsed, |d| d.flex_col())
                                     .children(
                                         [
-                                            ("start", "启动内核", "Play"),
-                                            ("stop", "停止内核", "Stop"),
-                                            ("refresh-unavailable", "刷新数据", "ArrowPath"),
+                                            ("start", tr(cx, "启动内核"), "Play"),
+                                            ("stop", tr(cx, "停止内核"), "Stop"),
+                                            (
+                                                "refresh-unavailable",
+                                                tr(cx, "刷新数据"),
+                                                "ArrowPath",
+                                            ),
                                         ]
                                         .map(
                                             |(id, label, glyph)| {
@@ -306,10 +379,14 @@ impl Render for AppView {
                     ),
             );
         let status = match &self.bridge.load {
-            LoadState::Idle => "等待状态".into(),
-            LoadState::Busy => "Loading · 本地状态".into(),
-            LoadState::Ready => "本地状态".into(),
-            LoadState::Error(e) => format!("读取失败 · {e}"),
+            LoadState::Idle => tr(cx, "等待状态").into(),
+            LoadState::Busy => tr(cx, "Loading · 本地状态").into(),
+            LoadState::Ready => tr(cx, "本地状态").into(),
+            LoadState::Error(e) => format!(
+                "{} · {}",
+                tr(cx, "读取失败"),
+                crate::ui::i18n::message(cx, &e.to_string())
+            ),
         };
         let saved = self
             .bridge
@@ -425,12 +502,14 @@ impl Render for AppView {
                                     .items_center()
                                     .gap(px(t::GAP))
                                     .p(px(t::GAP))
-                                    .child("视觉偏好保存失败，草稿已保留")
-                                    .child(button("retry-visual-save", "重试保存").on_click(
-                                        cx.listener(|this, _, window, cx| {
-                                            this.retry_visual(window, cx)
-                                        }),
-                                    )),
+                                    .child(tr(cx, "视觉偏好保存失败，草稿已保留"))
+                                    .child(
+                                        button("retry-visual-save", tr(cx, "重试保存")).on_click(
+                                            cx.listener(|this, _, window, cx| {
+                                                this.retry_visual(window, cx)
+                                            }),
+                                        ),
+                                    ),
                             )
                         })
                         .when(
@@ -443,9 +522,12 @@ impl Render for AppView {
                                         .gap(px(t::GAP))
                                         .p(px(t::GAP))
                                         .child(status.clone())
-                                        .child(button("retry-state-load", "重新加载").on_click(
-                                            cx.listener(|this, _, _, cx| this.refresh(cx)),
-                                        )),
+                                        .child(
+                                            button("retry-state-load", tr(cx, "重新加载"))
+                                                .on_click(
+                                                    cx.listener(|this, _, _, cx| this.refresh(cx)),
+                                                ),
+                                        ),
                                 )
                             },
                         )
@@ -468,7 +550,18 @@ impl Render for AppView {
                                     .track_scroll(&self.page_scroll)
                                     .vertical_scrollbar(&self.page_scroll)
                             })
-                            .child(self.pages.get(self.route)),
+                            // 页面已拥有固定视口：复用 GPUI 缓存边界，避免动画每帧
+                            // 在父布局测量时展开整棵控件树；尺寸/实体变化仍会重绘。
+                            .child(if window.is_a11y_active() {
+                                // pinned GPUI 的 cached reuse 不重建 AX 子树；无障碍激活时
+                                // 用同一页面 Entity 正常绘制，普通路径仍保留缓存优化。
+                                self.pages.get(self.route).into_any_element()
+                            } else {
+                                self.pages
+                                    .get(self.route)
+                                    .cached(StyleRefinement::default().size_full())
+                                    .into_any_element()
+                            }),
                     )
                     .when(evidence_visible(), |d| {
                         d.child(
@@ -516,5 +609,44 @@ impl Render for AppView {
                     }),
             )
             .child(self.notice_center.clone())
+    }
+}
+
+#[cfg(test)]
+mod sidebar_transition_tests {
+    use super::{SidebarTransition, t};
+    use std::time::{Duration, Instant};
+
+    #[test]
+    fn sidebar_moves_between_exact_endpoints_and_finishes() {
+        let start = Instant::now();
+        let duration = Duration::from_millis(t::SIDEBAR_TRANSITION_MS);
+        for (from, collapsed, to) in [
+            (t::SIDEBAR, true, t::SIDEBAR_COLLAPSED),
+            (t::SIDEBAR_COLLAPSED, false, t::SIDEBAR),
+        ] {
+            let animation = SidebarTransition::new(from, collapsed, start);
+            assert_eq!(animation.width(start), from);
+            let midway = animation.width(start + duration / 2);
+            assert!(midway > t::SIDEBAR_COLLAPSED && midway < t::SIDEBAR);
+            assert!(!animation.finished(start + duration / 2));
+            assert_eq!(animation.width(start + duration), to);
+            assert!(animation.finished(start + duration));
+        }
+    }
+
+    #[test]
+    fn reversing_sidebar_keeps_current_width_without_jumping() {
+        let start = Instant::now();
+        let collapsing = SidebarTransition::new(t::SIDEBAR, true, start);
+        let reverse_at = start + Duration::from_millis(80);
+        let current = collapsing.width(reverse_at);
+        let expanding = SidebarTransition::new(current, false, reverse_at);
+        assert_eq!(expanding.width(reverse_at), current);
+        assert!(expanding.width(reverse_at + Duration::from_millis(40)) > current);
+        assert_eq!(
+            expanding.width(reverse_at + Duration::from_millis(t::SIDEBAR_TRANSITION_MS)),
+            t::SIDEBAR
+        );
     }
 }

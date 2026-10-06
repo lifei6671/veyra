@@ -2,3 +2,14 @@
 members = ["crates/veyra-core", "crates/veyra-desktop", "crates/veyra-gpui-prototype", "crates/veyra-helper", "src-tauri"]
 default-members = ["crates/veyra-core"]
 resolver = "3"
+
+# GPUI 的布局/绘制热路径在 opt-level=0 下超出动画帧预算；
+# 仅优化桌面渲染相关包，保留开发构建的调试信息和断言。
+[profile.dev.package.veyra-desktop]
+opt-level = 1
+
+[profile.dev.package.gpui-pre]
+opt-level = 1
+
+[profile.dev.package.taffy]
+opt-level = 1

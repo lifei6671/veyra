@@ -2,6 +2,9 @@
 //! 局部规格保留独立名称，避免把 Panel 覆盖误用于其他页面。
 pub const SIDEBAR: f32 = 256.;
 pub const SIDEBAR_COLLAPSED: f32 = 64.;
+// .sidebar { transition: width .24s ease; }，CSS ease 的标准 Bezier 控制点。
+pub const SIDEBAR_TRANSITION_MS: u64 = 240;
+pub const SIDEBAR_EASE: [f32; 4] = [0.25, 0.1, 0.25, 1.];
 pub const BRAND_WIDTH: f32 = 126.33;
 // React 品牌 PNG 不随主题反色；文字区域最常见的不透明 RGB 为 (56,68,82)。
 pub const BRAND_INK: u32 = 0x384452;
@@ -23,6 +26,16 @@ pub const ACCENT: u32 = 0x70c996;
 pub const SETTING_HEIGHT: f32 = 40.;
 pub const SECTION_PADDING: f32 = 16.;
 pub const COLUMN_GAP: f32 = 48.;
+// .panel-settings-grid 的 viewport media queries；折叠侧栏时更早切换双列。
+// .panel-settings-grid { width: 100%; max-width: 1280px; }
+pub const SETTINGS_GRID_MAX_WIDTH: f32 = 1280.;
+pub const PANEL_TWO_COLUMNS: f32 = 1024.;
+pub const PANEL_COLLAPSED_TWO_COLUMNS: f32 = 768.;
+pub const PANEL_WIDE: f32 = 1280.;
+pub const PANEL_EXTRA_WIDE: f32 = 1536.;
+pub const PANEL_COLUMN_GAP: f32 = 16.;
+pub const PANEL_MEDIUM_COLUMN_GAP: f32 = 32.;
+pub const PANEL_EXTRA_COLUMN_GAP: f32 = 64.;
 pub const SECTION_TITLE: f32 = 16.;
 pub const SECTION_LINE: f32 = 24.;
 pub const SELECT_WIDTH: f32 = 192.;
@@ -44,6 +57,10 @@ pub const SITE_ICON_WIDTH: f32 = 64.;
 pub const SITE_NAME_WIDTH: f32 = 112.;
 pub const PICKER_WIDTH: f32 = 256.;
 pub const PICKER_MAX_HEIGHT: f32 = 320.;
+// 搜索/分类区之外的既有图标列表视口，行高使用 CONTROL（32px）。
+pub const PICKER_LIST_HEIGHT: f32 = 232.;
+// 用户明确调整暗色图标分类选中项：accent 底上的文字为黑色。
+pub const PICKER_SELECTED_DARK_TEXT: u32 = 0x000000;
 pub const MENU_PADDING: f32 = 4.;
 pub const MENU_RADIUS: f32 = 10.;
 pub const OPTION_RADIUS: f32 = 7.;
@@ -55,15 +72,17 @@ pub const ROW_BORDER: u32 = 0x4b526329;
 pub const HOVER: u32 = 0x4b526312;
 pub const SELECT_HIGHLIGHT: u32 = 0x65cb8f2e;
 pub const SELECT_TEXT: u32 = 0x37664c;
-// .panel-ip-tooltip / .test-sites-tooltip / .tooltip-trigger::after。
-pub const TOOLTIP_BG: u32 = 0x30394c;
-pub const TOOLTIP_TEXT: u32 = 0xfafafa;
+// 用户统一两主题：OpenBox .tippy-box 14px/1.4，neutral 墨绿色与浅色文字。
+pub const TOOLTIP_BG: u32 = 0x19362d;
+pub const TOOLTIP_TEXT: u32 = 0xcdd3d1;
 pub const TOOLTIP_RADIUS: f32 = 7.;
 pub const TOOLTIP_Y: f32 = 5.;
 pub const TOOLTIP_OFFSET: f32 = 6.;
 pub const IP_TOOLTIP_WIDTH: f32 = 280.;
 pub const SITE_TOOLTIP_WIDTH: f32 = 350.;
-pub const SITE_TOOLTIP_LINE: f32 = 19.6;
+// 所有 Tooltip 共用，不允许侧栏/页面覆盖字号。
+pub const TOOLTIP_FONT: f32 = 14.;
+pub const TOOLTIP_LINE: f32 = 19.6;
 
 // 本地 Chromium reference 默认按钮 focus outline。
 pub const BROWSER_FOCUS: u32 = 0x005fcc;
