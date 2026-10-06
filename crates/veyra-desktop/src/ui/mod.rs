@@ -10,3 +10,5 @@ pub mod icons;
 pub mod tokens;
 
 pub mod background;
+
+pub mod i18n;

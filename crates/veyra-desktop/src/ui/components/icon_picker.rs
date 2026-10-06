@@ -1,11 +1,12 @@
 //! React PanelIconPicker 的本地图标目录；不解析 URL、不访问外部资源。
 use super::{button, text_input};
+use crate::ui::i18n::{Locale, tr};
 use crate::ui::icons::icon;
 use crate::ui::tokens as t;
 use gpui_kit::{
     component::{
         ActiveTheme,
-        button::{Button, ButtonVariants},
+        button::{Button, ButtonCustomVariant, ButtonVariants},
         input::{InputEvent, InputState},
         popover::Popover,
     },
@@ -15,8 +16,9 @@ use gpui_kit::{
 use std::sync::{Arc, OnceLock};
 struct Entry {
     code: String,
-    label: String,
+    labels: [String; 3],
     category: String,
+    search_text: String,
     image: Arc<Image>,
 }
 fn entries() -> &'static [Entry] {
@@ -45,44 +47,87 @@ fn entries() -> &'static [Entry] {
                         bytes.push(c);
                     }
                 }
+                let labels = [
+                    veyra_core::domain::DesktopLanguage::SimplifiedChinese,
+                    veyra_core::domain::DesktopLanguage::English,
+                    veyra_core::domain::DesktopLanguage::TraditionalChinese,
+                ]
+                .map(|language| {
+                    crate::ui::i18n::icon_label(language, v["label"].as_str().unwrap())
+                });
                 Entry {
                     code: v["code"].as_str().unwrap().into(),
-                    label: v["label"].as_str().unwrap().into(),
+
                     category: v["category"].as_str().unwrap().into(),
+                    search_text: format!("{} {}", labels.join(" "), v["code"].as_str().unwrap())
+                        .to_lowercase(),
+                    labels,
                     image: Arc::new(Image::from_bytes(ImageFormat::Svg, bytes)),
                 }
             })
             .collect()
     })
 }
+// 搜索键随本地图标目录缓存，滚动重绘不重复分配/转换全部标签。
+fn matching_options(category: &str, query: &str) -> Vec<usize> {
+    let query = query.to_lowercase();
+    entries()
+        .iter()
+        .enumerate()
+        .filter(|(_, e)| {
+            (category == "all" || e.category == category) && e.search_text.contains(&query)
+        })
+        .map(|(index, _)| index)
+        .collect()
+}
 pub struct IconPicked(pub String);
 pub struct IconPicker {
     pub value: String,
     search: Entity<InputState>,
+    // Kit 的 value 包含 IME 预编辑内容；筛选只消费 Change 事件提交后的值。
+    query: String,
+    search_language: veyra_core::domain::DesktopLanguage,
     category: usize,
-    scroll: ScrollHandle,
+    scroll: UniformListScrollHandle,
     _subscription: Subscription,
 }
 impl EventEmitter<IconPicked> for IconPicker {}
 impl IconPicker {
+    // set_value 只更新显示，不发 Change；两个清空入口必须同步提交后的筛选词。
+    fn clear_search(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        self.query.clear();
+        self.search.update(cx, |s, cx| s.set_value("", window, cx));
+        cx.notify();
+    }
     pub fn new(value: String, window: &mut Window, cx: &mut Context<Self>) -> Self {
         let search = cx.new(|cx| InputState::new(window, cx).placeholder("搜索国家/地区"));
-        let subscription = cx.subscribe(&search, |_, _, event, cx| {
+        let subscription = cx.subscribe(&search, |this, input, event, cx| {
             if matches!(event, InputEvent::Change) {
+                this.query = input.read(cx).value().to_string();
+                this.scroll.scroll_to_item_strict(0, ScrollStrategy::Top);
                 cx.notify()
             }
         });
         Self {
             value,
             search,
+            query: String::new(),
+            search_language: Default::default(),
             category: 0,
-            scroll: ScrollHandle::new(),
+            scroll: UniformListScrollHandle::new(),
             _subscription: subscription,
         }
     }
 }
 impl Render for IconPicker {
-    fn render(&mut self, _: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
+    fn render(&mut self, window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
+        let language = cx.global::<Locale>().0;
+        if self.search_language != language {
+            self.search_language = language;
+            self.search.update(cx, |search, cx| {
+                search.set_placeholder(tr(cx, "搜索国家/地区"), window, cx)
+            });
+        }
         let current = entries().iter().find(|e| e.code == self.value);
         let entity = cx.entity();
         Popover::new("site-icon-picker")
@@ -98,15 +143,14 @@ impl Render for IconPicker {
                         .position(|e| e.code == this.value)
                         .unwrap_or(0);
                     this.scroll
-                        .set_offset(point(px(0.), -px((index as f32 * 32. - 100.).max(0.))));
-                    this.search.update(cx, |s, cx| s.set_value("", window, cx));
-                    cx.notify();
+                        .scroll_to_item_strict(index, ScrollStrategy::Center);
+                    this.clear_search(window, cx);
                 }
             }))
             .trigger(
                 Button::new("icon-trigger")
                     .ghost()
-                    .accessibility_label("选择测试站点图标")
+                    .accessibility_label(tr(cx, "选择测试站点图标"))
                     .w(px(t::SITE_ICON_WIDTH))
                     .h(px(t::CONTROL))
                     .px(px(t::GAP))
@@ -126,58 +170,60 @@ impl Render for IconPicker {
             )
             .content(move |_, _, cx| {
                 let picker = entity.read(cx);
-                let query = picker.search.read(cx).value().to_lowercase();
+                let query = &picker.query;
                 let category = ["all", "region", "brand", "other"][picker.category];
                 let popup = cx.entity();
-                let mut list = div()
-                    .id("icon-options")
-                    .track_scroll(&picker.scroll)
-                    .overflow_y_scroll()
-                    .min_h_0()
-                    .max_h(px(232.));
-                for (index, e) in entries().iter().enumerate().filter(|(_, e)| {
-                    (category == "all" || e.category == category)
-                        && format!("{} {}", e.label, e.code)
-                            .to_lowercase()
-                            .contains(&query)
-                }) {
-                    let entity = entity.clone();
-                    let popup = popup.clone();
-                    let code = e.code.clone();
-                    list = list.child(
-                        Button::new(("icon-option", index))
-                            .ghost()
-                            .w_full()
-                            .h(px(t::CONTROL))
-                            .px(px(t::GAP))
-                            .justify_start()
-                            .rounded(px(6.))
-                            .when(e.code == picker.value, |b| {
-                                b.bg(if cx.theme().mode.is_dark() {
-                                    rgb(0x151111)
-                                } else {
-                                    rgba(0xe8e8e8bf)
+                // 固定 32px 行复用 GPUI 可见范围列表，不再每帧创建 896 个 Button/SVG。
+                let options = matching_options(category, query);
+                let list_height = (options.len() as f32 * t::CONTROL).min(t::PICKER_LIST_HEIGHT);
+                let value = picker.value.clone();
+                let list_entity = entity.clone();
+                let list = uniform_list("icon-options", options.len(), move |range, _, cx| {
+                    range
+                        .map(|position| {
+                            let index = options[position];
+                            let e = &entries()[index];
+                            let entity = list_entity.clone();
+                            let popup = popup.clone();
+                            let code = e.code.clone();
+                            Button::new(("icon-option", index))
+                                .ghost()
+                                .w_full()
+                                .h(px(t::CONTROL))
+                                .px(px(t::GAP))
+                                .justify_start()
+                                .rounded(px(6.))
+                                .when(e.code == value, |b| {
+                                    b.bg(if cx.theme().mode.is_dark() {
+                                        rgb(0x151111)
+                                    } else {
+                                        rgba(0xe8e8e8bf)
+                                    })
                                 })
-                            })
-                            .child(
-                                div()
-                                    .flex()
-                                    .items_center()
-                                    .w_full()
-                                    .gap(px(t::GAP))
-                                    .child(img(e.image.clone()).size(px(16.)))
-                                    .child(e.label.clone()),
-                            )
-                            .on_click(move |_, w, cx| {
-                                entity.update(cx, |s, cx| {
-                                    s.value = code.clone();
-                                    cx.emit(IconPicked(code.clone()));
-                                    cx.notify();
-                                });
-                                popup.update(cx, |s, cx| s.dismiss(w, cx));
-                            }),
-                    );
-                }
+                                .child(
+                                    div()
+                                        .flex()
+                                        .items_center()
+                                        .w_full()
+                                        .gap(px(t::GAP))
+                                        .child(img(e.image.clone()).size(px(16.)))
+                                        .child(e.labels[match cx.global::<Locale>().0 { veyra_core::domain::DesktopLanguage::SimplifiedChinese => 0, veyra_core::domain::DesktopLanguage::English => 1, veyra_core::domain::DesktopLanguage::TraditionalChinese => 2 }].clone()),
+                                )
+                                .on_click(move |_, w, cx| {
+                                    entity.update(cx, |s, cx| {
+                                        s.value = code.clone();
+                                        cx.emit(IconPicked(code.clone()));
+                                        cx.notify();
+                                    });
+                                    popup.update(cx, |s, cx| s.dismiss(w, cx));
+                                })
+                        })
+                        .collect()
+                })
+                .track_scroll(&picker.scroll)
+                .w_full()
+                .h(px(list_height))
+                .min_h_0();
                 div()
                     .flex()
                     .flex_col()
@@ -203,7 +249,7 @@ impl Render for IconPicker {
                             .child(
                                 super::icon_button(
                                     "clear-icon-search",
-                                    "清空图标搜索",
+                                    tr(cx, "清空图标搜索"),
                                     "XMark",
                                     16.,
                                 )
@@ -214,8 +260,8 @@ impl Render for IconPicker {
                                     let entity = entity.clone();
                                     move |_, w, cx| {
                                         entity.update(cx, |s, cx| {
-                                            s.search
-                                                .update(cx, |input, cx| input.set_value("", w, cx));
+                                            s.clear_search(w, cx);
+                                            s.scroll.scroll_to_item_strict(0, ScrollStrategy::Top);
                                         });
                                     }
                                 }),
@@ -233,22 +279,47 @@ impl Render for IconPicker {
                                     .enumerate()
                                     .map(|(i, label)| {
                                         let entity = entity.clone();
+                                        // React 分类 Tab 没有 Kit ghost 的 hover/active 配色；
+                                        // 用户指定暗色绿色选中项黑字，未选中项仍用 muted；
+                                        // 三个鼠标状态使用相同配色，不让 Kit 再覆盖。
+                                        let foreground = if i == picker.category {
+                                            if cx.theme().mode.is_dark() {
+                                                rgb(t::PICKER_SELECTED_DARK_TEXT).into()
+                                            } else {
+                                                cx.theme().foreground
+                                            }
+                                        } else {
+                                            cx.theme().muted_foreground
+                                        };
+                                        let background = if i == picker.category {
+                                            rgb(t::ACCENT).into()
+                                        } else {
+                                            cx.theme().transparent
+                                        };
                                         // React tab flex:1 必须作用于直接 flex child；共享按钮外层保留焦点装饰。
                                         div().flex_1().min_w_0().child(
-                                            button(label, label)
-                                                .ghost()
+                                            button(label, tr(cx, label))
+                                                .custom(
+                                                    ButtonCustomVariant::new(cx)
+                                                        .foreground(foreground)
+                                                        .color(background)
+                                                        .hover(background)
+                                                        .active(background),
+                                                )
+                                                // Kit Custom 的 normal 背景会混合透明色，
+                                                // React 的 active Tab 则直接使用不透明 accent。
+                                                .bg(background)
                                                 .rounded(px(6.))
-                                                .text_color(cx.theme().muted_foreground)
                                                 .w_full()
                                                 .h(px(24.))
                                                 .p_0()
-                                                .when(i == picker.category, |b| {
-                                                    b.bg(rgb(t::ACCENT))
-                                                        .text_color(cx.theme().foreground)
-                                                })
                                                 .on_click(move |_, _, cx| {
                                                     entity.update(cx, |s, cx| {
                                                         s.category = i;
+                                                        s.scroll.scroll_to_item_strict(
+                                                            0,
+                                                            ScrollStrategy::Top,
+                                                        );
                                                         cx.notify();
                                                     })
                                                 }),
@@ -263,6 +334,37 @@ impl Render for IconPicker {
 
 #[cfg(test)]
 mod tests {
+    // 保护语言切换：目录名称/变体不遗漏中文，搜索同时支持翻译名称和稳定 code。
+    #[test]
+    fn catalog_labels_and_search_cover_english() {
+        for entry in super::entries() {
+            assert!(
+                !entry.labels[1]
+                    .chars()
+                    .any(|c| ('\u{4e00}'..='\u{9fff}').contains(&c)),
+                "{}",
+                entry.labels[1]
+            );
+        }
+        assert!(!super::matching_options("region", "United States").is_empty());
+        assert!(!super::matching_options("brand", "Baidu").is_empty());
+    }
+    // 保护可见行映射：分类/搜索后的点击仍对应原目录，并保留名称/代码大小写不敏感搜索。
+    #[test]
+    fn filtered_positions_retain_icon_identity_and_search_contract() {
+        let catalog = super::entries();
+        assert_eq!(super::matching_options("all", "").len(), catalog.len());
+        let by_code = super::matching_options("brand", "BRAND:BAIDU");
+        assert!(!by_code.is_empty());
+        assert!(
+            by_code
+                .iter()
+                .all(|i| catalog[*i].category == "brand" && catalog[*i].code.contains("baidu"))
+        );
+        assert!(super::matching_options("all", "百度").contains(&by_code[0]));
+        assert!(super::matching_options("region", "BRAND:BAIDU").is_empty());
+        assert!(super::matching_options("all", "no-such-veyra-icon").is_empty());
+    }
     // 所有随包选项必须能解码，防止打开站点图标选择器时崩溃。
     #[test]
     fn bundled_picker_catalog_decodes() {

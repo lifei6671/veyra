@@ -27,6 +27,8 @@ pub struct AppView {
     pub behavior_panel: Entity<crate::ui::behavior_panel::BehaviorPanel>,
     _behavior_subscription: Subscription,
     pub visual: crate::preferences::SaveCoordinator,
+    // 仅呈现状态；最终折叠偏好仍由原有 visual/CAS 保存路径负责。
+    pub sidebar_transition: Option<crate::ui::shell::SidebarTransition>,
     pub panel: Entity<crate::ui::panel::PanelView>,
     pub page_scroll: ScrollHandle,
     pub notice_center: Entity<crate::ui::components::notice::NoticeCenter>,
@@ -189,6 +191,7 @@ impl AppView {
             behavior_panel,
             _behavior_subscription: behavior_subscription,
             visual: Default::default(),
+            sidebar_transition: None,
             panel,
             page_scroll: ScrollHandle::new(),
             notice_center,
@@ -271,12 +274,20 @@ impl AppView {
         self.started.elapsed().as_millis() as u64
     }
     pub fn apply_theme(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        crate::ui::i18n::set(self.visual.draft.language, cx);
+        self.tray.set_language(self.visual.draft.language);
         self.dark = crate::ui::theme::apply(
             &self.visual.draft,
             self.route == Route::Settings,
             window,
             cx,
         );
+        self.behavior_panel.update(cx, |panel, cx| {
+            if panel.sidebar_collapsed != self.visual.draft.sidebar_collapsed {
+                panel.sidebar_collapsed = self.visual.draft.sidebar_collapsed;
+                cx.notify();
+            }
+        });
         #[cfg(debug_assertions)]
         {
             use gpui_kit::component::ActiveTheme;
@@ -378,7 +389,7 @@ impl AppView {
         self.visual.retry(self.now_ms());
         self.submit_visual(window, cx);
     }
-    fn submit_visual(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+    fn submit_visual(&mut self, _window: &mut Window, cx: &mut Context<Self>) {
         self.request_preview();
         let Some(state) = &self.bridge.snapshot else {
             return;
@@ -391,12 +402,7 @@ impl AppView {
                 request.draft.background_opacity,
                 request.draft.background_blur
             );
-            crate::ui::components::notify(
-                crate::ui::components::Notice::Saving,
-                "正在保存 / Saving",
-                window,
-                cx,
-            );
+            // 自动保存不弹进度通知，失败仍由完成事件反馈。
             self.services.save_visual(request);
         }
         cx.notify();
@@ -524,16 +530,14 @@ impl AppView {
                 eprintln!(
                     "visual completion generation={generation} accepted={accepted} result={completion:?}"
                 );
-                if accepted {
-                    match completion {
-                        Ok(()) => notify(Notice::Success, "视觉偏好已保存 / Saved", window, cx),
-                        Err(error) => notify(
-                            Notice::Error,
-                            format!("保存失败 · draft 保留 · {error}"),
-                            window,
-                            cx,
-                        ),
-                    }
+                // 视觉偏好自动保存成功保持静默；失败仍提示并保留草稿。
+                if accepted && let Err(error) = completion {
+                    notify(
+                        Notice::Error,
+                        format!("保存失败 · draft 保留 · {error}"),
+                        window,
+                        cx,
+                    );
                 }
                 self.services
                     .collect_asset_orphans(self.visual.draft.background.clone());

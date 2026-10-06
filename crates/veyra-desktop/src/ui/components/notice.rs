@@ -94,10 +94,10 @@ impl Render for NoticeCenter {
             .line_height(px(20.))
             .font_weight(FontWeight(650.))
             .text_color(rgb(text))
-            .child(item.message.clone())
+            .child(crate::ui::i18n::message(cx, &item.message))
             .child(
                 gpui_kit::base::Button::new("dismiss-notice")
-                    .accessibility_label("关闭通知")
+                    .accessibility_label(crate::ui::i18n::tr(cx, "关闭通知"))
                     .absolute()
                     .top(px(9.))
                     .right(px(9.))

@@ -18,5 +18,5 @@ tray-icon = "=0.24.2"
 libc = "0.2"
 objc2 = "=0.6.4"
 objc2-foundation = { version = "=0.3.2", default-features = false, features = ["std", "NSArray", "NSString", "NSURL", "NSData", "NSObject", "NSPathUtilities"] }
-objc2-app-kit = { version = "=0.3.2", default-features = false, features = ["std", "NSOpenPanel", "NSSavePanel", "NSApplication", "NSWindow", "NSResponder", "NSPasteboard", "NSPasteboardItem", "NSWorkspace", "block2"] }
+objc2-app-kit = { version = "=0.3.2", default-features = false, features = ["std", "NSOpenPanel", "NSSavePanel", "NSApplication", "NSImage", "NSWindow", "NSResponder", "NSPasteboard", "NSPasteboardItem", "NSWorkspace", "block2"] }
 block2 = "=0.6.2"

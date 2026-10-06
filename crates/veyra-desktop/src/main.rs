@@ -1,4 +1,5 @@
 mod app;
+mod application_icon;
 mod behavior_preferences;
 mod desktop_lifecycle;
 mod navigation;
@@ -52,6 +53,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let quit_owner = ownership.clone();
     gpui_kit::application().with_assets(Assets).run(move |cx| {
         gpui_kit::init(cx);
+        cx.set_global(ui::i18n::Locale::default());
+        platform::macos::set_application_icon();
         let (tray, mut tray_events) = tray::DesktopTray::new().expect("desktop tray");
         cx.on_app_quit(move |_| {
             quit_owner.prepare_quit();
@@ -63,6 +66,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         let window_handle = gpui_kit::open_window(
             WindowOptions {
                 window_bounds: Some(WindowBounds::centered(size(px(1280.), px(720.)), cx)),
+                // 保留桌面布局：内容区宽度不得进入原版 <=768px 的手机断点。
+                // 保留桌面侧栏和底部状态区所需空间；设置内容继续纵向滚动。
+                window_min_size: Some(size(px(769.), px(600.))),
                 titlebar: Some(TitlebarOptions {
                     title: Some("Veyra · Desktop".into()),
                     ..Default::default()

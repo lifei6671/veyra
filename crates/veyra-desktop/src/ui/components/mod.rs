@@ -1,4 +1,5 @@
 //! Mature Kit controls with Veyra sizing/theme; overlay ownership remains window-level Kit Root.
+use crate::ui::i18n::tr;
 use gpui_kit::base::StyledExt as _;
 use gpui_kit::prelude::*;
 use gpui_kit::{
@@ -21,6 +22,15 @@ impl PanelInput {
     pub fn focus_style(mut self, color: Hsla, offset: f32) -> Self {
         self.focus_style = Some((color, offset));
         self
+    }
+    pub(super) fn step_value(value: &str, increment: bool) -> String {
+        let value = value.parse::<u64>().unwrap_or(0);
+        if increment {
+            value.saturating_add(1)
+        } else {
+            value.saturating_sub(1)
+        }
+        .to_string()
     }
     pub fn numeric(mut self) -> Self {
         self.number = true;
@@ -73,6 +83,9 @@ impl RenderOnce for PanelInput {
                         .h(px(t::SPINNER_HEIGHT))
                         .flex()
                         .flex_col()
+                        // 步进区盖住输入文字 hitbox，焦点后的 I-beam 不得截获按钮操作。
+                        .occlude()
+                        .cursor_default()
                         .bg(rgb(if cx.theme().mode.is_dark() { t::SPINNER_DARK_BG } else { t::SPINNER_BG }))
                         .when(!focused, |d| d.invisible().group_hover("number-field", |s| s.visible()))
                         .children([true, false].map(|increment| {
@@ -85,20 +98,25 @@ impl RenderOnce for PanelInput {
                             };
                             gpui_kit::base::Button::new((if increment { "number-up" } else { "number-down" }, state.entity_id()))
                                 .tab_stop(false)
-                                .accessibility_label(if increment { "增加数值" } else { "减少数值" })
+                                .accessibility_label(tr(cx, if increment { "增加数值" } else { "减少数值" }))
                                 .w(px(t::SPINNER_WIDTH))
                                 .h(px(t::SPINNER_HEIGHT / 2.))
                                 .flex()
                                 .items_center()
                                 .justify_center()
                                 .p_0()
+                                .cursor_default()
+                                .on_mouse_down(MouseButton::Left, |_, window, cx| {
+                                    window.prevent_default();
+                                    cx.stop_propagation();
+                                })
                                 .text_color(rgb(if cx.theme().mode.is_dark() { t::SPINNER_DARK_TEXT } else { t::SPINNER_TEXT }))
                                 .child(gpui_kit::component::Icon::default().data(arrow).with_size(px(t::SPINNER_ARROW)).h(px(t::SPINNER_ARROW / 2.)))
                                 .on_click(move |_, window, cx| {
                                     state.update(cx, |input, cx| {
-                                        let value = input.value().parse::<u64>().unwrap_or(0);
-                                        let next = if increment { value.saturating_add(1) } else { value.saturating_sub(1) };
-                                        input.set_value(next.to_string(), window, cx);
+                                        let next = PanelInput::step_value(input.value().as_str(), increment);
+                                        // replace_all 保留 undo，并明确发 Change；set_value 只用于静默投影。
+                                        input.replace_all(next, window, cx);
                                         input.focus_handle(cx).focus(window, cx);
                                     });
                                 })
@@ -235,6 +253,7 @@ pub fn toggle(id: &'static str, checked: bool, label: impl Into<SharedString>) -
 #[derive(IntoElement)]
 pub struct PanelButton {
     button: Button,
+    tooltip: Option<SharedString>,
     id: &'static str,
     radius: f32,
     disabled: bool,
@@ -262,7 +281,7 @@ impl PanelButton {
         self
     }
     pub fn tooltip(mut self, text: impl Into<SharedString>) -> Self {
-        self.button = self.button.tooltip(text);
+        self.tooltip = Some(text.into());
         self
     }
     pub fn accessibility_label(mut self, text: impl Into<SharedString>) -> Self {
@@ -287,6 +306,7 @@ impl RenderOnce for PanelButton {
     fn render(self, window: &mut Window, cx: &mut App) -> impl IntoElement {
         // 与 Kit Button 在同一父元素 scope 读取它的稳定焦点 id；放入 child 后
         // scope 已进入 Button/content，会读到另一个 handle 且被 overflow 裁切。
+        let tooltip = self.tooltip;
         let button = RenderOnce::render(self.button, window, cx).into_any_element();
         let focus = window
             .use_keyed_state(self.id, cx, |_, cx| cx.focus_handle())
@@ -295,6 +315,10 @@ impl RenderOnce for PanelButton {
         let focused =
             !self.disabled && focus.is_focused(window) && window.last_input_was_keyboard();
         div()
+            .id(self.id)
+            .when_some(tooltip, |d, text| {
+                d.tooltip(move |_, cx| cx.new(|_| tooltip::TooltipContent(text.clone())).into())
+            })
             .relative()
             .flex_shrink_0()
             // Kit 主动抑制 mouse focus；React 按钮点击会让旧 Input blur。
@@ -317,6 +341,7 @@ pub fn button(id: &'static str, label: impl Into<SharedString>) -> PanelButton {
     use gpui_kit::component::FocusableExt as _;
     PanelButton {
         id,
+        tooltip: None,
         radius: super::tokens::RADIUS,
         disabled: false,
         button: Button::new(id)
@@ -434,6 +459,7 @@ pub fn navigation_item(
         .when(active, |b| b.bg(rgb(active_bg)).text_color(foreground));
     PanelButton {
         id,
+        tooltip: None,
         button,
         disabled: false,
         radius: if category { t::RADIUS } else { t::NAV_RADIUS },
@@ -485,6 +511,8 @@ impl RenderOnce for CompactSetting {
             .flex()
             .items_center()
             .h(px(t::SETTING_HEIGHT))
+            .w_full()
+            .min_w_0()
             .flex_shrink_0()
             .gap(px(t::GAP))
             .border_b_1()
@@ -496,10 +524,11 @@ impl RenderOnce for CompactSetting {
             .child(
                 div()
                     .flex_1()
+                    .min_w_0()
                     .font_weight(FontWeight::MEDIUM)
                     .child(self.label),
             )
-            .child(div().flex_shrink_0().child(self.control))
+            .child(div().min_w_0().flex_shrink_0().child(self.control))
     }
 }
 pub fn compact_setting(label: impl IntoElement, control: impl IntoElement) -> CompactSetting {
@@ -508,15 +537,81 @@ pub fn compact_setting(label: impl IntoElement, control: impl IntoElement) -> Co
         control: control.into_any_element(),
     }
 }
-/// 1280 logical viewport 的 CSS 双列，按 DOM 顺序逐行排列。
-pub fn settings_pair(left: impl IntoElement, right: impl IntoElement) -> Div {
-    div()
-        .w_full()
-        .min_w_0()
-        .flex()
-        .gap(px(super::tokens::COLUMN_GAP))
-        .child(div().flex_1().min_w_0().child(left))
-        .child(div().flex_1().min_w_0().child(right))
+/// 复用 React .panel-settings-grid：按窗口逻辑宽度与侧栏状态决定列数、列间距。
+/// 子项保持 DOM 顺序，单列时不插入为双列占位的空行。
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct SettingsLayout {
+    columns: u16,
+    column_gap: f32,
+}
+impl SettingsLayout {
+    pub fn new(width: f32, sidebar_collapsed: bool) -> Self {
+        use super::tokens as t;
+        Self {
+            columns: if width >= t::PANEL_TWO_COLUMNS
+                || (sidebar_collapsed && width >= t::PANEL_COLLAPSED_TWO_COLUMNS)
+            {
+                2
+            } else {
+                1
+            },
+            column_gap: if width >= t::PANEL_EXTRA_WIDE {
+                t::PANEL_EXTRA_COLUMN_GAP
+            } else if width >= t::PANEL_WIDE {
+                t::COLUMN_GAP
+            } else if width >= t::PANEL_TWO_COLUMNS {
+                t::PANEL_MEDIUM_COLUMN_GAP
+            } else {
+                t::PANEL_COLUMN_GAP
+            },
+        }
+    }
+    pub fn grid(self) -> Div {
+        div()
+            .w_full()
+            .max_w(px(super::tokens::SETTINGS_GRID_MAX_WIDTH))
+            .min_w_0()
+            .grid()
+            .grid_cols(self.columns)
+            .gap_x(px(self.column_gap))
+            .gap_y(px(super::tokens::ROW_GAP))
+    }
+}
+
+#[cfg(test)]
+mod settings_layout_tests {
+    use super::SettingsLayout;
+
+    // 超宽窗口也必须沿用 React 1280px 上限，不让两列无限扩张。
+    #[test]
+    fn grid_has_react_max_width() {
+        use gpui_kit::{Styled, px};
+        assert_eq!(super::super::tokens::SETTINGS_GRID_MAX_WIDTH, 1280.);
+        for width in [1600., 1920., 2560.] {
+            let mut grid = SettingsLayout::new(width, false).grid();
+            assert_eq!(grid.style().max_size.width, Some(px(1280.).into()));
+        }
+    }
+    // 保护实际窗口缩放：展开/折叠各自在 React 断点切列，不让固定宽度控件挤进窄列。
+    #[test]
+    fn columns_follow_viewport_and_sidebar_breakpoints() {
+        for (width, collapsed, columns) in [
+            (767., true, 1),
+            (768., true, 2),
+            (900., false, 1),
+            (1023., false, 1),
+            (1024., false, 2),
+            (1280., false, 2),
+        ] {
+            assert_eq!(SettingsLayout::new(width, collapsed).columns, columns);
+        }
+    }
+    #[test]
+    fn column_gaps_follow_react_media_queries() {
+        for (width, gap) in [(900., 16.), (1024., 32.), (1280., 48.), (1536., 64.)] {
+            assert_eq!(SettingsLayout::new(width, false).column_gap, gap);
+        }
+    }
 }
 
 /// React .icon-button：通用按钮的真实复用规格，调用方可指定 24/32/36px。
@@ -661,7 +756,7 @@ pub fn panel_slider(
 }
 
 /// 未迁移路由共用空状态，不制造 Runtime 或观测数据。
-pub fn unavailable(task: &'static str) -> Div {
+pub fn unavailable(task: &'static str, cx: &App) -> Div {
     div()
         .flex()
         .flex_col()
@@ -672,9 +767,13 @@ pub fn unavailable(task: &'static str) -> Div {
         .child(
             div()
                 .text_size(px(super::tokens::BODY))
-                .child("当前功能尚未接入"),
+                .child(tr(cx, "当前功能尚未接入")),
         )
-        .child(div().text_size(px(10.)).child(format!("将在 {task} 实现")))
+        .child(
+            div()
+                .text_size(px(10.))
+                .child(format!("{} {task}", tr(cx, "将在"))),
+        )
 }
 
 /// React 两处实际复用的说明图标，语义与文案由页面提供。
@@ -683,7 +782,7 @@ pub fn help_label(label: &'static str, id: &'static str, help: &'static str, cx:
         .flex()
         .items_center()
         .gap(px(super::tokens::ROW_GAP))
-        .child(label)
+        .child(tr(cx, label))
         .child(
             gpui_kit::base::Button::new(id)
                 .flex()
@@ -692,7 +791,7 @@ pub fn help_label(label: &'static str, id: &'static str, help: &'static str, cx:
                 .rounded_full()
                 .size(px(super::tokens::ICON_SMALL))
                 .p_0()
-                .accessibility_label(help)
+                .accessibility_label(tr(cx, help))
                 .child(
                     super::icons::icon("QuestionMarkCircle", super::tokens::ICON_SMALL)
                         .text_color(cx.theme().muted_foreground),

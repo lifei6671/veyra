@@ -3,6 +3,35 @@ use crate::ui::tokens as t;
 use gpui_kit::base::StyledExt as _;
 use gpui_kit::component::{ActiveTheme, Sizable};
 use gpui_kit::{base::Button, prelude::*, *};
+
+// 所有自绘提示共用同一字体和颜色，Kit 仅负责触发/定位。
+pub fn bubble(cx: &App) -> Div {
+    div()
+        .bg(rgb(t::TOOLTIP_BG))
+        .text_color(rgb(t::TOOLTIP_TEXT))
+        .font_family(cx.theme().font_family.clone())
+        .text_size(px(t::TOOLTIP_FONT))
+        .line_height(px(t::TOOLTIP_LINE))
+        .font_weight(FontWeight::NORMAL)
+}
+pub struct TooltipContent(pub SharedString);
+impl Render for TooltipContent {
+    fn render(&mut self, _: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
+        bubble(cx)
+            .px(px(t::GAP))
+            .py(px(t::TOOLTIP_Y))
+            .rounded(px(t::TOOLTIP_RADIUS))
+            .max_w(px(t::SITE_TOOLTIP_WIDTH))
+            .child(crate::ui::i18n::message(cx, &self.0))
+    }
+}
+
+// 鼠标点击会保留按钮焦点，但不能因此让 hover 提示在移开后继续显示。
+// 键盘聚焦仍可查看提示，Escape 的主动关闭优先于两种显示来源。
+fn tooltip_visible(hovered: bool, focused: bool, keyboard: bool, dismissed: bool) -> bool {
+    (hovered || (focused && keyboard)) && !dismissed
+}
+
 struct TooltipState {
     focus: FocusHandle,
     hovered: bool,
@@ -67,7 +96,12 @@ impl RenderOnce for TooltipButton {
     fn render(self, window: &mut Window, cx: &mut App) -> impl IntoElement {
         let state = window.use_keyed_state(self.id, cx, TooltipState::new);
         let s = state.read(cx);
-        let visible = (s.hovered || s.focus.is_focused(window)) && !s.dismissed;
+        let visible = tooltip_visible(
+            s.hovered,
+            s.focus.is_focused(window),
+            window.last_input_was_keyboard(),
+            s.dismissed,
+        );
         let focus = s.focus.clone();
         let hover = state.clone();
         let sites = self.id == "sites-help";
@@ -117,7 +151,8 @@ impl RenderOnce for TooltipButton {
                     .on_mouse_down(MouseButton::Left, move |_, w, cx| focus.focus(w, cx)),
             )
             .when(visible, |d| {
-                let popup = div()
+                let background = t::TOOLTIP_BG;
+                let popup = bubble(cx)
                     .relative()
                     .px(px(if self.sidebar {
                         t::COLLAPSE_TOOLTIP_X
@@ -130,17 +165,6 @@ impl RenderOnce for TooltipButton {
                     } else {
                         t::TOOLTIP_RADIUS
                     }))
-                    .bg(rgb(t::TOOLTIP_BG))
-                    .text_color(rgb(t::TOOLTIP_TEXT))
-                    .text_size(px(if sites || self.sidebar { t::BODY } else { 12. }))
-                    .line_height(px(if sites {
-                        t::SITE_TOOLTIP_LINE
-                    } else if self.sidebar {
-                        t::BODY_LINE
-                    } else {
-                        18.
-                    }))
-                    .font_weight(FontWeight::NORMAL)
                     .shadow(vec![
                         BoxShadow::new(px(0.), px(4.), rgba(0x00000024).into())
                             .blur_radius(px(12.)),
@@ -153,7 +177,7 @@ impl RenderOnce for TooltipButton {
                         }))
                     })
                     .when(!sites && !self.sidebar, |d| d.text_center())
-                    .child(self.text)
+                    .child(crate::ui::i18n::tr(cx, self.text))
                     .when(self.sidebar, |d| {
                         // React ::before 是 8px 正方形旋转45°；外接尺寸8√2，
                         // 中心在顶部/左侧边缘，颜色继承 tooltip 背景。
@@ -161,7 +185,7 @@ impl RenderOnce for TooltipButton {
                         let arrow = gpui_kit::component::Icon::default()
                             .data(br#"<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 8 8"><path d="M4 0 8 4 4 8 0 4Z" fill="currentColor"/></svg>"#.as_slice())
                             .with_size(px(diameter))
-                            .text_color(rgb(t::TOOLTIP_BG))
+                            .text_color(rgb(background))
                             .absolute();
                         d.child(if self.sidebar_collapsed {
                             arrow.left(px(-diameter / 2.)).top(relative(0.5)).mt(px(-diameter / 2.))
@@ -218,5 +242,23 @@ impl RenderOnce for TooltipButton {
                     ),
                 )
             })
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::tooltip_visible;
+
+    #[test]
+    fn pointer_focus_does_not_keep_tooltip_after_mouse_leaves() {
+        assert!(tooltip_visible(true, true, false, false));
+        assert!(!tooltip_visible(false, true, false, false));
+    }
+
+    #[test]
+    fn keyboard_focus_shows_tooltip_until_blur_or_escape() {
+        assert!(tooltip_visible(false, true, true, false));
+        assert!(!tooltip_visible(false, false, true, false));
+        assert!(!tooltip_visible(true, true, true, true));
     }
 }

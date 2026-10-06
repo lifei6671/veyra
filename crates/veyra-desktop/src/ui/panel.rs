@@ -1,5 +1,6 @@
 use super::components::select::{SelectEvent, SelectState};
 use super::components::*;
+use crate::ui::i18n::tr;
 use gpui_kit::{
     component::{
         IndexPath, WindowExt,
@@ -528,7 +529,7 @@ impl Render for PanelView {
                             .bg(cx.theme().input)
                             .overflow_hidden()
                             .child(match &self.draft.background {
-                                DesktopBackground::ManagedAsset(_) => "本地图片",
+                                DesktopBackground::ManagedAsset(_) => tr(cx, "本地图片"),
                                 DesktopBackground::None => "",
                             })
                             .when(
@@ -537,7 +538,7 @@ impl Render for PanelView {
                                     d.child(
                                         icon_button(
                                             "clear-background",
-                                            "清空面板背景",
+                                            tr(cx, "清空面板背景"),
                                             "XMark",
                                             16.,
                                         )
@@ -556,7 +557,7 @@ impl Render for PanelView {
                             .w(px(t::UPLOAD_WIDTH))
                             .rounded_l_none()
                             .child(icon("ArrowUpTray", t::ICON_SMALL))
-                            .accessibility_label("上传面板背景")
+                            .accessibility_label(tr(cx, "上传面板背景"))
                             .on_click(cx.listener(|_, _, _, cx| cx.emit(PanelEvent::ChooseImage))),
                     ),
             )
@@ -566,7 +567,7 @@ impl Render for PanelView {
                     d.child(
                         icon_button(
                             "adjust-background",
-                            "调整面板背景",
+                            tr(cx, "调整面板背景"),
                             "AdjustmentsHorizontal",
                             t::CONTROL,
                         )
@@ -578,6 +579,7 @@ impl Render for PanelView {
                 },
             );
         let radius = div()
+            .relative()
             .flex()
             .items_center()
             .w(px(190.))
@@ -616,38 +618,44 @@ impl Render for PanelView {
                         this.draft.global_radius = (this.draft.global_radius + 1).min(24);
                         this.changed(cx);
                     })),
+            )
+            // React 右按钮 -1px 拼接覆盖了中段边线；最后补绘同一条 1px 分隔线。
+            .child(
+                div()
+                    .absolute()
+                    .right(px(t::COLUMN_GAP - 1.))
+                    .top_0()
+                    .bottom_0()
+                    .w(px(1.))
+                    .bg(cx.theme().border),
             );
         let provider = self
             .behavior
             .as_ref()
             .map(|b| b.read(cx).provider_control());
-        setting_section("通用", dark, self.draft.global_radius as f32)
-            .child(settings_pair(
-                compact_setting("面板语言", select(&self.language, "面板语言")),
-                compact_setting("面板背景", background),
-            ))
-            .when(
-                self.background_adjust
-                    && matches!(self.draft.background, DesktopBackground::ManagedAsset(_)),
-                |section| {
-                    section.child(settings_pair(
-                        compact_setting("透明度", panel_slider(&self.opacity, cx)),
-                        compact_setting("毛玻璃强度", panel_slider(&self.blur, cx)),
-                    ))
-                },
-            )
-            .child(settings_pair(
-                compact_setting("全局圆角", radius),
-                compact_setting("主题", select(&self.theme, "主题")),
-            ))
-            .child(settings_pair(
-                compact_setting(
-                    "修改密码",
-                    button("password-unavailable", "修改密码")
+        let layout = SettingsLayout::new(
+            f32::from(window.viewport_size().width),
+            self.draft.sidebar_collapsed,
+        );
+        setting_section(tr(cx, "通用"), dark, self.draft.global_radius as f32)
+            .child(layout.grid()
+                .child(compact_setting(tr(cx, "面板语言"), select(&self.language, tr(cx, "面板语言"))))
+                .child(compact_setting(tr(cx, "面板背景"), background))
+                .when(
+                    self.background_adjust
+                        && matches!(self.draft.background, DesktopBackground::ManagedAsset(_)),
+                    |grid| grid
+                        .child(compact_setting(tr(cx, "透明度"), panel_slider(&self.opacity, cx)))
+                        .child(compact_setting(tr(cx, "毛玻璃强度"), panel_slider(&self.blur, cx))),
+                )
+                .child(compact_setting(tr(cx, "全局圆角"), radius))
+                .child(compact_setting(tr(cx, "主题"), select(&self.theme, tr(cx, "主题"))))
+                .child(compact_setting(
+                    tr(cx, "修改密码"),
+                    button("password-unavailable", tr(cx, "修改密码"))
                         .disabled(true)
-                        .tooltip("本地桌面未提供访问密码服务"),
-                ),
-                compact_setting(super::components::help_label("IP信息API", "ip-api-help", "此API会用于IP检查中全球节点IP信息查询、连接详情中的IP地理信息查询、面板DNS查询中的IP地理信息查询。", cx), div().children(provider)),
-            ))
+                        .tooltip(tr(cx, "本地桌面未提供访问密码服务")),
+                ))
+                .child(compact_setting(super::components::help_label(tr(cx, "IP信息API"), "ip-api-help", tr(cx, "此API会用于IP检查中全球节点IP信息查询、连接详情中的IP地理信息查询、面板DNS查询中的IP地理信息查询。"), cx), div().children(provider))))
     }
 }

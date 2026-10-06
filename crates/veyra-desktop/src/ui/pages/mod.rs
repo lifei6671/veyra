@@ -37,9 +37,9 @@ impl PageView {
     }
 }
 impl Render for PageView {
-    fn render(&mut self, window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
+    fn render(&mut self, _window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
         if self.route != Route::Settings && !super::components::evidence_visible() {
-            return super::components::unavailable(self.route.task());
+            return super::components::unavailable(self.route.task(), cx);
         }
         let mut content = div()
             .flex()
@@ -49,8 +49,8 @@ impl Render for PageView {
             .min_w_0()
             .overflow_hidden()
             .when(self.route == Route::Settings, |d| {
-                // Entity 边界上的百分比高度无确定父高度，使用真实内容区约束滚动。
-                d.h(window.viewport_size().height).min_h_0()
+                // cached Entity 已由 page-content 分配确定 bounds；错误横条会缩小父高度。
+                d.size_full().min_h_0()
             });
         if self.route == Route::Settings {
             let dark = matches!(cx.theme().mode, gpui_kit::component::ThemeMode::Dark);
@@ -74,7 +74,7 @@ impl Render for PageView {
                                 |(i, category)| {
                                     super::components::navigation_item(
                                         category.id(),
-                                        category.label(),
+                                        crate::ui::i18n::tr(cx, category.label()),
                                         [
                                             "Home",
                                             "Rss",
@@ -154,7 +154,7 @@ impl Render for PageView {
                 }
             } else {
                 if !super::components::evidence_visible() {
-                    return content.child(super::components::unavailable(self.category.task()));
+                    return content.child(super::components::unavailable(self.category.task(), cx));
                 }
                 content = content
                     .child(format!(
