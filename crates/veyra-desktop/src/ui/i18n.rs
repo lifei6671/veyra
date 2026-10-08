@@ -48,6 +48,350 @@ pub fn icon_label(language: DesktopLanguage, label: &str) -> String {
     out
 }
 const MESSAGES: &[[&str; 3]] = &[
+    [
+        "配置已保存，重启内核后生效",
+        "Configuration saved; restart the kernel to apply",
+        "設定已儲存，重啟核心後生效",
+    ],
+    [
+        "配置已被更新，请重新操作",
+        "Configuration changed elsewhere; please retry",
+        "設定已被更新，請重新操作",
+    ],
+    [
+        "配置保存失败，URL 草稿已保留，请重试",
+        "Save failed; URL drafts retained. Please retry",
+        "設定儲存失敗，URL 草稿已保留，請重試",
+    ],
+    [
+        "请输入有效的 HTTP / HTTPS 测速地址",
+        "Enter a valid HTTP / HTTPS health URL",
+        "請輸入有效的 HTTP / HTTPS 測速位址",
+    ],
+    [
+        "重启内核后生效",
+        "Applies after restarting the kernel",
+        "重啟核心後生效",
+    ],
+    [
+        "选一个导出的 .json 文件,或直接把文件拖到这张卡片上。",
+        "Choose an exported .json file or drop it on this card.",
+        "選一個匯出的 .json 檔案，或直接拖到這張卡片上。",
+    ],
+    [
+        "已去掉密码、密钥、节点和订阅地址,可以直接贴到公开的 issue 里。",
+        "Passwords, keys, node and subscription addresses are removed for public issues.",
+        "已移除密碼、金鑰、節點和訂閱位址，可以直接附到公開的 issue。",
+    ],
+    [
+        "自建服务(RustDesk、端口映射出去的 NAS 服务等)用到的端口:目标端口或来源端口是这些的 TCP / UDP 流量在进内核之前就放行,和没装 Open-Box 一样,端口映射和打洞不受影响。和「前置自定义分流」里的「端口 → 直连」不同:那种已经进了内核,由内核替它重新连接,NAT 会被打乱。黑名单、白名单各存一份,只有选中的那份生效。",
+        "Ports used by self-hosted services (RustDesk, a published NAS, etc.) are allowed before TCP/UDP enters the kernel, preserving port forwarding and NAT traversal. This differs from a direct rule inside the kernel, which reconnects and can alter NAT. Blacklist and whitelist keep separate lists; only the selected one applies.",
+        "自建服務(RustDesk、連接埠映射出去的 NAS 服務等)用到的連接埠：目標或來源連接埠符合的 TCP / UDP 流量在進核心之前就放行，連接埠映射和打洞不受影響。和「前置自訂分流」裡的「連接埠 → 直連」不同：那種已經進了核心，由核心替它重新連線，NAT 會被打亂。黑名單、白名單各存一份，只有選中的那份生效。",
+    ],
+    [
+        "黑名单:列出的端口不进内核,在进内核前就放行(和没装 Open-Box 一样);其余所有流量照常进内核。单个端口、范围(用 -)都行,多个用逗号隔开;留空就是全部进内核。多 WAN(mwan3)时,这些端口的连接一律走主路由表。",
+        "Blacklist: listed ports bypass the kernel before entry; all other traffic enters normally. Enter a port or a range separated by a hyphen; separate entries with commas. Empty means all traffic enters the kernel. With multi-WAN (mwan3), these connections always use the main routing table.",
+        "黑名單：列出的連接埠不進核心，在進核心前就放行；其餘流量照常進核心。單個連接埠、範圍（用 -）都可以，多個用逗號隔開；留空就是全部進核心。多 WAN(mwan3)時，這些連接埠的連線一律走主路由表。",
+    ],
+    [
+        "内核 tun 接口的几个底层参数,一般不用改。",
+        "Low-level parameters of the kernel TUN interface; normally no changes are needed.",
+        "核心 tun 介面的幾個底層參數，一般不用改。",
+    ],
+    [
+        "mixed(默认):TCP 走系统内核栈、其余走用户态,吞吐最高。gvisor:全部走用户态栈,绕开内核的 DNAT 路径——MT6000 这类开着硬件流量卸载的机器,有线口直连大文件损坏时选它。system:全部走系统栈。",
+        "mixed (default): TCP uses the system kernel stack and the rest uses userspace for maximum throughput. gvisor: everything uses userspace, bypassing kernel DNAT; try it if hardware flow offload on devices such as MT6000 corrupts large wired direct transfers. system: everything uses the system stack.",
+        "mixed（預設）：TCP 走系統核心堆疊，其餘走使用者空間，吞吐最高。gvisor：全部走使用者空間堆疊，繞過核心 DNAT 路徑——MT6000 這類開著硬體流量卸載的機器，有線直連大檔案損壞時可選它。system：全部走系統堆疊。",
+    ],
+    [
+        "内核自己发出的 TCP 连接(走代理和直连的都算)在 SYN 上钳制 MSS;0 = 不钳制。上游链路 MTU 偏小(PPPoE、隧道)、大包卡住时可试 1400 左右;局域网转发的流量由系统防火墙的 MSS 钳制管。",
+        "Clamp MSS in SYN packets for TCP connections made by the kernel, both proxied and direct; 0 disables clamping. Try around 1400 when the upstream MTU is small (PPPoE, tunnels) or large packets stall. Forwarded LAN traffic uses the system firewall MSS clamp.",
+        "核心自己發出的 TCP 連線（代理和直連都算）在 SYN 上限制 MSS；0 = 不限制。上游鏈路 MTU 偏小（PPPoE、隧道）、大封包卡住時可試 1400 左右；區域網路轉送的流量由系統防火牆的 MSS 限制管理。",
+    ],
+    [
+        "自动择优组和代理页的延迟测试用这两个地址;每个自动择优组也可以单独指定。",
+        "Automatic selection groups and proxy latency checks use these two URLs; each group can also specify its own URL.",
+        "自動擇優群組和代理頁的延遲測試用這兩個位址；每個自動擇優群組也可以單獨指定。",
+    ],
+    [
+        "每日流量记录在路由器上存多久,超期每天清理一次;按小时的明细只留最近 7 天。超过 30 天的日子只保留当天流量最大的 300 个访问目标,其余合并成一行「其他」(总量、终端、节点不受影响)。",
+        "How long daily traffic records are retained on the router. Expired records are removed daily; hourly detail keeps only the latest 7 days. Beyond 30 days, only the 300 largest destinations per day are kept; the rest is combined as Other. Totals, clients and nodes are unaffected.",
+        "每日流量記錄在路由器上存多久，過期每天清理一次；每小時明細只留最近 7 天。超過 30 天的日期只保留當天流量最大的 300 個存取目標，其餘合併為「其他」（總量、終端、節點不受影響）。",
+    ],
+    [
+        "把分流、站点集、节点组、DNS、面板设置等打成一个文件,可选带上订阅、链式代理、终端分流、共享网络;新设备导入即用。",
+        "Package routing, site sets, node groups, DNS and panel settings into one file. Optionally include subscriptions, chains, client routing and sharing for import on a new device.",
+        "把分流、站點集、節點群組、DNS、面板設定等打包成一個檔案，可選擇帶上訂閱、鏈式代理、終端分流、共享網路；新裝置匯入即可使用。",
+    ],
+    [
+        "路由器的系统时区,和 LuCI「系统 → 时区」是同一个设置。自动更新、订阅定时更新都按这个时区的钟点执行。",
+        "The router system time zone, shared with LuCI System → Time Zone. Automatic updates and scheduled subscription refreshes use its local time.",
+        "路由器的系統時區，和 LuCI「系統 → 時區」是同一個設定。自動更新、訂閱定時更新都按這個時區的時間執行。",
+    ],
+    [
+        "版本、固件、内核状态、脱敏配置和最近日志打成一个文件,反馈问题时贴到 GitHub issue。",
+        "Package version, firmware, kernel status, redacted configuration and recent logs into one file for a GitHub issue.",
+        "把版本、韌體、核心狀態、去識別設定和最近日誌打包成一個檔案，回報問題時附到 GitHub issue。",
+    ],
+    [
+        "只读，未接入编辑",
+        "Read only; editing is unavailable",
+        "唯讀，尚未接入編輯",
+    ],
+    [
+        "例如 21114-21119, 2233",
+        "For example 21114-21119, 2233",
+        "例如 21114-21119, 2233",
+    ],
+    [
+        "自动择优、手动测速和故障转移使用；支持 HTTP / HTTPS，默认使用 HTTP。",
+        "Used for automatic selection, manual latency checks and failover. Supports HTTP / HTTPS; HTTP is the default.",
+        "自動擇優、手動測速和故障轉移使用；支援 HTTP / HTTPS，預設使用 HTTP。",
+    ],
+    [
+        "只给内置直连用；支持 HTTP / HTTPS，默认使用 HTTP。",
+        "Only for the built-in direct outbound. Supports HTTP / HTTPS; HTTP is the default.",
+        "只供內建直連使用；支援 HTTP / HTTPS，預設使用 HTTP。",
+    ],
+    [
+        "IPv6 目标和 IPv4 一样交给选中的节点;节点不支持 IPv6 时会失败。直连的 IPv6 照常。",
+        "IPv6 destinations use the selected node like IPv4; requests fail if the node has no IPv6 support. Direct IPv6 is unchanged.",
+        "IPv6 目標和 IPv4 一樣交給選中的節點；節點不支援 IPv6 時會失敗。直連 IPv6 照常。",
+    ],
+    [
+        "走代理的域名不再给 AAAA,设备改用 IPv4 连;裸 IPv6 目标要走代理时在内核里拒绝,不从 WAN 直出。直连的 IPv6 照常。",
+        "Proxy domains no longer receive AAAA records and use IPv4. Literal IPv6 destinations requiring a proxy are rejected in the kernel instead of leaving through WAN. Direct IPv6 is unchanged.",
+        "走代理的網域不再給 AAAA，裝置改用 IPv4；裸 IPv6 目標要走代理時在核心拒絕，不從 WAN 直出。直連 IPv6 照常。",
+    ],
+    [
+        "IPv6 流量不进内核,按系统路由直接从 WAN 出去（和 OpenClash 默认一样,test-ipv6 能过）:直连的 IPv6 照常;走代理的域名仍会解析出 AAAA,设备会先试 IPv6 直连、不通再退回 IPv4 走代理。",
+        "IPv6 bypasses the kernel and follows system routing through WAN. Direct IPv6 is unchanged; proxy domains still resolve AAAA, trying direct IPv6 before falling back to proxied IPv4.",
+        "IPv6 流量不進核心，按系統路由從 WAN 直出：直連 IPv6 照常；代理網域仍會解析 AAAA，裝置先試 IPv6 直連，不通再退回 IPv4 代理。",
+    ],
+    ["已存数据：—", "Stored data: —", "已存資料：—"],
+    [
+        "后端时区配置尚未接入。",
+        "Backend time zone settings are unavailable.",
+        "後端時區設定尚未接入。",
+    ],
+    ["后端时间：—", "Backend time: —", "後端時間：—"],
+    ["就绪", "Ready", "就緒"],
+    ["等待", "Waiting", "等待"],
+    ["不可用", "Unavailable", "不可用"],
+    ["未接入", "Unavailable", "未接入"],
+    ["内核", "Kernel", "核心"],
+    ["控制器", "Controller", "控制器"],
+    ["开机自启", "Start at login", "開機自啟"],
+    ["保存版本", "Saved revision", "儲存版本"],
+    ["运行版本", "Running revision", "執行版本"],
+    [
+        "恢复出厂设置：未接入",
+        "Factory reset: unavailable",
+        "恢復原廠設定：未接入",
+    ],
+    ["Geo 数据 GitHub", "Geo data GitHub", "Geo 資料 GitHub"],
+    ["沿用安装通道", "Installation channel", "沿用安裝通道"],
+    ["检查更新", "Check updates", "檢查更新"],
+    ["安装时通道", "Installed channel", "安裝時通道"],
+    ["自动更新", "Automatic updates", "自動更新"],
+    [
+        "到点先探最新版,有新版才升级;按设定的间隔探,一天最多一次。",
+        "Check at the scheduled time and upgrade only when a newer version exists; check at the chosen interval, at most once a day.",
+        "到點先探最新版,有新版才升級;按設定的間隔探,一天最多一次。",
+    ],
+    [
+        "自动更新尚未接入",
+        "Automatic updates are unavailable",
+        "自動更新尚未接入",
+    ],
+    ["启动", "Start", "啟動"],
+    ["重启", "Restart", "重新啟動"],
+    [
+        "订阅和节点站点直连",
+        "Direct access to subscriptions and node hosts",
+        "訂閱和節點站點直連",
+    ],
+    [
+        "订阅地址和各节点的服务器地址一律直连,排在所有站点集之前。",
+        "Subscription URLs and node server addresses connect directly, before all site sets.",
+        "訂閱位址和各節點的伺服器位址一律直連，排在所有站點集之前。",
+    ],
+    [
+        "直连不进内核",
+        "Direct traffic bypasses the kernel",
+        "直連不進核心",
+    ],
+    [
+        "直连流量在入口就放走、不经过内核转发,吞吐可能翻倍;代价是这部分流量内核看不到——连接页、流量洞察、各项统计里都不会有它们。关掉后所有流量进内核,统计完整,但速度受内核转发能力限制。",
+        "Direct traffic bypasses kernel forwarding for higher throughput, but is absent from connections, traffic insights and statistics. Disabling this sends all traffic through the kernel for complete statistics, with throughput limited by kernel forwarding.",
+        "直連流量在入口就放走、不經過核心轉送，吞吐可能翻倍；代價是這部分流量核心看不到——連線頁、流量洞察、各項統計裡都不會有它們。關掉後所有流量進核心，統計完整，但速度受核心轉送能力限制。",
+    ],
+    ["屏蔽 QUIC", "Block QUIC", "封鎖 QUIC"],
+    [
+        "走代理线路的 QUIC(UDP 443)直接拒绝,浏览器会自动退回 TCP。不少节点转发 UDP 很差,YouTube 等走 QUIC 反而卡;直连的站点不受影响。",
+        "Reject proxied QUIC (UDP 443) so browsers fall back to TCP. Nodes with poor UDP forwarding may make YouTube slower over QUIC; direct sites are unaffected.",
+        "走代理線路的 QUIC(UDP 443)直接拒絕，瀏覽器會自動退回 TCP。不少節點轉送 UDP 很差，YouTube 等走 QUIC 反而卡；直連的站點不受影響。",
+    ],
+    [
+        "进内核前放行的端口",
+        "Ports bypassing the kernel",
+        "進核心前放行的連接埠",
+    ],
+    [
+        "自建服务所用端口可在进内核前放行，避免影响端口映射和打洞；这与内核内的直连分流不同。此能力尚未接入。",
+        "Ports for self-hosted services can bypass the kernel to preserve port forwarding and hole punching. This differs from direct routing inside the kernel. This capability is unavailable.",
+        "自建服務所用連接埠可在進核心前放行，避免影響連接埠對映和打洞；這與核心內的直連分流不同。此能力尚未接入。",
+    ],
+    ["黑名单", "Blocklist", "黑名單"],
+    ["白名单", "Allowlist", "白名單"],
+    ["端口列表：—", "Port list: —", "連接埠清單：—"],
+    [
+        "默认关闭。关着时不解析 IPv6 域名,也不访问 IPv6 地址。",
+        "Off by default. When disabled, IPv6 names are not resolved and IPv6 addresses are not accessed.",
+        "預設關閉。關閉時不解析 IPv6 網域，也不存取 IPv6 位址。",
+    ],
+    ["走代理的 IPv6", "Proxied IPv6", "走代理的 IPv6"],
+    [
+        "已保存策略，仅供查看",
+        "Saved policy, read only",
+        "已儲存策略，僅供檢視",
+    ],
+    ["交给节点", "Use node", "交給節點"],
+    ["降为 IPv4", "Use IPv4", "降為 IPv4"],
+    [
+        "不进内核,直连放行",
+        "Bypass kernel directly",
+        "不進核心，直連放行",
+    ],
+    ["TUN 参数", "TUN parameters", "TUN 參數"],
+    [
+        "已保存的 TUN 参数，仅供查看；当前手动代理不启用 TUN。",
+        "Saved TUN parameters, read only. The current manual proxy does not enable TUN.",
+        "已儲存的 TUN 參數，僅供檢視；目前手動代理不啟用 TUN。",
+    ],
+    ["协议栈", "Stack", "協定堆疊"],
+    [
+        "mixed：TCP 走系统栈，其余走用户态；gvisor：全部走用户态；system：全部走系统栈。",
+        "mixed: system stack for TCP, userspace for others; gvisor: userspace; system: system stack.",
+        "mixed：TCP 走系統堆疊，其餘走使用者態；gvisor：全部走使用者態；system：全部走系統堆疊。",
+    ],
+    [
+        "0 = 内核默认(9000);范围 1280–65535。",
+        "0 = kernel default (9000); range 1280–65535.",
+        "0 = 核心預設(9000)；範圍 1280–65535。",
+    ],
+    ["出站 TCP MSS", "Outbound TCP MSS", "出站 TCP MSS"],
+    [
+        "内核发出的 TCP 连接的 MSS 钳制值；0 表示不钳制。",
+        "MSS clamp for outbound kernel TCP connections; 0 disables clamping.",
+        "核心發出的 TCP 連線的 MSS 鉗制值；0 表示不鉗制。",
+    ],
+    ["测速地址", "Health check URL", "測速位址"],
+    [
+        "运行时健康检查使用的已保存地址，仅供查看。",
+        "Saved runtime health check URLs, read only.",
+        "執行時健康檢查使用的已儲存位址，僅供檢視。",
+    ],
+    ["直连测速地址", "Direct health check URL", "直連測速位址"],
+    [
+        "支持 HTTP / HTTPS",
+        "Supports HTTP / HTTPS",
+        "支援 HTTP / HTTPS",
+    ],
+    [
+        "分析数据保留时长",
+        "Analytics retention",
+        "分析資料保留時間",
+    ],
+    [
+        "流量分析数据的保留和清理策略尚未接入。",
+        "Traffic analytics retention and cleanup are unavailable.",
+        "流量分析資料的保留和清理策略尚未接入。",
+    ],
+    ["个月", "months", "個月"],
+    ["时区", "Time zone", "時區"],
+    ["导出与导入", "Export and import", "匯出與匯入"],
+    [
+        "配置数据的导出与导入尚未接入。",
+        "Configuration export and import are unavailable.",
+        "設定資料的匯出與匯入尚未接入。",
+    ],
+    ["导出", "Export", "匯出"],
+    ["导入", "Import", "匯入"],
+    [
+        "包含订阅和节点",
+        "Include subscriptions and nodes",
+        "包含訂閱和節點",
+    ],
+    ["包含链式代理", "Include proxy chains", "包含鏈式代理"],
+    ["包含终端分流", "Include client routing", "包含終端分流"],
+    ["包含共享网络", "Include shared networks", "包含共享網路"],
+    ["导出诊断包", "Export diagnostics", "匯出診斷包"],
+    [
+        "诊断包导出尚未接入。",
+        "Diagnostics export is unavailable.",
+        "診斷包匯出尚未接入。",
+    ],
+    ["内核服务", "Kernel service", "核心服務"],
+    ["内核版本", "Kernel version", "核心版本"],
+    ["内核状态", "Kernel status", "核心狀態"],
+    ["未运行", "Stopped", "未執行"],
+    ["正在启动", "Starting", "正在啟動"],
+    ["运行中", "Running", "執行中"],
+    ["恢复中", "Recovering", "復原中"],
+    ["操作失败", "Failed", "操作失敗"],
+    [
+        "正在读取服务状态",
+        "Loading service status",
+        "正在讀取服務狀態",
+    ],
+    ["正在运行版本", "Applied version", "正在執行版本"],
+    [
+        "保存配置不会自动应用，重启内核后生效",
+        "Saved configuration takes effect after restarting the kernel",
+        "儲存設定不會自動套用，重新啟動核心後生效",
+    ],
+    ["重启内核", "Restart kernel", "重新啟動核心"],
+    [
+        "正在处理内核操作",
+        "Processing kernel operation",
+        "正在處理核心操作",
+    ],
+    ["内核已启动", "Kernel started", "核心已啟動"],
+    ["内核已停止", "Kernel stopped", "核心已停止"],
+    ["内核已重启", "Kernel restarted", "核心已重新啟動"],
+    ["内核已在运行", "Kernel already running", "核心已在執行"],
+    [
+        "服务状态已刷新",
+        "Service status refreshed",
+        "服務狀態已更新",
+    ],
+    [
+        "固定内核不可用",
+        "KernelUnavailable: fixed kernel unavailable",
+        "固定核心不可用",
+    ],
+    [
+        "无法读取已保存配置",
+        "Saved configuration unavailable",
+        "無法讀取已儲存設定",
+    ],
+    [
+        "当前配置无法启动，请检查有效订阅和配置选项",
+        "Cannot start: check subscription and configuration",
+        "目前設定無法啟動，請檢查有效訂閱和設定選項",
+    ],
+    [
+        "候选内核检查或启动失败",
+        "Candidate check or startup failed",
+        "候選核心檢查或啟動失敗",
+    ],
+    [
+        "内核清理失败，请重试停止",
+        "Kernel cleanup failed; retry Stop",
+        "核心清理失敗，請重試停止",
+    ],
+    ["内核意外退出", "Kernel exited unexpectedly", "核心意外結束"],
     ["标题", "Title", "標題"],
     ["添加订阅分享", "Add subscription share", "新增訂閱分享"],
     ["新增订阅分享", "New subscription share", "新增訂閱分享"],
@@ -898,6 +1242,21 @@ mod tests {
         assert_eq!(
             translate(DesktopLanguage::TraditionalChinese, "主题"),
             "主題"
+        );
+    }
+    #[test]
+    fn runtime_translations_keep_existing_column_order() {
+        assert_eq!(
+            translate(DesktopLanguage::English, "内核服务"),
+            "Kernel service"
+        );
+        assert_eq!(
+            translate(DesktopLanguage::TraditionalChinese, "内核服务"),
+            "核心服務"
+        );
+        assert_eq!(
+            translate(DesktopLanguage::English, "内核意外退出"),
+            "Kernel exited unexpectedly"
         );
     }
 }

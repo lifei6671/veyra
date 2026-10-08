@@ -14,8 +14,11 @@ pub struct PageView {
     pub panel: Option<Entity<super::panel::PanelView>>,
     pub behavior: Option<Entity<super::behavior_panel::BehaviorPanel>>,
     pub subscriptions: Option<Entity<super::subscriptions::SubscriptionsView>>,
+    pub backend: Option<Entity<super::backend::BackendView>>,
     behavior_open: bool,
     settings_scroll: ScrollHandle,
+    category_scroll: ScrollHandle,
+    backend_scroll: ScrollHandle,
 }
 impl PageView {
     pub fn new(route: Route, window: &mut Window, cx: &mut Context<Self>) -> Self {
@@ -26,8 +29,11 @@ impl PageView {
             panel: None,
             behavior: None,
             subscriptions: None,
+            backend: None,
             behavior_open: false,
             settings_scroll: ScrollHandle::new(),
+            category_scroll: ScrollHandle::new(),
+            backend_scroll: ScrollHandle::new(),
             input: cx.new(|cx| {
                 InputState::new(window, cx).placeholder(if route == Route::Settings {
                     "P1-03 evidence draft · 仅此会话，不写入 Profile"
@@ -69,6 +75,7 @@ impl Render for PageView {
                         div()
                             .flex_1()
                             .id("settings-nav-scroll")
+                            .track_scroll(&self.category_scroll)
                             .flex()
                             .min_w_0()
                             .gap(px(super::tokens::GAP))
@@ -104,7 +111,17 @@ impl Render for PageView {
                                                     )
                                                 });
                                             }
+                                            if let Some(backend) = &this.backend {
+                                                backend.update(cx, |view, cx| {
+                                                    view.set_visible(
+                                                        category == Category::Backend,
+                                                        cx,
+                                                    )
+                                                });
+                                            }
                                             this.category = category;
+                                            // 对应 React 分类栏：选中项必须完整滚入视口。
+                                            this.category_scroll.scroll_to_item(i);
                                             cx.notify();
                                         },
                                     ))
@@ -181,6 +198,21 @@ impl Render for PageView {
                     }
                 } else if let Some(panel) = &self.panel {
                     content = content.child(panel.clone());
+                }
+            } else if self.category == Category::Backend {
+                if let Some(backend) = &self.backend {
+                    content = content.child(
+                        div()
+                            .id("backend-scroll")
+                            .track_scroll(&self.backend_scroll)
+                            .w_full()
+                            .flex()
+                            .flex_col()
+                            .flex_1()
+                            .min_h_0()
+                            .overflow_y_scroll()
+                            .child(backend.clone()),
+                    );
                 }
             } else if self.category == Category::Subscriptions {
                 if let Some(subscriptions) = &self.subscriptions {

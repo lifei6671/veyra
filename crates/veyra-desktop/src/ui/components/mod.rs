@@ -525,7 +525,7 @@ pub fn navigation_item(
         .rounded(px(if category { t::RADIUS } else { t::NAV_RADIUS }))
         .text_size(px(t::BODY))
         .text_color(rgb(p.text))
-        .font_weight(FontWeight::NORMAL)
+        .font_weight(super::theme::MISANS_REGULAR)
         .child(
             div()
                 .flex()
@@ -588,7 +588,7 @@ pub fn section_heading(title: impl IntoElement) -> Div {
         .pb(px(t::GAP))
         .text_size(px(t::SECTION_TITLE))
         .line_height(px(t::SECTION_LINE))
-        .font_weight(FontWeight::SEMIBOLD)
+        .font_weight(super::theme::MISANS_SEMIBOLD)
         .child(title)
 }
 #[derive(IntoElement)]
@@ -618,7 +618,7 @@ impl RenderOnce for CompactSetting {
                 div()
                     .flex_1()
                     .min_w_0()
-                    .font_weight(FontWeight::MEDIUM)
+                    .font_weight(super::theme::MISANS_MEDIUM)
                     .child(self.label),
             )
             .child(div().min_w_0().flex_shrink_0().child(self.control))

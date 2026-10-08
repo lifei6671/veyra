@@ -255,3 +255,55 @@ pub const SUBSCRIPTION_SHARE_CHECKBOX: f32 = 20.;
 pub const SUBSCRIPTION_SHARE_PROTOCOL_WIDTH: f32 = 83.;
 pub const SUBSCRIPTION_SHARE_COPY_WIDTH: f32 = 40.;
 pub const SUBSCRIPTION_SHARE_QR_SIZE: f32 = 176.;
+
+/// OpenBox .backend-card/.backend-badge/.backend-service-actions (openbox.css:2313–2352).
+pub mod backend {
+    // OpenBox只读控件保留原生对比度，不叠加Kit disabled opacity。
+    pub const FIELD_LINE_ALPHA: u32 = 0x21;
+    pub const FIELD_ALPHA: u32 = 0xbf;
+    pub const SWITCH_BORDER_ALPHA: u32 = 0x80;
+    // 本机 OpenBox 1280px viewport 的实际分组几何，未知字段保留布局槽位。
+    pub const CHANNEL_WIDTH: f32 = 126.;
+    pub const FIELD_WIDTH: f32 = 200.;
+    pub const SMALL_FIELD_WIDTH: f32 = 96.;
+    pub const TIMEZONE_WIDTH: f32 = 384.;
+    pub const FIELD_GAP: f32 = 4.;
+    pub const SEGMENT_RADIUS: f32 = 6.4;
+    pub const TUN_LABEL_WIDTH: f32 = 112.;
+    pub const TUN_SELECT_WIDTH: f32 = 144.;
+    pub const IPV6_FIELD_WIDTH: f32 = 176.;
+    pub const SWITCH_TRAVEL: f32 = 12.;
+    // P2-03-VISUAL-BUSY-001：过渡态使用琥珀色，不复用失败红色。
+    pub const TRANSITION_LIGHT: u32 = 0x9a6700;
+    pub const TRANSITION_DARK: u32 = 0xe7bb62;
+    pub const TRANSITION_ALPHA: u32 = 0x2e;
+    pub const LINE_LIGHT: u32 = 0xd1d1d199;
+    pub const LINE_DARK: u32 = 0xffffff0c;
+    pub const BADGE_LINE_LIGHT: u32 = 0x4b526311;
+    pub const BADGE_LINE_DARK: u32 = 0xffffff0a;
+    pub const TITLE_LINE: f32 = 24.;
+    pub const PADDING: f32 = 16.;
+    pub const GAP: f32 = 12.;
+    pub const RADIUS: f32 = 16.;
+    pub const BODY: f32 = 14.;
+    pub const LINE: f32 = 20.;
+    pub const TITLE: f32 = 16.;
+    pub const HINT: f32 = 12.;
+    pub const HINT_LINE: f32 = 16.;
+    pub const ICON: f32 = 16.;
+    pub const ACTION_GAP: f32 = 8.;
+    pub const BUTTON_HEIGHT: f32 = 32.;
+    pub const BUTTON_PADDING: f32 = 12.;
+    pub const BUTTON_GAP: f32 = 6.;
+    pub const BUTTON_RADIUS: f32 = 8.7;
+    pub const BADGE_HEIGHT: f32 = 20.;
+    pub const BADGE_PADDING: f32 = 9.;
+    pub const BUTTON_LIGHT: u32 = 0xe8e8e8;
+    // 本机 OpenBox .btn:hover computed color (oklab L=.8649)。
+    pub const BUTTON_HOVER_LIGHT: u32 = 0xd2d2d2;
+    pub const BUTTON_DARK: u32 = 0x191e24;
+    pub const ON: u32 = 0x00a96e;
+    pub const ON_BG: u32 = 0x00a96e2e;
+    pub const OFF: u32 = 0xff5861;
+    pub const OFF_BG: u32 = 0xff586126;
+}

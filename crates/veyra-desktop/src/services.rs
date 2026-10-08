@@ -20,10 +20,11 @@ thread_local! {
 }
 
 pub struct AppServices {
+    pub manual_runtime: crate::runtime_service::RuntimeService,
     pub snapshots: Arc<SnapshotService>,
     pub subscriptions: Arc<veyra_core::application::subscription_management::SubscriptionManager>,
-    // Composition only: P1-03 has no profile or selection write UI.
-    pub _profiles: Arc<ProfileService>,
+    // Profile 保存复用 Core CAS writer；选择服务继续由各功能按契约接入。
+    pub profiles: Arc<ProfileService>,
     pub _selections: Arc<SelectionService>,
     pub preferences: Arc<DesktopPreferencesService>,
     pub assets: Arc<crate::visual_assets::VisualAssetStore>,
@@ -59,17 +60,24 @@ impl AppServices {
                 gate.clone(),
             )?,
         );
+        let snapshots = Arc::new(snapshots);
+        let manual_runtime = crate::runtime_service::RuntimeService::new(
+            root.clone(),
+            snapshots.clone(),
+            sender.clone(),
+        );
         let services = Self {
+            manual_runtime,
             subscriptions,
-            _profiles: Arc::new(ProfileService::new(snapshots.clone())),
-            _selections: Arc::new(SelectionService::new(snapshots.clone())),
-            preferences: Arc::new(DesktopPreferencesService::new(snapshots.clone())),
+            profiles: Arc::new(ProfileService::new((*snapshots).clone())),
+            _selections: Arc::new(SelectionService::new((*snapshots).clone())),
+            preferences: Arc::new(DesktopPreferencesService::new((*snapshots).clone())),
             assets: Arc::new(crate::visual_assets::VisualAssetStore::new(
                 root.join("assets"),
             )),
             root,
             gate,
-            snapshots: Arc::new(snapshots),
+            snapshots,
             runtime: Builder::new_multi_thread()
                 .worker_threads(2)
                 .max_blocking_threads(1)
@@ -78,6 +86,24 @@ impl AppServices {
             sender,
         };
         Ok((services, receiver))
+    }
+    pub fn save_backend_profile(&self, request: crate::backend_profile::Request) {
+        let profiles = self.profiles.clone();
+        let snapshots = self.snapshots.clone();
+        let sender = self.sender.clone();
+        self.runtime.spawn_blocking(move || {
+            let result = request
+                .change
+                .patch()
+                .and_then(|patch| profiles.patch(request.expected.clone(), patch));
+            // 失败也重读：CAS 冲突只能由权威快照恢复，不能以 UI 草稿覆盖外部写入。
+            let snapshot = snapshots.snapshot().map(Box::new);
+            let _ = sender.send(AppEvent::BackendProfile {
+                request,
+                result,
+                snapshot,
+            });
+        });
     }
     pub fn subscription_command(
         &self,

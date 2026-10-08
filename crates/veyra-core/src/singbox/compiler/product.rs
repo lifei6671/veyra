@@ -179,6 +179,12 @@ impl SingBoxCompiler {
             RuntimeProfile::ObservationOnly,
         )?;
         let document = &mut plan.document;
+        // 动态地址只从当前 child 的受管 stderr 发现，Platform 丢弃非监听行。
+        document.log = LogConfig {
+            disabled: false,
+            level: Some("info".into()),
+            output: None,
+        };
         document.experimental.clash_api.external_controller = resources.controller.0.to_string();
         document.experimental.cache_file = Some(CacheFile {
             enabled: true,
@@ -425,7 +431,8 @@ fn udp_dns(tag: &str, server: &str, port: u16, detour: &str) -> Result<DnsServer
         tag: tag.into(),
         server: Some(server.into()),
         server_port: Some(port),
-        detour: Some(detour.into()),
+        // v1.14 默认拨号即直连；空 direct outbound 不允许作为 DNS detour。
+        detour: (detour != "direct").then(|| detour.into()),
     })
 }
 fn add_host(
@@ -531,17 +538,20 @@ impl Document {
         }
         for server in &self.dns.servers {
             if server.kind != "udp"
-                || !server.detour.as_ref().is_some_and(|target| {
-                    (server.tag == "dns-direct" && target == "direct")
-                        || (is_proxy(Some(target))
-                            && server.tag == proxy_dns_tag(target, &self.route.final_outbound))
+                || !(if server.tag == "dns-direct" {
+                    server.detour.is_none()
+                } else {
+                    server.detour.as_ref().is_some_and(|target| {
+                        is_proxy(Some(target))
+                            && tags.contains(target)
+                            && server.tag == proxy_dns_tag(target, &self.route.final_outbound)
+                    })
                 })
                 || !server
                     .server
                     .as_ref()
                     .is_some_and(|s| s.parse::<IpAddr>().is_ok())
                 || !server.server_port.is_some_and(|p| p > 0)
-                || !server.detour.as_ref().is_some_and(|t| tags.contains(t))
             {
                 return Err(rejected);
             }
@@ -602,7 +612,18 @@ impl Document {
             }
         }
         // 同一封闭 Document 复用原有节点/endpoint/selector/urltest 验证，不建立第二套出口模型。
+        if self.log.disabled
+            || self.log.level.as_deref() != Some("info")
+            || self.log.output.is_some()
+        {
+            return Err(CompileError::InvalidFinalConfiguration);
+        }
         let mut ordinary = self.clone();
+        ordinary.log = LogConfig {
+            disabled: true,
+            level: None,
+            output: None,
+        };
         ordinary.inbounds.clear();
         ordinary.experimental.cache_file = None;
         ordinary.experimental.clash_api.external_controller = API_ADDRESS.into();

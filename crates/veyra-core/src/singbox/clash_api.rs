@@ -30,10 +30,37 @@ use tokio_tungstenite::{
 
 use super::secret::ApiSecret;
 
-const CLASH_API_ROOT_URL: &str = "http://127.0.0.1:9090/";
-const CLASH_API_CONNECTIONS_URL: &str = "http://127.0.0.1:9090/connections/";
-const CLASH_API_TRAFFIC_URL: &str = "ws://127.0.0.1:9090/traffic";
-const CLASH_API_LOGS_URL: &str = "ws://127.0.0.1:9090/logs";
+/// 只能由 Platform 对自己的 child 输出解析后建立；撤销后所有旧 client 拒绝 I/O。
+pub struct ManagedControllerEndpoint {
+    address: std::net::SocketAddr,
+    secret: ApiSecret,
+    valid: std::sync::atomic::AtomicBool,
+}
+impl ManagedControllerEndpoint {
+    pub fn from_owned_child(
+        address: std::net::SocketAddr,
+        config: &super::GeneratedConfig,
+    ) -> Result<Self, ClashApiError> {
+        if address.ip() != std::net::IpAddr::V4(std::net::Ipv4Addr::LOCALHOST)
+            || address.port() == 0
+        {
+            return Err(ClashApiError::Unavailable);
+        }
+        Ok(Self {
+            address,
+            secret: super::secret::api_secret_from_config(config)
+                .map_err(|_| ClashApiError::Unavailable)?,
+            valid: std::sync::atomic::AtomicBool::new(true),
+        })
+    }
+    pub fn invalidate(&self) {
+        self.valid
+            .store(false, std::sync::atomic::Ordering::Release);
+    }
+    pub fn address(&self) -> std::net::SocketAddr {
+        self.address
+    }
+}
 const REQUEST_TIMEOUT: Duration = Duration::from_secs(2);
 const MIN_STREAM_SAMPLE_INTERVAL: Duration = Duration::from_secs(1);
 const MAX_STREAM_FRAME_BYTES: usize = 16 * 1024;
@@ -46,10 +73,10 @@ enum FixedStream {
 }
 
 impl FixedStream {
-    const fn url(self) -> &'static str {
+    const fn path(self) -> &'static str {
         match self {
-            Self::Traffic => CLASH_API_TRAFFIC_URL,
-            Self::Logs => CLASH_API_LOGS_URL,
+            Self::Traffic => "/traffic",
+            Self::Logs => "/logs",
         }
     }
 }
@@ -123,6 +150,7 @@ impl RuntimeObservationBridge {
     }
 
     /// 只采样固定 REST 摘要及到期的固定流；调用方不得传入网络参数。
+    #[cfg(any(test, feature = "legacy-test-support"))]
     pub async fn sample(
         &mut self,
         secret: &ApiSecret,
@@ -189,20 +217,65 @@ pub enum ClashApiError {
 pub struct ClashApiClient<'secret> {
     client: Client,
     secret: &'secret ApiSecret,
+    endpoint: Option<&'secret ManagedControllerEndpoint>,
 }
 
 impl<'secret> ClashApiClient<'secret> {
+    #[cfg(any(test, feature = "legacy-test-support"))]
     pub fn new(secret: &'secret ApiSecret) -> Result<Self, ClashApiError> {
         let client = Client::builder()
             .timeout(REQUEST_TIMEOUT)
             .build()
             .map_err(|_| ClashApiError::Unavailable)?;
-        Ok(Self { client, secret })
+        Ok(Self {
+            client,
+            secret,
+            endpoint: None,
+        })
     }
 
+    pub fn managed(endpoint: &'secret ManagedControllerEndpoint) -> Result<Self, ClashApiError> {
+        let client = Client::builder()
+            .no_proxy()
+            .redirect(reqwest::redirect::Policy::none())
+            .timeout(REQUEST_TIMEOUT)
+            .build()
+            .map_err(|_| ClashApiError::Unavailable)?;
+        Ok(Self {
+            client,
+            secret: &endpoint.secret,
+            endpoint: Some(endpoint),
+        })
+    }
+    fn url(&self, path: &str, websocket: bool) -> String {
+        let address = match self.endpoint {
+            Some(endpoint) => endpoint.address,
+            #[cfg(any(test, feature = "legacy-test-support"))]
+            None => ([127, 0, 0, 1], 9090).into(),
+            #[cfg(not(any(test, feature = "legacy-test-support")))]
+            None => unreachable!("生产 client 必须绑定受管 endpoint"),
+        };
+        format!(
+            "{}://{}{}",
+            if websocket { "ws" } else { "http" },
+            address,
+            path
+        )
+    }
+    pub async fn read_version(&self) -> Result<(), ClashApiError> {
+        #[derive(Deserialize)]
+        struct Version {
+            version: String,
+        }
+        let version: Version = self.get_json(&self.url("/version", false)).await?;
+        if version.version != "sing-box 1.14.0" {
+            return Err(ClashApiError::InvalidResponse);
+        }
+        Ok(())
+    }
     /// 只接受固定根路径的 JSON hello，既验证认证又作为受管 child 的 loopback Ready 判据。
     pub async fn read_ready(&self) -> Result<(), ClashApiError> {
-        let response: ReadyResponse = self.get_json(CLASH_API_ROOT_URL).await?;
+        let response: ReadyResponse = self.get_json(&self.url("/", false)).await?;
         (response.hello == "clash")
             .then_some(())
             .ok_or(ClashApiError::InvalidResponse)
@@ -210,7 +283,8 @@ impl<'secret> ClashApiClient<'secret> {
 
     /// 只读取累计流量和连接数量；每个连接对象在解析时被 `IgnoredAny` 丢弃。
     pub async fn read_connections(&self) -> Result<ClashConnectionSnapshot, ClashApiError> {
-        let response: ConnectionsResponse = self.get_json(CLASH_API_CONNECTIONS_URL).await?;
+        let response: ConnectionsResponse =
+            self.get_json(&self.url("/connections/", false)).await?;
         let connection_count = u32::try_from(response.connections.len())
             .map_err(|_| ClashApiError::InvalidResponse)?;
         Ok(ClashConnectionSnapshot {
@@ -248,7 +322,7 @@ impl<'secret> ClashApiClient<'secret> {
         let authorization = self.authorization()?;
         let response = self
             .client
-            .put(selector_url(selector_tag)?)
+            .put(selector_url_at(&self.url("/", false), selector_tag)?)
             .header(AUTHORIZATION, authorization)
             .json(&SelectorMutation { name: node_tag })
             .send()
@@ -266,7 +340,7 @@ impl<'secret> ClashApiClient<'secret> {
         let authorization = self.authorization()?;
         let response = self
             .client
-            .get(selector_url(selector_tag)?)
+            .get(selector_url_at(&self.url("/", false), selector_tag)?)
             .header(AUTHORIZATION, authorization)
             .send()
             .await
@@ -282,11 +356,17 @@ impl<'secret> ClashApiClient<'secret> {
     }
 
     fn authorization(&self) -> Result<HeaderValue, ClashApiError> {
+        if self
+            .endpoint
+            .is_some_and(|e| !e.valid.load(std::sync::atomic::Ordering::Acquire))
+        {
+            return Err(ClashApiError::Unavailable);
+        }
         HeaderValue::from_str(&format!("Bearer {}", self.secret.as_str()))
             .map_err(|_| ClashApiError::Unavailable)
     }
 
-    async fn get_json<T>(&self, url: &'static str) -> Result<T, ClashApiError>
+    async fn get_json<T>(&self, url: &str) -> Result<T, ClashApiError>
     where
         T: for<'de> Deserialize<'de>,
     {
@@ -360,11 +440,12 @@ impl<'secret> ClashApiClient<'secret> {
         >,
         ClashApiError,
     > {
+        self.authorization()?;
         let authorization =
             WebSocketHeaderValue::from_str(&format!("Bearer {}", self.secret.as_str()))
                 .map_err(|_| ClashApiError::Unavailable)?;
-        let mut request = stream
-            .url()
+        let mut request = self
+            .url(stream.path(), true)
             .into_client_request()
             .map_err(|_| ClashApiError::Unavailable)?;
         request
@@ -400,9 +481,12 @@ impl<'secret> ClashApiClient<'secret> {
     }
 }
 
+#[cfg(test)]
 fn selector_url(selector_tag: &str) -> Result<reqwest::Url, ClashApiError> {
-    let mut url =
-        reqwest::Url::parse(CLASH_API_ROOT_URL).map_err(|_| ClashApiError::Unavailable)?;
+    selector_url_at("http://127.0.0.1:9090/", selector_tag)
+}
+fn selector_url_at(root: &str, selector_tag: &str) -> Result<reqwest::Url, ClashApiError> {
+    let mut url = reqwest::Url::parse(root).map_err(|_| ClashApiError::Unavailable)?;
     url.path_segments_mut()
         .map_err(|_| ClashApiError::Unavailable)?
         .extend(["proxies", selector_tag]);
@@ -1421,5 +1505,67 @@ mod tests {
             }
         }
         String::from_utf8(bytes).expect("HTTP request is UTF-8")
+    }
+}
+
+#[cfg(test)]
+mod managed_endpoint_tests {
+    use super::*;
+    #[test]
+    fn dynamic_authenticated_ready_and_revoked_endpoint() {
+        use std::{
+            io::{Read, Write},
+            net::TcpListener,
+        };
+        let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+        let address = listener.local_addr().unwrap();
+        let secret = super::super::secret::generate_api_secret().unwrap();
+        let mut json: serde_json::Value = serde_json::from_str(include_str!(
+            "../../tests/fixtures/compiler/p2-02b-base.expected.json"
+        ))
+        .unwrap();
+        json["experimental"]["clash_api"]["secret"] = secret.as_str().into();
+        let config = super::super::GeneratedConfig::from_bytes(serde_json::to_vec(&json).unwrap());
+        let endpoint = ManagedControllerEndpoint::from_owned_child(address, &config).unwrap();
+        assert!(
+            ManagedControllerEndpoint::from_owned_child("8.8.8.8:443".parse().unwrap(), &config)
+                .is_err()
+        );
+        let expected = format!("authorization: Bearer {}", secret.as_str());
+        let server = std::thread::spawn(move || {
+            for (path, body) in [
+                ("/", r#"{"hello":"clash"}"#),
+                ("/version", r#"{"version":"sing-box 1.14.0"}"#),
+            ] {
+                let (mut socket, _) = listener.accept().unwrap();
+                socket
+                    .set_read_timeout(Some(Duration::from_secs(2)))
+                    .unwrap();
+                let mut b = [0; 4096];
+                let n = socket.read(&mut b).unwrap();
+                let request = std::str::from_utf8(&b[..n]).unwrap();
+                assert!(request.starts_with(&format!("GET {path} HTTP/1.1")));
+                assert!(request.contains(&expected));
+                write!(
+                    socket,
+                    "HTTP/1.1 200 OK\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{}",
+                    body.len(),
+                    body
+                )
+                .unwrap();
+            }
+        });
+        let runtime = tokio::runtime::Builder::new_current_thread()
+            .enable_all()
+            .build()
+            .unwrap();
+        runtime.block_on(async {
+            let client = ClashApiClient::managed(&endpoint).unwrap();
+            client.read_ready().await.unwrap();
+            client.read_version().await.unwrap();
+            endpoint.invalidate();
+            assert_eq!(client.read_ready().await, Err(ClashApiError::Unavailable));
+        });
+        server.join().unwrap();
     }
 }

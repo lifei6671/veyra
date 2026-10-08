@@ -390,9 +390,7 @@ impl ConfigCompiler for SingBoxCompiler {
         let document = Document {
             log: LogConfig {
                 disabled: true,
-                #[cfg(any(test, feature = "legacy-test-support"))]
                 level: None,
-                #[cfg(any(test, feature = "legacy-test-support"))]
                 output: None,
             },
             dns: DnsConfig {
@@ -466,10 +464,8 @@ struct TestInbound {
 #[serde(deny_unknown_fields)]
 struct LogConfig {
     disabled: bool,
-    #[cfg(any(test, feature = "legacy-test-support"))]
     #[serde(skip_serializing_if = "Option::is_none")]
     level: Option<String>,
-    #[cfg(any(test, feature = "legacy-test-support"))]
     #[serde(skip_serializing_if = "Option::is_none")]
     output: Option<String>,
 }

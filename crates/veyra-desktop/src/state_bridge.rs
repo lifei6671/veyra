@@ -15,6 +15,18 @@ pub struct InstanceToken {
     pub generation: u64,
 }
 pub enum AppEvent {
+    BackendProfile {
+        request: crate::backend_profile::Request,
+        result: Result<
+            veyra_core::application::state_service::SaveOutcome<
+                veyra_core::domain::Profile,
+                veyra_core::domain::ConfigVersion,
+            >,
+            AppError,
+        >,
+        snapshot: Result<Box<AppState>, AppError>,
+    },
+    Runtime(crate::runtime_service::RuntimeEvent),
     Subscriptions {
         request: crate::subscriptions::Request,
         result: Result<
@@ -77,6 +89,16 @@ pub enum LoadState {
 }
 #[derive(Default)]
 pub struct StateBridge {
+    pub runtime: Option<veyra_core::application::manual_runtime::ManualRuntimeSnapshot>,
+    pub runtime_request: u64,
+    pub runtime_sequence: u64,
+    pub runtime_operation: Option<veyra_core::application::manual_runtime::RuntimeCommand>,
+    pub runtime_result: Option<
+        Result<
+            veyra_core::application::manual_runtime::RuntimeResult,
+            veyra_core::application::manual_runtime::RuntimeError,
+        >,
+    >,
     /// Read-only projection of the one core snapshot, never edited in desktop.
     pub snapshot: Option<Box<AppState>>,
     pub load: LoadState,
@@ -89,6 +111,16 @@ pub struct StateBridge {
     pub synthetic_accepted: u64,
 }
 impl StateBridge {
+    pub fn begin_runtime(
+        &mut self,
+        command: veyra_core::application::manual_runtime::RuntimeCommand,
+    ) -> u64 {
+        self.runtime_request += 1;
+        // 新 request 替换旧操作的视觉归属；旧 completion 仍由 receive 拒绝。
+        self.runtime_operation = Some(command);
+        self.runtime_result = None;
+        self.runtime_request
+    }
     pub fn begin(&mut self) -> Request {
         self.next_request += 1;
         let request = Request {
@@ -124,8 +156,27 @@ impl StateBridge {
     }
     pub fn receive(&mut self, event: AppEvent) -> Disposition {
         match event {
+            AppEvent::Runtime(event) => {
+                if event.request != self.runtime_request {
+                    return Disposition::StaleRequest;
+                }
+                if event.sequence <= self.runtime_sequence {
+                    return Disposition::OldInstance;
+                }
+                self.runtime_sequence = event.sequence;
+                match event.snapshot {
+                    Ok(snapshot) => self.runtime = Some(snapshot),
+                    Err(error) => self.runtime_result = Some(Err(error)),
+                }
+                if let Some(result) = event.result {
+                    self.runtime_result = Some(result);
+                    self.runtime_operation = None;
+                }
+                Disposition::Accepted
+            }
             AppEvent::Subscriptions { .. }
             | AppEvent::BehaviorSaved { .. }
+            | AppEvent::BackendProfile { .. }
             | AppEvent::PlatformSaved { .. }
             | AppEvent::ExternalPreferenceWrite { .. }
             | AppEvent::VisualSaved { .. }
@@ -294,5 +345,51 @@ mod tests {
             Disposition::Accepted
         );
         assert_eq!(b.synthetic_accepted, 1);
+    }
+}
+
+#[cfg(test)]
+mod runtime_tests {
+    use super::*;
+    use crate::runtime_service::RuntimeEvent;
+    use veyra_core::application::manual_runtime::{RuntimeCommand, RuntimeError, RuntimeResult};
+    #[test]
+    fn old_runtime_result_cannot_clear_new_operation_busy() {
+        let mut b = StateBridge::default();
+        let old = b.begin_runtime(RuntimeCommand::Start);
+        assert_eq!(b.runtime_operation, Some(RuntimeCommand::Start));
+        let latest = b.begin_runtime(RuntimeCommand::Stop);
+        let event = |request, sequence| {
+            AppEvent::Runtime(RuntimeEvent {
+                request,
+                sequence,
+                snapshot: Err(RuntimeError::StateUnavailable),
+                result: Some(Ok(RuntimeResult::Stopped)),
+            })
+        };
+        assert_eq!(b.receive(event(old, 1)), Disposition::StaleRequest);
+        assert_eq!(b.runtime_operation, Some(RuntimeCommand::Stop));
+        assert_eq!(b.receive(event(latest, 3)), Disposition::Accepted);
+        assert_eq!(b.runtime_operation, None);
+        assert_eq!(b.receive(event(latest, 2)), Disposition::OldInstance);
+    }
+    // 保护 Restart 被旧 Start 回调覆盖，以及当前失败 completion 的释放。
+    #[test]
+    fn restart_operation_survives_old_start_and_clears_on_current_failure() {
+        let mut b = StateBridge::default();
+        let old = b.begin_runtime(RuntimeCommand::Start);
+        let current = b.begin_runtime(RuntimeCommand::Restart);
+        let completion = |request, sequence| {
+            AppEvent::Runtime(RuntimeEvent {
+                request,
+                sequence,
+                snapshot: Err(RuntimeError::CandidateFailed),
+                result: Some(Err(RuntimeError::CandidateFailed)),
+            })
+        };
+        assert_eq!(b.receive(completion(old, 1)), Disposition::StaleRequest);
+        assert_eq!(b.runtime_operation, Some(RuntimeCommand::Restart));
+        assert_eq!(b.receive(completion(current, 2)), Disposition::Accepted);
+        assert_eq!(b.runtime_operation, None);
     }
 }

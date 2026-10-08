@@ -7,11 +7,12 @@ use super::{
 use crate::ui::i18n::tr;
 use crate::{app::AppView, navigation::Route, preferences::SaveStatus, state_bridge::LoadState};
 use gpui_kit::{
-    component::{Disableable, button::*, scroll::ScrollableElement},
+    component::{Disableable, Sizable, button::*, scroll::ScrollableElement},
     prelude::*,
     *,
 };
 use std::time::{Duration, Instant};
+use veyra_core::application::manual_runtime::RuntimeCommand;
 use veyra_core::domain::DesktopLanguage;
 
 fn sidebar_width(collapsed: bool) -> f32 {
@@ -108,7 +109,7 @@ impl Render for AppView {
         let mut root = div()
             .id("app-shell")
             // 仅 debug 的证据快捷键，正式布局不增加控件，也不代替 Tray 验收。
-            .on_key_down(|event, window, cx| {
+            .on_key_down(cx.listener(|this, event: &KeyDownEvent, window, cx| {
                 if cfg!(debug_assertions)
                     && event.keystroke.modifiers.control
                     && event.keystroke.modifiers.alt
@@ -118,6 +119,18 @@ impl Render for AppView {
                             window.resize(size(px(1280.), px(720.)));
                             cx.stop_propagation();
                         }
+                        "s" => this.runtime_command(
+                            veyra_core::application::manual_runtime::RuntimeCommand::Start,
+                            cx,
+                        ),
+                        "t" => this.runtime_command(
+                            veyra_core::application::manual_runtime::RuntimeCommand::Stop,
+                            cx,
+                        ),
+                        "r" => this.runtime_command(
+                            veyra_core::application::manual_runtime::RuntimeCommand::Restart,
+                            cx,
+                        ),
                         "q" => crate::desktop_lifecycle::dispatch(
                             crate::desktop_lifecycle::Intent::Quit,
                             None,
@@ -126,11 +139,12 @@ impl Render for AppView {
                         _ => {}
                     }
                 }
-            })
+            }))
             .relative()
             .flex()
             .size_full()
-            .font_family(".SystemUIFont")
+            .font_family("MiSans")
+            .font_weight(super::theme::MISANS_REGULAR)
             .text_size(px(t::BODY))
             .line_height(px(t::BODY_LINE))
             .text_color(rgb(p.text))
@@ -213,7 +227,7 @@ impl Render for AppView {
                                 .w(px(t::BRAND_WIDTH))
                                 .h(px(24.))
                                 .text_size(px(18.))
-                                .font_weight(FontWeight::SEMIBOLD)
+                                .font_weight(super::theme::MISANS_SEMIBOLD)
                                 .text_color(rgb(if self.dark && self.route == Route::Settings {
                                     t::BRAND_PANEL_DARK_INK
                                 } else {
@@ -309,7 +323,7 @@ impl Render for AppView {
                                 .gap(px(t::GAP))
                                 .p(px(t::PAD))
                                 .rounded(px(16.))
-                                .bg(rgba((p.surface << 8) | surface_alpha))
+                                .bg(rgba((p.surface << 8) | if panel_plain {0xbf} else {surface_alpha}))
                                 .children(
                                     [
                                         [tr(cx, "连接数"), tr(cx, "内存使用")],
@@ -317,7 +331,7 @@ impl Render for AppView {
                                         [tr(cx, "出站流量"), tr(cx, "出站速率")],
                                     ]
                                     .map(|labels| {
-                                        div().flex().gap(px(16.)).children(labels.map(|label| {
+                                        div().flex().gap(px(t::GAP)).children(labels.map(|label| {
                                             div()
                                                 .flex_1()
                                                 .flex()
@@ -331,9 +345,8 @@ impl Render for AppView {
                                                 )
                                                 .child(
                                                     div()
-                                                        .mt(px(1.))
-                                                        .line_height(px(18.))
-                                                        .font_weight(FontWeight::SEMIBOLD)
+                                                        .text_size(px(14.))
+                                                        .line_height(px(20.))
                                                         .child("—"),
                                                 )
                                         }))
@@ -356,14 +369,15 @@ impl Render for AppView {
                                         .child(
                                             div()
                                                 .text_size(px(12.))
-                                                .line_height(px(15.))
+                                                .line_height(px(16.))
                                                 .text_color(rgba(p.muted))
                                                 .child(tr(cx, "运行时长")),
                                         )
                                         .child(
                                             div()
                                                 .line_height(px(t::BODY_LINE))
-                                                .child(tr(cx, "当前不可用")),
+                                                .text_size(px(14.)).font_weight(super::theme::MISANS_MEDIUM)
+                                                .child(self.bridge.runtime.as_ref().and_then(|s| s.uptime_seconds).map(|seconds| format!("{:02}:{:02}:{:02}", seconds/3600, seconds/60%60, seconds%60)).unwrap_or_else(|| tr(cx, super::backend::status(self.bridge.runtime.as_ref())).to_owned())),
                                         ),
                                 )
                             })
@@ -375,24 +389,26 @@ impl Render for AppView {
                                     .when(collapsed, |d| d.flex_col())
                                     .children(
                                         [
-                                            ("start", tr(cx, "启动内核"), "Play"),
-                                            ("stop", tr(cx, "停止内核"), "Stop"),
+                                            ("start", tr(cx, "启动内核"), "Play", RuntimeCommand::Start),
+                                            ("stop", tr(cx, "停止内核"), "Stop", RuntimeCommand::Stop),
                                             (
                                                 "refresh-unavailable",
                                                 tr(cx, "刷新数据"),
-                                                "ArrowPath",
+                                                "ArrowPath", RuntimeCommand::Refresh,
                                             ),
                                         ]
                                         .map(
-                                            |(id, label, glyph)| {
+                                            |(id, label, glyph, command)| {
                                                 Button::new(id)
                                                     .ghost()
-                                                    .disabled(true)
+                                                    .disabled(self.bridge.runtime_operation.is_some() || self.bridge.runtime.is_none() || (id == "start" && self.bridge.runtime.as_ref().is_some_and(|s| s.runtime.status == veyra_core::application::runtime_snapshot::RuntimeStatus::Ready)) || (id == "stop" && self.bridge.runtime.as_ref().is_some_and(|s| s.runtime.status == veyra_core::application::runtime_snapshot::RuntimeStatus::Stopped)))
+                                                    .on_click(cx.listener(move |this, _, _, cx| { this.runtime_command(command, cx); }))
                                                     .accessibility_label(label)
                                                     .size(px(t::NAV_HEIGHT))
                                                     .rounded(px(t::NAV_RADIUS))
-                                                    .bg(rgba((p.surface << 8) | surface_alpha))
-                                                    .child(icon(glyph, t::ICON_SMALL))
+                                                    .bg(rgba((p.surface << 8) | if panel_plain {0xbf} else {surface_alpha}))
+                                                    .when(!super::backend::action_is_busy(self.bridge.runtime_operation, command), |b| b.child(icon(glyph, t::ICON_SMALL)))
+                                                    .when(super::backend::action_is_busy(self.bridge.runtime_operation, command), |b| b.child(gpui_kit::component::spinner::Spinner::new().with_size(px(t::ICON_SMALL))))
                                             },
                                         ),
                                     ),
@@ -491,7 +507,7 @@ impl Render for AppView {
                                 .child(
                                     div()
                                         .text_lg()
-                                        .font_weight(FontWeight::SEMIBOLD)
+                                        .font_weight(super::theme::MISANS_SEMIBOLD)
                                         .child(route_label(self.route, lang)),
                                 )
                                 .child(
@@ -609,7 +625,7 @@ impl Render for AppView {
                                         .child(
                                             div()
                                                 .text_color(rgb(p.text))
-                                                .font_weight(FontWeight::SEMIBOLD)
+                                                .font_weight(super::theme::MISANS_SEMIBOLD)
                                                 .child("本地视觉偏好"),
                                         )
                                         .child("GPUI preview · 平台目录 / 单实例"),
@@ -668,6 +684,36 @@ mod sidebar_transition_tests {
         assert_eq!(
             expanding.width(reverse_at + Duration::from_millis(t::SIDEBAR_TRANSITION_MS)),
             t::SIDEBAR
+        );
+    }
+}
+
+#[cfg(test)]
+mod runtime_action_tests {
+    use super::RuntimeCommand;
+    #[test]
+    fn sidebar_spinner_belongs_only_to_submitted_command() {
+        let commands = [
+            RuntimeCommand::Start,
+            RuntimeCommand::Stop,
+            RuntimeCommand::Refresh,
+        ];
+        for (index, active) in commands.into_iter().enumerate() {
+            let spinning = commands
+                .map(|command| super::super::backend::action_is_busy(Some(active), command));
+            assert_eq!(spinning.iter().filter(|v| **v).count(), 1);
+            assert!(spinning[index]);
+        }
+        // sidebar 没有 Restart 按钮，不将其伪装成 Refresh 正在执行。
+        assert!(
+            commands
+                .into_iter()
+                .all(|c| !super::super::backend::action_is_busy(Some(RuntimeCommand::Restart), c))
+        );
+        assert!(
+            commands
+                .into_iter()
+                .all(|c| !super::super::backend::action_is_busy(None, c))
         );
     }
 }

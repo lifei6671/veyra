@@ -135,14 +135,18 @@ cleanup NOT_RUN：沙箱拒绝`ps`进程身份查询（Operation not permitted�
 
 **泳道 / 写范围**：Runtime/Platform + GPUI；runtime 启停/实例公共契约与服务卡；Runtime 契约单一 owner。
 
+**当前状态（2026-10-07）**：DONE；Runtime/Platform + GPUI owner、Runtime 公共契约 owner 与本卡预约已释放。Host明确确认当前Basic2 build功能与视觉“符合”，绑定executable SHA256 `59280c3146502e1b9474d08f976d807cfae4390751493badf9f89aeca9b325c4`；见[最终收口](#p2-03-final-closeout)。历史候选、失败及BUSY-001记录保留；本轮仅文档/evidence，不操作app/runtime资源。
+
+**实施约束**：正式运行配置必须使用 P2-02B `compile_product(ProductCompileRequest { state, runtime_intent, default_outbound, resources })`，显式消费 `application::selected_subscription::project_selected_runtime()` 的 `runtime_intent` 和 `projected_default_target`（转换为领域 `OutboundId`）。不得继续使用 `application/runtime.rs` 现有 ObservationOnly `compile(...)` 作为正式运行配置；运行资源由 Runtime owner 显式提供，tag仍仅Compiler adapter内部。
+
 **执行与交付**：桌面管理手动代理 child；check→启动→地址发现→鉴权就绪→停止，统一操作互斥和实例身份。基于 P1-03 的 AppServices/状态桥和基础服务壳接通状态、版本、启停/重启与操作反馈；Runtime 不依赖 P1-06 托盘完成，托盘未接通时仍显示准确不可用状态。
 
 **验收**：
 
-- [ ] 同一候选配置完成一次受控真实访问与停止，端口和 child 归属有证据。
-- [ ] 重复启动、check 失败、端口冲突、超时、异常退出不误报 Ready；只停止自有实例。
-- [ ] 内核停机时仍可编辑；保存/运行版本与实际状态分别展示。
-- [ ] 服务卡实际操作通过验收，点击已提交不冒充启动完成；托盘与 Runtime 联动在 P2-09 经 P1-07 组合验收。
+- [x] 同一候选配置完成一次受控真实访问与停止，端口和 child 归属有证据。
+- [x] 重复启动、check 失败、端口冲突、超时、异常退出不误报 Ready；只停止自有实例。
+- [x] 内核停机时仍可编辑；保存/运行版本与实际状态分别展示。
+- [x] Host最终确认当前Basic2 build功能与视觉“符合”（绑定59280c31…及最终evidence），点击已提交不冒充启动完成；托盘与 Runtime 联动仍在 P2-09 经 P1-07 组合验收。
 
 <a id="obg-p2-04"></a>
 ## OBG-P2-04 选择持久化、缓存与最后成功配置

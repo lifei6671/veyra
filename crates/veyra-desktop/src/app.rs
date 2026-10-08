@@ -23,6 +23,9 @@ pub struct AppView {
     pub pages: Pages,
     pub subscriptions: Entity<crate::ui::subscriptions::SubscriptionsView>,
     _subscriptions: Subscription,
+    pub backend: Entity<crate::ui::backend::BackendView>,
+    _runtime_subscription: Subscription,
+    _profile_subscription: Subscription,
     pub bridge: StateBridge,
     pub services: Arc<AppServices>,
     pub behavior: crate::behavior_preferences::BehaviorCoordinator,
@@ -57,6 +60,22 @@ impl AppView {
     ) -> Self {
         let notice_center = crate::ui::components::notice::NoticeCenter::mount(cx);
         let pages = Pages::new(window, cx);
+        let backend = cx.new(|cx| crate::ui::backend::BackendView::new(window, cx));
+        pages
+            .get(Route::Settings)
+            .update(cx, |p, _| p.backend = Some(backend.clone()));
+        let runtime_subscription = cx.subscribe(
+            &backend,
+            |this, _, command: &veyra_core::application::manual_runtime::RuntimeCommand, cx| {
+                this.runtime_command(*command, cx)
+            },
+        );
+        let profile_subscription = cx.subscribe(
+            &backend,
+            |this, _, request: &crate::backend_profile::Request, _cx| {
+                this.services.save_backend_profile(request.clone())
+            },
+        );
         let subscriptions =
             cx.new(|cx| crate::ui::subscriptions::SubscriptionsView::new(window, cx));
         pages.get(Route::Settings).update(cx, |page, _| {
@@ -184,15 +203,21 @@ impl AppView {
             let _ = view.update_in(cx, |view, _, _| view.tray.diagnose());
         })
         .detach();
-        let tray_quit = cx.on_app_quit(|view, _| {
+        let tray_quit = cx.on_app_quit(|view, cx| {
             view.tray.prepare_quit();
-            async {}
+            let done = view.services.manual_runtime.shutdown();
+            cx.background_executor().spawn(async move {
+                let _ = done.recv();
+            })
         });
         eprintln!(
             "AppView created entity={:?}; pages_created_count=6",
             cx.entity_id()
         );
         let mut view = Self {
+            backend,
+            _runtime_subscription: runtime_subscription,
+            _profile_subscription: profile_subscription,
             tray,
             dialog_open: false,
             clipboard_snapshot: None,
@@ -225,6 +250,10 @@ impl AppView {
             _tray_quit: tray_quit,
         };
         view.refresh(cx);
+        view.runtime_command(
+            veyra_core::application::manual_runtime::RuntimeCommand::Refresh,
+            cx,
+        );
         view
     }
     fn platform_notice(
@@ -426,6 +455,87 @@ impl AppView {
     fn receive_event(&mut self, event: AppEvent, window: &mut Window, cx: &mut Context<Self>) {
         use crate::ui::components::{Notice, notify};
         match event {
+            AppEvent::BackendProfile {
+                request,
+                result,
+                snapshot,
+            } => {
+                // 保存完成先接纳同 epoch 且不倒退的快照；旧请求不能解除新字段的 busy。
+                // 若原子保存后已有其它 writer 推进版本，取消排队草稿并要求重试；
+                // 不能把外部写入自动当成下一条用户操作的 CAS 基线。
+                let mut success = result.as_ref().is_ok_and(|saved| {
+                    snapshot
+                        .as_ref()
+                        .is_ok_and(|state| state.config_version() == saved.version)
+                });
+                match snapshot {
+                    Ok(state)
+                        if self.bridge.snapshot.as_ref().is_some_and(|current| {
+                            current.state_epoch == request.expected.0.epoch
+                                && (state.state_epoch != current.state_epoch
+                                    || state.config_revision >= current.config_revision)
+                        }) =>
+                    {
+                        self.bridge.leave_page();
+                        self.bridge.snapshot = Some(state);
+                    }
+                    _ => success = false,
+                }
+                if let Some(state) = &self.bridge.snapshot {
+                    self.backend
+                        .update(cx, |view, cx| view.project_profile(state, window, cx));
+                }
+                let accepted = self
+                    .backend
+                    .update(cx, |view, cx| view.complete(&request, success, cx));
+                if accepted {
+                    let message = if success {
+                        "配置已保存，重启内核后生效"
+                    } else if result.is_ok()
+                        || result.as_ref().is_err_and(|e| {
+                            e.code() == veyra_core::domain::AppErrorCode::RevisionConflict
+                        })
+                    {
+                        "配置已被更新，请重新操作"
+                    } else {
+                        "配置保存失败，URL 草稿已保留，请重试"
+                    };
+                    notify(
+                        if success {
+                            Notice::Success
+                        } else {
+                            Notice::Error
+                        },
+                        message,
+                        window,
+                        cx,
+                    );
+                }
+                self.project_runtime(cx);
+            }
+            AppEvent::Runtime(event) => {
+                let result = event.result;
+                let accepted = self.bridge.receive(AppEvent::Runtime(event))
+                    == crate::state_bridge::Disposition::Accepted;
+                if accepted && let Some(result) = result {
+                    // 仅最终且当前请求的结果提示；轮询不产生通知。
+                    if result
+                        != Ok(veyra_core::application::manual_runtime::RuntimeResult::Refreshed)
+                    {
+                        notify(
+                            if result.is_ok() {
+                                Notice::Success
+                            } else {
+                                Notice::Error
+                            },
+                            crate::ui::backend::feedback(result),
+                            window,
+                            cx,
+                        );
+                    }
+                }
+                self.project_runtime(cx);
+            }
             AppEvent::Subscriptions { request, result } => {
                 let state = self
                     .subscriptions
@@ -609,8 +719,32 @@ impl AppView {
             self.subscriptions
                 .update(cx, |view, cx| view.project(state, cx));
         }
+        if let Some(state) = &self.bridge.snapshot {
+            self.backend
+                .update(cx, |view, cx| view.project_profile(state, window, cx));
+        }
         // 当前 composition root 未绑定 P2 Runtime owner，不从偏好或配置推断运行状态。
         self.tray.project(self.bridge.snapshot.as_deref(), None);
+    }
+    fn project_runtime(&mut self, cx: &mut Context<Self>) {
+        self.backend.update(cx, |view, cx| {
+            view.snapshot = self.bridge.runtime.clone();
+            view.operation = self.bridge.runtime_operation;
+            if let (Some(runtime), Some(state)) = (&mut view.snapshot, &self.bridge.snapshot) {
+                runtime.runtime.saved_version = state.config_version();
+            }
+            cx.notify();
+        });
+        cx.notify();
+    }
+    pub fn runtime_command(
+        &mut self,
+        command: veyra_core::application::manual_runtime::RuntimeCommand,
+        cx: &mut Context<Self>,
+    ) {
+        let request = self.bridge.begin_runtime(command);
+        self.services.manual_runtime.submit(request, command);
+        self.project_runtime(cx);
     }
     pub fn refresh(&mut self, cx: &mut Context<Self>) {
         let request = self.bridge.begin();
@@ -627,6 +761,11 @@ impl AppView {
                 == crate::navigation::Category::Subscriptions;
         self.subscriptions
             .update(cx, |view, cx| view.set_visible(visible, cx));
+        let backend_visible = route == Route::Settings
+            && self.pages.get(Route::Settings).read(cx).category
+                == crate::navigation::Category::Backend;
+        self.backend
+            .update(cx, |view, cx| view.set_visible(backend_visible, cx));
         self.route = route;
         // The shell viewport is shared; a long Settings page must not leave
         // the next page's heading above the viewport.

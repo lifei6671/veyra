@@ -2,6 +2,7 @@
 pub mod directories;
 pub mod files;
 pub mod macos;
+pub mod manual_sidecar;
 pub mod single_instance;
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum PlatformError {

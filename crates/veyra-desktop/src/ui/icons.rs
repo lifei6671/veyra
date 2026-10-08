@@ -34,6 +34,12 @@ pub fn icon(name: &str, size: f32) -> Icon {
         "Link" => include_bytes!("../../assets/heroicons/Link.svg"),
         "Share" => include_bytes!("../../assets/heroicons/Share.svg"),
         "ServerStack" => include_bytes!("../../assets/heroicons/ServerStack.svg"),
+        "CircleStack" => include_bytes!("../../assets/heroicons/CircleStack.svg"),
+        "ArrowTopRightOnSquare" => {
+            include_bytes!("../../assets/heroicons/ArrowTopRightOnSquare.svg")
+        }
+        "ArrowDownTray" => include_bytes!("../../assets/heroicons/ArrowDownTray.svg"),
+        "Github" => include_bytes!("../../assets/heroicons/Github.svg"),
         "CpuChip" => include_bytes!("../../assets/heroicons/CpuChip.svg"),
         "ArrowUpTray" => include_bytes!("../../assets/heroicons/ArrowUpTray.svg"),
         "AdjustmentsHorizontal" => {

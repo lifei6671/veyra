@@ -4,6 +4,11 @@ use gpui_kit::{
     *,
 };
 use veyra_core::domain::{DesktopThemeMode, DesktopVisualPreferences};
+// font-kit按CoreText normalized trait反算的face权重；对应官方CSS 400/500/600。
+// 4.009 Regular=-.161、Medium=-.046、Semibold=.22；直接请求600会误选Bold。
+pub const MISANS_REGULAR: FontWeight = FontWeight(330.);
+pub const MISANS_MEDIUM: FontWeight = FontWeight(380.);
+pub const MISANS_SEMIBOLD: FontWeight = FontWeight(520.);
 #[derive(Clone, Copy)]
 pub struct Palette {
     pub window: u32,
@@ -82,6 +87,7 @@ pub fn apply(
     );
     let p = Palette::new(dark, panel);
     Theme::update(cx, |t| {
+        t.font_family = "MiSans".into();
         t.font_size = px(super::tokens::BODY);
         t.radius = px(super::tokens::RADIUS);
         t.radius_lg = px(prefs.global_radius as f32);

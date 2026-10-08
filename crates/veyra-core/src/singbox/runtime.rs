@@ -15,6 +15,13 @@ use super::{GeneratedConfig, clash_api::ClashRuntimeObservation};
 #[error("sidecar port operation failed")]
 pub struct SidecarPortError;
 
+/// 同一个受管 child 确认的动态端点；不属于业务配置。
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct ManagedRuntimeEndpoints {
+    pub mixed: std::net::SocketAddr,
+    pub controller: std::net::SocketAddr,
+}
+
 /// 仅由 [`SidecarPort::run`] 产生的受管实例身份。
 ///
 /// 其值不包含 PID，调用方不能构造任意待停止的进程身份。
@@ -39,6 +46,13 @@ impl ManagedSidecar {
 /// 实现负责把这组语义映射到应用拥有的目录、已验证的 sidecar 身份以及固定参数；
 /// Runtime 不提供执行任意命令、访问任意路径或停止任意 PID 的入口。
 pub trait SidecarPort {
+    /// ready 完成后才能取得；历史 ObservationOnly Port 无 mixed。
+    fn endpoints(&self, _instance: &ManagedSidecar) -> Option<ManagedRuntimeEndpoints> {
+        None
+    }
+    fn is_alive(&mut self, _instance: &ManagedSidecar) -> Result<bool, SidecarPortError> {
+        Err(SidecarPortError)
+    }
     fn check(&mut self, candidate: &GeneratedConfig) -> Result<(), SidecarPortError>;
     fn prepare(&mut self, candidate: &GeneratedConfig) -> Result<(), SidecarPortError>;
     fn run(&mut self) -> Result<ManagedSidecar, SidecarPortError>;
@@ -113,6 +127,8 @@ struct ConfigSlots {
 pub struct SidecarRuntime<P> {
     port: P,
     mixed_port: Option<NonZeroU16>,
+    endpoints: Option<ManagedRuntimeEndpoints>,
+    dynamic: bool,
     configs: ConfigSlots,
     child: Option<ManagedSidecar>,
     recovery_required: bool,
@@ -127,6 +143,8 @@ where
         Self {
             port,
             mixed_port: Some(mixed_port),
+            endpoints: None,
+            dynamic: false,
             configs: ConfigSlots::default(),
             child: None,
             recovery_required: false,
@@ -138,12 +156,39 @@ where
         Self {
             port,
             mixed_port: None,
+            endpoints: None,
+            dynamic: false,
             configs: ConfigSlots::default(),
             child: None,
             recovery_required: false,
         }
     }
 
+    /// 正式产品端口必须由 ready 后的当前 child 提供，构造期没有预选端口。
+    pub fn new_dynamic(port: P) -> Self {
+        let mut runtime = Self::new_observation_only(port);
+        runtime.dynamic = true;
+        runtime
+    }
+    pub fn endpoints(&self) -> Option<ManagedRuntimeEndpoints> {
+        (self.snapshot().lifecycle == SidecarLifecycle::Ready)
+            .then_some(self.endpoints)
+            .flatten()
+    }
+    pub fn active_identity(&self) -> Option<u64> {
+        self.child.as_ref().map(ManagedSidecar::identity)
+    }
+    pub fn refresh_alive(&mut self) -> Result<bool, SidecarError> {
+        let Some(child) = self.child.clone() else {
+            return Ok(false);
+        };
+        if self.port.is_alive(&child).unwrap_or(false) {
+            return Ok(true);
+        }
+        self.endpoints = None;
+        self.stop()?;
+        Ok(false)
+    }
     pub fn snapshot(&self) -> SidecarSnapshot {
         let lifecycle = if self.recovery_required {
             SidecarLifecycle::RecoveryRequired
@@ -162,7 +207,11 @@ where
     /// 仅在 sidecar 已通过 Ready 判据后暴露固定 loopback mixed port。
     pub fn mixed_port(&self) -> Option<NonZeroU16> {
         (self.snapshot().lifecycle == SidecarLifecycle::Ready)
-            .then_some(self.mixed_port)
+            .then_some(
+                self.endpoints
+                    .and_then(|e| NonZeroU16::new(e.mixed.port()))
+                    .or(self.mixed_port),
+            )
             .flatten()
     }
 
@@ -215,6 +264,7 @@ where
             }
             self.child = None;
         }
+        self.endpoints = None;
         self.configs.active = None;
         let candidate_child = match self.port.run() {
             Ok(child) => child,
@@ -224,7 +274,9 @@ where
                 return Err(SidecarError::CandidateStart);
             }
         };
-        if self.port.ready(&candidate_child).is_err() {
+        if self.port.ready(&candidate_child).is_err()
+            || (self.dynamic && self.port.endpoints(&candidate_child).is_none())
+        {
             self.configs.candidate = None;
             if self.port.stop(&candidate_child).is_err() {
                 self.child = Some(candidate_child);
@@ -233,6 +285,7 @@ where
             }
             return Err(SidecarError::CandidateReady);
         }
+        self.endpoints = self.port.endpoints(&candidate_child);
         self.child = Some(candidate_child);
         self.configs.active = self.configs.candidate.take();
         self.recovery_required = false;
@@ -251,6 +304,7 @@ where
 
     /// 只停止已拥有的 child 与 pending；未确认清理时保留归属供手动 Stop。
     pub fn stop(&mut self) -> Result<(), SidecarError> {
+        self.endpoints = None;
         if let Some(child) = self.child.as_ref() {
             if self.port.stop(child).is_err() {
                 self.recovery_required = true;

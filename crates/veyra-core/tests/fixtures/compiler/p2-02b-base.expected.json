@@ -1,6 +1,7 @@
 {
   "log": {
-    "disabled": true
+    "disabled": false,
+    "level": "info"
   },
   "dns": {
     "strategy": "ipv4_only",
@@ -8,7 +9,6 @@
       {
         "server": "1.1.1.1",
         "server_port": 53,
-        "detour": "direct",
         "type": "udp",
         "tag": "dns-direct"
       }

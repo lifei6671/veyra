@@ -1,10 +1,12 @@
 mod app;
 mod application_icon;
+mod backend_profile;
 mod behavior_preferences;
 mod desktop_lifecycle;
 mod navigation;
 mod platform;
 mod preferences;
+mod runtime_service;
 mod services;
 mod state_bridge;
 mod subscriptions;
@@ -54,6 +56,23 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let quit_owner = ownership.clone();
     gpui_kit::application().with_assets(Assets).run(move |cx| {
         gpui_kit::init(cx);
+        // 官方4.009静态字重与VF同源；GPUI当前只匹配face，不展开VF的wght轴。
+        cx.text_system()
+            .add_fonts(vec![
+                std::borrow::Cow::Borrowed(
+                    include_bytes!("../assets/fonts/MiSans-Regular.ttf").as_slice(),
+                ),
+                std::borrow::Cow::Borrowed(
+                    include_bytes!("../assets/fonts/MiSans-Medium.ttf").as_slice(),
+                ),
+                std::borrow::Cow::Borrowed(
+                    include_bytes!("../assets/fonts/MiSans-Semibold.ttf").as_slice(),
+                ),
+                std::borrow::Cow::Borrowed(
+                    include_bytes!("../assets/fonts/MiSans-Bold.ttf").as_slice(),
+                ),
+            ])
+            .expect("load embedded MiSans 4.009 weights");
         cx.set_global(ui::i18n::Locale::default());
         platform::macos::set_application_icon();
         let (tray, mut tray_events) = tray::DesktopTray::new().expect("desktop tray");

@@ -404,7 +404,7 @@ fn p202b_split_dns_uses_profile_paths_bootstrap_and_site_order() {
     let d = document(&s);
     assert_eq!(
         d["dns"]["servers"],
-        json!([{"type":"udp","tag":"dns-direct","server":"127.0.0.1","server_port":53,"detour":"direct"},{"type":"udp","tag":"dns-proxy-pool-auto","server":"::1","server_port":53,"detour":"pool-auto"},{"type":"udp","tag":"dns-proxy","server":"::1","server_port":53,"detour":"pool-manual"}])
+        json!([{"type":"udp","tag":"dns-direct","server":"127.0.0.1","server_port":53},{"type":"udp","tag":"dns-proxy-pool-auto","server":"::1","server_port":53,"detour":"pool-auto"},{"type":"udp","tag":"dns-proxy","server":"::1","server_port":53,"detour":"pool-manual"}])
     );
     assert_eq!(d["dns"]["rules"][0]["server"], "dns-direct");
     assert_eq!(d["dns"]["rules"][2]["server"], "dns-proxy-pool-auto");

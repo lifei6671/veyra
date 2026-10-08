@@ -14,3 +14,5 @@ pub mod background;
 pub mod i18n;
 
 pub mod subscriptions;
+
+pub mod backend;
