@@ -13,6 +13,7 @@ pub struct PageView {
     pub alternate: bool,
     pub panel: Option<Entity<super::panel::PanelView>>,
     pub behavior: Option<Entity<super::behavior_panel::BehaviorPanel>>,
+    pub subscriptions: Option<Entity<super::subscriptions::SubscriptionsView>>,
     behavior_open: bool,
     settings_scroll: ScrollHandle,
 }
@@ -24,6 +25,7 @@ impl PageView {
             alternate: false,
             panel: None,
             behavior: None,
+            subscriptions: None,
             behavior_open: false,
             settings_scroll: ScrollHandle::new(),
             input: cx.new(|cx| {
@@ -58,13 +60,14 @@ impl Render for PageView {
                 div()
                     .flex()
                     .h(px(crate::ui::tokens::SETTINGS_NAV_HEIGHT))
-                    .bg(rgba(
-                        (super::theme::Palette::new(dark, true).surface << 8) | 0xbf,
-                    ))
+                    .bg(rgb(super::theme::Palette::new(dark, true).surface)
+                        .opacity(crate::ui::tokens::PANEL_TOOLBAR_ALPHA))
                     .flex_shrink_0()
                     .p(px(super::tokens::GAP))
+                    .gap(px(super::tokens::GAP))
                     .child(
                         div()
+                            .flex_1()
                             .id("settings-nav-scroll")
                             .flex()
                             .min_w_0()
@@ -93,13 +96,40 @@ impl Render for PageView {
                                     )
                                     .on_click(cx.listener(
                                         move |this, _, _, cx| {
+                                            if let Some(subscriptions) = &this.subscriptions {
+                                                subscriptions.update(cx, |view, cx| {
+                                                    view.set_visible(
+                                                        category == Category::Subscriptions,
+                                                        cx,
+                                                    )
+                                                });
+                                            }
                                             this.category = category;
                                             cx.notify();
                                         },
                                     ))
                                 },
                             )),
-                    ),
+                    )
+                    .when(self.category == Category::Subscriptions, |d| {
+                        d.child(
+                            super::components::icon_button(
+                                "subscription-header-add",
+                                crate::ui::i18n::tr(cx, "添加订阅或节点"),
+                                "Plus",
+                                super::tokens::CONTROL,
+                            )
+                            .primary()
+                            .with_tooltip(crate::ui::i18n::tr(cx, "添加订阅或节点"))
+                            .on_click(cx.listener(
+                                |this, _, window, cx| {
+                                    if let Some(view) = &this.subscriptions {
+                                        view.update(cx, |view, cx| view.open_add(window, cx));
+                                    }
+                                },
+                            )),
+                        )
+                    }),
             );
             if self.category == Category::Panel && !super::components::evidence_visible() {
                 let mut panel_content = div()
@@ -151,6 +181,17 @@ impl Render for PageView {
                     }
                 } else if let Some(panel) = &self.panel {
                     content = content.child(panel.clone());
+                }
+            } else if self.category == Category::Subscriptions {
+                if let Some(subscriptions) = &self.subscriptions {
+                    content = content.child(
+                        div()
+                            .id("subscriptions-content")
+                            .flex_1()
+                            .min_h_0()
+                            .p(px(super::tokens::GAP))
+                            .child(subscriptions.clone()),
+                    );
                 }
             } else {
                 if !super::components::evidence_visible() {

@@ -21,6 +21,7 @@ thread_local! {
 
 pub struct AppServices {
     pub snapshots: Arc<SnapshotService>,
+    pub subscriptions: Arc<veyra_core::application::subscription_management::SubscriptionManager>,
     // Composition only: P1-03 has no profile or selection write UI.
     pub _profiles: Arc<ProfileService>,
     pub _selections: Arc<SelectionService>,
@@ -30,6 +31,13 @@ pub struct AppServices {
     gate: StateAccessGate,
     runtime: Runtime,
     sender: UnboundedSender<AppEvent>,
+}
+impl Drop for AppServices {
+    fn drop(&mut self) {
+        // Runtime 销毁会等待 blocking worker；先消费 Core 已有关闭信号取消下载，
+        // 避免退出线程等待完整网络 timeout。普通窗口隐藏不销毁 AppServices。
+        self.subscriptions.request_closing();
+    }
 }
 impl AppServices {
     pub fn new(
@@ -45,7 +53,14 @@ impl AppServices {
         #[cfg(test)]
         WRITERS_CREATED.set(WRITERS_CREATED.get() + 1);
         let (sender, receiver) = unbounded_channel();
+        let subscriptions = Arc::new(
+            veyra_core::application::subscription_management::SubscriptionManager::new(
+                root.join("state.json"),
+                gate.clone(),
+            )?,
+        );
         let services = Self {
+            subscriptions,
             _profiles: Arc::new(ProfileService::new(snapshots.clone())),
             _selections: Arc::new(SelectionService::new(snapshots.clone())),
             preferences: Arc::new(DesktopPreferencesService::new(snapshots.clone())),
@@ -58,12 +73,79 @@ impl AppServices {
             runtime: Builder::new_multi_thread()
                 .worker_threads(2)
                 .max_blocking_threads(1)
-                .enable_time()
+                .enable_all()
                 .build()?,
             sender,
         };
         Ok((services, receiver))
     }
+    pub fn subscription_command(
+        &self,
+        request: crate::subscriptions::Request,
+        command: crate::subscriptions::Command,
+    ) {
+        let manager = self.subscriptions.clone();
+        let snapshots = self.snapshots.clone();
+        let sender = self.sender.clone();
+        let handle = self.runtime.handle().clone();
+        // 包含网络 await、parse 与磁盘 commit 的整段操作在服务 blocking worker 上执行，
+        // 既不阻塞 GPUI，也不在 Tokio reactor 执行同步解析/存储。
+        self.runtime.spawn_blocking(move || {
+            use crate::subscriptions::{Command, Completion};
+            use veyra_core::application::subscription_management::SubscriptionOperationError as Error;
+            let result = handle.block_on(async {
+                match command {
+                    Command::Load => snapshots.snapshot()
+                        .map(|state| Completion::Loaded(Box::new(state)))
+                        .map_err(|_| Error::StateUnavailable),
+                    #[cfg(test)]
+                    Command::Preview(input) => manager.preview(&input).await.map(Completion::Preview),
+                    Command::SaveDraft(input) => {
+                        let preview = manager.preview(&input).await?;
+                        if preview.expected != request.expected { return Err(Error::Busy); }
+                        let saved = manager.save_preview(input, &preview).await?;
+                        if saved.subscriptions.is_empty() { return Ok(Completion::SaveRejected(saved)); }
+                        let state = snapshots.snapshot().map_err(|_| Error::StateUnavailable)?;
+                        Ok(Completion::Mutation { state: Box::new(state), saved: Some(saved) })
+                    }
+                    #[cfg(test)]
+                    Command::Save(input, preview) => {
+                        if preview.expected != request.expected { return Err(Error::Busy); }
+                        let saved = manager.save_preview(input, &preview).await?;
+                        if saved.subscriptions.is_empty() { return Ok(Completion::SaveRejected(saved)); }
+                        let state = snapshots.snapshot().map_err(|_| Error::StateUnavailable)?;
+                        Ok(Completion::Mutation { state: Box::new(state), saved: Some(saved) })
+                    }
+                    command => {
+                        let expected = request.expected.clone().ok_or(Error::StateUnavailable)?;
+                        let saved = match command {
+
+                            Command::Edit(input, content) => {
+                                manager.edit_direct_with_content(input, content, expected).await?;
+                                None
+                            }
+                            Command::Refresh { id, content } => {
+                                manager.refresh_direct(id, content, expected).await?;
+                                None
+                            }
+                            // 尚无 Runtime owner；绝不把未知活动状态冒充“已停止”。
+                            Command::Delete(id) => {
+                                manager.delete_at_version(id, false, expected)?;
+                                None
+                            }
+                            Command::Load | Command::SaveDraft(_) => unreachable!(),
+                            #[cfg(test)]
+                            Command::Preview(_) | Command::Save(_,_) => unreachable!(),
+                        };
+                        let state = snapshots.snapshot().map_err(|_| Error::StateUnavailable)?;
+                        Ok(Completion::Mutation { state: Box::new(state), saved })
+                    }
+                }
+            });
+            let _ = sender.send(AppEvent::Subscriptions { request, result });
+        });
+    }
+
     pub fn save_behavior(&self, request: crate::behavior_preferences::BehaviorSave) {
         let preferences = self.preferences.clone();
         let sender = self.sender.clone();
@@ -474,6 +556,253 @@ mod behavior_integration_tests {
         let (restarted, _) = AppServices::new(root.clone()).unwrap();
         assert_eq!(restarted.snapshots.snapshot().unwrap(), saved);
         drop(restarted);
+        std::fs::remove_dir_all(root).unwrap();
+    }
+    // 真实 AppServices/channel：只用隔离 JSON 和 pasted fixture，保护 UI busy/error/retry/保存投影。
+    #[test]
+    fn subscriptions_bridge_preview_save_edit_refresh_delete_and_stale() {
+        use crate::subscriptions::{Command, Completion, Model, Status};
+        use veyra_core::application::subscription_management::{
+            EditSubscription, SubscriptionOperationError as Error,
+            preview::{PreviewInput, PreviewSource},
+        };
+        let root = std::env::temp_dir().join(format!(
+            "veyra-p201-bridge-{:?}",
+            veyra_core::domain::StateEpoch::fresh().unwrap()
+        ));
+        std::fs::create_dir_all(&root).unwrap();
+        let (services, mut rx) = AppServices::new(root.clone()).unwrap();
+        let receive = |rx: &mut tokio::sync::mpsc::UnboundedReceiver<AppEvent>| {
+            services.runtime.block_on(async {
+                tokio::time::timeout(std::time::Duration::from_secs(5), rx.recv())
+                    .await
+                    .unwrap()
+                    .unwrap()
+            })
+        };
+        let mut model = Model::default();
+        assert_eq!(model.status, Status::Empty);
+        let input = PreviewInput {
+            name: "Fixture".into(),
+            description: String::new(),
+            sources: vec![PreviewSource::Pasted("socks5://127.0.0.1:1080#one".into())],
+        };
+        let old = model.begin();
+        services.subscription_command(old.clone(), Command::Preview(input.clone()));
+        model.invalidate();
+        let request = model.begin();
+        services.subscription_command(request, Command::Preview(input.clone()));
+        assert!(model.busy());
+        let AppEvent::Subscriptions { request, result } = receive(&mut rx) else {
+            panic!("subscription event")
+        };
+        assert_eq!(request, old);
+        model.complete(&request, result);
+        assert!(model.busy());
+        let AppEvent::Subscriptions { request, result } = receive(&mut rx) else {
+            panic!("subscription event")
+        };
+        model.complete(&request, result);
+        assert_eq!(model.status, Status::Preview);
+        assert!(
+            !root.join("state.json").exists(),
+            "preview must not initialize storage"
+        );
+        let receipt = model.preview.clone().unwrap();
+        let request = model.begin();
+        services.subscription_command(request, Command::Save(input, receipt));
+        let AppEvent::Subscriptions { request, result } = receive(&mut rx) else {
+            panic!("subscription event")
+        };
+        let state = model.complete(&request, result).unwrap();
+        assert_eq!(model.status, Status::Saved);
+        assert_eq!(model.list.len(), 1);
+        assert_eq!(services.snapshots.snapshot().unwrap(), *state);
+        let id = model.list[0].id.clone();
+        let request = model.begin();
+        services.subscription_command(
+            request,
+            Command::Edit(
+                EditSubscription {
+                    id: id.clone(),
+                    name: Some("Edited".into()),
+                    description: Some("Manual metadata".into()),
+                    url_replacement: None,
+                    remote_request: None,
+                    update_policy: None,
+                },
+                None,
+            ),
+        );
+        let AppEvent::Subscriptions { request, result } = receive(&mut rx) else {
+            panic!("subscription event")
+        };
+        model.complete(&request, result);
+        assert_eq!(model.list[0].name, "Edited");
+        let request = model.begin();
+        services.subscription_command(
+            request,
+            Command::Refresh {
+                id: id.clone(),
+                content: Some("invalid".into()),
+            },
+        );
+        let AppEvent::Subscriptions { request, result } = receive(&mut rx) else {
+            panic!("subscription event")
+        };
+        model.complete(&request, result);
+        assert_eq!(model.status, Status::Error(Error::ParseFailed));
+        let request = model.begin();
+        services.subscription_command(
+            request,
+            Command::Refresh {
+                id: id.clone(),
+                content: Some("socks5://127.0.0.1:1080#renamed".into()),
+            },
+        );
+        let AppEvent::Subscriptions { request, result } = receive(&mut rx) else {
+            panic!("subscription event")
+        };
+        model.complete(&request, result);
+        assert_eq!(model.status, Status::Saved);
+        let request = model.begin();
+        services.subscription_command(request, Command::Delete(id));
+        let AppEvent::Subscriptions { request, result } = receive(&mut rx) else {
+            panic!("subscription event")
+        };
+        model.complete(&request, result);
+        assert_eq!(model.status, Status::Saved);
+        assert!(model.list.is_empty());
+        let request = model.begin();
+        services.subscription_command(request, Command::Load);
+        let AppEvent::Subscriptions { request, result } = receive(&mut rx) else {
+            panic!("subscription event")
+        };
+        assert!(matches!(result, Ok(Completion::Loaded(_))));
+        model.complete(&request, result);
+        assert_eq!(model.status, Status::Empty);
+        drop(services);
+        std::fs::remove_dir_all(root).unwrap();
+    }
+    // Host删除GUI预览区后，保护一次Save完成校验/原子保存及旧版本拒绝，不假保存失败来源。
+    #[test]
+    fn subscription_save_draft_is_one_operation_and_preserves_version_gate() {
+        use crate::subscriptions::{Command, Completion, Model, Status};
+        use veyra_core::application::subscription_management::{
+            SubscriptionOperationError as Error,
+            preview::{PreviewInput, PreviewSource},
+        };
+        let root = std::env::temp_dir().join(format!(
+            "veyra-save-draft-{:?}",
+            veyra_core::domain::StateEpoch::fresh().unwrap()
+        ));
+        std::fs::create_dir_all(&root).unwrap();
+        let (services, mut rx) = AppServices::new(root.clone()).unwrap();
+        let receive = |rx: &mut tokio::sync::mpsc::UnboundedReceiver<AppEvent>| {
+            services.runtime.block_on(async {
+                tokio::time::timeout(std::time::Duration::from_secs(5), rx.recv())
+                    .await
+                    .unwrap()
+                    .unwrap()
+            })
+        };
+        let input = |content: &str| PreviewInput {
+            name: "One click".into(),
+            description: "Description".into(),
+            sources: vec![PreviewSource::Pasted(content.into())],
+        };
+        let mut model = Model::default();
+        services.subscription_command(model.begin(), Command::SaveDraft(input("invalid")));
+        let AppEvent::Subscriptions { request, result } = receive(&mut rx) else {
+            panic!("subscription event")
+        };
+        assert!(matches!(&result, Ok(Completion::SaveRejected(_))));
+        model.complete(&request, result);
+        assert!(!root.join("state.json").exists());
+        let stale = model.begin();
+        let current = model.begin();
+        services.subscription_command(
+            current,
+            Command::SaveDraft(input("socks5://127.0.0.1:1080#one")),
+        );
+        let AppEvent::Subscriptions { request, result } = receive(&mut rx) else {
+            panic!("subscription event")
+        };
+        let state = model.complete(&request, result).unwrap();
+        assert_eq!(model.status, Status::Saved);
+        assert_eq!(model.list.len(), 1);
+        assert_eq!(state.config_revision, 1);
+        let bytes = std::fs::read(root.join("state.json")).unwrap();
+        services.subscription_command(
+            stale,
+            Command::SaveDraft(input("socks5://127.0.0.1:1081#two")),
+        );
+        let AppEvent::Subscriptions { result, .. } = receive(&mut rx) else {
+            panic!("subscription event")
+        };
+        assert!(matches!(result, Err(Error::Busy)));
+        assert_eq!(std::fs::read(root.join("state.json")).unwrap(), bytes);
+        drop(services);
+        let (restarted, _) = AppServices::new(root.clone()).unwrap();
+        assert_eq!(restarted.snapshots.snapshot().unwrap(), *state);
+        drop(restarted);
+        std::fs::remove_dir_all(root).unwrap();
+    }
+    // 保护退出时取消正在读取的下载：复用既有 closing watch，而非 UI 等网络预算结束。
+    #[test]
+    fn subscriptions_service_drop_cancels_stalled_download_without_initializing_state() {
+        use crate::subscriptions::{Command, Model};
+        use std::{
+            io::{Read, Write},
+            net::TcpListener,
+            time::{Duration, Instant},
+        };
+        use veyra_core::application::subscription_management::preview::{
+            PreviewInput, PreviewSource,
+        };
+        let root = std::env::temp_dir().join(format!(
+            "veyra-p201-cancel-{:?}",
+            veyra_core::domain::StateEpoch::fresh().unwrap()
+        ));
+        std::fs::create_dir_all(&root).unwrap();
+        let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+        let url = format!("http://{}/source", listener.local_addr().unwrap());
+        let (started_tx, started_rx) = std::sync::mpsc::channel();
+        let (release_tx, release_rx) = std::sync::mpsc::channel();
+        let server = std::thread::spawn(move || {
+            let (mut stream, _) = listener.accept().unwrap();
+            stream
+                .set_read_timeout(Some(Duration::from_secs(5)))
+                .unwrap();
+            let mut request = [0; 4096];
+            let count = stream.read(&mut request).unwrap();
+            assert!(count > 0);
+            stream
+                .write_all(b"HTTP/1.1 200 OK\r\nContent-Length: 100\r\nConnection: close\r\n\r\n")
+                .unwrap();
+            started_tx.send(()).unwrap();
+            let _ = release_rx.recv_timeout(Duration::from_secs(10));
+        });
+        let (services, _rx) = AppServices::new(root.clone()).unwrap();
+        let request = Model::default().begin();
+        services.subscription_command(
+            request,
+            Command::Preview(PreviewInput {
+                name: "Fixture".into(),
+                description: String::new(),
+                sources: vec![PreviewSource::Url(url)],
+            }),
+        );
+        started_rx.recv_timeout(Duration::from_secs(5)).unwrap();
+        let start = Instant::now();
+        drop(services);
+        assert!(
+            start.elapsed() < Duration::from_secs(3),
+            "shutdown must cancel instead of waiting for 30s download budget"
+        );
+        release_tx.send(()).unwrap();
+        server.join().unwrap();
+        assert!(!root.join("state.json").exists());
         std::fs::remove_dir_all(root).unwrap();
     }
 }

@@ -7,6 +7,7 @@ mod platform;
 mod preferences;
 mod services;
 mod state_bridge;
+mod subscriptions;
 mod tray;
 mod ui;
 mod visual_assets;

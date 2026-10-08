@@ -35,6 +35,20 @@ pub struct JsonStateStore {
 }
 
 impl JsonStateStore {
+    /// 预览只读版本，不触发迁移、恢复、备份或新 epoch；恢复仍由正常加载入口负责。
+    pub fn read_current_version(
+        &self,
+    ) -> Result<Option<crate::domain::ConfigVersion>, StateStoreError> {
+        if !self.has_snapshot_or_backup()? {
+            return Ok(None);
+        }
+        let (state, migrated) = self.decode(&read_snapshot(&self.state_file)?)?;
+        if migrated {
+            return Err(StateStoreError::InvalidStoredState);
+        }
+        Ok(Some(state.config_version()))
+    }
+
     pub fn new(state_file: PathBuf) -> Result<Self, StateStoreError> {
         if state_file.file_name().is_none() {
             return Err(StateStoreError::InvalidStatePath);

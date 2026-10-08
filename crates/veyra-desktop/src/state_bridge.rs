@@ -15,6 +15,13 @@ pub struct InstanceToken {
     pub generation: u64,
 }
 pub enum AppEvent {
+    Subscriptions {
+        request: crate::subscriptions::Request,
+        result: Result<
+            crate::subscriptions::Completion,
+            veyra_core::application::subscription_management::SubscriptionOperationError,
+        >,
+    },
     DefaultBackground {
         request: crate::ui::background::Request,
         bytes: Vec<u8>,
@@ -117,7 +124,8 @@ impl StateBridge {
     }
     pub fn receive(&mut self, event: AppEvent) -> Disposition {
         match event {
-            AppEvent::BehaviorSaved { .. }
+            AppEvent::Subscriptions { .. }
+            | AppEvent::BehaviorSaved { .. }
             | AppEvent::PlatformSaved { .. }
             | AppEvent::ExternalPreferenceWrite { .. }
             | AppEvent::VisualSaved { .. }

@@ -12,3 +12,5 @@ pub mod tokens;
 pub mod background;
 
 pub mod i18n;
+
+pub mod subscriptions;

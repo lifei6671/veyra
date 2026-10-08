@@ -91,7 +91,16 @@ impl Render for AppView {
         let lang = prefs.language;
         let radius = prefs.global_radius as f32;
         let p = Palette::new(self.dark, self.route == Route::Settings);
-        let surface_alpha = if self.dark && self.route != Route::Settings {
+        // 本机OpenBox无自定义背景时：base100 + base200/50，而非内置图片。
+        // Settings共用此背景，订阅页不能拥有另一套浅深色。
+        let panel_plain = self.route == Route::Settings
+            && matches!(
+                prefs.background,
+                veyra_core::domain::DesktopBackground::None
+            );
+        let surface_alpha = if panel_plain {
+            0xff
+        } else if self.dark && self.route != Route::Settings {
             0xf0
         } else {
             0xbf
@@ -127,10 +136,20 @@ impl Render for AppView {
             .text_color(rgb(p.text))
             .bg(rgb(p.window));
         // React 默认背景是随包资源；无用户背景时仍显示相同来源，避免纯白替代。
-        if matches!(
-            prefs.background,
-            veyra_core::domain::DesktopBackground::None
-        ) {
+        if panel_plain {
+            root = root.child(
+                div()
+                    .absolute()
+                    .size_full()
+                    .bg(rgb(p.sidebar).opacity(t::PANEL_BACKGROUND_TINT)),
+            );
+        }
+        if !panel_plain
+            && matches!(
+                prefs.background,
+                veyra_core::domain::DesktopBackground::None
+            )
+        {
             let size = window.viewport_size();
             if let Some(image) = self.default_background.ready() {
                 root = root.child(
@@ -165,7 +184,7 @@ impl Render for AppView {
                 }),
             );
         }
-        if self.dark && self.route == Route::Settings {
+        if self.dark && self.route == Route::Settings && !panel_plain {
             root = root.child(div().absolute().size_full().bg(rgba(0x000000a6)));
         }
         let sidebar = div()
@@ -176,7 +195,9 @@ impl Render for AppView {
             .flex_shrink_0()
             .h_full()
             .p(px(t::GAP))
-            .bg(rgba((p.sidebar << 8) | 0xbf))
+            .bg(rgba(
+                (p.sidebar << 8) | if panel_plain { 0xff } else { 0xbf },
+            ))
             .child(
                 div()
                     .flex()

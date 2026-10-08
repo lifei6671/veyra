@@ -21,6 +21,8 @@ pub struct AppView {
     pub route: Route,
     pub dark: bool,
     pub pages: Pages,
+    pub subscriptions: Entity<crate::ui::subscriptions::SubscriptionsView>,
+    _subscriptions: Subscription,
     pub bridge: StateBridge,
     pub services: Arc<AppServices>,
     pub behavior: crate::behavior_preferences::BehaviorCoordinator,
@@ -55,6 +57,18 @@ impl AppView {
     ) -> Self {
         let notice_center = crate::ui::components::notice::NoticeCenter::mount(cx);
         let pages = Pages::new(window, cx);
+        let subscriptions =
+            cx.new(|cx| crate::ui::subscriptions::SubscriptionsView::new(window, cx));
+        pages.get(Route::Settings).update(cx, |page, _| {
+            page.subscriptions = Some(subscriptions.clone())
+        });
+        let subscriptions_listener = cx.subscribe(
+            &subscriptions,
+            |this, _, event: &crate::ui::subscriptions::SubscriptionsEvent, _| {
+                this.services
+                    .subscription_command(event.request.clone(), event.command.clone());
+            },
+        );
         let panel = cx.new(|cx| crate::ui::panel::PanelView::new(window, cx));
         pages
             .get(Route::Settings)
@@ -185,6 +199,8 @@ impl AppView {
             route: Route::Overview,
             dark: false,
             pages,
+            subscriptions,
+            _subscriptions: subscriptions_listener,
             bridge: StateBridge::default(),
             services,
             behavior: Default::default(),
@@ -410,6 +426,17 @@ impl AppView {
     fn receive_event(&mut self, event: AppEvent, window: &mut Window, cx: &mut Context<Self>) {
         use crate::ui::components::{Notice, notify};
         match event {
+            AppEvent::Subscriptions { request, result } => {
+                let state = self
+                    .subscriptions
+                    .update(cx, |view, cx| view.complete(&request, result, window, cx));
+                if let Some(state) = state {
+                    self.bridge.leave_page();
+                    self.behavior.rebase(&state);
+                    self.bridge.snapshot = Some(state);
+                    self.project_behavior(window, cx);
+                }
+            }
             AppEvent::DefaultBackground { request, bytes } => {
                 let accepted = self.default_background.complete(request, bytes);
                 eprintln!(
@@ -578,6 +605,10 @@ impl AppView {
                 self.request_default_background(window);
             }
         }
+        if let Some(state) = &self.bridge.snapshot {
+            self.subscriptions
+                .update(cx, |view, cx| view.project(state, cx));
+        }
         // 当前 composition root 未绑定 P2 Runtime owner，不从偏好或配置推断运行状态。
         self.tray.project(self.bridge.snapshot.as_deref(), None);
     }
@@ -591,6 +622,11 @@ impl AppView {
             return;
         }
         self.bridge.leave_page();
+        let visible = route == Route::Settings
+            && self.pages.get(Route::Settings).read(cx).category
+                == crate::navigation::Category::Subscriptions;
+        self.subscriptions
+            .update(cx, |view, cx| view.set_visible(visible, cx));
         self.route = route;
         // The shell viewport is shared; a long Settings page must not leave
         // the next page's heading above the viewport.

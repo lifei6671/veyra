@@ -16,8 +16,15 @@ pub struct PanelInput {
     style: StyleRefinement,
     number: bool,
     focus_style: Option<(Hsla, f32)>,
+    border_focus: bool,
+    disabled: bool,
 }
 impl PanelInput {
+    /// subscription-source-form 用 1px accent border，而不是浏览器按钮 outline。
+    pub fn border_focus(mut self) -> Self {
+        self.border_focus = true;
+        self
+    }
     // 当前图标搜索框有 CSS 局部 focus 颜色/offset，输入语义仍由 Kit 管理。
     pub fn focus_style(mut self, color: Hsla, offset: f32) -> Self {
         self.focus_style = Some((color, offset));
@@ -34,6 +41,12 @@ impl PanelInput {
     }
     pub fn numeric(mut self) -> Self {
         self.number = true;
+        self
+    }
+}
+impl Disableable for PanelInput {
+    fn disabled(mut self, disabled: bool) -> Self {
+        self.disabled = disabled;
         self
     }
 }
@@ -54,8 +67,10 @@ impl RenderOnce for PanelInput {
             .relative()
             .h(px(t::CONTROL))
             .refine_style(&layout)
+            .when(self.border_focus, |d| d.rounded(px(t::RADIUS)))
             .child(Styled::h(
                 Input::new(&self.state)
+                    .disabled(self.disabled)
                     .focus_bordered(false)
                     .rounded(px(t::RADIUS))
                     .border_color(cx.theme().border)
@@ -63,11 +78,11 @@ impl RenderOnce for PanelInput {
                     .px(px(t::PAD))
                     .py(px(t::ROW_GAP))
                     .text_size(px(t::BODY))
-                    .line_height(px(t::BODY_LINE))
-                    .refine_style(&self.style),
+                    .line_height(px(t::BODY_LINE)),
                 px(t::CONTROL),
-            ))
-            .when(focused, |d| {
+            ).refine_style(&self.style)
+             .when(focused && self.border_focus, |i| i.border_color(rgb(t::ACCENT))))
+            .when(focused && !self.border_focus, |d| {
                 let (color, offset) = self.focus_style.unwrap_or((rgb(t::browser_focus(cx.theme().mode.is_dark())).into(), t::INPUT_FOCUS_OFFSET));
                 d.child(focus_outline(t::browser_focus(cx.theme().mode.is_dark()), t::RADIUS, offset).border_color(color))
             })
@@ -160,6 +175,8 @@ pub fn text_input(state: &Entity<InputState>) -> PanelInput {
         style: StyleRefinement::default(),
         number: false,
         focus_style: None,
+        border_focus: false,
+        disabled: false,
     }
 }
 pub mod select;
@@ -257,6 +274,8 @@ pub struct PanelButton {
     id: &'static str,
     radius: f32,
     disabled: bool,
+    reference_hover: Option<[Hsla; 3]>,
+    reference_focus: Option<Hsla>,
 }
 impl Styled for PanelButton {
     fn style(&mut self) -> &mut StyleRefinement {
@@ -269,6 +288,17 @@ impl ParentElement for PanelButton {
     }
 }
 impl PanelButton {
+    /// 原版 btn 的颜色过渡；仅明确指定参考颜色的调用方启用。
+    pub fn reference_hover(mut self, normal: Hsla, hover: Hsla, foreground: Hsla) -> Self {
+        self.reference_hover = Some([normal, hover, foreground]);
+        self.reference_focus = Some(foreground);
+        self
+    }
+    /// OpenBox .btn:focus-visible 的颜色；primary按钮使用primary而非其文字色。
+    pub fn reference_focus(mut self, color: Hsla) -> Self {
+        self.reference_focus = Some(color);
+        self
+    }
     pub fn on_click(
         mut self,
         handler: impl Fn(&ClickEvent, &mut Window, &mut App) + 'static,
@@ -303,9 +333,44 @@ impl ButtonVariants for PanelButton {
     }
 }
 impl RenderOnce for PanelButton {
-    fn render(self, window: &mut Window, cx: &mut App) -> impl IntoElement {
+    fn render(mut self, window: &mut Window, cx: &mut App) -> impl IntoElement {
         // 与 Kit Button 在同一父元素 scope 读取它的稳定焦点 id；放入 child 后
         // scope 已进入 Button/content，会读到另一个 handle 且被 overflow 裁切。
+        if let Some([normal, hover, foreground]) = self.reference_hover {
+            let state = window.use_keyed_state(
+                (ElementId::from(self.id), "reference-hover"),
+                cx,
+                |_, _| false,
+            );
+            let hovered = !self.disabled && *state.read(cx);
+            let bg = gpui_kit::base::motion::transition(
+                (self.id, "reference-bg"),
+                if hovered { hover } else { normal },
+                reference_button_transition(),
+                window,
+                cx,
+            );
+            self.button = self
+                .button
+                .custom(
+                    ButtonCustomVariant::new(cx)
+                        .color(bg)
+                        .foreground(foreground)
+                        .hover(bg)
+                        .active(bg)
+                        .shadow(false),
+                )
+                .bg(bg)
+                .text_color(foreground)
+                .when(!self.disabled, |b| {
+                    b.on_hover(move |hovered, _, cx| {
+                        state.update(cx, |state, cx| {
+                            *state = *hovered;
+                            cx.notify();
+                        })
+                    })
+                });
+        }
         let tooltip = self.tooltip;
         let button = RenderOnce::render(self.button, window, cx).into_any_element();
         let focus = window
@@ -329,29 +394,50 @@ impl RenderOnce for PanelButton {
             })
             .child(button)
             .when(focused, |d| {
-                d.child(focus_outline(
-                    super::tokens::browser_focus(cx.theme().mode.is_dark()),
-                    self.radius,
-                    0.,
-                ))
+                d.child(
+                    focus_outline(
+                        super::tokens::browser_focus(cx.theme().mode.is_dark()),
+                        self.radius,
+                        if self.reference_focus.is_some() {
+                            super::tokens::REFERENCE_BUTTON_FOCUS_OFFSET
+                        } else {
+                            0.
+                        },
+                    )
+                    .when_some(self.reference_focus, |outline, color| {
+                        outline.border_color(color)
+                    }),
+                )
             })
     }
 }
 pub fn button(id: &'static str, label: impl Into<SharedString>) -> PanelButton {
     use gpui_kit::component::FocusableExt as _;
+    let label = label.into();
     PanelButton {
         id,
         tooltip: None,
         radius: super::tokens::RADIUS,
         disabled: false,
+        reference_hover: None,
+        reference_focus: None,
         button: Button::new(id)
             .focus_ring(false)
-            .label(label)
+            // 空 label 不应成为 flex child；否则文字/图标内容会多出 Kit 的 gap。
+            .when(!label.is_empty(), |b| b.label(label))
             .border_0()
             .h(px(super::tokens::CONTROL))
             .rounded(px(super::tokens::RADIUS))
             .text_size(px(super::tokens::BODY)),
     }
+}
+fn reference_button_transition() -> gpui_kit::base::motion::Transition {
+    gpui_kit::base::motion::Transition::new(std::time::Duration::from_millis(
+        super::tokens::REFERENCE_BUTTON_TRANSITION_MS,
+    ))
+    .ease(gpui_kit::component::animation::cubic_bezier(
+        0., 0., 0.2, 1.,
+    ))
 }
 pub mod notice;
 pub use notice::{Notice, notify};
@@ -462,6 +548,8 @@ pub fn navigation_item(
         tooltip: None,
         button,
         disabled: false,
+        reference_hover: None,
+        reference_focus: None,
         radius: if category { t::RADIUS } else { t::NAV_RADIUS },
     }
 }
@@ -471,9 +559,8 @@ pub fn evidence_visible() -> bool {
     cfg!(debug_assertions) && std::env::var_os("VEYRA_UI_EVIDENCE").is_some()
 }
 
-/// 对应 React .surface.settings-block，页面只组合真实设置行。
-pub fn setting_section(title: impl IntoElement, dark: bool, radius: f32) -> Div {
-    use super::tokens as t;
+/// React .surface，Settings 与订阅卡共用相同主题/圆角，局部 padding 由组合层提供。
+pub fn surface(dark: bool, radius: Pixels) -> Div {
     let p = super::theme::Palette::new(dark, true);
     div()
         .flex()
@@ -481,10 +568,16 @@ pub fn setting_section(title: impl IntoElement, dark: bool, radius: f32) -> Div 
         .w_full()
         .min_w_0()
         .flex_shrink_0()
+        .rounded(radius)
+        .bg(rgba((p.surface << 8) | 0xbf))
+}
+
+/// 对应 React .surface.settings-block，页面只组合真实设置行。
+pub fn setting_section(title: impl IntoElement, dark: bool, radius: f32) -> Div {
+    use super::tokens as t;
+    surface(dark, px(radius))
         .gap(px(super::tokens::ROW_GAP))
         .p(px(t::SECTION_PADDING))
-        .rounded(px(radius))
-        .bg(rgba((p.surface << 8) | 0xbf))
         .child(section_heading(title).mb(px(t::ROW_GAP)))
 }
 pub fn section_heading(title: impl IntoElement) -> Div {
@@ -619,10 +712,33 @@ mod settings_layout_tests {
 pub struct IconButton {
     button: gpui_kit::base::Button,
     id: ElementId,
+    tooltip_text: Option<SharedString>,
+    disabled: bool,
+    primary: bool,
+    reference_ghost: Option<(Hsla, Hsla)>,
 }
 impl IconButton {
+    /// 复用 OpenBox btn-primary btn-square；禁用只阻断操作，不另加透明度改变参考颜色。
+    pub fn primary(mut self) -> Self {
+        self.primary = true;
+        self
+    }
+    /// 本机OpenBox btn-ghost：hover底色与focus边框，不改变disabled业务行为。
+    pub fn openbox_ghost(mut self, hover: Hsla, focus: Hsla) -> Self {
+        self.reference_ghost = Some((hover, focus));
+        self
+    }
+    pub fn with_tooltip(mut self, text: impl Into<SharedString>) -> Self {
+        self.tooltip_text = Some(text.into());
+        self
+    }
     pub fn tooltip(self, id: &'static str, text: &'static str) -> tooltip::TooltipButton {
-        tooltip::with_tooltip(self.button, id, text, false)
+        tooltip::with_tooltip(
+            self.button.hover(|s| s.bg(rgba(super::tokens::HOVER))),
+            id,
+            text,
+            false,
+        )
     }
     pub fn on_click(
         mut self,
@@ -632,28 +748,116 @@ impl IconButton {
         self
     }
 }
+impl Disableable for IconButton {
+    fn disabled(mut self, disabled: bool) -> Self {
+        self.disabled = disabled;
+        self.button = self.button.disabled(disabled);
+        self
+    }
+}
 impl Styled for IconButton {
     fn style(&mut self) -> &mut StyleRefinement {
         self.button.style()
     }
 }
 impl RenderOnce for IconButton {
-    fn render(self, window: &mut Window, cx: &mut App) -> impl IntoElement {
+    fn render(mut self, window: &mut Window, cx: &mut App) -> impl IntoElement {
+        let hover_state = window.use_keyed_state((self.id.clone(), "icon-hover"), cx, |_, _| false);
+        let hovered = !self.disabled && *hover_state.read(cx);
+        let normal_bg = if self.primary {
+            rgb(super::tokens::PRIMARY_BUTTON_BG).into()
+        } else {
+            self.button
+                .style()
+                .background
+                .as_ref()
+                .and_then(|fill| fill.color())
+                .and_then(|bg| bg.as_solid())
+                .unwrap_or_else(|| rgba(0).into())
+        };
+        let normal_fg = if self.primary {
+            rgb(super::tokens::PRIMARY_BUTTON_TEXT).into()
+        } else {
+            self.button
+                .style()
+                .text
+                .color
+                .unwrap_or(cx.theme().foreground)
+        };
+        let hover_bg: Hsla = if self.primary {
+            rgb(super::tokens::PRIMARY_BUTTON_HOVER).into()
+        } else {
+            self.reference_ghost
+                .map_or_else(|| rgba(super::tokens::HOVER).into(), |(hover, _)| hover)
+        };
+        let hover_fg = if self.primary || self.reference_ghost.is_some() {
+            normal_fg
+        } else {
+            cx.theme().foreground
+        };
+        let bg = gpui_kit::base::motion::transition(
+            (self.id.clone(), "icon-bg"),
+            if hovered { hover_bg } else { normal_bg },
+            reference_button_transition(),
+            window,
+            cx,
+        );
+        let fg = gpui_kit::base::motion::transition(
+            (self.id.clone(), "icon-fg"),
+            if hovered { hover_fg } else { normal_fg },
+            reference_button_transition(),
+            window,
+            cx,
+        );
         let focus = window
             .use_keyed_state((self.id, "icon-focus"), cx, ControlFocus::new)
             .read(cx)
             .handle
             .clone();
-        let focused = focus.is_focused(window) && window.last_input_was_keyboard();
+        let focused =
+            !self.disabled && focus.is_focused(window) && window.last_input_was_keyboard();
+        let radius = if self.primary {
+            super::tokens::PRIMARY_BUTTON_RADIUS
+        } else {
+            super::tokens::RADIUS
+        };
         self.button
+            .bg(bg)
+            .text_color(fg)
+            .when(self.primary, |b| b.rounded(px(radius)))
+            .when(!self.disabled, |b| {
+                b.on_hover(move |hovered, _, cx| {
+                    hover_state.update(cx, |state, cx| {
+                        *state = *hovered;
+                        cx.notify();
+                    })
+                })
+            })
+            .when_some(self.tooltip_text, |b, text| {
+                b.tooltip(move |_, cx| cx.new(|_| tooltip::TooltipContent(text.clone())).into())
+            })
             .track_focus(&focus)
-            .on_mouse_down(MouseButton::Left, move |_, w, cx| focus.focus(w, cx))
+            .when(!self.disabled, |b| {
+                b.on_mouse_down(MouseButton::Left, move |_, w, cx| focus.focus(w, cx))
+            })
             .when(focused, |b| {
-                b.child(focus_outline(
-                    super::tokens::browser_focus(cx.theme().mode.is_dark()),
-                    super::tokens::RADIUS,
-                    0.,
-                ))
+                b.child(
+                    focus_outline(
+                        super::tokens::browser_focus(cx.theme().mode.is_dark()),
+                        radius,
+                        if self.primary || self.reference_ghost.is_some() {
+                            super::tokens::REFERENCE_BUTTON_FOCUS_OFFSET
+                        } else {
+                            0.
+                        },
+                    )
+                    .when(self.primary, |outline| {
+                        outline.border_color(rgb(super::tokens::PRIMARY_BUTTON_BG))
+                    })
+                    .when_some(self.reference_ghost, |outline, (_, color)| {
+                        outline.border_color(color)
+                    }),
+                )
             })
     }
 }
@@ -663,16 +867,129 @@ pub fn icon_button(
     glyph: &'static str,
     size: f32,
 ) -> IconButton {
+    icon_button_content(
+        id,
+        label,
+        size,
+        super::icons::icon(glyph, super::tokens::ICON_SMALL),
+    )
+}
+/// 同一 IconButton 外壳复用真实图标/Refresh spinner，不另建页面按钮样式。
+pub fn icon_button_content(
+    id: impl Into<ElementId>,
+    label: impl Into<SharedString>,
+    size: f32,
+    content: impl IntoElement,
+) -> IconButton {
     let id = id.into();
     IconButton {
         id: id.clone(),
+        tooltip_text: None,
+        disabled: false,
+        primary: false,
+        reference_ghost: None,
         button: gpui_kit::base::Button::new(id)
-            .hover(|s| s.bg(rgba(super::tokens::HOVER)))
             .accessibility_label(label)
             .size(px(size))
             .p_0()
             .rounded(px(super::tokens::RADIUS))
-            .child(super::icons::icon(glyph, super::tokens::ICON_SMALL)),
+            .child(content),
+    }
+}
+
+/// ProxyOption 与 NodeHealthDots 复用参考 hover 时序；状态仅属于绘制，不进入业务模型。
+#[derive(IntoElement)]
+pub struct HoverSurface {
+    element: Stateful<Div>,
+    id: ElementId,
+    colors: Option<[Hsla; 4]>,
+    scale: Option<f32>,
+}
+impl HoverSurface {
+    pub fn new(id: impl Into<ElementId>) -> Self {
+        let id = id.into();
+        Self {
+            element: div().id(id.clone()),
+            id,
+            colors: None,
+            scale: None,
+        }
+    }
+    pub fn colors(mut self, normal: Hsla, hover: Hsla, border: Hsla, hover_border: Hsla) -> Self {
+        self.colors = Some([normal, hover, border, hover_border]);
+        self
+    }
+    pub fn scale(mut self, size: f32) -> Self {
+        self.scale = Some(size);
+        self
+    }
+    pub fn with_tooltip(mut self, text: impl Into<SharedString>) -> Self {
+        let text = text.into();
+        self.element = self
+            .element
+            .tooltip(move |_, cx| cx.new(|_| tooltip::TooltipContent(text.clone())).into());
+        self
+    }
+}
+impl Styled for HoverSurface {
+    fn style(&mut self) -> &mut StyleRefinement {
+        self.element.style()
+    }
+}
+impl ParentElement for HoverSurface {
+    fn extend(&mut self, children: impl IntoIterator<Item = AnyElement>) {
+        self.element.extend(children);
+    }
+}
+impl RenderOnce for HoverSurface {
+    fn render(mut self, window: &mut Window, cx: &mut App) -> impl IntoElement {
+        let state = window.use_keyed_state((self.id.clone(), "surface-hover"), cx, |_, _| false);
+        let hovered = *state.read(cx);
+        let policy = || {
+            gpui_kit::base::motion::Transition::new(std::time::Duration::from_millis(
+                super::tokens::SUBSCRIPTION_HOVER_TRANSITION_MS,
+            ))
+            .ease(gpui_kit::component::animation::cubic_bezier(
+                0.4, 0., 0.2, 1.,
+            ))
+        };
+        if let Some([normal, hover, border, hover_border]) = self.colors {
+            let bg = gpui_kit::base::motion::transition(
+                (self.id.clone(), "surface-bg"),
+                if hovered { hover } else { normal },
+                policy(),
+                window,
+                cx,
+            );
+            let line = gpui_kit::base::motion::transition(
+                (self.id.clone(), "surface-border"),
+                if hovered { hover_border } else { border },
+                policy(),
+                window,
+                cx,
+            );
+            self.element = self.element.bg(bg).border_color(line);
+        }
+        if let Some(size) = self.scale {
+            let scale = gpui_kit::base::motion::transition(
+                (self.id, "surface-scale"),
+                if hovered { 1.1 } else { 1. },
+                policy(),
+                window,
+                cx,
+            );
+            // 保持 dot 的占位尺寸；放大只改变自身，不挤动相邻点。
+            self.element = self
+                .element
+                .size(px(size * scale))
+                .m(px(size * (1. - scale) / 2.));
+        }
+        self.element.on_hover(move |hovered, _, cx| {
+            state.update(cx, |state, cx| {
+                *state = *hovered;
+                cx.notify();
+            })
+        })
     }
 }
 

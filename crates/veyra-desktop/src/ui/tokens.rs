@@ -115,3 +115,143 @@ pub const SPINNER_DARK_TEXT: u32 = 0xffffff;
 // sidebar-toggle.svg 的固定描边；Dark CSS filter + opacity .92。
 pub const COLLAPSE_INK: u32 = 0x30394c;
 pub const COLLAPSE_DARK_ALPHA: f32 = 0.92;
+
+// P2-01：openbox.css .subscription-empty/manage-card/editor-modal/source-form。
+pub const SUBSCRIPTION_EMPTY_HEIGHT: f32 = 132.;
+pub const SUBSCRIPTION_CARD_HEIGHT: f32 = 84.;
+pub const SUBSCRIPTION_EDITOR_WIDTH: f32 = 672.;
+pub const SUBSCRIPTION_TEXTAREA_HEIGHT: f32 = 162.;
+pub const SUBSCRIPTION_TEXTAREA_FONT: f32 = 12.;
+pub const SUBSCRIPTION_TEXTAREA_LINE: f32 = 18.;
+pub const SUBSCRIPTION_TEXTAREA_PX: f32 = 12.;
+pub const SUBSCRIPTION_TEXTAREA_PY: f32 = 8.;
+
+pub const SUBSCRIPTION_UPDATED_GAP: f32 = 6.;
+
+// .subscription-empty svg / :root --accent-strong；所有主题共用此基线。
+pub const SUBSCRIPTION_EMPTY_ICON: f32 = 26.;
+pub const ACCENT_STRONG: u32 = 0x5aba83;
+
+// .subscription-source-field / preview-error / preview-skipped。
+pub const SUBSCRIPTION_LABEL_FONT: f32 = 12.;
+pub const SUBSCRIPTION_LABEL_LINE: f32 = 16.;
+pub const SUBSCRIPTION_NOTICE_PX: f32 = 10.;
+pub const SUBSCRIPTION_NOTICE_PY: f32 = 8.;
+pub const SUBSCRIPTION_ERROR: u32 = 0xf06b6b;
+
+// OpenBox .btn-primary：本机真实页面 OKLCH 转 sRGB；hover 为 primary 混入 7% 黑色。
+pub const PRIMARY_BUTTON_TEXT: u32 = 0x223d30;
+pub const PRIMARY_BUTTON_BG: u32 = 0x66cc8a;
+pub const PRIMARY_BUTTON_HOVER: u32 = 0x5cb97d;
+pub const PRIMARY_BUTTON_RADIUS: f32 = 9.3;
+pub const REFERENCE_BUTTON_TRANSITION_MS: u64 = 200;
+pub const SUBSCRIPTION_DNS_ROTATION_MS: u64 = 150;
+pub const SUBSCRIPTION_HOVER_TRANSITION_MS: u64 = 150;
+// .subscription-tab-group active 与 primary 使用同一颜色。
+pub const SUBSCRIPTION_TAB_TEXT: u32 = PRIMARY_BUTTON_TEXT;
+pub const SUBSCRIPTION_TAB_BG: u32 = PRIMARY_BUTTON_BG;
+pub const SUBSCRIPTION_TAB_RADIUS: f32 = 6.;
+
+pub const SUBSCRIPTION_FOOTER: f32 = 49.;
+pub const SUBSCRIPTION_FOOTER_BUTTON: f32 = 52.;
+pub const SUBSCRIPTION_TAB_HEIGHT: f32 = 40.;
+pub const SUBSCRIPTION_TAB_MIN_WIDTH: f32 = 44.;
+pub const SUBSCRIPTION_TEXT_BUTTON: f32 = 11.;
+pub const SUBSCRIPTION_SKIPPED_GAP: f32 = 3.;
+pub const SUBSCRIPTION_EMPTY_GAP: f32 = 5.;
+pub const SUBSCRIPTION_NODE_EMPTY: f32 = 60.;
+pub const SUBSCRIPTION_LOADING_FONT: f32 = 13.;
+
+// .subscription-source-options / .switch-input page-local CSS overrides.
+pub const SUBSCRIPTION_OPTIONS_HEIGHT: f32 = 28.;
+pub const SUBSCRIPTION_SWITCH_WIDTH: f32 = 33.;
+pub const SUBSCRIPTION_SWITCH_HEIGHT: f32 = 20.;
+
+// Host原版节点DNS输入区：右侧Bootstrap固定192px。
+pub const SUBSCRIPTION_DNS_BOOTSTRAP_WIDTH: f32 = 192.;
+
+// SubscriptionSettings完整视觉骨架：openbox.css 1100–1142、ProxyOption 426/440/444。
+pub const SUBSCRIPTION_SHARE_HEIGHT: f32 = 136.;
+pub const SUBSCRIPTION_SHARE_HEADER: f32 = 76.;
+pub const SUBSCRIPTION_SHARE_CHEVRON: f32 = 15.;
+pub const SUBSCRIPTION_NODE_HEIGHT: f32 = 62.;
+pub const SUBSCRIPTION_NODE_MIN_WIDTH: f32 = 145.;
+pub const SUBSCRIPTION_NODE_RADIUS: f32 = 13.6;
+pub const SUBSCRIPTION_NODE_PY: f32 = 8.;
+pub const SUBSCRIPTION_NODE_NAME_HEIGHT: f32 = 20.;
+pub const SUBSCRIPTION_LATENCY_WIDTH: f32 = 40.;
+pub const SUBSCRIPTION_LATENCY_HEIGHT: f32 = 20.;
+pub const SUBSCRIPTION_DOTS_HEIGHT: f32 = 30.;
+pub const SUBSCRIPTION_DOTS_PT: f32 = 14.;
+pub const SUBSCRIPTION_UNTESTED: u32 = 0x9ca3af; // oklch(70.7% .022 261.325)→sRGB
+pub const SUBSCRIPTION_RULE_SEQUENCE_WIDTH: f32 = 56.;
+pub const SUBSCRIPTION_RULE_SEQUENCE_HEIGHT: f32 = 24.;
+pub const SUBSCRIPTION_REGION_WIDTH: f32 = 128.;
+pub const SUBSCRIPTION_REGION_DRAG: f32 = 18.;
+pub const SUBSCRIPTION_REGION_REMOVE: f32 = 24.;
+pub const SUBSCRIPTION_RULE_ROW_GAP: f32 = 6.;
+pub const SUBSCRIPTION_RULE_HINT_LINE: f32 = 16.;
+pub const SUBSCRIPTION_ERROR_WIDTH: f32 = 720.;
+pub const SUBSCRIPTION_ERROR_GAP: f32 = 13.;
+
+pub const SUBSCRIPTION_SWITCH_THUMB: f32 = 14.;
+pub const SUBSCRIPTION_SWITCH_PADDING: f32 = 2.;
+
+// .policy-option / .policy-option-latency 的浅色字面RGBA。
+// 2026-10-07本机OpenBox实测：base-200 Light oklch(93% 0 0)。
+pub const PANEL_BASE200_LIGHT: u32 = 0xe8e8e8;
+pub const PANEL_BACKGROUND_TINT: f32 = 0.5;
+pub const PANEL_TOOLBAR_ALPHA: f32 = 0.2;
+pub const SUBSCRIPTION_NODE_LIGHT_HOVER: u32 = 0xf1ead6;
+pub const SUBSCRIPTION_LATENCY_RADIUS: f32 = 16.;
+// Host本地OpenBox 2026-10-06实测暗色proxy-node-card：base-200由全局Theme提供，
+// border-base-content/[.08]、协议text-base-content/60与sm:hover色单独保留。
+pub const SUBSCRIPTION_NODE_DARK_BORDER_ALPHA: f32 = 0.08;
+pub const SUBSCRIPTION_NODE_DARK_MUTED_ALPHA: f32 = 0.6;
+pub const SUBSCRIPTION_NODE_DARK_HOVER_ALPHA: f32 = 0.16;
+pub const SUBSCRIPTION_NODE_DARK_HOVER: u32 = 0x4b4428;
+pub const SUBSCRIPTION_CHECKBOX_RADIUS: f32 = 9.3;
+// 本机OpenBox toggle-xs：规则开关26×16，区别于自动更新33×20。
+pub const SUBSCRIPTION_RULE_SWITCH_WIDTH: f32 = 26.;
+pub const SUBSCRIPTION_RULE_SWITCH_HEIGHT: f32 = 16.;
+pub const SUBSCRIPTION_RULE_SWITCH_THUMB: f32 = 10.;
+pub const SUBSCRIPTION_CONTROL_RADIUS: f32 = 9.3;
+pub const SUBSCRIPTION_EDITOR_RADIUS: f32 = 13.6;
+pub const SUBSCRIPTION_RULE_TOKEN_HEIGHT: f32 = 20.;
+
+pub const SUBSCRIPTION_RULE_SWITCH_RADIUS: f32 = 10.;
+
+// .subscription-{share,node}-collapse: height .2s ease-out / opacity .16s(.12s collapsed) ease。
+pub const SUBSCRIPTION_COLLAPSE_MS: u64 = 200;
+
+// .subscription-preview-panel/.subscription-preview-state；业务仍为已保存节点只读展示。
+pub const SUBSCRIPTION_NODES_PANEL_HEIGHT: f32 = 350.;
+pub const SUBSCRIPTION_NODES_STATE_PADDING: f32 = 24.;
+pub const SUBSCRIPTION_NODES_STATE_RADIUS: f32 = 15.8;
+pub const SUBSCRIPTION_NODES_STATE_ICON: f32 = 24.;
+
+// .subscription-preview-table：只读已保存节点复用其容器，未来改名/测速保持禁用。
+pub const SUBSCRIPTION_NODES_TABLE_RADIUS: f32 = 16.;
+pub const SUBSCRIPTION_NODES_TABLE_HEADER: f32 = 38.;
+pub const SUBSCRIPTION_NODES_TABLE_ROW: f32 = 48.;
+pub const SUBSCRIPTION_NODES_ORIGINAL_FRACTION: f32 = 5. / 12.;
+pub const SUBSCRIPTION_NODES_LATENCY_WIDTH: f32 = 80.;
+
+// 本机OpenBox .btn:hover：base-200在OKLab中混合7%黑色，区分全局主题。
+pub const REFERENCE_GHOST_HOVER_LIGHT: u32 = 0xd2d2d2;
+pub const REFERENCE_GHOST_HOVER_DARK: u32 = 0x130f0f;
+
+pub const REFERENCE_BUTTON_FOCUS_OFFSET: f32 = 2.;
+
+// 本机OpenBox分享Modal actual Tailwind级联：max-w-3xl、gap-5、1fr/.9fr。
+pub const SUBSCRIPTION_SHARE_EDITOR_WIDTH: f32 = 768.;
+pub const SUBSCRIPTION_SHARE_COLUMNS_GAP: f32 = 20.;
+pub const SUBSCRIPTION_SHARE_LEFT_FRACTION: f32 = 10. / 19.;
+pub const SUBSCRIPTION_SHARE_BODY_HEIGHT: f32 = 368.;
+pub const SUBSCRIPTION_SHARE_FOOTER: f32 = 53.;
+pub const SUBSCRIPTION_SHARE_ROW_HEIGHT: f32 = 38.;
+pub const SUBSCRIPTION_SHARE_LIST_MAX_HEIGHT: f32 = 320.;
+pub const SUBSCRIPTION_SHARE_CHECKBOX: f32 = 20.;
+pub const SUBSCRIPTION_SHARE_PROTOCOL_WIDTH: f32 = 83.;
+pub const SUBSCRIPTION_SHARE_COPY_WIDTH: f32 = 40.;
+pub const SUBSCRIPTION_SHARE_QR_SIZE: f32 = 176.;

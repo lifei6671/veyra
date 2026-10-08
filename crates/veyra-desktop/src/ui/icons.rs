@@ -3,6 +3,15 @@ use gpui_kit::component::{Icon, Sizable};
 use gpui_kit::*;
 pub fn icon(name: &str, size: f32) -> Icon {
     let bytes: &[u8] = match name {
+        "MagnifyingGlass" => include_bytes!("../../assets/heroicons/MagnifyingGlass.svg"),
+        "Power" => include_bytes!("../../assets/heroicons/Power.svg"),
+        "Bolt" => include_bytes!("../../assets/heroicons/Bolt.svg"),
+        "ExclamationTriangle" => include_bytes!("../../assets/heroicons/ExclamationTriangle.svg"),
+        "Bars3" => include_bytes!("../../assets/heroicons/Bars3.svg"),
+        "ClipboardDocument" => include_bytes!("../../assets/heroicons/ClipboardDocument.svg"),
+        "NoSymbol" => include_bytes!("../../assets/heroicons/NoSymbol.svg"),
+        "ArrowRight" => include_bytes!("../../assets/heroicons/ArrowRight.svg"),
+        "Plus" => include_bytes!("../../assets/heroicons/Plus.svg"),
         "CheckCircle" => include_bytes!("../../assets/heroicons/CheckCircle.svg"),
         "InformationCircle" => include_bytes!("../../assets/heroicons/InformationCircle.svg"),
         "XCircle" => include_bytes!("../../assets/heroicons/XCircle.svg"),
@@ -16,6 +25,8 @@ pub fn icon(name: &str, size: f32) -> Icon {
         "Play" => include_bytes!("../../assets/heroicons/Play.svg"),
         "Stop" => include_bytes!("../../assets/heroicons/Stop.svg"),
         "ArrowPath" => include_bytes!("../../assets/heroicons/ArrowPath.svg"),
+        "PencilSquare" => include_bytes!("../../assets/heroicons/PencilSquare.svg"),
+        "Trash" => include_bytes!("../../assets/heroicons/Trash.svg"),
         "Rss" => include_bytes!("../../assets/heroicons/Rss.svg"),
         "RectangleStack" => include_bytes!("../../assets/heroicons/RectangleStack.svg"),
         "Map" => include_bytes!("../../assets/heroicons/Map.svg"),
@@ -30,6 +41,7 @@ pub fn icon(name: &str, size: f32) -> Icon {
         }
         "ArrowUturnLeft" => include_bytes!("../../assets/heroicons/ArrowUturnLeft.svg"),
         "QuestionMarkCircle" => include_bytes!("../../assets/heroicons/QuestionMarkCircle.svg"),
+        "ChevronUp" => include_bytes!("../../assets/heroicons/ChevronUp.svg"),
         "ChevronDown" => include_bytes!("../../assets/heroicons/ChevronDown.svg"),
         "XMark" => include_bytes!("../../assets/heroicons/XMark.svg"),
         "SidebarToggle" => include_bytes!("../../assets/heroicons/SidebarToggle.svg"),

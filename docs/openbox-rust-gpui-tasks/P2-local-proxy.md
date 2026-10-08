@@ -15,10 +15,54 @@
 
 **验收**：
 
-- [ ] 预览不持久化；成功、跳过、失败项可解释；保存后重启仍能读取。
-- [ ] 刷新保留可确认的稳定节点身份与手工信息，不能按同名合并不同节点；失败保留旧有效内容。
-- [ ] 删除引用产生明确提示；旧预览/下载结果不覆盖新输入或新 epoch。
-- [ ] 最小订阅界面的实际操作、空/错误/忙碌状态和浅深色通过界面检查。
+- [x] 预览不持久化；成功、跳过、失败项可解释；保存后重启仍能读取。
+- [x] 刷新保留可确认的稳定节点身份与手工信息，不能按同名合并不同节点；失败保留旧有效内容。
+- [x] 删除引用产生明确提示；旧预览/下载结果不覆盖新输入或新 epoch。
+- [x] 最小订阅界面的实际操作、空/错误/忙碌状态和浅深色通过界面检查（历史功能PASS；Host最终确认build38-final完整订阅页面“符合”，完整页面Visual PASS）。
+
+**当前状态**：DONE；**owner**：已释放 Codex Desktop · Full Subscription UI Parity。P2-01-VISUAL-FULL-PAGE-001 CLOSED（2026-10-07）；Host明确确认build38-final完整订阅页面“符合”，绑定executable SHA256 `de220c173fb4cd70163419e93a54d34324b4dbf53617a87e46b32be8fafcbff3` 与[最终收口](evidence/p2-01/final-closeout-20261007-122027/README.md)。历史功能PASS继续有效；所有历史FAIL/REWORK/build及局部批准保留原结果。
+
+**上一轮局部视觉验收历史（2026-10-06）**：[最终矩阵、构建、回归与清理](evidence/p2-01/visual-parity-20261006-190927/README.md)。build29合并订阅/节点/规则，DNS默认折叠、11px按钮、32px输入及说明，移除Preview按钮/面板，单次SaveDraft复用原Core非持久化Preview/校验/重新下载/一次commit；body自然高度仅溢出滚动。浅深色、真实GUI/重启/cleanup、Host“符合”、Core304/Desktop69/outbound9与check/clippy/fmt/diff、Independent Review PASS。仅已批准字体/局部blur差异；Share/Rules/DNS业务/Node Runtime不提前实现。完整DAG DONE16/ACCEPTANCE0/READY3/TODO42/DEFERRED7，READY为P0-08/P2-02A/P5-06；未启动下游、未commit/push。
+
+**历史真实 GUI 验收（2026-10-06）**：[完整结果与截图](evidence/p2-01/gui-final-20261006-180816/README.md)。Preview/Save/Edit/Refresh/Delete、逐来源 partial、稳定 NodeId/同名不同 endpoint、失败保旧、ReferenceConflict、stale Preview/Refresh generation、Host实际中文IME与三语/重启/cleanup PASS。最终 Core304/Desktop68/outbound9、check/clippy/fmt/diff及独立Review PASS。仅有界修复本页 Retry旧报告、modal焦点/滚动、tab与反馈样式、Name翻译/多URL保存解释。视觉重开期间P0-08 READY、P2-02A/P5-06 TODO；最终当前队列见上文视觉收口。未启动、未commit/push。
+
+**本轮交付（2026-10-06）**：[实现/合同/验证/自查与 GUI 待验清单](evidence/p2-01/README.md)。application-level `preview` 返回无凭据/节点对象的逐来源 DTO；`save_preview` 重新校验输入指纹与 ConfigVersion、重新下载/解析，共用既有 import 候选与单次 JsonStateStore commit。多 URL 按输入顺序分别形成独立 Remote Subscription/Provider（当前 domain 为单 URL 来源），有效来源一起原子保存；失败来源不创建实体，保留逐来源报告。全部失败不提交。Manual 来源明确为 pasted/manual。正式 `refresh_direct` / `edit_direct_with_content` / `delete_at_version` 共用既有 update/edit/delete 合同及 provider replacement；旧入口的 scheduler/失败尝试时间语义保留，正式 Direct 失败不改旧 bytes/metadata。
+
+Direct 消费当前正式 fetch 的 no_proxy、30s 默认总预算、手工 redirect validation、跨源凭据剥离、userinfo/HTTPS downgrade 拒绝和 body limit。P0-06 custom resolver/Via 原型仍 feature-gated，未迁入；不推断 external-TUN physical bypass。Settings → Subscriptions 接入 AppServices、后台 worker、generation/request/epoch 隔离，复用 tokens/shared components/全局 i18n；没有 Compiler、运行、选择、测速、分享或 Via chooser。保留 React 视觉参考。P0-08/P2-02A/P5-06 READY，均未启动，未 commit/push。
+
+**最新完整UI候选（2026-10-07，build37）**：[矩阵、最终构建及独立Review](evidence/p2-01/all-ui-20261007-111729/BUILD37-FULL-UI-CANDIDATE.md)。补只读Share创建弹窗、field gap4、分享长列表及页面/modal分层；真实Light/Dark、Rules上下/DNS/Nodes/Share、滚动、错误/Busy/离页generation、三语留证。Core304/Desktop70/outbound9与九项验证、独立Review PASS；Host Visual PENDING，ACCEPTANCE/OPEN/owner保持，未开放未来条件业务、未启动下游、未commit/push。
+
+**最新窄范围候选（2026-10-07，build38）**：[Source常驻说明移除及真实截图](evidence/p2-01/source-final-20261007-115918/BUILD38-SOURCE-CANDIDATE.md)。只删除正文Direct/TUN hint，不新增占位/帮助UI；P0-06合同与未来能力边界保持。真实metadata保存description保留，重启后两订阅可读；Core304/Desktop70/outbound9与九项检查PASS。build38窄范围Independent Review PASS（不等于Host Visual PASS）。原版空feedback margin及自然高度差异明示，Host整页确认PENDING，ACCEPTANCE/OPEN/owner保持，无下游/commit/push。
+
+### P2-01-VISUAL-FULL-PAGE-001 · CLOSED（2026-10-07；2026-10-06开启）
+
+**开启与返工历史（2026-10-06，按当时结果保留）**：Host指出“目前应该只实现了添加订阅的UI视觉，其他都未实现”。上一轮Visual PASS仅覆盖当时限定实现区域，不能代表完整SubscriptionSettings页面。保留历史业务/Core/功能PASS、旧视觉记录和evidence，不重写。当前P2-01重新ACCEPTANCE；owner：Codex Desktop · Full Subscription UI Parity。完整页面一级视觉区域必须呈现，未来业务以完整禁用视觉壳表示，视觉与业务分别判定。仅最终完整页面Host明确确认后关闭Finding并恢复DONE；P2-02A/P5-06回TODO，P0-08保持READY。
+
+**前轮全控件候选（2026-10-07，build29-final，历史）**：[逐控件新旧矩阵、真实构建与验证](evidence/p2-01/full-reaudit-20261007-094122/BUILD29-CONTROLS-REWORK.md)。按actual OpenBox级联修复primary/ghost/focus、小按钮、完整Rules/DNS说明、saved Nodes table与CSS动画，移除Kit额外modal滑入；真实浅深色最终截图与键盘/URL增删已采集。Core304/Desktop70/outbound9及九项检查、Independent Review PASS；Host完整视觉仍PENDING，不能由工程结果关闭Finding。最后交接遇Mac锁屏待解锁核验，ACCEPTANCE/OPEN/owner与DAG保持，无下游、commit/push。
+
+**Host 按钮增量修复（2026-10-07，build25）**：[Plus 居中及 Share 主色](evidence/p2-01/full-reaudit-20261007-094122/BUILD25-PLUS-REWORK.md)。顶部空label文字按钮改为共享primary IconButton；Share去额外45%透明度，保留disabled/no-handler。双主题真实截图、Add/Cancel、Share bytes无副作用、九项自动验证及独立增量Review PASS。Host整页确认仍PENDING，ACCEPTANCE/Finding OPEN/owner不变；旧build24证据保留。
+
+**完整页面再次复核（2026-10-07，build24）**：[新旧 gap、actual OpenBox 对照及最终构建](evidence/p2-01/full-reaudit-20261007-094122/README.md)。以本机 actual DOM/CSS 重查完整区域，修正全局无背景层次、六列节点 grid、node geometry/status、Share/card header/action spacing、modal自然居中、Rules上下半页及Source输入样式。Host新增“原版没有说明字段”已移除额外UI，既有description编辑保存保留。最终Core304/Desktop70/outbound9及全部规定check/clippy/fmt/diff PASS，Independent Review PASS；真实浅深色Source/Nodes/Rules/DNS/empty/loading/error/busy重新采集。当前工程候选不代表Host Visual PASS；保持ACCEPTANCE、Finding OPEN与owner，最终真实.app保留供Host整页查看。不启动下游、不commit/push。
+
+
+<a id="obg-p2-02a"></a>
+
+**完整页面修复进度（2026-10-06）**：[本轮完整矩阵/最终build16/功能回归](evidence/p2-01/full-page-20261006-214140/README.md)。Share、五action、折叠健康点、AppState只读节点网格、Source/Rules/Nodes完整编辑架构及未来业务禁用壳已呈现。最终Core304/Desktop70/outbound9和check/clippy/fmt/diff PASS，独立源码Review PASS；浅深色最终真实.app对应截图已采集，待本轮完整页面Host明确确认，保持ACCEPTANCE/Finding OPEN。未启动下游、未commit/push。
+
+
+**Host完整页面复核（2026-10-06 22:43）**：最终build16 Host回复“仍有偏差”，本轮Visual FAIL/REWORK；Finding继续OPEN、ACCEPTANCE/owner保留，等待具体偏差定位。工程矩阵/自动验证/Independent Review不替代Host验收；旧evidence及结果保留。
+
+
+**暗色节点重修（build17）**：Host明确暗色节点卡片太亮，直接读取本地原版实际颜色，修复Dark base-200/正文/辅助文字/边框/状态块/hover，Light不变。最终Core304/Desktop70/outbound9及check/clippy/fmt/diff PASS；[实测与当前截图](evidence/p2-01/full-page-20261006-214140/DARK-NODE-REWORK-BUILD17.md)。仍待build17 Host确认，ACCEPTANCE/Finding OPEN，不启动下游。
+
+<a id="p2-01-final-closeout"></a>
+### P2-01 最终收口（2026-10-07）
+
+Host已明确确认 **build38-final完整订阅页面“符合”**，来源为本轮用户明确传达的Host最终批准。批准绑定executable SHA256 `de220c173fb4cd70163419e93a54d34324b4dbf53617a87e46b32be8fafcbff3`、[final身份](evidence/p2-01/source-final-20261007-115918/build38-final-identity.json)、[Host展示身份](evidence/p2-01/source-final-20261007-115918/build38-host-identity.json)及[build38候选与截图](evidence/p2-01/source-final-20261007-115918/BUILD38-SOURCE-CANDIDATE.md)。[新批准记录](evidence/p2-01/final-closeout-20261007-122027/host-final-visual-approval.json)补足完整页面Visual PASS；自然高度/空feedback margin及字体/blur技术差异仍明示，未声称精确几何或字体完全一致。未来业务保持原禁用边界。
+
+P2-01 ACCEPTANCE → DONE，Finding OPEN → CLOSED，释放Codex Desktop · Full Subscription UI Parity owner及资源预约。旧FAIL/REWORK、局部批准、PENDING与所有build记录按当时结果保留。完整68-card DAG按原显式依赖重算：DONE16 / READY3 / TODO42 / DEFERRED7，ACCEPTANCE/DOING/REVIEW/BLOCKED均0；READY仅P0-08/P2-02A/P5-06，均未领取/启动。见[最终证据与验证](evidence/p2-01/final-closeout-20261007-122027/README.md)。
+
+cleanup NOT_RUN：沙箱拒绝`ps`进程身份查询（Operation not permitted），无法确认旧PID当前归属；没有终止app/fixture或删除app/隔离root/证据，资源保留。owner释放不表示现场已清理。未接触用户LAN/OpenBox、正式状态、Runtime/TUN/SystemProxy/helper/admin；不改产品源码，不执行commit/push/fetch/pull/rebase/reset/restore/clean/stash，不运行产品构建/测试。
 
 <a id="obg-p2-02a"></a>
 ## OBG-P2-02A Base OutboundCatalog 与 OutboundId

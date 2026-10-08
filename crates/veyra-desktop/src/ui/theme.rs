@@ -43,7 +43,11 @@ impl Palette {
             Self {
                 window: 0xffffff,
                 surface: 0xffffff,
-                sidebar: 0xededed,
+                sidebar: if panel {
+                    super::tokens::PANEL_BASE200_LIGHT
+                } else {
+                    0xededed
+                },
                 text: if panel { 0x333c4d } else { 0x4b5263 },
                 muted: 0x4b5263ad,
                 field: 0xf7f7f8,

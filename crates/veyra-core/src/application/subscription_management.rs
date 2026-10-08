@@ -1,3 +1,5 @@
+pub mod preview;
+
 use std::{
     collections::{HashMap, HashSet},
     num::NonZeroU16,
@@ -501,6 +503,27 @@ impl SubscriptionManager {
         content: Option<String>,
         route_override: Option<UpdateRouteOverride>,
     ) -> Result<UpdateResult, SubscriptionOperationError> {
+        self.update_internal(id, content, route_override, None)
+            .await
+    }
+
+    pub async fn refresh_direct(
+        &self,
+        id: String,
+        content: Option<String>,
+        expected: crate::domain::ConfigVersion,
+    ) -> Result<UpdateResult, SubscriptionOperationError> {
+        self.update_internal(id, content, None, Some(expected))
+            .await
+    }
+
+    async fn update_internal(
+        &self,
+        id: String,
+        content: Option<String>,
+        route_override: Option<UpdateRouteOverride>,
+        expected: Option<crate::domain::ConfigVersion>,
+    ) -> Result<UpdateResult, SubscriptionOperationError> {
         let _write = self.begin_write_owned()?;
         if id.trim().is_empty() || id.len() > 128 {
             return Err(SubscriptionOperationError::InvalidInput);
@@ -510,7 +533,22 @@ impl SubscriptionManager {
             let state = self
                 .load_existing_or_empty()?
                 .ok_or(SubscriptionOperationError::NotFound)?;
-            update_snapshot(&state, &id)?
+            if expected
+                .as_ref()
+                .is_some_and(|version| *version != state.config_version())
+            {
+                return Err(SubscriptionOperationError::Busy);
+            }
+            let snapshot = update_snapshot(&state, &id)?;
+            if expected.is_some()
+                && snapshot
+                    .remote_request
+                    .as_ref()
+                    .is_some_and(|r| r.proxy_mode != SubscriptionProxyMode::Direct)
+            {
+                return Err(SubscriptionOperationError::ProxyUnavailable);
+            }
+            snapshot
         };
 
         let mut attempt_at_ms = None;
@@ -557,7 +595,9 @@ impl SubscriptionManager {
                         let now = (self.clock)()
                             .map_err(|_| SubscriptionOperationError::StateUnavailable)?;
                         self.remember_process_deadline(&snapshot, now);
-                        self.record_failed_attempt(&snapshot, now)?;
+                        if expected.is_none() {
+                            self.record_failed_attempt(&snapshot, now)?;
+                        }
                         return Err(error);
                     }
                 }
@@ -575,7 +615,9 @@ impl SubscriptionManager {
             FetchResult::Modified { body, .. } => match parse_content(body) {
                 Ok(parsed) => Some(parsed),
                 Err(error) => {
-                    if matches!(snapshot.source, SubscriptionSource::Remote { .. }) {
+                    if expected.is_none()
+                        && matches!(snapshot.source, SubscriptionSource::Remote { .. })
+                    {
                         self.record_failed_attempt(
                             &snapshot,
                             attempt_at_ms.ok_or(SubscriptionOperationError::StateUnavailable)?,
@@ -594,10 +636,12 @@ impl SubscriptionManager {
                     .as_ref()
                     .is_none_or(|document| document.local_override))
         {
-            self.record_failed_attempt(
-                &snapshot,
-                attempt_at_ms.ok_or(SubscriptionOperationError::StateUnavailable)?,
-            )?;
+            if expected.is_none() {
+                self.record_failed_attempt(
+                    &snapshot,
+                    attempt_at_ms.ok_or(SubscriptionOperationError::StateUnavailable)?,
+                )?;
+            }
             return Err(SubscriptionOperationError::CacheUnavailable);
         }
 
@@ -605,6 +649,12 @@ impl SubscriptionManager {
         let current = self
             .load_existing_or_empty()?
             .ok_or(SubscriptionOperationError::NotFound)?;
+        if expected
+            .as_ref()
+            .is_some_and(|version| *version != current.config_version())
+        {
+            return Err(SubscriptionOperationError::Busy);
+        }
         if update_snapshot(&current, &id)? != snapshot {
             return Err(SubscriptionOperationError::Busy);
         }
@@ -705,7 +755,7 @@ impl SubscriptionManager {
             source,
             remote_request,
             update_policy,
-            mut parsed,
+            parsed,
             document,
             http_metadata,
             expected_initially_empty,
@@ -716,6 +766,47 @@ impl SubscriptionManager {
             return Err(SubscriptionOperationError::Busy);
         }
         let mut candidate = current.unwrap_or_else(AppState::empty);
+        self.append_import(
+            &mut candidate,
+            ImportCommit {
+                name,
+                description,
+                source,
+                remote_request,
+                update_policy,
+                parsed,
+                document,
+                http_metadata,
+                expected_initially_empty: None,
+            },
+        )?;
+        self.ensure_commit_open()?;
+        self.store
+            .commit(&candidate)
+            .map_err(|_| SubscriptionOperationError::SaveFailed)?;
+        Ok(summary_for(
+            &candidate,
+            candidate.subscriptions.len().saturating_sub(1),
+        ))
+    }
+
+    // 仅构造候选；旧 import 和 P2-01 批量保存都在外层执行同一个 commit。
+    fn append_import(
+        &self,
+        candidate: &mut AppState,
+        input: ImportCommit,
+    ) -> Result<(), SubscriptionOperationError> {
+        let ImportCommit {
+            name,
+            description,
+            source,
+            remote_request,
+            update_policy,
+            mut parsed,
+            document,
+            http_metadata,
+            ..
+        } = input;
         let suffix = identity_suffix(
             (self.identity_source)().map_err(|_| SubscriptionOperationError::IdentityFailed)?,
         );
@@ -767,19 +858,12 @@ impl SubscriptionManager {
             enabled: true,
         });
         parsed.skipped.clear();
-        apply_provider_replacement(&mut candidate, provider_id, parsed)
+        apply_provider_replacement(candidate, provider_id, parsed)
             .map_err(map_replacement_error)?;
         candidate
             .validate()
             .map_err(|_| SubscriptionOperationError::ValidationFailed)?;
-        self.ensure_commit_open()?;
-        self.store
-            .commit(&candidate)
-            .map_err(|_| SubscriptionOperationError::SaveFailed)?;
-        Ok(summary_for(
-            &candidate,
-            candidate.subscriptions.len().saturating_sub(1),
-        ))
+        Ok(())
     }
 
     pub fn get_settings(
@@ -978,6 +1062,25 @@ impl SubscriptionManager {
         &self,
         input: EditSubscription,
     ) -> Result<UpdateResult, SubscriptionOperationError> {
+        self.edit_internal(input, None, None).await
+    }
+
+    /// 手工内容替换与元数据共用原 edit 候选，一次提交；空字段由桌面映射为 None。
+    pub async fn edit_direct_with_content(
+        &self,
+        input: EditSubscription,
+        content: Option<String>,
+        expected: crate::domain::ConfigVersion,
+    ) -> Result<UpdateResult, SubscriptionOperationError> {
+        self.edit_internal(input, Some(expected), content).await
+    }
+
+    async fn edit_internal(
+        &self,
+        input: EditSubscription,
+        expected: Option<crate::domain::ConfigVersion>,
+        content: Option<String>,
+    ) -> Result<UpdateResult, SubscriptionOperationError> {
         let _write = self.begin_write_owned()?;
         validate_id(&input.id)?;
         let baseline = {
@@ -990,7 +1093,25 @@ impl SubscriptionManager {
             .iter()
             .position(|value| value.id.0 == input.id)
             .ok_or(SubscriptionOperationError::NotFound)?;
+        if expected
+            .as_ref()
+            .is_some_and(|v| *v != baseline.config_version())
+        {
+            return Err(SubscriptionOperationError::Busy);
+        }
         let mut edited = baseline.subscriptions[index].clone();
+        if expected.is_some()
+            && (edited
+                .remote_request
+                .as_ref()
+                .is_some_and(|r| r.proxy_mode != SubscriptionProxyMode::Direct)
+                || input.remote_request.as_ref().is_some_and(|p| {
+                    p.proxy_mode
+                        .is_some_and(|m| m != SubscriptionProxyMode::Direct)
+                }))
+        {
+            return Err(SubscriptionOperationError::ProxyUnavailable);
+        }
         if let Some(name) = input.name {
             edited.name = validate_name(name)?;
         }
@@ -1030,7 +1151,15 @@ impl SubscriptionManager {
             }
         }
 
-        let replacement = if url_changed {
+        let replacement = if let Some(body) = content {
+            if !matches!(edited.source, SubscriptionSource::Manual) {
+                return Err(SubscriptionOperationError::InvalidInput);
+            }
+            let parsed = parse_content(&body)?;
+            let document = document_for_body(body, parsed.format);
+            let now = (self.clock)().map_err(|_| SubscriptionOperationError::StateUnavailable)?;
+            Some((parsed, document, None, None, now))
+        } else if url_changed {
             let SubscriptionSource::Remote { url } = &edited.source else {
                 return Err(SubscriptionOperationError::InvalidOptions);
             };
@@ -1051,7 +1180,9 @@ impl SubscriptionManager {
                     let now =
                         (self.clock)().map_err(|_| SubscriptionOperationError::StateUnavailable)?;
                     self.remember_process_deadline(&baseline_snapshot, now);
-                    self.record_failed_attempt(&baseline_snapshot, now)?;
+                    if expected.is_none() {
+                        self.record_failed_attempt(&baseline_snapshot, now)?;
+                    }
                     return Err(error);
                 }
             };
@@ -1064,7 +1195,9 @@ impl SubscriptionManager {
             } = fetched
             else {
                 self.remember_process_deadline(&baseline_snapshot, now);
-                self.record_failed_attempt(&baseline_snapshot, now)?;
+                if expected.is_none() {
+                    self.record_failed_attempt(&baseline_snapshot, now)?;
+                }
                 return Err(SubscriptionOperationError::CacheUnavailable);
             };
             let mut attempted_snapshot = baseline_snapshot.clone();
@@ -1077,7 +1210,9 @@ impl SubscriptionManager {
             let parsed = match parse_content(&body) {
                 Ok(value) => value,
                 Err(error) => {
-                    self.record_failed_attempt(&baseline_snapshot, now)?;
+                    if expected.is_none() {
+                        self.record_failed_attempt(&baseline_snapshot, now)?;
+                    }
                     return Err(error);
                 }
             };
@@ -1085,7 +1220,7 @@ impl SubscriptionManager {
             Some((
                 parsed,
                 document,
-                metadata,
+                Some(metadata),
                 profile_update_interval_minutes,
                 now,
             ))
@@ -1125,7 +1260,7 @@ impl SubscriptionManager {
             parsed.skipped.clear();
             let changed = apply_provider_replacement(&mut candidate, provider_id, parsed)
                 .map_err(map_replacement_error)?;
-            candidate.subscriptions[index].http_metadata = Some(metadata);
+            candidate.subscriptions[index].http_metadata = metadata;
             candidate.subscriptions[index].document = document;
             adopt_profile_interval(
                 &mut candidate.subscriptions[index].update_policy,
@@ -1162,12 +1297,36 @@ impl SubscriptionManager {
         id: String,
         active_runtime_stopped: bool,
     ) -> Result<String, SubscriptionOperationError> {
+        self.delete_internal(id, active_runtime_stopped, None)
+    }
+
+    pub fn delete_at_version(
+        &self,
+        id: String,
+        active_runtime_stopped: bool,
+        expected: crate::domain::ConfigVersion,
+    ) -> Result<String, SubscriptionOperationError> {
+        self.delete_internal(id, active_runtime_stopped, Some(expected))
+    }
+
+    fn delete_internal(
+        &self,
+        id: String,
+        active_runtime_stopped: bool,
+        expected: Option<crate::domain::ConfigVersion>,
+    ) -> Result<String, SubscriptionOperationError> {
         let _write = self.begin_write_owned()?;
         validate_id(&id)?;
         let _access = self.gate.try_lock().map_err(map_access_error)?;
         let mut candidate = self
             .load_existing_or_empty()?
             .ok_or(SubscriptionOperationError::NotFound)?;
+        if expected
+            .as_ref()
+            .is_some_and(|v| *v != candidate.config_version())
+        {
+            return Err(SubscriptionOperationError::Busy);
+        }
         let subscription_id = candidate
             .subscriptions
             .iter()
