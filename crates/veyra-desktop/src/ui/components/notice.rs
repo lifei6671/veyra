@@ -26,7 +26,11 @@ impl NoticeCenter {
         entity
     }
 }
-pub fn notify(_kind: Notice, message: impl Into<SharedString>, _: &mut Window, cx: &mut App) {
+pub fn notify(kind: Notice, message: impl Into<SharedString>, _: &mut Window, cx: &mut App) {
+    notify_app(kind, message, cx);
+}
+/// Worker 完成后同样发布到既有通知中心，无需捕获 Window。
+pub fn notify_app(_kind: Notice, message: impl Into<SharedString>, cx: &mut App) {
     let entity = cx.global::<NoticeHost>().0.clone();
     entity.update(cx, |this, cx| {
         this.item = Some(Item {

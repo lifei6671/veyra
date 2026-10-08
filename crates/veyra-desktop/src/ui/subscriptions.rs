@@ -58,6 +58,7 @@ pub struct SubscriptionsView {
     share_draft: Option<veyra_core::domain::SubscriptionShare>,
     share_busy: bool,
     share_error: Option<veyra_core::application::shares::ShareError>,
+    share_failed_mutation: bool,
     share_confirm: Option<veyra_core::application::shares::ShareCommand>,
     share_version: Option<veyra_core::domain::ConfigVersion>,
     share_editor_open: bool,
@@ -152,6 +153,7 @@ impl SubscriptionsView {
             share_draft: None,
             share_busy: false,
             share_error: None,
+            share_failed_mutation: false,
             share_confirm: None,
             share_version: None,
             share_editor_open: false,
@@ -185,8 +187,8 @@ impl SubscriptionsView {
             self.loading = false;
             // 与 React 页面重新挂载一致：离页后旧写入可在后台完成，回页重新读事实版本。
             if visible {
+                // 共享 Store 的 gate 不等待：先完成页面读取，再恢复分享监听，避免首次加载互相报 Busy。
                 self.send(Command::Load, cx);
-                self.share_send(None, cx);
             }
             cx.notify();
         }
@@ -205,6 +207,7 @@ impl SubscriptionsView {
         cx: &mut Context<Self>,
     ) -> Option<Box<AppState>> {
         let accepted = self.model.accepts(request);
+        let loading = self.loading;
         if accepted {
             self.load_error = self.loading && result.is_err();
         }
@@ -224,6 +227,9 @@ impl SubscriptionsView {
                     cx,
                 );
             }
+        }
+        if accepted && loading && state.is_some() {
+            self.share_send(None, cx);
         }
         if state.is_some() && self.model.editor_open {
             let view = cx.entity().downgrade();
@@ -358,12 +364,12 @@ impl SubscriptionsView {
             .child(
                 div()
                     .text_size(px(t::SECTION_TITLE))
-                    .line_height(px(t::SECTION_LINE))
-                    .font_weight(if share {
-                        FontWeight(600.)
+                    .line_height(px(if share {
+                        t::SUBSCRIPTION_SHARE_LINE
                     } else {
-                        FontWeight::BOLD
-                    })
+                        t::SECTION_LINE
+                    }))
+                    .font_weight(FontWeight::BOLD)
                     .text_color(palette.text)
                     .child(title),
             )
@@ -376,8 +382,8 @@ impl SubscriptionsView {
                 )
                 .text_color(palette.text)
                 .openbox_ghost(palette.button_hover(), palette.text)
-                .mr(-px(t::GAP))
-                .disabled(busy)
+                .when(!share, |b| b.mr(-px(t::GAP)))
+                .disabled(busy && !share)
                 .on_click(|_, window, cx| {
                     window.dispatch_action(Box::new(gpui_kit::component::dialog::Cancel), cx)
                 }),
@@ -425,6 +431,9 @@ impl SubscriptionsView {
             .flex()
             .flex_col()
             .min_h_0()
+            .when(share, |surface| {
+                surface.border_1().border_color(palette.line)
+            })
             .rounded(px(t::SUBSCRIPTION_EDITOR_RADIUS))
             .bg(palette.solid)
             .text_color(palette.text)
@@ -446,10 +455,10 @@ impl SubscriptionsView {
             .child(self.footer(cx));
         gpui_kit::base::Dialog::new(cx)
             .focus_handle(self.modal_focus.clone())
-            .close_on_escape(!busy)
-            .close_on_backdrop_press(!busy)
+            .close_on_escape(share || !busy)
+            .close_on_backdrop_press(share || !busy)
             .on_ok(|_, _, _| false)
-            .on_cancel(move |_, _, _| !busy)
+            .on_cancel(move |_, _, _| share || !busy)
             .backdrop(div().size_full().bg(cx.theme().overlay))
             .popup(gpui_kit::base::DialogPopup::new().child(surface))
             .on_close(cx.listener(|this, _, window, cx| {
@@ -1007,8 +1016,8 @@ impl SubscriptionsView {
                                     .child(
                                         div()
                                             .text_size(px(t::SECTION_TITLE))
-                                            .line_height(px(t::SECTION_LINE))
-                                            .font_weight(FontWeight::SEMIBOLD)
+                                            .line_height(px(t::SUBSCRIPTION_SHARE_LINE))
+                                            .font_weight(super::theme::MISANS_SEMIBOLD)
                                             .child(tr(cx, "订阅分享")),
                                     )
                                     .child(
@@ -1025,8 +1034,8 @@ impl SubscriptionsView {
                             )
                             .child(
                                 hint(tr(cx, "生成可供其他设备或代理软件直接使用的订阅链接"), p)
-                                    .line_height(px(t::SUBSCRIPTION_LABEL_LINE))
-                                    .mt(px(t::ROW_GAP)),
+                                    .line_height(px(t::SUBSCRIPTION_SHARE_LINE))
+                                    .mt(px(t::SUBSCRIPTION_SHARE_SUBTITLE_GAP)),
                             )
                             .on_click(cx.listener(|this, _, _, cx| {
                                 let now = Instant::now();
@@ -1049,7 +1058,9 @@ impl SubscriptionsView {
                     )
                     .child(
                         icon_action("subscription-share-add", "添加订阅分享", "Plus", p, cx)
-                            .primary()
+                            .bg(rgb(t::ACCENT_STRONG))
+                            .text_color(rgb(t::SUBSCRIPTION_SHARE_ADD_TEXT))
+                            .openbox_ghost(rgb(t::ACCENT_STRONG).into(), p.text)
                             .disabled(
                                 self.model.list.is_empty() || self.model.busy() || self.share_busy,
                             )
@@ -1543,7 +1554,7 @@ impl SubscriptionsView {
             .gap(px(t::GAP))
             .px(px(t::SECTION_PADDING))
             .py(px(t::GAP))
-            .when(share, |d| d.pt(px(t::PAD)))
+            .when(share, |d| d.gap(px(t::SUBSCRIPTION_SHARE_FOOTER_GAP)))
             .border_t_1()
             .border_color(p.text.opacity(0.1))
             .child(
@@ -1558,7 +1569,7 @@ impl SubscriptionsView {
                         .into(),
                         p.text,
                     )
-                    .disabled(busy)
+                    .disabled(busy && !share)
                     .w(px(t::SUBSCRIPTION_FOOTER_BUTTON))
                     .px(px(t::PAD))
                     .bg(p.base200())
@@ -1569,12 +1580,17 @@ impl SubscriptionsView {
                     } else {
                         FontWeight::SEMIBOLD
                     })
+                    .when(share, |b| {
+                        b.font_weight(super::theme::MISANS_REGULAR)
+                            .rounded(px(t::SUBSCRIPTION_SHARE_CANCEL_RADIUS))
+                    })
                     .on_click(|_, w, cx| {
                         w.dispatch_action(Box::new(gpui_kit::component::dialog::Cancel), cx)
                     }),
             )
             .child(
-                button("subscription-save", tr(cx, "保存"))
+                button("subscription-save", if share { "" } else { tr(cx, "保存") })
+                    .accessibility_label(tr(cx, "保存"))
                     .w(px(t::SUBSCRIPTION_FOOTER_BUTTON))
                     .px(px(t::PAD))
                     .custom(
@@ -1620,11 +1636,32 @@ impl SubscriptionsView {
                     .when(busy && !share, |b| {
                         b.child(Spinner::new().with_size(px(t::BODY)))
                     })
-                    .when(busy && share, |b| {
-                        b.child(super::components::loading_spinner(t::BODY, cx))
-                    })
                     .when(share, |b| {
-                        b.on_click(cx.listener(|this, _, _, cx| this.save_share(cx)))
+                        // React 分享弹窗使用全局 primary-button，不能套订阅编辑器的局部覆盖。
+                        b.w_auto()
+                            .min_w(px(t::SUBSCRIPTION_FOOTER_BUTTON))
+                            .h(px(t::SUBSCRIPTION_SHARE_SAVE_HEIGHT))
+                            .px(px(t::SUBSCRIPTION_SHARE_SAVE_PADDING))
+                            .rounded(px(t::SUBSCRIPTION_SHARE_SAVE_RADIUS))
+                            .text_size(px(t::SUBSCRIPTION_SHARE_META_FONT))
+                            .font_weight(FontWeight(t::SUBSCRIPTION_SHARE_SAVE_WEIGHT))
+                            .reference_hover(
+                                rgb(t::ACCENT_STRONG).into(),
+                                rgb(t::ACCENT_STRONG).into(),
+                                rgb(t::SUBSCRIPTION_SHARE_ADD_TEXT).into(),
+                            )
+                            .opacity(if disabled { 0.5 } else { 1. })
+                            .child(
+                                div()
+                                    .flex()
+                                    .items_center()
+                                    .gap(px(t::SUBSCRIPTION_SHARE_BUTTON_GAP))
+                                    .when(busy, |d| {
+                                        d.child(super::components::loading_spinner(t::BODY, cx))
+                                    })
+                                    .child(tr(cx, "保存")),
+                            )
+                            .on_click(cx.listener(|this, _, _, cx| this.save_share(cx)))
                     })
                     .when(!share, |b| {
                         b.on_click(cx.listener(|this, _, window, cx| {

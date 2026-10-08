@@ -100,7 +100,7 @@ Task：OBG-Px-xx
 
 ## 4 任务状态总表
 
-“估算”在P0出口回填人日及假设；当前macOS61项：**DONE21、ACCEPTANCE0、READY6、DOING1、REVIEW0、TODO33、BLOCKED0**；Windows7项DEFERRED，共68项。P2阶段5/10，macOS21/61。P2-03既有Host收口及Finding CLOSED保持；P2-04经Host独立FINAL ACCEPTANCE PASS，ACCEPTANCE→DONE，P2-04-PENDING-PERSISTENCE-001及前轮P1/P2 Finding均CLOSED，Runtime/Platform及Runtime公共契约owner/本卡预约释放，见[当前收口](P2-local-proxy.md#p2-04-final-host-closeout)。绑定Core source aggregate `987a01782c59d75c913f20a8133fd37df27638951f73cf3168cb2b35c3ff4fa8` 与Desktop harness身份；Host已核验Native/限定故障注入及原14条exit0，并独立新复跑Core371/Desktop85（11 ignored由显式Native父test覆盖）。自然HTTP/OS故障、SIGKILL、无控制线程竞态仍NOT_RUN；历史PASS/FAIL/REWORK保留，不扩大验收。P2-06 READY→DOING，Codex 保留 Runtime/Platform 与 Runtime DTO owner；仅本卡生产执行器/IPC/固定安装部分代码与OS隔离测试交付，已有双向关闭cache交接/半提交重试，已有停止前预检及远程选择fence/IPC/CAS/manifest，新增卸载Archive/新安装隔离闭环；已增加固定来源与OS退出观察后有限正常会话授权；cold-start/预先Stopped来源、未知slot/旧owner人工恢复及同UID信任边界仍OPEN；新增统一产品身份与helper Quit清理，[第八轮记录](P2-local-proxy.md#p2-06-round8)。P4-02 DONE；READY为P0-08/P2-05/P3-01/P4-03/P5-04/P5-06，未领取/启动；原显式依赖不变，其它任务状态不变。原P1-04/P2-02/P4-05父项不重复计数。
+“估算”在P0出口回填人日及假设；当前macOS61项：**DONE21、ACCEPTANCE1、READY5、DOING1、REVIEW0、TODO33、BLOCKED0**；Windows7项DEFERRED，共68项。P2阶段5/10，macOS21/61。P2-03既有Host收口及Finding CLOSED保持；P2-04经Host独立FINAL ACCEPTANCE PASS，ACCEPTANCE→DONE，P2-04-PENDING-PERSISTENCE-001及前轮P1/P2 Finding均CLOSED，Runtime/Platform及Runtime公共契约owner/本卡预约释放，见[当前收口](P2-local-proxy.md#p2-04-final-host-closeout)。绑定Core source aggregate `987a01782c59d75c913f20a8133fd37df27638951f73cf3168cb2b35c3ff4fa8` 与Desktop harness身份；Host已核验Native/限定故障注入及原14条exit0，并独立新复跑Core371/Desktop85（11 ignored由显式Native父test覆盖）。自然HTTP/OS故障、SIGKILL、无控制线程竞态仍NOT_RUN；历史PASS/FAIL/REWORK保留，不扩大验收。P2-06 READY→DOING，Codex 保留 Runtime/Platform 与 Runtime DTO owner；仅本卡生产执行器/IPC/固定安装部分代码与OS隔离测试交付，已有双向关闭cache交接/半提交重试，已有停止前预检及远程选择fence/IPC/CAS/manifest，新增卸载Archive/新安装隔离闭环；已增加固定来源与OS退出观察后有限正常会话授权；cold-start/预先Stopped来源、未知slot/旧owner人工恢复及同UID信任边界仍OPEN；新增统一产品身份与helper Quit清理，[第八轮记录](P2-local-proxy.md#p2-06-round8)。P4-02 DONE；P5-06已领取且保持ACCEPTANCE（真实GUI删除/绑定重试/正常退出补验已完成，视觉确认参考与启动读取失败原因待定位）；READY为P0-08/P2-05/P3-01/P4-03/P5-04，未领取/启动；原显式依赖不变，其它任务状态不变。原P1-04/P2-02/P4-05父项不重复计数。
 
 ### P0 基线与可行性（9 项）
 
@@ -180,7 +180,7 @@ Task：OBG-Px-xx
 | [OBG-P5-03 DNS 观测/热更边界](P5-dns-and-sharing.md#obg-p5-03) | P5-02、P3-01、P4-05C | TODO | — | — | — |
 | [OBG-P5-04 五种共享入站](P5-dns-and-sharing.md#obg-p5-04) | P2-02B、P2-03 | READY | — | — | — |
 | [OBG-P5-05 共享 UI/URI](P5-dns-and-sharing.md#obg-p5-05) | P5-04、P1-04A、P1-05 | TODO | — | — | — |
-| [OBG-P5-06 订阅分享](P5-dns-and-sharing.md#obg-p5-06) | P2-01、P1-05、P1-04A | ACCEPTANCE | Codex · Core/Config + GPUI | — | [真实 HTTP/Store、UI 已验与待验项](P5-06-acceptance.md) |
+| [OBG-P5-06 订阅分享](P5-dns-and-sharing.md#obg-p5-06) | P2-01、P1-05、P1-04A | ACCEPTANCE | Codex · Core/Config + GPUI | — | [重试修正/GUI补验、视觉及启动剩余项](P5-06-acceptance.md) |
 | [OBG-P5-07 DNS/共享验收](P5-dns-and-sharing.md#obg-p5-07) | P5-01、P5-02、P5-03、P5-04、P5-05、P5-06、P4-07 | TODO | — | — | — |
 
 ### P6 macOS TUN 与生命周期（5 项）

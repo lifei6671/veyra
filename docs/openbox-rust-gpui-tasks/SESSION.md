@@ -1,4 +1,6 @@
-**P5-06 / ACCEPTANCE（2026-10-08）**：正式分享 CRUD/CAS/磁盘恢复、真实 HTTP/token 撤销与监听生命周期、GPUI Worker/复制/二维码/三语言已接通；Core 144 / Desktop 7 个唯一定向测试通过，build/Clippy/fmt PASS；旧 Tauri Windows LICENSE 独立 FAIL。最终 UI 复核遇到 macOS 锁屏，正常 Quit、GUI 删除/端口冲突及最终同状态截图仍待完成，保持 ACCEPTANCE。见[交付记录](P5-06-acceptance.md)。68 卡 DONE21/DOING1/ACCEPTANCE1/READY5/TODO33/DEFERRED7；P2-06 owner 不变，P4-03 READY，未启动下游。下方领取及旧轮次保留为历史。
+**P5-06 验收修正 / ACCEPTANCE（2026-10-08，当前）**：保留9cf86ad8；读取按钮改“刷新”，刷新成功不抹去失败写操作，原草稿Save实际重试。Core9/Desktop8个唯一定向测试、build/Clippy/fmt PASS；旧Tauri本轮先报Windows libcronet.dll缺失exit101，历史LICENSE FAIL保留。最终无分享测试延迟签名SHA256 `d8d65d1b3f8277310ea08c43401c3ce324dc7241a77c525d0f9b9f31f3173b49`。真实GUI绑定冲突保旧/刷新保错/释放后Save200、用户托盘退出后PID及监听释放、删除确认与重启磁盘空态均补验；同Token/URL React与GPUI各状态原图、Vision二维码同URL留存。React原生确认参考原图缺失、启动瞬间读取失败原因和最终视觉逐项结论仍OPEN，不能DONE/释放owner。临时资源清理完成，最终bundle作为本地证据保留；本轮独立增量commit、不push。见[当前记录](P5-06-acceptance.md)。68卡DONE21/DOING1/ACCEPTANCE1/READY5/TODO33/DEFERRED7；READY=P0-08/P2-05/P3-01/P4-03/P5-04。P2-06 owner及P4状态不变，未领取下游。下方旧轮次按历史结果保留。
+
+**P5-06 首轮 / ACCEPTANCE（2026-10-08，历史）**：正式分享 CRUD/CAS/磁盘恢复、真实 HTTP/token 撤销与监听生命周期、GPUI Worker/复制/二维码/三语言已接通；Core 144 / Desktop 7 个唯一定向测试通过，build/Clippy/fmt PASS；旧 Tauri Windows LICENSE 独立 FAIL。最终 UI 复核遇到 macOS 锁屏，正常 Quit、GUI 删除/端口冲突及最终同状态截图仍待完成，保持 ACCEPTANCE。见[交付记录](P5-06-acceptance.md)。68 卡 DONE21/DOING1/ACCEPTANCE1/READY5/TODO33/DEFERRED7；P2-06 owner 不变，P4-03 READY，未启动下游。下方领取及旧轮次保留为历史。
 
 **P5-06 领取（2026-10-08）**：从 `30a4c7ddc1ef40dadc0a68ebebad8afe3f7d70c3` 创建独立工作树 `/Users/lifeilin/.codex/worktrees/p5-06-sharing/veyra` / `dev/p5-06-sharing`。三项依赖均 DONE，P5-06 → DOING。预约 shares 专属领域/Service、AppState 分享字段及 SnapshotService 最小保存入口、Desktop 分享 Worker/UI/国际化、QR 局部依赖与本卡文档。保留 P2-06 Runtime/Platform、Helper、IPC、Runtime DTO owner；退出仅消费 AppServices 自有资源关闭接口。自有临时目录与 loopback 监听，不动用户资源。当前 DONE21 / DOING2 / READY5 / TODO33 / DEFERRED7；P4-02 DONE、P4-03 READY。下方旧轮次是历史。
 
@@ -145,7 +147,7 @@ macOS：**21 / 61 完成**；READY 5、TODO 33、DOING 1、REVIEW 0、ACCEPTANCE
 
 | Task | owner / 泳道 | 写范围 / 公共契约 | 实际资源 / 下一动作 |
 | --- | --- | --- | --- |
-| P5-06 · ACCEPTANCE | Codex · Core/Config + GPUI | shares 专属领域/Service、AppState/SnapshotService 分享字段、Desktop 分享 UI/Worker、QR 局部依赖 | 独立 worktree；待解锁后最终截图/GUI 补验；本轮测试资源清理见验收记录；不写 Runtime/Helper/IPC/Runtime DTO |
+| P5-06 · ACCEPTANCE | Codex · Core/Config + GPUI | shares 专属领域/Service、AppState/SnapshotService 分享字段、Desktop 分享 UI/Worker、QR 局部依赖 | 独立 worktree；GUI删除/绑定重试/用户托盘Quit补验已完成；React原生确认参考图、启动读取失败原因与最终视觉结论待闭合；资源清理/最终bundle见验收记录；不写 Runtime/Helper/IPC/Runtime DTO |
 | P2-06 · DOING | Codex · Runtime/Platform | helper production/IPC、Core Runtime DTO、desktop runtime_service/platform、局部 Cargo 接线、任务文档 | checkpoint f2457e6 已提交、仍 DOING；本轮无资源操作；既有实现/限制按下方历史保留，GUI/Native/Helper 多轮及重启恢复后期补齐；当前先协调 P4-02/P5-06 UI 及其它 READY 写范围，不继续以复杂恢复阻塞其它功能，现有安全拒绝保持 |
 
 P4-02 本卡Core/Config + GPUI owner/预约已释放，本轮自有测试App/数据/harness已清理（见cleanup.json），原轮资源与用户资源未改动。P2-04 Runtime/Platform及Runtime公共契约owner/本卡预约已释放；P2-03既有预约释放保持，其历史文档收口不追认现场清理。

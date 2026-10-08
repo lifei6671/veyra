@@ -15,25 +15,37 @@ impl SubscriptionsView {
         let Some(services) = &self.share_services else {
             return;
         };
+        let refreshing = command.is_none();
+        let previous_error = self.share_error.filter(|_| self.share_failed_mutation);
         let saving = matches!(command, Some(ShareCommand::Save(_)));
         let receiver = services.shares_command(self.share_version.clone(), command);
         self.share_busy = true;
-        self.share_error = None;
+        // 刷新只读取已保存事实，不能把先前失败的保存/列表动作变为成功。
+        if !refreshing {
+            self.share_error = None;
+        }
         cx.spawn(async move |view, cx| {
             let result = receiver.await.unwrap_or(Err(ShareError::Closing));
             let _ = view.update(cx, |this, cx| {
                 this.share_busy = false;
-                match result {
-                    Ok(state) => {
-                        this.project(&state, cx);
-                        cx.emit(SharesUpdated(Box::new(state)));
-                        if saving {
-                            this.share_editor_open = false;
-                            this.share_draft = None;
-                        }
-                    }
-                    Err(error) => {
-                        this.share_error = Some(error);
+                if !refreshing {
+                    this.share_failed_mutation = result.is_err();
+                }
+                this.share_error =
+                    share_failure_after(refreshing, previous_error, result.as_ref().err().copied());
+                if let Err(error) = &result {
+                    super::super::components::notice::notify_app(
+                        super::super::components::Notice::Error,
+                        share_error_key(*error),
+                        cx,
+                    );
+                }
+                if let Ok(state) = result {
+                    this.project(&state, cx);
+                    cx.emit(SharesUpdated(Box::new(state)));
+                    if saving {
+                        this.share_editor_open = false;
+                        this.share_draft = None;
                     }
                 }
                 cx.notify();
@@ -67,6 +79,7 @@ impl SubscriptionsView {
         self.share_draft = Some(draft);
         self.share_editor_open = true;
         self.share_error = None;
+        self.share_failed_mutation = false;
         self.share_inputs[0]
             .read(cx)
             .focus_handle(cx)
@@ -81,6 +94,7 @@ impl SubscriptionsView {
         draft.host = self.share_inputs[1].read(cx).value().trim().to_owned();
         let Ok(listen) = self.share_inputs[3].read(cx).value().parse() else {
             self.share_error = Some(ShareError::Invalid);
+            self.share_failed_mutation = true;
             cx.notify();
             return;
         };
@@ -88,16 +102,16 @@ impl SubscriptionsView {
         self.share_send(Some(ShareCommand::Save(draft)), cx);
     }
     fn share_error_view(&self, cx: &mut Context<Self>) -> Div {
-        let mut view = div().flex().items_center().gap(px(t::GAP));
+        let mut view = div()
+            .flex()
+            .flex_wrap()
+            .items_center()
+            .gap(px(t::GAP))
+            .text_size(px(t::SUBSCRIPTION_SHARE_FIELD_FONT));
         if let Some(error) = self.share_error {
-            let key = match error {
-                ShareError::Bind => "分享监听失败：地址不可用或端口已占用",
-                ShareError::Invalid => "请检查名称、订阅、监听地址与分享端口",
-                ShareError::Export => "所选订阅包含无法无损导出的节点",
-                _ => "分享操作失败，请重试；原配置已保留",
-            };
+            let key = share_error_key(error);
             view = view.child(tr(cx, key)).child(
-                button("share-retry", tr(cx, "重试"))
+                button("share-refresh", tr(cx, "刷新"))
                     .disabled(self.share_busy)
                     .on_click(cx.listener(|this, _, _, cx| this.share_send(None, cx))),
             );
@@ -115,16 +129,18 @@ impl SubscriptionsView {
         if self.share_busy {
             body = body.child(super::super::components::loading_spinner(t::BODY, cx));
         }
-        if self.share_error.is_some() {
+        if self.share_error.is_some() && !self.share_editor_open {
             body = body.child(self.share_error_view(cx));
         }
         if self.shares.is_empty() && !self.share_busy {
-            return body.child(
+            return body.pb_0().child(
                 div()
                     .h(px(t::SUBSCRIPTION_NODE_EMPTY))
                     .flex()
                     .items_center()
                     .justify_center()
+                    .pt(px(t::PAD))
+                    .pb(px(t::SECTION_PADDING))
                     .text_color(p.muted)
                     .child(tr(cx, "暂无订阅分享，点右上角「添加」创建")),
             );
@@ -323,9 +339,11 @@ impl SubscriptionsView {
         let host = self.share_inputs[1].read(cx).value().trim().to_owned();
         let url = format!("http://{host}/sub/{}", draft.token);
         self.share_inputs[2].update(cx, |state, cx| state.set_value(url.clone(), window, cx));
+        self.share_inputs[0].update(cx, |state, cx| {
+            state.set_placeholder(tr(cx, "例如:手机代理订阅"), window, cx)
+        });
         let input = |ix| {
             text_input(&self.share_inputs[ix])
-                .disabled(self.share_busy)
                 .border_focus()
                 .text_size(px(t::SUBSCRIPTION_SHARE_FIELD_FONT))
                 .font_weight(super::super::theme::MISANS_MEDIUM)
@@ -335,7 +353,10 @@ impl SubscriptionsView {
         };
         let width = px(t::SUBSCRIPTION_SHARE_EDITOR_WIDTH)
             .min(window.viewport_size().width - px(t::SECTION_PADDING * 2.));
-        let left = (width - px(t::SECTION_PADDING * 2. + t::SUBSCRIPTION_SHARE_COLUMNS_GAP))
+        let left = (width
+            - px(t::SECTION_PADDING * 2.
+                + t::SUBSCRIPTION_SHARE_COLUMNS_GAP
+                + t::SUBSCRIPTION_SHARE_BORDER * 2.))
             * t::SUBSCRIPTION_SHARE_LEFT_FRACTION;
         let mut choices = div()
             .id("subscription-share-list")
@@ -359,15 +380,17 @@ impl SubscriptionsView {
                         gpui_kit::base::Button::new(("subscription-share-check", ix))
                             .accessibility_label(item.name.clone())
                             .size(px(t::SUBSCRIPTION_SHARE_CHECKBOX))
+                            // 对齐浏览器 checkbox 默认左 margin 4px、18px 网格轨道。
+                            .ml(px(t::SUBSCRIPTION_SHARE_CHECK_MARGIN))
+                            .mr(-px(t::SUBSCRIPTION_SHARE_CHECK_MARGIN / 2.))
                             .border_1()
                             .border_color(p.line)
                             .rounded(px(t::SUBSCRIPTION_SHARE_CHECK_RADIUS))
                             .bg(if checked {
-                                rgb(t::PRIMARY_BUTTON_BG).into()
+                                rgb(t::ACCENT_STRONG).into()
                             } else {
                                 p.solid
                             })
-                            .disabled(self.share_busy)
                             .when(checked, |b| {
                                 b.child(super::super::icons::icon("Check", t::BODY))
                             })
@@ -383,7 +406,10 @@ impl SubscriptionsView {
                             })),
                     )
                     .child(div().flex_1().child(item.name.clone()))
-                    .child(hint(format!("{} {}", item.node_count, tr(cx, "个节点")), p)),
+                    .child(
+                        hint(format!("{} {}", item.node_count, tr(cx, "个节点")), p)
+                            .text_size(px(t::SUBSCRIPTION_SHARE_META_FONT)),
+                    ),
             );
         }
         let copy = url.clone();
@@ -393,7 +419,8 @@ impl SubscriptionsView {
                 div().flex_1().min_w_0().child(
                     input(2)
                         .readonly(true)
-                        .font_family("SFMono-Regular")
+                        // React 在本机 SFMono/Consolas 不可用时实际解析为 Menlo。
+                        .font_family("Menlo")
                         .text_size(px(t::SUBSCRIPTION_SHARE_META_FONT))
                         .rounded_r(px(0.)),
                 ),
@@ -435,7 +462,6 @@ impl SubscriptionsView {
                     .flex_shrink_0()
                     .flex()
                     .flex_col()
-                    .gap(px(t::GAP))
                     .child(
                         div()
                             .pb(px(t::SUBSCRIPTION_SHARE_FIELD_FONT))
@@ -445,7 +471,7 @@ impl SubscriptionsView {
                             .child(tr(cx, "选择要分享的订阅")),
                     )
                     .child(choices)
-                    .child(share_field(tr(cx, "监听地址"), input(3)))
+                    .child(share_field(tr(cx, "监听地址"), input(3)).mt(px(t::GAP)))
                     .child(
                         hint(
                             tr(
@@ -455,8 +481,12 @@ impl SubscriptionsView {
                             p,
                         )
                         .w_full()
+                        .mt(px(t::GAP))
                         .whitespace_normal(),
-                    ),
+                    )
+                    .when(self.share_error.is_some(), |left| {
+                        left.child(self.share_error_view(cx).mt(px(t::GAP)))
+                    }),
             )
             .child(
                 div()
@@ -470,7 +500,6 @@ impl SubscriptionsView {
                         tr(cx, "域名或 IP"),
                         div()
                             .flex()
-                            .items_center()
                             .child(
                                 unavailable_select(
                                     "subscription-share-protocol",
@@ -479,17 +508,37 @@ impl SubscriptionsView {
                                     p,
                                     cx,
                                 )
-                                .rounded_r(px(0.)),
+                                .rounded_r(px(0.))
+                                .h(px(t::SUBSCRIPTION_SHARE_LINK_HEIGHT)),
                             )
                             .child(div().flex_1().child(input(1).rounded_l(px(0.)))),
                     ))
                     .child(share_field(tr(cx, "分享链接"), link))
-                    .child(div().flex().justify_center().child(qr))
-                    .when(self.share_error.is_some(), |d| {
-                        d.child(self.share_error_view(cx))
-                    }),
+                    .child(
+                        div()
+                            .flex()
+                            .justify_center()
+                            .pt(px(t::SUBSCRIPTION_SHARE_QR_TOP))
+                            .child(qr),
+                    ),
             )
     }
+}
+fn share_error_key(error: ShareError) -> &'static str {
+    match error {
+        ShareError::Bind => "分享监听失败：地址不可用或端口已占用",
+        ShareError::Invalid => "请检查名称、订阅、监听地址与分享端口",
+        ShareError::Export => "所选订阅包含无法无损导出的节点",
+        _ => "分享操作失败，请重试；原配置已保留",
+    }
+}
+/// 只有实际写操作成功才能清除原操作的失败；读取成功仅更新事实版本。
+fn share_failure_after(
+    refreshing: bool,
+    previous: Option<ShareError>,
+    failure: Option<ShareError>,
+) -> Option<ShareError> {
+    failure.or(if refreshing { previous } else { None })
 }
 fn share_field(text: &str, input: impl IntoElement) -> Div {
     div()
@@ -536,6 +585,27 @@ fn qr_code(url: &str) -> AnyElement {
 
 #[cfg(test)]
 mod tests {
+    /// 保护失败保存/删除不会被读取成功误报为完成；再次实际保存成功才清错。
+    #[test]
+    fn sharing_refresh_does_not_report_failed_action_as_success() {
+        use super::share_failure_after;
+        use veyra_core::application::shares::ShareError;
+        for failed_action in [ShareError::Bind, ShareError::Storage, ShareError::NotFound] {
+            assert_eq!(
+                share_failure_after(true, Some(failed_action), None),
+                Some(failed_action)
+            );
+            assert_eq!(share_failure_after(false, Some(failed_action), None), None);
+        }
+        assert_eq!(
+            share_failure_after(true, Some(ShareError::Bind), Some(ShareError::Storage)),
+            Some(ShareError::Storage)
+        );
+        assert_eq!(
+            share_failure_after(false, None, Some(ShareError::Bind)),
+            Some(ShareError::Bind)
+        );
+    }
     /// 保护三个语言的分享动作、错误与地址语义都有明确翻译。
     #[test]
     fn sharing_labels_have_three_languages() {

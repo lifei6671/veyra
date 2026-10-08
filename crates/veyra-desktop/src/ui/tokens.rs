@@ -245,6 +245,21 @@ pub const REFERENCE_GHOST_HOVER_DARK: u32 = 0x130f0f;
 pub const REFERENCE_BUTTON_FOCUS_OFFSET: f32 = 2.;
 
 // SubscriptionSettings.tsx / openbox.css:1274–1292 分享弹窗。
+// React 分享弹窗沿用全局 primary/compact 的实际 CSS 级联。
+pub const SUBSCRIPTION_SHARE_LINE: f32 = 20.;
+pub const SUBSCRIPTION_SHARE_FOOTER_GAP: f32 = 10.;
+pub const SUBSCRIPTION_SHARE_BUTTON_GAP: f32 = 7.;
+pub const SUBSCRIPTION_SHARE_CANCEL_RADIUS: f32 = 8.;
+pub const SUBSCRIPTION_SHARE_SAVE_HEIGHT: f32 = 36.;
+pub const SUBSCRIPTION_SHARE_SAVE_PADDING: f32 = 15.;
+pub const SUBSCRIPTION_SHARE_SAVE_RADIUS: f32 = 11.;
+pub const SUBSCRIPTION_SHARE_SAVE_WEIGHT: f32 = 750.;
+pub const SUBSCRIPTION_SHARE_SUBTITLE_GAP: f32 = 5.;
+pub const SUBSCRIPTION_SHARE_ADD_TEXT: u32 = 0xffffff;
+// React .ob-modal border、原生 checkbox margin 与 QR 顶部 padding。
+pub const SUBSCRIPTION_SHARE_BORDER: f32 = 1.;
+pub const SUBSCRIPTION_SHARE_CHECK_MARGIN: f32 = 4.;
+pub const SUBSCRIPTION_SHARE_QR_TOP: f32 = 2.;
 pub const SUBSCRIPTION_SHARE_EDITOR_WIDTH: f32 = 736.;
 pub const SUBSCRIPTION_SHARE_COLUMNS_GAP: f32 = 24.;
 pub const SUBSCRIPTION_SHARE_LEFT_FRACTION: f32 = 0.5;
