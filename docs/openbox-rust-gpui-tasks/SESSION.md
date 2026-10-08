@@ -1,3 +1,16 @@
+<a id="schedule-20261008"></a>
+## 当前调度决定（2026-10-08）
+
+WorkRun `work-5654-1791456602781005-182`：执行[唯一调度政策](DEVELOPMENT_WORKFLOW.md#delivery-order-20261008)及[优先级/延期清单](IMPLEMENTATION_PHASES.md#priority-20261008)。前期先 UI 与对应真实用户功能、局部受控定向集成、真实保存/读取与重建后磁盘恢复，UI 使用真实 Core Service/Store；只画 UI/Mock 不得 DONE。局部检查固定 150% 浅色并遵守 React/CSS；无实时来源显示未知，Saved 与 Applied/Ready 分开。
+
+**明确下一 READY 首选：P4-02 节点组 UI + 持久服务**，P5-06 订阅分享 UI 可跟进；P2-05 出站客户端、P3-01 观测和 P5-04 按原依赖/写范围并行或适时领取，涉及 Runtime/DTO 时协调 P2-06 owner，不以网络客户端抢先阻碍 UI。P2-05 仍是 P2-08 前置。P0-08 保留 READY 作路线准备。本次仅改计划，所有 READY 仍未领取/未启动；依赖不足的正式功能继续 TODO，不抢跑。
+
+P2-06 已阶段提交 `f2457e6a4e2fe0ac3c9186bc7d17323a70c4c0a8`，仍 DOING、原 owner 保留；GUI/Native/Helper 多轮及重启恢复后期补，不再持续钻研复杂崩溃恢复挡住其它功能。下方 round19 及其它轮次按当时结果保留，其“不提交/不推进”是历史约束，不覆盖本次已提交 checkpoint 和新调度。现有安全拒绝不解除，写冲突仍由 owner 协调。
+
+后期实施 P2-07 SystemProxy 与 P6-01 TUN/P6-02 恢复，前期系统开关禁用且不得假成功。最后按原 DAG 执行 P2-09/P3-08/P4-07/P5-07/P6-05 组合，P7-04 统一 6 主页/9 分类/77 API/19 场景实际 GUI E2E，P7-05 最终包。仅正式安装、真实内核网络、系统写入/恢复、Sleep/Wake 切网真机组合、其它主题/缩放和完整跨页/全场景交互归最终批次。P2-08 选择/测速、P3 实际服务/连接操作、P4 主备/Compiler/应用/受控链测试、P5 DNS 本地测试/资源下载/应用与分享 HTTP 监听/token 失效/退出清理必须在各自前期卡实现并局部验证，不能交由组合卡代替；无授权的具体验证准确 NOT_RUN，原需求/安全规则不删。
+
+**状态不变**：68 卡；DONE20 / DOING1 / READY6 / TODO34 / DEFERRED7，其余状态 0；原依赖、77 方法/19 场景归属和所有历史 PASS/FAIL/NOT_RUN 原样。本次无产品/GUI/网络/权限验证，不操作已有资源或未跟踪文件；不 add/commit/push，文档交 Host 独立 review 后按用户每 Task 一次 commit 规则提交。
+
 **P2-06 round19 / DOING**：同helper生命周期内首轮跨Desktop RebindCommit→新Primary独立Start→鉴权Ready→Stop/reap已接通并由真实双Primary/Unix IPC/受控内核fixture验证。提交保留旧Frozen/source/root审计，root create_new提交/当前owner并fsync后切内存；cycle继承且新Start先使CleanStop失效，lease同open-file-description持续持有。首个Commit回复丢失只Query，重复Start/错版本/脏cache/半marker/旧Peer拒绝。Core377/Desktop93/helper70/原型47/Python4及check/clippy/fmt通过，初始测试FAIL保留，见[round19](evidence/p2-06/round19/README.md)。**仅一轮旧→新Primary转换；第三会话继续轮换、helper重启恢复、bootstrap Apply/Select、GUI消费与Native仍OPEN/NOT_RUN**。保持DOING/owner/DAG/index空，不提交，不推进P2-05/P2-07。
 
 **P2-06 round18 / DOING**：新Primary的RebindPreflight→Core持久申请→root Prepared→Query已接生产协议与Desktop同worker。root持旧lease重算CleanStop关闭bundle，核验旧NOTE_EXIT、owner-session/安装generation及新OS Primary；保留旧Frozen/incarnation/source-session。真实两代Primary进程及IPC Query、脏cache拒绝/幂等测试通过。**Rebind Commit/新peer Start仍未实现，helper重启仍拒绝**，不声称跨Session重开完成。Core377/Desktop93/helper68/原型47/Python4及工程检查通过；初始编译FAIL与fixture IPC失败/中断保留，见[round18](evidence/p2-06/round18/README.md)。owner/DAG不变，index空，无提交/Native。
@@ -126,7 +139,7 @@ macOS：**20 / 61 完成**；READY 6、TODO 34、DOING 1、REVIEW 0、ACCEPTANCE
 
 | Task | owner / 泳道 | 写范围 / 公共契约 | 实际资源 / 下一动作 |
 | --- | --- | --- | --- |
-| P2-06 · DOING | Codex · Runtime/Platform | helper production/IPC、Core Runtime DTO、desktop runtime_service/platform、局部 Cargo 接线、任务文档 | 仅自有 temp/socket/测试exe child；不操作已有 writer/cache/manifest；执行器及固定安装部分代码已测，已有双向交接/停止前预检与选择fence/IPC/CAS/manifest；新增卸载Archive/重装隔离；尚缺正式handoff释放证明、cold-start与UNKNOWN/旧owner恢复，禁止直接Native |
+| P2-06 · DOING | Codex · Runtime/Platform | helper production/IPC、Core Runtime DTO、desktop runtime_service/platform、局部 Cargo 接线、任务文档 | checkpoint f2457e6 已提交、仍 DOING；本轮无资源操作；既有实现/限制按下方历史保留，GUI/Native/Helper 多轮及重启恢复后期补齐；当前先协调 P4-02/P5-06 UI 及其它 READY 写范围，不继续以复杂恢复阻塞其它功能，现有安全拒绝保持 |
 
 P2-04 Runtime/Platform及Runtime公共契约owner/本卡预约已释放；P2-03既有预约释放保持。本轮仅文档收口，未对app/root/live child或bundle/fixture操作，不声称资源已退出或已清理。
 
@@ -141,11 +154,11 @@ P1-07 已 DONE 并从 Active Tasks 移除，GPUI owner 与本卡资源预约释�
 | Task | 依赖满足依据 | owner / 下一动作 |
 | --- | --- | --- |
 | P0-08 · READY | P0-03、P0-05均DONE；后续下载消费P0-06显式client与范围限制 | 未领取；不启动 |
-| P2-05 · READY | P2-03、P0-06均DONE | 未领取；不启动 |
+| P2-05 · READY | P2-03、P0-06均DONE | 按依赖/写范围适时领取或并行；仍为 P2-08 前置，协调 Runtime/DTO owner；本轮未启动 |
 | P3-01 · READY | P2-03、P0-07均DONE | 未领取；不启动 |
-| P4-02 · READY | P2-01、P2-02A、P2-02B、P1-03、P1-04A均DONE | 未领取；不启动 |
+| P4-02 · READY | P2-01、P2-02A、P2-02B、P1-03、P1-04A均DONE | 下一首选入口：节点组 UI + 真实持久服务/局部定向集成；本轮未领取/未启动 |
 | P5-04 · READY | P2-02B、P2-03均DONE | 未领取；不启动 |
-| P5-06 · READY | P2-01、P1-05、P1-04A均DONE | 未领取；不启动 |
+| P5-06 · READY | P2-01、P1-05、P1-04A均DONE | 可跟进分享 UI + 真实 HTTP/Store/token 生命周期及局部验证；本轮未领取/未启动 |
 
 
 当前68卡：DONE20 / ACCEPTANCE0 / DOING1 / REVIEW0 / READY6 / TODO34 / BLOCKED0 / DEFERRED7；READY仅P0-08/P2-05/P3-01/P4-02/P5-04/P5-06，均未领取/未启动；P2-04 DONE、Finding CLOSED保持。P2-06 DOING、Runtime/Platform及Runtime公共契约owner=Codex；P2-07/P6依赖未满足，不转READY。其它状态/显式依赖不变。
