@@ -1,3 +1,6 @@
+#[path = "remote_selection.rs"]
+mod remote_selection;
+pub use remote_selection::{RemoteSelection, SelectionFence};
 use std::fmt;
 use std::path::PathBuf;
 
@@ -92,6 +95,8 @@ impl JsonStateStore {
     }
 
     fn write_current_without_backup(&self, state: &AppState) -> Result<(), StateStoreError> {
+        let _writer = self.writer_lock()?;
+        self.writable()?;
         validate_state(state.clone())?;
         let contents = serde_json::to_vec_pretty(&StoredStateV9::from(state))
             .map_err(|_| StateStoreError::SerializationFailed)?;
@@ -101,8 +106,13 @@ impl JsonStateStore {
     /// Caller holds the shared StateAccessGate. Raw save is only the physical snapshot primitive.
     /// Legacy consumers use this entrypoint too, so a delayed candidate cannot overwrite a new epoch.
     pub fn commit(&self, candidate: &AppState) -> Result<AppState, StateStoreError> {
+        // 自动迁移/备份恢复先按原契约执行；取得writer锁后再读取当前版本做CAS。
+        if self.has_snapshot_or_backup()? {
+            self.load()?;
+        }
+        let _writer = self.lock_unfenced_writer()?;
         let next = if self.has_snapshot_or_backup()? {
-            let previous = self.load()?;
+            let previous = self.strict_state()?;
             let revised = candidate.revised_from(&previous).map_err(|error| {
                 if error.code() == crate::domain::AppErrorCode::RevisionConflict {
                     StateStoreError::RevisionConflict
@@ -121,7 +131,7 @@ impl JsonStateStore {
                 .revised_from(&initial)
                 .map_err(|_| StateStoreError::RevisionConflict)?
         };
-        self.save(&next)?;
+        self.save_unfenced(&next)?;
         Ok(next)
     }
 
@@ -171,6 +181,7 @@ impl StateStore for JsonStateStore {
                 Ok(state)
             }
             Err(error) if error.is_recoverable() => {
+                self.writable()?;
                 preserve_corrupt_copy(&self.state_file)?;
                 let recovered = self
                     .load_backup()
@@ -183,6 +194,13 @@ impl StateStore for JsonStateStore {
     }
 
     fn save(&self, state: &AppState) -> Result<(), StateStoreError> {
+        let _writer = self.writer_lock()?;
+        self.writable()?;
+        self.save_unfenced(state)
+    }
+}
+impl JsonStateStore {
+    fn save_unfenced(&self, state: &AppState) -> Result<(), StateStoreError> {
         validate_state(state.clone())?;
         let stored = StoredStateV9::from(state);
         let contents =
@@ -262,6 +280,7 @@ impl TryFrom<StoredStateV9> for AppState {
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum StateStoreError {
+    WriteFenced,
     InvalidState(StateValidationError),
     RevisionConflict,
     InvalidStatePath,
@@ -280,6 +299,7 @@ pub enum StateStoreError {
 impl fmt::Display for StateStoreError {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         let message = match self {
+            Self::WriteFenced => "state writes await remote selection reconciliation",
             Self::InvalidState(error) => return write!(formatter, "invalid state: {error}"),
             Self::RevisionConflict => "state snapshot version changed",
             Self::InvalidStatePath => "state storage path is invalid",
@@ -416,6 +436,171 @@ mod tests {
         if directory.exists() {
             fs::remove_dir_all(directory).expect("remove test directory");
         }
+    }
+
+    #[test]
+    #[ignore = "internal child fixture, invoked only by remote_fence_cross_process"]
+    fn remote_fence_os_child() {
+        // 只由父测试提供自有临时state路径；不是生产入口。
+        let path =
+            PathBuf::from(std::env::var_os("VEYRA_TEST_FENCED_STATE").expect("parent fixture"));
+        let store = JsonStateStore::new(path).unwrap();
+        let state = store.load().unwrap();
+        assert_eq!(store.save(&state), Err(StateStoreError::WriteFenced));
+    }
+    #[test]
+    fn remote_fence_cross_process() {
+        // 保护新进程/独立StateAccessGate：OS互斥及持久fence都不能因进程内锁消失而绕过。
+        let store = unique_test_store();
+        let state = valid_state_with_pool_and_route();
+        store.save(&state).unwrap();
+        let child = || {
+            let mut process = std::process::Command::new(std::env::current_exe().unwrap())
+                .args([
+                    "--exact",
+                    "storage::store::tests::remote_fence_os_child",
+                    "--ignored",
+                ])
+                .env("VEYRA_TEST_FENCED_STATE", &store.state_file)
+                .stdout(std::process::Stdio::null())
+                .stderr(std::process::Stdio::null())
+                .spawn()
+                .unwrap();
+            let until = std::time::Instant::now() + std::time::Duration::from_secs(5);
+            loop {
+                if let Some(status) = process.try_wait().unwrap() {
+                    assert!(status.success());
+                    break;
+                }
+                if std::time::Instant::now() >= until {
+                    process.kill().unwrap();
+                    process.wait().unwrap();
+                    panic!("isolated child timeout");
+                }
+                std::thread::sleep(std::time::Duration::from_millis(5));
+            }
+        };
+        let guard = store.writer_lock().unwrap();
+        child();
+        drop(guard);
+        store
+            .begin_remote(&RemoteSelection {
+                request_id: 1,
+                instance: 1,
+                expected: state.version(),
+                pool: PoolId("pool".into()),
+                node: NodeId("node".into()),
+            })
+            .unwrap();
+        child();
+        assert!(store.selection_fence().unwrap().is_some());
+        remove_test_files(&store);
+    }
+
+    #[test]
+    fn remote_fence_blocks_all_json_writers_and_survives_reopen() {
+        // 保护RPC超时/重启后的pending：整体替换、订阅更新、旧cache恢复不能越过持久fence。
+        use crate::application::{
+            state_access::StateAccessGate,
+            state_service::{SelectionService, SnapshotService},
+            subscription_management::{
+                ImportRequestSource, SubscriptionImport, SubscriptionManager,
+            },
+        };
+        let store = unique_test_store();
+        let mut state = valid_state_with_pool_and_route();
+        let mut next_node = state.nodes[0].clone();
+        next_node.id = NodeId("next".into());
+        state.nodes.push(next_node);
+        store.save(&state).unwrap();
+        let request = RemoteSelection {
+            request_id: 9,
+            instance: 11,
+            expected: state.version(),
+            pool: PoolId("pool".into()),
+            node: NodeId("next".into()),
+        };
+        let fence = store.begin_remote(&request).unwrap();
+        let pending = store.load().unwrap();
+        assert_eq!(pending.selection_revision, 1);
+        let reopened = JsonStateStore::new(store.state_file.clone()).unwrap();
+        assert_eq!(reopened.selection_fence().unwrap(), Some(fence.clone()));
+        assert_eq!(reopened.save(&state), Err(StateStoreError::WriteFenced));
+        let snapshots = SnapshotService::new(reopened.clone(), StateAccessGate::default());
+        assert!(snapshots.replace(pending.version(), state.clone()).is_err());
+        assert!(
+            SelectionService::new(snapshots.clone())
+                .begin_manual_pending(
+                    pending.selection_version(),
+                    request.pool.clone(),
+                    NodeId("node".into())
+                )
+                .is_err()
+        );
+        // 正式SubscriptionManager用独立gate，也必须由底层writer边界拒绝。
+        let manager =
+            SubscriptionManager::new(store.state_file.clone(), StateAccessGate::default()).unwrap();
+        let runtime = tokio::runtime::Runtime::new().unwrap();
+        assert!(
+            runtime
+                .block_on(manager.import_with_options(SubscriptionImport {
+                    name: "blocked".into(),
+                    description: String::new(),
+                    source: ImportRequestSource::Manual {
+                        content:
+                            "ss://YWVzLTEyOC1nY206cGFzc3dvcmQ=@example.invalid:443#fixture".into()
+                    }
+                }))
+                .is_err()
+        );
+        // 即使ProviderReplacement持有自己的mutex而非SnapshotService gate，最终commit也被拒绝。
+        let mut provider_state = pending.clone();
+        provider_state.pools.clear();
+        provider_state.routes.clear();
+        let provider = crate::application::provider_replacement::ProviderReplacementService::new(
+            reopened.clone(),
+            provider_state,
+        )
+        .unwrap();
+        let parsed = crate::subscription::parse_subscription(
+            "ss://YWVzLTEyOC1nY206cGFzc3dvcmQ=@example.invalid:443#fixture",
+        )
+        .unwrap();
+        assert!(matches!(
+            provider.replace(ProviderId("provider".into()), parsed),
+            Err(
+                crate::application::provider_replacement::ProviderReplacementError::Store(
+                    StateStoreError::WriteFenced
+                )
+            )
+        ));
+        assert_eq!(reopened.load().unwrap(), pending);
+        assert!(
+            reopened
+                .confirm_remote(&fence, &NodeId("third".into()))
+                .is_err()
+        );
+        let confirmed = reopened.confirm_remote(&fence, &request.node).unwrap();
+        assert_eq!(confirmed.selection_revision, 2);
+        assert_eq!(reopened.save(&confirmed), Err(StateStoreError::WriteFenced));
+        assert_eq!(
+            reopened.confirm_remote(&fence, &request.node).unwrap(),
+            confirmed
+        );
+        reopened
+            .finish_remote(&fence, &confirmed.version())
+            .unwrap();
+        assert!(reopened.selection_fence().unwrap().is_none());
+        reopened.save(&confirmed).unwrap();
+        // 原快照损坏时不能从旧backup清pending/fence并换epoch。
+        let mut request = request;
+        request.expected = confirmed.version();
+        request.request_id += 1;
+        reopened.begin_remote(&request).unwrap();
+        fs::write(&reopened.state_file, b"corrupt").unwrap();
+        assert_eq!(reopened.load(), Err(StateStoreError::WriteFenced));
+        assert!(reopened.selection_fence().unwrap().is_some());
+        remove_test_files(&store);
     }
 
     #[test]

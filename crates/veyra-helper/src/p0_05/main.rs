@@ -19,8 +19,8 @@ mod readiness;
 const ROOT: &str = "/Library/Application Support/VeyraP005";
 // 传统 LaunchDaemon 使用本原型专用目录，不进入 Service Management helper 目录。
 const HELPER: &str = "/Library/Application Support/VeyraP005/helper";
-const PLIST: &str = "/Library/LaunchDaemons/com.lifei6671.veyra.p005.plist";
-const LABEL: &str = "com.lifei6671.veyra.p005";
+const PLIST: &str = "/Library/LaunchDaemons/me.disign.veyra.p005.plist";
+const LABEL: &str = "me.disign.veyra.p005";
 const KERNEL_HASH: &str = "973388c3f720e918fc64dff7fd75dde14b31cc1aa6fc15855e2f00c5291dd4f4";
 const MAX: usize = 4096;
 type Result<T> = std::result::Result<T, Box<dyn std::error::Error>>;
@@ -245,7 +245,7 @@ fn daemon_plist() -> String {
 fn cleanup_paths() -> [(String, bool); 8] {
     [
         (HELPER.to_owned(), false),
-        (path("sing-box"), false),
+        (path("veyra-sing-box"), false),
         (path("runtime"), true),
         (path("authorization.json"), false),
         (path("service-id"), false),
@@ -674,7 +674,7 @@ impl Helper {
         let config_evidence = config_pipe::evidence(&config_bytes);
         if at_stage(
             "StartSystemProxyTest.kernel_hash",
-            hash(Path::new(&path("sing-box"))),
+            hash(Path::new(&path("veyra-sing-box"))),
         )? != KERNEL_HASH
         {
             return Err(
@@ -683,7 +683,7 @@ impl Helper {
         }
         at_stage(
             "StartSystemProxyTest.kernel_protected",
-            protected(&path("sing-box"), false),
+            protected(&path("veyra-sing-box"), false),
         )?;
         let config_read = at_stage(
             "StartSystemProxyTest.config_pipe",
@@ -691,7 +691,7 @@ impl Helper {
         )?;
         let config_fd = config_read.as_raw_fd();
         let (uid, gid) = (owner.uid, owner.gid);
-        let mut command = Command::new(path("sing-box"));
+        let mut command = Command::new(path("veyra-sing-box"));
         command
             .args(["run", "-c", "/dev/fd/3"])
             .current_dir(ROOT)
@@ -1044,7 +1044,7 @@ fn install(uid: u32, helper_digest: &str) -> Result<Value> {
     let kernel = executable
         .parent()
         .ok_or("no staging directory")?
-        .join("sing-box");
+        .join("veyra-sing-box");
     if hash(&kernel)? != KERNEL_HASH {
         return Err("staged kernel digest mismatch".into());
     }
@@ -1067,12 +1067,12 @@ fn install(uid: u32, helper_digest: &str) -> Result<Value> {
     }
     fs::set_permissions(HELPER, fs::Permissions::from_mode(0o755))?;
     protected(HELPER, false)?;
-    copy_installed(&kernel, &path("sing-box"))?;
-    fs::set_permissions(path("sing-box"), fs::Permissions::from_mode(0o755))?;
-    if hash(Path::new(&path("sing-box")))? != KERNEL_HASH {
+    copy_installed(&kernel, &path("veyra-sing-box"))?;
+    fs::set_permissions(path("veyra-sing-box"), fs::Permissions::from_mode(0o755))?;
+    if hash(Path::new(&path("veyra-sing-box")))? != KERNEL_HASH {
         return Err("installed kernel digest mismatch".into());
     }
-    protected(&path("sing-box"), false)?;
+    protected(&path("veyra-sing-box"), false)?;
     save("authorization.json", &json!({"uid":uid,"gid":gid}))?;
     fs::set_permissions(
         path("authorization.json"),

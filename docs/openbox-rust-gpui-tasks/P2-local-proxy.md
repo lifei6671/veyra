@@ -207,6 +207,8 @@ cleanup NOT_RUN：沙箱拒绝`ps`进程身份查询（Operation not permitted�
 
 **执行与交付**：按 Network Service ID 管理原值/本应用值/实际值；完整代理字段组、写前恢复记录、回读与条件恢复；网络变化串行处理；接通系统代理开关和 owner 交接。
 
+**用户已批准的产品决策（P2-06 round11登记，仅P2-07实施）**：用户主动开启SystemProxy时，允许接管其他软件当前已设置的代理，不因已有代理而拒绝。以Network Service ID识别服务，写前持久保存HTTP/HTTPS/SOCKS、PAC、自动发现、绕过名单的原始状态（含缺失/启停语义）；Veyra自身check/认证Ready/选择对账完成后，才核对预期实际值、条件应用并回读。关闭时仅恢复实际仍匹配Veyra managed的相关字段组；其它软件后来修改的状态保留，报冲突，不自动抢回、不无限重试。按服务分别记录未写/成功/失败/冲突/已删除；部分失败只回退可确认仍属于本次托管的修改，未知结果保留恢复材料，禁止笼统报告全部恢复。新服务先独立快照，服务切换不覆盖旧快照，不按显示名寻找替代服务。此决策不是本轮实现：P2-07仍TODO，依赖P2-06/P2-05，不领取owner，不执行SystemConfiguration。
+
 **验收**：
 
 - [ ] HTTP/HTTPS/SOCKS、PAC、自动发现和例外列表正确接管/恢复；外部修改保留并报告。
@@ -500,3 +502,285 @@ Host 自己经 MCP 新复跑 Core **371/371，exit0**，receipt `CommandRun comm
 **当前 DAG**：68条唯一任务及其原显式依赖独立核验一致、无环；**DONE20 / ACCEPTANCE0 / READY7 / TODO34 / DEFERRED7**，DOING/REVIEW/BLOCKED均0；macOS **20/61**，P2 **5/10**。只有 P2-04 ACCEPTANCE→DONE 与 P2-06 TODO→READY；READY=P0-08/P2-05/P2-06/P3-01/P4-02/P5-04/P5-06，全部未领取/未启动，其它任务状态/依赖不变。
 
 **本轮范围与版本控制**：仅本卡、IMPLEMENTATION_PHASES、SESSION及新 ignored [Host收口记录/独立静态核验](evidence/p2-04/final-host-closeout-20261008/README.md)。业务源码与harness SHA前后不变；未操作正式root、已有app/live child、GUI、网络设置、SystemProxy/TUN、权限或openbox.disign.me，cleanup/live资源复验 **NOT_RUN**。owner释放不意味着现场资源已清理。只读提交隔离评估 **BLOCKED**：HEAD `0230aa72539375b622422e0e76e009a399b81669` 缺P2-04所依赖的前序未提交实现及本卡Runtime/adapter模块，当前index无已暂存修改；无法形成不混入前序内容且可重建自洽的独立P2-04提交。未stage/commit、不制造空提交，不触碰index/dirtytree；后续基线整合由Host处理，无push/fetch/pull/rebase/reset/restore/clean/stash。
+
+
+<a id="p2-06-local-contract"></a>
+## P2-06 首轮最小契约（2026-10-08，历史，DOING）
+
+当前进度以[第二轮工程记录](#p2-06-round2)为准；以下首轮结果与失败原文保留。
+
+唯一 owner：Codex Runtime/Platform / Runtime共享DTO。基线 ac919f3729fed5a3cf0a2b3dbcbd4164b06a3597，初始工作树干净。
+
+生产 executable 与 prototype 分 feature/bin 隔离；封闭 IPC，无任意执行参数。Hello 不需要实例；业务会话由内核 UID/PID/进程启动身份确定，重连不撤销操作。固定帧/配置/事件限额、Host 时间预算、有限并发与 TTL/LRU 操作结果；UNKNOWN 必须重新查 Status，无持久 journal。Start/Apply 使用类型化业务配置与完整 epoch/config/selection CAS；受控 P2-02B compiler 本地生成。生产未具备安装/安全 writer-cache-manifest 交接时 fail closed；不得接管手动 child。SystemProxy 仅类型化接口/不支持状态，P2-07 实现未启动。
+
+测试保护：非法请求在副作用前拒绝；重复与断线不制造双 child；结果不把失败写成 Ready；跨进程不能 Stop；版本冲突不应用；事件和资源有界；客户端拒绝不可信 socket。OS 身份用隔离 socket 实测，其余生命周期用 Mock 并单列范围。Native 安装/卸载、普通用户 child、真实控制器与 GUI 均 NOT_RUN；实现者自查不等于 Host review。
+
+
+### 本轮交付与未完成边界
+
+- **生产源码已接线**：Core `application/helper_protocol.rs`；helper `src/production/{host,transport,main}.rs` / library；Desktop `runtime_service.rs` 与 `platform/helper.rs`。现有 AppServices composition 创建的 RuntimeService 持有真实生产 Client；UI 消费未开放。Helper worker 调用真实 P2-02B compiler，未把 opaque JSON 直接交内核。
+- **生产能力 fail closed**：缺固定资产/登记为 NotInstalled；属性不安全为 UnsafeEndpoint；即使固定 kernel 文件存在，仍 HandoffRequired、不启动进程。实际 kernel version 未核验，Hello 返回 None，另列 required 1.14.0。没有 installer/uninstaller、降权 child、controller adapter、跨 owner cache/manifest 的完整生产代码，**不能仅补 Native 测试后就 DONE**。旧手动 Runtime/恢复实现未改，prototype 源码/native 未改。
+- **有界本地合同**：协议1；控制16KiB、配置1MiB、资源0；connect/每帧2s，4连接worker+4队列，一个业务worker/在途，backend固定30s预算；操作结果128条/完成后120s TTL+LRU，UNKNOWN先Status，无journal；事件ring256/单批16/gap。UID/PID/start time 由 OS 取得，payload无owner；请求ID只在同一进程会话有效。SystemProxy仅封闭请求和Unsupported，没有系统写入。
+
+| 原卡验收 | 本轮证据范围 | 整项结论 |
+| --- | --- | --- |
+| 1 Hello/身份/版本/大小 | 无实例Hello、真实非特权peer UID/PID/start、拒绝版本/UID/额外字段/oversize/invalid frame；root目录/socket规则只作非特权拒绝及属性测试 | 本地合同 PASS；真实已安装root端点 NOT_RUN，不勾整项 |
+| 2 幂等/重连/操作查询 | Mock单child计数、同requestId/新ID重复Start、断线再连Inflight/Completed、TTL/LRU Unknown；真实Unix socket + 真实产品编译 | MOCK/OS隔离 PASS；真实child NOT_RUN，不勾整项 |
+| 3 受控请求/旧实例/无journal | 封闭schema拒绝任意path/PID/command/owner/timeout，跨session与复用PID启动身份拒绝、完整版本CAS、pending与旧writer拒绝、无持久journal | 本地合同 PASS；跨owner实际恢复未实现，不勾整项 |
+| 4 安装/用户身份/controller | 正式生产代码未完整实连；未执行管理员、launchctl、真实helper/kernel/GUI/System Proxy/TUN | NOT_RUN；不能以P0-05旧结果代替 |
+
+验证命令/exit/源码身份及初次失败见新 ignored [evidence/p2-06](evidence/p2-06/README.md)。Core **371**、Desktop **87**（原85+2，11 Native ignored）、production helper **14**、P0-05 **47**、原Python **2** PASS；Core/Desktop/helper production+prototype 的 `check --all-targets`、`clippy --all-targets -- -D warnings`、helper生产bin构建与fmt/diff结果分别记录。旧 `cargo clippy --manifest-path src-tauri/Cargo.toml --lib --offline -- -D warnings` **FAIL**：缺 `binaries/sing-box-1.14.0-windows-amd64/LICENSE`；未改旧Cargo/资源、未用TAURI_CONFIG覆盖。零测试的main/doc-test不计行为通过。
+
+实现者自查修复：AlreadyRunning结果漏留存、同版本不同配置的假确认、连接阶段缺超时、缺失/权限错误混淆；初次测试误把port=0当作AppState层拒绝，修正为真实compiler断言。两次clippy候选失败（collapsible_if、unused import/expect）原日志保留；不是Host独立review，Host review NOT_RUN。
+
+**状态**：P2-06 继续 **DOING**，不是只待第四项的 ACCEPTANCE；owner保留。完整68卡 DONE20 / DOING1 / ACCEPTANCE0 / READY6 / TODO34 / DEFERRED7。READY=P0-08/P2-05/P3-01/P4-02/P5-04/P5-06均未领取；P2-07仍TODO。仅本卡dirtytree保留，无commit SHA、无stage/commit/push；本卡未达到可按Task提交的完整实现候选，且规定旧Tauri检查失败，不提交不自洽候选。
+
+**下一步（仍属P2-06）**：补正式受控安装/卸载源码、固定资产身份验证、普通用户child+Ready/controller adapter，复用P2-04选择/manifest语义，完成单writer/cache的明确交接；未具备安全交接时继续拒绝，不接管已有手动child。上述代码完成后由Host独立review，再由Codex Desktop执行管理员安装/卸载、root目录/socket、真实普通用户child身份/FD配置、控制器选择/观测、断线重连/重复Start、停止清理与授权拒绝后手动代理 Native/GUI验收。P2-07多Service SystemConfiguration、P2-05应用出站、P6正式实现均不在本轮。
+
+
+<a id="p2-06-round2"></a>
+## P2-06 第二轮工程记录（2026-10-08，历史，DOING）
+
+当前见[第三轮工程记录](#p2-06-round3)，以下结果与OPEN原文保留。
+
+同一Task / WorkRun `work-5654-1791427311971442-122`，基线HEAD `ac919f3729fed5a3cf0a2b3dbcbd4164b06a3597`，继承首轮dirtytree，Codex继续唯一Runtime/Platform与Runtime DTO owner。写范围增加helper `assets/backend/process/install/process_tests.rs`、Core仅抽取原Desktop `owned_child::terminate`、Desktop复用与交接拒绝；不改P0-05 src/native，也不改ManualRuntime/recovery业务语义。没有领取P2-05/P2-07/P6。
+
+**实质新增**：固定root资产SHA/版本/父目录验证；复用ManualRuntime与RecoveryStore的真正check/run/Ready/reconcile/Stop/reap执行器；受保护FD3配置、清环境/setsid/清附加组/非root uid/gid启动代码；复用鉴权ClashApiClient；单owner当前cache inode授权与回收后快照；250ms自有child存活刷新和有界事件。安装CLI只接受固定bundle资源和OS console用户，SHA及root保护前置校验，固定plist/launchctl代码；非特权拒绝路径已测。以上root分支一律未执行。
+
+**尚未闭合的工程边界（不是Native测试欠缺）**：
+
+1. **P1 OWNER-HANDOFF OPEN**：Desktop独立worker与helper之间没有stop/reap + writer关闭的持久交接凭证，也没有受保护目录间cache/manifest身份/摘要/epoch核对与撤销机制。现有ManualRuntime仅有本进程gate，不能把status Stopped当作跨进程排他权。正式Backend资产校验后仍HandoffRequired，Desktop Start/Apply校验业务版本后也拒绝；不会为测试停止旧child。Host需确认后续最小交接契约，再继续本Task工程。
+2. **P1 REMOTE-SELECTION OPEN**：ManualRuntime::select_manual依赖本地SnapshotService/gate完成持久pending→PUT/GET→精确CAS确认。helper收到的AppState只能作编译输入；不能作为第二份可编辑事实。缺少desktop持久pending与helper操作结果的事务边界，因此Select仍HandoffRequired；启动reconcile和Observe已有真实执行器。不能把初始reconcile当作用户选择完成。
+3. **P1 INSTALL-LIFECYCLE OPEN**：固定install代码已提供，root保护的bundle/manifest打包与管理员授权调用UI未接通；uninstall只支持无socket/无runtime材料的离线完整安装。活动资源Stop/恢复/卸载barrier尚缺，失败保留材料；未尝试真机操作。
+
+| 四项验收 | 本轮证据 | 当前结论 |
+| --- | --- | --- |
+| 1 Hello/系统身份/版本/资源限额 | 无实例Hello、OS peer与请求拒绝合同已有测试；正式root端点未执行 | 非特权范围PASS，非完整平台验收 |
+| 2 会话/幂等/未知结果 | 原14合同/Mock/OS项保留；真实Backend经自有Unix socket验证重复Start、断线重连Operation、CAS、进程退出后Status撤销 | 非特权范围PASS，非Native |
+| 3 禁止任意执行/过期实例/永久日志 | 封闭路径/PID/命令拒绝、真实Backend stale/CAS复核、内存TTL结果；无journal | 非特权范围PASS；不能据此宣称交接与Select完成 |
+| 4 管理员安装/业务用户/controller | 仅固定源码和非特权拒绝测试；root身份变化、正式kernel与UI未运行 | NOT_RUN，禁止直接Native验收 |
+
+本轮Core371/Desktop87（11 ignored）/production helper20（1子进程fixture ignored）/prototype47/Python2均PASS；三包all-targets check/clippy -D warnings、production bin build、workspace/legacy fmt与diff均exit0。完整测试命令、exit、失败历史、源码SHA与自查见新 ignored [round2 evidence](evidence/p2-06/round2/README.md)，不覆盖首轮日志。原Tauri缺Windows LICENSE是已知外部fixture失败，不修改Legacy，也不以它作为本轮阻断依据。实现者自查不等于Host独立review。
+
+**状态保持DOING**，不能ACCEPTANCE/DONE；Runtime/Platform owner保留，DAG DONE20/DOING1/READY6/TODO34/DEFERRED7。READY=P0-08/P2-05/P3-01/P4-02/P5-04/P5-06；P2-07 TODO。工程合同未完整，按用户Git条件不stage/commit，继续保留本Task dirtytree，无新commit。先补上述工程缺口并由Host独立review，之后才交Codex Desktop管理员安装/取消/卸载、root目录socket、实际降权child/FD、Native鉴权controller/选择与必要UI验收；P2-07系统代理写入不在本卡。
+
+
+<a id="p2-06-round3"></a>
+## P2-06 第三轮工程记录（2026-10-08，DOING）
+
+同一Task，继承round2 dirtytree，HEAD仍`ac919f3729fed5a3cf0a2b3dbcbd4164b06a3597`，Runtime/Platform与Runtime DTO owner不变。没有改变P2-04 DONE、领取P2-05/P2-07；所有新增证据仅ignored `evidence/p2-06/round3/`。用户报告的Host round2源码复核与helper20复跑只属于前轮，不能当作本轮Host审批。
+
+**A 已实做的范围**：Desktop `RuntimeService::transfer_owner`使用真实串行worker；Core `helper_transfer.rs`、`manual_runtime/handoff.rs`、`runtime_recovery/handoff.rs`；Helper `Handoff`协议/Unix framing/worker/backend。双向同一流程：源先写Freezing并禁止Start/Select，实际Stop/reap后导出封闭plan/关闭cache/manifest；目标Prepared禁止启动，源Released持久确认后目标原子保存材料/manifest并标Local。转移不自动启动，恢复需新check/Ready。双epoch/config/selection精确CAS在桌面现有gate内核对；缓存代际、内核SHA/版本、plan/index/选择映射、关闭cache与live内容摘要一致。目标引用由摘要推导，拒绝payload任意路径。plan≤1MiB/cache≤2MiB/bundle JSON≤13MiB，仅Prepare/携带bundle的响应用资源class3，其余控制16KiB。业务pending、运行manifest与新业务epoch/已确认选择版本不符都在freeze/Stop前拒绝，不用旧cache清pending。
+
+票据同ID/版本/摘要可重试，半提交不解冻。每root仅一份当前交接记录、一份bundle、Runtime生命周期绑定；helper另用内核peer写固定0600会话记录，没有持久请求journal。Runtime重建不能用空Child冒充旧writer退出：nonce不匹配阻止Start/再次释放；helper重启只能由相同OS会话只读Query并返回recovery_required，不能自动恢复或跨session接管。干净首次启动无manifest时先拒绝且不写冻结标志，不冒充cold-start已交付。
+
+**Host新Finding修复**：同session新requestId Start不再从Host缓存直接Completed(Ready)，改为Inflight→owner worker同步poll/核验→实际Completed/错误；不创建第二child。同ID仍是历史结果。新增确定性Mock测试只暂停空闲poll，保留请求同步核验，证明退出后不能复用缓存Ready；真实OS退出状态撤销测试仍通过。
+
+**OPEN / 工程尚未完整**：
+
+- A的正常双向及半提交重试已在非特权真实进程/Unix socket验证；崩溃后的安全解除冻结、旧writer处置/重建尚无完整入口，当前只查询并fail closed。正式安装Backend和Desktop Start/Apply总gate仍HandoffRequired，不能称正式模式切换已可用。
+- **B REMOTE-SELECTION仍OPEN**：没有交付远程durable pending→PUT/GET→Desktop CAS→manifest闭环。关键缺口是本地gate若在IPC超时后释放，helper仍可能继续PUT，而同池新pending/epoch替换已发生；不能把持锁等待一次RPC或helper修改received-state当作解决。需要跨超时/断线仍有效、所有业务writer共同遵守的有界冻结/终止查询合同，再在实际GET后做完整SelectionVersion CAS确认及helper manifest回告。当前Select继续HandoffRequired，未添加影子业务CAS。
+- C活动Stop/恢复/卸载barrier未实现，沿用round2仅离线未使用安装可卸载的限制；未扩大到P2-07 SystemConfiguration。
+
+**验证**：最终Core371、Desktop88（新增1，11 Native ignored）、helper25（新增5，1内部子进程fixture ignored）、prototype47、Python2通过；三包all-targets check/clippy -D warnings、production build、fmt/diff结果及精确source SHA见[round3 evidence](evidence/p2-06/round3/README.md)。新增OS测试真正运行生产Backend与当前测试exe的kernel HTTP fixture，不是正式sing-box或root身份转换。P0-05源码/native未改；P2-04原选择/恢复逻辑未替换，新增专门交接模块、入口fence与full-version gate，旧371测试全部保留。
+
+仅code-delivery-review实现者自查，Host独立review本轮NOT_RUN。初次编译/Clippy失败日志保留，旧evidence不覆盖；没有真实root、已装helper、既有app/child、sudo/launchctl、SystemProxy/TUN、公网或GUI操作。**P2-06保持DOING**，不ACCEPTANCE/DONE，owner保留；工程未完整故不stage/commit，HEAD不变。DAG DONE20/DOING1/READY6/TODO34/DEFERRED7；READY P0-08/P2-05/P3-01/P4-02/P5-04/P5-06未领取，P2-07 TODO。下一步仍为本Task工程：补B及安全解冻/卸载，再Host独立review，之后才交Codex Desktop管理员安装/取消/真实降权child/Native controller/UI验收。
+
+
+<a id="p2-06-round4"></a>
+## P2-06 第四轮工程部分交付（2026-10-08）
+
+**DOING / Runtime-Platform及Runtime DTO owner保留；未提交，不能进入Native。** WorkRun `work-5654-1791427311971442-122`。用户提供Host已独立review第三轮并复跑Core371/Desktop88/helper25/prototype47的事实（CommandRun `command-5654-1791432070225921-130` exit0）；这不代表第四轮源码已获Host批准。本轮证据独立存入ignored [round4](evidence/p2-06/round4/README.md)，旧FAIL/SHA/源码历史按原结果保留。
+
+**P1 HANDOFF PREFLIGHT ORDER 修复候选**：`helper_transfer::transfer`在Stop/freeze前先读Desktop完整版本/pending/远程fence，ToHelper再只读核验当前confirmed/manifest、Configuration合法性和1MiB上限，经固定Client完成OS peer/socket/Hello协议/宿主/kernel能力检查，发送只读`Handoff::Preflight`确认目标资产/目录/历史owner可接入。生产HandoffRequired能力也会在此拒绝。之后prepare_handoff重新检查业务事实才持久freeze/Stop；执行期失败仍可能中断并冻结，未承诺不中断。真实隔离child回归：missing endpoint、bad protocol、接入拒绝、stale epoch/selection、合法超大配置都无Stop、无owner冻结，真实child仍存活、cache/manifest原字节保持。
+
+**B 已接通范围**：Desktop `RuntimeService` 的RuntimeCommand Select在原串行worker中路由到Core `helper_transfer::select_remote`；`JsonStateStore`先持久化一份16KiB有界fence再保存pending。所有普通save/commit/replace共用OS writer锁和fence检查，commit版本CAS与写文件同锁，局部controller PUT gate也持有该锁。SubscriptionManager/ProviderReplacement不需要另立状态机；独立gate或新进程仍不能跨越fence。Helper在自身当前实例、OS session、完整版本和稳定PoolId/NodeId核验后映射artifact tags，发真实controller PUT/GET；只有Desktop按完整SelectionVersion及requested/previous CAS确认或clear后，helper才更新manifest并接收桌面回告的非权威输入投影，最终解除fence。读回old时保存clear但返回选择失败；third/unknown不清pending。复用Host有界请求结果/Operation/事件；相同requestId不同payload拒绝，重试查询不重发PUT。没有helper第二份业务权威或永久请求journal。
+
+**确定性OS验证**：自有测试exe持有真实cache writer FD，正式Backend/Unix socket/controller loopback完成选择、发送端socket真实关闭/重连Query、同池GET屏障期间新pending/换epoch/原始写拒绝、桌面CAS成功后manifest失败重试；PUT计数核验无旧PUT重放。新OS进程验证writer互斥及持久fence，corrupt state不从旧backup清pending。Core373/Desktop88/helper28/prototype47/Python2 PASS；Core额外1 ignored和helper1 ignored为父测试实际调用的内部子进程fixture，Desktop11 Native ignored均NOT_RUN。三包all-targets check/clippy -D warnings、fmt/diff见最终receipt；最初两次oversize测试fixture不合法、初始方法可见性编译错误、初始PUT绝对计数断言、收尾只读handoff_state误拒绝pending的FAIL保留；后者已移回专用preflight_transfer并重跑helper28，不改写为PASS。实现者自查按code-delivery-review，不称独立review。
+
+**剩余OPEN**：A崩溃安全解冻/旧writer证明、首次cold-start与完整模式启用；B缺失存活slot/OS会话变更时仅保留fence，尚无安全重新绑定和终结UNKNOWN的恢复入口（不能自动Execute）；C活动Stop/恢复/卸载barrier及安装授权集成。B当前限定明确旧confirmed NodeId的Manual pool和已应用完整版本；未应用业务配置不混入旧运行实例。正式HandoffRequired继续保留，不用cfg(test)运行证据解除。P2-07真实SystemConfiguration仍Unsupported。完成工程缺口并经Host独立review后才可交Codex Desktop执行管理员安装/取消、真实降权child/controller和Native/UI。当前无commit条件，保留dirtytree。
+
+DAG保持DONE20 / DOING1 / READY6 / TODO34 / DEFERRED7；P2-04 DONE不变，P2-05 READY未领取，P2-07 TODO。Ready Queue：P0-08/P2-05/P3-01/P4-02/P5-04/P5-06。
+
+
+<a id="p2-06-round5"></a>
+### P2-06 第五轮工程交付（DOING）
+
+同一WorkRun `work-5654-1791427311971442-122`，parentExecution `execution-5654-1791432203384243-131`；Runtime/Platform、Runtime DTO owner保留。第四轮Host复跑CommandRun `command-5654-1791434121002287-132` exit0属于历史输入，本轮仅实现者自查。旧源码/FAIL/evidence保留，新证据 [round5](evidence/p2-06/round5/README.md)。
+
+本轮新增固定管理员文件请求→串行worker实际Stop/reap→ClosedBundle关闭cache/manifest校验→持久ACK→bootout→服务退出锁→删除固定安装文件的代码。管理员身份不进入普通客户端Peer。service生命周期锁与installer互斥锁是固定root文件；请求永久封住该安装，新命令/新服务不能越过。未确认remote selection只停止自有child，保留Desktop pending/fence且不ACK。封存/停止失败或未知旧材料不bootout/不删除恢复资料；生命周期锁释放不能证明旧writer已死。卸载成功分支仍保留封存runtime和marker，不擅自删恢复材料。增加无权限安装manifest摘要生成API，未接入真实打包/授权UI。
+
+初始root检查从已知文件列表收紧为完全空目录；没有manifest但有旧cache同样拒绝，不写session/新cache。重建backend即报告recovery_required，Host初始状态取实际backend。正式HandoffRequired总gate未解除，该检查不是完整cold-start合同。
+
+新增6项helper定向回归覆盖真实受控child Stop/reap/封存、未确认选择不清fence、manifest路径故障不ACK、OS服务进程kill后独立writer仍持FD而拒绝卸载、marker权限/symlink、旧cache无manifest。仅测试exe/自有temp；不是root/native结果。首轮3 FAIL来自错误的manifest字节不变预期与可被Stop正常刷新覆盖的故障注入；修正为业务字段不变和不可写manifest路径，原FAIL保留。
+
+**OPEN**：跨helper/Desktop崩溃及会话重建的安全解冻/接管、lost selection slot/UNKNOWN的有界终结、双方无历史材料的cold-start接受合同、卸载失败/持久marker后的恢复与重装、真实打包和授权UI接线。不能只凭新进程空Child handle清fence，不能自动恢复旧cache。P2-06仍DOING，四项验收未全部完成，不进入Native、不提交；P2-04 DONE不变，P2-05 READY未领，P2-07 TODO。
+
+第五轮完整离线验证：Core373 PASS/1内部fixture ignored，Desktop88 PASS/11 Native ignored，production-helper34 PASS/2内部fixture ignored，P0-05 prototype47 PASS，Python2 PASS。内部fixture由父测试显式运行；三包两feature all-targets check/clippy -D warnings、production bin build、workspace与Legacy fmt PASS。Native root/安装/授权/真实kernel/GUI均NOT_RUN。DAG仍DONE20/DOING1/READY6/TODO34/DEFERRED7；index空、HEAD不变。
+
+
+<a id="p2-06-round6"></a>
+### P2-06 第六轮：卸载归档与可重装候选（DOING）
+
+同一WorkRun `work-5654-1791427311971442-122`，parent `execution-5654-1791434235257029-133`。输入第五轮source `b8d0db73f6fbe8d765b8bbbbe4d974f7cc18537fcd2ab164ee4fc04ce2b3c682`，用户提供Host helper34/clippy复跑exit0；本轮不冒充Host独立review。Runtime/Platform owner保留，旧FAIL/证据不改，新证据 [round6](evidence/p2-06/round6/README.md)。
+
+修复“成功卸载留下固定root而永远Busy”：安装/卸载持有root外固定deployment-lock；ACK、固定bootout成功记录和服务退出锁齐备后，将plist移入旧root，再将整root以RENAME_EXCL原子迁到固定RecoveryArchive，条目名取OS dev/inode；0700、root归属、同文件系统、禁止symlink/可写目录/覆盖，fsync双方父目录。旧runtime/cache/manifest/fence/owner和凭据留在受保护Archive。新安装只验证Archive的归属/ACK/bootout记录，不消费历史数据。未知原root/Archive/残留plist拒绝安装。plist移入后的半卸载可重试；rename后的响应/同步失败可补同步。bootout真实成功但记录未落盘的SIGKILL窗口仍fail closed，需管理员人工核验，不假定已卸载。
+
+新增5项非特权OS测试覆盖两轮模拟卸载/重装、目录权限/符号链接、Archive冲突、真实rename不覆盖失败、半提交、缺失ACK、bootout模拟失败、自有SIGKILL子进程和锁。旧Core/Desktop/Runtime选择/owner协议没有改动。导出固定installation_plist生成函数，与原manifest生成/核验为bundle打包提供确定输入，但真实打包/授权UI仍未接通。
+
+**收口决策交Host**：Archive闭环可独立review；正式普通handoff启用仍是工程OPEN。现有Released由客户端DTO提供，helper未独立验证源固定释放记录/旧writer关闭，Desktop Start/Apply也仍保持拒绝；本轮未简单移除gate。Cold-start双方无历史且无writer的证明尚缺。未知owner或lost slot可考虑限定人工修复分支，但这需要Host明确确认验收取舍；当前没有宣称该取舍已批准，亦不清pending/fence或重发PUT。P2-06仍DOING、不提交、不Native，P2-04 DONE/P2-05 READY/P2-07 TODO不变。
+
+第六轮完整离线回归：Core373/1内部fixture ignored、Desktop88/11 Native ignored、helper39/2内部fixture ignored、prototype47、Python2 PASS；三包两feature all-targets check/clippy -D warnings、production build、workspace/Legacy fmt PASS。Native root/launchctl/真实kernel/GUI均NOT_RUN。DAG保持DONE20/DOING1/READY6/TODO34/DEFERRED7，index空、无提交。
+
+<a id="p2-06-round7"></a>
+### P2-06 第七轮：固定来源核验与有限正常交接（DOING）
+
+同一WorkRun `work-5654-1791427311971442-122`，parent `execution-5654-1791435120590446-137`。输入为round6及用户提供的Host Core373/Desktop88/helper39/prototype47 exit0。唯一Runtime/Platform及DTO owner保留；新ignored证据 [round7](evidence/p2-06/round7/README.md)，历史FAIL不改。
+
+正式Hello协议升级v2：handoff可预检与runtime已授权分离，解除预检依赖runtime授权的循环。Core在Stop/freeze前发布本进程OS身份与Runtime incarnation；helper从getpwuid_r固定Desktop root独立读取，不能由payload指定来源。预检观察唯一固定digest直接child的kqueue退出事件；Prepare要求真实退出/reap与Closed证据，Commit重读Released与完整ticket/manifest/关闭cache摘要。仅同Peer/start/incarnation在本helper生命周期内接受Local后，Start/Apply/选择每次重新核验来源；未授权仍HandoffRequired。Desktop同worker核对本地Stopped/Released、helper Local/Status及业务全版本，正式Start/Apply不再无条件拒绝；手动写入口仍冻结。
+
+新增2个真实非特权OS父测试，helper共41：Preflight只读成功且旧child保持运行；正常Stop/reap/Closed/Released/Commit后真实Unix IPC Start→认证Ready→重复Start同child→Apply→Stop；伪造PID、活源writer、错误incarnation/Peer/epoch/revision、非Released及坏bundle拒绝；已接受来源被修改时不启动新child且RecoveryRequired。源凭据/manifest保留，fixture验证自身child均reap并清理临时root。负面交接为真实Backend直接调用；执行链路才是实际socket。没有root/正式kernel/真实安装，不能冒充Native。
+
+**OPEN与收口决策**：仅适用预检时仍有可观察旧child、完整last-successful的正常会话。cold-first-start与预先Stopped来源仍拒绝；helper SIGKILL/丢slot、Desktop换session、未知orphan writer保留fence/RecoveryRequired，需明确人工修复决定。OS NOTE_EXIT证明观察到的直接child已退出，不等于同UID可写资料不可伪造，也不能排除隐藏writer；磁盘kernel SHA不等于加载代码签名。此有限信任边界待Host判断是否满足范围，不能称已完整工程收口。打包/授权UI仍缺；未进入Native，保持DOING、不提交。
+
+离线Core373/1内部fixture ignored、Desktop88/11 Native ignored、helper41/2内部fixture ignored、prototype47/Python2及check/clippy/build/fmt/diff见round7 receipts；内部fixture由父测试启动。最初Desktop参数漏接编译失败与proc_listchildpids返回值误读失败保留，修复后重跑。实现者按code-delivery-review自查，不冒充Host独立review。DAG DONE20/DOING1/READY6/TODO34/DEFERRED7；P2-05 READY、P2-07 TODO不启动。
+
+<a id="p2-06-round8"></a>
+### P2-06 第八轮：统一产品标识与helper退出清理（DOING）
+
+同一WorkRun `work-5654-1791427311971442-122`，parent `execution-5654-1791435786077906-140`。用户明确授权精确重命名：7文件13处原标识改为 `me.disign.veyra`，保留 `.gpui-preview/.helper/.p005` 后缀。Desktop固定数据目录与helper source同时更新，Tauri JSON、安装plist/label与probe一致；prototype仅LABEL/PLIST字符串变更，native和其余行为不变。全体有效tracked+非ignored untracked文本/文件名复扫旧值零残余，历史ignored evidence不动。新数据目录不会自动加载旧数据；没有迁移、fallback、删除、旧daemon卸载，专门迁移需另行批准。实际bundle签名/安装/升级未执行。
+
+Quit及worker断连在同一Runtime worker按持久owner处理。Released先通过固定Client核对helper Local同票据，按真实instance Stop并查询Operation及Status；超时不重发、UNKNOWN不假成功，半交接不冒充已停止。失败事件为Recovering/StopFailed，持久fence/owner保留。Query允许在未确认选择时只读核对owner，Stop不能清pending；只有实际无instance/applied且无RecoveryRequired才确认清理。窗口隐藏不等于退出；普通手动Start仍受Core owner fence阻止。P2-07 SystemConfiguration/TUN未实现。source Witness在kqueue注册后重新核对实际进程身份；原NOTE_EXIT+reap、固定source Closed→Released与完整hash校验继续保留，cold/未知session/丢slot不自动接管。
+
+新增Desktop半交接退出/拒绝第二writer测试、helper UNKNOWN/失败清理语义测试、Python跨组件身份测试；既有正常交接OS测试增加真实Client退出、错误票据拒绝、注入响应丢失后的同Operation查询、重复Quit。真实自有socket/child/wait与controller fixture；响应丢失为客户端故障注入，不冒充物理断网。初始Python测试遗漏system/前缀FAIL、两次Desktop退出读取snapshot导致state意外初始化FAIL保留；后者已去掉成功Quit快照读取，不修改原订阅回归。最终结果与源身份见 [round8 evidence](evidence/p2-06/round8/README.md)。
+
+仍DOING、Runtime/Platform+DTO owner不变。cold-first-start、未被观察的旧实例、跨崩溃owner/slot人工恢复与同UID文件信任边界、实际打包/授权接线仍OPEN。没有Native/root/launchctl/正式sing-box/GUI操作，没有stage/commit。DAG DONE20/DOING1/READY6/TODO34/DEFERRED7，P2-05 READY未领取，P2-07 TODO。
+
+<a id="p2-06-round9"></a>
+### P2-06 第九轮：限定应用标识纠正（DOING）
+
+用户纠正正确基础身份为 `me.disign.veyra`；只更新当前源码/配置/工具/测试/说明，保留 `.p005/.helper/.gpui-preview` 后缀和独立实验标识。当前第八轮说明同步为正确值，历史原始round8 evidence只读不变。本轮不推进Quit/交接/冷启动/恢复等功能。新数据根 `~/Library/Application Support/me.disign.veyra.gpui-preview` 与两个历史namespace隔离，不自动读取、迁移、覆盖或删除旧数据，不fallback、不卸载旧daemon；专门迁移需后续用户批准。Bundle/LaunchDaemon标识变更未进行真实安装/签名/授权验收。
+
+WorkRun `work-5654-1791427311971442-122`，parent `execution-5654-1791437186920664-143`。验证命令/输出、精确本轮diff、源码身份及零残留扫描见 [round9](evidence/p2-06/round9/README.md)。P2-06仍DOING、唯一Runtime/Platform+DTO owner保留，index空、不提交。DAG与round8不变，P2-05 READY/P2-07 TODO均不启动；无Native/root/GUI/系统配置操作。
+
+<a id="p2-06-round10"></a>
+### P2-06 round10：恢复查询只读边界（DOING）
+
+同一WorkRun `work-5654-1791427311971442-122`，parent `execution-5654-1791437881532671-148`。本轮修复Handoff Query/Preflight进入admin_barrier可触发Stop/封存的副作用：Query不进入drain；Preflight只读检查管理员请求并拒绝准入，不执行drain。已授权管理员poll/变更路径仍按原合同处理，后台独立drain不属于查询的无副作用承诺。没有新协议/API、冷启动开关或数据迁移。
+
+新增3项非特权测试：真实fixture child在Query与Preflight后仍活且无ACK/owner封存；重建Backend只读返回Closed+RecoveryRequired，跨session/宽权限凭据拒绝，Start仍拒绝；真实自有writer持有已unlink FD且目录完全空时，pristine_root虽返回空，正式requires_source准入仍HandoffRequired、不创建第二child。因此目录/文件/PID缺失不能等价于“从未有writer”。所有资源为测试自有，未碰真实安装/用户目录。
+
+四条验收现状：①Hello/身份/版本/限额已有生产协议及OS/Mock证据；②重复Start/Operation/断线结果查询已有实现，重启不承诺exactly-once；③封闭命令、CAS、session归属及无journal已有，未知恢复仍拒绝；④安装/卸载代码与隔离fixture已有，但真实管理员/root权限/降权kernel/controller/授权拒绝证据NOT_RUN，打包授权接线未闭合。不能把前三项自动测试等价于全卡通过。
+
+首次冷启动OPEN：固定安装资产和授权UID不证明Desktop此前没有writer，现有安装合同没有可信的独占首次owner接受事实。同UID用户资料及hash不等于root可信记录/加载代码签名。已向Host提出唯一范围决策：是否接受首版只从正在运行且可观察退出的手动实例交接、首次helper冷启动明确不支持；未有答复前不改变验收范围，继续DOING。若保持首次冷启动要求，需要单独明确可信安装准入合同，不能以空目录放行。旧Stopped、orphan、lost slot、跨崩溃情况仍独立拒绝。
+
+源码增量/测试输出/SHA见 [round10](evidence/p2-06/round10/README.md)。Runtime/Platform+DTO owner保持，P2-04 DONE、P2-05 READY未领取、P2-07 TODO不变；不stage/commit、不进入Native。
+
+<a id="p2-06-round11"></a>
+### P2-06 round11：内核真实basename / SystemProxy决策登记（DOING）
+
+同一WorkRun `work-5654-1791427311971442-122`，parent `execution-5654-1791438327148817-151`。用户决策A仅增补P2-07卡/方案§11.1.1/SESSION：主动开启允许接管已有代理，按Service ID先持久快照，Veyra Ready后条件应用/回读，关闭仅恢复仍匹配managed的字段组，外部更改保留报冲突，多服务/部分失败分别记录；没有SystemConfiguration代码，P2-07仍TODO无owner。
+
+决策B实际落地：共享受控文件名为`veyra-sing-box`；production安装bundle输入、受保护root、卸载固定文件检查、source Witness来源basename统一；ProcessPort从该固定资源exec，Archive仍整体封存不改格式。Desktop开发override及canonical结果均检查实际basename，旧名字/别名指向旧名字拒绝并给出明确诊断；bundle固定Resources/helper入口验证同名同SHA，P0-08产物尚未交付。P0-05原型安装/执行/资源探针与Python staging同步；P0-04/P0-07诊断工具只在自身新temp内重命名新解压文件后执行。没有exec-a、没有通过改进程名伪装、没有查杀外部sing-box。上游归档成员/字节SHA/1.14.0/Clash版本字符串/JSON语义及全部App identity不变。
+
+新增OS测试实际exec测试exe字节副本，通过proc_pidpath与proc_bsdinfo.pbi_comm核验均为veyra-sing-box，认证fixture Ready后Stop/reap；这是真OS basename证据但不是正式kernel/root Native。新增Desktop拒绝旧名/symlink/错误字节测试，Python跨链合同测试。离线Core373/Desktop90/helper46/prototype47/Python4均通过，all-targets check/clippy -D warnings、build/fmt/diff见 [round11](evidence/p2-06/round11/README.md)，本轮0失败。实现者code-delivery-review自查非Host独立review。
+
+明确剩余路径：Legacy Windows `src-tauri/src/platform/windows/managed_sidecar_port.rs:88`仍join sing-box.exe，配套managed_sidecar常量/Tauri Windows bundle映射亦未改；W0-01/W1-01及P0-08需在Windows fixture/打包资源可验证时完成，不能称全平台命名完成。P0-08真实macOS bundle产物与新basename Native check/run/降权/安装卸载均NOT_RUN。原P0-05 DONE审批只绑定旧baseline，历史证据不改，新basename实现不能复用旧Native PASS；不改变既有Task状态。
+
+已有安装/用户cache/旧namespace完全未操作、不迁移、不fallback，新installer不会覆盖旧root。P2-06原cold/未知owner恢复/打包授权等OPEN保留，DOING、Runtime/Platform+DTO owner不变；index空，不提交、不启动P2-05/P2-07/P6。DAG不变。
+
+
+<a id="p2-06-round12"></a>
+### P2-06 round12：安装归属事实与重试存活修复（DOING）
+
+用户要求首次安装/正常重启直接启动helper，不能依赖先运行手动代理；这是实现目标，不再请求产品确认。本轮安装器在固定deployment锁下、发布plist之前创建0600 `installation.json`，绑定随机安装世代、固定root dev/inode与授权UID/GID；资产加载和实际check/run复核绑定。复制到另一个root、缺失/半写/不安全权限拒绝，重试不覆盖，Archive保留原件。该记录只证明管理员安装归属，不证明旧Desktop writer已退出，不单独授予cold-start。
+
+同requestId成功Start重传现在进入串行worker同步poll并核对完整版本，不执行第二次Start；已Stopped/退出返回StaleInstance，仍活返回真实状态。Operation在重试前仍可查询历史结果，重新核验不延长原TTL，过期UNKNOWN。缺失/损坏安装身份的Backend报告RecoveryRequired，不以空slot冒充干净停止。非特权OS fixture覆盖实际Unix peer、NOTE_EXIT、Stop/reap与安装Archive，Mock覆盖TTL。
+
+首次bootstrap/正常重启仍OPEN：现有Desktop Released票据依赖last-successful+已观察的活child，尚无首次无历史的持久让权合同；root安装世代尚未与Desktop Runtime worker跨进程独占及可重试提交绑定。下一步应限定同一安装世代/本产品自有资源，补双方合作的独占与启动前提交，不再要求证明全机器从未存在writer。已知旧root/崩溃/孤儿/lost selection slot继续拒绝，不能重置pending/fence；同UID用户文件hash不是管理员凭据/代码签名。新旧安装不自动迁移。
+
+精确diff、失败与修复、源码SHA/命令、四场景与四项验收边界、Host review建议及后续Native提示词见 [round12](evidence/p2-06/round12/README.md)。本轮不启动P2-05/P2-07，未实现SystemConfiguration/TUN，Native NOT_RUN，不提交。
+
+
+<a id="p2-06-round13"></a>
+### P2-06 round13：跨父端失联的writer租约（DOING，未开放首次Start）
+
+首次合作准入最小合同仍为 `未占有 → Desktop持久冻结 → helper Prepared → 同票据Commit → helper已占有 → Start`，半提交保持冻结。不能用安装记录/空目录直接跳到Start；正常跨进程重启另需真实Stop/reap、关闭cache/manifest及无pending的持久clean-stop凭据。
+
+本轮切成可运行底层增量：固定安装root `runtime-writer-lock` 由正式ProcessPort持有，check/run继承同一open-file-description到FD4（配置仍FD3），父端死亡/关闭自身FD不释放仍活child的租约；新owner不能取得同一锁。每次spawn校验锁path与持有inode、owner/mode/nlink一致，替换/权限攻击拒绝。Assets只读Preflight检查既有锁，不创建文件，冲突在旧Desktop冻结/Stop之前拒绝；Backend在写输入投影/owner记录之前实际取锁。Archive在已有ACK、lifecycle条件之外再取writer锁，失败不移动原root/资料。租约只能证明参与本合同的writer互斥，不证明任意旧writer已死，不放宽旧owner/pending/fence。
+
+新增非特权OS测试实际继承FD4、杀死自有服务持锁进程、保持另一自有writer存活，确认新租约及Archive拒绝；writer真实退出/wait之后才可再次取锁。服务模拟进程和writer均由父测试持有Child，不是运行真实helper/sing-box，bootout为Mock。现有真实Backend/kernel fixture所有check/run也验证FD4继承；正式降权kernel是否保留该FD需Native确认。
+
+**首次独立Start仍OPEN**：本轮未增加bootstrap IPC、Desktop首次无历史冻结/确认、可查询提交或跨会话clean-stop恢复；不是首要业务目标已达成。最小下一实现范围是把既有安装世代与当前Desktop worker持久owner、完整版本、OS peer绑定到受限prepare/commit/query，不新增任意path/PID输入；未知分支继续拒绝。本轮Native NOT_RUN，不提交，全部精确diff/SHA/命令/Host review及后续提示词见 [round13](evidence/p2-06/round13/README.md)。
+
+
+<a id="p2-06-round14"></a>
+### P2-06 round14：首次本地冻结与初始化竞争修复（DOING）
+
+**已实装的有限增量（a）**：`RuntimeService.freeze_first_bootstrap`由同一worker调用Core，在完整版本、无pending/remote fence、受限Configuration、本地Stopped且无成功历史及无已知旧材料前提下，持久绑定incarnation及`BootstrapFrozen{id, installation, version}`。同一进程同票据幂等；`owner_transfer`可在回复丢失及重启后查询；重启不允许冒用旧incarnation重试/解冻，Manual Start/Select拒绝。历史材料或symlink拒绝且不清除。安装世代参数仅关联候选，不是授权token；空目录/空Child槽没有被用来开放helper Start。
+
+**Host finding修复**：`InstalledBackend::initialize`在借用assets时取得/验证writer lease，成功后才take。真实OS锁竞争失败保留assets且不写owner/received-state；持久写阶段一旦开始，失败锁定HandoffRequired/RecoveryRequired，保留owner资料。相应隔离测试覆盖锁释放后同backend重新取得租约、owner写后失败不重试、真实fixture child运行时拒绝first-freeze且保持原实例/manifest。
+
+**明确未完成（b/c）**：首次root受限prepare/commit/query、root安装预检到Desktop freeze的调用方编排、helper核验Desktop的合作让权与OS排他证明、正常跨进程clean-stop重开仍OPEN。新freeze是内部阶段API，尚未由产品/UI自动调用；调用方在未来接线前必须完成目标安装/世代/版本/能力预检，不能直接调用freeze后才发现helper不可用。`BootstrapFrozen`既不是Released也不是Local，现有Start/Handoff Commit均不因此放行。没有新增可用bootstrap IPC，也不称用户首次独立Start已支持。
+
+**验证**：Core376（1内部fixture ignored）、Desktop91（11 Native ignored）、helper56（3内部fixture ignored）、P0原型47、Python4；三包all-targets check/clippy -D warnings、production build、fmt/diff通过。最初定向测试漏导入StateEpoch编译失败已修复，原FAIL保留。OS隔离只运行测试自有child/Unix socket/文件锁，不代表root、真实veyra-sing-box、Native授权或UI验收。精确增量/逐文件SHA/命令收据/实现者自查与后续Host要点见[round14](evidence/p2-06/round14/README.md)。P2-06保持DOING，不提交，不启动P2-05/P2-07。
+
+
+<a id="p2-06-round15"></a>
+### P2-06 round15：root首次Preflight/Prepare/Query已接通（DOING，Start未开放）
+
+**实际生产通路**：封闭Bootstrap协议进入既有Host单worker，沿用版本/UID/配置大小/frame校验与固定客户端endpoint。只读Preflight验证安装身份/generation、实际OS peer、完整版本、root旧资料/lease/管理员撤销条件，返回Eligible；不创建运行目录/文件、不停止child。Desktop同worker先预检成功再Core freeze并发布SourceSession；root Prepare从固定UID home相对路径读取冻结记录/incarnation/session，核对票据和OS UID/PID/start，再持有writer lease、create_new+fsync单份0600 prepared记录。配置只保留digest，不产生第二份业务事实。相同peer/票据/配置可幂等Prepare和Query，半状态/未知旧owner拒绝，跨helper重建丢slot仅RecoveryRequired，不重新夺锁或消除证据。
+
+**Host finding**：incarnation存在但owner-transfer缺失的半写入，root Prepare拒绝；同一Desktop Runtime的Start及重新freeze均拒绝，保留现场。测试模拟该磁盘半状态，不声称已经注入真实硬盘fsync失败。
+
+**明确剩余OPEN**：没有Commit或BootstrapCommitted，没有首次独立Start；Desktop单实例PrimaryInstance持锁事实尚未作为受系统可验证证据传给helper，source同UID资料不是代码签名或旧writer退出证明；需在现有锁/Runtime边界闭合合作排他与提交版本后再准入。正常跨进程clean-stop重开仍缺。旧live handoff Witness/NOTE_EXIT/reap与P2-04业务状态/远程选择fence继续走原通路，P2-07网络修改未实现。首次使用产品决策无需重问。
+
+**验证范围**：新增Core/真实Desktop worker、Helper固定安装角色/真实Unix socket与OS peer/文件锁测试；客户端处理root Prepared ACK后模拟返回Timeout，后续真socket重试/Query保持记录；源Port禁止spawn，真实child/FD4沿用完整回归。Core377（1内部fixture ignored）、Desktop92（11 Native ignored）、Helper60（3内部fixture ignored）、P0原型47、Python4及check/clippy -D warnings/build/fmt/diff通过。root/签名/真实kernel/GUI/SystemConfiguration/TUN NOT_RUN。精确diff、source identity、命令receipt、威胁边界和Host review见[round15](evidence/p2-06/round15/README.md)。仍DOING，不stage/commit，不领取其它Task。
+
+
+<a id="p2-06-round16"></a>
+### P2-06 round16：同OS会话首次Committed→独立Start（DOING）
+
+新增`BootstrapAction::Commit`/`BootstrapPhase::Committed`。Prepare及Commit独立连接业务UID passwd home派生的固定primary socket，以OS返回的UID/PID/start与当前RPC Peer比较；固定desktop.lock必须实际被flock占有，固定socket/lock权限、类型和inode均检查。2-byte OWNER_PROBE/ACK不发送ACTIVATE、不打开窗口。承诺只覆盖守约产品参与者，不认证加载代码签名、不声称抵御恶意同UID修改文件/伪造合作协议。
+
+Core先核对完整业务版本/pending/fence并持久BootstrapFrozen；root绑定安装generation、ticket、配置摘要、source incarnation与primary inode，持唯一writer lease。create_new 0600 committed marker和文件/父目录fsync成功后才确认Committed。同会话Query/Commit幂等；半写、丢slot、旧peer、异常child退出保留记录并拒绝新Start。ProcessPort继承同open-file-description的lease副本，无重新加锁或释放窗口；check/run继续真实FD4。首次没有last-successful仅在此独立分支允许，旧手动Released/Local与Source Witness/NOTE_EXIT路径不放宽。
+
+Desktop同worker新增commit_bootstrap，只有该worker确认Commit后才允许Frozen分支Start，实际请求再次核对helper Committed/Status和当前业务版本；本地Manual Start/Select继续被持久Frozen阻止。Quit可以在primary listener先关闭后查询已提交owner并Stop/Operation/Status；不把本地空Port当远端Stopped。无GUI自动开关接线。
+
+**真实能力及OPEN**：非特权OS fixture已证明源Desktop从未运行child，root角色后端经真实Unix IPC独立启动本测试`veyra-sing-box`可执行文件，鉴权controller Ready，重复Start不新建、Stop/reap后同会话同配置重启。它不是实际root/真实sing-box验收。跨Desktop/helper进程clean-stop重开、bootstrap分支Apply/远程选择/反向移交仍拒绝或Unsupported；已有未知owner/orphan/lost-slot不能并入首次路径。P2-06四项验收仍未全闭合，保持DOING。P2-07 SystemConfiguration/TUN不实现。
+
+Core377（1内部ignored）、Desktop93（11 Native ignored）、Helper65（4内部fixture ignored，父测试会启动对应fixture）、P0原型47、Python4通过；初始测试FAIL、修复、check/clippy/build/fmt/diff与源码身份见[round16](evidence/p2-06/round16/README.md)。这是实现者自查，后续Host独立review；无暂存/提交、无Native/管理员/系统设置操作。
+
+
+<a id="p2-06-round17"></a>
+### P2-06 round17：CleanStop凭据及Primary退出清理（DOING，跨Session未开放）
+
+本轮按用户允许的A增量收口：Core复用既有ClosedBundle校验，只有当前ManualRuntime真正Stop/reap、生命周期Stopped、last-successful完整版本一致且无pending/fence时，读取plan、关闭cache与live cache、manifest并核验。bootstrap Stop绑定当前root安装世代、旧Peer UID/PID/start、source incarnation、ticket/config摘要及owner-session，原子持久0600 `bootstrap-lifecycle.json`。记录仅一份当前cycle/关闭材料摘要；不是journal，也不是新Peer授权。下一次Start先持久Running（closed=None）、cycle+1，再执行check/run；半写pending文件不擦除，失败RecoveryRequired。
+
+P1修复：Prepared注册OS kqueue NOTE_EXIT并前后核验peer启动身份；Backend.poll收到明确Primary退出事件时仅通过已持有的Runtime/Child句柄Stop/reap，异常退出不签发CleanStop。socket断线/窗口隐藏/缺PID不触发清理。保留FD4孤儿writer租约与Archive阻断。新真实Primary子进程+内核fixture测试覆盖断线仍Ready、Primary退出后内核回收/非Ready、根记录仍Running/未知，旧Frozen不变；不得解释为真实GUI验收。
+
+跨Desktop/helper进程的rebind Prepare/Commit、读取CleanStop后完整资料重验并切换新incarnation/owner-session仍OPEN；未修改旧Frozen或接受新Peer，不声称跨Session重开通过。同Session首次Start/Stop重启保留。bootstrap Apply/选择/反向移交仍未开放。shutdown_owner的bootstrap_touched限制保留：新worker不能拿旧Frozen假定有权停止或接管旧session；正常退出同worker仍走Query/Stop/Operation/Status，listener先关闭不等同owner退出。Native/真实root/kernel/GUI及P2-07网络写入均NOT_RUN。
+
+Core377（1内部ignored）、Desktop93（11 Native ignored）、Helper67（4内部fixture ignored）、原型47、Python4 PASS；all-targets check/clippy、production build、fmt/diff通过。初始clippy FAIL及完整收据、精确diff/SHA/自查和下一步提示词见[round17](evidence/p2-06/round17/README.md)。P2-06 DOING，P2-04 DONE/P2-05 READY/P2-07 TODO不变；未暂存/提交。
+
+
+<a id="p2-06-round18"></a>
+### P2-06 round18：新Primary受控Rebind准备（DOING，Commit/Start未开放）
+
+新增封闭BootstrapAction RebindPreflight/RebindPrepare/RebindQuery，沿用配置1MiB/控制帧上限及既有OS peer/worker。Desktop RuntimeService.prepare_rebind→Core helper_transfer先校验当前业务完整版本/无pending/fence→root只读CleanStop预检→本地写固定runtime/bootstrap-rebind.json→root Prepare→Query。申请包含旧/新ticket和新OS session/nonce，不覆盖旧Frozen、incarnation或source-session；原Frozen持续阻止本地Start/Select。
+
+root必须仍持有原ManualRuntime真实Stop/reap事实和writer lease：重新通过Core读取并校验last-applied/plan/关闭cache/live cache、重算ClosedBundle摘要，与当前CleanStop/cycle及安装generation/owner-session绑定比较；旧Peer必须已产生NOTE_EXIT。新Peer同UID/GID但PID/start不同，固定Primary lock/socket OS证明和保留旧source资料必须成立。root写0600/create_new/fsync bootstrap-rebind-prepared.json；同票据/peer/资料匹配可重试Query。半写保留slot/材料；新peer不获运行权，Status恢复状态保持。
+
+新增多进程OS用例：旧Primary启动受控fixture内核，正常Stop后退出；新Primary预检/本地申请/Prepare/Query通过，旧来源字节不变；旧owner仍活、dirty live cache被拒绝；Prepared后Start仍拒绝；重建helper Backend因缺旧Runtime/租约/退出观察而拒绝。Query另经新Primary真实Unix客户端与Host执行。Prepare正例直调真实Backend并使用OS socket采样Peer，不冒充全动作端到端IPC。
+
+**OPEN**：原子/可查的Rebind Commit、新root owner-session与Desktop本地确认、同lease下新Peer Start及后续多次重开尚未实现。不能只改self.session，也不能将Prepared当Local/Committed。helper重启恢复及既有bootstrap Apply/选择/反向交接继续拒绝。Native/GUI/真实kernel/root/授权、P2-07 SystemConfiguration/TUN均NOT_RUN。Core377/Desktop93/helper68/原型47/Python4及check/clippy/build/fmt/diff通过；完整FAIL/修复/收据/SHA/自查见[round18](evidence/p2-06/round18/README.md)。P2-06仍DOING，其它卡状态不变，无stage/commit。
+
+
+<a id="p2-06-round19"></a>
+### P2-06 round19：同helper生命周期的一轮跨Primary提交与启动
+
+状态仍DOING，唯一Runtime/Platform+shared DTO owner保持；P2-04 DONE/P2-05 READY/P2-07 TODO未变。实际新增Core `commit_rebind` 与本worker申请读取、Desktop `RebindCommit`/受控ticket路由、Helper独立RebindCommit/新owner生命周期。原Frozen/incarnation/SourceSession及原root Prepared/Committed/owner-session不覆盖；新root提交记录保留旧cycle/closed证据，单独current-owner记录指向经OS认证的新peer。文件及目录fsync全成功后才切内存session/NOTE_EXIT；半写保留RecoveryRequired。ProcessPort与lease不重建、不释放重flock。新Start先失效CleanStop且cycle递增。
+
+双真实Primary、Unix RPC/Core编排、受控`veyra-sing-box`测试exe经FD3/FD4、鉴权Controller fixture验证：首个Commit回复丢失→Query确认、重复Commit/Start、Ready→Stop/reap；旧Peer/版本漂移/新ticket/Prepare后cache污染/半marker拒绝，原凭据字节保持。Core377/Desktop93/helper70/原型47/Python4、三包all-targets check/clippy -D warnings及fmt通过。完整收据、失败与修复、源码身份见[round19](evidence/p2-06/round19/README.md)。这是实现者自查，不是Host review或Native证据。
+
+**能力限制**：只开放同一个仍存活helper中一轮旧Primary→新Primary；新peer同session继续Stop/Start沿用已有生命周期规则。第三Desktop会话再次轮换尚未实现（固定rebind申请/marker不覆盖旧历史），helper重启/lost slot/orphan仍拒绝自动恢复。Bootstrap Apply/Select、产品GUI自动消费与真实管理员安装/降权/授权/内核/视觉仍OPEN/NOT_RUN。P2-07 SystemConfiguration/TUN不在此实现，不允许提前Native或标DONE。

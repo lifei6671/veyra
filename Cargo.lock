@@ -9314,6 +9314,7 @@ dependencies = [
  "tokio",
  "tray-icon",
  "veyra-core",
+ "veyra-helper-prototype",
 ]
 
 [[package]]
@@ -9334,6 +9335,8 @@ dependencies = [
  "serde",
  "serde_json",
  "sha2 0.10.9",
+ "tokio",
+ "veyra-core",
 ]
 
 [[package]]

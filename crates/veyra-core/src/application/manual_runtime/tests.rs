@@ -1,7 +1,7 @@
 use super::*;
 use crate::{
     application::state_access::StateAccessGate,
-    domain::{AppState, RouteTarget},
+    domain::{AppState, RouteTarget, StateEpoch},
     singbox::{
         GeneratedConfig,
         runtime::{ManagedSidecar, SidecarPortError},
@@ -2245,4 +2245,159 @@ fn host_rework_partial_confirm_cas_conflict_retains_committed_result_and_pending
     assert!(trace.lock().unwrap().active.is_none());
     assert!(!owner.sidecar.snapshot().has_candidate_config);
     std::fs::remove_dir_all(root).unwrap();
+}
+
+// 首次freeze只封住Desktop writer，不能被当成helper授权；重启和丢回复均不得解冻。
+#[test]
+fn first_bootstrap_freeze_is_durable_idempotent_and_incarnation_bound() {
+    let (mut owner, trace, store, root) = fixture();
+    let version = owner.handoff_state().unwrap().version();
+    let id = StateEpoch::fresh().unwrap();
+    let installation = StateEpoch::fresh().unwrap();
+    let record = owner
+        .freeze_first_bootstrap(id.clone(), installation.clone(), version.clone())
+        .unwrap();
+    assert_eq!(
+        owner
+            .freeze_first_bootstrap(id.clone(), installation.clone(), version.clone())
+            .unwrap(),
+        record
+    );
+    assert!(owner.execute(RuntimeCommand::Start, |_| {}).is_err());
+    assert_eq!(
+        owner.select_manual(ManualSelectionRequest {
+            instance: InstanceId("unstarted".into()),
+            expected: version.selection.clone(),
+            pool: PoolId("manual".into()),
+            node: NodeId("a".into()),
+        }),
+        Err(SelectionError::Pending)
+    );
+    assert_eq!(trace.lock().unwrap().checks, 0);
+    assert!(
+        owner
+            .freeze_first_bootstrap(
+                StateEpoch::fresh().unwrap(),
+                installation.clone(),
+                version.clone()
+            )
+            .is_err()
+    );
+    let bytes = std::fs::read(root.join("runtime/owner-transfer.json")).unwrap();
+    drop(owner);
+    let snapshots = Arc::new(SnapshotService::new(store, StateAccessGate::default()));
+    let mut restarted = ManualRuntime::new(Mock(trace.clone()), snapshots, root.clone(), true);
+    assert_eq!(restarted.owner_transfer().unwrap(), Some(record));
+    assert!(
+        restarted
+            .freeze_first_bootstrap(id, installation, version)
+            .is_err()
+    );
+    assert!(restarted.execute(RuntimeCommand::Start, |_| {}).is_err());
+    assert_eq!(
+        std::fs::read(root.join("runtime/owner-transfer.json")).unwrap(),
+        bytes
+    );
+    assert_eq!(trace.lock().unwrap().checks, 0);
+    std::fs::remove_dir_all(root).unwrap();
+}
+
+#[test]
+fn first_bootstrap_rejects_stale_version_and_known_history_without_freezing() {
+    let (mut owner, trace, _store, root) = fixture();
+    let version = owner.handoff_state().unwrap().version();
+    let mut stale = version.clone();
+    stale.selection.0.revision += 1;
+    assert!(
+        owner
+            .freeze_first_bootstrap(
+                StateEpoch::fresh().unwrap(),
+                StateEpoch::fresh().unwrap(),
+                stale
+            )
+            .is_err()
+    );
+    assert_eq!(owner.owner_transfer().unwrap(), None);
+    let history = root.join("kernel-cache/old-writer.db");
+    std::fs::write(&history, b"preserve unknown writer").unwrap();
+    assert!(
+        owner
+            .freeze_first_bootstrap(
+                StateEpoch::fresh().unwrap(),
+                StateEpoch::fresh().unwrap(),
+                version
+            )
+            .is_err()
+    );
+    assert_eq!(owner.owner_transfer().unwrap(), None);
+    assert_eq!(std::fs::read(history).unwrap(), b"preserve unknown writer");
+    assert_eq!(trace.lock().unwrap().checks, 0);
+    std::fs::remove_dir_all(root).unwrap();
+}
+
+#[test]
+fn first_bootstrap_does_not_accept_symlink_or_old_incarnation_as_empty_history() {
+    // 不把同UID可改的空目录当root可信证明；已知危险路径/旧归属在freeze前拒绝。
+    for symlink in [true, false] {
+        let (mut owner, _trace, _store, root) = fixture();
+        let version = owner.handoff_state().unwrap().version();
+        if symlink {
+            std::fs::remove_dir(root.join("runtime/configs")).unwrap();
+            std::os::unix::fs::symlink(root.join("kernel-cache"), root.join("runtime/configs"))
+                .unwrap();
+        } else {
+            std::fs::write(root.join("runtime/owner-incarnation.json"), b"old owner").unwrap();
+        }
+        assert!(
+            owner
+                .freeze_first_bootstrap(
+                    StateEpoch::fresh().unwrap(),
+                    StateEpoch::fresh().unwrap(),
+                    version
+                )
+                .is_err()
+        );
+        assert_eq!(owner.owner_transfer().unwrap(), None);
+        if symlink {
+            assert!(
+                std::fs::symlink_metadata(root.join("runtime/configs"))
+                    .unwrap()
+                    .file_type()
+                    .is_symlink()
+            );
+        } else {
+            assert_eq!(
+                std::fs::read(root.join("runtime/owner-incarnation.json")).unwrap(),
+                b"old owner"
+            );
+        }
+        std::fs::remove_dir_all(root).unwrap();
+    }
+}
+
+#[test]
+fn bootstrap_target_preflight_failure_never_freezes_desktop() {
+    // 未安装/版本不兼容时用户仍可手动启动；首次预检必须在freeze及SourceSession写入前。
+    use crate::application::{helper_protocol::Error, helper_transfer::prepare_bootstrap};
+    for error in [
+        Error::NotInstalled,
+        Error::IncompatibleVersion,
+        Error::HandoffRequired,
+    ] {
+        let (mut owner, trace, _store, root) = fixture();
+        let version = owner.handoff_state().unwrap().version();
+        assert_eq!(
+            prepare_bootstrap(&mut owner, StateEpoch::fresh().unwrap(), version, |_| Err(
+                error
+            )),
+            Err(error)
+        );
+        assert_eq!(owner.owner_transfer().unwrap(), None);
+        assert!(!root.join("runtime/owner-incarnation.json").exists());
+        assert!(!root.join("runtime/source-session.json").exists());
+        assert_eq!(trace.lock().unwrap().checks, 0);
+        owner.execute(RuntimeCommand::Start, |_| {}).unwrap();
+        owner.execute(RuntimeCommand::Stop, |_| {}).unwrap();
+        std::fs::remove_dir_all(root).unwrap();
+    }
 }

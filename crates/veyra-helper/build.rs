@@ -1,4 +1,7 @@
 fn main() {
+    if std::env::var_os("CARGO_FEATURE_P0_05_PROTOTYPE").is_none() {
+        return;
+    }
     assert_eq!(std::env::var("CARGO_CFG_TARGET_OS").unwrap(), "macos");
     assert_eq!(
         std::env::var("MACOSX_DEPLOYMENT_TARGET").as_deref(),

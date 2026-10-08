@@ -7,6 +7,7 @@ impl From<crate::storage::StateStoreError> for AppError {
         let detail = match error {
             E::RevisionConflict => return Self::new(AppErrorCode::RevisionConflict),
             E::InvalidState(_) => return Self::validation(FieldPath::Snapshot),
+            E::WriteFenced => ErrorDetail::Busy,
             E::ReadFailed => ErrorDetail::Read,
             E::WriteFailed => ErrorDetail::Write,
             E::ReplaceFailed => ErrorDetail::Replace,

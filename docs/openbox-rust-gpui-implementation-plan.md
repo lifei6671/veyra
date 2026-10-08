@@ -808,6 +808,8 @@ SystemProxy 不因交给 helper 管理就默认让内核以 root 运行。纯手
 
 #### 11.1.1 代理快照与恢复
 
+**用户已批准的产品决策（P2-06 round11登记，仅P2-07实施）**：用户主动开启SystemProxy时，允许接管其他软件当前已设置的代理，不因已有代理而拒绝。以Network Service ID识别服务，写前持久保存HTTP/HTTPS/SOCKS、PAC、自动发现、绕过名单的原始状态（含缺失/启停语义）；Veyra自身check/认证Ready/选择对账完成后，才核对预期实际值、条件应用并回读。关闭时仅恢复实际仍匹配Veyra managed的相关字段组；其它软件后来修改的状态保留，报冲突，不自动抢回、不无限重试。按服务分别记录未写/成功/失败/冲突/已删除；部分失败只回退可确认仍属于本次托管的修改，未知结果保留恢复材料，禁止笼统报告全部恢复。新服务先独立快照，服务切换不覆盖旧快照，不按显示名寻找替代服务。此决策不是本轮实现：P2-07仍TODO，依赖P2-06/P2-05，不领取owner，不执行SystemConfiguration。
+
 沿用现有三态思路：`ProxySnapshot` 是接管前的相关字段，`ManagedProxyState` 是本应用写入的精确值，`ObservedProxyState` 是操作前或回读时取得的实际值。按 Network Service ID 保存一份记录，包含 snapshot、managed、业务 owner 和当前处理结果；observed 现场读取，不再复制成一套持久状态库。
 
 接管时将 HTTP/HTTPS/SOCKS 指向受管 mixed 端口，禁用 PAC 和自动发现，采用固定的本地地址绕过规则；原 PAC URL 等未需改写的值保留，绕过规则变化包含在快照内。先持久化恢复记录，再提交系统变更并回读确认；部分失败只回退本次已确认属于自己的修改。实际值不确定时保留恢复记录并报告，不能直接宣告未接管。
@@ -859,6 +861,10 @@ macOS Unix socket 与 Windows Named Pipe 共用以下业务请求/结果语义�
 版本在连接握手时校验；只给相关操作添加实例/配置字段，Start 前不伪造实例 ID。普通控制消息、候选配置和资源各有明确大小上限，超限在执行前拒绝；上限与现有下载限制及样本在 P2 固化。操作时间预算由宿主按操作类别约束，不接受客户端任意延长。
 
 有副作用的操作使用请求 ID 去重，同一已验证会话中的重复请求返回在途或已保留结果；不得启动第二个 child。业务会话绑定已验证的桌面进程身份，同一进程短暂断线重连不重新创建会话。结果缓存有界，过期后返回未知，客户端先查询实际状态再决定下一步。断线和超时不等于撤销已发生的操作。宿主重启后的判断依靠受管实例/恢复记录，不引入永久请求日志或跨重启 exactly-once 保证。不兼容版本拒绝修改，仍可展示修复入口。
+
+P2-06 当前局部落地（2026-10-08）见[任务记录](openbox-rust-gpui-tasks/P2-local-proxy.md#p2-06-local-contract)：协议 v1 的 Unix transport、OS peer、有限操作结果与 Desktop 串行入口已实现，控制16KiB/配置1MiB；compiler外部资源0，第三轮交接bundle另有13MiB上限；事件256/单批16，结果128/120秒TTL。[第二轮](openbox-rust-gpui-tasks/P2-local-proxy.md#p2-06-round2)已有ManualRuntime生产执行器、固定资产/安装部分代码及非特权真实进程测试；跨owner缓存/manifest交接、远程选择pending与活动卸载barrier仍缺，正式入口HandoffRequired，Task保持DOING，不表示本节目标已验收。系统代理请求当前Unsupported，P2-07未启动。 [第三轮](openbox-rust-gpui-tasks/P2-local-proxy.md#p2-06-round3)新增双向关闭cache/manifest交接票据与持久fence、重启只读Query、新requestId Start同步存活核验；B远程选择及安全解冻/活动卸载未闭合，生产总gate未解除。
+
+[第四轮](openbox-rust-gpui-tasks/P2-local-proxy.md#p2-06-round4)前移handoff只读预检，新增远程选择的Desktop持久fence（16KiB）和共享JSON OS writer锁：pending→当前helper controller PUT/GET→Desktop完整CAS→helper manifest/已确认输入投影→解除fence。旧值clear仍报告选择失败，third/unknown保留pending；断线查询不重复PUT，缺失存活slot或OS会话变更不自动解除冻结。未闭合旧owner安全恢复、cold-start和活动卸载，正式HandoffRequired保留，仍DOING。
 
 ### 11.3 macOS 生命周期
 

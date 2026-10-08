@@ -22,3 +22,6 @@ impl std::fmt::Display for PlatformError {
     }
 }
 impl std::error::Error for PlatformError {}
+
+#[cfg(target_os = "macos")]
+pub mod helper;

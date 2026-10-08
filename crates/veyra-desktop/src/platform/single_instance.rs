@@ -139,12 +139,23 @@ pub fn acquire(d: &AppDirectories) -> Result<Ownership, PlatformError> {
                     let _ = s.set_read_timeout(Some(Duration::from_millis(200)));
                     let _ = s.set_write_timeout(Some(Duration::from_millis(200)));
                     let mut command = [0; 2];
-                    if same_user(&s)
-                        && s.read_exact(&mut command).is_ok()
-                        && command == ACTIVATE
-                        && tx.send(InstanceCommand::Activate).is_ok()
-                    {
-                        let _ = s.write_all(&ACK);
+                    if s.read_exact(&mut command).is_ok() {
+                        use veyra_core::application::helper_protocol::{OWNER_ACK, OWNER_PROBE};
+                        let (mut uid, mut gid) = (0, 0);
+                        let identified =
+                            unsafe { libc::getpeereid(s.as_raw_fd(), &mut uid, &mut gid) } == 0;
+                        if command == OWNER_PROBE
+                            && identified
+                            && (uid == 0 || uid == unsafe { libc::geteuid() })
+                        {
+                            // primary整个listener生命周期持有flock；root仅可读probe，不允许ACTIVATE。
+                            let _ = s.write_all(&OWNER_ACK);
+                        } else if command == ACTIVATE
+                            && same_user(&s)
+                            && tx.send(InstanceCommand::Activate).is_ok()
+                        {
+                            let _ = s.write_all(&ACK);
+                        }
                     }
                 }
                 Err(e) if e.kind() == std::io::ErrorKind::WouldBlock => {
@@ -174,6 +185,27 @@ mod tests {
             std::process::id(),
             NEXT.fetch_add(1, Ordering::Relaxed)
         )))
+    }
+    #[test]
+    fn owner_probe_is_read_only_and_preserves_primary_lock() {
+        use veyra_core::application::helper_protocol::{OWNER_ACK, OWNER_PROBE};
+        let d = dirs();
+        let Ownership::Primary(owner, mut rx) = acquire(&d).unwrap() else {
+            panic!()
+        };
+        let mut s = UnixStream::connect(d.socket()).unwrap();
+        s.set_read_timeout(Some(Duration::from_secs(2))).unwrap();
+        s.write_all(&OWNER_PROBE).unwrap();
+        let mut ack = [0; 2];
+        s.read_exact(&mut ack).unwrap();
+        assert_eq!(ack, OWNER_ACK);
+        assert!(matches!(
+            rx.try_recv(),
+            Err(tokio::sync::mpsc::error::TryRecvError::Empty)
+        ));
+        assert!(locked_file(&d).unwrap().is_none());
+        drop(owner);
+        std::fs::remove_dir_all(d.application_support).unwrap();
     }
     #[test]
     fn primary_secondary_fixed_activate_and_one_services_writer() {

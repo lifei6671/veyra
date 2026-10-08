@@ -1,3 +1,41 @@
+**P2-06 round19 / DOING**：同helper生命周期内首轮跨Desktop RebindCommit→新Primary独立Start→鉴权Ready→Stop/reap已接通并由真实双Primary/Unix IPC/受控内核fixture验证。提交保留旧Frozen/source/root审计，root create_new提交/当前owner并fsync后切内存；cycle继承且新Start先使CleanStop失效，lease同open-file-description持续持有。首个Commit回复丢失只Query，重复Start/错版本/脏cache/半marker/旧Peer拒绝。Core377/Desktop93/helper70/原型47/Python4及check/clippy/fmt通过，初始测试FAIL保留，见[round19](evidence/p2-06/round19/README.md)。**仅一轮旧→新Primary转换；第三会话继续轮换、helper重启恢复、bootstrap Apply/Select、GUI消费与Native仍OPEN/NOT_RUN**。保持DOING/owner/DAG/index空，不提交，不推进P2-05/P2-07。
+
+**P2-06 round18 / DOING**：新Primary的RebindPreflight→Core持久申请→root Prepared→Query已接生产协议与Desktop同worker。root持旧lease重算CleanStop关闭bundle，核验旧NOTE_EXIT、owner-session/安装generation及新OS Primary；保留旧Frozen/incarnation/source-session。真实两代Primary进程及IPC Query、脏cache拒绝/幂等测试通过。**Rebind Commit/新peer Start仍未实现，helper重启仍拒绝**，不声称跨Session重开完成。Core377/Desktop93/helper68/原型47/Python4及工程检查通过；初始编译FAIL与fixture IPC失败/中断保留，见[round18](evidence/p2-06/round18/README.md)。owner/DAG不变，index空，无提交/Native。
+
+**P2-06 round17 / DOING**：交付A的同helper生命周期CleanStop固定凭据及P1修复：真实Stop/reap后核验完整版本/pending/fence、关闭plan/cache/manifest、owner-session，再写root-only当前生命周期记录；新Start先持久使旧CleanStop失效，cycle单调递增。bootstrap注册OS NOTE_EXIT，Primary异常退出时helper只清理自有Child，保留Unknown/RecoveryRequired且不签CleanStop。新Primary rebind Prepare/Commit与跨进程重开B/C仍未实现，继续拒绝。Core377/Desktop93/helper67/P0原型47/Python4及工程检查通过，clippy初始FAIL保留；[round17](evidence/p2-06/round17/README.md)。Native NOT_RUN；owner、DAG、index空和不提交约束保持。
+
+**P2-06 round16 / DOING**：同一Runtime/Platform+DTO owner。已接通固定Primary socket只读probe+OS UID/PID/start与flock核验、root持久Committed、同一lease FD接入ProcessPort，以及Desktop同worker Commit确认后的独立Start。真实非特权socket/测试child证明无需先运行手动代理即可check/run/鉴权Ready，重复Start同实例、同会话Stop/reap后同版本重启；跨进程clean-stop、bootstrap Apply/远程选择、GUI消费与Native仍OPEN/NOT_RUN。Core377/Desktop93/helper65/P0原型47/Python4通过；详细receipt与初始FAIL见[round16](evidence/p2-06/round16/README.md)。未暂存/提交，P2-04 DONE/P2-05 READY/P2-07 TODO不变。
+
+**P2-06 round15 / DOING**：同一Runtime/Platform+DTO owner。正式Bootstrap只读Preflight、root持久Prepared/Query已接IPC；Desktop同worker→Core先预检再freeze/发布SourceSession→root独立核验固定source/OS peer/安装generation→持有lease并Prepared。失联重试绑定同票据/配置摘要；丢slot仅RecoveryRequired；incarnation-only拒绝。未实现Commit/独立Start及跨进程clean-stop，不删除gate。Core377/Desktop92/helper60/P0原型47/Python4、all-targets check/clippy/build/fmt通过；[round15证据](evidence/p2-06/round15/README.md)。P2-04 DONE/P2-05 READY/P2-07 TODO不动，未Native/暂存/提交。
+
+**P2-06 round14 / DOING**：交付 Desktop 单worker→Core durable `BootstrapFrozen`、同票据重试及只读查询；重启不解除冻结，Manual Start/Select继续拒绝。此记录仅是本地限制，不是root授权，未接产品/UI自动调用。修复helper lease竞争在取得独占前吞掉assets；owner写入后的失败保持RecoveryRequired。首次root prepare/commit/安装预检编排和跨进程clean-stop仍OPEN，独立First Start仍不可用。Core376/Desktop91/helper56/P0原型47/Python4，三包check/clippy/build/fmt通过；新证据 [round14](evidence/p2-06/round14/README.md)。Runtime/Platform+DTO owner保留；P2-04 DONE/P2-05 READY/P2-07 TODO不动，无Native/提交。
+
+**P2-06 round13 / DOING**：唯一Runtime/Platform+DTO owner保持。生产helper新增安装级writer OS租约，check/run通过FD4继承；父端失联后child仍持锁，Archive不能越过活writer。预检不创建文件，持锁冲突在Desktop Stop/freeze前拒绝。首次bootstrap/跨进程clean-stop提交仍未实现，不解除HandoffRequired，不声称新安装独立Start可用；只做有界底层增量。证据 [round13](evidence/p2-06/round13/README.md)，无Native/系统配置/Git提交；P2-04 DONE/P2-05 READY/P2-07 TODO保持。
+
+**P2-06 round12 / DOING**：Runtime/Platform+DTO唯一owner保留。新增固定root安装世代与资产绑定，修复同requestId Start重放旧Ready；未知安装身份报告RecoveryRequired。首次直接启动是已确认产品目标，但Desktop首次让权/正常重启凭据与bootstrap提交尚未实装，不能用安装世代独立解锁，HandoffRequired保持。仅自有fixture/离线检查，无Native，不stage/commit；P2-04 DONE、P2-05 READY、P2-07 TODO不变。新证据 [round12](evidence/p2-06/round12/README.md)，历史FAIL保留。
+
+**P2-06 round11 / DOING**：执行用户已批准的内核本地basename `veyra-sing-box`；唯Runtime/Platform+DTO owner保留。只改受控启动链/测试/必要当前说明；P2-07仅登记主动接管/条件恢复的产品决策，仍TODO无owner。旧安装/缓存/历史证据不动，不stage/commit，无Native。新证据 `evidence/p2-06/round11/`。 用户已批准SystemProxy主动接管已有代理：写前按Service ID保存全字段，Ready后条件写入/回读，关闭只恢复仍匹配managed的字段组，外部变更保留报冲突，多服务/部分失败逐项记录；仅补P2-07/设计文档，无网络实现。
+
+**P2-06 round10 / DOING**：唯一Runtime/Platform+DTO owner保留。限定只读恢复Query/Preflight不触发管理员drain，验证空目录/缺文件不能授权cold-start；不放宽准入、不推进其它Task，无Native/安装/迁移。证据 `evidence/p2-06/round10/`，原dirtytree与index空保留。
+
+**P2-06 第九轮 / DOING · 仅标识纠正**：用户确认正确基础身份 `me.disign.veyra`；本轮仅精确替换身份及测试/当前说明，Runtime/Platform+DTO owner保留，不推进功能。两个历史namespace目录与旧daemon不读取、不迁移、不覆盖、不删除、不fallback；迁移另需批准。旧round8证据只读保留，新证据 [round9](evidence/p2-06/round9/README.md)。index空、不提交，P2-05 READY/P2-07 TODO不启动。
+
+**P2-06 第八轮 / DOING**：同一Task及唯一Runtime/Platform/DTO owner保留。统一新身份 `me.disign.veyra`（Desktop/source/Tauri/helper/prototype/probe），不迁移旧数据或操作旧daemon。单worker Quit核验helper owner并Stop/Operation/Status，失败Recovering、UNKNOWN保留fence；窗口隐藏不变。源码/真实验证与初次FAIL见 [round8](evidence/p2-06/round8/README.md)。cold/未知崩溃恢复、同UID信任边界及打包授权仍OPEN；不Native、不stage/commit，原dirtytree保留，其它Task不启动。
+
+**P2-06 第七轮 / DOING**：同一Task，Runtime/Platform与共享DTO owner保留。正式handoff预检能力与runtime授权分离，固定source Released+本helper观察的旧child退出/reap+完整票据验证后，有限正常会话可Start/Apply/Stop；Desktop同worker接线。Core373/Desktop88/helper41/prototype47/Python2，最终检查见 [round7](evidence/p2-06/round7/README.md)。cold/预先Stopped来源、崩溃后未知owner/slot、同UID资料信任边界、打包授权仍OPEN；DOING、不Native、不stage/commit。旧dirtytree/FAIL保留，其它Task不启动。
+
+**P2-06 第六轮 / DOING**：同一Task，Runtime/Platform owner保留。先修复ACK后固定root原子封存与可重装，再核对正式handoff释放证明；仅helper安装/archive及必要测试/文档，无root/launchctl/Native操作，不领取其它任务。旧dirtytree/证据保留；新证据 [round6](evidence/p2-06/round6/README.md)。Archive释放ROOT且保留历史的隔离OS路径已测；Core373/Desktop88/helper39/prototype47/Python2通过。正式handoff释放证明、cold-start及未知owner/slot恢复仍OPEN；不解除gate、不提交、不Native。
+
+**P2-06 第五轮工程实施 / DOING**：同一 Task，Runtime/Platform 与共享 DTO owner 保留。固定管理员卸载请求与串行 Stop/封存、服务生命周期锁为本轮写范围；未知旧 owner/丢失 selection slot 仍 fail closed，不解除正式 gate。仅隔离 fixture，旧证据保留；Core373/Desktop88/helper34/prototype47/Python2及check/clippy/build/fmt通过。新增活动停止封存barrier，旧owner/UNKNOWN恢复、cold-start与卸载失败恢复/重装仍OPEN；证据 [round5](evidence/p2-06/round5/README.md)，不领取 P2-05/P2-07、不提交。
+
+**P2-06 第四轮工程部分交付 / DOING**：同一 Task / WorkRun `work-5654-1791427311971442-122`；Runtime/Platform 与 Runtime DTO owner 保留。先修复 HANDOFF PREFLIGHT ORDER，再补远程选择持久 fence/IPC/CAS；写范围为当前 Core Runtime/state storage 必要公共写边界、Desktop worker、production helper、当前文档。仅自有 temp/socket/test exe；保留旧 dirty tree 和证据，禁止 Native/root/真实系统配置，不领取 P2-05/P2-07。新证据 [round4](evidence/p2-06/round4/README.md)。预检顺序修复、Desktop持久fence/真实IPC PUT-GET/CAS/manifest正常与失败重试已实做；Core373/Desktop88/helper28/prototype47/Python2通过。缺失存活slot/未知旧owner的安全恢复与活动卸载仍OPEN；正式HandoffRequired保留，不进入Native、不提交。见[第四轮](P2-local-proxy.md#p2-06-round4)。
+
+**P2-06 第三轮工程部分交付 / DOING**：同一Task，Runtime/Platform与Runtime DTO owner保留；优先双向writer/cache/manifest交接和远程pending/CAS，修复新requestId重复Start存活核验。写范围限定Core交接seam、Desktop worker/helper、production helper及本卡文档；锁为单Runtime worker与业务StateAccessGate，资源仅自有temp/socket/测试exe。P2-04 DONE不变，不领取P2-05/P2-07。新证据 `evidence/p2-06/round3/`，旧dirtytree/日志保留。 已交付双向关闭cache/manifest握手与持久fence、同票据重试/重启只读查询、重复Start同步存活修复；B远程pending/CAS、崩溃后安全解冻和C活动卸载仍OPEN，正式总gate保持。Core371/Desktop88/helper25/prototype47/Python2通过；不stage/commit，不直接Native。见[第三轮](P2-local-proxy.md#p2-06-round3)。
+
+**P2-06 第二轮工程部分交付 / DOING**：同一Task，WorkRun `work-5654-1791427311971442-122`；保留首轮dirtytree与所有历史证据，owner不变。生产进程/固定资产/安装入口与跨owner缺口继续工程实现，仅非特权隔离进程测试，禁止Native/root/系统设置操作。独立证据目录 `evidence/p2-06/round2/`。Core371/Desktop87/helper20/prototype47/Python2、三包all-targets check/clippy、build/fmt/diff PASS；11 Desktop Native ignored，1 helper fixture由测试内部启动。 已新增真实ProcessPort/ManualRuntime执行器、固定安装代码和OS隔离测试；缺owner交接、远程选择pending闭环及活动卸载barrier，正式入口HandoffRequired。不得直接进入Native；见[本轮记录](P2-local-proxy.md#p2-06-round2)。工程未完整，不stage/commit。
+
+**2026-10-08 P2-06 首轮工作（历史）**：基线 `ac919f3729fed5a3cf0a2b3dbcbd4164b06a3597` / `codex/dist-react-restore` / clean；READY → DOING。Codex 是唯一 Runtime/Platform、Runtime DTO owner。仅生产 helper/IPC、桌面 composition、必要 Core 契约与本卡文档；P0-05 prototype 保留隔离。Host 后续独立 review；Native 安装/GUI 交 Codex Desktop。禁止真实 root/child/网络设置/管理员操作；仅 Mock、测试自有 Unix socket 和临时目录。锁范围为 Runtime worker、helper 会话/操作缓存及 Cargo 局部依赖条目；不领取 P2-05/P2-07/P6。当前 DONE20 / DOING1 / READY6 / TODO34 / DEFERRED7。IPC/受控编译/客户端接线已完成本地检查；生产 child、安装、controller 和 writer/cache/manifest 交接代码仍未完整实现，故保持 DOING，不转 ACCEPTANCE。Core371/Desktop87/helper14/prototype47+Python2 PASS；新 workspace check/clippy PASS；旧 Tauri clippy 缺 Windows LICENSE 资源 FAIL。未 commit/push，保留本卡 dirtytree。见[交付边界](P2-local-proxy.md#p2-06-local-contract)。下方带日期历史原文保留，其“当前”不覆盖本段。
+
 **任务文档同步（2026-10-08，当前版本控制状态）**：P0-05 → P0-06 → P2-01 → P2-02A → P2-02B → P2-03 → P2-04 已按依赖顺序形成七个独立提交，末端 `dcc9b7b2b7aa32e6f3c472eeae42f24ed2f22906`；远端历史已通过 `fdb8930a010ed321e496caa62a98257c64031b8a` 合并，文件树不变，七个 SHA 保留。此前“Git 隔离 BLOCKED / 未提交”的收口记录仅描述当时现场，现已解除。本次仅同步四份任务文档，不修改源码、不重跑 Native/GUI、不启动下游、不 push。P2-04 DONE、Finding CLOSED、P2-06 READY 及 owner 释放保持；完整提交验证见[提交链报告](evidence/p2-04/git-history-integration-20261008/integration-20261008T100426/REPORT.md)。
 
 **P2-04 Host FINAL ACCEPTANCE（2026-10-08，当前）**：Host独立确认PASS，P2-04 ACCEPTANCE→DONE，P2-04-PENDING-PERSISTENCE-001及前轮P1/P2 Finding均CLOSED；Runtime/Platform及Runtime公共契约owner/本卡预约释放，不意味着已有app/root/child被操作或清理。Core source aggregate `987a01782c59d75c913f20a8133fd37df27638951f73cf3168cb2b35c3ff4fa8` 与harness身份精确绑定，Host核验77 Native事件/逐行日志、六组恢复及preflight、P1/P2限定注入、原14条exit0，另MCP新复跑Core371/Desktop85 exit0（11 ignored显式覆盖），receipt见[收口证据](evidence/p2-04/final-host-closeout-20261008/README.md)。自然HTTP/OS故障、SIGKILL、无控制线程竞态仍NOT_RUN，历史REWORK与原证据不改写。本轮仅文档/静态核验，无Cargo/Native/GUI/真实资源操作。DAG DONE20/ACCEPTANCE0/READY7/TODO34/DEFERRED7，共68；P2 5/10、macOS20/61；P2-06仅TODO→READY，全部READY未领取/启动。Git独立提交BLOCKED：HEAD缺前序未提交实现，无法安全隔离P2-04-only自洽提交；index未触碰、无stage/commit/push。见[正式收口](P2-local-proxy.md#p2-04-final-host-closeout)。
@@ -82,13 +120,13 @@
 | P7 数据与发布收尾 | 0 / 5 | 未开始，schema/清理按显式依赖等待 | P7-05 未开始 |
 | Windows W0–W3 | 0 / 7 | 后续排期 DEFERRED | W3-02 未开始 |
 
-macOS：**20 / 61 完成**；READY 7、TODO 34、DOING 0、REVIEW 0、ACCEPTANCE 0、BLOCKED 0。Windows 7 项 DEFERRED 单列，共 68 项。数量不等于工期权重或代码完成百分比；P1-04/P2-02/P4-05 父项被后缀子项替代，不重复计数。
+macOS：**20 / 61 完成**；READY 6、TODO 34、DOING 1、REVIEW 0、ACCEPTANCE 0、BLOCKED 0。Windows 7 项 DEFERRED 单列，共 68 项。数量不等于工期权重或代码完成百分比；P1-04/P2-02/P4-05 父项被后缀子项替代，不重复计数。
 
 ## 2 Active Tasks
 
 | Task | owner / 泳道 | 写范围 / 公共契约 | 实际资源 / 下一动作 |
 | --- | --- | --- | --- |
-| — | — | 无活跃任务 | P2-04 DONE；Runtime/Platform及Runtime公共契约owner/本卡预约已释放 |
+| P2-06 · DOING | Codex · Runtime/Platform | helper production/IPC、Core Runtime DTO、desktop runtime_service/platform、局部 Cargo 接线、任务文档 | 仅自有 temp/socket/测试exe child；不操作已有 writer/cache/manifest；执行器及固定安装部分代码已测，已有双向交接/停止前预检与选择fence/IPC/CAS/manifest；新增卸载Archive/重装隔离；尚缺正式handoff释放证明、cold-start与UNKNOWN/旧owner恢复，禁止直接Native |
 
 P2-04 Runtime/Platform及Runtime公共契约owner/本卡预约已释放；P2-03既有预约释放保持。本轮仅文档收口，未对app/root/live child或bundle/fixture操作，不声称资源已退出或已清理。
 
@@ -104,20 +142,19 @@ P1-07 已 DONE 并从 Active Tasks 移除，GPUI owner 与本卡资源预约释�
 | --- | --- | --- |
 | P0-08 · READY | P0-03、P0-05均DONE；后续下载消费P0-06显式client与范围限制 | 未领取；不启动 |
 | P2-05 · READY | P2-03、P0-06均DONE | 未领取；不启动 |
-| P2-06 · READY | P2-03、P2-04、P0-05均DONE | 仅TODO→READY，未领取；不启动 |
 | P3-01 · READY | P2-03、P0-07均DONE | 未领取；不启动 |
 | P4-02 · READY | P2-01、P2-02A、P2-02B、P1-03、P1-04A均DONE | 未领取；不启动 |
 | P5-04 · READY | P2-02B、P2-03均DONE | 未领取；不启动 |
 | P5-06 · READY | P2-01、P1-05、P1-04A均DONE | 未领取；不启动 |
 
 
-当前68卡：DONE20 / ACCEPTANCE0 / DOING0 / REVIEW0 / READY7 / TODO34 / BLOCKED0 / DEFERRED7；READY仅P0-08/P2-05/P2-06/P3-01/P4-02/P5-04/P5-06，均未领取/未启动；P2-04 DONE、Finding CLOSED，Runtime/Platform及Runtime公共契约owner/本卡预约已释放。只有P2-04 ACCEPTANCE→DONE及P2-06 TODO→READY，其它状态/显式依赖不变。
+当前68卡：DONE20 / ACCEPTANCE0 / DOING1 / REVIEW0 / READY6 / TODO34 / BLOCKED0 / DEFERRED7；READY仅P0-08/P2-05/P3-01/P4-02/P5-04/P5-06，均未领取/未启动；P2-04 DONE、Finding CLOSED保持。P2-06 DOING、Runtime/Platform及Runtime公共契约owner=Codex；P2-07/P6依赖未满足，不转READY。其它状态/显式依赖不变。
 
 **P2-03当前契约**：正式运行配置必须调用P2-02B `compile_product(ProductCompileRequest { state, runtime_intent, default_outbound, resources })`，显式消费 `project_selected_runtime()` 的 `runtime_intent` / `projected_default_target`（转换为 `OutboundId`）；不得继续使用 `application/runtime.rs` 现有ObservationOnly `compile(...)`作为正式运行配置。参见[P2-03任务卡](P2-local-proxy.md#obg-p2-03)。已实现并由Host最终确认功能与视觉“符合”；本轮仅文档收口，不启动下游。
 
 ## 4 Blocked
 
-没有BLOCKED任务；P2-04 DONE、P2-04-PENDING-PERSISTENCE-001及前轮P1/P2 Finding CLOSED，owner/预约已释放；P2-06 READY但未领取/启动。P2-04独立Git提交隔离曾BLOCKED，仅为当时版本控制基线阻断；现已随七任务提交链整合解除，不将已验收Task改为BLOCKED。P2-03-BACKEND-BASIC-SETTINGS-004/P2-03-VISUAL-FULL-PAGE-002/P2-03-VISUAL-FIDELITY-003 CLOSED，Host已确认Basic2 build功能与视觉“符合”；BUSY-001历史不改写。P2-01-VISUAL-FULL-PAGE-001 CLOSED，Host已确认build38-final完整页面“符合”。P0-05原卡真实GUI owner缺口已关闭，E按原始定义PASS；executable/service/root-total-deadline均optional hardening NOT_RUN。历史macOS15实机、字体/blur/截图等限制保留于原任务证据，不伪造新结果。
+没有BLOCKED任务；P2-04 DONE、P2-04-PENDING-PERSISTENCE-001及前轮P1/P2 Finding CLOSED，owner/预约已释放；P2-06 DOING并保留Runtime/Platform owner。P2-04独立Git提交隔离曾BLOCKED，仅为当时版本控制基线阻断；现已随七任务提交链整合解除，不将已验收Task改为BLOCKED。P2-03-BACKEND-BASIC-SETTINGS-004/P2-03-VISUAL-FULL-PAGE-002/P2-03-VISUAL-FIDELITY-003 CLOSED，Host已确认Basic2 build功能与视觉“符合”；BUSY-001历史不改写。P2-01-VISUAL-FULL-PAGE-001 CLOSED，Host已确认build38-final完整页面“符合”。P0-05原卡真实GUI owner缺口已关闭，E按原始定义PASS；executable/service/root-total-deadline均optional hardening NOT_RUN。历史macOS15实机、字体/blur/截图等限制保留于原任务证据，不伪造新结果。
 
 ## 5 基线与验证记录
 

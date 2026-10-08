@@ -257,6 +257,14 @@ impl<P: SidecarPort> ManualRuntime<P> {
         command: RuntimeCommand,
         mut publish: impl FnMut(ManualRuntimeSnapshot),
     ) -> Result<RuntimeResult, RuntimeError> {
+        if !matches!(command, RuntimeCommand::Stop | RuntimeCommand::Refresh)
+            && !self
+                .store()?
+                .local_owner_available(&self.nonce)
+                .map_err(RuntimeError::RecoveryUnavailable)?
+        {
+            return Err(RuntimeError::RecoveryUnavailable(RecoveryError::UnsafePath));
+        }
         let result = self.execute_inner(command, &mut publish);
         if result.is_err()
             && self.sidecar.active_identity().is_none()
@@ -922,6 +930,15 @@ impl<P: SidecarPort> ManualRuntime<P> {
         &mut self,
         request: ManualSelectionRequest,
     ) -> Result<SelectionVersion, SelectionError> {
+        if !self
+            .records
+            .as_ref()
+            .map_err(|_| SelectionError::StateUnavailable)?
+            .local_owner_available(&self.nonce)
+            .map_err(|_| SelectionError::StateUnavailable)?
+        {
+            return Err(SelectionError::Pending);
+        }
         let RuntimeState::Ready {
             instance_id,
             applied_version,
@@ -1063,3 +1080,7 @@ impl<P: SidecarPort> ManualRuntime<P> {
 #[cfg(test)]
 #[path = "manual_runtime/tests.rs"]
 mod tests;
+
+mod handoff;
+
+mod remote_selection;

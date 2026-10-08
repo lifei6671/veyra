@@ -357,7 +357,10 @@ def main():
         assert sha(archive) == DIGEST, 'digest mismatch: do not execute'
         with tarfile.open(archive) as bundle:
             bundle.extractall(root, filter='data')
-        binary = root / 'sing-box-1.14.0-darwin-arm64/sing-box'
+        # root是本次mkdtemp；保留上游成员/字节，只调整本地执行basename。
+        upstream_binary = root / 'sing-box-1.14.0-darwin-arm64/sing-box'
+        binary = root / 'veyra-sing-box'
+        upstream_binary.rename(binary)
         version = command([str(binary), 'version'])
         assert version.returncode == 0 and REVISION in version.stdout and 'darwin/arm64' in version.stdout
         artifacts['kernel-identity.json'] = {'tag': TAG, 'commit': REVISION, 'archive_url': ARCHIVE_URL,

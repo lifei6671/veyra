@@ -207,7 +207,10 @@ impl AppView {
             view.tray.prepare_quit();
             let done = view.services.manual_runtime.shutdown();
             cx.background_executor().spawn(async move {
-                let _ = done.recv();
+                // 退出等待有界Runtime清理；失败是Unknown，不能记录成已停止。
+                if !matches!(done.recv(), Ok(Ok(()))) {
+                    eprintln!("runtime quit cleanup unresolved; recovery records retained");
+                }
             })
         });
         eprintln!(

@@ -5,4 +5,4 @@ mod snapshot;
 mod store;
 mod validation;
 
-pub use store::{JsonStateStore, StateStore, StateStoreError};
+pub use store::{JsonStateStore, RemoteSelection, SelectionFence, StateStore, StateStoreError};

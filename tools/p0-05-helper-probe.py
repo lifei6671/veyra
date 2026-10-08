@@ -28,7 +28,7 @@ import urllib.request
 URL = "https://github.com/SagerNet/sing-box/releases/download/v1.14.0/sing-box-1.14.0-darwin-arm64.tar.gz"
 DIGEST = "a150c94012ff768b7261939cd236b9c8554127f45137230295d23a5660225cc9"
 BINARY_DIGEST = "973388c3f720e918fc64dff7fd75dde14b31cc1aa6fc15855e2f00c5291dd4f4"
-LABEL = "com.lifei6671.veyra.p005"
+LABEL = "me.disign.veyra.p005"
 ROOT = Path("/Library/Application Support/VeyraP005")
 HELPER = ROOT / "helper"
 PLIST = Path("/Library/LaunchDaemons") / (LABEL + ".plist")
@@ -218,8 +218,8 @@ def main():
             if not member.isfile():
                 raise RuntimeError("archive kernel is not a regular file")
             with bundle.extractfile(member) as source:
-                (staging / "sing-box").write_bytes(source.read())
-        kernel = staging / "sing-box"
+                (staging / "veyra-sing-box").write_bytes(source.read())
+        kernel = staging / "veyra-sing-box"
         kernel.chmod(0o755)
         if sha(kernel) != BINARY_DIGEST:
             raise RuntimeError("binary digest differs from P0-04 identity")

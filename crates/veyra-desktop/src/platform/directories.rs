@@ -6,8 +6,8 @@ use objc2_foundation::{
 #[cfg(test)]
 use std::path::Path;
 use std::path::PathBuf;
-pub const PRODUCT_IDENTIFIER: &str = "com.lifei6671.veyra";
-pub const PREVIEW_NAMESPACE: &str = "com.lifei6671.veyra.gpui-preview";
+pub const PRODUCT_IDENTIFIER: &str = "me.disign.veyra";
+pub const PREVIEW_NAMESPACE: &str = "me.disign.veyra.gpui-preview";
 #[derive(Clone, Debug)]
 pub struct AppDirectories {
     pub application_support: PathBuf,
@@ -102,6 +102,9 @@ mod tests {
     }
     #[test]
     fn namespace_and_state_layout_are_separate_from_legacy_and_evictable_cache() {
+        // 新产品身份不复用旧用户namespace；此测试只解析路径，不迁移/读取任何用户数据。
+        assert_eq!(PRODUCT_IDENTIFIER, "me.disign.veyra");
+        assert_eq!(PREVIEW_NAMESPACE, "me.disign.veyra.gpui-preview");
         let d = AppDirectories::from_roots(
             Path::new("/test/Library/Application Support").into(),
             Path::new("/test/Library/Caches").into(),

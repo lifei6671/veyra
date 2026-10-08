@@ -57,6 +57,49 @@ impl SnapshotService {
         self.store.save(&state)?;
         Ok(state)
     }
+    /// P2-06交接只在writer关闭后持有此短gate复制有界材料；不跨child生命周期。
+    pub(crate) fn with_runtime_version<T>(
+        &self,
+        expected: &crate::domain::SnapshotVersion,
+        action: impl FnOnce() -> T,
+    ) -> Result<T, AppError> {
+        let _guard = self.lock()?;
+        let state = self.load_or_initialize()?;
+        state.config_version().0.require(&expected.config.0)?;
+        state.selection_version().0.require(&expected.selection.0)?;
+        Ok(action())
+    }
+    /// 短gate只保护本地落盘；RPC期间靠持久fence阻止所有JsonStateStore writer。
+    pub fn begin_remote_selection(
+        &self,
+        request: &crate::storage::RemoteSelection,
+    ) -> Result<crate::storage::SelectionFence, AppError> {
+        let _guard = self.lock()?;
+        self.store.begin_remote(request).map_err(Into::into)
+    }
+    pub fn remote_selection_fence(
+        &self,
+    ) -> Result<Option<crate::storage::SelectionFence>, AppError> {
+        self.store.selection_fence().map_err(Into::into)
+    }
+    pub(crate) fn confirm_remote_selection(
+        &self,
+        fence: &crate::storage::SelectionFence,
+        actual: &NodeId,
+    ) -> Result<AppState, AppError> {
+        let _guard = self.lock()?;
+        self.store.confirm_remote(fence, actual).map_err(Into::into)
+    }
+    pub(crate) fn finish_remote_selection(
+        &self,
+        fence: &crate::storage::SelectionFence,
+        confirmed: &SnapshotVersion,
+    ) -> Result<(), AppError> {
+        let _guard = self.lock()?;
+        self.store
+            .finish_remote(fence, confirmed)
+            .map_err(Into::into)
+    }
     pub fn snapshot(&self) -> Result<AppState, AppError> {
         let _guard = self.lock()?;
         self.load_or_initialize()
@@ -69,6 +112,7 @@ impl SnapshotService {
         write: impl FnOnce() -> T,
     ) -> Result<T, AppError> {
         let _guard = self.lock()?;
+        let _writer = self.store.lock_unfenced_writer()?;
         self.load_or_initialize()?
             .selection_version()
             .0
@@ -126,7 +170,7 @@ impl SnapshotService {
         replacement
             .validate()
             .map_err(|_| AppError::validation(FieldPath::Snapshot))?;
-        self.store.save(&replacement)?;
+        self.store.replace_at(&expected, &replacement)?;
         Ok(SaveOutcome {
             version: replacement.version(),
             value: replacement,

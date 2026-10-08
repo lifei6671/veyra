@@ -312,7 +312,10 @@ def main():
             raise RuntimeError("official archive digest mismatch; binary NOT RUN")
         with tarfile.open(archive) as bundle:
             bundle.extractall(root, filter="data")
-        binary = root / "sing-box-1.14.0-darwin-arm64" / "sing-box"
+        # root是本次mkdtemp；只重命名新解压资产，不触碰历史安装/缓存。
+        upstream_binary = root / "sing-box-1.14.0-darwin-arm64" / "sing-box"
+        binary = root / "veyra-sing-box"
+        upstream_binary.rename(binary)
         version = command([str(binary), "version"])
         file_info = command(["file", str(binary)])
         assert version.returncode == file_info.returncode == 0

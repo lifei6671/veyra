@@ -14,6 +14,8 @@ use std::{
     path::{Path, PathBuf},
 };
 
+/// 本地受控可执行文件名；上游版本/协议及原始字节摘要保持不变。
+pub const KERNEL_EXECUTABLE: &str = "veyra-sing-box";
 pub const KERNEL_VERSION: &str = "1.14.0";
 pub const KERNEL_DIGEST: &str = "973388c3f720e918fc64dff7fd75dde14b31cc1aa6fc15855e2f00c5291dd4f4";
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -40,13 +42,13 @@ pub struct ArtifactRef {
     pub path: String,
     pub digest: String,
 }
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(deny_unknown_fields)]
 pub struct ConfirmedSelection {
     pub version: SelectionVersion,
     pub nodes: BTreeMap<PoolId, NodeId>,
 }
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(deny_unknown_fields)]
 pub struct LastAppliedManifest {
     pub schema: u32,
@@ -654,3 +656,6 @@ mod tests {
         std::fs::remove_dir_all(root).unwrap();
     }
 }
+
+mod handoff;
+pub use handoff::*;

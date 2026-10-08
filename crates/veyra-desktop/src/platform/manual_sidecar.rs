@@ -28,18 +28,40 @@ pub struct VerifiedKernel(PathBuf);
 impl VerifiedKernel {
     pub fn development() -> Option<Self> {
         #[cfg(debug_assertions)]
-        {
-            std::env::var_os("VEYRA_SING_BOX_PATH")
-                .map(PathBuf::from)
-                .and_then(|p| Self::verify(p).ok())
+        if let Some(path) = std::env::var_os("VEYRA_SING_BOX_PATH") {
+            // 明确提供但不合法的开发资源不能静默fallback另一份内核。
+            return Self::verify(PathBuf::from(path)).ok();
         }
-        #[cfg(not(debug_assertions))]
-        {
-            None
-        } // 正式分发资源由 P0-08 决定。
+        // P0-08尚未交付bundle；只接受与实际MacOS入口相邻的固定Resources/helper资产。
+        let executable = std::env::current_exe().ok()?;
+        let macos = executable.parent()?;
+        if macos.file_name()? != "MacOS" {
+            return None;
+        }
+        let contents = macos.parent()?;
+        if contents.file_name()? != "Contents" {
+            return None;
+        }
+        Self::verify(
+            contents
+                .join("Resources/helper")
+                .join(veyra_core::application::runtime_recovery::KERNEL_EXECUTABLE),
+        )
+        .ok()
     }
     fn verify(path: PathBuf) -> Result<Self, SidecarPortError> {
+        let expected =
+            std::ffi::OsStr::new(veyra_core::application::runtime_recovery::KERNEL_EXECUTABLE);
+        if path.file_name() != Some(expected) {
+            eprintln!("kernel unavailable: executable basename must be veyra-sing-box");
+            return Err(SidecarPortError);
+        }
         let path = path.canonicalize().map_err(|_| SidecarPortError)?;
+        // 同名symlink指向旧sing-box也不满足实际被执行文件的basename要求。
+        if path.file_name() != Some(expected) {
+            eprintln!("kernel unavailable: resolved executable basename must be veyra-sing-box");
+            return Err(SidecarPortError);
+        }
         let bytes = fs::read(&path).map_err(|_| SidecarPortError)?;
         if format!("{:x}", Sha256::digest(bytes)) != KERNEL_SHA {
             return Err(SidecarPortError);
@@ -484,25 +506,7 @@ impl SidecarPort for ManualSidecarPort {
         self.pending.is_some() || self.check_child.is_some()
     }
 }
-/// 只使用持有的 Child；try_wait 后不再对已回收 PID 发信号。
-fn terminate(child: &mut Child) -> Result<(), SidecarPortError> {
-    if child.try_wait().map_err(|_| SidecarPortError)?.is_some() {
-        return Ok(());
-    }
-    unsafe {
-        libc::kill(child.id() as i32, libc::SIGTERM);
-    }
-    let deadline = Instant::now() + Duration::from_secs(3);
-    while Instant::now() < deadline {
-        if child.try_wait().map_err(|_| SidecarPortError)?.is_some() {
-            return Ok(());
-        }
-        thread::sleep(Duration::from_millis(20));
-    }
-    child.kill().map_err(|_| SidecarPortError)?;
-    child.wait().map_err(|_| SidecarPortError)?;
-    Ok(())
-}
+use veyra_core::application::owned_child::terminate;
 impl Drop for ManualSidecarPort {
     fn drop(&mut self) {
         if let Some(identity) = self.owned.as_ref().map(|c| c.identity.clone()) {
@@ -2166,5 +2170,30 @@ mod real_tests {
             drop(port);
             fs::remove_dir_all(root).unwrap();
         }
+    }
+}
+
+#[cfg(test)]
+mod kernel_name_tests {
+    use super::*;
+    #[test]
+    fn development_rejects_old_name_and_alias_without_executing_it() {
+        // 开发override不能通过新名字symlink执行旧basename；无真实内核或用户缓存访问。
+        let root = std::env::temp_dir().join(format!(
+            "veyra-kernel-name-{:?}",
+            veyra_core::domain::StateEpoch::fresh().unwrap()
+        ));
+        fs::create_dir(&root).unwrap();
+        let old = root.join("sing-box");
+        fs::write(&old, b"not executable fixture").unwrap();
+        assert!(VerifiedKernel::verify(old.clone()).is_err());
+        let alias = root.join("veyra-sing-box");
+        std::os::unix::fs::symlink(&old, &alias).unwrap();
+        assert!(VerifiedKernel::verify(alias.clone()).is_err());
+        fs::remove_file(alias).unwrap();
+        fs::write(root.join("veyra-sing-box"), b"foreign bytes").unwrap();
+        assert!(VerifiedKernel::verify(root.join("veyra-sing-box")).is_err());
+        assert_eq!(fs::read(old).unwrap(), b"not executable fixture");
+        fs::remove_dir_all(root).unwrap();
     }
 }

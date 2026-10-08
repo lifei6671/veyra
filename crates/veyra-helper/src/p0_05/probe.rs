@@ -307,7 +307,7 @@ pub fn privileged_probe(uid: u32, helper_digest: &str) -> Result<Value> {
             ROOT,
             HELPER,
             PLIST,
-            &path("sing-box"),
+            &path("veyra-sing-box"),
             &path("runtime"),
             &path("control.sock"),
         ] {

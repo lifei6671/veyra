@@ -18,3 +18,10 @@ pub mod outbound_query;
 pub mod manual_runtime;
 
 pub mod runtime_recovery;
+
+pub mod helper_protocol;
+
+#[cfg(unix)]
+pub mod owned_child;
+
+pub mod helper_transfer;
