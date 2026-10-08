@@ -5,6 +5,9 @@ mod fetch;
 mod normalize;
 mod parser;
 
+#[cfg(feature = "p0-06-prototype")]
+pub mod outbound;
+
 pub use document::{
     DocumentError, DocumentErrorCode, DocumentErrorLocation, format_document, parse_exact_document,
 };

@@ -9286,6 +9286,7 @@ dependencies = [
  "futures-util",
  "getrandom 0.4.3",
  "reqwest 0.12.28",
+ "rustls",
  "serde",
  "serde_json",
  "serde_yaml_ng",

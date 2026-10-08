@@ -1131,6 +1131,11 @@ mod tests {
     }
 
     #[test]
+    // 上游握手回调固定使用 ErrorResponse；不能为 lint 改掉认证断言。
+    #[expect(
+        clippy::result_large_err,
+        reason = "tungstenite callback requires its fixed ErrorResponse type"
+    )]
     fn bridge_sample_keeps_authenticated_rest_totals_distinct_from_websocket_window() {
         use tokio::io::{AsyncReadExt, AsyncWriteExt};
 
@@ -1196,6 +1201,11 @@ mod tests {
     }
 
     #[test]
+    // 上游握手回调固定使用 ErrorResponse；不能为 lint 改掉认证断言。
+    #[expect(
+        clippy::result_large_err,
+        reason = "tungstenite callback requires its fixed ErrorResponse type"
+    )]
     fn traffic_first_frame_timeout_releases_socket_before_fresh_authenticated_sample() {
         let _lock = FIXED_CLASH_API_TEST_LOCK
             .lock()
@@ -1301,6 +1311,11 @@ mod tests {
         });
     }
 
+    // 上游回调错误类型无法 box；该受控 fixture 保留请求头断言。
+    #[expect(
+        clippy::result_large_err,
+        reason = "tungstenite callback requires its fixed ErrorResponse type"
+    )]
     async fn spawn_websocket_fixture(
         expected_path: &'static str,
         expected_authorization: String,

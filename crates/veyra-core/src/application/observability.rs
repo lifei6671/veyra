@@ -1084,7 +1084,7 @@ mod tests {
             .take_latest_delta()
             .expect("managed summary delta");
         assert_eq!(delta.traffic, snapshot.traffic);
-        let serialized = serde_json::to_value(&delta.traffic).expect("safe traffic DTO");
+        let serialized = serde_json::to_value(delta.traffic).expect("safe traffic DTO");
         assert_eq!(
             serialized,
             serde_json::json!({

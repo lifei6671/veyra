@@ -1,4 +1,4 @@
-use std::time::Duration;
+use std::{net::SocketAddr, time::Duration};
 
 use reqwest::{
     Client, StatusCode, Url,
@@ -73,6 +73,15 @@ pub fn build_client() -> Result<Client, FetchError> {
 }
 
 pub fn build_client_with_options(options: &FetchClientOptions) -> Result<Client, FetchError> {
+    client_builder_with_options(options)?
+        .build()
+        .map_err(|_| FetchError::RequestFailed)
+}
+
+// 订阅与显式出站原型共享同一builder，不另建自动代理/redirect HTTP栈。
+pub(crate) fn client_builder_with_options(
+    options: &FetchClientOptions,
+) -> Result<reqwest::ClientBuilder, FetchError> {
     let connect_timeout = options.timeout.min(Duration::from_secs(10));
     let mut builder = Client::builder()
         .user_agent(
@@ -82,6 +91,8 @@ pub fn build_client_with_options(options: &FetchClientOptions) -> Result<Client,
                 .unwrap_or_else(default_user_agent),
         )
         .connect_timeout(connect_timeout)
+        .read_timeout(connect_timeout)
+        .timeout(options.timeout)
         .danger_accept_invalid_certs(!options.verify_tls)
         .redirect(reqwest::redirect::Policy::none());
     if let Some(proxy_url) = &options.proxy_url {
@@ -90,7 +101,7 @@ pub fn build_client_with_options(options: &FetchClientOptions) -> Result<Client,
     } else {
         builder = builder.no_proxy();
     }
-    builder.build().map_err(|_| FetchError::RequestFailed)
+    Ok(builder)
 }
 
 #[cfg(test)]
@@ -117,11 +128,31 @@ async fn fetch_subscription_with_timeout(
     conditional: ConditionalHeaders,
     total_timeout: Duration,
 ) -> Result<FetchResult, FetchError> {
+    fetch_subscription_on_client(
+        client,
+        source,
+        conditional,
+        total_timeout,
+        HeaderMap::new(),
+        |_, _| {},
+    )
+    .await
+}
+
+// 一次请求链复用同一client：proxy/DNS身份不会随redirect或Runtime变化而切换。
+pub(crate) async fn fetch_subscription_on_client(
+    client: &Client,
+    source: &str,
+    conditional: ConditionalHeaders,
+    total_timeout: Duration,
+    source_credentials: HeaderMap,
+    observe: impl FnMut(&Url, Option<SocketAddr>),
+) -> Result<FetchResult, FetchError> {
     let initial = Url::parse(source).map_err(|_| FetchError::InvalidUrl)?;
     validate_url(&initial, None)?;
     tokio::time::timeout(
         total_timeout,
-        fetch_with_redirects(client, initial, conditional),
+        fetch_with_redirects(client, initial, conditional, source_credentials, observe),
     )
     .await
     .map_err(|_| FetchError::RequestFailed)?
@@ -131,6 +162,8 @@ async fn fetch_with_redirects(
     client: &Client,
     initial: Url,
     conditional: ConditionalHeaders,
+    source_credentials: HeaderMap,
+    mut observe: impl FnMut(&Url, Option<SocketAddr>),
 ) -> Result<FetchResult, FetchError> {
     let initial_origin = origin(&initial);
     let initial_scheme = initial.scheme().to_owned();
@@ -138,6 +171,8 @@ async fn fetch_with_redirects(
     for redirects in 0..=MAX_REDIRECTS {
         let mut request = client.get(current.clone());
         if origin(&current) == initial_origin {
+            // 包含Authorization/Cookie及其它source credential；跨origin全部剥离。
+            request = request.headers(source_credentials.clone());
             if let Some(etag) = conditional.etag.as_deref() {
                 request = request.header(IF_NONE_MATCH, etag);
             }
@@ -149,6 +184,7 @@ async fn fetch_with_redirects(
             .send()
             .await
             .map_err(|_| FetchError::RequestFailed)?;
+        observe(&current, response.remote_addr());
         let validators_match_source = origin(&current) == initial_origin;
         if response.status() == StatusCode::NOT_MODIFIED {
             let mut metadata = response_metadata(response.headers());

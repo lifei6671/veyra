@@ -100,10 +100,12 @@
 
 **验收**：
 
-- [ ] 系统代理/TUN 开关组合中 Direct 的出口与 DNS 有证据，不能只以 `no_proxy()` 作为结论。
-- [ ] 无订阅或代理失效时仍可尝试直连；不会依赖尚未下载的订阅自举。
-- [ ] ViaRunningProxy 使用最后有效实例，失败不静默改道；跨源不转发认证头。
-- [ ] 无法证明 Direct 的组合明确判为不支持或未完成，供 P0 出口决定范围。
+- [x] 系统代理/TUN 开关组合中 Direct 的出口与 DNS 有证据，不能只以 `no_proxy()` 作为结论。
+- [x] 无订阅或代理失效时仍可尝试直连；不会依赖尚未下载的订阅自举。
+- [x] ViaRunningProxy 使用最后有效实例，失败不静默改道；跨源不转发认证头。
+- [x] 无法证明 Direct 的组合明确判为不支持或未完成，供 P0 出口决定范围。
+
+**当前状态（2026-10-06）**：DONE，owner释放。复选框表示原卡要求的证据调查/范围判定已完成，不表示所有物理路径PASS。原验收1：OFF/external-TUN-ON真实HTTPS出口和独立DoH证据；SystemProxy ON为UNSUPPORTED_IN_CURRENT_TEST_ENV，TUN OFF及managed bypass为INCOMPLETE_EXTERNAL_TUN_ACTIVE。原验收2/3/4 PASS。保护用户现有TUN，无系统网络写入；本地9项/全core294与303串行/helper47与规定检查通过；独立review PASS、cleanup PASS。完整限制、历史FAIL和证据见[本轮交付](#p0-06-delivery)。P0-08/P2-01仅READY，不启动、不commit/push。
 
 <a id="obg-p0-07"></a>
 ## OBG-P0-07 流量、DNS 与诊断能力核实

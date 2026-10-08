@@ -190,6 +190,11 @@ impl SingBoxCompiler {
     }
 
     /// 仅为同路径拒绝验证生成精确阳性对照；正常编译仍以 WG 拒绝规则开头。
+    // 既有测试入口逐项传递四个受控端口，保留调用方契约。
+    #[expect(
+        clippy::too_many_arguments,
+        reason = "existing test-only positive control takes four distinct ports"
+    )]
     pub fn compile_wireguard_local_positive(
         &self,
         intent: &RuntimeIntent,
