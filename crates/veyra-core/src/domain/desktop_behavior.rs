@@ -26,8 +26,15 @@ pub enum NodeSort {
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 #[serde(transparent)]
 pub struct UiLatencyUrl(pub String);
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(Clone, Debug, Eq, PartialEq, Serialize)]
+#[serde(transparent)]
 pub struct RuntimeHealthUrl(String);
+// 持久化和 patch 读入同一校验边界，不能通过 serde 绕过 URL 类型。
+impl<'de> Deserialize<'de> for RuntimeHealthUrl {
+    fn deserialize<D: serde::Deserializer<'de>>(d: D) -> Result<Self, D::Error> {
+        Self::new(String::deserialize(d)?).map_err(serde::de::Error::custom)
+    }
+}
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct GroupHealthUrl(String);
 impl RuntimeHealthUrl {

@@ -69,6 +69,14 @@ pub enum FieldPath {
     DesktopVisual,
     #[serde(rename = "profile.ipv6")]
     Ipv6,
+    #[serde(rename = "profile.ipv6Proxy")]
+    Ipv6Proxy,
+    #[serde(rename = "profile.directForNodes")]
+    DirectForNodes,
+    #[serde(rename = "profile.rejectQuic")]
+    RejectQuic,
+    #[serde(rename = "profile.directTestUrl")]
+    DirectHealthUrl,
     #[serde(rename = "profile.dns")]
     Dns,
     #[serde(rename = "profile.dns.split")]

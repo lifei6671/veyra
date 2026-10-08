@@ -1,0 +1,310 @@
+{
+  "subscriptions": [
+    {
+      "id": "subscription",
+      "name": "fixture",
+      "description": "",
+      "source": {
+        "kind": "remote",
+        "url": "https://subscription.example.invalid/feed?token=synthetic"
+      },
+      "last_success_at_ms": null,
+      "last_attempt_at_ms": null,
+      "http_metadata": null,
+      "remote_request": {
+        "user_agent": null,
+        "timeout_seconds": 30,
+        "proxy_mode": "direct",
+        "verify_tls": true
+      },
+      "update_policy": {
+        "allow_auto_update": false,
+        "interval_minutes": null
+      }
+    },
+    {
+      "id": "subscription-cross",
+      "name": "cross",
+      "description": "",
+      "source": {
+        "kind": "remote",
+        "url": "https://cross-subscription.example.invalid/feed?token=hidden-cross"
+      },
+      "last_success_at_ms": null,
+      "last_attempt_at_ms": null,
+      "http_metadata": null,
+      "remote_request": {
+        "user_agent": null,
+        "timeout_seconds": 30,
+        "proxy_mode": "direct",
+        "verify_tls": true
+      },
+      "update_policy": {
+        "allow_auto_update": false,
+        "interval_minutes": null
+      }
+    },
+    {
+      "id": "subscription-unrelated",
+      "name": "unrelated",
+      "description": "",
+      "source": {
+        "kind": "remote",
+        "url": "https://unrelated-subscription.example.invalid/feed?token=hidden-unrelated"
+      },
+      "last_success_at_ms": null,
+      "last_attempt_at_ms": null,
+      "http_metadata": null,
+      "remote_request": {
+        "user_agent": null,
+        "timeout_seconds": 30,
+        "proxy_mode": "direct",
+        "verify_tls": true
+      },
+      "update_policy": {
+        "allow_auto_update": false,
+        "interval_minutes": null
+      }
+    }
+  ],
+  "providers": [
+    {
+      "id": "provider",
+      "subscription_id": "subscription",
+      "name": "fixture"
+    },
+    {
+      "id": "provider-cross",
+      "subscription_id": "subscription-cross",
+      "name": "cross"
+    },
+    {
+      "id": "provider-unrelated",
+      "subscription_id": "subscription-unrelated",
+      "name": "unrelated"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "a",
+      "provider_id": "provider",
+      "name": "fixture",
+      "protocol": "socks",
+      "server": "127.0.0.1",
+      "port": 20000,
+      "options": {
+        "kind": "socks",
+        "version": 5,
+        "username": null,
+        "password": null
+      },
+      "tls": null,
+      "transport": null
+    },
+    {
+      "id": "b",
+      "provider_id": "provider",
+      "name": "fixture",
+      "protocol": "socks",
+      "server": "node.example.invalid",
+      "port": 20000,
+      "options": {
+        "kind": "socks",
+        "version": 5,
+        "username": null,
+        "password": null
+      },
+      "tls": null,
+      "transport": null
+    },
+    {
+      "id": "c",
+      "provider_id": "provider",
+      "name": "fixture",
+      "protocol": "socks",
+      "server": "::1",
+      "port": 20000,
+      "options": {
+        "kind": "socks",
+        "version": 5,
+        "username": null,
+        "password": null
+      },
+      "tls": null,
+      "transport": null
+    },
+    {
+      "id": "cross",
+      "provider_id": "provider-cross",
+      "name": "cross",
+      "protocol": "socks",
+      "server": "cross-node.example.invalid",
+      "port": 20000,
+      "options": {
+        "kind": "socks",
+        "version": 5,
+        "username": null,
+        "password": null
+      },
+      "tls": null,
+      "transport": null
+    },
+    {
+      "id": "cross-sibling",
+      "provider_id": "provider-cross",
+      "name": "sibling",
+      "protocol": "socks",
+      "server": "cross-sibling.example.invalid",
+      "port": 20000,
+      "options": {
+        "kind": "socks",
+        "version": 5,
+        "username": null,
+        "password": null
+      },
+      "tls": null,
+      "transport": null
+    },
+    {
+      "id": "unrelated",
+      "provider_id": "provider-unrelated",
+      "name": "unrelated",
+      "protocol": "socks",
+      "server": "unrelated-node.example.invalid",
+      "port": 20000,
+      "options": {
+        "kind": "socks",
+        "version": 5,
+        "username": null,
+        "password": null
+      },
+      "tls": null,
+      "transport": null
+    }
+  ],
+  "pools": [
+    {
+      "id": "manual",
+      "name": "fixture",
+      "kind": "implicit_provider",
+      "sources": [
+        {
+          "provider_id": "provider",
+          "filter": {
+            "regions": [],
+            "protocols": [],
+            "include_keywords": [],
+            "exclude_keywords": [],
+            "include_node_ids": [],
+            "exclude_node_ids": []
+          }
+        }
+      ],
+      "selection": {
+        "kind": "manual",
+        "selected_node_id": "a"
+      },
+      "enabled": true
+    },
+    {
+      "id": "auto",
+      "name": "fixture",
+      "kind": "implicit_provider",
+      "sources": [
+        {
+          "provider_id": "provider",
+          "filter": {
+            "regions": [],
+            "protocols": [],
+            "include_keywords": [],
+            "exclude_keywords": [],
+            "include_node_ids": [],
+            "exclude_node_ids": []
+          }
+        }
+      ],
+      "selection": {
+        "kind": "url_test",
+        "probe_url": "http://127.0.0.1:20001/pool",
+        "interval_secs": 120,
+        "tolerance_ms": 80
+      },
+      "enabled": true
+    },
+    {
+      "id": "outside",
+      "name": "outside",
+      "kind": "implicit_provider",
+      "sources": [
+        {
+          "provider_id": "provider-unrelated",
+          "filter": {
+            "regions": [],
+            "protocols": [],
+            "include_keywords": [],
+            "exclude_keywords": [],
+            "include_node_ids": [],
+            "exclude_node_ids": []
+          }
+        }
+      ],
+      "selection": {
+        "kind": "manual",
+        "selected_node_id": "unrelated"
+      },
+      "enabled": true
+    }
+  ],
+  "routes": [
+    {
+      "id": "direct",
+      "name": "fixture",
+      "enabled": true,
+      "priority": 0,
+      "matcher": {
+        "kind": "domain_suffix",
+        "values": [
+          "direct.example.invalid"
+        ]
+      },
+      "target": {
+        "kind": "direct"
+      }
+    },
+    {
+      "id": "proxy",
+      "name": "fixture",
+      "enabled": true,
+      "priority": 1,
+      "matcher": {
+        "kind": "domain_suffix",
+        "values": [
+          "proxy.example.invalid"
+        ]
+      },
+      "target": {
+        "kind": "pool",
+        "pool_id": "auto"
+      }
+    },
+    {
+      "id": "block",
+      "name": "fixture",
+      "enabled": true,
+      "priority": 2,
+      "matcher": {
+        "kind": "domain_suffix",
+        "values": [
+          "block.example.invalid"
+        ]
+      },
+      "target": {
+        "kind": "block"
+      }
+    }
+  ],
+  "default_target": {
+    "kind": "unconfigured"
+  },
+  "active_subscription_id": "subscription"
+}

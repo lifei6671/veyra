@@ -13,6 +13,10 @@ use crate::domain::{
 
 use super::secret::ApiSecret;
 
+#[path = "compiler/product.rs"]
+mod product;
+pub use product::*;
+
 const DNS_TAG: &str = "dns-system";
 const API_ADDRESS: &str = "127.0.0.1:9090";
 
@@ -52,6 +56,7 @@ pub trait ConfigCompiler {
 #[derive(Clone)]
 pub struct SingBoxPlan {
     document: Document,
+    health: Option<RuntimeHealthPlan>,
 }
 
 impl fmt::Debug for SingBoxPlan {
@@ -61,6 +66,11 @@ impl fmt::Debug for SingBoxPlan {
 }
 
 impl SingBoxPlan {
+    /// Runtime health 属于运行计划，不伪装为 sing-box 的 Direct URLTest 字段。
+    pub fn runtime_health(&self) -> Option<&RuntimeHealthPlan> {
+        self.health.as_ref()
+    }
+
     pub fn finalize(&self, secret: &ApiSecret) -> Result<GeneratedConfig, CompileError> {
         let mut document = self.document.clone();
         document.experimental.clash_api.secret = secret.as_str().to_owned();
@@ -253,7 +263,7 @@ impl SingBoxCompiler {
         }
         let mut plan =
             self.compile(intent, default_target, dns, RuntimeProfile::ObservationOnly)?;
-        plan.document.inbounds.push(TestInbound {
+        plan.document.inbounds.push(CoreInbound::Test(TestInbound {
             kind: "direct".to_owned(),
             tag: "test-wg-udp".to_owned(),
             listen: "127.0.0.1".to_owned(),
@@ -261,7 +271,7 @@ impl SingBoxCompiler {
             network: "udp".to_owned(),
             override_address: "198.18.0.2".to_owned(),
             override_port: NonZeroU16::new(18081).expect("fixed nonzero UDP port"),
-        });
+        }));
         plan.document.validate(false)?;
         Ok(plan)
     }
@@ -277,7 +287,7 @@ impl SingBoxCompiler {
     ) -> Result<SingBoxPlan, CompileError> {
         let mut plan =
             self.compile(intent, default_target, dns, RuntimeProfile::ObservationOnly)?;
-        plan.document.inbounds.push(TestInbound {
+        plan.document.inbounds.push(CoreInbound::Test(TestInbound {
             kind: "direct".to_owned(),
             tag: "test-metering".to_owned(),
             listen: "127.0.0.1".to_owned(),
@@ -285,7 +295,7 @@ impl SingBoxCompiler {
             network: "tcp".to_owned(),
             override_address: "127.0.0.1".to_owned(),
             override_port: echo_port,
-        });
+        }));
         plan.document.validate(false)?;
         Ok(plan)
     }
@@ -386,9 +396,13 @@ impl ConfigCompiler for SingBoxCompiler {
                 output: None,
             },
             dns: DnsConfig {
+                strategy: None,
                 servers: vec![DnsServer {
                     kind: "local".to_owned(),
                     tag: DNS_TAG.to_owned(),
+                    server: None,
+                    server_port: None,
+                    detour: None,
                 }],
                 final_server: DNS_TAG.to_owned(),
                 rules: if ingress.is_empty() {
@@ -406,6 +420,7 @@ impl ConfigCompiler for SingBoxCompiler {
                 default_domain_resolver: DNS_TAG.to_owned(),
             },
             experimental: Experimental {
+                cache_file: None,
                 clash_api: ClashApi {
                     external_controller: API_ADDRESS.to_owned(),
                     secret: String::new(),
@@ -413,7 +428,10 @@ impl ConfigCompiler for SingBoxCompiler {
             },
         };
         document.validate(false)?;
-        Ok(SingBoxPlan { document })
+        Ok(SingBoxPlan {
+            document,
+            health: None,
+        })
     }
 }
 
@@ -422,10 +440,7 @@ impl ConfigCompiler for SingBoxCompiler {
 struct Document {
     log: LogConfig,
     dns: DnsConfig,
-    #[cfg(not(any(test, feature = "legacy-test-support")))]
-    inbounds: Vec<()>,
-    #[cfg(any(test, feature = "legacy-test-support"))]
-    inbounds: Vec<TestInbound>,
+    inbounds: Vec<CoreInbound>,
     outbounds: Vec<CoreOutbound>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     endpoints: Vec<WireGuardEndpoint>,
@@ -462,6 +477,8 @@ struct LogConfig {
 #[derive(Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 struct DnsConfig {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    strategy: Option<String>,
     servers: Vec<DnsServer>,
     #[serde(rename = "final")]
     final_server: String,
@@ -472,6 +489,12 @@ struct DnsConfig {
 #[derive(Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 struct DnsServer {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    server: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    server_port: Option<u16>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    detour: Option<String>,
     #[serde(rename = "type")]
     kind: String,
     tag: String,
@@ -489,6 +512,8 @@ struct RouteConfig {
 #[derive(Clone, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 struct Experimental {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    cache_file: Option<CacheFile>,
     clash_api: ClashApi,
 }
 
@@ -676,6 +701,10 @@ struct WireGuardPeer {
 #[derive(Clone, Default, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 struct CoreRule {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    ip_version: Option<u8>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    server: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     inbound: Option<Vec<String>>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -706,6 +735,7 @@ impl CoreRule {
     }
     fn matcher_count(&self) -> usize {
         [
+            self.ip_version.is_some(),
             self.domain.is_some(),
             self.domain_suffix.is_some(),
             self.process_name.is_some(),
@@ -721,6 +751,7 @@ impl CoreRule {
         self.inbound.as_deref() == Some(tags)
             && self.action.as_deref() == Some("reject")
             && self.outbound.is_none()
+            && self.server.is_none()
             && self.matcher_count() == 0
     }
 }
@@ -1190,6 +1221,9 @@ impl CoreOutbound {
 
 impl Document {
     fn validate(&self, bound: bool) -> Result<(), CompileError> {
+        if self.experimental.cache_file.is_some() {
+            return self.validate_product(bound);
+        }
         #[cfg(any(test, feature = "legacy-test-support"))]
         if !self.log.disabled || self.log.level.is_some() || self.log.output.is_some() {
             self.validate_dns_probe()?;
@@ -1230,6 +1264,11 @@ impl Document {
             || self.experimental.clash_api.external_controller != API_ADDRESS
             || (bound && !valid_secret(&self.experimental.clash_api.secret))
             || (!bound && !self.experimental.clash_api.secret.is_empty())
+            || self.dns.servers.is_empty()
+            || self.dns.strategy.is_some()
+            || self.dns.servers[0].server.is_some()
+            || self.dns.servers[0].server_port.is_some()
+            || self.dns.servers[0].detour.is_some()
             || self.dns.servers.len() != 1
             || self.dns.servers[0].kind != "local"
             || self.dns.servers[0].tag != DNS_TAG
@@ -1352,6 +1391,8 @@ impl Document {
         };
         for rule in user_rules {
             if rule.inbound.is_some()
+                || rule.server.is_some()
+                || rule.ip_version.is_some()
                 || rule.action.is_some()
                 || rule.matcher_count() != 1
                 || !rule.outbound.as_ref().is_some_and(|target| {
@@ -1538,7 +1579,7 @@ impl Document {
             return Ok(());
         }
         let rejected = CompileError::InvalidFinalConfiguration;
-        let [inbound] = self.inbounds.as_slice() else {
+        let [CoreInbound::Test(inbound)] = self.inbounds.as_slice() else {
             return Err(rejected);
         };
         if inbound.tag == "test-wg-udp" {
@@ -1915,6 +1956,9 @@ pub enum CompileError {
     UnsupportedNodeProtocol,
     InvalidFinalConfiguration,
     SerializationFailed,
+    InvalidRuntimeResources,
+    InvalidProfile,
+    UnsupportedOption(UnsupportedProductOption),
 }
 impl fmt::Display for CompileError {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
@@ -1932,6 +1976,9 @@ impl fmt::Display for CompileError {
             Self::InvalidFinalConfiguration => {
                 "generated configuration violates the managed profile"
             }
+            Self::InvalidRuntimeResources => "invalid managed loopback/cache resources",
+            Self::InvalidProfile => "invalid product profile or state",
+            Self::UnsupportedOption(_) => "profile option is not supported by Base Compiler",
             Self::SerializationFailed => "generated configuration could not be serialized",
         })
     }

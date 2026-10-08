@@ -449,6 +449,11 @@ mod tests {
     fn check_failure_keeps_active_config_and_child() {
         let mut runtime = SidecarRuntime::new(MockPort::default(), mixed_port());
         runtime.start_or_replace(config()).expect("start stable");
+        let active_bytes = runtime
+            .with_active_config(|c| c.as_bytes().to_vec())
+            .unwrap();
+        let active_child = runtime.child.clone();
+        let events_before = runtime.port.events.clone();
         runtime.port.check.push_back(Err(SidecarPortError));
 
         let error = runtime
@@ -456,9 +461,78 @@ mod tests {
             .expect_err("check failure");
 
         assert_eq!(error, SidecarError::CandidateCheck);
+        // 保护显式 apply/check 失败后的旧配置/child；只能新增 Check，不能 Stop/Prepare/Run。
+        assert_eq!(runtime.child, active_child);
+        assert_eq!(
+            runtime
+                .with_active_config(|c| c.as_bytes().to_vec())
+                .unwrap(),
+            active_bytes
+        );
+        assert_eq!(
+            &runtime.port.events[..events_before.len()],
+            events_before.as_slice()
+        );
+        assert_eq!(&runtime.port.events[events_before.len()..], &[Event::Check]);
         assert_eq!(runtime.snapshot().lifecycle, SidecarLifecycle::Ready);
         assert!(runtime.snapshot().has_active_config);
         assert!(!error.to_string().contains("fixture-secret"));
+    }
+
+    #[test]
+    fn p202b_product_check_failure_preserves_old_active_bytes_and_child() {
+        use crate::domain::{AppState, OutboundId};
+        use crate::singbox::{
+            LoopbackListener, ManagedCacheFile, ProductCompileRequest, ProductRuntimeResources,
+        };
+        let mut value = serde_json::to_value(AppState::empty()).unwrap();
+        let fixture: serde_json::Value =
+            serde_json::from_str(include_str!("../../tests/fixtures/compiler/p2-02b.json"))
+                .unwrap();
+        for (key, part) in fixture.as_object().unwrap() {
+            value[key] = part.clone();
+        }
+        let state: AppState = serde_json::from_value(value).unwrap();
+        let resources = ProductRuntimeResources {
+            mixed: LoopbackListener::new("127.0.0.1:0".parse().unwrap()).unwrap(),
+            controller: LoopbackListener::new("127.0.0.1:0".parse().unwrap()).unwrap(),
+            cache: ManagedCacheFile::new(
+                std::path::Path::new("/tmp/veyra-p202b"),
+                "/tmp/veyra-p202b/cache.db".into(),
+                "stable-v114".into(),
+                false,
+                false,
+            )
+            .unwrap(),
+        };
+        let candidate = SingBoxCompiler
+            .compile_product(ProductCompileRequest {
+                state: &state,
+                runtime_intent: &RuntimeIntent::from_state(&state).unwrap(),
+                default_outbound: &OutboundId::Direct,
+                resources: &resources,
+            })
+            .unwrap()
+            .finalize(&crate::singbox::secret::test_api_secret())
+            .unwrap();
+        let mut runtime = SidecarRuntime::new(MockPort::default(), mixed_port());
+        let previous = config();
+        let expected = previous.as_bytes().to_vec();
+        assert_ne!(candidate.as_bytes(), expected);
+        runtime.start_or_replace(previous).unwrap();
+        let child = runtime.child.clone();
+        let event_count = runtime.port.events.len();
+        runtime.port.check.push_back(Err(SidecarPortError));
+        assert_eq!(
+            runtime.start_or_replace(candidate),
+            Err(SidecarError::CandidateCheck)
+        );
+        assert_eq!(runtime.child, child);
+        assert_eq!(
+            runtime.with_active_config(|c| c.as_bytes().to_vec()),
+            Some(expected)
+        );
+        assert_eq!(&runtime.port.events[event_count..], &[Event::Check]);
     }
 
     #[test]

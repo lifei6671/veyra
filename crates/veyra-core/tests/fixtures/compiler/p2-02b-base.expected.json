@@ -1,0 +1,130 @@
+{
+  "log": {
+    "disabled": true
+  },
+  "dns": {
+    "strategy": "ipv4_only",
+    "servers": [
+      {
+        "server": "1.1.1.1",
+        "server_port": 53,
+        "detour": "direct",
+        "type": "udp",
+        "tag": "dns-direct"
+      }
+    ],
+    "final": "dns-direct"
+  },
+  "inbounds": [
+    {
+      "type": "mixed",
+      "tag": "mixed",
+      "listen": "127.0.0.1",
+      "listen_port": 0
+    }
+  ],
+  "outbounds": [
+    {
+      "type": "socks",
+      "tag": "node-a",
+      "server": "127.0.0.1",
+      "server_port": 20000,
+      "version": "5"
+    },
+    {
+      "type": "socks",
+      "tag": "node-b",
+      "server": "node.example.invalid",
+      "server_port": 20000,
+      "version": "5"
+    },
+    {
+      "type": "socks",
+      "tag": "node-c",
+      "server": "::1",
+      "server_port": 20000,
+      "version": "5"
+    },
+    {
+      "type": "urltest",
+      "tag": "pool-auto",
+      "outbounds": [
+        "node-a",
+        "node-b",
+        "node-c"
+      ],
+      "url": "http://127.0.0.1:20001/pool",
+      "interval": "120s",
+      "tolerance": 80
+    },
+    {
+      "type": "selector",
+      "tag": "pool-manual",
+      "outbounds": [
+        "node-a",
+        "node-b",
+        "node-c"
+      ],
+      "default": "node-a"
+    },
+    {
+      "type": "direct",
+      "tag": "direct"
+    }
+  ],
+  "route": {
+    "rules": [
+      {
+        "ip_version": 6,
+        "action": "reject"
+      },
+      {
+        "outbound": "direct",
+        "domain": [
+          "node.example.invalid",
+          "subscription.example.invalid"
+        ]
+      },
+      {
+        "outbound": "direct",
+        "ip_cidr": [
+          "127.0.0.1/32",
+          "::1/128"
+        ]
+      },
+      {
+        "outbound": "direct",
+        "domain_suffix": [
+          "direct.example.invalid"
+        ]
+      },
+      {
+        "outbound": "pool-auto",
+        "domain_suffix": [
+          "proxy.example.invalid"
+        ]
+      },
+      {
+        "action": "reject",
+        "domain_suffix": [
+          "block.example.invalid"
+        ]
+      }
+    ],
+    "final": "pool-manual",
+    "default_domain_resolver": "dns-direct"
+  },
+  "experimental": {
+    "cache_file": {
+      "enabled": true,
+      "path": "/tmp/veyra-product/profile-v114/cache.db",
+      "cache_id": "profile-v114",
+      "store_fakeip": false,
+      "store_dns": false
+    },
+    "clash_api": {
+      "external_controller": "127.0.0.1:0",
+      "secret": "<runtime-secret>"
+    }
+  }
+}

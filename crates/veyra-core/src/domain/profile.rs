@@ -1,14 +1,61 @@
-use super::{AppError, FieldPath, RouteTarget};
+use super::{AppError, FieldPath, RouteTarget, RuntimeHealthUrl};
 use serde::{Deserialize, Deserializer, Serialize};
 
 /// Supported foundation fields only; this is not an OpenBox backup importer or full P4/P5 model.
-#[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 pub struct Profile {
     pub ipv6: bool,
+    // schema9 兼容默认仅补缺失的新字段；显式 null/未知字段仍拒绝。
+    #[serde(default)]
+    pub ipv6_proxy: Ipv6Proxy,
+    #[serde(default = "default_direct_for_nodes")]
+    pub direct_for_nodes: bool,
+    #[serde(default)]
+    pub reject_quic: bool,
+    #[serde(default = "default_health_url")]
+    pub test_url: RuntimeHealthUrl,
+    #[serde(default = "default_direct_health_url")]
+    pub direct_test_url: RuntimeHealthUrl,
     pub dns: ProfileDns,
     pub routing: ProfileRouting,
     pub tun: ProfileTun,
+}
+
+/// node 可由 Base Compiler 精确表达；ipv4/bypass 保留意图，应用时类型化拒绝。
+#[derive(Clone, Copy, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
+#[serde(rename_all = "lowercase")]
+pub enum Ipv6Proxy {
+    #[default]
+    Node,
+    Ipv4,
+    Bypass,
+}
+fn default_direct_for_nodes() -> bool {
+    true
+}
+fn default_health_url() -> RuntimeHealthUrl {
+    RuntimeHealthUrl::new("http://www.gstatic.com/generate_204".into())
+        .expect("固定 HTTP health URL")
+}
+fn default_direct_health_url() -> RuntimeHealthUrl {
+    RuntimeHealthUrl::new("http://connectivitycheck.platform.hicloud.com/generate_204".into())
+        .expect("固定 Direct health URL")
+}
+impl Default for Profile {
+    fn default() -> Self {
+        Self {
+            ipv6: false,
+            ipv6_proxy: Ipv6Proxy::Node,
+            direct_for_nodes: true,
+            reject_quic: false,
+            test_url: default_health_url(),
+            direct_test_url: default_direct_health_url(),
+            dns: ProfileDns::default(),
+            routing: ProfileRouting::default(),
+            tun: ProfileTun::default(),
+        }
+    }
 }
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
@@ -122,6 +169,11 @@ impl<'de, T: Deserialize<'de>> Deserialize<'de> for Patch<T> {
 #[serde(default, rename_all = "camelCase", deny_unknown_fields)]
 pub struct ProfilePatch {
     pub ipv6: Patch<bool>,
+    pub ipv6_proxy: Patch<Ipv6Proxy>,
+    pub direct_for_nodes: Patch<bool>,
+    pub reject_quic: Patch<bool>,
+    pub test_url: Patch<RuntimeHealthUrl>,
+    pub direct_test_url: Patch<RuntimeHealthUrl>,
     pub dns: Patch<DnsPatch>,
     pub routing: Patch<RoutingPatch>,
     pub tun: Patch<TunPatch>,
@@ -172,6 +224,27 @@ impl Profile {
     pub fn patched(&self, patch: ProfilePatch) -> Result<Self, AppError> {
         let mut next = self.clone();
         set(&mut next.ipv6, patch.ipv6, FieldPath::Ipv6)?;
+        set(&mut next.ipv6_proxy, patch.ipv6_proxy, FieldPath::Ipv6Proxy)?;
+        set(
+            &mut next.direct_for_nodes,
+            patch.direct_for_nodes,
+            FieldPath::DirectForNodes,
+        )?;
+        set(
+            &mut next.reject_quic,
+            patch.reject_quic,
+            FieldPath::RejectQuic,
+        )?;
+        set(
+            &mut next.test_url,
+            patch.test_url,
+            FieldPath::RuntimeHealthUrl,
+        )?;
+        set(
+            &mut next.direct_test_url,
+            patch.direct_test_url,
+            FieldPath::DirectHealthUrl,
+        )?;
         match patch.dns {
             Patch::Missing => {}
             Patch::Null => return Err(AppError::validation(FieldPath::Dns)),

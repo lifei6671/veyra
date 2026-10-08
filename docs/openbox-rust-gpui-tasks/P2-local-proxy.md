@@ -112,6 +112,8 @@ cleanup NOT_RUN：沙箱拒绝`ps`进程身份查询（Operation not permitted�
 <a id="obg-p2-02b"></a>
 ## OBG-P2-02B 最小可用 Compiler
 
+**当前状态**：DONE；**owner**：已释放 Codex Core/Config。P2-02B-RUNTIME-PROJECTION-001 CLOSED，Host independent review PASS；见[最终收口](#p2-02b-host-closeout)。首次DONE、重开与修复候选历史保留。
+
 **类型**：配置编译；**依赖**：OBG-P2-02A、OBG-P0-04。**依据/范围**：方案 §7；core compiler/domain；API 60–61 对应配置消费。
 
 **泳道 / 写范围**：Core/Config；compiler 基础配置与 fixtures；公共模型/目录交 owner。
@@ -120,11 +122,11 @@ cleanup NOT_RUN：沙箱拒绝`ps`进程身份查询（Operation not permitted�
 
 **验收**：
 
-- [ ] 目录中的节点、隐式组、selector/urltest、Direct、Block 按同一 OutboundId/引用语义编译，Compiler 不自建出口目录；合法模型生成锁定内核可接受的配置；统一目录报告 self/cycle/dangling，Compiler 拒绝不允许字段。
-- [ ] 保存不启动 `sing-box check`，显式应用前才检查同一候选；check 失败不停止旧实例。
-- [ ] cache path/tag 与身份稳定；不输出锁定版本已移除的 DNS/缓存字段。
-- [ ] IPv6、rejectQuic、directForNodes 等本阶段开放选项映射真实规则；尚未支持选项明确拒绝应用。
-- [ ] Runtime health test URL（含 directTestUrl）按 profile 消费，独立于 UI latency preference test URL；后续 group health URL 只使用其明确的覆盖/继承规则。
+- [x] 目录中的节点、隐式组、selector/urltest、Direct、Block 按同一 OutboundId/引用语义编译，Compiler 不自建出口目录；合法模型生成锁定内核可接受的配置；统一目录报告 self/cycle/dangling，Compiler 拒绝不允许字段。
+- [x] 保存不启动 `sing-box check`，显式应用前才检查同一候选；check 失败不停止旧实例。
+- [x] cache path/tag 与身份稳定；不输出锁定版本已移除的 DNS/缓存字段。
+- [x] IPv6、rejectQuic、directForNodes 等本阶段开放选项映射真实规则；尚未支持选项明确拒绝应用。
+- [x] Runtime health test URL（含 directTestUrl）按 profile 消费，独立于 UI latency preference test URL；后续 group health URL 只使用其明确的覆盖/继承规则。
 
 <a id="obg-p2-03"></a>
 ## OBG-P2-03 手动代理 Runtime 与服务状态
