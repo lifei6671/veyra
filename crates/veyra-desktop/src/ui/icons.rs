@@ -51,6 +51,10 @@ pub fn icon(name: &str, size: f32) -> Icon {
         "ChevronDown" => include_bytes!("../../assets/heroicons/ChevronDown.svg"),
         "XMark" => include_bytes!("../../assets/heroicons/XMark.svg"),
         "SidebarToggle" => include_bytes!("../../assets/heroicons/SidebarToggle.svg"),
+        "Sparkles" => include_bytes!("../../assets/heroicons/Sparkles.svg"),
+        "Minus" => include_bytes!("../../assets/heroicons/Minus.svg"),
+        "ChevronLeft" => include_bytes!("../../assets/heroicons/ChevronLeft.svg"),
+        "ChevronRight" => include_bytes!("../../assets/heroicons/ChevronRight.svg"),
         _ => unreachable!("未登记的 React 图标"),
     };
     Icon::default()

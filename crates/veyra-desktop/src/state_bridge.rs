@@ -15,6 +15,12 @@ pub struct InstanceToken {
     pub generation: u64,
 }
 pub enum AppEvent {
+    Groups {
+        request: u64,
+        result: Result<Box<AppState>, veyra_core::application::state_service::GroupSaveError>,
+        saved: bool,
+        snapshot: Option<Box<AppState>>,
+    },
     BackendProfile {
         request: crate::backend_profile::Request,
         result: Result<
@@ -174,7 +180,8 @@ impl StateBridge {
                 }
                 Disposition::Accepted
             }
-            AppEvent::Subscriptions { .. }
+            AppEvent::Groups { .. }
+            | AppEvent::Subscriptions { .. }
             | AppEvent::BehaviorSaved { .. }
             | AppEvent::BackendProfile { .. }
             | AppEvent::PlatformSaved { .. }

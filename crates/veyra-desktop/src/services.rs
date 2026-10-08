@@ -83,6 +83,34 @@ impl AppServices {
         };
         Ok((services, receiver))
     }
+    pub fn groups_command(&self, event: crate::ui::groups::GroupsEvent) {
+        let snapshots = self.snapshots.clone();
+        let sender = self.sender.clone();
+        self.runtime.spawn_blocking(move || {
+            let saved = event.save.is_some();
+            let result = match event.save {
+                Some((expected, groups)) => snapshots
+                    .save_groups(expected, groups)
+                    .map(|out| Box::new(out.value)),
+                None => snapshots
+                    .snapshot()
+                    .map(Box::new)
+                    .map_err(veyra_core::application::state_service::GroupSaveError::Storage),
+            };
+            // 失败保留草稿并重读权威版本，用户可以修正后再保存。
+            let snapshot = if result.is_err() {
+                snapshots.snapshot().ok().map(Box::new)
+            } else {
+                None
+            };
+            let _ = sender.send(AppEvent::Groups {
+                request: event.request,
+                result,
+                saved,
+                snapshot,
+            });
+        });
+    }
     pub fn save_backend_profile(&self, request: crate::backend_profile::Request) {
         let profiles = self.profiles.clone();
         let snapshots = self.snapshots.clone();

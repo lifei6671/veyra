@@ -235,6 +235,7 @@ mod tests {
                 tls: None,
             }],
             pools: Vec::new(),
+            groups: Vec::new(),
             routes: Vec::new(),
         }
     }

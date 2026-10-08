@@ -140,6 +140,33 @@ impl SnapshotService {
             effect: ApplyEffect::SavedOnly,
         })
     }
+    /// 组编辑器保存唯一业务快照；不启动内核，不覆盖并发偏好/选择。
+    pub fn save_groups(
+        &self,
+        expected: ConfigVersion,
+        groups: Vec<crate::domain::NodeGroup>,
+    ) -> Result<GroupSaveOutcome, GroupSaveError> {
+        let _guard = self.lock().map_err(GroupSaveError::Storage)?;
+        let mut next = self.load_or_initialize().map_err(GroupSaveError::Storage)?;
+        next.config_version()
+            .0
+            .require(&expected.0)
+            .map_err(GroupSaveError::Storage)?;
+        next.groups = groups;
+        next.validate_groups().map_err(GroupSaveError::Invalid)?;
+        next.validate()
+            .map_err(|_| GroupSaveError::Storage(AppError::validation(FieldPath::Snapshot)))?;
+        let saved = self
+            .store
+            .commit(&next)
+            .map_err(|e| GroupSaveError::Storage(e.into()))?;
+        Ok(GroupSaveOutcome {
+            version: saved.version(),
+            dropped: saved.dropped_groups(),
+            value: saved,
+            effect: ApplyEffect::SavedOnly,
+        })
+    }
     /// Restores business facts only. Imported concurrency tokens are discarded; both counters
     /// start at zero in the new epoch. A mismatch on either current counter rejects replacement.
     pub fn replace(
@@ -634,4 +661,19 @@ impl BehaviorConsumer {
             ),
         })
     }
+}
+
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub enum GroupSaveError {
+    Invalid(crate::domain::GroupIssue),
+    Storage(AppError),
+}
+
+/// 空动态组已保存，但不会进入配置；悬空引用通过 GroupSaveError 明确拒绝。
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct GroupSaveOutcome {
+    pub value: AppState,
+    pub version: SnapshotVersion,
+    pub effect: ApplyEffect,
+    pub dropped: Vec<PoolId>,
 }

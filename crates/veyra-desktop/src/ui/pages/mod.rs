@@ -1,7 +1,7 @@
 //! Every main route owns one persistent PageView entity and its own input entities.
 use crate::navigation::{Category, Route};
 use gpui_kit::{
-    component::{ActiveTheme, button::*, input::InputState},
+    component::{ActiveTheme, Disableable, button::*, input::InputState},
     prelude::*,
     *,
 };
@@ -14,6 +14,7 @@ pub struct PageView {
     pub panel: Option<Entity<super::panel::PanelView>>,
     pub behavior: Option<Entity<super::behavior_panel::BehaviorPanel>>,
     pub subscriptions: Option<Entity<super::subscriptions::SubscriptionsView>>,
+    pub groups: Option<Entity<super::groups::GroupsView>>,
     pub backend: Option<Entity<super::backend::BackendView>>,
     behavior_open: bool,
     settings_scroll: ScrollHandle,
@@ -29,6 +30,7 @@ impl PageView {
             panel: None,
             behavior: None,
             subscriptions: None,
+            groups: None,
             backend: None,
             behavior_open: false,
             settings_scroll: ScrollHandle::new(),
@@ -119,6 +121,14 @@ impl Render for PageView {
                                                     )
                                                 });
                                             }
+                                            if let Some(groups) = &this.groups {
+                                                groups.update(cx, |view, cx| {
+                                                    view.set_visible(
+                                                        category == Category::Groups,
+                                                        cx,
+                                                    )
+                                                });
+                                            }
                                             this.category = category;
                                             // 对应 React 分类栏：选中项必须完整滚入视口。
                                             this.category_scroll.scroll_to_item(i);
@@ -128,6 +138,39 @@ impl Render for PageView {
                                 },
                             )),
                     )
+                    .when(self.category == Category::Groups, |d| {
+                        d.children(
+                            [
+                                ("恢复默认", "ArrowUturnLeft"),
+                                ("自动分组", "Sparkles"),
+                                ("添加分组", "Plus"),
+                            ]
+                            .into_iter()
+                            .enumerate()
+                            .map(|(i, (label, glyph))| {
+                                super::components::icon_button(
+                                    label,
+                                    crate::ui::i18n::tr(cx, label),
+                                    glyph,
+                                    super::tokens::CONTROL,
+                                )
+                                .with_tooltip(crate::ui::i18n::tr(cx, label))
+                                .when(i == 2, |b| b.primary())
+                                .disabled(self.groups.as_ref().is_some_and(|g| g.read(cx).busy))
+                                .on_click(cx.listener(
+                                    move |this, _, window, cx| {
+                                        if let Some(groups) = &this.groups {
+                                            groups.update(cx, |view, cx| match i {
+                                                0 => view.restore(window, cx),
+                                                1 => view.automatic(window, cx),
+                                                _ => view.open_add(window, cx),
+                                            });
+                                        }
+                                    },
+                                ))
+                            }),
+                        )
+                    })
                     .when(self.category == Category::Subscriptions, |d| {
                         d.child(
                             super::components::icon_button(
@@ -212,6 +255,16 @@ impl Render for PageView {
                             .min_h_0()
                             .overflow_y_scroll()
                             .child(backend.clone()),
+                    );
+                }
+            } else if self.category == Category::Groups {
+                if let Some(groups) = &self.groups {
+                    content = content.child(
+                        div()
+                            .flex_1()
+                            .min_h_0()
+                            .p(px(super::tokens::GAP))
+                            .child(groups.clone()),
                     );
                 }
             } else if self.category == Category::Subscriptions {

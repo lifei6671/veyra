@@ -58,6 +58,8 @@ pub struct AppState {
     pub providers: Vec<Provider>,
     pub nodes: Vec<ProxyNode>,
     pub pools: Vec<NodePool>,
+    #[serde(default)]
+    pub groups: Vec<super::NodeGroup>,
     pub routes: Vec<RoutePolicy>,
 }
 
@@ -81,6 +83,7 @@ impl AppState {
             providers: Vec::new(),
             nodes: Vec::new(),
             pools: Vec::new(),
+            groups: Vec::new(),
             routes: Vec::new(),
         })
     }
@@ -204,7 +207,12 @@ impl AppState {
             return Err(StateValidationError::InvalidVersion);
         }
         if let Some(custom) = &self.profile.routing.custom {
-            let pool_ids = self.pools.iter().map(|p| &p.id).collect();
+            let pool_ids = self
+                .pools
+                .iter()
+                .map(|p| &p.id)
+                .chain(self.groups.iter().filter(|g| !g.builtin()).map(|g| &g.id))
+                .collect();
             for rule in &custom.rules {
                 rule.target.validate(&pool_ids)?;
             }
@@ -212,7 +220,14 @@ impl AppState {
         let subscriptions = unique_ids(self.subscriptions.iter().map(|value| &value.id))?;
         let providers = unique_ids(self.providers.iter().map(|value| &value.id))?;
         unique_ids(self.nodes.iter().map(|value| &value.id))?;
-        let pools = unique_ids(self.pools.iter().map(|value| &value.id))?;
+        let pools = unique_ids(
+            self.pools
+                .iter()
+                .map(|value| &value.id)
+                .chain(self.groups.iter().filter(|g| !g.builtin()).map(|g| &g.id)),
+        )?;
+        self.validate_groups()
+            .map_err(|_| StateValidationError::InvalidFilter)?;
         unique_ids(self.routes.iter().map(|value| &value.id))?;
 
         self.default_target.validate(&pools)?;
@@ -336,6 +351,7 @@ pub enum DnsPolicy {
 pub struct RuntimeIntent {
     pub nodes: Vec<ProxyNode>,
     pub pools: Vec<RuntimePool>,
+    pub groups: Vec<super::RuntimeGroup>,
     pub routes: Vec<RoutePolicy>,
 }
 
@@ -370,7 +386,12 @@ impl RuntimeIntent {
             .filter(|route| route.enabled)
             .cloned()
             .collect::<Vec<_>>();
-        let active_pool_ids = pools.iter().map(|pool| &pool.id).collect::<HashSet<_>>();
+        let groups = state.runtime_groups();
+        let active_pool_ids = pools
+            .iter()
+            .map(|pool| &pool.id)
+            .chain(groups.iter().map(|g| &g.id))
+            .collect::<HashSet<_>>();
         if routes.iter().any(|route| {
             matches!(
                 &route.target,
@@ -383,6 +404,7 @@ impl RuntimeIntent {
         Ok(Self {
             nodes,
             pools,
+            groups,
             routes,
         })
     }
@@ -1216,6 +1238,7 @@ mod tests {
                 tls: None,
             }],
             pools: Vec::new(),
+            groups: Vec::new(),
             routes: Vec::new(),
         }
     }

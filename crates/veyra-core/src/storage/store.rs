@@ -228,6 +228,8 @@ struct StoredStateV9 {
     providers: Vec<Provider>,
     nodes: Vec<ProxyNode>,
     pools: Vec<NodePool>,
+    #[serde(default)]
+    groups: Vec<crate::domain::NodeGroup>,
     routes: Vec<RoutePolicy>,
 }
 
@@ -247,6 +249,7 @@ impl From<&AppState> for StoredStateV9 {
             providers: state.providers.clone(),
             nodes: state.nodes.clone(),
             pools: state.pools.clone(),
+            groups: state.groups.clone(),
             routes: state.routes.clone(),
         }
     }
@@ -273,6 +276,7 @@ impl TryFrom<StoredStateV9> for AppState {
             providers: stored.providers,
             nodes: stored.nodes,
             pools: stored.pools,
+            groups: stored.groups,
             routes: stored.routes,
         })
     }
@@ -400,6 +404,7 @@ mod tests {
                 tls: None,
             }],
             pools: Vec::new(),
+            groups: Vec::new(),
             routes: Vec::new(),
         }
     }

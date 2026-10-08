@@ -22,6 +22,8 @@ pub struct AppView {
     pub dark: bool,
     pub pages: Pages,
     pub subscriptions: Entity<crate::ui::subscriptions::SubscriptionsView>,
+    pub groups: Entity<crate::ui::groups::GroupsView>,
+    _groups_subscription: Subscription,
     _subscriptions: Subscription,
     pub backend: Entity<crate::ui::backend::BackendView>,
     _runtime_subscription: Subscription,
@@ -86,6 +88,16 @@ impl AppView {
             |this, _, event: &crate::ui::subscriptions::SubscriptionsEvent, _| {
                 this.services
                     .subscription_command(event.request.clone(), event.command.clone());
+            },
+        );
+        let groups = cx.new(|cx| crate::ui::groups::GroupsView::new(window, cx));
+        pages
+            .get(Route::Settings)
+            .update(cx, |page, _| page.groups = Some(groups.clone()));
+        let groups_subscription = cx.subscribe(
+            &groups,
+            |this, _, event: &crate::ui::groups::GroupsEvent, _| {
+                this.services.groups_command(event.clone())
             },
         );
         let panel = cx.new(|cx| crate::ui::panel::PanelView::new(window, cx));
@@ -229,6 +241,8 @@ impl AppView {
             pages,
             subscriptions,
             _subscriptions: subscriptions_listener,
+            groups,
+            _groups_subscription: groups_subscription,
             bridge: StateBridge::default(),
             services,
             behavior: Default::default(),
@@ -539,6 +553,26 @@ impl AppView {
                 }
                 self.project_runtime(cx);
             }
+            AppEvent::Groups {
+                request,
+                result,
+                saved,
+                snapshot,
+            } => {
+                let (result, snapshot) = crate::ui::groups::reconcile_completion(
+                    self.bridge.snapshot.as_deref(),
+                    result,
+                    snapshot,
+                );
+                if let Some(state) = self.groups.update(cx, |view, cx| {
+                    view.complete(request, result, saved, snapshot, window, cx)
+                }) {
+                    self.bridge.leave_page();
+                    self.behavior.rebase(&state);
+                    self.bridge.snapshot = Some(state);
+                    self.project_behavior(window, cx);
+                }
+            }
             AppEvent::Subscriptions { request, result } => {
                 let state = self
                     .subscriptions
@@ -719,6 +753,7 @@ impl AppView {
             }
         }
         if let Some(state) = &self.bridge.snapshot {
+            self.groups.update(cx, |view, cx| view.project(state, cx));
             self.subscriptions
                 .update(cx, |view, cx| view.project(state, cx));
         }
@@ -769,6 +804,11 @@ impl AppView {
                 == crate::navigation::Category::Backend;
         self.backend
             .update(cx, |view, cx| view.set_visible(backend_visible, cx));
+        let groups_visible = route == Route::Settings
+            && self.pages.get(Route::Settings).read(cx).category
+                == crate::navigation::Category::Groups;
+        self.groups
+            .update(cx, |view, cx| view.set_visible(groups_visible, cx));
         self.route = route;
         // The shell viewport is shared; a long Settings page must not leave
         // the next page's heading above the viewport.

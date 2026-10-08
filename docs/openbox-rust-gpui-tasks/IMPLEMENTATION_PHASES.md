@@ -6,7 +6,7 @@
 
 ## 1 当前基线与范围
 
-- 新路线共 **61 个 macOS 任务、7 个 Windows 后续任务**。当前完成 **20项**：P0-01至07、P1全部8项、P2-01/P2-02A/P2-02B/P2-03/P2-04；P2为 **5/10**、macOS为 **20/61**。P2-04 Host FINAL ACCEPTANCE PASS，P2-04-PENDING-PERSISTENCE-001及前轮P1/P2 Finding CLOSED，Runtime/Platform及Runtime公共契约owner/本卡预约释放；见[Host最终收口](P2-local-proxy.md#p2-04-final-host-closeout)。P2-06 DOING；READY=P0-08/P2-05/P3-01/P4-02/P5-04/P5-06，未领取/未启动；其余任务状态/依赖与历史PASS/FAIL/REWORK/NOT_RUN保持。
+- 新路线共 **61 个 macOS 任务、7 个 Windows 后续任务**。当前完成 **20项**：P0-01至07、P1全部8项、P2-01/P2-02A/P2-02B/P2-03/P2-04；P2为 **5/10**、macOS为 **20/61**。P2-04 Host FINAL ACCEPTANCE PASS，P2-04-PENDING-PERSISTENCE-001及前轮P1/P2 Finding CLOSED，Runtime/Platform及Runtime公共契约owner/本卡预约释放；见[Host最终收口](P2-local-proxy.md#p2-04-final-host-closeout)。P4-02 ACCEPTANCE（[本轮记录](P4-02-acceptance.md)）；P2-06 DOING；READY=P0-08/P2-05/P3-01/P5-04/P5-06，未领取/未启动；其余任务状态/依赖与历史PASS/FAIL/REWORK/NOT_RUN保持。
 - 已有 React UI 和旧 Rust 模块是迁移输入，不直接算 GPUI 新路线完成。P0-02 的完成仅指本次明确要求的范围/规则调整，该历史文档动作不计功能实现；现 P1-01 已完成核心抽取，P1-02 已完成类型/原子快照与版本。
 - 当前已建立根 Cargo workspace、单一 Cargo.lock 与 `crates/veyra-core/`；旧入口接共享核心。实际构建/纯测试见 P1-01 记录，不表示原型或真实设备验收完成。
 - 旧 SDLC 状态与 UI 门禁已按用户要求退役；不恢复缺失文件，不补办历史 DCR/UI Contract。当前进度以本目录为准。
@@ -100,7 +100,7 @@ Task：OBG-Px-xx
 
 ## 4 任务状态总表
 
-“估算”在P0出口回填人日及假设；当前macOS61项：**DONE20、ACCEPTANCE0、READY6、DOING1、REVIEW0、TODO34、BLOCKED0**；Windows7项DEFERRED，共68项。P2阶段5/10，macOS20/61。P2-03既有Host收口及Finding CLOSED保持；P2-04经Host独立FINAL ACCEPTANCE PASS，ACCEPTANCE→DONE，P2-04-PENDING-PERSISTENCE-001及前轮P1/P2 Finding均CLOSED，Runtime/Platform及Runtime公共契约owner/本卡预约释放，见[当前收口](P2-local-proxy.md#p2-04-final-host-closeout)。绑定Core source aggregate `987a01782c59d75c913f20a8133fd37df27638951f73cf3168cb2b35c3ff4fa8` 与Desktop harness身份；Host已核验Native/限定故障注入及原14条exit0，并独立新复跑Core371/Desktop85（11 ignored由显式Native父test覆盖）。自然HTTP/OS故障、SIGKILL、无控制线程竞态仍NOT_RUN；历史PASS/FAIL/REWORK保留，不扩大验收。P2-06 READY→DOING，Codex 保留 Runtime/Platform 与 Runtime DTO owner；仅本卡生产执行器/IPC/固定安装部分代码与OS隔离测试交付，已有双向关闭cache交接/半提交重试，已有停止前预检及远程选择fence/IPC/CAS/manifest，新增卸载Archive/新安装隔离闭环；已增加固定来源与OS退出观察后有限正常会话授权；cold-start/预先Stopped来源、未知slot/旧owner人工恢复及同UID信任边界仍OPEN；新增统一产品身份与helper Quit清理，[第八轮记录](P2-local-proxy.md#p2-06-round8)。READY为P0-08/P2-05/P3-01/P4-02/P5-04/P5-06，未领取/启动；原显式依赖不变，其它任务状态不变。原P1-04/P2-02/P4-05父项不重复计数。
+“估算”在P0出口回填人日及假设；当前macOS61项：**DONE20、ACCEPTANCE1、READY5、DOING1、REVIEW0、TODO34、BLOCKED0**；Windows7项DEFERRED，共68项。P2阶段5/10，macOS20/61。P2-03既有Host收口及Finding CLOSED保持；P2-04经Host独立FINAL ACCEPTANCE PASS，ACCEPTANCE→DONE，P2-04-PENDING-PERSISTENCE-001及前轮P1/P2 Finding均CLOSED，Runtime/Platform及Runtime公共契约owner/本卡预约释放，见[当前收口](P2-local-proxy.md#p2-04-final-host-closeout)。绑定Core source aggregate `987a01782c59d75c913f20a8133fd37df27638951f73cf3168cb2b35c3ff4fa8` 与Desktop harness身份；Host已核验Native/限定故障注入及原14条exit0，并独立新复跑Core371/Desktop85（11 ignored由显式Native父test覆盖）。自然HTTP/OS故障、SIGKILL、无控制线程竞态仍NOT_RUN；历史PASS/FAIL/REWORK保留，不扩大验收。P2-06 READY→DOING，Codex 保留 Runtime/Platform 与 Runtime DTO owner；仅本卡生产执行器/IPC/固定安装部分代码与OS隔离测试交付，已有双向关闭cache交接/半提交重试，已有停止前预检及远程选择fence/IPC/CAS/manifest，新增卸载Archive/新安装隔离闭环；已增加固定来源与OS退出观察后有限正常会话授权；cold-start/预先Stopped来源、未知slot/旧owner人工恢复及同UID信任边界仍OPEN；新增统一产品身份与helper Quit清理，[第八轮记录](P2-local-proxy.md#p2-06-round8)。P4-02 ACCEPTANCE；READY为P0-08/P2-05/P3-01/P5-04/P5-06，未领取/启动；原显式依赖不变，其它任务状态不变。原P1-04/P2-02/P4-05父项不重复计数。
 
 ### P0 基线与可行性（9 项）
 
@@ -162,7 +162,7 @@ Task：OBG-Px-xx
 | 任务 | 显式依赖 | 状态 | 负责人 | 估算 | 证据 |
 | --- | --- | --- | --- | --- | --- |
 | [OBG-P4-01 订阅高级项](P4-configuration.md#obg-p4-01) | P2-01、P2-05 | TODO | — | — | — |
-| [OBG-P4-02 静态/动态组](P4-configuration.md#obg-p4-02) | P2-01、P2-02A、P2-02B、P1-03、P1-04A | READY | — | — | — |
+| [OBG-P4-02 静态/动态组](P4-configuration.md#obg-p4-02) | P2-01、P2-02A、P2-02B、P1-03、P1-04A | ACCEPTANCE | Codex · Core/Config + GPUI | — | [实现与局部验收](P4-02-acceptance.md) |
 | [OBG-P4-03 failover](P4-configuration.md#obg-p4-03) | P4-02、P2-04 | TODO | — | — | — |
 | [OBG-P4-04 规则资源](P4-configuration.md#obg-p4-04) | P2-02B、P2-04、P2-05、P1-04A | TODO | — | — | — |
 | [OBG-P4-06 链式代理](P4-configuration.md#obg-p4-06) | P2-02A、P2-02B、P2-05、P2-08 | TODO | — | — | — |

@@ -30,10 +30,12 @@
 
 **执行与交付**：依赖基础订阅、Base OutboundCatalog、最小 Compiler 与已有 GPUI 基础，扩展 P2-02A 已有的隐式组/selector/urltest 语义并注册高级 Group 出口，使用稳定 OutboundId；selector/urltest、静态/动态成员、国家分组、图标、拖拽、默认组与成员引用；返回 dropped/dangling 结果。group health URL 与 UI latency/Runtime health URL 分别建模，留空只按已有规则继承 Runtime 全局 health URL。Group 领域/Compiler/编辑器不以 P2-08 Proxy UI/service 为前置；其运行态增强在 P4-05C/P4-07 集成验证。
 
+**当前交付（2026-10-08）**：ACCEPTANCE，Core/Config + GPUI owner 保留；[实现、测试、磁盘与实机证据](P4-02-acceptance.md)。加载/忙碌及局部视觉差异未齐，不标 DONE，不解锁 P4-03。
+
 **验收**：
 
-- [ ] 动态组只使用实际存在且符合条件的节点，排除禁用节点，保留手工顺序与新增成员。
-- [ ] OutboundCatalog 统一校验 self/cycle/dangling，重名与悬空成员可定位；保存失败不丢草稿，合法配置可由最小 Compiler 编译，组配置可重启桌面恢复。Runtime 实际应用与 Proxy service 运行态增强在 P4-05C/P4-07 验收。
+- [x] 动态组只使用实际存在且符合条件的节点，排除禁用节点，保留手工顺序与新增成员。
+- [x] OutboundCatalog 统一校验 self/cycle/dangling，重名与悬空成员可定位；保存失败不丢草稿，合法配置可由最小 Compiler 编译，组配置可重启桌面恢复。Runtime 实际应用与 Proxy service 运行态增强在 P4-05C/P4-07 验收。
 - [ ] 编辑弹窗、默认恢复、排序和节点展示通过界面检查；failover 策略由下一任务完成。
 
 <a id="obg-p4-03"></a>

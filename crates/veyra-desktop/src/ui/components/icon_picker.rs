@@ -5,7 +5,7 @@ use crate::ui::icons::icon;
 use crate::ui::tokens as t;
 use gpui_kit::{
     component::{
-        ActiveTheme,
+        ActiveTheme, Disableable,
         button::{Button, ButtonCustomVariant, ButtonVariants},
         input::{InputEvent, InputState},
         popover::Popover,
@@ -83,6 +83,8 @@ fn matching_options(category: &str, query: &str) -> Vec<usize> {
 pub struct IconPicked(pub String);
 pub struct IconPicker {
     pub value: String,
+    pub expanded: bool,
+    pub disabled: bool,
     search: Entity<InputState>,
     // Kit 的 value 包含 IME 预编辑内容；筛选只消费 Change 事件提交后的值。
     query: String,
@@ -109,6 +111,8 @@ impl IconPicker {
             }
         });
         Self {
+            expanded: false,
+            disabled: false,
             value,
             search,
             query: String::new(),
@@ -132,15 +136,15 @@ impl Render for IconPicker {
         let entity = cx.entity();
         Popover::new("site-icon-picker")
             .appearance(false)
-            .anchor(Anchor::BottomLeft)
+            .anchor(if self.expanded { Anchor::TopLeft } else { Anchor::BottomLeft })
             .offset(px(4.))
             .track_focus(&self.search.focus_handle(cx))
             .on_open_change(cx.listener(|this, open, window, cx| {
                 if *open {
                     this.category = 0;
-                    let index = entries()
+                    let index = picker_options("all", "", this.expanded)
                         .iter()
-                        .position(|e| e.code == this.value)
+                        .position(|entry| entry.map_or(this.value.is_empty(), |index| entries()[index].code == this.value))
                         .unwrap_or(0);
                     this.scroll
                         .scroll_to_item_strict(index, ScrollStrategy::Center);
@@ -150,8 +154,9 @@ impl Render for IconPicker {
             .trigger(
                 Button::new("icon-trigger")
                     .ghost()
-                    .accessibility_label(tr(cx, "选择测试站点图标"))
-                    .w(px(t::SITE_ICON_WIDTH))
+                    .disabled(self.disabled)
+                    .accessibility_label(tr(cx, if self.expanded { "分组图标" } else { "选择测试站点图标" }))
+                    .w(px(if self.expanded { t::groups::ICON_FIELD } else { t::SITE_ICON_WIDTH }))
                     .h(px(t::CONTROL))
                     .px(px(t::GAP))
                     .rounded(px(t::RADIUS))
@@ -163,8 +168,11 @@ impl Render for IconPicker {
                             .flex()
                             .w_full()
                             .items_center()
-                            .justify_around()
-                            .children(current.map(|e| img(e.image.clone()).size(px(20.))))
+                            .gap(px(t::GAP))
+                            .when(!self.expanded,|d|d.justify_around())
+                            .children(current.map(|e| img(e.image.clone()).size(px(if self.expanded {t::ICON_SMALL}else{20.}))))
+                            .when(self.expanded&&current.is_none(),|d|d.child(div().w(px(t::ICON)).text_color(cx.theme().muted_foreground).child("—")))
+                            .when(self.expanded, |d| d.child(div().flex_1().min_w_0().overflow_hidden().text_ellipsis().child(current.map_or_else(||tr(cx,"无").to_owned(), |e|e.labels[match language {veyra_core::domain::DesktopLanguage::SimplifiedChinese=>0,veyra_core::domain::DesktopLanguage::English=>1,veyra_core::domain::DesktopLanguage::TraditionalChinese=>2}].clone()))))
                             .child(icon("ChevronDown", 12.).text_color(cx.theme().foreground)),
                     ),
             )
@@ -174,26 +182,26 @@ impl Render for IconPicker {
                 let category = ["all", "region", "brand", "other"][picker.category];
                 let popup = cx.entity();
                 // 固定 32px 行复用 GPUI 可见范围列表，不再每帧创建 896 个 Button/SVG。
-                let options = matching_options(category, query);
+                let options = picker_options(category, query, picker.expanded);
                 let list_height = (options.len() as f32 * t::CONTROL).min(t::PICKER_LIST_HEIGHT);
                 let value = picker.value.clone();
                 let list_entity = entity.clone();
                 let list = uniform_list("icon-options", options.len(), move |range, _, cx| {
                     range
                         .map(|position| {
-                            let index = options[position];
-                            let e = &entries()[index];
+                            let entry = options[position].map(|index| &entries()[index]);
                             let entity = list_entity.clone();
                             let popup = popup.clone();
-                            let code = e.code.clone();
-                            Button::new(("icon-option", index))
+                            let code = entry.map_or_else(String::new, |e| e.code.clone());
+                            let label = entry.map_or_else(|| tr(cx, "无").to_owned(), |e| e.labels[match cx.global::<Locale>().0 { veyra_core::domain::DesktopLanguage::SimplifiedChinese => 0, veyra_core::domain::DesktopLanguage::English => 1, veyra_core::domain::DesktopLanguage::TraditionalChinese => 2 }].clone());
+                            Button::new(("icon-option", position))
                                 .ghost()
                                 .w_full()
                                 .h(px(t::CONTROL))
                                 .px(px(t::GAP))
                                 .justify_start()
                                 .rounded(px(6.))
-                                .when(e.code == value, |b| {
+                                .when(code == value, |b| {
                                     b.bg(if cx.theme().mode.is_dark() {
                                         rgb(0x151111)
                                     } else {
@@ -206,8 +214,8 @@ impl Render for IconPicker {
                                         .items_center()
                                         .w_full()
                                         .gap(px(t::GAP))
-                                        .child(img(e.image.clone()).size(px(16.)))
-                                        .child(e.labels[match cx.global::<Locale>().0 { veyra_core::domain::DesktopLanguage::SimplifiedChinese => 0, veyra_core::domain::DesktopLanguage::English => 1, veyra_core::domain::DesktopLanguage::TraditionalChinese => 2 }].clone()),
+                                        .children(entry.map(|e| img(e.image.clone()).size(px(16.))))
+                                        .child(label),
                                 )
                                 .on_click(move |_, w, cx| {
                                     entity.update(cx, |s, cx| {
@@ -330,6 +338,56 @@ impl Render for IconPicker {
                     .child(list)
             })
     }
+}
+
+// 原版组图标菜单将“无”放在品牌与地区之间，选择后保存空 code。
+fn picker_options(category: &str, query: &str, expanded: bool) -> Vec<Option<usize>> {
+    let mut options: Vec<_> = matching_options(category, query)
+        .into_iter()
+        .map(Some)
+        .collect();
+    if expanded {
+        let position = options
+            .iter()
+            .position(|index| entries()[index.unwrap()].category == "region")
+            .unwrap_or(options.len());
+        options.insert(position, None);
+    }
+    options
+}
+
+/// 列表与图标选择器复用同源 SVG，保持资源来源与许可。
+pub fn group_icon(code: &str, size: f32, cx: &App) -> Div {
+    let container = div().size(px(size)).flex_shrink_0();
+    if let Some(entry) = entries().iter().find(|e| e.code == code) {
+        container.child(img(entry.image.clone()).size(px(size)))
+    } else {
+        // GroupIcon 对空图标和未知 code 使用不同占位符。
+        container
+            .flex()
+            .items_center()
+            .justify_center()
+            .text_size(px(t::groups::FALLBACK_ICON))
+            .line_height(px(size))
+            .text_color(cx.theme().muted_foreground)
+            .child(if code.is_empty() { "—" } else { "◎" })
+    }
+}
+
+/// 自动国家分组沿用原版矩形国旗，区别于节点组列表的方形图标。
+pub fn country_icon(code: &str, cx: &App) -> Div {
+    div()
+        .w(px(t::groups::COUNTRY_ICON_WIDTH))
+        .h(px(t::groups::COUNTRY_ICON_HEIGHT))
+        .flex_shrink_0()
+        .border_1()
+        .border_color(cx.theme().foreground.opacity(0.15))
+        .children(entries().iter().find(|e| e.code == code).map(|e| {
+            img(e.image.clone())
+                .w(px(t::groups::COUNTRY_ICON_WIDTH))
+                .h(px(t::groups::COUNTRY_ICON_HEIGHT))
+                .object_fit(ObjectFit::Cover)
+        }))
 }
 
 #[cfg(test)]

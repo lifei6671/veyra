@@ -69,7 +69,12 @@ pub fn project_selected_runtime(
         "{RUNTIME_POOL_PREFIX}{}",
         selected_subscription_id.0
     ));
-    if state.pools.iter().any(|pool| pool.id == implicit_pool_id) {
+    if state.pools.iter().any(|pool| pool.id == implicit_pool_id)
+        || state
+            .groups
+            .iter()
+            .any(|group| group.id == implicit_pool_id)
+    {
         return Err(SelectionProjectionError::SelectionConflict);
     }
     let mut pools = vec![RuntimePool {
@@ -81,9 +86,18 @@ pub fn project_selected_runtime(
         },
     }];
 
+    let groups = state.runtime_groups();
+    let group_pool_ids = groups
+        .iter()
+        .flat_map(|g| g.members.iter())
+        .filter_map(|id| match id {
+            crate::domain::OutboundId::Pool(id) => Some(id),
+            _ => None,
+        })
+        .collect::<HashSet<_>>();
     for pool in state.pools.iter().filter(|pool| pool.enabled) {
         let mut filtered = pool.clone();
-        if pool.kind == PoolKind::ImplicitProvider {
+        if pool.kind == PoolKind::ImplicitProvider && !group_pool_ids.contains(&pool.id) {
             filtered
                 .sources
                 .retain(|source| selected_provider_ids.contains(&source.provider_id));
@@ -96,7 +110,7 @@ pub fn project_selected_runtime(
             return Err(SelectionProjectionError::SelectionConflict);
         }
         let members = entry.node_members().cloned().collect::<Vec<_>>();
-        if pool.kind == PoolKind::Custom {
+        if pool.kind == PoolKind::Custom || group_pool_ids.contains(&pool.id) {
             selected_node_ids.extend(members.iter().cloned());
         }
         pools.push(RuntimePool {
@@ -105,6 +119,12 @@ pub fn project_selected_runtime(
             selection: filtered.selection,
         });
     }
+    selected_node_ids.extend(groups.iter().flat_map(|g| g.members.iter()).filter_map(
+        |id| match id {
+            crate::domain::OutboundId::Node(id) => Some(id.clone()),
+            _ => None,
+        },
+    ));
     nodes = state
         .nodes
         .iter()
@@ -123,6 +143,7 @@ pub fn project_selected_runtime(
     let runtime_intent = RuntimeIntent {
         nodes,
         pools,
+        groups,
         routes,
     };
     let catalog = OutboundCatalog::from_runtime_intent(&runtime_intent);

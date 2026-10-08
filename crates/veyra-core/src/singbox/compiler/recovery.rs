@@ -20,6 +20,9 @@ pub struct AppliedArtifactIndex {
     pub selection: SelectionVersion,
     pub pools: BTreeMap<PoolId, AppliedPool>,
     pub nodes: BTreeMap<NodeId, String>,
+    /// 组 selector 可含节点、组或 Direct，保持用户顺序；旧节点池选择契约不变。
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub groups: BTreeMap<PoolId, Vec<OutboundId>>,
 }
 impl AppliedArtifactIndex {
     pub(super) fn compile(state: &AppState, intent: &RuntimeIntent) -> Self {
@@ -60,6 +63,12 @@ impl AppliedArtifactIndex {
             config: state.config_version(),
             selection: state.selection_version(),
             pools,
+            groups: intent
+                .groups
+                .iter()
+                .filter(|g| matches!(g.selection, SelectionPolicy::Manual { .. }))
+                .map(|g| (g.id.clone(), g.members.clone()))
+                .collect(),
             nodes: intent
                 .nodes
                 .iter()
@@ -94,8 +103,21 @@ impl AppliedArtifactIndex {
                 }
             })
             .collect();
-        if selectors.len() != self.pools.len() {
+        if selectors.len() != self.pools.len() + self.groups.len() {
             return Err(invalid);
+        }
+        for (id, members) in &self.groups {
+            let selector = selectors
+                .iter()
+                .find(|s| s.tag == pool_tag(&id.0))
+                .ok_or(invalid)?;
+            if self.pools.contains_key(id)
+                || members.is_empty()
+                || selector.default.is_some()
+                || selector.outbounds != members.iter().map(outbound_tag).collect::<Vec<_>>()
+            {
+                return Err(invalid);
+            }
         }
         for (id, pool) in &self.pools {
             let selector = selectors

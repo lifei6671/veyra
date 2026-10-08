@@ -201,7 +201,7 @@ impl BehaviorPanel {
         let mut subscriptions = vec![
             cx.subscribe(&columns, |this, _, event, cx| {
                 if let SelectEvent::Confirm(Some(value)) = event {
-                    let columns = match *value {
+                    let columns = match value.as_ref() {
                         "单列" => 1,
                         "双列" => 2,
                         _ => 3,
@@ -219,7 +219,7 @@ impl BehaviorPanel {
             }),
             cx.subscribe(&sort, |this, _, event, cx| {
                 if let SelectEvent::Confirm(Some(value)) = event {
-                    let sort = match *value {
+                    let sort = match value.as_ref() {
                         "default" => NodeSort::Default,
                         "nameAsc" => NodeSort::NameAsc,
                         "nameDesc" => NodeSort::NameDesc,
@@ -239,7 +239,7 @@ impl BehaviorPanel {
             }),
             cx.subscribe(&provider, |this, _, event, cx| {
                 if let SelectEvent::Confirm(Some(value)) = event {
-                    let provider = match *value {
+                    let provider = match value.as_ref() {
                         "ipwho.is" => IpInfoProvider::IpWhoIs,
                         "ipapi.is" => IpInfoProvider::IpApiIs,
                         _ => IpInfoProvider::IpSb,

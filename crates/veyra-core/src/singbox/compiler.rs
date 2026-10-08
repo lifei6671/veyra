@@ -368,6 +368,32 @@ impl ConfigCompiler for SingBoxCompiler {
                 },
             );
         }
+        for group in &intent.groups {
+            let entry = catalog
+                .require_available(&OutboundId::Pool(group.id.clone()))
+                .map_err(catalog_error)?;
+            // 静态成员顺序决定 selector 默认项，不能沿用 Base pool 的排序。
+            let members = entry.references.iter().map(outbound_tag).collect();
+            let tag = pool_tag(&group.id.0);
+            outbounds.push(match &group.selection {
+                SelectionPolicy::Manual { .. } => CoreOutbound::Selector(Selector {
+                    tag,
+                    outbounds: members,
+                    default: None,
+                }),
+                SelectionPolicy::UrlTest {
+                    probe_url,
+                    interval_secs,
+                    tolerance_ms,
+                } => CoreOutbound::Urltest(UrlTest {
+                    tag,
+                    outbounds: members,
+                    url: probe_url.clone(),
+                    interval: format!("{interval_secs}s"),
+                    tolerance: *tolerance_ms,
+                }),
+            });
+        }
         outbounds.push(CoreOutbound::Direct(Terminal {
             tag: "direct".to_owned(),
         }));
@@ -1347,10 +1373,29 @@ impl Document {
         if direct_count != 1 || block_count != 1 || node_tags.is_empty() || !valid_final_outbound {
             return Err(CompileError::InvalidRouteTarget);
         }
+        let mut member_tags = node_tags.clone();
+        member_tags.extend(pool_tags.iter().cloned());
+        member_tags.insert("direct".into());
+        crate::domain::validate_outbound_graph(
+            self.outbounds
+                .iter()
+                .map(|o| {
+                    (
+                        o.tag().to_owned(),
+                        match o {
+                            CoreOutbound::Selector(p) => p.outbounds.clone(),
+                            CoreOutbound::Urltest(p) => p.outbounds.clone(),
+                            _ => vec![],
+                        },
+                    )
+                })
+                .chain(self.endpoints.iter().map(|e| (e.tag.clone(), vec![]))),
+        )
+        .map_err(|_| CompileError::InvalidRouteTarget)?;
         for outbound in &self.outbounds {
             match outbound {
                 CoreOutbound::Selector(pool) => {
-                    validate_members(&pool.outbounds, &node_tags)?;
+                    validate_members(&pool.outbounds, &member_tags)?;
                     if pool
                         .default
                         .as_ref()
@@ -1360,7 +1405,7 @@ impl Document {
                     }
                 }
                 CoreOutbound::Urltest(pool) => {
-                    validate_members(&pool.outbounds, &node_tags)?;
+                    validate_members(&pool.outbounds, &member_tags)?;
                     let seconds = pool
                         .interval
                         .strip_suffix('s')
@@ -2163,6 +2208,7 @@ mod tests {
     }
     fn fixture(selected: ProxyNode) -> RuntimeIntent {
         RuntimeIntent {
+            groups: Vec::new(),
             nodes: vec![selected],
             pools: vec![
                 RuntimePool {
@@ -4160,6 +4206,7 @@ mod tests {
                 "app_config",
                 "default_target",
                 "nodes",
+                "groups",
                 "pools",
                 "providers",
                 "routes",
@@ -4167,7 +4214,7 @@ mod tests {
                 "subscriptions",
             ])
         );
-        assert_eq!(fields.len(), 14);
+        assert_eq!(fields.len(), 15);
         assert_eq!(DnsPolicy::System, DnsPolicy::System);
     }
 }

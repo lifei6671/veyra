@@ -8,19 +8,19 @@ use gpui_kit::{
     *,
 };
 pub enum SelectEvent {
-    Confirm(Option<&'static str>),
+    Confirm(Option<SharedString>),
 }
 // 选项、已提交值与待确认 cursor 共用一个 presentation state，鼠标不另存 hover 值。
 struct Selection {
-    options: Vec<&'static str>,
+    options: Vec<SharedString>,
     selected: Option<usize>,
     cursor: usize,
 }
 impl Selection {
-    fn new(options: Vec<&'static str>, selected: Option<usize>) -> Self {
+    fn new(options: Vec<impl Into<SharedString>>, selected: Option<usize>) -> Self {
         let selected = selected.filter(|&i| i < options.len());
         Self {
-            options,
+            options: options.into_iter().map(Into::into).collect(),
             selected,
             cursor: selected.unwrap_or(0),
         }
@@ -47,15 +47,15 @@ impl Selection {
             (self.cursor + len - 1) % len
         };
     }
-    fn confirm(&mut self, index: usize) -> Option<&'static str> {
-        let value = self.options.get(index).copied()?;
+    fn confirm(&mut self, index: usize) -> Option<SharedString> {
+        let value = self.options.get(index).cloned()?;
         self.activate(index);
         self.selected = Some(index);
         Some(value)
     }
-    fn selected_value(&self) -> &'static str {
+    fn selected_value(&self) -> &str {
         self.selected
-            .and_then(|i| self.options.get(i).copied())
+            .and_then(|i| self.options.get(i).map(|s| s.as_ref()))
             .unwrap_or("")
     }
 }
@@ -66,12 +66,15 @@ pub struct SelectState {
     popup: FocusHandle,
     label: SharedString,
     width: Pixels,
+    height: Pixels,
+    disabled: bool,
+    pub translated_options: usize,
 }
 impl EventEmitter<SelectEvent> for SelectState {}
 impl EventEmitter<DismissEvent> for SelectState {}
 impl SelectState {
     pub fn new(
-        options: Vec<&'static str>,
+        options: Vec<impl Into<SharedString>>,
         selected: Option<IndexPath>,
         _: &mut Window,
         cx: &mut Context<Self>,
@@ -83,7 +86,20 @@ impl SelectState {
             popup: cx.focus_handle(),
             label: "".into(),
             width: px(t::SELECT_WIDTH),
+            height: px(t::CONTROL),
+            disabled: false,
+            translated_options: usize::MAX,
         }
+    }
+    pub fn set_options(
+        &mut self,
+        options: Vec<String>,
+        window: &mut Window,
+        cx: &mut Context<Self>,
+    ) {
+        self.close(false, window, cx);
+        self.selection = Selection::new(options, Some(0));
+        cx.notify();
     }
     pub fn set_selected_index(
         &mut self,
@@ -95,7 +111,7 @@ impl SelectState {
         cx.notify();
     }
     fn set_open(&mut self, open: bool, window: &mut Window, cx: &mut Context<Self>) {
-        let open = open && !self.selection.options.is_empty();
+        let open = open && !self.disabled && !self.selection.options.is_empty();
         if open {
             if !self.open {
                 self.selection.cursor = self.selection.selected.unwrap_or(0);
@@ -131,6 +147,9 @@ impl SelectState {
         cx.notify();
     }
     fn confirm(&mut self, index: usize, window: &mut Window, cx: &mut Context<Self>) {
+        if self.disabled {
+            return;
+        }
         let Some(value) = self.selection.confirm(index) else {
             return;
         };
@@ -145,6 +164,7 @@ pub struct Select {
     state: Entity<SelectState>,
     label: SharedString,
     style: StyleRefinement,
+    disabled: bool,
 }
 impl Select {
     pub fn new(state: &Entity<SelectState>, label: impl Into<SharedString>) -> Self {
@@ -152,7 +172,14 @@ impl Select {
             state: state.clone(),
             label: label.into(),
             style: StyleRefinement::default(),
+            disabled: false,
         }
+    }
+}
+impl gpui_kit::component::Disableable for Select {
+    fn disabled(mut self, disabled: bool) -> Self {
+        self.disabled = disabled;
+        self
     }
 }
 impl Styled for Select {
@@ -164,6 +191,18 @@ impl RenderOnce for Select {
     fn render(self, _: &mut Window, cx: &mut App) -> impl IntoElement {
         self.state.update(cx, |s, _| {
             s.label = self.label;
+            s.disabled = self.disabled;
+            s.height = self
+                .style
+                .size
+                .height
+                .and_then(|h| match h {
+                    Length::Definite(DefiniteLength::Absolute(AbsoluteLength::Pixels(p))) => {
+                        Some(p)
+                    }
+                    _ => None,
+                })
+                .unwrap_or(px(t::CONTROL));
             s.width = self
                 .style
                 .size
@@ -178,7 +217,7 @@ impl RenderOnce for Select {
         });
         div()
             .w(self.state.read(cx).width)
-            .h(px(t::CONTROL))
+            .h(self.state.read(cx).height)
             .child(self.state)
     }
 }
@@ -187,14 +226,23 @@ impl Render for SelectState {
         let entity = cx.entity();
         let popup_entity = entity.clone();
         let open_entity = entity.clone();
-        let selected = tr(cx, self.selection.selected_value());
+        let selected = if self
+            .selection
+            .selected
+            .is_some_and(|i| i < self.translated_options)
+        {
+            tr(cx, self.selection.selected_value())
+        } else {
+            self.selection.selected_value()
+        }
+        .to_owned();
         BaseSelect::new("select")
             .open(self.open)
-            .disabled(self.selection.options.is_empty())
+            .disabled(self.disabled || self.selection.options.is_empty())
             .focus_handle(&self.trigger)
             .content_focus_handle(&self.popup)
             .accessibility_label(tr(cx, &self.label).to_owned())
-            .accessibility_value(selected)
+            .accessibility_value(selected.clone())
             .on_open_change(move |open, w, cx| {
                 open_entity.update(cx, |s, cx| s.set_open(open, w, cx))
             })
@@ -211,11 +259,16 @@ impl Render for SelectState {
                     }))
                     .trigger(
                         gpui_kit::base::Button::new("select-trigger")
-                            .disabled(self.selection.options.is_empty())
+                            .disabled(self.disabled || self.selection.options.is_empty())
                             .tab_stop(false)
                             .flex()
                             .w(self.width)
-                            .h(px(t::CONTROL))
+                            .h(self.height)
+                            .text_size(px(if self.height < px(t::CONTROL) {
+                                t::SMALL
+                            } else {
+                                t::BODY
+                            }))
                             .items_center()
                             .justify_between()
                             .px(px(t::PAD))
@@ -244,6 +297,7 @@ impl Render for SelectState {
                         let cursor = s.selection.cursor;
                         let selected = s.selection.selected;
                         let options = s.selection.options.clone();
+                        let translated_options = s.translated_options;
                         let focus = s.popup.clone();
                         let keyboard = popup_entity.clone();
                         div()
@@ -312,7 +366,11 @@ impl Render for SelectState {
                                     .id(("option", i))
                                     .role(Role::ListBoxOption)
                                     .aria_selected(selected == Some(i))
-                                    .aria_label(tr(cx, label))
+                                    .aria_label(if i < translated_options {
+                                        tr(cx, &label).to_owned()
+                                    } else {
+                                        label.to_string()
+                                    })
                                     .flex()
                                     .h(px(t::CONTROL))
                                     .items_center()
@@ -338,7 +396,11 @@ impl Render for SelectState {
                                             });
                                         }
                                     })
-                                    .child(tr(cx, label))
+                                    .child(if i < translated_options {
+                                        tr(cx, &label).to_owned()
+                                    } else {
+                                        label.to_string()
+                                    })
                                     .when(selected == Some(i), |d| {
                                         d.child(icon("Check", 14.).text_color(rgb(highlight_text)))
                                     })
@@ -363,12 +425,12 @@ mod tests {
         s.activate(2);
         assert_eq!((s.selected, s.cursor), (Some(0), 2));
         assert_eq!((0..3).filter(|&i| s.cursor == i).collect::<Vec<_>>(), [2]);
-        assert_eq!(s.confirm(s.cursor), Some("c"));
+        assert_eq!(s.confirm(s.cursor), Some("c".into()));
         assert_eq!(s.selected, Some(2));
     }
     #[test]
     fn empty_options_and_invalid_selection_are_normalized() {
-        let mut empty = Selection::new(vec![], Some(9));
+        let mut empty = Selection::new(Vec::<gpui_kit::SharedString>::new(), Some(9));
         empty.step(true);
         empty.step(false);
         empty.activate(9);
@@ -395,6 +457,6 @@ mod tests {
         s.step(true);
         s.set_selected(Some(2), true);
         assert_eq!((s.selected, s.cursor), (Some(2), 1));
-        assert_eq!(s.confirm(s.cursor), Some("繁體中文"));
+        assert_eq!(s.confirm(s.cursor), Some("繁體中文".into()));
     }
 }

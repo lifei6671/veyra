@@ -415,6 +415,7 @@ mod tests {
 
     fn intent() -> RuntimeIntent {
         RuntimeIntent {
+            groups: Vec::new(),
             nodes: vec![ProxyNode {
                 id: NodeId("node".to_owned()),
                 provider_id: ProviderId("provider".to_owned()),

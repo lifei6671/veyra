@@ -30,3 +30,6 @@ mod outbound_catalog;
 mod outbound_graph;
 pub use outbound_catalog::*;
 pub use outbound_graph::{OutboundGraphError, validate_outbound_graph};
+
+mod groups;
+pub use groups::*;

@@ -2973,6 +2973,7 @@ mod tests {
             providers,
             nodes,
             pools: Vec::new(),
+            groups: Vec::new(),
             routes: Vec::new(),
         };
 

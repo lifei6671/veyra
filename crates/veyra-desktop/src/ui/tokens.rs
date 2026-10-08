@@ -10,6 +10,7 @@ pub const BRAND_WIDTH: f32 = 126.33;
 pub const BRAND_INK: u32 = 0x384452;
 // Panel Dark 的品牌局部 filter: invert(1) hue-rotate(180deg)。
 pub const BRAND_PANEL_DARK_INK: u32 = 0xb2becc;
+pub const SMALL: f32 = 12.;
 pub const BODY: f32 = 14.;
 pub const BODY_LINE: f32 = 20.;
 pub const NAV_HEIGHT: f32 = 36.;
@@ -306,4 +307,39 @@ pub mod backend {
     pub const ON_BG: u32 = 0x00a96e2e;
     pub const OFF: u32 = 0xff5861;
     pub const OFF_BG: u32 = 0xff586126;
+}
+
+// OpenBox openbox.css:1311–1465 节点组；原版固定逻辑像素，不取 Kit 默认值。
+pub mod groups {
+    pub const FALLBACK_ICON: f32 = 15.;
+    pub const RULE_CHECK_RADIUS: f32 = 2.;
+    pub const BADGE_PAD_X: f32 = 7.;
+    pub const BADGE_PAD_Y: f32 = 1.;
+    pub const BADGE_LINE: f32 = 17.;
+    pub const BADGE_RADIUS: f32 = 7.;
+    pub const DESCRIPTION_TOP: f32 = 2.;
+    pub const COUNTRY_ICON_WIDTH: f32 = 16.;
+    pub const COUNTRY_ICON_HEIGHT: f32 = 12.;
+    pub const COUNTRY_PICKER: f32 = 144.;
+    pub const COUNTRY_MENU: f32 = 256.;
+    pub const SCALE_RESET: f32 = 52.;
+    pub const TABS_WIDTH: f32 = 124.;
+    pub const MODAL_WIDTH: f32 = 896.;
+    pub const HEADER: f32 = 41.;
+    pub const FOOTER: f32 = 49.;
+    pub const CARD_HEIGHT: f32 = 60.;
+    pub const CARD_PAD_Y: f32 = 11.;
+    pub const CARD_ICON: f32 = 18.;
+    pub const CARD_ACTION: f32 = 30.;
+    pub const DRAG_ICON: f32 = 15.;
+    pub const ICON_FIELD: f32 = 224.;
+    pub const SCALE_VALUE: f32 = 48.;
+    pub const SCALE_WIDTH: f32 = 158.;
+    pub const RULE_FIELD: f32 = 174.;
+    pub const MEMBER_HEIGHT: f32 = 256.;
+    pub const MEMBER_ROW: f32 = 36.;
+    pub const FILTER_HEIGHT: f32 = 24.;
+    pub const FILTER_WIDTH: f32 = 128.;
+    pub const AUTO_WIDTH: f32 = 576.;
+    pub const DYNAMIC_HEIGHT: f32 = 224.;
 }

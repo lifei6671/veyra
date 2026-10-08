@@ -97,7 +97,7 @@ impl PanelView {
             ),
             cx.subscribe(&language, |this, _, event, cx| {
                 if let SelectEvent::Confirm(Some(value)) = event {
-                    this.draft.language = match *value {
+                    this.draft.language = match value.as_ref() {
                         "English" => DesktopLanguage::English,
                         "繁體中文" => DesktopLanguage::TraditionalChinese,
                         _ => DesktopLanguage::SimplifiedChinese,

@@ -4,7 +4,10 @@ use super::{
 };
 
 /// 显示名、协议和内核 tag 均不参与出口身份；当前仅定义 Base 所需种类。
-#[derive(Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+#[derive(
+    Clone, Debug, serde::Deserialize, serde::Serialize, Eq, Hash, Ord, PartialEq, PartialOrd,
+)]
+#[serde(tag = "kind", content = "id", rename_all = "snake_case")]
 pub enum OutboundId {
     Node(NodeId),
     Pool(PoolId),
@@ -125,7 +128,34 @@ impl OutboundCatalog {
         for pool in &state.pools {
             entries.push(Self::pool_from_state(state, pool));
         }
-        Self::with_terminals(entries)
+        for group in &state.groups {
+            if group.builtin() {
+                continue;
+            }
+            let mut entry = group_entry(&group.id, state.group_members(group), None);
+            entry.display_name = Some(group.name.clone());
+            entry.kind = if group.rule == super::GroupRule::UrlTest {
+                OutboundKind::UrlTest
+            } else {
+                OutboundKind::Selector
+            };
+            if !group.enabled {
+                entry.availability =
+                    OutboundAvailability::Unavailable(OutboundUnavailableReason::Disabled);
+            }
+            entries.push(entry);
+        }
+        let mut catalog = Self::with_terminals(entries);
+        for group in state.groups.iter().filter(|g| g.builtin()) {
+            let entry = catalog
+                .entries
+                .iter_mut()
+                .find(|e| e.id == group.outbound_id())
+                .expect("terminal");
+            entry.display_name = Some(group.name.clone());
+            // Direct/Block 内核出口始终存在；停用只影响编辑器可选项。
+        }
+        catalog
     }
 
     /// 既有 RuntimeIntent 已是选定配置投影；沿用同一身份、成员、选择和图校验。
@@ -136,6 +166,12 @@ impl OutboundCatalog {
             intent.pools.iter().map(|pool| {
                 pool_entry(&pool.id, None, None, pool.members.clone(), &pool.selection)
             }),
+        );
+        entries.extend(
+            intent
+                .groups
+                .iter()
+                .map(|g| group_entry(&g.id, g.members.clone(), Some(g.selection.clone()))),
         );
         Self::with_terminals(entries)
     }
@@ -199,6 +235,27 @@ impl OutboundCatalog {
                         OutboundUnavailableReason::InvalidGraph(error.clone()),
                     );
                 }
+            }
+        }
+        loop {
+            let unavailable = entries
+                .iter()
+                .filter(|e| e.availability != OutboundAvailability::Available)
+                .map(|e| e.id.clone())
+                .collect::<std::collections::BTreeSet<_>>();
+            let mut changed = false;
+            for entry in &mut entries {
+                if entry.availability == OutboundAvailability::Available
+                    && let Some(id) = entry.references.iter().find(|id| unavailable.contains(*id))
+                {
+                    entry.availability = OutboundAvailability::Unavailable(
+                        OutboundUnavailableReason::UnavailableReference(id.clone()),
+                    );
+                    changed = true;
+                }
+            }
+            if !changed {
+                break;
             }
         }
         Self { entries }
@@ -358,3 +415,30 @@ fn pool_entry(
 
 #[cfg(test)]
 mod tests;
+
+fn group_entry(
+    id: &PoolId,
+    references: Vec<OutboundId>,
+    selection: Option<SelectionPolicy>,
+) -> OutboundEntry {
+    let availability = if references.is_empty() {
+        OutboundAvailability::Unavailable(OutboundUnavailableReason::EmptyMembers)
+    } else {
+        OutboundAvailability::Available
+    };
+    OutboundEntry {
+        id: OutboundId::Pool(id.clone()),
+        kind: if matches!(selection, Some(SelectionPolicy::UrlTest { .. })) {
+            OutboundKind::UrlTest
+        } else {
+            OutboundKind::Selector
+        },
+        display_name: None,
+        pool_kind: Some(PoolKind::Custom),
+        provider_ids: vec![],
+        subscription_ids: vec![],
+        references,
+        selection,
+        availability,
+    }
+}
