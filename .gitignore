@@ -36,3 +36,9 @@ src-tauri/binaries/
 
 # Local agent/workspace state
 .workbuddy-ai/
+
+# macOS Finder metadata
+.DS_Store
+
+# Local task evidence, validation logs, and recovery materials
+/docs/openbox-rust-gpui-tasks/evidence/
