@@ -244,18 +244,32 @@ pub const REFERENCE_GHOST_HOVER_DARK: u32 = 0x130f0f;
 
 pub const REFERENCE_BUTTON_FOCUS_OFFSET: f32 = 2.;
 
-// 本机OpenBox分享Modal actual Tailwind级联：max-w-3xl、gap-5、1fr/.9fr。
-pub const SUBSCRIPTION_SHARE_EDITOR_WIDTH: f32 = 768.;
-pub const SUBSCRIPTION_SHARE_COLUMNS_GAP: f32 = 20.;
-pub const SUBSCRIPTION_SHARE_LEFT_FRACTION: f32 = 10. / 19.;
-pub const SUBSCRIPTION_SHARE_BODY_HEIGHT: f32 = 368.;
+// SubscriptionSettings.tsx / openbox.css:1274–1292 分享弹窗。
+pub const SUBSCRIPTION_SHARE_EDITOR_WIDTH: f32 = 736.;
+pub const SUBSCRIPTION_SHARE_COLUMNS_GAP: f32 = 24.;
+pub const SUBSCRIPTION_SHARE_LEFT_FRACTION: f32 = 0.5;
+pub const SUBSCRIPTION_SHARE_BODY_HEIGHT: f32 = 320.;
 pub const SUBSCRIPTION_SHARE_FOOTER: f32 = 53.;
-pub const SUBSCRIPTION_SHARE_ROW_HEIGHT: f32 = 38.;
+pub const SUBSCRIPTION_SHARE_ROW_HEIGHT: f32 = 42.;
 pub const SUBSCRIPTION_SHARE_LIST_MAX_HEIGHT: f32 = 320.;
-pub const SUBSCRIPTION_SHARE_CHECKBOX: f32 = 20.;
-pub const SUBSCRIPTION_SHARE_PROTOCOL_WIDTH: f32 = 83.;
-pub const SUBSCRIPTION_SHARE_COPY_WIDTH: f32 = 40.;
-pub const SUBSCRIPTION_SHARE_QR_SIZE: f32 = 176.;
+pub const SUBSCRIPTION_SHARE_CHECKBOX: f32 = 16.;
+pub const SUBSCRIPTION_SHARE_PROTOCOL_WIDTH: f32 = 82.;
+pub const SUBSCRIPTION_SHARE_COPY_WIDTH: f32 = 38.;
+pub const SUBSCRIPTION_SHARE_QR_SIZE: f32 = 164.;
+// React 分享卡片、表单与 QRCodeSVG 容器；监听说明沿用相同排版。
+pub const SUBSCRIPTION_SHARE_CARD_LIGHT: u32 = 0xededeead;
+pub const SUBSCRIPTION_SHARE_CARD_DARK: u32 = 0xffffff0b;
+pub const SUBSCRIPTION_SHARE_CARD_HEIGHT: f32 = 60.;
+pub const SUBSCRIPTION_SHARE_CARD_RADIUS: f32 = 11.;
+pub const SUBSCRIPTION_SHARE_TEXT_GAP: f32 = 2.;
+pub const SUBSCRIPTION_SHARE_META_FONT: f32 = 11.;
+pub const SUBSCRIPTION_SHARE_FIELD_FONT: f32 = 12.;
+pub const SUBSCRIPTION_SHARE_BODY_FONT: f32 = 13.;
+pub const SUBSCRIPTION_SHARE_CHECK_RADIUS: f32 = 3.;
+pub const SUBSCRIPTION_SHARE_LINK_HEIGHT: f32 = 34.;
+pub const SUBSCRIPTION_SHARE_QR_PADDING: f32 = 8.;
+// 原版 window.confirm 由系统呈现，GPUI 使用既有 Dialog 的紧凑确认宽度。
+pub const SUBSCRIPTION_SHARE_CONFIRM_WIDTH: f32 = 420.;
 
 /// OpenBox .backend-card/.backend-badge/.backend-service-actions (openbox.css:2313–2352).
 pub mod backend {

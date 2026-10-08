@@ -17,9 +17,15 @@ pub struct PanelInput {
     number: bool,
     focus_style: Option<(Hsla, f32)>,
     border_focus: bool,
+    readonly: bool,
     disabled: bool,
 }
 impl PanelInput {
+    /// 只读分享链接保留选择/复制与正常文字颜色。
+    pub fn readonly(mut self, value: bool) -> Self {
+        self.readonly = value;
+        self
+    }
     /// subscription-source-form 用 1px accent border，而不是浏览器按钮 outline。
     pub fn border_focus(mut self) -> Self {
         self.border_focus = true;
@@ -70,6 +76,7 @@ impl RenderOnce for PanelInput {
             .when(self.border_focus, |d| d.rounded(px(t::RADIUS)))
             .child(Styled::h(
                 Input::new(&self.state)
+                    .readonly(self.readonly)
                     .disabled(self.disabled)
                     .focus_bordered(false)
                     .rounded(px(t::RADIUS))
@@ -176,6 +183,7 @@ pub fn text_input(state: &Entity<InputState>) -> PanelInput {
         number: false,
         focus_style: None,
         border_focus: false,
+        readonly: false,
         disabled: false,
     }
 }

@@ -24,6 +24,9 @@ pub fn icon(name: &str, size: f32) -> Icon {
         "Cog6Tooth" => include_bytes!("../../assets/heroicons/Cog6Tooth.svg"),
         "Play" => include_bytes!("../../assets/heroicons/Play.svg"),
         "Stop" => include_bytes!("../../assets/heroicons/Stop.svg"),
+        "ArrowPathRoundedSquare" => {
+            include_bytes!("../../assets/heroicons/ArrowPathRoundedSquare.svg")
+        }
         "ArrowPath" => include_bytes!("../../assets/heroicons/ArrowPath.svg"),
         "PencilSquare" => include_bytes!("../../assets/heroicons/PencilSquare.svg"),
         "Trash" => include_bytes!("../../assets/heroicons/Trash.svg"),

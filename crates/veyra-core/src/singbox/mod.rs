@@ -9,7 +9,7 @@ pub use compiler::{
     AppliedArtifactIndex, AppliedPool, CompileError, ConfigCompiler, GeneratedConfig,
     LoopbackListener, ManagedCacheFile, ProductCompileRequest, ProductRuntimeResources,
     RECOVERY_FORMAT, RuntimeHealthPlan, RuntimeProfile, SingBoxCompiler, SingBoxPlan,
-    UnsupportedProductOption,
+    UnsupportedProductOption, subscription_document,
 };
 
 #[cfg(any(test, feature = "legacy-test-support"))]

@@ -25,3 +25,5 @@ pub mod helper_protocol;
 pub mod owned_child;
 
 pub mod helper_transfer;
+
+pub mod shares;

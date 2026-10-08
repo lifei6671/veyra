@@ -192,6 +192,8 @@ impl AppState {
             return Err(StateValidationError::UnsupportedSchemaVersion);
         }
 
+        super::shares::validate_shares(&self.app_config.subscription_shares)
+            .map_err(|_| StateValidationError::InvalidSubscription)?;
         self.app_config
             .visual
             .validate()
@@ -1726,6 +1728,8 @@ mod tests {
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 #[serde(deny_unknown_fields)]
 pub struct AppConfig {
+    #[serde(default)]
+    pub subscription_shares: Vec<super::SubscriptionShare>,
     pub check_updates_on_start: bool,
     pub visual: super::DesktopVisualPreferences,
     pub behavior: super::DesktopBehaviorPreferences,
@@ -1733,6 +1737,7 @@ pub struct AppConfig {
 impl Default for AppConfig {
     fn default() -> Self {
         Self {
+            subscription_shares: Vec::new(),
             check_updates_on_start: true,
             visual: super::DesktopVisualPreferences::default(),
             behavior: super::DesktopBehaviorPreferences::default(),

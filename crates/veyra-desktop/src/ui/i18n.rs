@@ -48,6 +48,52 @@ pub fn icon_label(language: DesktopLanguage, label: &str) -> String {
     out
 }
 const MESSAGES: &[[&str; 3]] = &[
+    ["删除订阅分享", "Delete subscription share", "刪除訂閱分享"],
+    ["修改订阅分享", "Edit subscription share", "修改訂閱分享"],
+    [
+        "重新生成分享链接",
+        "Regenerate share link",
+        "重新產生分享連結",
+    ],
+    ["启用订阅分享", "Enable subscription share", "啟用訂閱分享"],
+    ["停用订阅分享", "Disable subscription share", "停用訂閱分享"],
+    ["编辑订阅分享", "Edit subscription share", "編輯訂閱分享"],
+    [
+        "分享监听失败：地址不可用或端口已占用",
+        "Cannot listen: address unavailable or port in use",
+        "分享監聽失敗：位址不可用或連接埠已佔用",
+    ],
+    [
+        "请检查名称、订阅、监听地址与分享端口",
+        "Check name, subscriptions, bind address and advertised port",
+        "請檢查名稱、訂閱、監聽位址與分享連接埠",
+    ],
+    [
+        "所选订阅包含无法无损导出的节点",
+        "Selected subscriptions contain nodes that cannot be exported losslessly",
+        "所選訂閱包含無法無損匯出的節點",
+    ],
+    [
+        "分享操作失败，请重试；原配置已保留",
+        "Sharing failed. Retry; previous configuration is preserved",
+        "分享操作失敗，請重試；原設定已保留",
+    ],
+    [
+        "确定删除订阅分享？",
+        "Delete this subscription share?",
+        "確定刪除訂閱分享？",
+    ],
+    [
+        "重新生成分享链接？旧链接将立即失效。",
+        "Regenerate this link? The old link will stop working immediately.",
+        "重新產生分享連結？舊連結將立即失效。",
+    ],
+    ["监听地址", "Listen address", "監聽位址"],
+    [
+        "仅提供 HTTP；分享端口须与监听一致，外部可达性取决于网络",
+        "HTTP only. Advertised and listening ports must match; external access depends on the network.",
+        "僅提供 HTTP；分享連接埠須與監聽一致，外部可達性取決於網路",
+    ],
     [
         "请添加国家地区",
         "Add a country or region",

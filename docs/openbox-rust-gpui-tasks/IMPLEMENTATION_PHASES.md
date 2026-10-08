@@ -6,7 +6,7 @@
 
 ## 1 当前基线与范围
 
-- 新路线共 **61 个 macOS 任务、7 个 Windows 后续任务**。当前完成 **21项**：P0-01至07、P1全部8项、P2-01/P2-02A/P2-02B/P2-03/P2-04、P4-02；P2为 **5/10**、macOS为 **21/61**。P2-04 Host FINAL ACCEPTANCE PASS，P2-04-PENDING-PERSISTENCE-001及前轮P1/P2 Finding CLOSED，Runtime/Platform及Runtime公共契约owner/本卡预约释放；见[Host最终收口](P2-local-proxy.md#p2-04-final-host-closeout)。P4-02 DONE（[本轮记录](P4-02-acceptance.md)）；P2-06 DOING；READY=P0-08/P2-05/P3-01/P4-03/P5-04/P5-06，未领取/未启动；其余任务状态/依赖与历史PASS/FAIL/REWORK/NOT_RUN保持。
+- 新路线共 **61 个 macOS 任务、7 个 Windows 后续任务**。当前完成 **21项**：P0-01至07、P1全部8项、P2-01/P2-02A/P2-02B/P2-03/P2-04、P4-02；P2为 **5/10**、macOS为 **21/61**。P2-04 Host FINAL ACCEPTANCE PASS，P2-04-PENDING-PERSISTENCE-001及前轮P1/P2 Finding CLOSED，Runtime/Platform及Runtime公共契约owner/本卡预约释放；见[Host最终收口](P2-local-proxy.md#p2-04-final-host-closeout)。P4-02 DONE（[本轮记录](P4-02-acceptance.md)）；P5-06 ACCEPTANCE（[交付/待验收](P5-06-acceptance.md)）；P2-06 DOING；READY=P0-08/P2-05/P3-01/P4-03/P5-04，未领取/未启动；其余任务状态/依赖与历史PASS/FAIL/REWORK/NOT_RUN保持。
 - 已有 React UI 和旧 Rust 模块是迁移输入，不直接算 GPUI 新路线完成。P0-02 的完成仅指本次明确要求的范围/规则调整，该历史文档动作不计功能实现；现 P1-01 已完成核心抽取，P1-02 已完成类型/原子快照与版本。
 - 当前已建立根 Cargo workspace、单一 Cargo.lock 与 `crates/veyra-core/`；旧入口接共享核心。实际构建/纯测试见 P1-01 记录，不表示原型或真实设备验收完成。
 - 旧 SDLC 状态与 UI 门禁已按用户要求退役；不恢复缺失文件，不补办历史 DCR/UI Contract。当前进度以本目录为准。
@@ -20,11 +20,11 @@
 
 | 顺序 | 当前入口 / 后续安排 | 验收边界 |
 | --- | --- | --- |
-| 前期 | P4-02 已DONE；下一可并行 READY 首选 P5-06 分享 UI，P4-03 新增READY（协调Runtime owner）；P2-05/P3-01/P5-04 按依赖/写范围并行或适时领取；P2-08/P3–P5/P7-01 后续仍按原 DAG | 真实用户业务动作、Service/Store CRUD 与重建回读、loopback/自有资源局部定向集成及 150% 浅色 UI；只 Mock/静态配置/禁用按钮不能 DONE |
+| 前期 | P4-02 已DONE；P5-06 分享 UI 已交付待最终局部验收，P4-03 新增READY（协调Runtime owner）；P2-05/P3-01/P5-04 按依赖/写范围并行或适时领取；P2-08/P3–P5/P7-01 后续仍按原 DAG | 真实用户业务动作、Service/Store CRUD 与重建回读、loopback/自有资源局部定向集成及 150% 浅色 UI；只 Mock/静态配置/禁用按钮不能 DONE |
 | 后期平台实施 | P2-06 checkpoint 后仍 DOING，GUI/Native/Helper 多轮恢复后补；P2-07 SystemProxy、P6-01 TUN/P6-02 恢复与依赖平台任务后做 | 保留接管/恢复与安全归属；前期系统开关禁用，真实能力完成后才开放；不新增 P3–P5 前置 |
 | 最终组合验收 | P2-09/P3-08/P4-07/P5-07/P6-05 仅补未执行 Native 与跨模块完整组合；P7-04 统一 GUI E2E，P7-05 最终包，P7-03 保留包构建/升级职责 | 系统能力、正式安装/真实内核网络、Sleep/Wake 切网真机组合、完整跨页/主题/缩放、6 主页/9 分类/77 API/19 场景整套复验；不承接前期全部局部功能测试 |
 
-P0-08 保留 READY 作路线准备，Windows 7 卡仍 DEFERRED。P2-06 checkpoint `f2457e6a4e2fe0ac3c9186bc7d17323a70c4c0a8` 已存在，但不证明 DONE 或恢复全通过；不继续以复杂崩溃恢复阻塞其它已 READY 功能。仅 OS 授权/正式内核网络的具体验证与完整组合项可记 NOT_RUN/原因/承接卡；选择测速、实际观测/连接操作、主备/Compiler/应用接口、DNS 本地测试/资源下载/应用、分享 HTTP/token 失效/退出清理及真实保存/加载均在各业务卡实现并局部定向验证，不得一并延期。68 卡与 DONE21/DOING1/READY6/TODO33/DEFERRED7，按P4-02收口重新计算。
+P0-08 保留 READY 作路线准备，Windows 7 卡仍 DEFERRED。P2-06 checkpoint `f2457e6a4e2fe0ac3c9186bc7d17323a70c4c0a8` 已存在，但不证明 DONE 或恢复全通过；不继续以复杂崩溃恢复阻塞其它已 READY 功能。仅 OS 授权/正式内核网络的具体验证与完整组合项可记 NOT_RUN/原因/承接卡；选择测速、实际观测/连接操作、主备/Compiler/应用接口、DNS 本地测试/资源下载/应用、分享 HTTP/token 失效/退出清理及真实保存/加载均在各业务卡实现并局部定向验证，不得一并延期。68 卡与 DONE21/DOING1/ACCEPTANCE1/READY5/TODO33/DEFERRED7，按 P5-06 实际验收结果重新计算。
 
 ## 2 如何执行与更新
 
@@ -180,7 +180,7 @@ Task：OBG-Px-xx
 | [OBG-P5-03 DNS 观测/热更边界](P5-dns-and-sharing.md#obg-p5-03) | P5-02、P3-01、P4-05C | TODO | — | — | — |
 | [OBG-P5-04 五种共享入站](P5-dns-and-sharing.md#obg-p5-04) | P2-02B、P2-03 | READY | — | — | — |
 | [OBG-P5-05 共享 UI/URI](P5-dns-and-sharing.md#obg-p5-05) | P5-04、P1-04A、P1-05 | TODO | — | — | — |
-| [OBG-P5-06 订阅分享](P5-dns-and-sharing.md#obg-p5-06) | P2-01、P1-05、P1-04A | READY | — | — | — |
+| [OBG-P5-06 订阅分享](P5-dns-and-sharing.md#obg-p5-06) | P2-01、P1-05、P1-04A | ACCEPTANCE | Codex · Core/Config + GPUI | — | [真实 HTTP/Store、UI 已验与待验项](P5-06-acceptance.md) |
 | [OBG-P5-07 DNS/共享验收](P5-dns-and-sharing.md#obg-p5-07) | P5-01、P5-02、P5-03、P5-04、P5-05、P5-06、P4-07 | TODO | — | — | — |
 
 ### P6 macOS TUN 与生命周期（5 项）

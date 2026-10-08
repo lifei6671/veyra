@@ -20,6 +20,7 @@ thread_local! {
 pub struct AppServices {
     pub manual_runtime: crate::runtime_service::RuntimeService,
     pub snapshots: Arc<SnapshotService>,
+    pub shares: Arc<veyra_core::application::shares::ShareService>,
     pub subscriptions: Arc<veyra_core::application::subscription_management::SubscriptionManager>,
     // Profile 保存复用 Core CAS writer；选择服务继续由各功能按契约接入。
     pub profiles: Arc<ProfileService>,
@@ -35,6 +36,7 @@ impl Drop for AppServices {
         // Runtime 销毁会等待 blocking worker；先消费 Core 已有关闭信号取消下载，
         // 避免退出线程等待完整网络 timeout。普通窗口隐藏不销毁 AppServices。
         self.subscriptions.request_closing();
+        self.shares.shutdown();
     }
 }
 impl AppServices {
@@ -63,7 +65,25 @@ impl AppServices {
             snapshots.clone(),
             sender.clone(),
         );
+        let runtime = Builder::new_multi_thread()
+            .worker_threads(2)
+            .max_blocking_threads(1)
+            .enable_all()
+            .build()?;
+        let shares = Arc::new(veyra_core::application::shares::ShareService::new(
+            snapshots.clone(),
+            runtime.handle().clone(),
+        ));
+        let restore = shares.clone();
+        // 启动恢复失败留给分享页面重试并显示真实错误，不阻止其它页面使用。
+        if root.join("state.json").exists() {
+            runtime.spawn_blocking(move || {
+                let _ = restore.restore();
+            });
+        }
         let services = Self {
+            shares,
+
             manual_runtime,
             subscriptions,
             profiles: Arc::new(ProfileService::new((*snapshots).clone())),
@@ -74,14 +94,30 @@ impl AppServices {
             root,
             gate,
             snapshots,
-            runtime: Builder::new_multi_thread()
-                .worker_threads(2)
-                .max_blocking_threads(1)
-                .enable_all()
-                .build()?,
+            runtime,
             sender,
         };
         Ok((services, receiver))
+    }
+    pub fn shares_command(
+        &self,
+        expected: Option<veyra_core::domain::ConfigVersion>,
+        command: Option<veyra_core::application::shares::ShareCommand>,
+    ) -> tokio::sync::oneshot::Receiver<
+        Result<veyra_core::domain::AppState, veyra_core::application::shares::ShareError>,
+    > {
+        let shares = self.shares.clone();
+        let (sender, receiver) = tokio::sync::oneshot::channel();
+        self.runtime.spawn_blocking(move || {
+            let result = match command {
+                Some(command) => expected
+                    .ok_or(veyra_core::application::shares::ShareError::Storage)
+                    .and_then(|version| shares.execute(version, command)),
+                None => shares.restore(),
+            };
+            let _ = sender.send(result);
+        });
+        receiver
     }
     pub fn groups_command(&self, event: crate::ui::groups::GroupsEvent) {
         let snapshots = self.snapshots.clone();
@@ -352,6 +388,78 @@ impl AppServices {
 mod tests {
     use super::*;
     use crate::state_bridge::{Disposition, LoadState, StateBridge};
+    /// 保护正式 Desktop Worker 连续保存/轮换及 AppServices 退出释放监听。
+    #[test]
+    fn sharing_worker_roundtrip_and_application_drop_release_port() {
+        use std::io::{Read, Write};
+        use veyra_core::application::{
+            shares::{ShareCommand, ShareService},
+            subscription_management::preview::{PreviewInput, PreviewSource},
+        };
+        let root = std::env::temp_dir().join(format!(
+            "veyra-p506-desktop-{:?}",
+            veyra_core::domain::StateEpoch::fresh().unwrap()
+        ));
+        let (services, _rx) = AppServices::new(root.clone()).unwrap();
+        let input = PreviewInput {
+            name: "owned".into(),
+            description: String::new(),
+            sources: vec![PreviewSource::Pasted(
+                "socks5://127.0.0.1:1080#owned".into(),
+            )],
+        };
+        services.runtime.block_on(async {
+            let preview = services.subscriptions.preview(&input).await.unwrap();
+            services
+                .subscriptions
+                .save_preview(input, &preview)
+                .await
+                .unwrap();
+        });
+        let state = services.snapshots.snapshot().unwrap();
+        let socket = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
+        let address = socket.local_addr().unwrap();
+        drop(socket);
+        let mut share = ShareService::draft().unwrap();
+        share.name = "owned".into();
+        share.listen = address;
+        share.host = address.to_string();
+        share.subscription_ids = vec![state.subscriptions[0].id.clone()];
+        let state = services
+            .shares_command(
+                Some(state.config_version()),
+                Some(ShareCommand::Save(share.clone())),
+            )
+            .blocking_recv()
+            .unwrap()
+            .unwrap();
+        let state = services
+            .shares_command(
+                Some(state.config_version()),
+                Some(ShareCommand::Regenerate(share.id)),
+            )
+            .blocking_recv()
+            .unwrap()
+            .unwrap();
+        let token = &state.app_config.subscription_shares[0].token;
+        let mut stream = std::net::TcpStream::connect(address).unwrap();
+        stream
+            .set_read_timeout(Some(std::time::Duration::from_secs(3)))
+            .unwrap();
+        write!(
+            stream,
+            "GET /sub/{token} HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n"
+        )
+        .unwrap();
+        let mut response = String::new();
+        stream.read_to_string(&mut response).unwrap();
+        assert!(response.starts_with("HTTP/1.1 200"));
+        drop(stream);
+        drop(services);
+        let rebound = std::net::TcpListener::bind(address).unwrap();
+        drop(rebound);
+        std::fs::remove_dir_all(root).unwrap();
+    }
     // Protect real StateStore errors/retry through the production channel and runtime.
     #[test]
     fn real_store_empty_error_retry_and_late_delivery() {
