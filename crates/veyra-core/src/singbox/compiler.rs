@@ -6,8 +6,9 @@ use std::num::NonZeroU16;
 use serde::{Deserialize, Serialize};
 
 use crate::domain::{
-    DnsPolicy, NetworkProtocol, NodeId, ProtocolOptions, ProviderId, ProxyNode, ProxyProtocol,
-    RouteTarget, RuntimeIntent, SelectionPolicy, TlsOptions, TrafficMatcher, Transport,
+    DnsPolicy, NetworkProtocol, NodeId, OutboundCatalog, OutboundId, OutboundResolveError,
+    OutboundUnavailableReason, ProtocolOptions, ProviderId, ProxyNode, ProxyProtocol, RouteTarget,
+    RuntimeIntent, SelectionPolicy, TlsOptions, TrafficMatcher, Transport,
 };
 
 use super::secret::ApiSecret;
@@ -299,18 +300,11 @@ impl ConfigCompiler for SingBoxCompiler {
         profile: RuntimeProfile,
     ) -> Result<SingBoxPlan, CompileError> {
         let (DnsPolicy::System, RuntimeProfile::ObservationOnly) = (dns, profile);
-        let final_outbound = match default_target {
-            RouteTarget::Pool(default_pool)
-                if intent.pools.iter().any(|pool| &pool.id == default_pool) =>
-            {
-                pool_tag(&default_pool.0)
-            }
-            RouteTarget::Direct => "direct".to_owned(),
-            RouteTarget::Block => "block".to_owned(),
-            RouteTarget::Pool(_) | RouteTarget::Unconfigured => {
-                return Err(CompileError::InvalidRouteTarget);
-            }
-        };
+        let catalog = OutboundCatalog::from_runtime_intent(intent);
+        catalog
+            .validate_graph()
+            .map_err(|_| CompileError::InvalidFinalConfiguration)?;
+        let final_outbound = outbound_tag(&catalog.resolve(default_target).map_err(catalog_error)?);
         let mut nodes = intent.nodes.iter().collect::<Vec<_>>();
         nodes.sort_by(|left, right| left.id.cmp(&right.id));
         let mut outbounds = Vec::new();
@@ -326,35 +320,39 @@ impl ConfigCompiler for SingBoxCompiler {
         let mut pools = intent.pools.iter().collect::<Vec<_>>();
         pools.sort_by(|left, right| left.id.cmp(&right.id));
         for pool in pools {
-            if pool.members.is_empty() {
-                return Err(CompileError::EmptyPoolMembership);
-            }
-            let mut members = pool
-                .members
+            let entry = catalog
+                .require_available(&OutboundId::Pool(pool.id.clone()))
+                .map_err(catalog_error)?;
+            let mut members = entry
+                .references
                 .iter()
-                .map(|id| node_tag(&id.0))
+                .map(outbound_tag)
                 .collect::<Vec<_>>();
             members.sort();
             members.dedup();
             let tag = pool_tag(&pool.id.0);
-            outbounds.push(match &pool.selection {
-                SelectionPolicy::Manual { selected_node_id } => CoreOutbound::Selector(Selector {
-                    tag,
-                    outbounds: members,
-                    default: selected_node_id.as_ref().map(|id| node_tag(&id.0)),
-                }),
-                SelectionPolicy::UrlTest {
-                    probe_url,
-                    interval_secs,
-                    tolerance_ms,
-                } => CoreOutbound::Urltest(UrlTest {
-                    tag,
-                    outbounds: members,
-                    url: probe_url.clone(),
-                    interval: format!("{interval_secs}s"),
-                    tolerance: *tolerance_ms,
-                }),
-            });
+            outbounds.push(
+                match entry.selection.as_ref().expect("Base pool selection") {
+                    SelectionPolicy::Manual { selected_node_id } => {
+                        CoreOutbound::Selector(Selector {
+                            tag,
+                            outbounds: members,
+                            default: selected_node_id.as_ref().map(|id| node_tag(&id.0)),
+                        })
+                    }
+                    SelectionPolicy::UrlTest {
+                        probe_url,
+                        interval_secs,
+                        tolerance_ms,
+                    } => CoreOutbound::Urltest(UrlTest {
+                        tag,
+                        outbounds: members,
+                        url: probe_url.clone(),
+                        interval: format!("{interval_secs}s"),
+                        tolerance: *tolerance_ms,
+                    }),
+                },
+            );
         }
         outbounds.push(CoreOutbound::Direct(Terminal {
             tag: "direct".to_owned(),
@@ -377,7 +375,7 @@ impl ConfigCompiler for SingBoxCompiler {
             .collect::<Vec<_>>();
         routes.sort_by_key(|route| (route.priority, &route.id));
         for route in routes {
-            rules.push(route_rule(route)?);
+            rules.push(route_rule(route, &catalog)?);
         }
         let document = Document {
             log: LogConfig {
@@ -912,13 +910,31 @@ fn core_transport(transport: Option<&Transport>) -> Option<CoreTransport> {
     }
 }
 
-fn route_rule(route: &crate::domain::RoutePolicy) -> Result<CoreRule, CompileError> {
-    let outbound = match &route.target {
-        RouteTarget::Pool(id) => pool_tag(&id.0),
-        RouteTarget::Direct => "direct".to_owned(),
-        RouteTarget::Block => "block".to_owned(),
-        RouteTarget::Unconfigured => return Err(CompileError::InvalidRouteTarget),
-    };
+// 标签映射只留在适配边界，应用/领域 API 不暴露 sing-box tag。
+fn outbound_tag(id: &OutboundId) -> String {
+    match id {
+        OutboundId::Node(id) => node_tag(&id.0),
+        OutboundId::Pool(id) => pool_tag(&id.0),
+        OutboundId::Direct => "direct".to_owned(),
+        OutboundId::Block => "block".to_owned(),
+    }
+}
+
+fn catalog_error(error: OutboundResolveError) -> CompileError {
+    match error {
+        OutboundResolveError::Unavailable {
+            reason: OutboundUnavailableReason::EmptyMembers,
+            ..
+        } => CompileError::EmptyPoolMembership,
+        _ => CompileError::InvalidRouteTarget,
+    }
+}
+
+fn route_rule(
+    route: &crate::domain::RoutePolicy,
+    catalog: &OutboundCatalog,
+) -> Result<CoreRule, CompileError> {
+    let outbound = outbound_tag(&catalog.resolve(&route.target).map_err(catalog_error)?);
     let mut rule = CoreRule {
         outbound: Some(outbound),
         ..CoreRule::default()
@@ -4031,6 +4047,41 @@ mod tests {
         let mut null = document(&intent());
         null["endpoints"] = Value::Null;
         rejects(null);
+    }
+
+    #[test]
+    fn base_catalog_compiler_bytes_remain_stable() {
+        use sha2::{Digest, Sha256};
+        let mut inputs = protocol_nodes()
+            .into_iter()
+            .map(fixture)
+            .collect::<Vec<_>>();
+        inputs.push(intent());
+        let mut digests = String::new();
+        for input in inputs {
+            for target in [
+                RouteTarget::Pool(input.pools[0].id.clone()),
+                RouteTarget::Direct,
+                RouteTarget::Block,
+            ] {
+                let bytes = SingBoxCompiler
+                    .compile(
+                        &input,
+                        &target,
+                        DnsPolicy::System,
+                        RuntimeProfile::ObservationOnly,
+                    )
+                    .unwrap()
+                    .finalize(&test_api_secret())
+                    .unwrap();
+                digests.push_str(&format!("{:x}", Sha256::digest(bytes.as_bytes())));
+            }
+        }
+        // 改接 Catalog 前采集的 16 个既有输入 × Pool/Direct/Block，保护完整配置字节。
+        assert_eq!(
+            format!("{:x}", Sha256::digest(digests.as_bytes())),
+            "4204c8cc2383c67fbfc23d1f71d49fe124c773958deefb8532c434c3d1faf167"
+        );
     }
 
     #[test]

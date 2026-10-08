@@ -306,14 +306,20 @@ pub struct RuntimeIntent {
 impl RuntimeIntent {
     pub fn from_state(state: &AppState) -> Result<Self, StateValidationError> {
         state.validate()?;
+        let catalog = super::OutboundCatalog::from_state(state);
         let mut pools = state
             .pools
             .iter()
             .filter(|pool| pool.enabled)
-            .map(|pool| RuntimePool {
-                id: pool.id.clone(),
-                members: state.resolve_pool_members(pool),
-                selection: pool.selection.clone(),
+            .map(|pool| {
+                let entry = catalog
+                    .get(&super::OutboundId::Pool(pool.id.clone()))
+                    .expect("validated pool identity");
+                RuntimePool {
+                    id: pool.id.clone(),
+                    members: entry.node_members().cloned().collect(),
+                    selection: entry.selection.clone().expect("Base pool selection"),
+                }
             })
             .collect::<Vec<_>>();
         if pools.iter().any(|pool| pool.members.is_empty()) {

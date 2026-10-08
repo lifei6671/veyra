@@ -25,3 +25,8 @@ pub use desktop_visual::*;
 
 mod desktop_behavior;
 pub use desktop_behavior::*;
+
+mod outbound_catalog;
+mod outbound_graph;
+pub use outbound_catalog::*;
+pub use outbound_graph::{OutboundGraphError, validate_outbound_graph};

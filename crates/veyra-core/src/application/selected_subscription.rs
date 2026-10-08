@@ -1,8 +1,8 @@
 use std::collections::HashSet;
 
 use crate::domain::{
-    AppState, NodeId, PoolId, PoolKind, RouteTarget, RuntimeIntent, RuntimePool, SelectionPolicy,
-    StateValidationError, SubscriptionId,
+    AppState, NodeId, OutboundAvailability, OutboundCatalog, PoolId, PoolKind, RouteTarget,
+    RuntimeIntent, RuntimePool, SelectionPolicy, StateValidationError, SubscriptionId,
 };
 
 const RUNTIME_POOL_PREFIX: &str = "runtime-active-";
@@ -90,21 +90,11 @@ pub fn project_selected_runtime(
         if filtered.sources.is_empty() {
             continue;
         }
-        let members = state
-            .resolve_pool_members(&filtered)
-            .into_iter()
-            .filter(|node_id| pool.kind == PoolKind::Custom || selected_node_ids.contains(node_id))
-            .collect::<Vec<_>>();
-        if members.is_empty()
-            || matches!(
-                &filtered.selection,
-                SelectionPolicy::Manual {
-                    selected_node_id: Some(node_id)
-                } if !members.contains(node_id)
-            )
-        {
+        let entry = OutboundCatalog::pool_from_state(state, &filtered);
+        if entry.availability != OutboundAvailability::Available {
             return Err(SelectionProjectionError::SelectionConflict);
         }
+        let members = entry.node_members().cloned().collect::<Vec<_>>();
         if pool.kind == PoolKind::Custom {
             selected_node_ids.extend(members.iter().cloned());
         }
@@ -122,48 +112,38 @@ pub fn project_selected_runtime(
         .collect();
     nodes.sort_by(|left, right| left.id.cmp(&right.id));
     pools.sort_by(|left, right| left.id.cmp(&right.id));
-    let pool_ids = pools
-        .iter()
-        .map(|pool| pool.id.clone())
-        .collect::<HashSet<_>>();
-
     let mut routes = state
         .routes
         .iter()
         .filter(|route| route.enabled)
         .cloned()
         .collect::<Vec<_>>();
-    if routes.iter().any(
-        |route| matches!(&route.target, RouteTarget::Pool(pool_id) if !pool_ids.contains(pool_id)),
-    ) {
-        return Err(SelectionProjectionError::SelectionConflict);
-    }
     routes.sort_by_key(|route| (route.priority, route.id.clone()));
-
+    let runtime_intent = RuntimeIntent {
+        nodes,
+        pools,
+        routes,
+    };
+    let catalog = OutboundCatalog::from_runtime_intent(&runtime_intent);
+    for route in &runtime_intent.routes {
+        // 历史 RouteTarget::Unconfigured 的编译失败语义仍由 Compiler 处理。
+        if !matches!(route.target, RouteTarget::Unconfigured) {
+            catalog
+                .resolve(&route.target)
+                .map_err(|_| SelectionProjectionError::SelectionConflict)?;
+        }
+    }
+    // 选定订阅的明确默认策略是既有 projection 行为；目录自身永不猜默认值。
     let projected_default_target = match &state.default_target {
         RouteTarget::Unconfigured => RouteTarget::Pool(implicit_pool_id),
-        RouteTarget::Pool(pool_id) if pool_ids.contains(pool_id) => {
-            RouteTarget::Pool(pool_id.clone())
-        }
-        RouteTarget::Direct => RouteTarget::Direct,
-        RouteTarget::Block => RouteTarget::Block,
-        RouteTarget::Pool(_) => return Err(SelectionProjectionError::SelectionConflict),
+        target => target.clone(),
     };
-    if let RouteTarget::Pool(default_pool_id) = &projected_default_target
-        && pools
-            .iter()
-            .find(|pool| &pool.id == default_pool_id)
-            .is_none_or(|pool| pool.members.is_empty())
-    {
-        return Err(SelectionProjectionError::ConfigurationFailed);
-    }
+    catalog
+        .resolve(&projected_default_target)
+        .map_err(|_| SelectionProjectionError::SelectionConflict)?;
 
     Ok(SelectedRuntimeProjection {
-        runtime_intent: RuntimeIntent {
-            nodes,
-            pools,
-            routes,
-        },
+        runtime_intent,
         projected_default_target,
         selected_subscription_id,
         selected_generation: state.active_configuration_generation,

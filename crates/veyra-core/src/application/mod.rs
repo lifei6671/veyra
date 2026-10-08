@@ -12,3 +12,5 @@ pub mod system_proxy;
 pub mod error;
 pub mod runtime_snapshot;
 pub mod state_service;
+
+pub mod outbound_query;

@@ -75,9 +75,39 @@ cleanup NOT_RUN：沙箱拒绝`ps`进程身份查询（Operation not permitted�
 
 **验收**：
 
-- [ ] Node、隐式 provider/subscription group、selector/urltest、Direct、Block 均由目录定义并可查询；同名/重命名/刷新不混淆身份；删除或禁用后的引用结果明确，显示名不能作为 ID。
-- [ ] Base 目录的 self/cycle/dangling 校验契约统一；后续注册沿用同一图校验，不能由 Routing 或 UI 各写一套。
-- [ ] Compiler、Proxy service 和基础 UI 通过目录查询出口，未知目标不猜测为 Direct；首个闭环的隐式组与 selector/urltest 已包含，尚无 P4 高级 Group/Failover/Chain 时不伪造完整目录。
+- [x] Node、隐式 provider/subscription group、selector/urltest、Direct、Block 均由目录定义并可查询；同名/重命名/刷新不混淆身份；删除或禁用后的引用结果明确，显示名不能作为 ID。
+- [x] Base 目录的 self/cycle/dangling 校验契约统一；后续注册沿用同一图校验，不能由 Routing 或 UI 各写一套。
+- [x] **PASS（本层验收解释，Host确认）**：现有 Compiler 与 selected/runtime projection 消费 Catalog/共享解析契约；`OutboundQueryService`/`OutboundQuerySnapshot` 提供未来消费者的唯一查询 seam，未知目标不猜测为 Direct；隐式组与 selector/urltest 已包含，无伪造 P4 高级 Group/Failover/Chain。P2-08 的正式 ProxyService/基础 Proxy UI 必须消费该 seam，不得建立平行出口列表；实际业务/视觉集成仅属于 P2-08 验收，本卡不宣称已测试 UI。
+
+<a id="p2-02a-closeout"></a>
+### P2-02A Host 独立审查与范围收口（2026-10-07）
+
+**状态：DONE；Core/Config owner 已释放。** Host确认当前产品代码 SHA 与交付证据一致；独立审查未发现可操作代码 bug；Host在当前源码上运行 Core 313/313、core check、all-targets clippy `-D warnings`、workspace fmt 与 `git diff --check`，全部 PASS。来源为用户本轮明确转达的 Host 结果；本次仅文档/evidence收口，没有重跑产品构建或测试。
+
+**第三项 PASS 的精确解释**：P2-02A 交付目录和解析契约；现有 Compiler、selected/runtime projection 已消费它，`OutboundQueryService`/`OutboundQuerySnapshot` 是后续唯一查询 seam。正式 ProxyService/最小 Proxy UI 明确由 P2-08 交付，而 P2-08 显式依赖 P2-02A；若要求 P2-08 的真实集成先于 P2-02A DONE，会形成验收依赖环。因此本层第三项通过；P2-08 必须消费上述 seam，禁止自建另一份出口列表。实际 ProxyService/UI 行为及视觉集成仍在 P2-08 验收，当前保持 NOT_RUN，未宣称“UI tested”。这是 Host 批准的作用域/验收解释，不是产品代码修改，也不修改任何依赖。
+
+`P2-02A-CONSUMER-001` **CLOSED：SCOPE_RESOLVED / DEFERRED_CONSUMER_INTEGRATION**。该关闭只消除本卡对下游 UI 集成的错误前置要求，不把未实现/未测试的 P2-08 能力改为 PASS。初轮编译 FAIL、311 PASS/1 FAIL、既有实现者自查措辞及 ACCEPTANCE 历史完整保留于下方初次交付和旧 evidence；新增 [收口证据](evidence/p2-02a/closeout-20261007-124330/README.md)单列 Host 独立结果与当前状态。
+
+不变依赖重算68卡：**DONE17 / READY3 / TODO41 / DEFERRED7**，ACCEPTANCE/DOING/REVIEW/BLOCKED均0；READY仅 **P0-08、P2-02B、P5-06**，均未领取/启动。P2-02B前置P2-02A/P0-04均DONE；P2-08仍缺P2-04/P2-05，保持TODO。无下游开工；未 commit/push/fetch/pull/rebase/reset/restore/clean/stash。
+
+<a id="p2-02a-delivery"></a>
+### P2-02A 初次实现交付（2026-10-07，历史）
+
+**状态：ACCEPTANCE；owner：Codex Core/Config（单一 owner 保留，交 Host Review）。** 仅领取 P2-02A；不启动 P0-08/P5-06/P2-02B/P2-08/P4，不改变依赖或验收范围。
+
+- Domain 新增 `OutboundId::{Node(NodeId),Pool(PoolId),Direct,Block}`；`OutboundCatalog::from_state/from_runtime_intent`、`list/get/resolve/require_available/validate_graph`。entry 返回 kind、display_name、pool_kind、provider/subscription 来源、成员引用、selection 事实及显式 availability。没有新持久字段/serde/schema；无 sing-box tag；无 Group/Failover/Chain 业务实例。
+- `ImplicitProvider` 直接消费已有 pool；Manual→Selector、UrlTest→UrlTest，选中节点必须属于实际成员，probe_url/interval/tolerance 原样保留。禁用 pool、空成员、缺失 provider/subscription/node、过滤/选择失效均明确报告；lookup Missing、resolve Unavailable/Unconfigured，不猜 Direct。当前 Subscription/Provider/Node 没有独立 enabled 字段，不能把 auto-update 或未选中订阅解释为禁用；本轮不扩 schema。
+- `validate_outbound_graph<Id>` 接受稳定 ID→引用边，统一拒绝 Duplicate/Dangling/SelfReference/Cycle。后续注册交同一机制验证；正常 AppState 仅包含已有 Node/Pool/Direct/Block。`StateValidation` 引用规则保留，成员计算共用 `resolve_pool_members`。
+- 现有消费者：`RuntimeIntent::from_state`、`selected_subscription` 的 pool/target projection 和 Compiler。选定订阅的既有 `runtime-active-*` 适配及 Unconfigured 默认策略保留，目录本身不新增隐式默认或伪造高级组。Compiler 消费目录成员/selection/RouteTarget 解析，仅基础身份合法性接线，标签仍在 singbox 边界；无 P2-02B 的 check/apply/cache/DNS 新能力。
+- application 新增 `OutboundQueryService::snapshot()` 和同版本 `OutboundQuerySnapshot::{list,get,resolve}`，复用 SnapshotService/gate，为 P2-08 提供查询 seam；不新增缓存、后台任务或持久化。**第三验收项仅 Compiler/现有投影/查询 seam PASS，正式 ProxyService 与基础 Proxy UI 尚不存在，真实 UI 消费 NOT_RUN，保留未勾选。** Host Review 决定该 gap 的范围处理前不伪造 DONE，不修改依赖。
+
+**验证 PASS**：`cargo test -p veyra-core --offline -- --test-threads=1`：313/313（新增9，含 catalog7/query1/compiler1；doc-tests0 不计用例）；`cargo check -p veyra-core --offline`；`cargo clippy -p veyra-core --all-targets --offline -- -D warnings`；`cargo fmt --all -- --check`；`git diff --check`。全量覆盖 selected_subscription/subscription_management/state validation/compiler 回归。Compiler 改接前固定16个既有输入×Pool/Direct/Block=48个配置字节摘要，改接后完全匹配；原有名称/排序/tag稳定性测试继续 PASS。查询测试证明 state/schema 字段不增加，查询前后磁盘与序列化字节不变，刷新后读到当前 SnapshotVersion。
+
+**历史 FAIL 保留**：首轮新增测试误用私有 `state_file()`，编译 FAIL；次轮311 PASS/1 FAIL，发现空池含旧选择时错误优先级改变，修复后恢复 `EmptyPoolMembership`。未删/跳过/弱化旧测试。验证包含既有文件/mock/loopback fixtures，无真实 sing-box child、系统代理、TUN/helper/正式状态或公网操作。Desktop源码/seam未改，Desktop checks N/A；Proxy UI及正式消费者验收 NOT_RUN。
+
+**code-delivery-review 实现者自查**：按 correctness/contract-data/verification/Rust 关注面重新检查本轮代码、调用边界、测试与基线差分，未发现未修复代码 Finding；这是实现者自查，非独立审查。交付 gap `P2-02A-CONSUMER-001 OPEN`：正式 ProxyService/基础 Proxy UI尚未实现，查询 seam不能冒充真实 UI集成。既有 dirtytree无关文件保持原字节，本轮仅9个Core文件与3个任务文档；local-only [证据](evidence/p2-02a/README.md)包含失败/最终日志、源码身份、自查与DAG。未 commit/push/fetch/pull/rebase/reset/restore/clean/stash。
+
+**DAG**：68卡 DONE16 / ACCEPTANCE1 / READY2 / TODO42 / DEFERRED7，DOING/REVIEW/BLOCKED0；READY仅P0-08/P5-06且未领取；P2-02B/P2-08等下游保持TODO。
 
 <a id="obg-p2-02b"></a>
 ## OBG-P2-02B 最小可用 Compiler
