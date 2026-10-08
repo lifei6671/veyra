@@ -30,9 +30,15 @@ DIGEST = "a150c94012ff768b7261939cd236b9c8554127f45137230295d23a5660225cc9"
 BINARY_DIGEST = "973388c3f720e918fc64dff7fd75dde14b31cc1aa6fc15855e2f00c5291dd4f4"
 LABEL = "com.lifei6671.veyra.p005"
 ROOT = Path("/Library/Application Support/VeyraP005")
-HELPER = Path("/Library/PrivilegedHelperTools") / LABEL
+HELPER = ROOT / "helper"
 PLIST = Path("/Library/LaunchDaemons") / (LABEL + ".plist")
 REPO = Path(__file__).resolve().parents[1]
+
+
+def existing_protected_resources():
+    # 安装预检与卸载后残留判定共用固定清单；悬空 symlink 不能当作不存在。
+    return [str(resource) for resource in (ROOT, HELPER, PLIST)
+            if resource.exists() or resource.is_symlink()]
 
 
 def sha(path):
@@ -83,7 +89,7 @@ def manual(kernel, staging):
     inherited.close()
     ports = {}
     result = {"config_check": "PASS", "uid": os.getuid(), "gid": os.getgid(),
-              "helper_absent": not HELPER.exists(), "system_proxy_writes": 0,
+              "helper_absent": not (HELPER.exists() or HELPER.is_symlink()), "system_proxy_writes": 0,
               "kernel_sha256": sha(kernel), "child_pid": child.pid, "config_input": "/dev/fd/<inherited-fd>",
               "root_only_resource_read": "NOT_RUN; ordinary-user-owned 0600 compatibility probe"}
     try:
@@ -154,9 +160,8 @@ def main():
     output.mkdir(parents=True, exist_ok=True)
     if list(output.iterdir()):
         raise RuntimeError("use a new empty evidence directory")
-    for resource in [ROOT, HELPER, PLIST]:
-        if resource.exists() or resource.is_symlink():
-            raise RuntimeError("pre-existing P005 resources; no mutation or cleanup")
+    if existing_protected_resources():
+        raise RuntimeError("pre-existing P005 resources; no mutation or cleanup")
     artifact = REPO / "target/debug/veyra-helper-prototype"
     original_uid, original_gid = os.getuid(), os.getgid()
     username = getpass.getuser()
@@ -225,7 +230,7 @@ def main():
         save("manual-without-helper.json", manual(kernel, staging))
         installation = {"ordinary_install": denied, "protected_resources_created_by_denied_install": False,
             "real_user_cancel": "NOT_RUN", "cancel_evidence": "non-root installer rejection; not a cancelled authorization dialog"}
-        assert not any(resource.exists() for resource in [ROOT, HELPER, PLIST])
+        assert not existing_protected_resources()
         if args.no_authorize:
             installation["system_authorization"] = {"status": "NOT_RUN", "reason": "--no-authorize"}
         else:
@@ -257,7 +262,7 @@ def main():
     finally:
         # The root harness has its own finally restoration/stop/uninstall. Ordinary
         # orchestration never tries to bypass permissions to remove protected state.
-        residual = [str(resource) for resource in [ROOT, HELPER, PLIST] if resource.exists() or resource.is_symlink()]
+        residual = existing_protected_resources()
         if residual:
             recovery_required = True
         shutil.rmtree(staging)

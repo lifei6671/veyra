@@ -5,6 +5,13 @@ edition = "2024"
 rust-version = "1.99"
 publish = false
 
+[features]
+default = []
+p0-05-gui-owner = ["dep:serde_json"]
+
 [dependencies]
 gpui-kit = "=0.7.0"
 tray-icon = "=0.24.2"
+
+[target.'cfg(target_os = "macos")'.dependencies]
+serde_json = { version = "1", optional = true }

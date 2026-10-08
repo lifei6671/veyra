@@ -77,11 +77,19 @@
 
 **验收**：
 
-- [ ] 最低 macOS 目标上无 Developer ID 也可按方案运行；安装目录受保护，对端 UID/进程身份来自系统，不能以自报 PID 或 ad-hoc 证明开发者身份。
-- [ ] 拒绝授权可继续手动代理；批准后的重复操作不依赖未经验证的授权假设。
-- [ ] helper 管理 SystemProxy child 时内核使用已验证用户身份，受保护资源可按需读取。
-- [ ] 强制结束测试 GUI 后，helper 恢复仍归属自己的代理并清理 child；瞬时 IPC 断开不被当成进程死亡。
-- [ ] 拒绝其他未授权用户和任意命令/路径；管理员权限或系统限制不足时记录具体错误，不把证书缺失列为阻塞。
+- [x] 最低 macOS 目标上无 Developer ID 也可按方案运行；安装目录受保护，对端 UID/进程身份来自系统，不能以自报 PID 或 ad-hoc 证明开发者身份。
+- [x] 拒绝授权可继续手动代理；批准后的重复操作不依赖未经验证的授权假设。
+- [x] helper 管理 SystemProxy child 时内核使用已验证用户身份，受保护资源可按需读取。
+- [x] 强制结束测试 GUI 后，helper 恢复仍归属自己的代理并清理 child；瞬时 IPC 断开不被当成进程死亡。
+- [x] 拒绝其他未授权用户和任意命令/路径；管理员权限或系统限制不足时记录具体错误，不把证书缺失列为阻塞。
+
+**当前状态（2026-10-06最终收口）**：原卡五项A/B/C/D/E全部PASS，P0-05 DONE，owner释放。[真实 GUI owner 最终验收](evidence/p0-05/gui-owner-final-20261006-142752/README.md)证明真正GUI PID74759、Host确认ready窗口、五次连接同实例、SIGKILL后owner_NOTE_EXIT、精确恢复、child/组/listener清理、无RecoveryRequired、卸载/finalcleanup与主网络hash不变；13条自动命令exit0（默认GPUI0 tests不计用例PASS），独立Review通过。E消费原卡已有真实拒绝证据，executable/service/root-total-deadline明确optional hardening NOT_RUN，不再作为DONE blocker。仅P0-06/P0-08转READY，不启动、不commit/push。
+
+以下Desktop/新路径段落为各轮当时的历史结果；FAIL/NOT_RUN/ACCEPTANCE不改写。
+
+**Desktop 补验（2026-10-06）**：保持 ACCEPTANCE。标准 macOS 授权 UI 实际出现，两次批准均执行固定 root 安装/卸载；原 linker-signed 与 explicit ad-hoc staging 候选均未建立 daemon socket，内层返回 `launchd helper socket startup timeout`。第一轮 AMFI CT 错误、第二轮 amfid -423 与启动时间线见[本轮真实证据](evidence/p0-05/desktop-privileged-20261006-113208/README.md)；尚未证明完整退出根因，不把证书缺失列为既定阻塞。真实取消、root 日常 IPC/降权 child、完整 Proxies 写回恢复/conflict、GUI SIGKILL 均未完成。独立现场 cleanup PASS，主用网络 hash 不变；5 定向测试及 prototype check/build/clippy/fmt/core check PASS。历史 -60008/NOT_RUN 不改写；P0-06/P0-08 仍 TODO，不启动下游、未 commit/push。
+
+**新路径复验（2026-10-06 12:03 起）**：保持 ACCEPTANCE。[本轮证据](evidence/p0-05/desktop-pathfix-20261006-120343/README.md)取得真实 UI 取消 -128/Host 确认与取消后 manual PASS。批准安装在 bootstrap 前因 `fs::copy` 的业务用户 owner 被保护检查拒绝；同一标准 UI 经固定 SHA/type/空 runtime 等检查归正自有文件后，既有卸载与独立 cleanup PASS。只修复实测复制 bug：helper/kernel 由安装进程新建 0600 文件并仅复制字节，原 hash/mode/protected 检查保留，新增一项回归。14 Rust/2 Python 与指定检查 PASS、独立代码 Review 通过；修复后批准调用 240 秒超时，Host 未看到授权窗口，停止特权分支。新路径 daemon/socket 与完整 A–E 尚未实测；主用网络三组 hash 不变，P0-06/P0-08 仍 TODO，未 commit/push。
 
 <a id="obg-p0-06"></a>
 ## OBG-P0-06 应用自身出站策略原型

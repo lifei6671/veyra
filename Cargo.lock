@@ -9319,6 +9319,7 @@ name = "veyra-gpui-prototype"
 version = "0.1.0"
 dependencies = [
  "gpui-kit",
+ "serde_json",
  "tray-icon",
 ]
 

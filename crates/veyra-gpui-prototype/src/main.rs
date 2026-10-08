@@ -1,4 +1,7 @@
 //! P0 capability probe. Synthetic data only; one GPUI/AppKit main loop.
+#[cfg(all(target_os = "macos", feature = "p0-05-gui-owner"))]
+mod p0_05_gui_owner;
+
 use gpui_kit::{
     assets::Assets,
     component::{
@@ -15,6 +18,8 @@ use tray_icon::{
 };
 
 struct Prototype {
+    #[cfg(all(target_os = "macos", feature = "p0-05-gui-owner"))]
+    gui_owner_status: Option<&'static str>,
     input: Entity<InputState>,
     text: Entity<TextareaState>,
     modal_text: Entity<TextareaState>,
@@ -38,6 +43,8 @@ impl Prototype {
             false
         });
         Self {
+            #[cfg(all(target_os = "macos", feature = "p0-05-gui-owner"))]
+            gui_owner_status: None,
             input: cx.new(|cx| InputState::new(window, cx).placeholder("在此使用中文输入法")),
             text: cx
                 .new(|cx| TextareaState::new(window, cx).placeholder("多行中文 · 换行 · 跨行选择")),
@@ -156,7 +163,17 @@ impl Render for Prototype {
                     )
                     .child(Button::new("disabled").label("禁用状态").disabled(true))
                     .child(format!("Window blur: {}", self.blur))
-                    .child("仅测试数据 / 无网络业务"),
+                    .child("仅测试数据 / 无网络业务")
+                    .children({
+                        #[cfg(all(target_os = "macos", feature = "p0-05-gui-owner"))]
+                        {
+                            self.gui_owner_status
+                        }
+                        #[cfg(not(all(target_os = "macos", feature = "p0-05-gui-owner")))]
+                        {
+                            None::<&str>
+                        }
+                    }),
             )
             .child(
                 div()
@@ -343,12 +360,33 @@ fn main() {
         )
         .expect("prototype window");
         cx.activate(true);
+        // 窗口已真实创建后才启动验收；后台线程仍是同一 GUI PID，不创建 CLI child。
+        #[cfg(all(target_os = "macos", feature = "p0-05-gui-owner"))]
+        let gui_owner_receiver = p0_05_gui_owner::start();
+        #[cfg(all(target_os = "macos", feature = "p0-05-gui-owner"))]
+        if gui_owner_receiver.is_some() {
+            view.update(cx, |view, cx| {
+                view.gui_owner_status = Some("P0-05 GUI Owner: checking");
+                cx.notify();
+            });
+        }
         // GPUI foreground task owns the receiver and UI handles. Only MenuEvent crosses the channel.
         cx.spawn(async move |cx| {
             loop {
                 cx.background_executor()
                     .timer(Duration::from_millis(40))
                     .await;
+                #[cfg(all(target_os = "macos", feature = "p0-05-gui-owner"))]
+                if let Some(receiver) = &gui_owner_receiver
+                    && let Ok(status) = receiver.try_recv()
+                {
+                    cx.update(|cx| {
+                        view.update(cx, |view, cx| {
+                            view.gui_owner_status = Some(status);
+                            cx.notify();
+                        });
+                    });
+                }
                 while let Ok(event) = receiver.try_recv() {
                     cx.update(|cx| {
                         if event.id == show.id() {
