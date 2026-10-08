@@ -33,3 +33,7 @@ rustls = { version = "=0.23.43", default-features = false, features = ["ring", "
 [[example]]
 name = "p0_06_outbound"
 required-features = ["p0-06-prototype"]
+
+[target.'cfg(unix)'.dependencies]
+# 复用 workspace 已有 libc；恢复文件按现有 Platform 方式 O_NOFOLLOW 打开。
+libc = "0.2"

@@ -16,3 +16,5 @@ pub mod state_service;
 pub mod outbound_query;
 
 pub mod manual_runtime;
+
+pub mod runtime_recovery;

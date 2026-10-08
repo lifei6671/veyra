@@ -854,6 +854,7 @@ impl SubscriptionManager {
             }],
             selection: SelectionPolicy::Manual {
                 selected_node_id: None,
+                pending_node_id: None,
             },
             enabled: true,
         });
@@ -3863,6 +3864,13 @@ mod tests {
         let mut state = manager.store.load().expect("load state");
         state.active_subscription_id = Some(state.subscriptions[0].id.clone());
         state.active_configuration_generation = 4;
+        if let SelectionPolicy::Manual {
+            pending_node_id, ..
+        } = &mut state.pools[0].selection
+        {
+            *pending_node_id = Some(state.nodes[0].id.clone());
+        }
+        let selection_before_delete = state.selection_revision;
         manager.store.save(&state).expect("save selected state");
 
         assert_eq!(
@@ -3879,6 +3887,7 @@ mod tests {
         assert!(state.providers.is_empty());
         assert!(state.nodes.is_empty());
         assert!(state.pools.is_empty());
+        assert_eq!(state.selection_revision, selection_before_delete + 1);
         assert_eq!(state.active_subscription_id, None);
         assert_eq!(state.active_configuration_generation, 5);
         fs::remove_dir_all(state_file.parent().expect("state parent")).expect("cleanup");
@@ -3996,6 +4005,7 @@ mod tests {
             }],
             selection: SelectionPolicy::Manual {
                 selected_node_id: None,
+                pending_node_id: None,
             },
             enabled: true,
         });

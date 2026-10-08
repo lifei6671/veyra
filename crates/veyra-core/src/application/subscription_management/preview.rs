@@ -436,6 +436,7 @@ mod tests {
         let node = state.nodes[0].id.clone();
         state.pools[0].selection = SelectionPolicy::Manual {
             selected_node_id: Some(node.clone()),
+            pending_node_id: None,
         };
         state.pools[0].name = "hand-labelled pool".into();
         m.store.commit(&state).unwrap();
@@ -447,7 +448,8 @@ mod tests {
         assert_eq!(
             state.pools[0].selection,
             SelectionPolicy::Manual {
-                selected_node_id: Some(node)
+                selected_node_id: Some(node),
+                pending_node_id: None,
             }
         );
         assert_eq!(state.pools[0].name, "hand-labelled pool");

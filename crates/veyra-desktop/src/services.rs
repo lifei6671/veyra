@@ -7,9 +7,7 @@ use tokio::{
 use veyra_core::{
     application::{
         state_access::StateAccessGate,
-        state_service::{
-            DesktopPreferencesService, ProfileService, SelectionService, SnapshotService,
-        },
+        state_service::{DesktopPreferencesService, ProfileService, SnapshotService},
     },
     storage::JsonStateStore,
 };
@@ -25,7 +23,6 @@ pub struct AppServices {
     pub subscriptions: Arc<veyra_core::application::subscription_management::SubscriptionManager>,
     // Profile 保存复用 Core CAS writer；选择服务继续由各功能按契约接入。
     pub profiles: Arc<ProfileService>,
-    pub _selections: Arc<SelectionService>,
     pub preferences: Arc<DesktopPreferencesService>,
     pub assets: Arc<crate::visual_assets::VisualAssetStore>,
     root: PathBuf,
@@ -70,7 +67,6 @@ impl AppServices {
             manual_runtime,
             subscriptions,
             profiles: Arc::new(ProfileService::new((*snapshots).clone())),
-            _selections: Arc::new(SelectionService::new((*snapshots).clone())),
             preferences: Arc::new(DesktopPreferencesService::new((*snapshots).clone())),
             assets: Arc::new(crate::visual_assets::VisualAssetStore::new(
                 root.join("assets"),

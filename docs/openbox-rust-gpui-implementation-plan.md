@@ -458,6 +458,10 @@ Compiler 显式输出 `experimental.cache_file.enabled = true`、受管绝对 `p
 
 manifest 跟随实际 owner 保存，GUI 通过快照读取状态，不再维护另一份权威记录。macOS desktop/helper 或 Windows desktop/service 交接时，只有旧实例与网络资源完成清理后才能使用其受控恢复材料启动新实例；旧 manifest 仍是历史记录，不能被另一 owner 自动启动。它与用于清理现存进程的实例身份记录分别管理。
 
+P2-04 的恢复格式为 schema/compiler/recovery version 1：`last-applied.json` 保存配置版本、计划编译时的 `plan_selection`、本次应用确认的 `selection_at_apply` 和可轻量前进的 `confirmed_selection`，以及固定内核 version/SHA256、pre-finalize plan 相对引用/SHA256、具体启动 config SHA256、cache generation/快照引用和资源摘要列表。凭据只进入独立 0600 recovery plan，manifest 不保存 PID/端口/secret/Ready；目录 0700。恢复读回 deny_unknown 的 Compiler 封闭模型并校验 index、epoch、内核、版本与摘要，重新绑定受管 cache 路径、生成 secret、请求动态端口并重新 check/Ready/selection reconciliation。当前产品无外部资源，非空资源列表拒绝恢复；FakeIP/owner 交接属于后续任务。
+
+正式命令为 `ApplySaved` / `RestoreLastSuccessful`，既有 `Start` 在停止状态等价 `ApplySaved`，Ready 时仍幂等。Sidecar 分段为 `prepare_replacement` → `stop_old_writer`（Platform 已 wait/reap）→ Runtime opaque cache snapshot → `run_prepared`。首次 cache 由 owner 预建 0600 空文件，防止固定内核默认创建 0644；不能修补正在写入的旧 cache。snapshot 失败阻止 candidate run并返回专门错误；候选运行/对账失败只尝试一次兼容旧计划与快照的回退。最终 manifest 失败不撤销新 Ready/applied，旧 last-successful 与回退材料保留；成功提交后才清理过期且摘要正常的工件，损坏材料保留诊断副本。
+
 ### 7.7 固定内核的配置样本
 
 以实际发布的 sing-box 版本及编译特性约束 Compiler。当前资源线索指向 1.14.0；该版本已移除旧 DNS server 格式和旧 `dns.fakeip` 配置，迁移不能只改版本号。参见官方 [Legacy DNS server](https://sing-box.sagernet.org/configuration/dns/server/legacy/) 和 [旧 FakeIP 配置](https://sing-box.sagernet.org/configuration/dns/fakeip/)。
@@ -510,6 +514,8 @@ failover 是现有 UI 的业务能力，需在 Rust 实现有限的主备编排�
 只设置一个受串行约束的选择入口，UI、编排器和恢复逻辑都提交包含实例 ID、组 ID、完整选择版本（state_epoch 与 selection_revision）的命令。手动固定先使该组旧探测结果失效，再提交选择；迟到的自动结果不得覆盖新选择。恢复自动时重新探测，不沿用手动期间累计的失败阈值。被固定的目标不可用时明确显示失败，直到用户恢复自动或选择其他目标。
 
 选择操作在同一原子业务快照中保存 pending 意图，调用控制器并读取确认后提交已确认状态；明确失败则清除 pending、保留旧选择。响应不确定或进程中断时保留待核对状态，重连先读取实际选择，不能自动重发导致重复切换。内核已切换而本地保存失败时展示“已切换，保存失败”，不伪造旧运行状态或持久化成功。
+
+P2-04 具体实现将 pending_node_id 与 selected_node_id 放在同一 Pool 的 Manual SelectionPolicy 中，由 SelectionService 在 state.json 原子提交，begin/confirm 分别推进 selection_revision。Runtime 串行校验实例、版本与 applied membership；重连实际值等于 pending 时确认，等于旧 confirmed（None 使用 compiler 明确默认成员）时清 pending，其余保留待核对且不得发布 Ready。manifest 仅记录 confirmed；后续自动编排共用此 owner 入口，本卡不实现 failover。
 
 手动选择、编排器换线和覆盖模式只推进 `selection_revision`，不推进 profile 的 `saved_revision`/`applied_revision`。用户修改成员、优先级、线路模式或阈值才改变 profile revision。配置应用时冻结选择写入，按稳定 ID 校验旧选择；成员被删除后撤销无效固定并提示，再恢复编排。由 helper/服务管理的模式，其命令和事件通过同一实例 owner 执行，GPUI 不直接绕过服务写控制器。
 

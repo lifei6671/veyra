@@ -79,6 +79,7 @@ pub fn apply_provider_replacement(
         .nodes
         .retain(|node| node.provider_id != provider_id);
     candidate.nodes.extend(replacement);
+    candidate.clear_invalid_pending();
     candidate.validate()?;
     Ok(changed)
 }
@@ -326,6 +327,7 @@ mod tests {
             }],
             selection: SelectionPolicy::Manual {
                 selected_node_id: Some(NodeId("old-node".to_owned())),
+                pending_node_id: None,
             },
             enabled: true,
         });
@@ -373,5 +375,59 @@ mod tests {
             service.snapshot().nodes[0].name.as_str(),
             "First" | "Second"
         ));
+    }
+    // 保护刷新删除 pending 节点时，在同一业务 commit 清除并推进选择版本；confirmed 不受影响。
+    #[test]
+    fn replacement_clears_removed_pending_in_atomic_state() {
+        let mut before = state();
+        before.pools.push(NodePool {
+            id: PoolId("pool".into()),
+            name: "Pool".into(),
+            kind: PoolKind::Custom,
+            sources: vec![PoolSource {
+                provider_id: ProviderId("provider".into()),
+                filter: NodeFilter::default(),
+            }],
+            selection: SelectionPolicy::Manual {
+                selected_node_id: None,
+                pending_node_id: Some(NodeId("old-node".into())),
+            },
+            enabled: true,
+        });
+        let root = std::env::temp_dir().join(format!(
+            "veyra-p204-pending-provider-{:?}",
+            before.state_epoch
+        ));
+        let store = crate::storage::JsonStateStore::new(root.join("state.json")).unwrap();
+        store.save(&before).unwrap();
+        let mut next = before.clone();
+        apply_provider_replacement(&mut next, ProviderId("provider".into()), parsed(Vec::new()))
+            .unwrap();
+        assert!(matches!(
+            next.pools[0].selection,
+            SelectionPolicy::Manual {
+                selected_node_id: None,
+                pending_node_id: None
+            }
+        ));
+        let saved = store.commit(&next).unwrap();
+        assert_eq!(saved.selection_revision, before.selection_revision + 1);
+        assert_eq!(saved.config_revision, before.config_revision + 1);
+        assert_eq!(store.load().unwrap(), saved);
+        let mut filtered = before;
+        filtered.pools[0].sources[0]
+            .filter
+            .exclude_keywords
+            .push("Old".into());
+        filtered.clear_invalid_pending();
+        filtered.validate().unwrap();
+        assert!(matches!(
+            filtered.pools[0].selection,
+            SelectionPolicy::Manual {
+                pending_node_id: None,
+                ..
+            }
+        ));
+        std::fs::remove_dir_all(root).unwrap();
     }
 }

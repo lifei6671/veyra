@@ -434,6 +434,7 @@ mod tests {
                 members: vec![NodeId("node".to_owned())],
                 selection: crate::domain::SelectionPolicy::Manual {
                     selected_node_id: None,
+                    pending_node_id: None,
                 },
             }],
             routes: Vec::new(),

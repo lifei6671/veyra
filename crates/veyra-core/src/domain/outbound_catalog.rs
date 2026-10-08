@@ -331,6 +331,7 @@ fn pool_entry(
         _ if members.is_empty() => Some(OutboundUnavailableReason::EmptyMembers),
         SelectionPolicy::Manual {
             selected_node_id: Some(id),
+            ..
         } if !members.contains(id) => {
             Some(OutboundUnavailableReason::SelectedNodeNotMember(id.clone()))
         }

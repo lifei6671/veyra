@@ -104,7 +104,8 @@ pub struct ProductCompileRequest<'a> {
     pub default_outbound: &'a OutboundId,
     pub resources: &'a ProductRuntimeResources,
 }
-#[derive(Clone, Debug, Eq, PartialEq)]
+#[derive(Clone, Debug, Deserialize, Serialize, Eq, PartialEq)]
+#[serde(deny_unknown_fields)]
 pub struct RuntimeHealthPlan {
     pub proxy_url: RuntimeHealthUrl,
     pub direct_url: RuntimeHealthUrl,
@@ -114,8 +115,8 @@ pub struct RuntimeHealthPlan {
 #[serde(deny_unknown_fields)]
 pub(super) struct CacheFile {
     enabled: bool,
-    path: PathBuf,
-    cache_id: String,
+    pub(super) path: PathBuf,
+    pub(super) cache_id: String,
     store_fakeip: bool,
     store_dns: bool,
 }
@@ -133,7 +134,7 @@ pub(super) struct MixedInbound {
     kind: String,
     tag: String,
     listen: IpAddr,
-    listen_port: u16,
+    pub(super) listen_port: u16,
 }
 
 impl SingBoxCompiler {
@@ -412,6 +413,7 @@ impl SingBoxCompiler {
             direct_url: profile.direct_test_url.clone(),
         });
         document.validate(false)?;
+        plan.index = Some(AppliedArtifactIndex::compile(state, intent));
         Ok(plan)
     }
 }

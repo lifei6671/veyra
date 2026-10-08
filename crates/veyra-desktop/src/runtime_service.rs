@@ -7,7 +7,8 @@ use std::{
 };
 use veyra_core::application::{
     manual_runtime::{
-        ManualRuntime, ManualRuntimeSnapshot, RuntimeCommand, RuntimeError, RuntimeResult,
+        ManualRuntime, ManualRuntimeSnapshot, ManualSelectionRequest, RuntimeCommand, RuntimeError,
+        RuntimeResult, SelectionError,
     },
     state_service::SnapshotService,
 };
@@ -20,6 +21,10 @@ pub struct RuntimeEvent {
 }
 enum Message {
     Operation(u64, RuntimeCommand),
+    Selection(
+        ManualSelectionRequest,
+        mpsc::Sender<Result<veyra_core::domain::SelectionVersion, SelectionError>>,
+    ),
     Quit(mpsc::Sender<()>),
 }
 pub struct RuntimeService {
@@ -59,6 +64,13 @@ impl RuntimeService {
                     Err(mpsc::RecvTimeoutError::Disconnected) => {
                         let _ = owner.execute(RuntimeCommand::Stop, |_| {});
                         break;
+                    }
+                    Ok(Message::Selection(selection, reply)) => {
+                        let result = owner.select_manual(selection);
+                        let _ = reply.send(result);
+                        let snapshot = owner.snapshot();
+                        previous = Some(snapshot.clone());
+                        emit(snapshot, None);
                     }
                     Ok(Message::Operation(id, command)) => {
                         request = id;
@@ -101,6 +113,16 @@ impl RuntimeService {
     }
     pub fn submit(&self, request: u64, command: RuntimeCommand) {
         let _ = self.sender.send(Message::Operation(request, command));
+    }
+    /// 后续 Proxy UI 消费的业务 ID 入口，与应用命令共用一个 worker，无法传 endpoint/tag。
+    #[expect(dead_code, reason = "P2-04 API; Proxy UI consumer belongs to P2-08")]
+    pub fn select_manual(
+        &self,
+        selection: ManualSelectionRequest,
+    ) -> mpsc::Receiver<Result<veyra_core::domain::SelectionVersion, SelectionError>> {
+        let (tx, rx) = mpsc::channel();
+        let _ = self.sender.send(Message::Selection(selection, tx));
+        rx
     }
     /// on_app_quit 在后台 await 清理完成；窗口隐藏不调用此方法。
     pub fn shutdown(&self) -> mpsc::Receiver<()> {

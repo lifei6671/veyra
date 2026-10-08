@@ -77,6 +77,7 @@ pub fn project_selected_runtime(
         members: sorted_node_ids(&selected_node_ids),
         selection: SelectionPolicy::Manual {
             selected_node_id: None,
+            pending_node_id: None,
         },
     }];
 
@@ -253,6 +254,7 @@ mod tests {
                 .to_vec(),
             selection: SelectionPolicy::Manual {
                 selected_node_id: Some(NodeId("node-b".to_owned())),
+                pending_node_id: None,
             },
             enabled: true,
         });
@@ -312,6 +314,7 @@ mod tests {
             }],
             selection: SelectionPolicy::Manual {
                 selected_node_id: None,
+                pending_node_id: None,
             },
             enabled: true,
         });
@@ -341,6 +344,7 @@ mod tests {
             }],
             selection: SelectionPolicy::Manual {
                 selected_node_id: Some(NodeId("node-a".to_owned())),
+                pending_node_id: None,
             },
             enabled: false,
         });
@@ -377,6 +381,7 @@ mod tests {
             }],
             selection: SelectionPolicy::Manual {
                 selected_node_id: Some(NodeId("node-a".to_owned())),
+                pending_node_id: None,
             },
             enabled: true,
         });

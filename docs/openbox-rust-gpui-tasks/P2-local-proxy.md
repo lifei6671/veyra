@@ -151,6 +151,8 @@ cleanup NOT_RUN：沙箱拒绝`ps`进程身份查询（Operation not permitted�
 <a id="obg-p2-04"></a>
 ## OBG-P2-04 选择持久化、缓存与最后成功配置
 
+**当前状态：DONE；P2-04-PENDING-PERSISTENCE-001 与前轮 Host P1/P2 Finding 均 CLOSED。Runtime/Platform 及 Runtime 公共契约 owner/本卡预约已释放；仅文档预约释放，不表示已有 app/root/child 被操作或清理。** 见 [Host FINAL ACCEPTANCE](#p2-04-final-host-closeout)。
+
 **类型**：运行恢复；**依赖**：OBG-P2-03。**依据/范围**：方案 §7.5–7.6、§8.2.1；core runtime/storage。
 
 **泳道 / 写范围**：Runtime/Platform；runtime 选择/恢复、storage manifest/cache；公共契约交 owner。
@@ -159,10 +161,10 @@ cleanup NOT_RUN：沙箱拒绝`ps`进程身份查询（Operation not permitted�
 
 **验收**：
 
-- [ ] 控制器确认与业务/缓存持久化失败分别报告；重启对账完成后才报告应用就绪。
-- [ ] 已保存 12/最后成功 11 时可按用户选择恢复；停止后 applied=None，不沿用旧 Ready。
-- [ ] manifest 写失败显示实际运行成功及恢复记录失败，保留旧记录和回退材料。
-- [ ] 缓存仅在 writer 退出后快照/交接；新代际或资源缺失不静默恢复，旧 PID 不作当前身份依据。
+- [x] 控制器确认与业务/缓存持久化失败分别报告；重启对账完成后才报告应用就绪。pending修复自动验证与绑定源码 Native PASS；Host FINAL ACCEPTANCE PASS，Task DONE、Finding CLOSED，历史结果保留。
+- [x] 已保存 12/最后成功 11 时可按用户选择恢复；停止后 applied=None，不沿用旧 Ready。
+- [x] manifest 写失败显示实际运行成功及恢复记录失败，保留旧记录和回退材料。
+- [x] 缓存仅在 writer 退出后快照/交接；新代际或资源缺失不静默恢复，旧 PID 不作当前身份依据。
 
 <a id="obg-p2-05"></a>
 ## OBG-P2-05 下载、测速和 IP 查询的出站策略

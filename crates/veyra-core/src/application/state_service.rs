@@ -61,6 +61,20 @@ impl SnapshotService {
         let _guard = self.lock()?;
         self.load_or_initialize()
     }
+    /// Runtime selector 写入的窄范围例外：版本/epoch核对与有超时的PUT/GET共用业务写gate。
+    /// 不能复读后释放再PUT，否则新pending可在间隙发布。此锁不覆盖child生命周期或cache复制。
+    pub(crate) fn with_selection_write<T>(
+        &self,
+        expected: &SelectionVersion,
+        write: impl FnOnce() -> T,
+    ) -> Result<T, AppError> {
+        let _guard = self.lock()?;
+        self.load_or_initialize()?
+            .selection_version()
+            .0
+            .require(&expected.0)?;
+        Ok(write())
+    }
     pub fn append(
         &self,
         expected: ConfigVersion,
@@ -96,6 +110,15 @@ impl SnapshotService {
             .selection_version()
             .0
             .require(&expected.selection.0)?;
+        // 新 state space 不携带旧实例尚未确认的意图。
+        for pool in &mut replacement.pools {
+            if let SelectionPolicy::Manual {
+                pending_node_id, ..
+            } = &mut pool.selection
+            {
+                *pending_node_id = None;
+            }
+        }
         replacement.profile.validate()?;
         replacement.state_epoch = StateEpoch::fresh()?;
         replacement.config_revision = 0;
@@ -145,6 +168,11 @@ impl ProfileService {
 pub struct SelectionService {
     snapshots: SnapshotService,
 }
+enum ManualStage {
+    Begin,
+    Confirm,
+    Clear,
+}
 impl SelectionService {
     pub fn new(snapshots: SnapshotService) -> Self {
         Self { snapshots }
@@ -163,15 +191,94 @@ impl SelectionService {
             .iter_mut()
             .find(|v| v.id == pool_id)
             .ok_or_else(|| AppError::validation(FieldPath::Selection))?;
-        let SelectionPolicy::Manual { selected_node_id } = &mut pool.selection else {
+        let SelectionPolicy::Manual {
+            selected_node_id,
+            pending_node_id,
+        } = &mut pool.selection
+        else {
             return Err(AppError::validation(FieldPath::Selection));
         };
+        if pending_node_id.is_some() {
+            return Err(AppError::validation(FieldPath::Selection));
+        }
         *selected_node_id = node_id.clone();
         next.validate()
             .map_err(|_| AppError::validation(FieldPath::Selection))?;
         let saved = self.snapshots.store.commit(&next)?;
         Ok(SaveOutcome {
             value: node_id,
+            version: saved.selection_version(),
+            effect: ApplyEffect::SavedOnly,
+        })
+    }
+    /// 先持久化意图，保持最后确认值；拒绝覆盖尚未核对的请求。
+    pub fn begin_manual_pending(
+        &self,
+        expected: SelectionVersion,
+        pool: PoolId,
+        requested: NodeId,
+    ) -> Result<SaveOutcome<NodeId, SelectionVersion>, AppError> {
+        self.stage_manual(expected, pool, requested, ManualStage::Begin)
+    }
+    /// 只有同版本、同 pending 请求才允许提交 controller 的确认结果。
+    pub fn confirm_manual_pending(
+        &self,
+        expected: SelectionVersion,
+        pool: PoolId,
+        requested: NodeId,
+    ) -> Result<SaveOutcome<NodeId, SelectionVersion>, AppError> {
+        self.stage_manual(expected, pool, requested, ManualStage::Confirm)
+    }
+    /// 调用者须已读回旧 confirmed；CAS 防止清掉另一请求。
+    pub fn clear_manual_pending(
+        &self,
+        expected: SelectionVersion,
+        pool: PoolId,
+        requested: NodeId,
+    ) -> Result<SaveOutcome<NodeId, SelectionVersion>, AppError> {
+        self.stage_manual(expected, pool, requested, ManualStage::Clear)
+    }
+    fn stage_manual(
+        &self,
+        expected: SelectionVersion,
+        pool_id: PoolId,
+        requested: NodeId,
+        stage: ManualStage,
+    ) -> Result<SaveOutcome<NodeId, SelectionVersion>, AppError> {
+        let _guard = self.snapshots.lock()?;
+        let mut next = self.snapshots.load_or_initialize()?;
+        next.selection_version().0.require(&expected.0)?;
+        let pool = next
+            .pools
+            .iter_mut()
+            .find(|p| p.id == pool_id)
+            .ok_or_else(|| AppError::validation(FieldPath::Selection))?;
+        let SelectionPolicy::Manual {
+            selected_node_id,
+            pending_node_id,
+        } = &mut pool.selection
+        else {
+            return Err(AppError::validation(FieldPath::Selection));
+        };
+        match stage {
+            ManualStage::Begin if pending_node_id.is_none() => {
+                *pending_node_id = Some(requested.clone())
+            }
+            ManualStage::Confirm | ManualStage::Clear
+                if pending_node_id.as_ref() == Some(&requested) =>
+            {
+                if matches!(stage, ManualStage::Confirm) {
+                    *selected_node_id = Some(requested.clone());
+                }
+                *pending_node_id = None;
+            }
+            _ => return Err(AppError::validation(FieldPath::Selection)),
+        }
+        next.validate()
+            .map_err(|_| AppError::validation(FieldPath::Selection))?;
+        let saved = self.snapshots.store.commit(&next)?;
+        Ok(SaveOutcome {
+            value: requested,
             version: saved.selection_version(),
             effect: ApplyEffect::SavedOnly,
         })

@@ -16,6 +16,9 @@ use super::secret::ApiSecret;
 #[path = "compiler/product.rs"]
 mod product;
 pub use product::*;
+#[path = "compiler/recovery.rs"]
+mod recovery;
+pub use recovery::*;
 
 const DNS_TAG: &str = "dns-system";
 const API_ADDRESS: &str = "127.0.0.1:9090";
@@ -57,6 +60,7 @@ pub trait ConfigCompiler {
 pub struct SingBoxPlan {
     document: Document,
     health: Option<RuntimeHealthPlan>,
+    index: Option<AppliedArtifactIndex>,
 }
 
 impl fmt::Debug for SingBoxPlan {
@@ -343,13 +347,13 @@ impl ConfigCompiler for SingBoxCompiler {
             let tag = pool_tag(&pool.id.0);
             outbounds.push(
                 match entry.selection.as_ref().expect("Base pool selection") {
-                    SelectionPolicy::Manual { selected_node_id } => {
-                        CoreOutbound::Selector(Selector {
-                            tag,
-                            outbounds: members,
-                            default: selected_node_id.as_ref().map(|id| node_tag(&id.0)),
-                        })
-                    }
+                    SelectionPolicy::Manual {
+                        selected_node_id, ..
+                    } => CoreOutbound::Selector(Selector {
+                        tag,
+                        outbounds: members,
+                        default: selected_node_id.as_ref().map(|id| node_tag(&id.0)),
+                    }),
                     SelectionPolicy::UrlTest {
                         probe_url,
                         interval_secs,
@@ -429,6 +433,7 @@ impl ConfigCompiler for SingBoxCompiler {
         Ok(SingBoxPlan {
             document,
             health: None,
+            index: None,
         })
     }
 }
@@ -2165,6 +2170,7 @@ mod tests {
                     members: vec![NodeId("node".to_owned())],
                     selection: SelectionPolicy::Manual {
                         selected_node_id: Some(NodeId("node".to_owned())),
+                        pending_node_id: None,
                     },
                 },
                 RuntimePool {
@@ -2625,6 +2631,7 @@ mod tests {
         let mut changed = original.clone();
         changed.pools[0].selection = SelectionPolicy::Manual {
             selected_node_id: Some(NodeId("node".to_owned())),
+            pending_node_id: None,
         };
         variants.push(changed);
         for (index, changed) in variants.iter().enumerate() {
@@ -2824,6 +2831,7 @@ mod tests {
         let mut changed = original.clone();
         changed.pools[0].selection = SelectionPolicy::Manual {
             selected_node_id: None,
+            pending_node_id: None,
         };
         variants.push(changed);
         let mut changed = original.clone();
@@ -3010,6 +3018,7 @@ mod tests {
         let mut invalid = original.clone();
         invalid.pools[0].selection = SelectionPolicy::Manual {
             selected_node_id: None,
+            pending_node_id: None,
         };
         cases.push(invalid);
         let mut invalid = original.clone();
@@ -3571,6 +3580,7 @@ mod tests {
         }
         compatibility.pools[0].selection = SelectionPolicy::Manual {
             selected_node_id: Some(members[0].clone()),
+            pending_node_id: None,
         };
 
         let config = final_config(&compatibility);
@@ -3753,6 +3763,7 @@ mod tests {
         invalid = intent();
         invalid.pools[0].selection = SelectionPolicy::Manual {
             selected_node_id: Some(NodeId("absent".to_owned())),
+            pending_node_id: None,
         };
         assert!(compile(&invalid).is_err());
         invalid = intent();

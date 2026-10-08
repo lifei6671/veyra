@@ -43,6 +43,7 @@ fn state() -> AppState {
             "manual",
             SelectionPolicy::Manual {
                 selected_node_id: Some(s.nodes[0].id.clone()),
+                pending_node_id: None,
             },
         ),
         (
@@ -185,6 +186,7 @@ fn disabled_empty_deleted_and_missing_owners_are_reported() {
     s.nodes.clear();
     s.pools[0].selection = SelectionPolicy::Manual {
         selected_node_id: None,
+        pending_node_id: None,
     };
     assert_eq!(
         entry(&s, "manual").availability,
@@ -337,6 +339,7 @@ fn provider_refresh_uses_normalized_identity_and_updates_implicit_members() {
     let deleted = s.nodes[1].id.clone();
     s.pools[0].selection = SelectionPolicy::Manual {
         selected_node_id: Some(stable.clone()),
+        pending_node_id: None,
     };
     let before = entry(&s, "manual");
     let mut renamed = first;
@@ -370,7 +373,8 @@ fn provider_refresh_uses_normalized_identity_and_updates_implicit_members() {
     assert_eq!(
         after.selection,
         Some(SelectionPolicy::Manual {
-            selected_node_id: Some(stable)
+            selected_node_id: Some(stable),
+            pending_node_id: None,
         })
     );
     assert_eq!(after.availability, OutboundAvailability::Available);

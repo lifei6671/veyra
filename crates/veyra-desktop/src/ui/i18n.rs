@@ -391,6 +391,51 @@ const MESSAGES: &[[&str; 3]] = &[
         "Kernel cleanup failed; retry Stop",
         "核心清理失敗，請重試停止",
     ],
+    [
+        "恢复材料保存失败，应用已中止",
+        "Recovery material save failed; apply aborted",
+        "恢復材料儲存失敗，套用已中止",
+    ],
+    [
+        "已恢复旧配置，恢复记录保存失败",
+        "Previous configuration restored; recovery record save failed",
+        "已恢復舊設定，恢復記錄儲存失敗",
+    ],
+    [
+        "上次运行恢复材料不可用",
+        "Last successful recovery material unavailable",
+        "上次執行恢復材料不可用",
+    ],
+    [
+        "内核缓存快照失败，切换已中止",
+        "Cache snapshot failed; switch aborted",
+        "核心快取快照失敗，切換已中止",
+    ],
+    [
+        "选择待核对，尚未就绪",
+        "Selection requires reconciliation; not ready",
+        "選擇待核對，尚未就緒",
+    ],
+    [
+        "内核选择对账失败，尚未就绪",
+        "Selection reconciliation failed; not ready",
+        "核心選擇對帳失敗，尚未就緒",
+    ],
+    [
+        "运行成功，恢复记录保存失败",
+        "Runtime ready; recovery record save failed",
+        "執行成功，恢復記錄儲存失敗",
+    ],
+    [
+        "候选运行失败，已恢复上次成功配置",
+        "Candidate failed; last successful configuration restored",
+        "候選執行失敗，已恢復上次成功設定",
+    ],
+    [
+        "候选运行和一次回退失败，请检查恢复状态",
+        "Candidate and rollback failed; check recovery status",
+        "候選執行和一次回退失敗，請檢查恢復狀態",
+    ],
     ["内核意外退出", "Kernel exited unexpectedly", "核心意外結束"],
     ["标题", "Title", "標題"],
     ["添加订阅分享", "Add subscription share", "新增訂閱分享"],

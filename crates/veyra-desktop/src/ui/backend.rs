@@ -261,6 +261,15 @@ pub fn feedback(result: Result<RuntimeResult, RuntimeError>) -> &'static str {
         Err(RuntimeError::CandidateFailed) => "候选内核检查或启动失败",
         Err(RuntimeError::StopFailed) => "内核清理失败，请重试停止",
         Err(RuntimeError::UnexpectedExit) => "内核意外退出",
+        Err(RuntimeError::RecoveryUnavailable(_)) => "上次运行恢复材料不可用",
+        Err(RuntimeError::CacheSnapshotFailed) => "内核缓存快照失败，切换已中止",
+        Err(RuntimeError::SelectionPending) => "选择待核对，尚未就绪",
+        Err(RuntimeError::SelectionReconcileFailed) => "内核选择对账失败，尚未就绪",
+        Err(RuntimeError::RecoveryRecordFailed) => "运行成功，恢复记录保存失败",
+        Err(RuntimeError::RecoveryPreparationFailed) => "恢复材料保存失败，应用已中止",
+        Err(RuntimeError::RollbackRecordFailed(_)) => "已恢复旧配置，恢复记录保存失败",
+        Err(RuntimeError::CandidateRolledBack(_)) => "候选运行失败，已恢复上次成功配置",
+        Err(RuntimeError::RollbackFailed(_)) => "候选运行和一次回退失败，请检查恢复状态",
     }
 }
 // 只读外观组件共用 React 的尺寸；没有回调即没有未来业务入口。

@@ -104,6 +104,26 @@ impl AppState {
         }
     }
 
+    /// Provider 刷新后撤销被删除/过滤的待确认意图；commit 自动推进选择版本。
+    pub(crate) fn clear_invalid_pending(&mut self) {
+        let members: Vec<_> = self
+            .pools
+            .iter()
+            .map(|p| self.resolve_pool_members(p))
+            .collect();
+        for (pool, members) in self.pools.iter_mut().zip(members) {
+            if let SelectionPolicy::Manual {
+                pending_node_id, ..
+            } = &mut pool.selection
+                && pending_node_id
+                    .as_ref()
+                    .is_some_and(|id| !members.contains(id))
+            {
+                *pending_node_id = None;
+            }
+        }
+    }
+
     /// Compute version changes from facts, including writes through the legacy consumers.
     pub fn revised_from(&self, previous: &Self) -> Result<Self, super::AppError> {
         previous
@@ -123,8 +143,12 @@ impl AppState {
                 .iter()
                 .filter_map(|pool| match &pool.selection {
                     SelectionPolicy::Manual {
-                        selected_node_id: Some(id),
-                    } => Some((pool.id.clone(), id.clone())),
+                        selected_node_id,
+                        pending_node_id,
+                    } if selected_node_id.is_some() || pending_node_id.is_some() => Some((
+                        pool.id.clone(),
+                        (selected_node_id.clone(), pending_node_id.clone()),
+                    )),
                     _ => None,
                 })
                 .collect::<std::collections::BTreeMap<_, _>>()
@@ -132,8 +156,13 @@ impl AppState {
         let selection_changed = selections(previous) != selections(self);
         for state in [&mut config_before, &mut config_after] {
             for pool in &mut state.pools {
-                if let SelectionPolicy::Manual { selected_node_id } = &mut pool.selection {
+                if let SelectionPolicy::Manual {
+                    selected_node_id,
+                    pending_node_id,
+                } = &mut pool.selection
+                {
                     *selected_node_id = None;
+                    *pending_node_id = None;
                 }
             }
         }
@@ -234,11 +263,18 @@ impl AppState {
                 source.filter.validate(&source.provider_id, &self.nodes)?;
             }
             if let SelectionPolicy::Manual {
-                selected_node_id: Some(node_id),
+                selected_node_id,
+                pending_node_id,
             } = &pool.selection
-                && !self.resolve_pool_members(pool).contains(node_id)
             {
-                return Err(StateValidationError::InvalidSelection);
+                let members = self.resolve_pool_members(pool);
+                if selected_node_id
+                    .iter()
+                    .chain(pending_node_id.iter())
+                    .any(|id| !members.contains(id))
+                {
+                    return Err(StateValidationError::InvalidSelection);
+                }
             }
             if let SelectionPolicy::UrlTest {
                 probe_url,
@@ -938,10 +974,13 @@ impl NodeFilter {
 }
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
-#[serde(tag = "kind", rename_all = "snake_case")]
+#[serde(tag = "kind", rename_all = "snake_case", deny_unknown_fields)]
 pub enum SelectionPolicy {
     Manual {
         selected_node_id: Option<NodeId>,
+        /// 待核对意图与最后确认值同属业务快照；旧 schema9 缺省为 None。
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        pending_node_id: Option<NodeId>,
     },
     UrlTest {
         probe_url: String,
@@ -1458,6 +1497,7 @@ mod tests {
         let mut state = valid_state();
         state.pools.push(pool(SelectionPolicy::Manual {
             selected_node_id: Some(NodeId(id("node-a"))),
+            pending_node_id: None,
         }));
         state.routes.push(RoutePolicy {
             id: RoutePolicyId(id("route-a")),
@@ -1552,6 +1592,7 @@ mod tests {
             }],
             ..pool(SelectionPolicy::Manual {
                 selected_node_id: None,
+                pending_node_id: None,
             })
         });
 
@@ -1565,6 +1606,7 @@ mod tests {
             enabled: false,
             ..pool(SelectionPolicy::Manual {
                 selected_node_id: None,
+                pending_node_id: None,
             })
         });
         state.routes.push(RoutePolicy {
@@ -1592,6 +1634,7 @@ mod tests {
             }],
             ..pool(SelectionPolicy::Manual {
                 selected_node_id: None,
+                pending_node_id: None,
             })
         });
         assert_eq!(state.validate(), Err(StateValidationError::MissingProvider));
@@ -1620,6 +1663,7 @@ mod tests {
             }],
             ..pool(SelectionPolicy::Manual {
                 selected_node_id: None,
+                pending_node_id: None,
             })
         });
         assert_eq!(state.validate(), Err(StateValidationError::InvalidFilter));

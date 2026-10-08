@@ -70,6 +70,7 @@ impl Fixture {
             }],
             selection: SelectionPolicy::Manual {
                 selected_node_id: None,
+                pending_node_id: None,
             },
         });
         self.store.commit(&state).unwrap()
@@ -518,6 +519,7 @@ fn legacy_commit_infers_selection_only_and_rejects_stale_revision() {
     let mut next = old.clone();
     next.pools[0].selection = SelectionPolicy::Manual {
         selected_node_id: Some(NodeId("n".into())),
+        pending_node_id: None,
     };
     let saved = f.store.commit(&next).unwrap();
     assert_eq!(saved.config_version(), old.config_version());
@@ -882,4 +884,203 @@ fn v7_visual_migration_persists_defaults_without_advancing_versions() {
     let persisted = f.bytes();
     assert_eq!(f.store.load().unwrap(), migrated);
     assert_eq!(f.bytes(), persisted);
+}
+
+// 保护旧 schema9 无 pending 的逐字兼容、重启读取与两阶段原子版本语义。
+#[test]
+fn manual_pending_schema9_and_staged_versions() {
+    let f = Fixture::new();
+    let old = f.seed_pool();
+    let bytes = f.bytes();
+    assert!(!String::from_utf8_lossy(&bytes).contains("pending_node_id"));
+    let reopened = JsonStateStore::new(f.root.join("state.json")).unwrap();
+    assert_eq!(reopened.load().unwrap(), old);
+    assert_eq!(f.bytes(), bytes, "旧 v9 不应触发迁移写入");
+    let service = f.selection();
+    let pending = service
+        .begin_manual_pending(
+            old.selection_version(),
+            PoolId("pool".into()),
+            NodeId("n".into()),
+        )
+        .unwrap();
+    let state = reopened.load().unwrap();
+    assert_eq!(state.config_version(), old.config_version());
+    assert_eq!(pending.version.0.revision, old.selection_revision + 1);
+    assert_eq!(
+        state.pools[0].selection,
+        SelectionPolicy::Manual {
+            selected_node_id: None,
+            pending_node_id: Some(NodeId("n".into()))
+        }
+    );
+    assert!(
+        service
+            .begin_manual_pending(
+                pending.version.clone(),
+                PoolId("pool".into()),
+                NodeId("n".into())
+            )
+            .is_err()
+    );
+    for operation in [
+        SelectionService::confirm_manual_pending,
+        SelectionService::clear_manual_pending,
+    ] {
+        assert_eq!(
+            operation(
+                &service,
+                old.selection_version(),
+                PoolId("pool".into()),
+                NodeId("n".into())
+            )
+            .unwrap_err()
+            .code(),
+            AppErrorCode::RevisionConflict
+        );
+        assert!(
+            operation(
+                &service,
+                pending.version.clone(),
+                PoolId("pool".into()),
+                NodeId("other".into())
+            )
+            .is_err()
+        );
+        assert_eq!(reopened.load().unwrap(), state);
+    }
+    assert_eq!(
+        service
+            .begin_manual_pending(
+                old.selection_version(),
+                PoolId("pool".into()),
+                NodeId("n".into())
+            )
+            .unwrap_err()
+            .code(),
+        AppErrorCode::RevisionConflict
+    );
+    let confirmed = service
+        .confirm_manual_pending(
+            pending.version.clone(),
+            PoolId("pool".into()),
+            NodeId("n".into()),
+        )
+        .unwrap();
+    assert_eq!(confirmed.version.0.revision, old.selection_revision + 2);
+    let state = reopened.load().unwrap();
+    assert_eq!(state.config_version(), old.config_version());
+    assert_eq!(
+        state.pools[0].selection,
+        SelectionPolicy::Manual {
+            selected_node_id: Some(NodeId("n".into())),
+            pending_node_id: None
+        }
+    );
+    assert!(!String::from_utf8_lossy(&f.bytes()).contains("pending_node_id"));
+    assert!(
+        service
+            .clear_manual_pending(pending.version, PoolId("pool".into()), NodeId("n".into()))
+            .is_err()
+    );
+}
+
+// 保护新 epoch、删除/过滤的意图撤销和保存失败不发布 pending。
+#[test]
+fn pending_clear_validation_epoch_and_atomic_failure() {
+    let f = Fixture::new();
+    let old = f.seed_pool();
+    let service = f.selection();
+    assert!(
+        service
+            .begin_manual_pending(
+                old.selection_version(),
+                PoolId("pool".into()),
+                NodeId("missing".into())
+            )
+            .is_err()
+    );
+    assert_eq!(f.state(), old);
+    f.fail_writes();
+    assert!(
+        service
+            .begin_manual_pending(
+                old.selection_version(),
+                PoolId("pool".into()),
+                NodeId("n".into())
+            )
+            .is_err()
+    );
+    assert_eq!(f.state(), old);
+    fs::remove_dir(f.root.join("state.tmp")).unwrap();
+    let pending = service
+        .begin_manual_pending(
+            old.selection_version(),
+            PoolId("pool".into()),
+            NodeId("n".into()),
+        )
+        .unwrap();
+    let mut dangling = f.state();
+    if let SelectionPolicy::Manual {
+        pending_node_id, ..
+    } = &mut dangling.pools[0].selection
+    {
+        *pending_node_id = Some(NodeId("missing".into()));
+    }
+    assert_eq!(
+        dangling.validate(),
+        Err(StateValidationError::InvalidSelection)
+    );
+    let cleared = service
+        .clear_manual_pending(
+            pending.version.clone(),
+            PoolId("pool".into()),
+            NodeId("n".into()),
+        )
+        .unwrap();
+    assert_eq!(cleared.version.0.revision, old.selection_revision + 2);
+    assert_eq!(f.state().config_version(), old.config_version());
+    service
+        .begin_manual_pending(cleared.version, PoolId("pool".into()), NodeId("n".into()))
+        .unwrap();
+    let before = f.state();
+    let replacement = f
+        .snapshots
+        .replace(before.version(), before.clone())
+        .unwrap()
+        .value;
+    assert_ne!(replacement.state_epoch, before.state_epoch);
+    assert_eq!(replacement.selection_revision, 0);
+    assert!(matches!(
+        replacement.pools[0].selection,
+        SelectionPolicy::Manual {
+            pending_node_id: None,
+            ..
+        }
+    ));
+    assert!(
+        service
+            .confirm_manual_pending(
+                before.selection_version(),
+                PoolId("pool".into()),
+                NodeId("n".into())
+            )
+            .is_err()
+    );
+    assert!(
+        service
+            .clear_manual_pending(
+                before.selection_version(),
+                PoolId("pool".into()),
+                NodeId("n".into())
+            )
+            .is_err()
+    );
+}
+
+// 保护 pending 不能出现在 UrlTest，避免不可信 JSON 把它静默丢弃。
+#[test]
+fn non_manual_policy_rejects_pending_input() {
+    let value = serde_json::json!({"kind":"url_test", "probe_url":"https://example.invalid", "interval_secs":120, "tolerance_ms":80, "pending_node_id":"n"});
+    assert!(serde_json::from_value::<SelectionPolicy>(value).is_err());
 }

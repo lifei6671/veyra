@@ -46,6 +46,22 @@ impl ManagedSidecar {
 /// 实现负责把这组语义映射到应用拥有的目录、已验证的 sidecar 身份以及固定参数；
 /// Runtime 不提供执行任意命令、访问任意路径或停止任意 PID 的入口。
 pub trait SidecarPort {
+    /// tag 只能来自当前 applied artifact；Port 必须校验 owned identity 并使用该 child 的鉴权。
+    fn read_selector(
+        &mut self,
+        _instance: &ManagedSidecar,
+        _tag: &str,
+    ) -> Result<String, SidecarPortError> {
+        Err(SidecarPortError)
+    }
+    fn write_selector(
+        &mut self,
+        _instance: &ManagedSidecar,
+        _tag: &str,
+        _node: &str,
+    ) -> Result<(), SidecarPortError> {
+        Err(SidecarPortError)
+    }
     /// ready 完成后才能取得；历史 ObservationOnly Port 无 mixed。
     fn endpoints(&self, _instance: &ManagedSidecar) -> Option<ManagedRuntimeEndpoints> {
         None
@@ -248,6 +264,12 @@ where
 
     /// 只消费已经检查的候选；失败遵守既有停止/清理语义，不启动旧配置。
     pub fn commit_prepared(&mut self) -> Result<(), SidecarError> {
+        self.stop_old_writer()?;
+        self.run_prepared()
+    }
+
+    /// stop 返回表示 Platform 已 wait/reap；保留 checked candidate，供 owner 在 run 前快照 cache。
+    pub fn stop_old_writer(&mut self) -> Result<(), SidecarError> {
         if self.configs.candidate.is_none() {
             return Err(SidecarError::CandidatePrepare);
         }
@@ -266,6 +288,13 @@ where
         }
         self.endpoints = None;
         self.configs.active = None;
+        Ok(())
+    }
+
+    pub fn run_prepared(&mut self) -> Result<(), SidecarError> {
+        if self.child.is_some() || self.recovery_required || self.configs.candidate.is_none() {
+            return Err(SidecarError::RecoveryRequired);
+        }
         let candidate_child = match self.port.run() {
             Ok(child) => child,
             Err(_) => {
@@ -451,6 +480,7 @@ mod tests {
                         members: vec![NodeId("node".to_owned())],
                         selection: crate::domain::SelectionPolicy::Manual {
                             selected_node_id: None,
+                            pending_node_id: None,
                         },
                     }],
                     routes: Vec::new(),

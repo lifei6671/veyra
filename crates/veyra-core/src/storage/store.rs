@@ -4,7 +4,7 @@ use std::path::PathBuf;
 use serde::{Deserialize, Serialize};
 
 use crate::domain::{
-    AppState, CURRENT_SCHEMA_VERSION, NodePool, Provider, ProxyNode, RoutePolicy,
+    AppState, CURRENT_SCHEMA_VERSION, NodePool, Provider, ProxyNode, RoutePolicy, SelectionPolicy,
     StateValidationError, Subscription,
 };
 
@@ -75,6 +75,15 @@ impl JsonStateStore {
         let contents = read_snapshot(&backup_path(&self.state_file))?;
         let (mut state, _) = self.decode(&contents)?;
         // A full rollback/recovery is a replacement, never a reusable old concurrency token.
+        // replacement 的旧 pending 不得跨越 epoch 恢复为新业务意图。
+        for pool in &mut state.pools {
+            if let SelectionPolicy::Manual {
+                pending_node_id, ..
+            } = &mut pool.selection
+            {
+                *pending_node_id = None;
+            }
+        }
         state.state_epoch =
             crate::domain::StateEpoch::fresh().map_err(|_| StateStoreError::WriteFailed)?;
         state.config_revision = 0;
@@ -387,6 +396,7 @@ mod tests {
             }],
             selection: SelectionPolicy::Manual {
                 selected_node_id: Some(NodeId("node".to_owned())),
+                pending_node_id: None,
             },
             enabled: true,
         });
@@ -505,7 +515,7 @@ mod tests {
         assert_eq!(state.pools[0].id, PoolId("pool-preserved".to_owned()));
         assert!(matches!(
             state.pools[0].selection,
-            SelectionPolicy::Manual { selected_node_id: Some(NodeId(ref id)) } if id == "node-preserved"
+            SelectionPolicy::Manual { selected_node_id: Some(NodeId(ref id)), .. } if id == "node-preserved"
         ));
         assert!(matches!(
             state.routes[0].target,

@@ -248,15 +248,57 @@ mod tests {
         struct MockPort {
             next: u64,
             active: Option<u64>,
+            config: Option<serde_json::Value>,
+            selectors: std::collections::BTreeMap<String, String>,
         }
         impl SidecarPort for MockPort {
-            fn check(&mut self, _: &GeneratedConfig) -> Result<(), SidecarPortError> {
+            fn read_selector(
+                &mut self,
+                _: &ManagedSidecar,
+                tag: &str,
+            ) -> Result<String, SidecarPortError> {
+                self.selectors.get(tag).cloned().ok_or(SidecarPortError)
+            }
+            fn write_selector(
+                &mut self,
+                _: &ManagedSidecar,
+                tag: &str,
+                node: &str,
+            ) -> Result<(), SidecarPortError> {
+                self.selectors.insert(tag.into(), node.into());
+                Ok(())
+            }
+            fn check(&mut self, config: &GeneratedConfig) -> Result<(), SidecarPortError> {
+                self.config = Some(serde_json::from_slice(config.as_bytes()).unwrap());
                 Ok(())
             }
             fn prepare(&mut self, _: &GeneratedConfig) -> Result<(), SidecarPortError> {
                 Ok(())
             }
             fn run(&mut self) -> Result<ManagedSidecar, SidecarPortError> {
+                let c = self.config.as_ref().unwrap();
+                for pool in c["outbounds"]
+                    .as_array()
+                    .unwrap()
+                    .iter()
+                    .filter(|v| v["type"] == "selector")
+                {
+                    self.selectors.insert(
+                        pool["tag"].as_str().unwrap().into(),
+                        pool["default"]
+                            .as_str()
+                            .unwrap_or(pool["outbounds"][0].as_str().unwrap())
+                            .into(),
+                    );
+                }
+                let cache =
+                    std::path::Path::new(c["experimental"]["cache_file"]["path"].as_str().unwrap());
+                std::fs::write(cache, b"mock-opaque-cache").unwrap();
+                {
+                    use std::os::unix::fs::PermissionsExt;
+                    std::fs::set_permissions(cache, std::fs::Permissions::from_mode(0o600))
+                        .unwrap();
+                }
                 self.next += 1;
                 self.active = Some(self.next);
                 Ok(ManagedSidecar::from_port_identity(self.next))

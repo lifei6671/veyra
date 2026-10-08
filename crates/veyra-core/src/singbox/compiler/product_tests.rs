@@ -764,6 +764,7 @@ fn p202b_projection_cross_subscription_pool_adds_only_matching_nodes_and_provide
         }],
         selection: SelectionPolicy::Manual {
             selected_node_id: None,
+            pending_node_id: None,
         },
         enabled: true,
     });

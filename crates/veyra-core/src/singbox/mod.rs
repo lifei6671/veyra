@@ -6,9 +6,10 @@ pub mod runtime;
 pub mod secret;
 
 pub use compiler::{
-    CompileError, ConfigCompiler, GeneratedConfig, LoopbackListener, ManagedCacheFile,
-    ProductCompileRequest, ProductRuntimeResources, RuntimeHealthPlan, RuntimeProfile,
-    SingBoxCompiler, SingBoxPlan, UnsupportedProductOption,
+    AppliedArtifactIndex, AppliedPool, CompileError, ConfigCompiler, GeneratedConfig,
+    LoopbackListener, ManagedCacheFile, ProductCompileRequest, ProductRuntimeResources,
+    RECOVERY_FORMAT, RuntimeHealthPlan, RuntimeProfile, SingBoxCompiler, SingBoxPlan,
+    UnsupportedProductOption,
 };
 
 #[cfg(any(test, feature = "legacy-test-support"))]
