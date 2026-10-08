@@ -1,8 +1,66 @@
+**任务文档同步（2026-10-08，当前版本控制状态）**：P0-05 → P0-06 → P2-01 → P2-02A → P2-02B → P2-03 → P2-04 已按依赖顺序形成七个独立提交，末端 `dcc9b7b2b7aa32e6f3c472eeae42f24ed2f22906`；远端历史已通过 `fdb8930a010ed321e496caa62a98257c64031b8a` 合并，文件树不变，七个 SHA 保留。此前“Git 隔离 BLOCKED / 未提交”的收口记录仅描述当时现场，现已解除。本次仅同步四份任务文档，不修改源码、不重跑 Native/GUI、不启动下游、不 push。P2-04 DONE、Finding CLOSED、P2-06 READY 及 owner 释放保持；完整提交验证见[提交链报告](evidence/p2-04/git-history-integration-20261008/integration-20261008T100426/REPORT.md)。
+
+**P2-04 Host FINAL ACCEPTANCE（2026-10-08，当前）**：Host独立确认PASS，P2-04 ACCEPTANCE→DONE，P2-04-PENDING-PERSISTENCE-001及前轮P1/P2 Finding均CLOSED；Runtime/Platform及Runtime公共契约owner/本卡预约释放，不意味着已有app/root/child被操作或清理。Core source aggregate `987a01782c59d75c913f20a8133fd37df27638951f73cf3168cb2b35c3ff4fa8` 与harness身份精确绑定，Host核验77 Native事件/逐行日志、六组恢复及preflight、P1/P2限定注入、原14条exit0，另MCP新复跑Core371/Desktop85 exit0（11 ignored显式覆盖），receipt见[收口证据](evidence/p2-04/final-host-closeout-20261008/README.md)。自然HTTP/OS故障、SIGKILL、无控制线程竞态仍NOT_RUN，历史REWORK与原证据不改写。本轮仅文档/静态核验，无Cargo/Native/GUI/真实资源操作。DAG DONE20/ACCEPTANCE0/READY7/TODO34/DEFERRED7，共68；P2 5/10、macOS20/61；P2-06仅TODO→READY，全部READY未领取/启动。Git独立提交BLOCKED：HEAD缺前序未提交实现，无法安全隔离P2-04-only自洽提交；index未触碰、无stage/commit/push。见[正式收口](P2-local-proxy.md#p2-04-final-host-closeout)。
+
+**此前带日期摘要为历史原文，旧“当前/本轮”指当时；本次现态以上方收口及第1–4节为准。**
+
+**P2-04 Host修复绑定源码Native（2026-10-08，当前）**：三文件aggregate `987a01782c59d75c913f20a8133fd37df27638951f73cf3168cb2b35c3ff4fa8`逐轮MATCH，固定1.14.0 kernel MATCH；production/UI未改，只增cfg(test) harness。旧Native、六组跨OS恢复、uncovered preflight PASS；P1旧cache保护/P2同池GET交错、epoch、CAS与共享gate的真实控制器+限定故障注入3/3 PASS。自然HTTP/启动故障及SIGKILL等NOT_RUN，边界明确。Core371/Desktop85（11 ignored已显式覆盖）、check/clippy/fmt/diff及全部自有资源cleanup PASS。仍ACCEPTANCE / FIXED_PENDING_HOST_REVIEW / Runtime/Platform owner；等待Host最终复核证据，不自行DONE。DAG DONE19/ACCEPTANCE1/READY6/TODO35/DEFERRED7；P2-06 TODO，无下游/既有app或正式root/系统网络/Git提交推送操作。见[完整证据](evidence/p2-04/host-rework-native-20261008-091526/README.md)与[验收记录](P2-local-proxy.md#p2-04-host-rework-native)。
+
+**P2-04 Host REWORK 有界修正（2026-10-08，前轮）**：Host 独立审查的历史结论 **REWORK（P1 + P2）** 保留。只改 Core `manual_runtime.rs`、其 `tests.rs` 及必要 `state_service.rs` 共享 gate；配套本卡/SESSION 与新 ignored evidence。candidate Run/Ready/reconcile 失败存在持久 pending 时清理后拒绝旧 cache 回退；显式 Restore 校验 active plan/关闭 live cache 来源，来源不符则 prepare/Stop 前拒绝。所有 controller PUT 将完整 SelectionVersion/epoch 核对与有界 PUT/GET 置于同一共享 gate，确认/clear 仍精确 CAS；覆盖同池 GET 并发及部分确认冲突。初始回归 4 FAIL/1 PASS 保留；最终 Core371（原366 + 5）、Desktop85（8 ignored NOT_RUN）、两 crate all-targets offline check/clippy -D warnings、workspace fmt/diff PASS。三文件 source aggregate SHA256 `987a01782c59d75c913f20a8133fd37df27638951f73cf3168cb2b35c3ff4fa8`。仅实现者自查，无 Host PASS/自DONE；当前修正 Native/GUI NOT_RUN，旧 Native evidence 未写入，不代表新源码验收。P2-04 仍 ACCEPTANCE / FIXED_PENDING_HOST_REVIEW / owner Runtime/Platform，P2-06 TODO，无下游/DAG状态变化，无真实内核/既有app、child、root/系统代理/TUN或Git写操作。见[新证据](evidence/p2-04/host-rework-fix-20261008-085206/README.md)及[修正记录](P2-local-proxy.md#p2-04-host-rework-fix)。
+
+**P2-04 最终 Native（2026-10-08，历史；当前修正尚未复验）**：仅ignored test harness，production/UI未改；old/pending/third × ApplySaved/RestoreLastSuccessful 六组真实跨OS进程验收PASS，startup PUT=0；旧plan不覆盖一个/两个pending时active child不动、无GET/PUT/部分CAS。关闭cache交接及所有自有资源cleanup PASS；首轮测试路径FAIL与无活资源诊断root保留。修改前/最终P2-03/P2-04旧Native均PASS，最终Core366/Desktop85（8 ignored已显式覆盖）、check/clippy/fmt/diff PASS。仍ACCEPTANCE / FIXED_PENDING_HOST_REVIEW / owner Runtime/Platform，等待ChatGPT/Host独立review，不自行DONE。DAG DONE19/ACCEPTANCE1/READY6/TODO35/DEFERRED7；P2-06 TODO，无下游/系统代理/TUN/既有app操作，无commit/push。见[本轮完整证据](evidence/p2-04/pending-native-acceptance-20261008-082538/README.md)与[验收记录](P2-local-proxy.md#p2-04-pending-native-acceptance)。
+
+**P2-04 pending全量覆盖修复（2026-10-08，前轮）**：同一Host P1 Finding第二边界已完成代码/自动修复；P2-04继续ACCEPTANCE、P2-04-PENDING-PERSISTENCE-001继续FIXED_PENDING_HOST_REVIEW、Runtime/Platform owner保留。candidate在finalize/check/prepare前及stop_old_writer前验证全部业务pending被index覆盖；reconcile读取最新state并全量预检，末尾以pending_in(latest).is_empty作为最终gate。不覆盖则SelectionPending、不PUT/clear/Ready；静态拒绝保留已有child/identity/endpoints。Core366/Desktop85及指定检查PASS；3 Native ignored、本轮Native/桌面NOT_RUN。旧日志不覆盖；DAG DONE19/ACCEPTANCE1/READY6/TODO35/DEFERRED7，P2-06 TODO，无下游/Git写操作。见[新fix evidence](evidence/p2-04/pending-persistence-fix/uncovered-pool-20261008/README.md)。
+
+**P2-04 Finding 修复（2026-10-07，前轮）**：P2-04 DONE→DOING→ACCEPTANCE，owner Runtime/Platform保留；P2-04-PENDING-PERSISTENCE-001 OPEN→FIXED_PENDING_HOST_REVIEW。恢复业务pending持久化契约；Core361/Desktop85、check/clippy/fmt PASS；本轮仅代码/自动/Mock，真实中断/重启验收 NOT_RUN，等待Codex Desktop/Host，不操作真实桌面/child/root。旧交付与evidence全部作为历史保留，旧DONE已被本Finding撤销。新记录见 [fix evidence](evidence/p2-04/pending-persistence-fix/README.md)。
+
+**前轮 P2-04 收口（2026-10-07，历史；DONE已撤销）**：P2-04 DONE；Runtime/Platform及Runtime公共契约owner释放。唯一串行选择入口、封闭恢复计划/index、last-applied v1、stop/reap后cache快照、一次回退与ApplySaved/RestoreLastSuccessful交付；隔离真实child/cache及独立OS进程重启验收PASS，P2-03真实failure matrix回归PASS。Core354/Desktop85（3个真实test默认ignored、已另行显式执行）及指定检查PASS；实现者code-delivery-review自查无剩余Finding，不称独立审查。初轮编译/测试/clippy FAIL及内核0644 cache引起的真实UnsafePath失败保留。无恢复视觉UI，无现有app/child/root操作，无Git写操作。68卡DONE20/READY7/TODO34/DEFERRED7；READY=P0-08/P2-05/P2-06/P3-01/P4-02/P5-04/P5-06，全部未领取/启动。见[交付](P2-local-proxy.md#p2-04-delivery)和[本轮evidence](evidence/p2-04/README.md)。
+
+**前轮 P2-04领取（2026-10-07，历史）**：只领取 OBG-P2-04，DOING，owner Runtime/Platform（Runtime公共契约单一owner）。写范围 Core manual_runtime、Compiler恢复/index、Sidecar事务与受管recovery storage；Desktop manual_sidecar/runtime_service 必要契约与回归；本卡文档/local-only evidence。只使用隔离测试root，不触碰P2-03 live app/child，不启动下游，保留大dirtytree。
+
+**当前P2-03最终收口（2026-10-07）**：Host明确确认Basic2 build功能与视觉“符合”；executable SHA256 `59280c3146502e1b9474d08f976d807cfae4390751493badf9f89aeca9b325c4`，绑定basic-settings-004/full-page-002/fidelity-003最终evidence。P2-03 DONE；BASIC-SETTINGS-004/FULL-PAGE-002/FIDELITY-003 CLOSED；Runtime/Platform + GPUI及Runtime公共契约owner/本卡预约已释放。BUSY-001、历史FAIL/REWORK/候选记录保留。仅文档/evidence，app/runtime资源不操作；释放预约不等于现场清理。本轮cleanup NOT_RUN。68卡DONE19/READY7/TODO35/DEFERRED7，其余0；所有READY未领取/未启动。见[最终收口](P2-local-proxy.md#p2-03-final-closeout)及[Host approval/验证](evidence/p2-03/final-closeout-20261007-164453/README.md)。
+
+**前轮基础设置最终候选（历史）**：`59280c3146502e1b9474d08f976d807cfae4390751493badf9f89aeca9b325c4`；P2-03-BACKEND-BASIC-SETTINGS-004 FIX_PENDING_HOST。仅五字段通过ProfileService.patch保存；真机10/5→Restart10/10，同一build重启持久化通过。Core336/Desktop84（既有1 ignored）、check/clippy/fmt/diff通过，七个Runtime保护文件SHA不变。P2-03 ACCEPTANCE，FULL-PAGE-002 / FIDELITY-003 OPEN；owner与DAG不变，等待Host功能+视觉确认。证据 `evidence/p2-03/basic-settings-004/README.md`。
+
+**前轮基础设置接线（历史）**：P2-03-BACKEND-BASIC-SETTINGS-004 OPEN。owner Runtime/Platform + GPUI；仅五个既有 Profile 字段通过 ProfileService.patch 保存，Desktop services/state bridge/backend/i18n 与队列测试为实际写范围。保存不自动应用。P2-03 ACCEPTANCE，FULL-PAGE-002 / FIDELITY-003 OPEN；DAG不变。
+
+**前轮细节候选（历史）**：`3d98e8de375a626e376daab98f7474d917958b867268f8afa7a094a2147e030e`；官方MiSans4.009同包静态face、只读控件、完整文案与自然flow已接入；同视口内部ink/控件对照、叠图与差分已补齐，Core336/Desktop80（既有1 ignored）及check/clippy/fmt/diff通过。当前Backend/Light/Ready；FULL-PAGE-002与FIDELITY-003均OPEN，字体/颜色级联差异仍供Host最终判断，不作Visual PASS。DAG、owner不变。
+
+**前轮视觉整改（历史）**：P2-03 ACCEPTANCE / FULL-PAGE-002 OPEN / VISUAL-FIDELITY-003 OPEN。owner Runtime/Platform + GPUI；仅Backend/shell视觉与必要字体/theme资源接线，Runtime八个保护文件不动，DAG不变。
+
+**前轮解锁后续采集完成（历史）**：同一acadf5a6…候选/源码/child保留，已补齐最终Backend全长图与后半页矩阵并回到顶部Light/Ready。TUN内部MTU/MSS锚点分别−12/−8px已记录，未改源码，Full Finding仍OPEN/P2-03 ACCEPTANCE，等待Host确认。
+
+**前轮收尾限制（历史）**：最终build `acadf5a6…` 已完成工程验证及Ready/Starting/Restart Busy、首屏分区对照；Mac锁屏阻断最后下半页长图与回到顶部交接，待Host手动解锁。Runtime未退出，锁屏前Backend/Light/Ready。Full Visual仍OPEN，不能将局部截图称为整页验收完成。
+
 # OpenBox Rust / GPUI 当前进度
 
-最后更新：2026-10-05。
+**前轮Host Full Visual修复（2026-10-07，历史）**：P2-03-VISUAL-FULL-PAGE-002 **OPEN**；BUSY-001工程修复FIXED，不代表Full Visual PASS。按本机实际OpenBox Backend DOM与React/CSS重建四组连续视觉骨架，未来能力disabled/未知—，Profile仅从snapshot只读，Runtime按钮真实可操作。P2-03仍ACCEPTANCE，owner Runtime/Platform + GPUI，DAG为DONE18 / ACCEPTANCE1 / READY3 / TODO39 / DEFERRED7。Core336/Desktop80（既有1 ignored）、check/clippy/fmt/diff PASS；Runtime/Compiler/Sidecar代码不变，不重跑failure matrix。等待Host对当前系统显示设置、Light、完整Backend与sidebar确认；[完整视觉交付](P2-local-proxy.md#p2-03-visual-full-page-002)。
 
-**当前结果：OBG-P0-01、P0-02、P0-03、P0-04、P0-07、P1-01、P1-02、P1-03、P1-04A、P1-04B、P1-05、P1-06、P1-07 DONE；P0-05 ACCEPTANCE；P1-07 owner 已释放，READY 为空。** P1-06 Human Visual / Tray interaction 由当前 Host 会话用户真实操作补足，截图未复制入仓库。P0-07 完成标准四流/区间 traffic/短连接/DNS 三能力/本地诊断；DNS records/hot rewrite unsupported，flush supported。P0-04 存在对账前流量窗口。P0-03 人工确认和历史限制保留；helper/TUN 运行未验证。阶段用于里程碑分组及组合验收，READY 只由显式依赖决定。
+**前轮交付（2026-10-07，历史）**：仅 P2-03 READY→DOING→ACCEPTANCE；owner Runtime/Platform + GPUI（本对话为 Runtime 公共契约单一 owner）。68卡 DONE18/ACCEPTANCE1/READY3/TODO39/DEFERRED7，依赖不变。写范围：Core application/runtime 服务、singbox/runtime/clash_api/compiler 的必要动态日志支持及相关 Mock/tests；Desktop platform/manual sidecar、AppServices/StateBridge、app退出、服务卡/sidebar/i18n/tokens；本卡状态文档和local-only evidence/p2-03。不启动其它 READY/下游，不改 SystemProxy/TUN，不实现 P2-04。隔离 binary/root/fixture/bundle 仅本卡使用。Core336、Desktop73及显式真实内核1测试、check/clippy/fmt/diff PASS；受控代理请求与失败/退出清理 PASS，独立review无剩余可操作Finding。最终bundle已打开Backend/Light/当前Host显示设置/Ready，Host 150% Visual/Interaction PENDING；未解锁下游。见[本卡交付](P2-local-proxy.md#p2-03-delivery)。
+
+**前轮Host最终收口（2026-10-07，历史）**：Host independent review PASS，P2-02B-RUNTIME-PROJECTION-001 CLOSED；P2-02B ACCEPTANCE→DONE，Codex Core/Config owner释放。Host source SHA/19定向/5 projection/7 catalog/332 Core及check/clippy/fmt/diff PASS；五个重新生成candidate经secret/cache path归一化后与修复轮fixed-kernel checked redacted candidates语义一致，无剩余可操作Finding。仅文档/evidence收口，旧首次DONE/重开/FAIL/修复候选保留，产品源码无修改。68卡DONE18/READY4/TODO39/DEFERRED7，其余0；READY=P0-08/P2-03/P4-02/P5-06，均未领取/未启动。见[Host最终收口](P2-local-proxy.md#p2-02b-host-closeout)。
+
+**前轮修复候选（2026-10-07，历史）**：P2-02B-RUNTIME-PROJECTION-001 FIXED_PENDING_HOST_REVIEW，P2-02B DONE→DOING→ACCEPTANCE，owner：Codex Core/Config保留，等待Host独立review。显式 selected runtime projection / runtime closure / directForNodes修复；19定向/5 projection/7 catalog/332 Core、指定检查、固定v1.14.0五候选check与实现者自查PASS。旧DONE/327 Core/locked-check证据原样保留。P2-03/P4-02 READY→TODO，P0-08/P5-06保持READY。68卡DONE17/ACCEPTANCE1/READY2/TODO41/DEFERRED7；本轮临时archive/binary/config/secret cleanup PASS。无下游/UI/真实run。见[Finding](P2-local-proxy.md#p2-02b-runtime-projection-fix)。
+
+**前轮 P2-02B 收口（2026-10-07，历史）**：最小产品Compiler五项验收PASS/DONE，Core/Config单一owner释放。14定向/327 Core、check/clippy/fmt/diff与固定v1.14.0四候选真实check PASS；48-plan digest不变；code-delivery-review实现者自查无剩余可操作Finding（非独立审查）。schema9严格兼容新Profile字段，旧v9/v8读取/版本/二次load稳定；普通保存仍SavedOnly。本轮仅生成/check，无run/UI/网络接管；现有dirtytree保留，无Git写操作。68卡DONE18/READY4/TODO39/DEFERRED7，其余0；READY=P0-08/P2-03/P4-02/P5-06，均未领取/启动。见[交付与边界](P2-local-proxy.md#p2-02b-closeout)。
+
+**前轮文档收口（2026-10-07，历史）**：Host独立审查确认代码SHA一致、Core313/313与check/clippy/fmt/diff PASS，无可操作代码bug；第三项按目录层契约PASS，P2-02A ACCEPTANCE→DONE，Core/Config owner释放。P2-02A-CONSUMER-001 CLOSED：SCOPE_RESOLVED/DEFERRED_CONSUMER_INTEGRATION；正式ProxyService/UI行为与视觉集成仍属P2-08，当前NOT_RUN。68卡DONE17 / READY3 / TODO41 / DEFERRED7，其余状态0；READY=[P0-08,P2-02B,P5-06]均未领取，不启动下游。见[Host收口](P2-local-proxy.md#p2-02a-closeout)。
+
+**初次实现交付（2026-10-07，历史）**：仅 P2-02A READY→DOING→ACCEPTANCE，Core/Config 单一 owner保留；代码/313 Core/指定检查PASS，实现者自查无未修复Finding。正式ProxyService/基础Proxy UI消费gap待Host Review；DONE16 / ACCEPTANCE1 / READY2 / TODO42 / DEFERRED7，READY=[P0-08,P5-06]且未领取，不启动下游。见[本轮交付](P2-local-proxy.md#p2-02a-delivery)。
+
+**前轮最终收口（2026-10-07，历史）**：Host已明确确认build38-final完整订阅页面“符合”，绑定executable SHA256 `de220c173fb4cd70163419e93a54d34324b4dbf53617a87e46b32be8fafcbff3` 与build38 evidence。P2-01 DONE，P2-01-VISUAL-FULL-PAGE-001 CLOSED，Codex Desktop · Full Subscription UI Parity owner/资源预约释放。完整68卡：DONE16 / READY3 / TODO42 / DEFERRED7，其余状态0；READY仅P0-08/P2-02A/P5-06，均未领取/启动。cleanup NOT_RUN（沙箱拒绝进程身份查询），app/fixture/隔离root保留。见[最终收口](evidence/p2-01/final-closeout-20261007-122027/README.md)。
+
+**前轮候选（历史）（2026-10-07，build38）**：仅移除 Source 正文常驻 Direct/TUN hint；不新增帮助UI或空占位，不改P0-06/未来业务。真实URL/Paste浅深色及整页6截图，metadata编辑description保留、两订阅重启可见；Core304/Desktop70/outbound9与九项检查PASS。build38窄范围Independent Review PASS（不等于Host Visual PASS）。自然高度及actual空feedback margin差异明示；Host Visual PENDING，ACCEPTANCE/OPEN/owner与DAG68保持。见[build38候选](evidence/p2-01/source-final-20261007-115918/BUILD38-SOURCE-CANDIDATE.md)。
+
+**前轮候选（2026-10-07，历史）：build37完整订阅UI候选新增只读Share弹窗、4px表单间距、38px分享列表与长页面modal分层。真实浅深色Source/Rules上下/DNS/Nodes/Share、11项滚动、busy/error/stale及三语已核对；Core304/Desktop70/outbound9与九项检查、独立Review PASS。Host全页视觉仍PENDING；P2-01 ACCEPTANCE、Finding OPEN、owner保留。未来能力控件保持禁用；periodic开启等条件分支未开放，不宣称全业务UI已验收。DAG68不变，仅P0-08 READY，无下游/commit/push。见[build37候选](evidence/p2-01/all-ui-20261007-111729/BUILD37-FULL-UI-CANDIDATE.md)。**
+
+最后更新：2026-10-08。
+
+**前轮候选（2026-10-07，历史）：完整页面候选 build29-final 按本机 actual OpenBox 逐控件修复按钮 hover/focus、说明、DNS/Rules、saved Nodes table、modal与动画；Core304/Desktop70/outbound9及九项验证、Independent Review PASS。完整矩阵与真实浅深色截图已采集，Host Visual仍PENDING；最后交接因Mac锁屏待解锁核验。P2-01 ACCEPTANCE、Finding OPEN、owner保留；仅P0-08 READY，无下游启动。见[build29全控件修复](evidence/p2-01/full-reaudit-20261007-094122/BUILD29-CONTROLS-REWORK.md)。**
+
+**前轮完整页面结果（2026-10-06，历史）：Host对最终build16完整页面回复“仍有偏差”，当前Visual FAIL/REWORK；P2-01-VISUAL-FULL-PAGE-001 OPEN；P2-01 DONE→ACCEPTANCE，owner为Codex Desktop · Full Subscription UI Parity。上一轮视觉PASS仅覆盖当时限定实现区域，不代表完整SubscriptionSettings页面。历史功能PASS及旧evidence保留。P2-02A/P5-06 READY→TODO；仅P0-08 READY，不启动下游。**
+
+**P0-06收口历史（2026-10-06）：P0-06 DONE，显式出站代码/本地契约/安全公网观测/cleanup与独立review完成，owner释放。** 原卡第4项允许未证明组合明确范围决定：SystemProxy ON为UNSUPPORTED，TUN OFF/managed bypass为INCOMPLETE_EXTERNAL_TUN_ACTIVE；外部TUN保护且未修改。共DONE15；READY仅P0-08/P2-01，未领取/启动。P0-05源码/evidence/验收与dirtytree完整保留；P1-07视觉PASS_WITH_TECHNICAL_DIFFERENCES与历史限制保留。[本轮完整证据](evidence/p0-06/20261006-144632/README.md)。
 
 - [长期开发总规范](DEVELOPMENT_WORKFLOW.md)：后续 Veyra Rust/GPUI 默认遵守；四泳道、并行与单一 owner。
 - [技术方案](../openbox-rust-gpui-implementation-plan.md)：架构、行为、接口与平台边界。
@@ -14,9 +72,9 @@
 
 | 里程碑 | DONE / 任务数 | 当前结果 | 组合验收 |
 | --- | --- | --- | --- |
-| P0 基线与可行性 | 5 / 9 | P0-01/03/04/07 验收通过；固定内核/缓存/观测能力核实完成，历史限制保留 | P0-09 未开始 |
+| P0 基线与可行性 | 7 / 9 | P0-01/03/04/05/06/07完成；P0-06保留未证明组合的明确范围决定，历史限制保留 | P0-09 未开始 |
 | P1 核心库与桌面壳 | 8 / 8 | 壳层/设置/基础组件视觉 PASS_WITH_TECHNICAL_DIFFERENCES；人工三轮、重启恢复、最终 Tray Quit 与清理 PASS；未实现业务页不计完成 | P1-07 DONE，组合 PASS |
-| P2 本机代理闭环 | 0 / 10 | 未开始，按各卡依赖推进 | P2-09 未开始 |
+| P2 本机代理闭环 | 5 / 10 | P2-01/P2-02A/P2-02B/P2-03/P2-04 DONE；Host FINAL ACCEPTANCE PASS，Finding CLOSED | P2-09 未开始 |
 | P3 观测与主页面 | 0 / 8 | 未开始，基础能力不计完整 DNS/分流 | P3-08 未开始 |
 | P4 完整配置能力 | 0 / 9 | 未开始，Chain 在 Routing 前交付 | P4-07 未开始 |
 | P5 DNS 与共享 | 0 / 7 | 未开始，Rules 在 DNS 后最终闭合 | P5-07 未开始 |
@@ -24,45 +82,54 @@
 | P7 数据与发布收尾 | 0 / 5 | 未开始，schema/清理按显式依赖等待 | P7-05 未开始 |
 | Windows W0–W3 | 0 / 7 | 后续排期 DEFERRED | W3-02 未开始 |
 
-macOS：**13 / 61 完成**；READY 0、TODO 47、DOING 0、REVIEW 0、ACCEPTANCE 1、BLOCKED 0。Windows 7 项 DEFERRED 单列，共 68 项。数量不等于工期权重或代码完成百分比；P1-04/P2-02/P4-05 父项被后缀子项替代，不重复计数。
+macOS：**20 / 61 完成**；READY 7、TODO 34、DOING 0、REVIEW 0、ACCEPTANCE 0、BLOCKED 0。Windows 7 项 DEFERRED 单列，共 68 项。数量不等于工期权重或代码完成百分比；P1-04/P2-02/P4-05 父项被后缀子项替代，不重复计数。
 
 ## 2 Active Tasks
 
 | Task | owner / 泳道 | 写范围 / 公共契约 | 实际资源 / 下一动作 |
 | --- | --- | --- | --- |
-| P0-05 · ACCEPTANCE | Codex /root · Runtime/Platform | `crates/veyra-helper/` 显式 `p0-05-prototype`、固定编排、P0-05 evidence/任务文档；本轮根 Cargo workspace/lock 已整合，core/公共 DTO 不改 | 系统授权 -60008，管理员入口未运行；原型 /Library/launchd/service 从未创建，普通用户 child/temp 已清。待可呈现标准管理员 UI 的本机环境补真实特权验收；不能计 DONE |
+| — | — | 无活跃任务 | P2-04 DONE；Runtime/Platform及Runtime公共契约owner/本卡预约已释放 |
 
-P0-05 历史起始 HEAD `3111a57`。历史 P1-03 起始 HEAD `f460e767957569e9f4a035132e26cc216277e98f`，工作树干净；当时只领取 P1-03；历史 P1-04A 起始 HEAD a71b664，干净；现已由 Host 提交 c184325，成为历史 P1-04B 基线；P1-04B 已由 Host 提交 f9adda4，本轮 P1-05 基线干净、完成后未提交，不启动下游。独立 label/path/socket/service/child/tmp 的现场预约已释放；补验时重新检查身份、版本与无残留。
+P2-04 Runtime/Platform及Runtime公共契约owner/本卡预约已释放；P2-03既有预约释放保持。本轮仅文档收口，未对app/root/live child或bundle/fixture操作，不声称资源已退出或已清理。
+
+P0-06/P0-05 owner与本轮隔离资源预约已释放。P0-05 历史起始 HEAD `3111a57`。历史 P1-03 起始 HEAD `f460e767957569e9f4a035132e26cc216277e98f`，工作树干净；当时只领取 P1-03；历史 P1-04A 起始 HEAD a71b664，干净；现已由 Host 提交 c184325，成为历史 P1-04B 基线；P1-04B 已由 Host 提交 f9adda4，本轮 P1-05 基线干净、完成后未提交，不启动下游。独立 label/path/socket/service/child/tmp 的现场预约已释放；补验时重新检查身份、版本与无残留。
 
 P1-07 已 DONE 并从 Active Tasks 移除，GPUI owner 与本卡资源预约释放；隔离 root/bundle 和 evidence 保留供 Host 复核，无自有 Veyra 验收进程残留。
 
 ## 3 Ready Queue
 
-本队列由主表状态与任务卡依赖计算，不按阶段或编号统一放行。写范围冲突的 READY 留在队列并注明等待；未完成普通依赖的任务仍为 TODO。
+本队列仅由完整68-card显式依赖计算；READY不等于领取或启动。
 
-| Task | 依赖满足依据 | 候选写范围 / 并行条件 | 下一具体动作 |
-| --- | --- | --- | --- |
+| Task | 依赖满足依据 | owner / 下一动作 |
+| --- | --- | --- |
+| P0-08 · READY | P0-03、P0-05均DONE；后续下载消费P0-06显式client与范围限制 | 未领取；不启动 |
+| P2-05 · READY | P2-03、P0-06均DONE | 未领取；不启动 |
+| P2-06 · READY | P2-03、P2-04、P0-05均DONE | 仅TODO→READY，未领取；不启动 |
+| P3-01 · READY | P2-03、P0-07均DONE | 未领取；不启动 |
+| P4-02 · READY | P2-01、P2-02A、P2-02B、P1-03、P1-04A均DONE | 未领取；不启动 |
+| P5-04 · READY | P2-02B、P2-03均DONE | 未领取；不启动 |
+| P5-06 · READY | P2-01、P1-05、P1-04A均DONE | 未领取；不启动 |
 
 
+当前68卡：DONE20 / ACCEPTANCE0 / DOING0 / REVIEW0 / READY7 / TODO34 / BLOCKED0 / DEFERRED7；READY仅P0-08/P2-05/P2-06/P3-01/P4-02/P5-04/P5-06，均未领取/未启动；P2-04 DONE、Finding CLOSED，Runtime/Platform及Runtime公共契约owner/本卡预约已释放。只有P2-04 ACCEPTANCE→DONE及P2-06 TODO→READY，其它状态/显式依赖不变。
 
-当前 68 卡：DONE13 / ACCEPTANCE1 / DOING0 / READY0 / TODO47 / DEFERRED7。按[完整显式依赖 DAG](evidence/p1-07/final-20261005/dag.json)重算无环、Ready Queue 为空。P1-07 DONE；消费它的 P2-09/P7-04 仍缺其他显式依赖，保持 TODO；P0-05 ACCEPTANCE、P0-06/P0-08 TODO、Windows DEFERRED 不变，未启动 P2。P1-07 实现与最终 Evidence 已由 Host 提交为 `25eb020`；其后仅有本交接页元数据更新，工作树干净，未 push。
-
+**P2-03当前契约**：正式运行配置必须调用P2-02B `compile_product(ProductCompileRequest { state, runtime_intent, default_outbound, resources })`，显式消费 `project_selected_runtime()` 的 `runtime_intent` / `projected_default_target`（转换为 `OutboundId`）；不得继续使用 `application/runtime.rs` 现有ObservationOnly `compile(...)`作为正式运行配置。参见[P2-03任务卡](P2-local-proxy.md#obg-p2-03)。已实现并由Host最终确认功能与视觉“符合”；本轮仅文档收口，不启动下游。
 
 ## 4 Blocked
 
-当前没有实际 BLOCKED。普通依赖未完成和未启动原型不伪标为外部阻塞；实际遇到问题后填写下表。
-
-| Task / owner | 实际阻塞原因 | 解除条件 / 下一动作 | 受影响任务 |
-| --- | --- | --- | --- |
-| 无 | — | — | — |
-
-后续限制按卡追踪：P1-04A 已验证 nested Select/Escape/focus 与用户 IME；MiSans desktop 资源未锁定、card backdrop 仍明确差异，macOS 15 实机及历史受控 blur/截图缺口保留于 P0-03；P0-04/07 已核实内核/缓存/观测/DNS 边界，出站 P0-06 待办；管理员 helper P0-05 原型已实现，但标准授权 -60008 待补特权验收；首次打开 P0-08、新版估算 P0-09。GitHub 无发布签名/公证和旧门禁退役已由 P0-02 记录，无补办流程前置。
+没有BLOCKED任务；P2-04 DONE、P2-04-PENDING-PERSISTENCE-001及前轮P1/P2 Finding CLOSED，owner/预约已释放；P2-06 READY但未领取/启动。P2-04独立Git提交隔离曾BLOCKED，仅为当时版本控制基线阻断；现已随七任务提交链整合解除，不将已验收Task改为BLOCKED。P2-03-BACKEND-BASIC-SETTINGS-004/P2-03-VISUAL-FULL-PAGE-002/P2-03-VISUAL-FIDELITY-003 CLOSED，Host已确认Basic2 build功能与视觉“符合”；BUSY-001历史不改写。P2-01-VISUAL-FULL-PAGE-001 CLOSED，Host已确认build38-final完整页面“符合”。P0-05原卡真实GUI owner缺口已关闭，E按原始定义PASS；executable/service/root-total-deadline均optional hardening NOT_RUN。历史macOS15实机、字体/blur/截图等限制保留于原任务证据，不伪造新结果。
 
 ## 5 基线与验证记录
 
-| 字段 | 当前值 |
+上轮P0-06基线（历史）：branch `codex/dist-react-restore` / HEAD `18a54d26ca171c1b00cc497b233c6f493aac43a9`，仅本卡core出站原型/测试/只读工具及文档/evidence，附带最小既有test clippy修订。开始已有dirtytree全部保留，P0-05 437文件与卡片区段SHA不变。下表P0-05历史行按各轮当时事实保留。
+
+| 字段 | 当前基线 / 按日期保留的验证记录 |
 | --- | --- |
-| 当前分支 / 提交基线 | `codex/dist-react-restore`；P1-07 Host acceptance commit `25eb020c349fdc8f716bd5a991d37b1eb407aae7`，其后仅有 SESSION 元数据提交；工作树干净，未 push |
+| P0-06 本次验证 | [完整出站/范围调查](evidence/p0-06/20261006-144632/README.md)：新增9、默认core294/feature303串行、subscription68/bridge14/observation1、helper47与指定check/clippy/fmt/diff PASS；真实Direct/自有mixed两HTTPS均返回104.28.196.30，route仍utun7仅外部TUN观测。四组合UNSUPPORTED/INCOMPLETE明示；cleanup/主网络hash/P005保护/独立review PASS；原并行Document Busy与初轮fixture/clippy FAIL保留 |
+| 历史分支 / Host收口时提交基线 | `codex/dist-react-restore` / `0230aa72539375b622422e0e76e009a399b81669`；P2-01～P2-04基础仍有大量未提交/未跟踪内容，当前index无已暂存修改。P2-04 DONE但独立可重建提交隔离BLOCKED，未stage/commit、index不动；待Host后续基线整合，无下游启动 |
+| 当前分支 / 文档同步起点 | `codex/dist-react-restore` / `fdb8930a010ed321e496caa62a98257c64031b8a`；七任务提交链与远端历史合并已完成，产品文件树与 `dcc9b7b2` 一致；本轮仅四份文档同步，`.gitignore`、`AGENTS.md`、`.DS_Store` 保持原样 |
+| P2-04 当前 Host FINAL ACCEPTANCE | [收口与receipt](evidence/p2-04/final-host-closeout-20261008/README.md)：Host PASS、三Core aggregate 987a0178…及harness精确匹配，77事件/14原命令/Native与限定注入PASS，Host新复跑Core371/Desktop85 exit0；Task DONE、Finding CLOSED、owner/预约释放。本轮仅静态文档验证，源码/harness SHA不变、Native/GUI/cleanup NOT_RUN |
+| P0-06历史执行基线 | `18a54d26ca171c1b00cc497b233c6f493aac43a9`；local history rewrite前的历史身份保留，不冒称当前HEAD |
 | 新路线实现基线 | P1-07 起始基线 b982e8d；最终 visual build SHA 8bd7a366d24fa2eff8bf78e22604f461030cedae9d1184c11a28ca8eb4f5c28d；Host acceptance commit `25eb020`；[build identity](evidence/p1-07/final-20261005/build-identity.json) 的源码身份与提交内容一致 |
 | 方案调查基线 | `bda242a920d471b9598f98b57dde5d7c2505c35e`；只作原调查身份，不能当当前 HEAD |
 | P0-01 交付（历史保留） | [最终验收](P0-01-baseline.md#current-acceptance)：8 当前源码 PNG、18 新真实脱敏 case、视觉数据、manifest/audit；四项 PASS |
@@ -75,13 +142,17 @@ P1-07 已 DONE 并从 Active Tasks 移除，GPUI owner 与本卡资源预约释�
 | P0-04 本次真实验证 | [真实内核交付](P0-feasibility.md#p0-04-delivery)：官方 1.14.0 arm64 digest、5 configs check、4 child 动态 controller/鉴权/SIGTERM 清理、selector/FakeIP restore、关闭 writer handoff PASS；存在对账前窗口；[validation](evidence/p0-04/validation.json)含 core check/脱敏/JSON/DAG/links/diff；仅同版本/cache_id/tag/pool/range |
 | P0-07 本次真实验证 | [本地 Observation 交付](P0-feasibility.md#p0-07-delivery)：固定 archive/source、四 WS、traffic 两 burst/reconnect、long/short、DNS records/flush/hot rewrite、局部诊断 PASS；[validation](evidence/p0-07/validation.json)含 JSON/AST/脱敏/core check/68 DAG/links/diff/cleanup；首轮 checker FAIL 保留，无产品 Rust 改动 |
 | 保留的限制 | candidate-window/tray screenshot 与独立前台 focus 缺证据、受控 window blur 对照缺失；card-level backdrop blur、MiSans、nested dropdown、macOS 15 实机未验证，不阻止 P0-03 DONE；Windows 仍 DEFERRED |
-| P0-05 本轮原型 | [授权与平台证据](evidence/p0-05/README.md)：macOS 27 arm64 / minos 15.0 / adhoc，固定内核/manual FD、普通用户 OS peer/NOTE_EXIT PASS；管理员授权失败 -60008，所有 root/network 实测 NOT_RUN，ACCEPTANCE；现场干净 |
+| P0-05 历史原型（2026-10-04） | [授权与平台证据](evidence/p0-05/README.md)：macOS 27 arm64 / minos 15.0 / adhoc，固定内核/manual FD、普通用户 OS peer/NOTE_EXIT PASS；管理员授权失败 -60008，所有 root/network 实测 NOT_RUN，ACCEPTANCE；现场干净 |
+| P0-05 Desktop 补验（2026-10-06） | [真实批准/启动失败](evidence/p0-05/desktop-privileged-20261006-113208/README.md)：两次标准 UI 批准、安装/卸载执行，socket startup timeout；隔离 Service disabled/not-in-set 创建并删除，独立 cleanup PASS、主用网络 hash 不变。5 定向测试/prototype check/build/clippy/fmt/core check PASS；root IPC/child/Proxies/真实 GUI 未执行，保持 ACCEPTANCE |
+| P0-05 新路径复验（12:03 起） | [真实取消/复制修复/待批准](evidence/p0-05/desktop-pathfix-20261006-120343/README.md)：USER_CANCELLED -128 PASS、取消后 manual PASS；初轮安装 owner 错误、标准 UI 固定清理 PASS。14 Rust/2 Python/指定检查/独立代码 Review PASS；修复后 UI 未见/240s 超时，新路径 daemon/socket/A–E 尚未完成。最终独立 cleanup PASS、主用网络三组 hash 不变，ACCEPTANCE |
 | P1-04B 本次验证 | [行为偏好交付](evidence/p1-04b/README.md)：293 core/24 desktop；规定 check/build/clippy/fmt、resource override workspace check/旧 lib clippy/tree PASS；实际字段编辑/校验、两轮真实冲突 rebase、磁盘失败 Retry、两轮重启和9张图通过；无网络/TUN/内核操作 |
 | P1-05 本次验证 | [平台交付](evidence/p1-05/README.md)：294 core/33 desktop，规定构建/检查与脱敏截图 PASS；真实五次 secondary active/key、busy unconfirmed、SIGKILL/stale恢复、原生 Open/Save Cancel/Accept、边界拒绝、Cmd+V/已物化 payload 恢复、loopback OS handoff；正常退出 socket 修复后 PASS。额外旧 clippy 原资源 FAIL/override PASS 明示；所有 task root/进程已清，无系统代理/TUN/内核/公网动作 |
 | P1-05 Host Review 修订 | [修订证据](evidence/p1-05/README.md#host-review-revision)：仅三处边界修复及证据措辞；新增 3 Desktop 回归，修复前均 FAIL，修复后 294 core / 36 desktop、用户指定检查与旧 lib clippy PASS。既有 GUI/源码身份保留，本轮未重跑 GUI；P1-06 保持 READY/未开始，无 commit/push、公网、sing-box/System Proxy/TUN |
 | P1-06 人工验收收口（2026-10-04） | [User/Host manual acceptance](evidence/p1-06/host-manual-acceptance.json)：V 图标、真实菜单/准确未接入状态/灰色禁用启停、连续三轮关闭→托盘恢复、最终托盘退出均人工 PASS；Host 已查看两张截图，未复制入仓库，无本地图片/SHA。用户确认 Host 此前独立复核及 41 Desktop/294 Core 与指定检查全部 exit 0；本次不复跑产品验证，窗口 Quit 清理与托盘人工结果分开 |
 | P1-07 最终收口 | [Host 复核](evidence/p1-07/final-20261005/host-final-review.json)：视觉 PASS_WITH_TECHNICAL_DIFFERENCES、组合 PASS，三项 blocker 已处理；[最终人工重启/退出](evidence/p1-07/final-20261005/human-host-final-restart-quit.json) 及 process/socket/flock cleanup PASS。首跑 Desktop 44 PASS/1 FAIL 保留，定向5/5、单线程45/45、默认并行45/45 PASS；仅记未复现的瞬态测试环境/flock 时序失败，目前无稳定回归证据，根因未证明；原日志不改 |
-| 下一里程碑 | P0-09 仍等待显式前置；当前 READY 为空，不启动后续 Task |
+| 下一里程碑 | P2-02B DONE；P2-03 ACCEPTANCE等待Host；P0-08/P4-02/P5-06 READY且未领取/启动 |
+
+| P0-05最终GUI验收（2026-10-06） | [真实 GUI owner 最终验收](evidence/p0-05/gui-owner-final-20261006-142752/README.md)：Host确认ready窗口，GUI/marker/helper owner74759一致，child74789/ports59100–59101/FD3 ready，SIGKILL→owner_NOTE_EXIT/exactrestore/childcleanup/finalcleanup/mainhash unchanged PASS；13条命令exit0（9GUI+47helper+2Python，默认GPUI0 tests不计用例PASS），独立Review PASS。A–E原卡PASS，optional三项NOT_RUN；DONE/owner释放，仅两个下游READY |
 
 ## 6 里程碑记录
 
@@ -96,6 +167,18 @@ P1-07 已 DONE 并从 Active Tasks 移除，GPUI owner 与本卡资源预约释�
 - [ ] Windows 单独排期及设备验收完成。
 
 ## 7 最近记录
+
+2026-10-07 文档/evidence收口：Host独立审查和当前源码验证PASS；P2-02A第三项以Compiler/selected/runtime projection消费及唯一query seam交付满足，本层不得反向等待依赖它的P2-08实际UI集成。消费者gap CLOSED（SCOPE_RESOLVED/DEFERRED_CONSUMER_INTEGRATION），P2-02A DONE/owner释放。仅改三份任务文档与新增收口evidence，未改产品代码/重跑产品测试/启动下游；旧FAIL和自查历史保留。DAG依赖不变，DONE17/READY3/TODO41/DEFERRED7，READY=[P0-08,P2-02B,P5-06]。见[收口](P2-local-proxy.md#p2-02a-closeout)。
+
+2026-10-07 初次实现交付（历史）仅P2-02A：Base OutboundCatalog/类型化OutboundId、统一图校验、application查询快照/service seam、既有projection与Compiler消费完成；313 Core/48字节回归/指定check-clippy-fmt-diff PASS，实现者自查无未修复代码Finding，正式ProxyService/Proxy UI尚不存在，P2-02A-CONSUMER-001 OPEN。第三卡项未全勾，ACCEPTANCE/owner保留，交Host Review；68卡DONE16/ACCEPTANCE1/READY2/TODO42/DEFERRED7，READY=[P0-08,P5-06]；无下游/commit/push。初轮编译FAIL与311/1错误优先级回归保留并已修复。见[交付](P2-local-proxy.md#p2-02a-delivery)。
+
+2026-10-06 本轮仅 P2-01 READY→DOING→ACCEPTANCE：复用既有订阅服务、provider replacement、Direct fetch 与单一 JSON 事务；新增正式预览/重校验保存、Direct CAS 刷新/编辑/删除和 Settings → Subscriptions。Core304/Desktop67 串行 PASS、定向 core45（新增10在最终全量覆盖）、bridge/model、P0-06 outbound9、check/clippy/fmt PASS；初轮 fixture/compile/clippy FAIL 日志保留。实现者按 code-delivery-review 自查，无未修复代码 finding；全部缺失的真实 GUI/浅深色/截图留 NOT_RUN。P0-05/P0-06 历史不改；owner 保留，仅 P0-08 READY，P2-02A/其余下游未启动，未 commit/push。见[交付](evidence/p2-01/README.md)。
+
+2026-10-06 14:27起最终GUI owner验收收口：P0-05 DONE、owner释放，READY=[P0-06,P0-08]，未启动下游、未commit/push。以下为各轮当时记录，历史失败/缺口不改写。
+
+2026-10-06 12:03 起仅 P0-05 新路径实机复验：保留 Host 修复与历史 evidence，取得真实 UI cancel -128/Host 确认和取消后 manual PASS。初轮批准安装在 bootstrap 前被 owner 保护检查拒绝；独立诊断证实 fs::copy 保留业务 UID，部分安装先经标准 UI 固定 SHA/type/空 runtime/无 endpoint 等检查安全卸载，现场独立清理 PASS。只把 helper/kernel 改为 root 安装进程 create_new/0600 后复制字节，原 hash/mode/protected 保留，新增一项纯回归；14 Rust/2 Python/指定检查及独立代码 Review PASS。修复后批准调用 240 秒超时，Host 未见授权窗口，立即停止特权分支；root IPC/child/代理恢复/owner/安全拒绝尚未执行。最终清理 PASS、主用网络三组 hash 不变；68 卡 READY=[]、P0-05 ACCEPTANCE，未释放 owner、未启动下游、未 commit/push。见[本轮报告](evidence/p0-05/desktop-pathfix-20261006-120343/README.md)。
+
+2026-10-06 仅 P0-05 真实特权补验：标准授权 UI 可显示，两次实际批准均执行固定安装/卸载，但原 linker-signed 及 explicit ad-hoc staging 候选均未建立 daemon socket。平台日志与缺失退出诊断、无真实取消/root IPC/child/代理恢复/GUI SIGKILL 样本如实保留；未把 CLI owner 当成 GUI。候选签名经独立 Review 后实测失败，已移除工作源码改动，最终只更新本卡文档/evidence。独立清理 PASS、主用网络三组 hash 不变；68-card DAG DONE13/ACCEPTANCE1/TODO47/DEFERRED7、READY 空，P0-06/P0-08 未解锁/未启动，未 commit/push。见[本轮报告](evidence/p0-05/desktop-privileged-20261006-113208/README.md)。
 
 2026-10-04 全局 UI 视觉迁移规范（仅文档）：更新 AGENTS.md、长期开发规范、方案 §9.3/§9.4 与迁移退役说明、P1-07 验收及本交接页。新增唯一 React/CSS 视觉事实来源、固定值精确迁移、GPUI Kit 外观覆写、字体/图标同源、95% 最低工程目标与逐页面/核心状态对照、Tokens/共享组件体系及视觉参考退役条件。P1-07 下一动作先审查当前壳层/设置视觉与组件体系，Proxies/Connections/Logs/Rules 留各自后续任务验收；仍唯一 READY、未领取/启动。68 卡状态/依赖不变：DONE12 / ACCEPTANCE1 / READY1 / TODO47 / DEFERRED7。本次不改产品源码、不运行 GUI/产品测试/构建、不访问公网或远端参考、不 commit/push。
 
@@ -126,7 +209,7 @@ P1-07 已 DONE 并从 Active Tasks 移除，GPUI owner 与本卡资源预约释�
 P0-03 Host 追加确认：对绿色托盘图标、三轮显示/隐藏、菜单状态更新和退出回复“完成”；退出后精确进程检查无残留。按 Host 报告记录，不代替缺失的托盘截图/关闭后前台 focus 与 IME 证据。
 
 
-2026-10-04 P0-03 Host/User Manual Acceptance：用户亲手完成真实中文输入（单行 Input 与 Modal Textarea）及托盘点击并确认可用，明确要求“就当验收通过了”。四项卡验收 PASS、P0-03 DONE；既有 IME candidate/composition、tray screenshot/focus、controlled blur LIMITATION 和无资源覆盖 workspace check FAIL 保留，不补造截图。两条指定 cargo check 本次复跑 PASS；[完整验证](evidence/p0-03/validation.json)。按 68-card DAG 重算 macOS DONE 5、READY 2、TODO 54、ACCEPTANCE 0；Windows DEFERRED 7。P0-04/P1-03 READY，P0-05 TODO；未启动下游、未改原型功能代码、未访问 OpenBox 远端、未运行真实 sing-box、无 commit/push。
+2026-10-04 P0-03 Host/User Manual Acceptance：用户亲手完成真实中文输入（单行 Input 与 Modal Textarea）及托盘点击并确认可用，明确要求“就当验收通过了”。四项卡验收 PASS、P0-03 DONE；既有 IME candidate/composition、tray screenshot/focus、controlled blur LIMITATION 和无资源覆盖 workspace check FAIL 保留，不补造截图。两条指定 cargo check 本次复跑 PASS；[完整验证](evidence/p0-03/validation.json)。按 68-card DAG 重算 macOS DONE 5、READY 2、TODO 54、ACCEPTANCE 1；Windows DEFERRED 7。P0-04/P1-03 READY，P0-05 TODO；未启动下游、未改原型功能代码、未访问 OpenBox 远端、未运行真实 sing-box、无 commit/push。
 
 2026-10-04 P0-04 DONE：固定官方 v1.14.0 macOS arm64 archive digest 匹配后运行；5 config checks / 4 child，动态 controller 从本 child 日志取得，鉴权 200/无鉴权 401；selector/FakeIP 及 closed-writer handoff 全通过、空缓存对照排除假恢复。restart/handoff 对账前窗口 22.990292/14.466458 ms；正式及试探资源已清理。68-card DAG：DONE 6、READY 3、TODO 52、Windows DEFERRED 7；READY P0-05/P0-07/P1-03、P0-06 TODO。前期字段 check FAIL 与试探配置未捕获 hash 的限制保留；sandbox 网络更新监听受限，不声称正式 Runtime/网络监听已实现。无系统设置修改、TUN run、公网协议测试、后续 Task、commit/push；[完整记录](evidence/p0-04/README.md)。
 
@@ -165,3 +248,45 @@ P0-03 Host 追加确认：对绿色托盘图标、三轮显示/隐藏、菜单�
 
 2026-10-05 P1-07 最终 Host 验收收口 DONE（仅文档/evidence）：同 8bd7a366 build 最终视觉/AX/comparison 与人工查看齐备，无新的可修视觉 blocker，MiSans/NotoEmoji fallback、element-level Card/Modal backdrop blur、少量 UA 栅格差异继续为 TECHNICAL_DIFFERENCE；Tokens/Theme → 基础组件 → NavigationItem/CompactSetting/Section → 页面保留。明确人工 Show #1 → Close → Show #2 → Close → Show #3 → Close → Tray Quit 及 Host post-check PASS，旧 first-launch Show2/Close3 日志不改写。相同 Mach-O bundle/root 重启 PID94362，Light/6600ms/IPv6on、snapshot_loaded、单 primary/writer、state bytes 不变 PASS；用户“最终退出完成”后 Tray Quit，Host PID gone/socket absent/flock free PASS，瞬态 PID96193 不计残留。Host 首跑 Desktop44/1 FAIL 与后续5/5、45/45、45/45 PASS 分别保留，根因未证明；Core294及指定检查 PASS 不覆盖旧日志。六项验收勾选、owner 释放并移出 Active Tasks。68 卡 DONE13 / ACCEPTANCE1 / READY0 / DOING0 / TODO47 / Windows DEFERRED7，无环、无新 READY；P0-05/P0-06/P0-08 与后续业务页状态不变。未修改源码/Cargo/assets/测试/AGENTS.md/长期规范，未删 Legacy 或 Host 复核文件，未 commit/push，未启动 P2/公网/sing-box/System Proxy/TUN。见[最终交付](P1-core-and-shell.md#p1-07-final-closeout)及[文档验证](evidence/p1-07/final-20261005/closeout-validation.json)。
 2026-10-05 P1-07 Host 提交：最终实现、共享组件、Heroicons 资产、完整视觉/交互 Evidence 与 DONE 状态由 Host 提交为 `25eb020c349fdc8f716bd5a991d37b1eb407aae7`；其后仅提交本交接页元数据，不改变 P1-07 实现或验收身份。未 push，P2 未启动。
+
+2026-10-06 12:35 起仅 P0-05 owner 修复后批准复验：Host真实看到标准UI并批准，正常构建776d…无额外签名。helper/kernel uid0/gid80、0755、不可写/hash正确，runtime0700、固定plist参数与业务UID/GID登记正确；launchd PID26627 running/execs1、root harness取得socket0600与完整Proxies snapshot。daily cycle exit1/errno22，聚合stdout空不能定位operation或断言无Start/写入；专门owner/安全拒绝未进入。当前固定path日志CT错误仍出现，另有exec allowed/legacy daemon，无PrivilegedHelperTool/-423观察。固定harness卸载和独立cleanup PASS，主用网络三hash unchanged，14 Rust/2 Python/全部指定自动验证PASS。一次性observer漏识别osascript的false/null已新增errata，raw保留。本轮无源码/DAG修改，状态/owner不变，READY=[]、未启动下游、未commit/push。见[本轮证据](evidence/p0-05/desktop-ownerfix-approved-20261006-123513/README.md)。
+
+2026-10-06 12:59起P0-05分阶段诊断真实复验：当前正常构建ce84558e…仅一次标准UI真实批准。NDJSON唯一step为cycle1/step1/Status/client.read/client_error，明确read_frame:358 set_read_timeout(Some(remaining)) errno22，前序成功空、Start未请求。root安装/daemon/socket仍实际建立；无root业务child/recovery/managed写入，专门owner/rejection/conflict未进入。固定uninstall失败preserve resources；RecoveryRequired，ROOT/plist/注册label/disabled隔离Service仍在，daemon exited0/socket/recovery absent；fresh独立SC API回读完整Proxies==snapshot且非Set/主用v4v6，主用网络三hash不变。23 Rust/2 Python及所有指定offline验证PASS。只定位，不修改源码/权限/签名/路径或DAG，未启动下游、commit/push。见[新证据](evidence/p0-05/desktop-errno22-localized-20261006-125933/README.md)与[后续卸载指南](evidence/p0-05/desktop-errno22-localized-20261006-125933/RECOVERY.md)。
+
+2026-10-06 13:20 两阶段 P0-05 复验：先经旧SHA helper标准UI卸载并独立清理PASS，再正常构建read_frame修复版完成真实批准。daemon/socket与首步Status PASS，第二步StartSystemProxyTest.child_readiness timeout；没有recovery/network_write，完整A–E未满足。最终独立cleanup/hash unchanged，Rust30/Python2及八条命令PASS；独立Review另列限制。保留ACCEPTANCE/owner，READY=[]，未改源码、未启动下游、未commit/push。[本轮证据](evidence/p0-05/desktop-readframe-fix-20261006-132202/README.md)。
+
+2026-10-06 13:41 当前readiness版本真实复验：一次标准UI批准、root安装/daemon/socket/Status PASS。cycle1 step2 readiness=child_exited，child PID/PGID52916，业务real/effective UID/GID正确，731ms exit1/raw256；stderr81bytes EOF，明确 `read config at /dev/fd/3: open /dev/fd/3: permission denied`。未到recovery/managed代理写入，固定卸载与独立cleanup/hash unchanged PASS；40 Rust/2 Python及八条指定命令PASS。完整C失败、A–E未全部满足，保留ACCEPTANCE/owner/READY=[]，不改源码/依赖、不启动下游、未commit/push。[本轮诊断与独立Review](evidence/p0-05/desktop-readiness-diagnostics-20261006-134101/README.md)。
+
+2026-10-06 13:59 FD3 anonymous pipe当前版本一次标准批准复验：root安装/daemon/socket/Status PASS，anonymouspipe425bytes/root0600、两轮child身份/readyports/auth PASS，8 daily steps全部ok/two_cycle_exact_restore。CLI prototype owner transientdisconnect保持、SIGKILL/NOTE_EXIT/restore/reaped/group/listener及externalPAC conflict/harnessfinalsnapshot PASS；固定卸载与独立allabsent/main3hash unchanged PASS。Rust47/Python2及八命令PASS；E真实仅pid/path/RunShell/>4096加nobody/rootcaller，executable/service/真实root总deadline仍NOT_RUN，原卡GUIowner未冒充。保持ACCEPTANCE/owner/READY=[]，不改源码/签名/权限路径、不启动下游、未commit/push。[本轮完整证据与独立Review](evidence/p0-05/desktop-fd3-pipe-20261006-135940/README.md)。
+
+2026-10-06 P0-06 READY→DOING→DONE：仅领取应用自身出站原型，复用subscription/fetch，feature中typed Direct/ViaRunningProxy、固定IP TLS DoH、跨源凭据清除、无fallback、无订阅自举完成。保护现有external TUN，仅只读/自有loopback mixed及自身公网请求；SystemProxy ON未试验、TUN OFF/managed bypass未试验，原卡4允许明确范围决定并保留INCOMPLETE/UNSUPPORTED。全部适用验证、独立review、资源cleanup PASS；P005源码/card/evidence SHA保持不变。68卡重算DONE15/ACCEPTANCE0/READY2/TODO44/DEFERRED7，READY为P0-08/P2-01；owner释放，仅更新READY不启动、不commit/push。完整证据见[evidence](evidence/p0-06/20261006-144632/README.md)。
+
+2026-10-06 P2-01 最终真实GUI收口：隔离root+loopback fixture+正式arm64/minos15 .app完成Preview/Save/Edit/Refresh/Delete、partial、无持久化、stable NodeId、失败保旧、ReferenceConflict、stale generation、busy/error/retry、Host中文IME/focus/Escape、Light/Dark五态、三语与重启；既有字体/blur技术差异保留。仅本页有界修复；Core304/Desktop68/outbound9及check/clippy/fmt/diff、独立Review、最终cleanup PASS。P2-01 DONE/owner释放，68卡DONE16/ACCEPTANCE0/READY3/TODO42/DEFERRED7；READY为P0-08/P2-02A/P5-06，未启动、未commit/push，P0-05/P0-06历史不变。[完整验收](evidence/p2-01/gui-final-20261006-180816/README.md)。
+
+DAG计数说明：按P5-06原卡与总表既有显式依赖，P2-01完成后P5-06也READY；因此完整68-card实际为READY3/TODO42，与预期READY2/TODO43不同。未增加/修改依赖或启动P5-06。
+
+2026-10-06 Host Finding重开P2-01：原功能PASS继续有效，上一轮gui-final evidence原样保留；订阅UI未复刻Finding需重新按React/CSS审计和验证，旧视觉PASS不再最终有效。P2-01 ACCEPTANCE/visual owner=Codex Desktop · GPUI visual parity；P2-02A/P5-06 TODO，READY仅P0-08，不启动下游。
+
+2026-10-06 P2-01视觉Finding最终关闭：build23拒绝保留；build29补输入说明、DNS11px/32px输入与原版hint、默认折叠、去Preview区域、自然高度/溢出滚动；Host“符合”。合并tabs及一次SaveDraft复用Core原合同，Busy输入/关闭锁定Finding修复。最终浅深色/真实GUI/三语/同root12条目重启bytes一致/cleanup、Core304/Desktop69/outbound9与check/clippy/fmt/diff、Independent Review PASS。ACCEPTANCE→DONE/owner释放；完整68卡DONE16/ACCEPTANCE0/READY3/TODO42/DEFERRED7，无环；READY=P0-08/P2-02A/P5-06，未启动。P0-05/P0-06历史与无关dirty未修改，未commit/push。[最终视觉交付](evidence/p2-01/visual-parity-20261006-190927/README.md)。
+
+
+2026-10-06 P2-01 FULL-PAGE-001完整页面修复：Share/五actions/health dots/真实只读节点grid与完整Source/Rules/Nodes、DNS/periodic/Rules未来能力禁用壳；最终build16 Core304/Desktop70/outbound9及check/clippy/fmt/diff PASS，源码独立Review PASS。1280×720当前真实缩放浅深色完整页面/编辑器/Loading/Error/Busy已采集；仅待Host明确完整页面确认，保持ACCEPTANCE/owner，READY仅P0-08。不启动下游、无commit/push；[本轮矩阵与报告](evidence/p2-01/full-page-20261006-214140/README.md)。
+
+
+2026-10-06 22:43 Host完整页面复核：回复“仍有偏差”，Finding P2-01-VISUAL-FULL-PAGE-001继续OPEN，P2-01继续ACCEPTANCE，owner保留。当前工程/自动/Independent Review PASS不代替Host视觉确认；正在请求具体偏差位置，保持隔离现场。DAG不变：DONE15/ACCEPTANCE1/READY1/TODO44/DEFERRED7，仅P0-08 READY。
+
+
+2026-10-06 P2-01 Host具体偏差：暗色节点卡片亮色刺眼。当前build17按用户本地原版实际DOM修复，仅本页node_grid颜色/对应tokens，Light不变；Core304/Desktop70/outbound9及指定九命令PASS。主列表/Editor真实浅深色重采；[build17实测和修复](evidence/p2-01/full-page-20261006-214140/DARK-NODE-REWORK-BUILD17.md)。仍ACCEPTANCE/Finding OPEN，等待当前Host确认，未启动下游/commit/push。
+
+2026-10-07 P2-01最终收口：Host明确确认build38-final完整订阅页面“符合”，executable SHA256 `de220c173fb4cd70163419e93a54d34324b4dbf53617a87e46b32be8fafcbff3`。ACCEPTANCE → DONE、Finding OPEN → CLOSED，owner Codex Desktop · Full Subscription UI Parity释放；历史FAIL/REWORK/局部批准/PENDING/build保留。68卡DONE16/READY3/TODO42/DEFERRED7，其余状态0；READY P0-08/P2-02A/P5-06均未领取/启动。cleanup NOT_RUN（ps被沙箱拒绝），app/fixture及隔离状态保留。文档/DAG/工作树保护与diff检查见[最终证据](evidence/p2-01/final-closeout-20261007-122027/README.md)。
+
+2026-10-07 P2-02B READY→DOING→DONE：仅Core/Config owner，复用既有Compiler/Catalog；产品loopback mixed/controller/cache、Profile选项与独立health计划/兼容schema9完成。14定向/327 Core及指定检查、四个locked-v1.14.0真实check PASS；初次FAIL/跨pool DNS detour自查修正记录保留。释放owner，DAG18DONE/4READY/39TODO/7DEFERRED，无环依赖不变；READY=P0-08/P2-03/P4-02/P5-06均未领取/启动。无run/Runtime child/SystemProxy/TUN/helper/UI/Git写操作；仅本轮私有候选/内核临时资源清理，历史cleanup NOT_RUN不改写。见[P2-02B交付](P2-local-proxy.md#p2-02b-closeout)。
+
+2026-10-07 P2-02B Host独立review最终收口：Finding FIXED_PENDING_HOST_REVIEW→CLOSED、Task ACCEPTANCE→DONE、Codex Core/Config owner释放。原依赖逐卡核对/无环/68卡计数一致；P2-03/P4-02仅READY。仅文档/evidence，不改产品源码，不重跑Cargo/候选/真实child/UI/网络。[Host收口记录](evidence/p2-02b/host-closeout-20261007-132657/README.md)。
+
+
+2026-10-07 P2-03最终Host收口（仅文档/evidence）：Host确认Basic2 `59280c3146502e1b9474d08f976d807cfae4390751493badf9f89aeca9b325c4` 功能与视觉“符合”；BASIC-SETTINGS-004 FIX_PENDING_HOST→CLOSED，FULL-PAGE-002/FIDELITY-003 OPEN→CLOSED，P2-03 ACCEPTANCE→DONE，Runtime/Platform + GPUI及Runtime公共契约owner/本卡预约释放。完整68卡DONE19/READY7/TODO35/DEFERRED7，其余0；新增READY P2-04/P2-05/P3-01/P5-04，全部未领取/启动。BUSY-001与历史失败/REWORK/候选保留，当前app/runtime资源不操作；仅本轮文档校验，不重跑产品测试/GUI/内核/网络，不执行禁止Git操作。[最终证据](evidence/p2-03/final-closeout-20261007-164453/README.md)。
+
+2026-10-07 P2-04 P1 Finding修复：原DONE撤销；业务Manual SelectionPolicy原子保存pending，begin→controller/read-back→confirm两阶段CAS，selection revision +2、config/applied不变；不确定/确认保存失败保留pending，重建owner/Stopped仍可见。ApplySaved/RestoreLastSuccessful先GET actual，等于pending确认、等于old/default清除，其余不PUT/不Ready；解决后的版本同步active/manifest confirmed。Core361/Desktop85及指定检查PASS，3 Native ignored、真实中断/重启 NOT_RUN；新initial FAIL/最终PASS分开保留，旧evidence未写入。P2-04 ACCEPTANCE、P2-04-PENDING-PERSISTENCE-001 FIXED_PENDING_HOST_REVIEW、Runtime/Platform owner保留，DAG DONE19/ACCEPTANCE1/READY6/TODO35/DEFERRED7；P2-06 TODO，无下游启动。见[修复契约](P2-local-proxy.md#p2-04-pending-persistence-fix)与[fix evidence](evidence/p2-04/pending-persistence-fix/README.md)。
+
+2026-10-08 P2-04同一P1 Finding第二边界：旧plan没有当前pending pool时，candidate静态检查先于prepare/旧writer停止，显式ReconcileSelection同样拒绝；循环期间剩余pending由最新业务快照最终gate阻止Ready。新增5自动测试保护v11/v12 manifest失败可达场景、已有child不动、多个pending部分覆盖不CAS、完整ApplySaved确认、Restart裁剪pool、prepare/read期间变化与已有CAS保留。Core366/Desktop85、check/clippy/fmt/diff PASS；初始2失败及版本断言365 PASS/1 FAIL日志保留。状态/owner/依赖不变，Native/桌面NOT_RUN。

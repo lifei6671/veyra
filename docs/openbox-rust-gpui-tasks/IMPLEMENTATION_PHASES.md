@@ -6,7 +6,7 @@
 
 ## 1 当前基线与范围
 
-- 新路线共 **61 个 macOS 任务、7 个 Windows 后续任务**，包括各阶段验收任务。当前完成 12 项（P0-01、P0-02、P0-03、P0-04、P0-07、P1-01、P1-02、P1-03、P1-04A、P1-04B、P1-05、P1-06）；基线、核心抽取和 GPUI 原型验收通过，P0-03 于 2026-10-04 经用户人工确认收口；P0-04 的真实 macOS 内核/controller/cache 验收通过；P0-07 的本地 Observation/DNS/诊断能力核实完成；P1-05 平台交付完成，P1-06 于 2026-10-04 经 User/Host 真实托盘操作与截图确认收口；helper 隔离原型已实现；标准系统授权返回 -60008，特权实测待验收。
+- 新路线共 **61 个 macOS 任务、7 个 Windows 后续任务**。当前完成 **20项**：P0-01至07、P1全部8项、P2-01/P2-02A/P2-02B/P2-03/P2-04；P2为 **5/10**、macOS为 **20/61**。P2-04 Host FINAL ACCEPTANCE PASS，P2-04-PENDING-PERSISTENCE-001及前轮P1/P2 Finding CLOSED，Runtime/Platform及Runtime公共契约owner/本卡预约释放；见[Host最终收口](P2-local-proxy.md#p2-04-final-host-closeout)。READY=P0-08/P2-05/P2-06/P3-01/P4-02/P5-04/P5-06，全部未领取/未启动；其余任务状态/依赖与历史PASS/FAIL/REWORK/NOT_RUN保持。
 - 已有 React UI 和旧 Rust 模块是迁移输入，不直接算 GPUI 新路线完成。P0-02 的完成仅指本次明确要求的范围/规则调整，该历史文档动作不计功能实现；现 P1-01 已完成核心抽取，P1-02 已完成类型/原子快照与版本。
 - 当前已建立根 Cargo workspace、单一 Cargo.lock 与 `crates/veyra-core/`；旧入口接共享核心。实际构建/纯测试见 P1-01 记录，不表示原型或真实设备验收完成。
 - 旧 SDLC 状态与 UI 门禁已按用户要求退役；不恢复缺失文件，不补办历史 DCR/UI Contract。当前进度以本目录为准。
@@ -87,7 +87,7 @@ Task：OBG-Px-xx
 
 ## 4 任务状态总表
 
-“估算”在 P0 出口回填人日及假设；当前的 `—` 表示尚未估算。“证据”为空表示尚未提交完成证据。当前 macOS 61 项（DONE 13、ACCEPTANCE 1、READY 0、DOING 0、TODO 47），Windows 7 项 DEFERRED，共 68 项。P1-07 最终 DONE，owner 已释放，视觉 PASS_WITH_TECHNICAL_DIFFERENCES、组合验收 PASS；逐卡显式依赖重算无新 READY。P0-05 仍 ACCEPTANCE，P0-06/P0-08 仍 TODO。原 P1-04/P2-02/P4-05 由后缀子任务替代，不重复计数。
+“估算”在P0出口回填人日及假设；当前macOS61项：**DONE20、ACCEPTANCE0、READY7、DOING0、REVIEW0、TODO34、BLOCKED0**；Windows7项DEFERRED，共68项。P2阶段5/10，macOS20/61。P2-03既有Host收口及Finding CLOSED保持；P2-04经Host独立FINAL ACCEPTANCE PASS，ACCEPTANCE→DONE，P2-04-PENDING-PERSISTENCE-001及前轮P1/P2 Finding均CLOSED，Runtime/Platform及Runtime公共契约owner/本卡预约释放，见[当前收口](P2-local-proxy.md#p2-04-final-host-closeout)。绑定Core source aggregate `987a01782c59d75c913f20a8133fd37df27638951f73cf3168cb2b35c3ff4fa8` 与Desktop harness身份；Host已核验Native/限定故障注入及原14条exit0，并独立新复跑Core371/Desktop85（11 ignored由显式Native父test覆盖）。自然HTTP/OS故障、SIGKILL、无控制线程竞态仍NOT_RUN；历史PASS/FAIL/REWORK保留，不扩大验收。P2-06仅TODO→READY；READY为P0-08/P2-05/P2-06/P3-01/P4-02/P5-04/P5-06，全部未领取/启动；原显式依赖不变，其它任务状态不变。原P1-04/P2-02/P4-05父项不重复计数。
 
 ### P0 基线与可行性（9 项）
 
@@ -97,10 +97,10 @@ Task：OBG-Px-xx
 | [OBG-P0-02 范围与规则](P0-feasibility.md#obg-p0-02) | 无 | DONE | Codex | 文档调整，不计实现工期 | [清理记录](P0-feasibility.md#cleanup-record) |
 | [OBG-P0-03 GPUI/输入/托盘原型](P0-feasibility.md#obg-p0-03) | P0-01 | DONE | Codex Desktop | — | [人工验收收口](P0-feasibility.md#p0-03-manual-acceptance) |
 | [OBG-P0-04 内核/控制器/缓存原型](P0-feasibility.md#obg-p0-04) | P0-01 | DONE | Codex /root | — | [真实内核验收](P0-feasibility.md#p0-04-delivery) |
-| [OBG-P0-05 本地 helper 原型](P0-feasibility.md#obg-p0-05) | P0-03、P0-04 | ACCEPTANCE | Codex /root (Runtime/Platform) | — | [原型与授权缺口](evidence/p0-05/README.md) |
-| [OBG-P0-06 自身出站原型](P0-feasibility.md#obg-p0-06) | P0-04、P0-05 | TODO | — | — | — |
+| [OBG-P0-05 本地 helper 原型](P0-feasibility.md#obg-p0-05) | P0-03、P0-04 | DONE | —（owner 已释放） | — | [原型历史](evidence/p0-05/README.md)；[Desktop 批准/启动失败/清理](evidence/p0-05/desktop-privileged-20261006-113208/README.md)；[新路径取消/复制修复/待批准](evidence/p0-05/desktop-pathfix-20261006-120343/README.md)；[旧现场清理/read_frame Status PASS/child readiness timeout](evidence/p0-05/desktop-readframe-fix-20261006-132202/README.md) ；[readiness child_exited / FD3 open权限拒绝 / cleanup PASS](evidence/p0-05/desktop-readiness-diagnostics-20261006-134101/README.md) ；[FD3真实probe历史与当时E扩展缺项](evidence/p0-05/desktop-fd3-pipe-20261006-135940/README.md)；[真实 GUI owner 最终验收](evidence/p0-05/gui-owner-final-20261006-142752/README.md) |
+| [OBG-P0-06 自身出站原型](P0-feasibility.md#obg-p0-06) | P0-04、P0-05 | DONE | —（owner 已释放） | — | [出站/范围调查](P0-feasibility.md#p0-06-delivery) |
 | [OBG-P0-07 观测/DNS/诊断能力](P0-feasibility.md#obg-p0-07) | P0-01、P0-04 | DONE | Codex /root | — | [能力核实](P0-feasibility.md#p0-07-delivery) |
-| [OBG-P0-08 更新与分发路线](P0-feasibility.md#obg-p0-08) | P0-03、P0-05 | TODO | — | — | — |
+| [OBG-P0-08 更新与分发路线](P0-feasibility.md#obg-p0-08) | P0-03、P0-05 | READY | — | — | — |
 | [OBG-P0-09 出口与重新估算](P0-feasibility.md#obg-p0-09) | P0-01、P0-02、P0-03、P0-04、P0-05、P0-06、P0-07、P0-08 | TODO | — | — | — |
 
 ### P1 核心库与桌面壳（8 项）
@@ -120,13 +120,13 @@ Task：OBG-Px-xx
 
 | 任务 | 显式依赖 | 状态 | 负责人 | 估算 | 证据 |
 | --- | --- | --- | --- | --- | --- |
-| [OBG-P2-01 订阅基础闭环](P2-local-proxy.md#obg-p2-01) | P1-02、P1-03、P1-04A、P0-06 | TODO | — | — | — |
-| [OBG-P2-02A Base OutboundCatalog/OutboundId](P2-local-proxy.md#obg-p2-02a) | P2-01 | TODO | — | — | — |
-| [OBG-P2-02B 最小 Compiler](P2-local-proxy.md#obg-p2-02b) | P2-02A、P0-04 | TODO | — | — | — |
-| [OBG-P2-03 Runtime/服务状态](P2-local-proxy.md#obg-p2-03) | P2-02B、P1-03 | TODO | — | — | — |
-| [OBG-P2-04 选择/缓存/成功记录](P2-local-proxy.md#obg-p2-04) | P2-03 | TODO | — | — | — |
-| [OBG-P2-05 自身出站客户端](P2-local-proxy.md#obg-p2-05) | P2-03、P0-06 | TODO | — | — | — |
-| [OBG-P2-06 helper/IPC](P2-local-proxy.md#obg-p2-06) | P2-03、P2-04、P0-05 | TODO | — | — | — |
+| [OBG-P2-01 订阅基础闭环](P2-local-proxy.md#obg-p2-01) | P1-02、P1-03、P1-04A、P0-06 | DONE | —（owner 已释放） | — | [build38-final最终收口](P2-local-proxy.md#p2-01-final-closeout)；完整页面Host Visual PASS，Finding CLOSED；历史FAIL/REWORK/build与未来业务禁用边界保留 |
+| [OBG-P2-02A Base OutboundCatalog/OutboundId](P2-local-proxy.md#obg-p2-02a) | P2-01 | DONE | —（Core/Config owner 已释放） | — | [Host独立审查/范围收口](P2-local-proxy.md#p2-02a-closeout) |
+| [OBG-P2-02B 最小 Compiler](P2-local-proxy.md#obg-p2-02b) | P2-02A、P0-04 | DONE | —（Core/Config owner 已释放） | — | [Host独立review/332 Core/五候选语义一致/Finding CLOSED](P2-local-proxy.md#p2-02b-host-closeout) |
+| [OBG-P2-03 Runtime/服务状态](P2-local-proxy.md#obg-p2-03) | P2-02B、P1-03 | DONE | —（Runtime/Platform + GPUI owner已释放） | Host功能/视觉符合；59280c31… | [最终Host收口](P2-local-proxy.md#p2-03-final-closeout) |
+| [OBG-P2-04 选择/缓存/成功记录](P2-local-proxy.md#obg-p2-04) | P2-03 | DONE | —（Runtime/Platform及Runtime公共契约owner已释放） | — | [Host FINAL ACCEPTANCE / Findings CLOSED](P2-local-proxy.md#p2-04-final-host-closeout) |
+| [OBG-P2-05 自身出站客户端](P2-local-proxy.md#obg-p2-05) | P2-03、P0-06 | READY | — | — | — |
+| [OBG-P2-06 helper/IPC](P2-local-proxy.md#obg-p2-06) | P2-03、P2-04、P0-05 | READY | — | — | — |
 | [OBG-P2-07 系统代理与恢复](P2-local-proxy.md#obg-p2-07) | P2-06、P2-05 | TODO | — | — | — |
 | [OBG-P2-08 选择与节点测速](P2-local-proxy.md#obg-p2-08) | P2-02A、P2-04、P2-05、P1-04B | TODO | — | — | — |
 | [OBG-P2-09 首个可用版本验收](P2-local-proxy.md#obg-p2-09) | P1-07、P2-01、P2-02A、P2-02B、P2-03、P2-04、P2-05、P2-06、P2-07、P2-08 | TODO | — | — | — |
@@ -135,7 +135,7 @@ Task：OBG-Px-xx
 
 | 任务 | 显式依赖 | 状态 | 负责人 | 估算 | 证据 |
 | --- | --- | --- | --- | --- | --- |
-| [OBG-P3-01 观测与事件](P3-observability.md#obg-p3-01) | P2-03、P0-07 | TODO | — | — | — |
+| [OBG-P3-01 观测与事件](P3-observability.md#obg-p3-01) | P2-03、P0-07 | READY | — | — | — |
 | [OBG-P3-02 连接](P3-observability.md#obg-p3-02) | P3-01、P2-02A、P2-05、P2-08、P1-04B | TODO | — | — | — |
 | [OBG-P3-03 日志](P3-observability.md#obg-p3-03) | P3-01、P1-05 | TODO | — | — | — |
 | [OBG-P3-04 统计存储](P3-observability.md#obg-p3-04) | P3-01 | TODO | — | — | — |
@@ -149,7 +149,7 @@ Task：OBG-Px-xx
 | 任务 | 显式依赖 | 状态 | 负责人 | 估算 | 证据 |
 | --- | --- | --- | --- | --- | --- |
 | [OBG-P4-01 订阅高级项](P4-configuration.md#obg-p4-01) | P2-01、P2-05 | TODO | — | — | — |
-| [OBG-P4-02 静态/动态组](P4-configuration.md#obg-p4-02) | P2-01、P2-02A、P2-02B、P1-03、P1-04A | TODO | — | — | — |
+| [OBG-P4-02 静态/动态组](P4-configuration.md#obg-p4-02) | P2-01、P2-02A、P2-02B、P1-03、P1-04A | READY | — | — | — |
 | [OBG-P4-03 failover](P4-configuration.md#obg-p4-03) | P4-02、P2-04 | TODO | — | — | — |
 | [OBG-P4-04 规则资源](P4-configuration.md#obg-p4-04) | P2-02B、P2-04、P2-05、P1-04A | TODO | — | — | — |
 | [OBG-P4-06 链式代理](P4-configuration.md#obg-p4-06) | P2-02A、P2-02B、P2-05、P2-08 | TODO | — | — | — |
@@ -165,9 +165,9 @@ Task：OBG-Px-xx
 | [OBG-P5-01 DNS 上游/重写](P5-dns-and-sharing.md#obg-p5-01) | P2-02B、P2-03、P2-05、P0-07、P1-04A | TODO | — | — | — |
 | [OBG-P5-02 DNS 过滤](P5-dns-and-sharing.md#obg-p5-02) | P5-01、P2-05 | TODO | — | — | — |
 | [OBG-P5-03 DNS 观测/热更边界](P5-dns-and-sharing.md#obg-p5-03) | P5-02、P3-01、P4-05C | TODO | — | — | — |
-| [OBG-P5-04 五种共享入站](P5-dns-and-sharing.md#obg-p5-04) | P2-02B、P2-03 | TODO | — | — | — |
+| [OBG-P5-04 五种共享入站](P5-dns-and-sharing.md#obg-p5-04) | P2-02B、P2-03 | READY | — | — | — |
 | [OBG-P5-05 共享 UI/URI](P5-dns-and-sharing.md#obg-p5-05) | P5-04、P1-04A、P1-05 | TODO | — | — | — |
-| [OBG-P5-06 订阅分享](P5-dns-and-sharing.md#obg-p5-06) | P2-01、P1-05、P1-04A | TODO | — | — | — |
+| [OBG-P5-06 订阅分享](P5-dns-and-sharing.md#obg-p5-06) | P2-01、P1-05、P1-04A | READY | — | — | — |
 | [OBG-P5-07 DNS/共享验收](P5-dns-and-sharing.md#obg-p5-07) | P5-01、P5-02、P5-03、P5-04、P5-05、P5-06、P4-07 | TODO | — | — | — |
 
 ### P6 macOS TUN 与生命周期（5 项）

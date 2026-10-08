@@ -223,6 +223,8 @@ cleanup NOT_RUN：沙箱拒绝`ps`进程身份查询（Operation not permitted�
 
 **执行与交付**：接通代理快照、手动选择、单节点/组测速及草稿节点测试；接入 Base OutboundCatalog 的 Proxy service；稳定身份、局部忙碌和历史结果；临时实例不替换主实例。
 
+**目录消费约束（P2-02A Host收口）**：正式 ProxyService 与最小 Proxy UI 必须消费 `OutboundQueryService`/`OutboundQuerySnapshot` 这一唯一查询 seam（底层 Catalog/共享解析契约），禁止建立平行出口列表或以显示名重建身份。此处的真实业务、操作与视觉集成由本卡验收；P2-02A 的接口交付不代表本卡已实现或 UI 已测试。见[P2-02A分层验收解释](#p2-02a-closeout)。
+
 **验收**：
 
 - [ ] 选择成功的新连接使用所选出口；失败不伪装成功，保存失败与实际选择分开显示。
@@ -245,3 +247,256 @@ cleanup NOT_RUN：沙箱拒绝`ps`进程身份查询（Operation not permitted�
 - [ ] 完整用户流程和代表性失败路径有同一构建的真实证据，网络设置恢复可核对。
 - [ ] 检查配置/选择版本、manifest、cache 与 child 归属，未遗留本次资源。
 - [ ] 所有已开放 UI 完成实际操作检查；TUN/高级功能尚未交付的状态准确，首个可用版不称为全量完成。
+
+<a id="p2-02b-closeout"></a>
+### P2-02B 最小产品 Compiler 交付（2026-10-07，历史）
+
+**状态：DONE；Core/Config 单一 owner 已释放。** 本轮仅领取 P2-02B，五项验收 PASS；无 UI/真实 Runtime child/平台网络操作。现有大 dirty tree 保留，无 commit/push/fetch/pull/rebase/reset/restore/clean/stash。local-only [gap/API/结果与自查](evidence/p2-02b/README.md)，[初始差距与设计决定](evidence/p2-02b/GAP-ANALYSIS.md)。本段是前轮历史验收摘要，初轮编译/fixture/Clippy FAIL 与各轮 PASS 日志分别保留。
+
+**API / 文件**：`SingBoxCompiler::compile_product(ProductCompileRequest { state, default_outbound: &OutboundId, resources })` 消费同一 AppState/Catalog/RuntimeIntent；没有第二套出口事实。`ProductRuntimeResources` 明确携带 `LoopbackListener(SocketAddr)` 的 mixed/controller（0 为动态）、`ManagedCacheFile` 的受管 absolute path/stable cache_id/显式 store 标志。运行期资源不持久化；tag 仅在 Compiler adapter。产品路径复用既有 15 协议/node/selector/urltest/封闭验证；ObservationOnly 原入口输出保持，48-config combined digest `4204c8cc2383c67fbfc23d1f71d49fe124c773958deefb8532c434c3d1faf167` 回归 PASS。产品 Block 转 route reject，mixed 不固定 1080；controller secret 仅 finalize 注入，Plan/GeneratedConfig Debug 脱敏。cache exact fields 为 enabled=true/path/cache_id/store_fakeip=false/store_dns=false；当前不生成 FakeIP、不持久恢复 DNS，旧 clash_api 缓存字段 absent。
+
+新增 `singbox/compiler/product.rs`、`product_tests.rs`、`examples/p2_02b_candidate.rs`、`tests/fixtures/compiler/` 输入/两份完整 expected JSON/说明；修改 `singbox/compiler.rs`/`mod.rs`、domain `profile.rs`/`desktop_behavior.rs`/`error.rs`，`singbox/runtime.rs` 仅加强/新增回归，生产 lifecycle 未修改。无新依赖/Cargo/DTO/UI/存储实现修改。
+
+**选项 / health**：Profile 增加 ipv6Proxy/node 默认、directForNodes=true、rejectQuic=false、testUrl/directTestUrl typed RuntimeHealthUrl。IPv6 off 对候选 DNS ipv4_only 与内核 IPv6 route reject 生效，on/node 按同一规则处理 IPv4/IPv6；不改系统 IPv6。ipv4/bypass、非默认 Tun、DNS extras、活动非 IP DNS upstream、split 的非域名站点规则与 split+Block default 类型化 UnsupportedOption；未知 option/null/非法 URL 严格拒绝，不静默忽略。rejectQuic 仅在按优先级确定的 proxy UDP443 路径拒绝，Direct 不受影响。directForNodes 的 subscription hostname/node hostname/IP 引导规则在 sites 前，URL query/凭据不进入规则；不能作为 Rust reqwest/TUN bypass 证据。基础 split DNS 按真实 Node/Pool 派生 proxy upstream detour，Direct default 使用 direct DNS。Profile custom 域名规则与基础 state routes 均通过 Catalog 解析。`SingBoxPlan::runtime_health()` 明确给出 proxy/direct 两个 URL，独立于 UI latency；pool 已有 probe_url 不被覆盖，Group health 留 P4。
+
+**schema / 保存**：CURRENT_SCHEMA_VERSION/StoredStateV9 仍为 9；仅新增字段有严格 missing defaults，原有必填字段不放宽，null/未知 enum/凭据 URL 不通过。真实 JsonStateStore 测试证明旧 v9 读取不重写 bytes、不改变 epoch/双 revision/业务事实；v8→v9 原迁移保留事实/生成原始备份，二次 load 稳定，保存后再读稳定。Profile/State/Subscription 普通保存仍 SavedOnly，无 Compiler/SidecarPort/check/child 依赖；应用拒绝不影响意图保存。产品 GeneratedConfig 通过既有显式 SidecarRuntime check seam；Mock check fail 对不同候选保持旧 child/旧配置 bytes，事件增量仅 Check，不能 Stop/Prepare/Run。
+
+**真实 check**：下载 official darwin-arm64 archive，执行前 SHA256 匹配 `a150c94012ff768b7261939cd236b9c8554127f45137230295d23a5660225cc9`；binary SHA256 匹配 `973388c3f720e918fc64dff7fd75dde14b31cc1aa6fc15855e2f00c5291dd4f4`，version `1.14.0`、darwin/arm64、revision `0b8995879f29a9b98ee027bc17b75e101445b238`。同一产品 fixture 生成 base/options/Direct/Block 四个 finalized GeneratedConfig，0700 temp root/0600 config、随机临时 secret，每个固定 binary `check -c <candidate>` 20s 有界、exit0 PASS。保留原始 candidate 摘要与脱敏 JSON；未 run、未创建 cache、没有真实 child lifecycle/Ready 结论。
+
+**验证 / Review**：P2-02B 定向 **14/14**、Core **327/327**（既有313全部保留，包含 compiler/selected_subscription/state/subscription）PASS；`cargo check -p veyra-core --offline`、`cargo clippy -p veyra-core --all-targets --offline -- -D warnings`、`cargo fmt --all -- --check`、`git diff --check` PASS。长命令有180/240s外层预算，真实 check 20s；Core全量含既有文件/Mock/loopback fixtures，不称纯单测，doc-tests0不计用例 PASS。按 code-delivery-review 的 correctness/contract-data/verification/Rust 完成实现者自查；首版跨 pool DNS detour Finding已修正/回归，最终无未解决可操作 Finding，非独立审查。
+
+**DAG**：68-card DONE18 / READY4 / TODO39 / DEFERRED7，其余0；依赖不变、无环。READY=P0-08/P2-03/P4-02/P5-06，均未领取/启动。P2-08/P4其他/P5其他/P6不启动；P2-03 仍负责正式 owner/child/Ready/服务 UI。本轮候选 secret/config、下载 archive/解包 binary 与临时脚本已按本次路径清理；历史 P2-01 app/fixture 的 cleanup NOT_RUN 记录不改写。
+
+<a id="p2-02b-runtime-projection-fix"></a>
+### Finding P2-02B-RUNTIME-PROJECTION-001（2026-10-07）
+
+**修复候选历史状态：FIXED_PENDING_HOST_REVIEW；P2-02B：ACCEPTANCE；owner：Codex Core/Config（当时保留，等待 Host 独立 review）。** 当前 Finding CLOSED、P2-02B DONE、owner释放，见[Host最终收口](#p2-02b-host-closeout)。 首次导入允许 default_target=Unconfigured，selected projection生成runtime-only pool；产品Compiler却用AppState catalog校验默认出口并重建intent，拒绝合法投影。directForNodes同时引入全部保存订阅host，超出实际运行闭包。责任归P2-02B契约，不转交P2-03。
+
+修复范围：显式AppState + RuntimeIntent + projected OutboundId + resources；运行成员/默认出口/Profile custom/runtime routes复用runtime catalog与既有graph校验；bootstrap仅实际节点及provider对应Remote订阅host。持久pool fixture/ObservationOnly digest保持。旧DONE、327 Core、locked-check-final.json及所有历史evidence原样保留。
+
+开始时 P2-02B DONE→DOING / Finding OPEN，P2-03/P4-02 READY→TODO；修复后只转 ACCEPTANCE / FIXED_PENDING_HOST_REVIEW，不恢复 DONE。修复候选当时68卡 DONE17/ACCEPTANCE1/READY2/TODO41/DEFERRED7，其余0；P0-08/P5-06保持READY，未领取。仅Core/Config，不启动下游/UI/真实run。
+
+**修复 API / 闭包**：`ProductCompileRequest { state, runtime_intent, default_outbound, resources }` 明确区分持久事实与实际运行投影。Compiler 不再调用 `RuntimeIntent::from_state()`；完整 configured-default 调用方仍可显式使用该函数。运行 identity/成员/default、Profile custom rules、runtime routes 均复用 `OutboundCatalog::from_runtime_intent()` / 既有 `validate_outbound_graph`；AppState.validate仅检查持久事实。runtime-only pool正常生成selector/default final，不持久化；OutboundId→tag仍仅adapter内部。directForNodes只取实际节点server及其provider对应Remote订阅URL host，去query/凭据，IPv4/IPv6精确/32、/128。无第二套graph、无Direct fallback；schema9/health/rejectQuic/IPv6/资源选项未无关改动。
+
+**新增5项回归**：真实3订阅active+Unconfigured首启、filtered custom跨订阅闭包及runtime-only route、实际intent节点host与Remote IPv4/IPv6、闭包外默认/空成员/悬空成员/Unconfigured与闭包外runtime route拒绝、已保存但闭包外Profile custom rule拒绝。原14项保持：定向19/19，projection5/5，P2-02A catalog7/7，Core332/332全部PASS；check/all-targets clippy/workspace fmt/diff PASS。原base/options expected JSON未修改、完整配置比较PASS；ObservationOnly48-config digest `4204c8cc2383c67fbfc23d1f71d49fe124c773958deefb8532c434c3d1faf167` PASS。初次测试代码误用Result.is_none导致编译FAIL，修正后PASS；原FAIL日志保留，不改写。
+
+**新 fixed-kernel check**：official archive SHA256 `a150c94012ff768b7261939cd236b9c8554127f45137230295d23a5660225cc9`先匹配，再匹配binary `973388c3f720e918fc64dff7fd75dde14b31cc1aa6fc15855e2f00c5291dd4f4`。base/options/direct/block/真实selected projection五个新candidate全部20s `sing-box check -c` exit0；root0700/config0600，随机secret只在私有临时config，证据仅脱敏副本及原candidate digest；没有run或cache生成。临时archive/binary/config/secret清理PASS，原locked-check-final.json与旧证据未覆盖。
+
+**实现者自查**：按 code-delivery-review 的correctness/contract-data/verification/Rust复查selected projection→compiler、运行闭包、bootstrap host隔离、custom route closure、旧fixture/digest与locked check，未发现剩余可操作Finding；这是实现者自查，非独立review。现有dirty tree无关内容保持；未commit/push/fetch/pull/rebase/reset/restore/clean/stash。
+
+本轮 local-only [报告与验证](evidence/p2-02b/runtime-projection-fix-20261007-131829/README.md)。
+
+<a id="p2-02b-host-closeout"></a>
+### P2-02B Host 独立 review / 最终收口（2026-10-07）
+
+**当前状态：DONE；Finding P2-02B-RUNTIME-PROJECTION-001：CLOSED；Codex Core/Config owner已释放。** Host明确独立review PASS，批准仅文档/evidence收口；FIXED_PENDING_HOST_REVIEW→CLOSED、ACCEPTANCE→DONE。首次DONE、重开DOING、初始FAIL与修复候选ACCEPTANCE及其evidence按当时事实保留，不覆盖旧证据。
+
+**Host独立复核**：当前source SHA与runtime-projection-fix evidence一致；重新运行P2-02B19/19、projection5/5、P2-02A catalog7/7、Core332/332、core check/all-targets clippy -D warnings/workspace fmt/diff全部PASS；重新生成base/options/direct/block/selected，secret/cache path脱敏归一化后，与修复轮fixed-kernel checked redacted candidates五个全部语义一致。selected具有pool-runtime-active-subscription selector及同名route.final，无关保存订阅/节点absent。独立代码review无剩余可操作Finding。此为Host在会话提供的复核事实；本收口轮未重新执行Cargo、候选生成或kernel check，不伪造原始日志。
+
+**DAG与边界**：68卡逐卡依赖与任务总表一致，原依赖无变更、无环；DONE18/READY4/TODO39/DEFERRED7，其余0。READY仅P0-08/P2-03/P4-02/P5-06，均未领取/未启动；Core/Config owner/本卡预约释放。P2-03正式运行必须使用compile_product+显式selected runtime projection，不得沿用application/runtime.rs ObservationOnly compile(...)；本轮只记录下一动作。仅三份状态文档及新增local-only evidence，产品源码/旧evidence不改，无真实child/UI/SystemProxy/TUN/helper或任何禁止的Git操作。
+
+[Host独立review与本轮文档验证](evidence/p2-02b/host-closeout-20261007-132657/README.md)。
+
+<a id="p2-03-delivery"></a>
+## P2-03 工程交付（2026-10-07，历史）
+
+**ACCEPTANCE；owner Runtime/Platform + GPUI保留；Host Visual/Interaction PENDING。** 仅本卡，68卡 DONE18 / ACCEPTANCE1 / READY3 / TODO39 / DEFERRED7，显式依赖不变；P0-08/P4-02/P5-06保持READY且未启动，所有依赖P2-03的下游保持TODO。
+
+正式链路为 SnapshotService → selected projection（含首次导入Unconfigured）→ projected OutboundId → compile_product → 随机secret → check/prepare → owned普通用户child → 本child动态mixed/controller输出 → 鉴权root/version → Ready。Desktop单一串行worker拥有Runtime，StateBridge按request/sequence接收真实快照；saved/applied独立，Stop后applied=None。候选check/prepare失败保留旧实例。稳定cache按内核版本/state epoch归属，不实现P2-04 manifest/rollback。
+
+真实run发现旧Product的dns-direct显式detour=direct虽然check接受，run却拒绝empty direct detour；本轮按真实v1.14.0语义移除此无效detour并更新精确fixture。首轮失败原样保留，未改写P2-02B历史check结果。
+
+固定内核v1.14.0 darwin-arm64，archive/binary两级SHA校验；每次check/run前复验binary。最终bundle executable SHA256 `fd127c1c1af4879d784efa46fe65fb6be6b894f39f2a9f2fe54f09fcef83825f`。受控本机HTTP唯一marker经actual mixed和SOCKS fixture成功；重复Start、check失败保留旧实例、mixed/controller真实冲突、Ready超时、真实异常退出/再启动、串行操作及独立进程Stop ownership均PASS。关闭窗口继续代理；显式Quit后全部owned child回收、旧端口关闭、候选目录清理PASS。
+
+Core **336/336**；Desktop **73/73**（默认1项真实内核测试ignore，已显式单独执行 **1/1 PASS**）；两crate check、all-targets clippy、fmt与diff检查PASS。按code-delivery-review实现者自查和独立review无剩余可操作Finding；未发现任意UI executable/PID/URL、SystemProxy/TUN副作用、secret泄漏或提前实现下游。既有dirtytree按开始时源码SHA核对，无关文件未覆盖；无commit/push或其他禁止Git操作。
+
+[完整local-only evidence](evidence/p2-03/README.md)包含源码/构建/kernel身份、真实PID/PGID/Instance/endpoints、请求、失败路径、测试和截图。最终app保持Settings→Backend、Light、Ready；沿用Host当前显示设置（GPUI backing scale=2与系统150%为不同概念），其它缩放/Dark本轮NOT_RUN。Host仅需确认当前150%下服务卡、左下Runtime状态、Start/Stop/Restart实际交互；明确回复符合/通过/可以前不DONE、不释放owner、不解锁下游。
+
+<a id="p2-03-visual-busy-001"></a>
+## P2-03-VISUAL-BUSY-001（2026-10-07）
+
+**OPEN / FIX_PENDING_HOST；P2-03保持ACCEPTANCE，owner Runtime/Platform + GPUI保留。** Host已独立确认工程/Runtime/真实代理/失败路径；本轮只修UI Busy/status：StateBridge记录具体RuntimeCommand，当前按钮显示spinner，其它保留原Heroicon并disabled；request/sequence拒绝旧completion。Backend移除额外Busy行，固定结果行高度。Stopped采用muted、Starting/Recovering过渡色、Ready绿、Failed红。Runtime/Compiler/Sidecar/进程生命周期和业务语义完全不变，固定kernel与历史build evidence保留；不重跑完整真实failure matrix。
+
+本轮验证/新bundle/Starting与Ready截图见[evidence](evidence/p2-03/visual-busy-001/README.md)。等待Host当前系统显示设置、Light下最终Visual PASS；未确认前不DONE、不释放owner、不解锁下游。
+
+
+<a id="p2-03-visual-full-page-002"></a>
+## P2-03-VISUAL-FULL-PAGE-002 · CLOSED（2026-10-07）
+
+**当前状态：CLOSED；P2-03 DONE；Runtime/Platform + GPUI owner已释放。** Host确认Basic2最终build功能与视觉“符合”；见[最终收口](#p2-03-final-closeout)。以下为开启、修复与候选历史，保留当时状态和结果。
+
+**OPEN；P2-03 ACCEPTANCE；owner Runtime/Platform + GPUI保留。** Host明确指出BUSY-001的局部修复不代表Full Visual Parity。本轮先观察实际OpenBox（内置浏览器192.168.1.6:3036）和旧Veyra ce5fc933…，记录初始geometry gap，再重建Backend完整层级。BUSY-001当前工程修复FIXED，历史OPEN/FIX_PENDING_HOST与原截图保留；本Full Visual Finding未关闭。
+
+写范围仅Desktop UI backend/pages/tokens/i18n/icons/sidebar，app中的只读Profile投影与现有Notice反馈，相关同源SVG和本状态文档。正式Runtime/Compiler/Sidecar/runtime_service及StateBridge未修改。顶部服务卡按品牌、版本、Geo、三组状态、hint/版本metadata、真实操作、更新、自动更新排列；下方按actual四张连续卡的grouped sections复现。未知Geo/更新/自启/端口策略/retention/数据工具显示—或未接入，全部禁用，无网络/保存/后台任务。已建模Profile字段仅只读；Controller就绪只来自Ready且当前endpoints存在，不伪造Panel。
+
+新bundle executable SHA256：`acadf5a6e83bf61804daa7130d4e4ff7ace265d351ecc3ba9e0b6e7c22f4d8c8`。当前系统显示设置/Light，1280×720逻辑内容视口对照。Core336、Desktop80 + 既有1 ignored；双方test/check/all-targets clippy，fmt/diff PASS；早期断言格式失败和clippy失败日志保留。未重跑完整真实failure matrix，沿用Host独立Review已通过的业务证据；本轮真实Start/Ready/Restart与只读UI操作另记。实现者按code-delivery-review自查，非独立审查；工程检查不等于Host Visual PASS。
+
+完整初始差距、最终geometry matrix、同视口截图、service/grouped/sidebar并排图、源码与build身份、只读边界、验证日志见[local-only evidence](evidence/p2-03/full-page-002/README.md)。DAG与依赖不变：DONE18 / ACCEPTANCE1 / READY3 / TODO39 / DEFERRED7；P0-08/P4-02/P5-06保持READY，其它下游不启动。锁屏前最终app为Backend/Light/真实Ready；收尾最底部截图与回到页面顶部时Mac锁屏，待Host手动解锁后完成最终长图/交接（不能声称完整采集已完成）。等待Host明确确认后才能关闭本Finding；本轮不DONE、不释放owner。
+
+解锁后补充：最终build同一源码/实例已完成后半页实际滚动截图与2036px内容长图，回到Backend/Light/Ready。矩阵诚实记录TUN内部MTU/MSS相对参考−12/−8px（超出4px目标）；本轮只补证据不改产品源码。P2-03 ACCEPTANCE、Full Finding OPEN、owner与DAG不变，未写Host Visual PASS。
+
+
+<a id="p2-03-visual-fidelity-003"></a>
+## P2-03-VISUAL-FIDELITY-003 · CLOSED（2026-10-07）
+
+**当前状态：CLOSED；P2-03 DONE；Runtime/Platform + GPUI owner已释放。** Host确认Basic2最终build功能与视觉“符合”；见[最终收口](#p2-03-final-closeout)。以下为开启、修复与候选历史，保留当时状态和结果。
+
+**OPEN；归属 FULL-PAGE-002（OPEN）；P2-03 ACCEPTANCE；owner Runtime/Platform + GPUI 保留。** Host 明确否定以外框坐标一致替代视觉验收。本轮仅调整 Backend / shell / 分类栏视觉、三语文案与字体资源接线；移除补偿高度，恢复完整说明，静态只读控件不再继承 Kit disabled opacity，未知开关用 off 轮廓并在外部标注未接入。Runtime、Compiler、Sidecar、child lifecycle 及八个保护文件未修改。
+
+Host 已授权采用官方 MiSans 4.009；GPUI 使用同一官方包未改动的静态字重 face，以适配当前 macOS 文本系统不展开 VF axis 的限制。与网页 4.003 的版本及栅格差异明确保留，不声明字体像素完全相同。字体来源、许可与 attribution 保存在 Desktop assets，字体文件不进入 evidence。
+
+完整同视口截图、内部文字/控件测量、无 mask alpha overlay / absolute difference、工程验证与候选身份见 [fidelity matrix](evidence/p2-03/fidelity-003/FULL-BACKEND-FIDELITY-MATRIX.md)。本轮不重跑 Runtime failure matrix，不修改业务语义；正常 Quit/Start 仅用于切换候选和最终 Ready smoke。Core 336 / Desktop 80（既有 1 ignored）及 check/clippy/fmt/diff 通过。最终 Host 视觉与交互确认仍待定，任何局部测量通过都不关闭 Full Visual。
+
+DAG 不变：DONE18 / ACCEPTANCE1 / READY3 / TODO39 / DEFERRED7。不领取其它 READY，不启动下游，不 commit/push。
+
+<a id="p2-03-backend-basic-settings-004"></a>
+## P2-03-BACKEND-BASIC-SETTINGS-004 · CLOSED（2026-10-07）
+
+**当前状态：CLOSED；P2-03 DONE；Runtime/Platform + GPUI owner已释放。** Host确认Basic2最终build功能与视觉“符合”；见[最终收口](#p2-03-final-closeout)。以下为开启、修复与候选历史，保留当时状态和结果。
+
+- Status: FIX_PENDING_HOST；owner Runtime/Platform + GPUI。
+- 范围：direct_for_nodes/reject_quic/ipv6/test_url/direct_test_url，复用 ProfileService.patch CAS/SavedOnly；其余控件保持只读。
+- 写范围：Desktop backend_profile/services/state_bridge/app/ui backend/pages/i18n，定向测试与本卡记录。Runtime/Compiler/Sidecar七个保护文件不改。
+- P2-03保持ACCEPTANCE，FULL-PAGE-002/FIDELITY-003保持OPEN，DAG不变，下游不启动。
+- 本地证据：`evidence/p2-03/basic-settings-004/`。
+
+- 最终候选 SHA `59280c3146502e1b9474d08f976d807cfae4390751493badf9f89aeca9b325c4`。五字段真控件、SavedOnly/CAS/字段局部busy已接通；真机保存10/运行5→显式Restart10/10，同一build正常退出重开后五字段保持。Core336/Desktop84（既有1 ignored）及check/clippy/fmt/diff通过。七个保护文件SHA不变；本轮实现者自查，未声明独立审查或Host PASS。最终Backend/Light/Ready。
+
+
+<a id="p2-03-final-closeout"></a>
+## P2-03 Host approval / 最终收口（2026-10-07）
+
+**P2-03：ACCEPTANCE → DONE；Runtime/Platform + GPUI owner及Runtime公共契约owner/本卡预约已释放。** 用户在当前会话明确转达：Host已确认当前P2-03 build的功能与视觉“符合”。批准对象为Basic2 executable SHA256 `59280c3146502e1b9474d08f976d807cfae4390751493badf9f89aeca9b325c4`，精确绑定[basic-settings-004最终身份](evidence/p2-03/basic-settings-004/build-identity.json)、[五字段实际操作/重启持久化及最终截图](evidence/p2-03/basic-settings-004/README.md)、[full-page-002最终矩阵与全长截图](evidence/p2-03/full-page-002/README.md)、[fidelity-003最终细节矩阵/叠图/差分](evidence/p2-03/fidelity-003/FULL-BACKEND-FIDELITY-MATRIX.md)；详见[新Host approval与证据绑定](evidence/p2-03/final-closeout-20261007-164453/README.md)。
+
+P2-03-BACKEND-BASIC-SETTINGS-004 FIX_PENDING_HOST → CLOSED；P2-03-VISUAL-FULL-PAGE-002 OPEN → CLOSED；P2-03-VISUAL-FIDELITY-003 OPEN → CLOSED。BUSY-001记录不改写；其历史OPEN/FIX_PENDING_HOST与后续工程FIXED分别保留，不另作状态变更。全部历史FAIL/REWORK/候选/PENDING及已知差异保留原结果。FullAcceptance `acadf5a6…`、Fidelity6 `3d98e8de…`均保留各自构建身份，不冒称来自Basic2；当前Host结论是功能/视觉符合，不改写旧测量为PASS，不声明字体/像素完全一致。Dark/其它缩放既有NOT_RUN及未来只读能力边界不扩大。
+
+按原有显式依赖完整重算68-card DAG：DONE19 / READY7 / TODO35 / DEFERRED7，ACCEPTANCE/DOING/REVIEW/BLOCKED均0；新增READY为P2-04/P2-05/P3-01/P5-04，原P0-08/P4-02/P5-06保持READY。全部未领取/未启动；没有改变依赖、覆盖归属或Windows排期。P2为4/10、macOS为19/61完成。owner释放仅为文档预约释放，不表示当前app/child/fixture已退出或清理。
+
+本轮仅更新三份状态文档并新增local-only evidence；现有产品源码与无关dirty tree保留。当前app/runtime资源未读取、重启、停止或清理，cleanup与live executable复验本轮NOT_RUN（按用户限定仅文档/evidence）；没有产品构建/测试、网络/权限操作，也没有commit/push/fetch/pull/rebase/reset/restore/clean/stash。DAG/链接/状态一致性与git diff --check结果写入最终evidence；原始evidence不进入Git。
+
+
+<a id="p2-04-delivery"></a>
+## P2-04 交付与验收（2026-10-07，历史）
+
+**历史状态：DONE（已由 P2-04-PENDING-PERSISTENCE-001 撤销；当前以下方修复记录为准）**。仅领取 P2-04，owner Runtime/Platform（本轮 Runtime 公共契约单一 owner）已释放。无恢复 UI/Backend 视觉改动，无 SystemProxy/helper/TUN/下载/测速/failover；未触碰 P2-03 的现有 app/child/root。现有大 dirty tree 保留，无 commit/push/fetch/pull/rebase/reset/restore/clean/stash；evidence local-only。实现、完整日志/源码身份/自查见 [P2-04 evidence](evidence/p2-04/README.md)。本次是实现者按 code-delivery-review 自查，不是独立审查。
+
+### 架构与 API
+
+- Compiler `AppliedArtifactIndex` 绑定 ConfigVersion/计划 SelectionVersion，映射 NodeId→runtime tag、Manual PoolId→selector tag/成员/显式首成员 default，涵盖 runtime-active-* 投影；synthetic pool 不写 AppState，业务 DTO 不含 tag。
+- `ManualRuntime::select_manual(ManualSelectionRequest { instance, expected, pool, node })` 和 Desktop `RuntimeService::select_manual` 共用应用命令的唯一串行 worker。依次校验当前实际存活实例/完整选择版本/applied membership，owned controller write→同实例 read-back→既有 SelectionService 原子保存→确认版本。写/读回/保存/恢复记录各自报告。保存失败一次补偿，失败保留 pending/unconfirmed；新选择在 pending 时拒绝。同 epoch 的未应用 Profile 修改不阻止合法选择，选择不会推进 config/applied config version。
+- Snapshot 明确暴露 saved/applied/last-successful config、last-successful/当前 confirmed selection、pending、默认回退的 pool 列表及 recovery availability/reason。重建 owner/独立进程启动只读记录，Stopped/applied=None，不自动启动。`ApplySaved` 使用当前保存状态；`RestoreLastSuccessful` 使用旧封闭计划；原 Start/Stop/Restart/Refresh 入口保留。
+
+### schema、缓存与回退
+
+schema/compiler/recovery version=1；manifest 绑定 state_epoch、config、plan_selection、selection_at_apply、confirmed_selection、kernel version/SHA256、plan 相对引用/SHA256、具体生成 config SHA256、cache generation/快照引用及 resources 摘要列表（当前为空，非空拒绝）。Runtime 私有目录0700/文件0600，原子 temp write+fsync+rename+目录fsync；最终提交失败保留旧文件。pre-finalize Document + RuntimeHealthPlan + index 作为单独私有恢复 artifact，严格未知字段/模型/摘要/版本/成员校验，重建 secret/动态 ports；不读最新 state.json 猜旧配置，不解析 cache 内部格式，不保存旧PID/ports/secret/Ready。
+
+cache path/id按固定 binary兼容身份与epoch稳定；普通revision/instance不变。Sidecar check/prepare在旧child仍活着时进行，stop_old_writer返回表示wait/reap完成，之后复制opaque关闭缓存，再run_prepared；candidate写cache不影响不可变rollback快照。copy失败返回CacheSnapshotFailed并阻止candidate，实际已停止则applied=None。当前无FakeIP，首次基线可以是明确空缓存；有引用的cache/resource缺失、generation/kernel/epoch不兼容及digest失败拒绝Restore。损坏材料不自动删除，显式ApplySaved修复前保留诊断副本。
+
+候选check/prepare失败不停止旧实例；旧writer已停止后，run/Ready/reconcile失败只自动回退一次，使用旧计划和对应cache、重新secret/port/check/Ready/reconcile。成功返回CandidateRolledBack且Ready/applied=旧版；失败按实际Failed/RecoveryRequired报告。没有旧记录不编造回退。Ready对外发布及applied更新均晚于selector对账；最终manifest失败返回“运行成功，恢复记录保存失败”，当前applied=new、last-successful=old。selection-only只轻量更新manifest selection section，不复制配置。
+
+### 实际验证与历史失败
+
+- PASS：完整 Core **354/354**（既有336项保留）、Desktop **85/85**；默认3 ignored为原P2-03真实测试和新增P2-04两阶段测试，均另行显式运行，不记作默认通过。Core/Desktop check、all-targets offline clippy `-D warnings`、workspace fmt与diff检查见完整日志。
+- PASS：固定 sing-box **1.14.0 darwin-arm64** / SHA256 `973388c3f720e918fc64dff7fd75dde14b31cc1aa6fc15855e2f00c5291dd4f4`，隔离root的真实selector写/读回与选择保存、writer停止/关闭cache快照、saved12/last11两入口、独立OS进程重启读取、随机secret/新instance、一次Ready失败回退和最后端口/候选目录清理。
+- PASS：P2-03既有真实failure matrix另行显式回归；最终结果见 evidence。P2-02B product compile/first-import runtime-active-*与Catalog/Compiler既有测试仍由完整Core覆盖，无弱化。
+- initial FAIL保留：首轮私有字段可见性编译失败；故障测试选了已选节点、漏算synthetic selector、恢复fixture节点数断言错误；clippy nested-if/deprecated test atomic API。真实首轮cache被内核创建0644导致下一次应用UnsafePath，是本次发现的实际P1问题，已由owner预建0600修复，最终真实回归PASS；失败root及日志保留供诊断。
+- Native gap：**无本卡恢复契约未验项**。真实平台验收以正式ManualRuntime/ManualSidecar和独立进程执行，未操作既有GUI。恢复UI/视觉、SystemProxy/helper/TUN/FakeIP和后续算法为本卡范围外N/A，不能据此宣称已完成这些能力。无剩余可操作Finding。
+
+完整68-card DAG重算：**DONE20 / READY7 / TODO34 / DEFERRED7**，其余0，无环、依赖不变。READY=P0-08/P2-05/P2-06/P3-01/P4-02/P5-04/P5-06；P2-06仅因本卡完成变为READY，全部未领取/启动。P2为5/10，macOS20/61。后续消费只能使用本卡owner seam，不另建选择写入路径。
+
+<a id="p2-04-pending-persistence-fix"></a>
+
+## P2-04 pending 持久化 Finding 修复（2026-10-07）
+
+**当前状态：ACCEPTANCE，owner Runtime/Platform保留。P2-04-PENDING-PERSISTENCE-001 = FIXED_PENDING_HOST_REVIEW（P1，Host independent review）。** 原交付DONE撤销；此前FAIL/PASS/source/evidence原样保留。§8.2.1不得用文档迁就内存pending实现。本fix只做代码与自动/Mock；真实进程中断/重启留给Codex Desktop。P2-06回到TODO，不启动下游。新 [fix evidence](evidence/p2-04/pending-persistence-fix/README.md)。
+
+
+### 修复后的权威契约
+
+- 根因：仅内存 `ManualRuntime.pending` 无法跨进程保存意图；§8.2.1被错误改写以迁就实现。已恢复原方案；前轮选择顺序/自动补偿描述与“无Native gap”结论不再适用于当前Finding，其原日志与源码快照保留，不改写历史FAIL/PASS。
+- 业务schema仍为9：`SelectionPolicy::Manual { selected_node_id, pending_node_id }`，pending `serde(default, skip_serializing_if = Option::is_none)`；旧v9缺省None且不迁移。pending与confirmed可不同，成员/Manual边界严格校验；不存在第二业务JSON/journal。
+- `SelectionService::{begin_manual_pending, confirm_manual_pending, clear_manual_pending}` 共享StateAccessGate和state.json原子commit。begin保存pending保留selected，confirm/clear必须完整SelectionVersion CAS并匹配requested；每阶段selection_revision+1，config不变。legacy select_manual拒绝未解决pending。
+- 正式选择校验Ready实例/expected/applied成员后：pending commit→owned controller PUT→同实例GET→confirmed commit并清pending→active/manifest confirmed轻量更新。成功返回最终+2版本。pending保存失败不PUT；write错误后仅额外GET明确读回旧值才CAS清pending；read-back超时/不一致、确认commit失败、clear commit失败均保留磁盘pending。取消默认controller补偿，不自动重发；新选择在pending时拒绝。
+- Snapshot每次从业务state读取pending（单项兼容字段及完整`pending_selections`），Stopped/新owner也暴露pool/requested；存在pending时不把旧active选择映射或版本冒充当前runtime确认。last-successful仍保持manifest对应confirmed。
+- 新child在Ready之前，对每个运行Manual pool先GET：actual=requested则confirm；actual=old confirmed/default则clear；third/unknown/读取失败保留pending，返回SelectionPending，不PUT，不Ready，不通过新rollback实例猜测消除意图。无pending保持confirmed authority对账。新增显式`RuntimeCommand::ReconcileSelection`供当前child重连核对，不新增UI。
+- 恢复旧plan时，当前confirmed节点若不在旧artifact中，不能把fallback/default冒充旧confirmed来清pending；只有actual=requested仍可确认，其余保留待核对。自查定向测试先FAIL（错误Started），修复后两种actual子场景PASS；失败日志保留。
+- ApplySaved与RestoreLastSuccessful都看当前同epoch业务pending；解决产生的selection revision进入ActivePlan/manifest。manifest schema1不变，仅confirmed section轻量前进，pending不作为last-success事实；缓存/计划/回退契约保持既有实现，未扩大config_digest强化。
+- Provider替换/refresh共用事务撤销被删除或过滤的pending；subscription delete删除所属Pool时自动推进selection revision，引用冲突仍拒绝。AppState成员变更禁止dangling pending提交。snapshot replacement/backup recovery新epoch清旧pending，旧CAS不能跨epoch；P7不实现。
+
+### 自动验证与Host边界
+
+Core **361/361**、Desktop **85/85** PASS；原P2-04 manifest/cache/rollback测试及336 Core基础行为全部保留。按新批准契约替换原自动补偿测试的预期，原测试源码留在新fix initial-source；新增schema9/staged CAS/持久pending/重建owner/两入口actual核对/显式重连/provider删除过滤与epoch测试。Core/Desktop offline check、all-targets clippy `-D warnings`、workspace fmt、diff检查PASS。日志、初始失败与实现者code-delivery-review自查记录见新fix evidence；不称独立审查。
+
+**Native gap（本fix NOT_RUN）**：Codex Desktop仍须用隔离root/自有child验收真实进程在pending commit后、controller切换后/confirm前被中断，OS进程重启后从state/cache核对actual=requested和actual=old/default；验证actual=third/unknown时不重发、不Ready、pending保留，以及两个恢复入口版本/manifest一致。本Agent未启动真实sing-box、未操作真实桌面或既有app/child/root；前轮Native PASS不能替代新增pending中断验收。Host review通过之前不得恢复DONE。
+
+完整68卡DAG：**DONE19 / ACCEPTANCE1 / DOING0 / READY6 / TODO35 / DEFERRED7**（其它0，显式依赖不变、无环）。READY=P0-08/P2-05/P3-01/P4-02/P5-04/P5-06；P2-06 TODO（缺P2-04 DONE）。owner Runtime/Platform保留；无下游启动。无commit/push/fetch/pull/rebase/reset/restore/clean/stash。
+
+
+<a id="p2-04-uncovered-pending-pool-fix"></a>
+
+## P2-04 同一Finding第二边界：pending pool未被旧plan覆盖（2026-10-08）
+
+**当前状态仍ACCEPTANCE / P2-04-PENDING-PERSISTENCE-001 FIXED_PENDING_HOST_REVIEW / owner Runtime/Platform保留。** Host independent review指出，旧reconcile仅遍历artifact index，遗漏当前业务新pool的pending，可能错误Ready；原361 Core/85 Desktop PASS及全部旧日志作为当时结果保留，不代表该边界已覆盖。新增[fix evidence](evidence/p2-04/pending-persistence-fix/uncovered-pool-20261008/README.md)，不覆盖前轮日志。
+
+Runtime `require_pending_coverage`按PoolId/NodeId校验所有业务pending均被当前plan的index覆盖。在compile/recovery-load之后、finalize/check/prepare之前拒绝静态不兼容candidate，返回SelectionPending，无PUT/CAS/clear，不停止当前child；prepare完成后、stop_old_writer之前再检查最新快照，如期间新增未覆盖pending则取消prepared candidate，保留旧child/identity/endpoints与业务意图。选择此边界是因为pool/index覆盖无需run或controller事实即可判定，不应破坏旧writer。恢复旧plan不删除或默认替换当前pending，不使用其它pool/manifest/display name猜测。
+
+reconcile开始读取最新业务快照、验证epoch并全量覆盖，再逐组GET按既有actual=pending/old/third语义处理；ReconcileSelection同样遵守。成功前最终验证`pending_in(latest).is_empty()`，优先报告SelectionPending，不能仅依赖循环覆盖或选择版本。若循环期间已有confirmed CAS，又出现新的未覆盖pending，则保留已确认结果与剩余意图，candidate停止、不Ready、不自动rollback另一实例消除不确定事实；已Ready的原child在显式重连拒绝时仍保留真实实例资源。
+
+自动验证：新增5 test函数，覆盖v11成功→v12新pool Ready但manifest失败→不确定选择→Mock进程结束/重建owner→Restore v11静态拒绝；已有v12 child与两pending的旧active child都保持identity/endpoints/counters；部分覆盖不GET/PUT/CAS；完整ApplySaved可确认两个pending；Restart裁剪pool拒绝；prepare/read期间新增pending及部分CAS后最终gate保留另一意图。完整Core **366/366**、Desktop **85/85** PASS（3 Native ignored、NOT_RUN）；两crate offline check/all-targets clippy `-D warnings`、fmt、diff PASS。初始2回归失败和完整365 PASS/1 FAIL的版本断言失败（漏算新增pool confirmed事实的revision）分别保留，最终纠正后PASS。实现者按code-delivery-review自查，无新增未修复代码Finding；不称独立review。
+
+本轮只改Core manual_runtime及其Mock/tests，配套文档/local-only evidence；无schema/API/依赖/Backend视觉变更，无Native、桌面、真实sing-box、现有app/child/root操作。真实pending进程中断/重启仍留给Codex Desktop/Host，不能自恢复DONE。DAG依赖/状态不变：DONE19 / ACCEPTANCE1 / READY6 / TODO35 / DEFERRED7；P2-06 TODO，owner保留，无下游启动，无commit/push/fetch/pull/rebase/reset/restore/clean/stash。
+
+
+<a id="p2-04-pending-native-acceptance"></a>
+## P2-04 pending 最终 Native Acceptance（2026-10-08）
+
+**Native Gate PASS；当前 P2-04 ACCEPTANCE / P2-04-PENDING-PERSISTENCE-001 FIXED_PENDING_HOST_REVIEW / owner Runtime/Platform 保留，等待 ChatGPT/Host 独立 review。** 本轮仅增加 Desktop `manual_sidecar.rs` 的 ignored `#[cfg(test)]` harness，production code/UI 未修改。fixed sing-box 1.14.0 darwin-arm64、binary SHA256 `973388c3f720e918fc64dff7fd75dde14b31cc1aa6fc15855e2f00c5291dd4f4` 每次执行前复核。最终 source aggregate SHA256 `5a62b80a19b1c26b46f32f2e5b1fdba8079dc04622654da9679df01f74fd6671`；完整身份与日志见[本轮 Native evidence](evidence/p2-04/pending-native-acceptance-20261008-082538/README.md)。
+
+六组独立 OS stage（old/pending/third × ApplySaved/RestoreLastSuccessful）全部 PASS：真实 pending 先原子落盘、controller GET=a/b/c；Stop/reap 关闭唯一 writer、setup OS 退出并由 parent wait 后，新进程读同 root/cache。old→clear、pending→confirm，selection 0→1→2；third→SelectionPending、selected=a/pending=b、selection 0→1→1、applied=None/no Ready、candidate 清理。startup PUT 均0；config/applied配置版本保持11、manifest仅confirmed；成功恢复新secret/new instance，动态端口仅由自有日志取得。本轮正常关闭child后退出stage，不冒称SIGKILL/crash注入。
+
+正式v11 Apply/Stop/Restore后增加新pool，真实旧plan缺一个及两个pending的preflight均PASS：当前instance/PID/两端点不变、listener存活，check/prepare/stop/run/GET/PUT均0、无部分CAS。无需伪造plan或Native N/A。unknown/read timeout = CORE_FAULT_INJECTION_ONLY。
+
+修改前与最终源码的P2-03/P2-04旧Native均PASS。最终Core366/366、Desktop85/85（8 ignored已通过显式父test/stage覆盖）、两包check/all-targets clippy -D warnings、fmt/diff PASS。逐阶段lsof单writer/关闭SHA/mtime交接、child/group/reap/listener/candidate目录与成功root清理PASS。首次harness路径canonicalization FAIL保留；该诊断root无存活child/listener/writer，其余成功root清理。实现者code-delivery-review自查无剩余问题，不称独立review。
+
+完整68卡DAG不变：DONE19 / ACCEPTANCE1 / READY6 / TODO35 / DEFERRED7；P2-06 TODO，全部下游未启动。未操作正式Veyra root/既有app或child/System Proxy/TUN，无commit/push/fetch/pull/rebase/reset/restore/clean/stash。
+
+<a id="p2-04-host-rework-fix"></a>
+## P2-04 Host REWORK 有界修正（2026-10-08）
+
+**Host 独立审查结论 REWORK（P1 + P2）保留；当前修正 FIXED_PENDING_HOST_REVIEW。P2-04 仍 ACCEPTANCE，owner Runtime/Platform 保留；P2-06 TODO，无下游或 DAG 状态变更。** 这是实现者修正与自查，不是独立复审/Host PASS，不自行 DONE。前轮 Native PASS 只绑定其原 source；`pending-native-acceptance-20261008-082538` 全部证据未写入，本轮新源码 Native/GUI NOT_RUN。
+
+- **P1 旧 cache 误清 pending**：v11 cache=a 成功、v12 Ready 但 manifest 提交失败；PUT=b 成功后 GET 失败留下持久 pending=b；下一次 ApplySaved 的 Run/Ready 失败，原路径恢复 v11 cache=a，再 GET=a/CAS clear 并错误 Ready。现候选清理后先读持久 pending，存在则 SelectionPending，保留意图/live cache，不起旧 cache rollback child。rollback 自身的 reconcile 也禁止解决后来出现的 pending，不通过新的回退实例猜测。无 pending 的一次回退/cleanup 保持既有测试。
+- **显式 Restore 同样受来源约束**：有 active 时恢复 artifact SHA 必须与当前 active plan 一致（不仅比较 config revision 或 cache 字节）；关闭 writer 后使用其最新 cache。重建 owner 仅接受 live cache 与 manifest cache 引用的字节摘要一致，不拿不同的旧快照覆盖 live 再推断 actual。不满足则在 prepare/check/Stop 前保留 child/identity/endpoints/pending 并拒绝；prepare 后再次检查新增 pending。actual 仍只由本次受管 controller GET 提供，不解析 cache 内容判断节点。可信当前 child 的显式 ReconcileSelection 或 ApplySaved 成功确认后，才可按已确认业务事实恢复；v12 确认不能把 v11 manifest 记录保存冒称成功。
+- **P2 同池 GET 并发后的旧 PUT**：初次 state 无 pending，GET 时同池发布 pending=b 且 actual=b，原路径仍 PUT=a 再由最终 gate 报 pending。现全部 controller PUT 共用 SnapshotService 的共享 selection write gate；持锁核对完整 SelectionVersion（epoch + revision），持续覆盖有超时的 PUT/GET，避免核对与写入之间再发生业务提交。gate 不覆盖 check/run/Stop/cache；现有 platform 每次 PUT/GET 的 10s 超时不变，其他业务写在此期间按既有 Busy 失败，释放后正常提交。确认/clear 在释放锁后仍需完整版本与 requested 的 CAS；冲突不丢已提交的部分确认，不新 Ready/manifest 假确认。
+
+**验证**：新增 5 项确定性 Mock 回归，覆盖 P1 Run/Ready 两故障、active/重建 owner 显式 Restore、cache 字节相同但 active plan 不同、ReconcileSelection/ApplySaved/Restore 三入口同池 GET 并发、两 controller 写入口共享 gate、epoch 替换以及部分确认 CAS 冲突。初始 **4 FAIL / 1 PASS** 原日志保留；修正中 **27 PASS / 1 FAIL**（测试误将 ApplySaved 后最新成功版仍断言为11）及完整 Core **370 PASS / 1 FAIL**（断言误假定 pending 排序）各自保留，最终断言精确核对版本、PoolId/requested、业务事实、manifest、PUT 数、cache 字节、identity/endpoints/cleanup，不弱化旧测试。最终 Core **371/371**（既有366 + 新增5，doc-tests0不计）、Desktop **85/85，8 ignored NOT_RUN**；两 crate offline `check --all-targets`、`clippy --all-targets -- -D warnings`、workspace fmt 与 `git diff --check` PASS。Core 包含既有自有 loopback fixtures/测试 executable 子进程，不称纯 Mock，更不作为 Native/GUI/公网验收；不执行真实 sing-box 或 ignored Native。Cargo 原有 `block 0.1.6` future-incompat 提示保留，无本次 lint 错误。
+
+**改动与身份**：产品/测试只改 `crates/veyra-core/src/application/manual_runtime.rs`、`manual_runtime/tests.rs`、必要 `state_service.rs` 共享 gate（14行新增）；配套仅本 Markdown、SESSION 与新 ignored evidence。无 Desktop/UI/schema/依赖/任务总表变更；开始时631文件工作树 hash 核对无关变更保留。三文件 source aggregate SHA256 `987a01782c59d75c913f20a8133fd37df27638951f73cf3168cb2b35c3ff4fa8`，完整算法/逐文件 hash/真实命令退出码与初始 FAIL、最终 PASS 见[新证据](evidence/p2-04/host-rework-fix-20261008-085206/README.md)。按 [code-delivery-review](../../.agents/skills/code-delivery-review/SKILL.md) 完成实现者自查，本次修正未发现剩余可操作 Finding；独立 Host review 与新 Native 验收仍待完成。无真实内核/GUI/现有 app、child、正式 root/系统代理/TUN/权限操作，无禁止的 Git 写操作。
+
+
+<a id="p2-04-host-rework-native"></a>
+## P2-04 Host修复绑定源码 Native复验（2026-10-08）
+
+**既有Native回归PASS；P1/P2真实控制器+限定故障注入补验PASS。P2-04继续ACCEPTANCE / Finding FIXED_PENDING_HOST_REVIEW / owner Runtime/Platform保留，等待Host对本轮证据最终复核。** Host已通过Core修复独立代码复审（当前用户说明）；本轮实现者自查不冒充独立review。
+
+严格重验三文件aggregate `987a01782c59d75c913f20a8133fd37df27638951f73cf3168cb2b35c3ff4fa8`，每条最终命令前核对源码/内核，production/UI未修改；只扩展Desktop real_tests的cfg(test) wrapper及3个ignored tests。固定sing-box1.14.0 darwin-arm64，SHA256 `973388c3f720e918fc64dff7fd75dde14b31cc1aa6fc15855e2f00c5291dd4f4`。完整身份、实际命令/退出码/日志和注入边界见[本轮独立evidence](evidence/p2-04/host-rework-native-20261008-091526/README.md)。
+
+P2-03/P2-04初始及最终回归、old/pending/third×ApplySaved/Restore六组跨OS进程、旧plan缺一个/两个pending preflight均PASS。P1真实v11→v12 Ready配合隔离目录写失败、丢弃真实GET=b结果、Run/Ready错误注入，证明pending12/1不被旧cache回退消除；active与closed来源不一致的Restore预检拒绝，manifest11/selection0保留；随后无PUT的实际GET=b确认到12/2。P2三入口GET结果返回前发布同池pending，不PUT旧a；Reconcile保留原child/端点，replacement入口清理candidate/no applied；旧revision、错误epoch、重复CAS被拒绝，精确确认到11/2，另验证epoch替换与共享写锁Busy。
+
+本轮注入不等于内核自然故障：自然HTTP超时/断线、自然spawn/内核启动失败、无控制线程race、SIGKILL仍NOT_RUN；unknown/read timeout/相同opaque cache但不同plan等为CORE_FAULT_INJECTION_ONLY。未伪造HTTP响应或写运行中cache。没有GUI/SystemProxy/TUN/既有app、child、正式root/openbox.disign.me操作。
+
+新增3/3（7个fixture）PASS；最终Core371/371、Desktop85/85（11 ignored已显式覆盖）、两包check/all-targets clippy、fmt/diff PASS。精确lsof单writer、关闭cache交接、candidate清理及成功root删除PASS；独立核验46内核PID/PGID、13 stage/test PID均退出、102端点拒绝连接。历史PASS/FAIL及失败root不改写/不触碰。DAG仍DONE19/ACCEPTANCE1/READY6/TODO35/DEFERRED7，P2-06 TODO，无owner释放/下游启动/commit/push。
+
+
+<a id="p2-04-final-host-closeout"></a>
+## P2-04 Host FINAL ACCEPTANCE 收口（2026-10-08，当前）
+
+**OBG-P2-04：ACCEPTANCE → DONE；P2-04-PENDING-PERSISTENCE-001 与前轮 Host P1 旧 cache/pending、P2 同池 GET/PUT 竞态两项 Finding：FIXED_PENDING_HOST_REVIEW → CLOSED。Runtime/Platform 及 Runtime 公共契约 owner/本卡预约释放。** Host 已在本轮独立确认本 Task 验收 **PASS** 并授权文档收口；这是记录 Host 的确认，不是实现者自查冒充独立复审。原首次 DONE、重开、Finding、FAIL/REWORK/候选与历史 PASS/NOT_RUN 段按当时事实保留；不改写原证据。
+
+**Host 绑定身份与核验**：三 Core 文件 SHA 与 [source identity](evidence/p2-04/host-rework-native-20261008-091526/source-identity.json) 精确一致，aggregate `987a01782c59d75c913f20a8133fd37df27638951f73cf3168cb2b35c3ff4fa8`；Desktop `manual_sidecar.rs` test harness SHA256 `06d2b0f93e69af498ca7e298ffc259b9575f5acd1fc3e84c2d06bc402f78b24a`。Host 已核验77条 Native结构化事件与逐行原日志完全一致，六组 old/pending/third × ApplySaved/RestoreLastSuccessful 的 actual、startup PUT=0、manifest版本及旧plan缺一个/两个pending preflight全面 PASS；P1 两类真实child配合限定故障注入、保留cache后无PUT的实际GET=b确认，P2同池GET交错、精确CAS、共享gate/epoch均 PASS。原14条最终命令exit0；完整 [Native/注入证据与边界](evidence/p2-04/host-rework-native-20261008-091526/README.md) 保持原样。
+
+Host 自己经 MCP 新复跑 Core **371/371，exit0**，receipt `CommandRun command-5654-1791423312116059-98`；Desktop **85/85，exit0**，receipt `CommandRun command-5654-1791423346868107-99`，**11 ignored由显式Native父test覆盖**。这是 Host 在当前会话提供的人工确认和命令 receipt；本收口轮不另跑 Cargo/Native/GUI，不伪造新的运行日志。自然HTTP/OS故障、SIGKILL、无控制线程竞态压力仍 **NOT_RUN**；unknown/read timeout等限定Core注入边界保留，不扩为本Task额外Native PASS。正常Stop/reap不称SIGKILL。
+
+**当前 DAG**：68条唯一任务及其原显式依赖独立核验一致、无环；**DONE20 / ACCEPTANCE0 / READY7 / TODO34 / DEFERRED7**，DOING/REVIEW/BLOCKED均0；macOS **20/61**，P2 **5/10**。只有 P2-04 ACCEPTANCE→DONE 与 P2-06 TODO→READY；READY=P0-08/P2-05/P2-06/P3-01/P4-02/P5-04/P5-06，全部未领取/未启动，其它任务状态/依赖不变。
+
+**本轮范围与版本控制**：仅本卡、IMPLEMENTATION_PHASES、SESSION及新 ignored [Host收口记录/独立静态核验](evidence/p2-04/final-host-closeout-20261008/README.md)。业务源码与harness SHA前后不变；未操作正式root、已有app/live child、GUI、网络设置、SystemProxy/TUN、权限或openbox.disign.me，cleanup/live资源复验 **NOT_RUN**。owner释放不意味着现场资源已清理。只读提交隔离评估 **BLOCKED**：HEAD `0230aa72539375b622422e0e76e009a399b81669` 缺P2-04所依赖的前序未提交实现及本卡Runtime/adapter模块，当前index无已暂存修改；无法形成不混入前序内容且可重建自洽的独立P2-04提交。未stage/commit、不制造空提交，不触碰index/dirtytree；后续基线整合由Host处理，无push/fetch/pull/rebase/reset/restore/clean/stash。

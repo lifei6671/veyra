@@ -235,3 +235,28 @@ Codex /root · Runtime/Platform；起始 HEAD `3111a57`、工作树干净。只�
 实现包含独立 disabled/unassociated service、OS peer 凭据二次校验、root-only config + 降权 child FD、按字段组保留外部改写、写前持久恢复记录、SCPreferences lock 下核对 expected 字段、owner/child NOTE_EXIT 与 RecoveryRequired 保留现场、restore/stop→bootout→delete 的 finally 路径；不能将已编译路径描述为实机通过。5 项纯定向测试保护输入/时限与恢复契约，不启动特权 child 或系统网络；[validation.json](evidence/p0-05/validation.json)区分构建、普通用户实测和 NOT_RUN。
 
 所有本轮普通用户 child 已回收、group/listener 关闭；专用 tmp/staging/archive/config 删除；原型 `/Library` helper/plist/root/socket 与 launchd label 不存在，从未创建测试 Network Service。失败历史保留，未 commit/push。DAG 68 卡不变：DONE 7、ACCEPTANCE 1、READY 1、TODO 52、Windows DEFERRED 7；READY 仅 P1-03，P0-06/P0-08/P0-09 仍 TODO，不启动下游。下一步仅在可安全呈现标准系统管理员 UI 的本机环境，以固定原型入口补特权实测并严格清理。
+
+### P0-05 read_frame 真实复验追加（2026-10-06 13:20）
+
+[旧RecoveryRequired独立清理](evidence/p0-05/desktop-recovery-cleanup-20261006-132006/README.md) PASS 后，[新版真实批准](evidence/p0-05/desktop-readframe-fix-20261006-132202/README.md) 已证明 root安装/新路径daemon/socket/首步Status；read errno22未复现。cycle1 step2精确失败于 `StartSystemProxyTest.child_readiness: child startup timeout; no proxy write`，未到recovery_save/network_write。不猜测根因，不修改源码。最终cleanup独立PASS、主用网络hash unchanged；自动验证30 Rust/2 Python及指定八条命令PASS。完整daily/受管代理恢复/owner SIGKILL/conflict/security rejection仍未完成，P0-05保持ACCEPTANCE、owner保留，P0-06/P0-08 TODO、READY=[]，未启动下游、未commit/push。历史失败与旧RECOVERY现场说明原样保留，当前现场已完全清理。
+
+### P0-05 child readiness诊断复验追加（2026-10-06 13:41）
+
+[本轮真实诊断](evidence/p0-05/desktop-readiness-diagnostics-20261006-134101/README.md)：当前Host修复版本正常构建后仅一次标准批准，安装/新路径daemon/socket/Status PASS；child PID/PGID52916业务身份正确，但731ms exit1，完整stderr给出 `read config at /dev/fd/3: open /dev/fd/3: permission denied`，不是无信息timeout。未到recovery_save/network_write，无managed代理修改。保持ACCEPTANCE，C实际FAIL，完整daily/lifecycle/conflict/security NOT_RUN；不猜修复、不改源码。独立cleanup及主用网络三组hash unchanged PASS，Rust40/Python2与八条命令PASS。历史USER_CANCELLED继续消费，不重复取消或授权；P0-06/P0-08保持TODO、READY=[]，未启动下游、未commit/push。
+
+### P0-05 FD3 pipe真实复验追加（2026-10-06 13:59）
+
+[本轮证据](evidence/p0-05/desktop-fd3-pipe-20261006-135940/README.md)：同一标准UI一次真实批准，当前版本FD3 anonymouspipe实测PASS；磁盘config仍root0600，actual425bytes/hash来自读回同一字节，两轮ready ports/controller auth/business UID/GID/PGID通过，不再出现permission denied。fixed privileged probe全流程内层PASS：两轮exactrestore、CLI owner disconnect/SIGKILL/NOTE_EXIT/reaped/group/listener、externalPAC conflict/finalsnapshot及独立cleanup/mainhash unchanged。47Rust/2Python与八命令PASS，独立Review另列范围。但E尚缺实际executable/service字段及root daemon总消息deadline请求，原卡真实GUIowner未执行，不能把实现/单测/CLI owner替代这些证据；P0-05保持ACCEPTANCE/owner，P0-06/P0-08 TODO、READY=[]。本轮未改源码或历史evidence、未重复授权或取消、未启动下游、未commit/push。
+
+### P0-05 最终真实GUI owner收口（2026-10-06 14:27起）
+
+[真实 GUI owner 最终验收](evidence/p0-05/gui-owner-final-20261006-142752/README.md)补足原卡最后GUI缺口：GUI/marker/helper owner PID74759一致，child74789/ports59100–59101/ready FD3，Host确认实际ready窗口。14:31:12 SIGKILL后owner_NOTE_EXIT、restore_readback/reaped/group_empty true，实例null/无recovery，独立child/group/listener absent；isolated Service完整snapshot精确恢复。标准UI卸载与finalcleanup/main三组hash unchanged PASS。本轮没有源码变更，保留初次shell进程退出NOT_RUN与历史失败。A/B/C/D/E原卡PASS，增强三项optional NOT_RUN；自动验证和独立Review完成，P0-05 ACCEPTANCE→DONE、owner释放；68卡DONE14/READY2/TODO45/DEFERRED7，READY仅P0-06/P0-08且未启动，未commit/push。
+
+<a id="p0-06-delivery"></a>
+## P0-06 显式出站原型交付（2026-10-06）
+
+[完整证据与四组合矩阵](evidence/p0-06/20261006-144632/README.md)：仅feature原型，复用subscription/fetch HTTP builder/manual redirect。Direct no_proxy + 固定IP TLS DoH、Via固定调用方current loopback instance；跨源四类source credential清除，无silent fallback，无订阅可自举，失效proxy明确失败。两独立HTTPS endpoint的Direct与自有mixed均返回104.28.196.30；实际route仍utun7，仅EXTERNAL_TUN_ACTIVE_OBSERVATION，不冒充物理Direct/TUN bypass PASS。
+
+现有外部TUN为PROTECTED_EXTERNAL_RESOURCE，未停止/修改/重启/接管，未启动第二个TUN。SystemProxy ON未建立安全active Service写入/精确恢复/control marker条件，UNSUPPORTED；TUN OFF/process_path/auto_detect_interface/bind/FakeIP bypass统一INCOMPLETE_EXTERNAL_TUN_ACTIVE：Existing user TUN is protected and was not modified. 原卡第4项允许明确范围决定，因此本卡DONE；后续消费者不能据此声称受管TUN直连支持。
+
+自有sing-box仅mixed PID84634/PGID84634/port55978，已reaped/group-empty/listener-closed；外部utun身份/配置、默认路由、DNS/系统代理和三组主网络hash相同。完整route-table hash不同、原因未证，不称完整表exact unchanged。后发现Karing provider PID6037的pre-run启动时间和final身份单列，owner→interface仍candidate。P0-05 437文件及卡片区段SHA保持不变。默认全core并行Document Busy历史FAIL、初轮fixture/clippy FAIL保留；全量串行和修订后验证均PASS，独立code-delivery-review PASS。[最新68-card DAG](evidence/p0-06/20261006-144632/dag.json)：DONE15/ACCEPTANCE0/READY2/TODO44/DEFERRED7，READY仅P0-08/P2-01，不启动。
