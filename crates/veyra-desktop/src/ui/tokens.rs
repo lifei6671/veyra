@@ -311,6 +311,23 @@ pub mod backend {
 
 // OpenBox openbox.css:1311–1465 节点组；原版固定逻辑像素，不取 Kit 默认值。
 pub mod groups {
+    pub const COMPACT_RADIUS: f32 = 7.;
+    pub const FOOTER_GAP: f32 = 10.;
+    pub const PRIMARY_TEXT: f32 = 11.;
+    pub const HINT_LINE: f32 = 16.;
+    pub const FOOTER_BUTTON_PAD: f32 = 14.;
+    pub const LOADING_HEIGHT: f32 = 180.;
+    pub const LOADING_ICON: f32 = 28.;
+    // OpenBox .group-member-* / .group-scale-control 的局部尺寸。
+    pub const FILTER_TEXT: f32 = 12.;
+    pub const FILTER_EXTRA: f32 = 32.;
+    pub const SEARCH_PAD: f32 = 10.;
+    pub const MEMBER_LINE: f32 = 20.;
+    pub const MEMBER_BADGE_HEIGHT: f32 = 16.;
+    pub const MEMBER_BADGE_PAD: f32 = 6.;
+    pub const MEMBER_BADGE_TEXT: f32 = 10.;
+    pub const MEMBER_CHECK_RADIUS: f32 = 6.;
+    pub const CHECK_COLOR: u32 = 0x17382b;
     pub const FALLBACK_ICON: f32 = 15.;
     pub const RULE_CHECK_RADIUS: f32 = 2.;
     pub const BADGE_PAD_X: f32 = 7.;

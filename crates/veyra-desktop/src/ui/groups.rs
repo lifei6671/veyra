@@ -98,6 +98,7 @@ pub struct GroupsView {
     visible: bool,
     request: u64,
     load_error: bool,
+    loading: bool,
     error: Option<GroupSaveError>,
     draft: Option<NodeGroup>,
     inputs: [Entity<InputState>; 9],
@@ -129,7 +130,7 @@ impl GroupsView {
         });
         let rule = cx.new(|cx| {
             SelectState::new(
-                vec!["自动择优", "手动选择"],
+                vec!["自动择优（url-test）", "手动选择（select）"],
                 Some(IndexPath::new(0)),
                 window,
                 cx,
@@ -138,7 +139,7 @@ impl GroupsView {
         let filters = std::array::from_fn(|_| {
             cx.new(|cx| {
                 SelectState::new(
-                    vec!["全部", "节点组", "节点"],
+                    vec!["全部", "全部节点组", "全部节点"],
                     Some(IndexPath::new(0)),
                     window,
                     cx,
@@ -160,7 +161,7 @@ impl GroupsView {
                     return;
                 }
                 if let (Some(d), SelectEvent::Confirm(Some(v))) = (&mut this.draft, event) {
-                    d.rule = if v.as_ref() == "手动选择" {
+                    d.rule = if v.as_ref() == "手动选择（select）" {
                         GroupRule::Selector
                     } else {
                         GroupRule::UrlTest
@@ -200,6 +201,7 @@ impl GroupsView {
             visible: false,
             request: 0,
             load_error: false,
+            loading: false,
             error: None,
             draft: None,
             inputs,
@@ -250,6 +252,7 @@ impl GroupsView {
         };
         self.request += 1;
         self.busy = true;
+        self.loading = save.is_none();
         self.error = None;
         self.load_error = false;
 
@@ -272,6 +275,7 @@ impl GroupsView {
             return None;
         }
         self.busy = false;
+        self.loading = false;
         match result {
             Ok(state) => {
                 self.state = Some(state.clone());
@@ -306,8 +310,20 @@ impl GroupsView {
                 if let Some(state) = &snapshot {
                     self.state = Some(state.clone());
                 }
-                self.load_error = self.state.is_none();
-                self.error = Some(error);
+                self.load_error = !saved;
+                if saved {
+                    // React persist 的失败走同一全局通知；保留编辑草稿供原地重试。
+                    let message = error_text(
+                        &error,
+                        self.state.as_deref(),
+                        self.draft.as_ref(),
+                        cx.global::<super::i18n::Locale>().0,
+                    );
+                    components::notify(components::Notice::Error, message, window, cx);
+                    self.error = None;
+                } else {
+                    self.error = Some(error);
+                }
                 cx.notify();
                 snapshot
             }
@@ -382,7 +398,7 @@ impl GroupsView {
         cx.notify();
     }
     fn refresh_filters(&mut self, window: &mut Window, cx: &mut Context<Self>) {
-        let mut options = vec!["全部".to_owned(), "节点组".into(), "节点".into()];
+        let mut options = vec!["全部".to_owned(), "全部节点组".into(), "全部节点".into()];
         for member in self.members() {
             if !member.subscription.is_empty() && !options.contains(&member.subscription) {
                 options.push(member.subscription);
@@ -509,12 +525,12 @@ impl GroupsView {
         }));
         members
     }
-    fn pane_members(&self, side: usize, cx: &App) -> Vec<Member> {
+    fn member_pool(&self, side: usize) -> Vec<Member> {
         let Some(draft) = &self.draft else {
             return vec![];
         };
         let all = self.members();
-        let pool = if side == 0 {
+        if side == 0 {
             all.into_iter()
                 .filter(|m| !draft.members.contains(&m.id))
                 .collect::<Vec<_>>()
@@ -533,7 +549,10 @@ impl GroupsView {
                         })
                 })
                 .collect()
-        };
+        }
+    }
+    fn pane_members(&self, side: usize, cx: &App) -> Vec<Member> {
+        let pool = self.member_pool(side);
         let search = self
             .value(
                 if side == 0 {
@@ -550,8 +569,8 @@ impl GroupsView {
             .filter(|m| {
                 (search.is_empty() || m.name.to_lowercase().contains(&search))
                     && (filter == "全部"
-                        || (filter == "节点" && matches!(m.id, OutboundId::Node(_)))
-                        || (filter == "节点组" && !matches!(m.id, OutboundId::Node(_)))
+                        || (filter == "全部节点" && matches!(m.id, OutboundId::Node(_)))
+                        || (filter == "全部节点组" && !matches!(m.id, OutboundId::Node(_)))
                         || filter == &m.subscription)
             })
             .collect()
@@ -561,19 +580,7 @@ impl GroupsView {
             return;
         }
         if let Some(draft) = &mut self.draft {
-            for id in ids {
-                if id == OutboundId::Block {
-                    continue;
-                }
-                if side == 0 {
-                    if !draft.members.contains(&id) {
-                        draft.members.push(id.clone());
-                    }
-                } else {
-                    draft.members.retain(|m| m != &id);
-                }
-                self.checked[side].remove(&id);
-            }
+            transfer_members(&mut draft.members, &mut self.checked[side], side, ids);
         }
         cx.notify();
     }
@@ -593,13 +600,15 @@ impl GroupsView {
             .flex()
             .h(px(t::CONTROL))
             .child(
-                components::icon_button(
+                components::icon_button_content(
                     "scale-down",
                     tr(cx, "缩小"),
-                    "Minus",
                     t::groups::CARD_ACTION,
+                    icon("Minus", t::BODY),
                 )
                 .disabled(self.busy)
+                .h(px(t::CONTROL))
+                .bg(cx.theme().foreground.opacity(0.07))
                 .rounded_none()
                 .rounded_l(px(t::RADIUS))
                 .on_click(cx.listener(|this, _, window, cx| this.scale(-1, window, cx))),
@@ -607,17 +616,39 @@ impl GroupsView {
             .child(
                 div()
                     .w(px(t::groups::SCALE_VALUE))
-                    .child(self.input(Field::Scale, cx)),
+                    .flex_shrink_0()
+                    .ml(px(-1.))
+                    .child(
+                        components::text_input(&self.inputs[Field::Scale as usize])
+                            .disabled(self.busy)
+                            .border_focus()
+                            .px_0()
+                            .py_0()
+                            .rounded_none()
+                            .font_family("SFMono-Regular")
+                            .text_size(px(t::SMALL))
+                            .text_center()
+                            .bg(cx.theme().popover),
+                    ),
             )
             .child(
-                components::icon_button("scale-up", tr(cx, "放大"), "Plus", t::groups::CARD_ACTION)
-                    .disabled(self.busy)
-                    .rounded_none()
-                    .on_click(cx.listener(|this, _, window, cx| this.scale(1, window, cx))),
+                components::icon_button_content(
+                    "scale-up",
+                    tr(cx, "放大"),
+                    t::groups::CARD_ACTION,
+                    icon("Plus", t::BODY),
+                )
+                .ml(px(-1.))
+                .disabled(self.busy)
+                .h(px(t::CONTROL))
+                .bg(cx.theme().foreground.opacity(0.07))
+                .rounded_none()
+                .on_click(cx.listener(|this, _, window, cx| this.scale(1, window, cx))),
             )
             .child(
                 group_button("scale-reset", tr(cx, "重置"), t::BODY)
                     .w(px(t::groups::SCALE_RESET))
+                    .bg(cx.theme().foreground.opacity(0.07))
                     .px_0()
                     .rounded_none()
                     .rounded_r(px(t::RADIUS))
@@ -650,6 +681,7 @@ impl GroupsView {
         let mut rules = div().flex().items_end().gap(px(t::PAD)).child(field(
             "分组规则",
             Select::new(&self.rule, tr(cx, "分组规则"))
+                .compact()
                 .disabled(self.busy)
                 .w(px(t::groups::RULE_FIELD)),
             cx,
@@ -703,9 +735,13 @@ impl GroupsView {
                 .map(|(mode, label)| {
                     group_button(label, tr(cx, label), t::BODY)
                         .ghost()
+                        .rounded(px(t::groups::COMPACT_RADIUS))
+                        .text_color(cx.theme().muted_foreground)
                         .px(px(t::GAP))
                         .disabled(self.busy)
-                        .when(mode == draft.mode, |b| b.primary())
+                        .when(mode == draft.mode, |b| {
+                            b.primary().text_color(rgb(t::groups::CHECK_COLOR))
+                        })
                         .on_click(cx.listener(move |this, _, _, cx| {
                             if let Some(d) = &mut this.draft {
                                 d.mode = mode;
@@ -744,21 +780,30 @@ impl GroupsView {
                         .py(px(6.))
                         .border_b_1()
                         .border_color(cx.theme().foreground.opacity(0.1))
-                        .text_size(px(12.))
-                        .child(format!("{} {}", tr(cx, "当前命中"), names.len())),
+                        .text_size(px(t::SMALL))
+                        .line_height(px(t::groups::HINT_LINE))
+                        .font_weight(super::theme::MISANS_MEDIUM)
+                        .child(
+                            tr(cx, "当前命中 {count} 个节点")
+                                .replace("{count}", &names.len().to_string()),
+                        ),
                 )
                 .child(
                     div()
                         .id("dynamic-members")
                         .max_h(px(t::groups::DYNAMIC_HEIGHT))
                         .overflow_y_scroll()
-                        .children(
-                            names
-                                .iter()
-                                .map(|name| div().px(px(t::PAD)).py(px(6.)).child(name.clone())),
-                        )
+                        .children(names.iter().map(|name| {
+                            div()
+                                .px(px(t::PAD))
+                                .py(px(6.))
+                                .text_size(px(t::BODY))
+                                .line_height(px(t::groups::MEMBER_LINE))
+                                .font_weight(super::theme::MISANS_REGULAR)
+                                .child(name.clone())
+                        }))
                         .when(names.is_empty(), |d| {
-                            d.child(hint("暂无匹配节点", cx).p(px(t::PAD)))
+                            d.child(hint("当前没有节点命中这些关键词", cx).p(px(t::PAD)))
                         }),
                 );
             form.child(
@@ -767,7 +812,10 @@ impl GroupsView {
                     .flex_col()
                     .gap(px(t::ROW_GAP))
                     .child(field("关键词", self.input(Field::Keywords, cx), cx))
-                    .child(hint("逗号分隔，留空匹配全部节点", cx))
+                    .child(hint(
+                        "节点名命中任一关键词就进组,留空 = 所有节点;新订阅也按此自动加入。",
+                        cx,
+                    ))
                     .child(results.mt(px(t::ROW_GAP))),
             )
         } else {
@@ -799,12 +847,8 @@ impl GroupsView {
                     .bg(cx.theme().button)
                     .disabled(self.busy || self.checked[side].is_empty())
                     .on_click(cx.listener(move |this, _, _, cx| {
-                        let ids = this
-                            .pane_members(side, cx)
-                            .iter()
-                            .filter(|m| this.checked[side].contains(&m.id))
-                            .map(|m| m.id.clone())
-                            .collect();
+                        // 筛选只改变显示；批量操作按完整原始顺序覆盖隐藏的勾选项。
+                        let ids = checked_members(&this.member_pool(side), &this.checked[side]);
                         this.transfer(side, ids, cx);
                     }))
                 }));
@@ -823,7 +867,7 @@ impl GroupsView {
         let title = format!(
             "{} ({})",
             tr(cx, if side == 0 { "可选" } else { "已选" }),
-            members.len()
+            self.member_pool(side).len()
         );
         let head = div()
             .flex()
@@ -838,7 +882,13 @@ impl GroupsView {
                     .flex()
                     .gap(px(t::GAP))
                     .items_center()
-                    .child(div().text_size(px(12.)).child(title))
+                    .child(
+                        div()
+                            .flex_shrink_0()
+                            .text_size(px(t::groups::FILTER_TEXT))
+                            .font_weight(super::theme::MISANS_MEDIUM)
+                            .child(title),
+                    )
                     .child(
                         div().flex_1().min_w_0().child(
                             components::text_input(
@@ -849,8 +899,11 @@ impl GroupsView {
                                 } as usize],
                             )
                             .disabled(self.busy)
+                            .border_focus()
+                            .bg(cx.theme().popover)
+                            .px(px(t::groups::SEARCH_PAD))
                             .h(px(t::groups::FILTER_HEIGHT))
-                            .text_size(px(12.)),
+                            .text_size(px(t::groups::FILTER_TEXT)),
                         ),
                     ),
             )
@@ -858,7 +911,8 @@ impl GroupsView {
                 div()
                     .flex()
                     .items_center()
-                    .children(["全选", "反选", "清空"].into_iter().enumerate().map(
+                    .gap(px(t::ROW_GAP))
+                    .children(["全选", "反选", "清空选择"].into_iter().enumerate().map(
                         |(action, label)| {
                             div().flex_shrink_0().child(
                                 group_button(label, tr(cx, label), t::SMALL)
@@ -894,8 +948,13 @@ impl GroupsView {
                     .child(div().flex_1())
                     .child(
                         Select::new(&self.filters[side], tr(cx, "成员筛选"))
+                            .compact()
                             .disabled(self.busy)
-                            .w(px(t::groups::FILTER_WIDTH))
+                            .w(px((tr(cx, &self.filter_values[side]).chars().count()
+                                as f32
+                                * t::groups::FILTER_TEXT
+                                + t::groups::FILTER_EXTRA)
+                                .min(t::groups::FILTER_WIDTH)))
                             .h(px(t::groups::FILTER_HEIGHT)),
                     ),
             );
@@ -939,6 +998,9 @@ impl GroupsView {
                     ))
                     .flex()
                     .min_h(px(t::groups::MEMBER_ROW))
+                    .text_size(px(t::BODY))
+                    .line_height(px(t::groups::MEMBER_LINE))
+                    .font_weight(super::theme::MISANS_REGULAR)
                     .items_center()
                     .gap(px(t::GAP))
                     .px(px(t::PAD))
@@ -966,6 +1028,8 @@ impl GroupsView {
                     })
                     .child(
                         gpui_kit::base::Button::new(("member-check", i))
+                            .size(px(t::ICON_SMALL))
+                            .flex_shrink_0()
                             .disabled(self.busy || blocked)
                             .accessibility_label(member.name.clone())
                             .child(
@@ -973,9 +1037,12 @@ impl GroupsView {
                                     .size(px(t::ICON_SMALL))
                                     .border_1()
                                     .border_color(cx.theme().border)
-                                    .rounded(px(6.))
+                                    .rounded(px(t::groups::MEMBER_CHECK_RADIUS))
                                     .when(checked, |d| {
-                                        d.bg(rgb(t::ACCENT)).child(icon("Check", t::ICON_SMALL))
+                                        d.bg(rgb(t::ACCENT)).border_color(rgb(t::ACCENT)).child(
+                                            icon("Check", t::groups::FILTER_TEXT)
+                                                .text_color(rgb(t::groups::CHECK_COLOR)),
+                                        )
                                     }),
                             )
                             .on_click(cx.listener(move |this, _, _, cx| {
@@ -985,29 +1052,51 @@ impl GroupsView {
                                 cx.notify();
                             })),
                     )
-                    .when(side == 1, |d| d.child(move_button()))
+                    .when(side == 1, |d| {
+                        d.child(
+                            div()
+                                .flex_shrink_0()
+                                .w(px(t::groups::FILTER_HEIGHT))
+                                .child(move_button()),
+                        )
+                    })
                     .child(
                         div()
-                            .flex_1()
                             .min_w_0()
                             .overflow_hidden()
                             .text_ellipsis()
                             .child(member.name.clone()),
                     )
-                    .when(blocked, |d| d.child(hint("暂不支持", cx)))
-                    .when(side == 0, |d| d.child(move_button()))
+                    .when(
+                        side == 0 && !matches!(member.id, OutboundId::Node(_)),
+                        |d| {
+                            d.child(
+                                div()
+                                    .flex_shrink_0()
+                                    .h(px(t::groups::MEMBER_BADGE_HEIGHT))
+                                    .px(px(t::groups::MEMBER_BADGE_PAD))
+                                    .rounded(px(t::ROW_GAP))
+                                    .bg(cx.theme().button)
+                                    .text_size(px(t::groups::MEMBER_BADGE_TEXT))
+                                    .line_height(px(t::groups::MEMBER_BADGE_HEIGHT))
+                                    .child(tr(cx, "出站节点")),
+                            )
+                        },
+                    )
+                    .when(side == 0, |d| d.child(div().flex_1()).child(move_button()))
             }))
             .when(members.is_empty(), |d| {
                 d.child(
                     hint(
                         if side == 0 {
-                            "暂无匹配节点"
+                            "没有匹配的条目。"
                         } else {
-                            "勾选左侧节点并加入"
+                            "勾选左边的条目,按中间的箭头加进来。"
                         },
                         cx,
                     )
-                    .p(px(t::PAD)),
+                    .p(px(t::PAD))
+                    .text_center(),
                 )
             });
         div()
@@ -1043,7 +1132,7 @@ impl GroupsView {
                 "添加分组"
             }
         } else if self.auto_open {
-            "自动分组"
+            "按国家自动分组"
         } else if matches!(self.confirmation, Some(Confirmation::Delete(_))) {
             "删除分组"
         } else {
@@ -1064,6 +1153,7 @@ impl GroupsView {
             )
         };
         let mut surface = div()
+            .font_weight(super::theme::MISANS_REGULAR)
             .flex()
             .flex_col()
             .w(px(if editing {
@@ -1093,7 +1183,7 @@ impl GroupsView {
                     .child(
                         div()
                             .text_size(px(t::SECTION_TITLE))
-                            .font_weight(FontWeight::BOLD)
+                            .font_weight(FontWeight(600.))
                             .child(tr(cx, title)),
                     )
                     .child(
@@ -1120,7 +1210,7 @@ impl GroupsView {
                 div()
                     .flex()
                     .justify_end()
-                    .gap(px(t::GAP))
+                    .gap(px(t::groups::FOOTER_GAP))
                     .min_h(px(t::groups::FOOTER))
                     .flex_shrink_0()
                     .px(px(t::SECTION_PADDING))
@@ -1144,25 +1234,34 @@ impl GroupsView {
                     )
                     .child(
                         group_button("group-cancel", tr(cx, "取消"), t::BODY)
+                            .px(px(t::groups::FOOTER_BUTTON_PAD))
+                            .font_weight(super::theme::MISANS_SEMIBOLD)
                             .disabled(busy)
                             .on_click(cx.listener(|this, _, window, cx| this.close(window, cx))),
                     )
                     .child(
                         group_button(
                             "group-save",
-                            tr(
-                                cx,
-                                if busy {
-                                    "保存中"
-                                } else if editing {
-                                    "保存"
-                                } else {
-                                    "确定"
-                                },
-                            ),
-                            t::BODY,
+                            if busy {
+                                tr(cx, "保存中").to_owned()
+                            } else if self.auto_open {
+                                tr(cx, "生成 {count} 个分组").replace(
+                                    "{count}",
+                                    &(self.auto_codes.len()
+                                        * self.auto_rules.iter().filter(|v| **v).count())
+                                    .to_string(),
+                                )
+                            } else {
+                                tr(cx, if editing { "保存" } else { "确定" }).to_owned()
+                            },
+                            t::groups::PRIMARY_TEXT,
                         )
                         .primary()
+                        .px(px(t::groups::FOOTER_BUTTON_PAD))
+                        .bg(rgb(t::ACCENT_STRONG))
+                        .text_color(rgb(0xffffff))
+                        .when(busy, |b| b.child(components::loading_spinner(t::BODY, cx)))
+                        .font_weight(super::theme::MISANS_SEMIBOLD)
                         .disabled(cannot_save)
                         .on_click(cx.listener(|this, _, _, cx| {
                             if this.draft.is_some() {
@@ -1233,7 +1332,7 @@ impl GroupsView {
                     .w(px(t::groups::COUNTRY_PICKER))
                     .disabled(self.busy)
                     .child(icon("GlobeAlt", t::ICON_SMALL))
-                    .child(div().flex_1().child(tr(cx, "添加地区")))
+                    .child(div().flex_1().child(tr(cx, "添加国家/地区")))
                     .child(icon("ChevronDown", t::BODY)),
             )
             .content(move |_, _, cx| {
@@ -1248,9 +1347,9 @@ impl GroupsView {
             .flex_col()
             .gap(px(t::SECTION_PADDING))
             .child(field(
-                "分组规则",
+                "要建哪种组（可以都建）",
                 div().flex().gap(px(t::SECTION_PADDING)).children(
-                    ["自动择优", "手动选择"]
+                    ["自动择优（url-test）", "手动选择（select）"]
                         .into_iter()
                         .enumerate()
                         .map(|(i, label)| {
@@ -1295,34 +1394,21 @@ impl GroupsView {
                             .items_center()
                             .gap(px(t::GAP))
                             .min_h(px(t::CONTROL))
-                            .child(hint("国家地区", cx))
+                            .child(div().text_size(px(t::BODY)).child(tr(cx, "选择国家/地区")))
                             .child(div().flex_1())
                             .child(picker)
                             .child(
                                 group_button(
                                     "clear-countries",
-                                    tr(
-                                        cx,
-                                        if self.auto_codes.is_empty() {
-                                            "重置"
-                                        } else {
-                                            "清空"
-                                        },
-                                    ),
+                                    tr(cx, "清空选择"),
                                     t::SMALL,
                                 )
                                 .ghost()
-                                .disabled(self.busy)
+                                .disabled(self.busy || self.auto_codes.is_empty())
                                 .text_size(px(t::SMALL))
                                 .on_click(cx.listener(
                                     |this, _, _, cx| {
-                                        if this.auto_codes.is_empty() {
-                                            this.auto_codes = ["HK", "TW", "SG", "JP", "KR", "US"]
-                                                .map(str::to_owned)
-                                                .to_vec();
-                                        } else {
-                                            this.auto_codes.clear();
-                                        }
+                                        this.auto_codes.clear();
                                         cx.notify();
                                     },
                                 )),
@@ -1332,7 +1418,7 @@ impl GroupsView {
                         div()
                             .id("auto-countries")
                             .when(self.auto_codes.is_empty(), |d| {
-                                d.child(hint("请添加国家地区", cx).p(px(t::SECTION_PADDING)))
+                                d.child(hint("还没有选国家/地区,用右上角的下拉框添加。", cx).p(px(t::SECTION_PADDING)))
                             })
                             .border_1()
                             .border_color(cx.theme().border)
@@ -1365,18 +1451,17 @@ impl GroupsView {
                                         }
                                     }))
                                     .child(
-                                        icon("Bars3", t::groups::DRAG_ICON)
+                                        icon("Bars3", t::ICON_SMALL)
                                             .text_color(cx.theme().muted_foreground),
                                     )
                                     .child(super::components::icon_picker::country_icon(code, cx))
                                     .child(div().flex_1().child(tr(cx, &country.name).to_owned()))
                                     .child(hint(&format!("{count} {}", tr(cx, "个节点")), cx))
                                     .child(
-                                        components::icon_button(
+                                        components::icon_button_content(
                                             ("remove-country", index),
                                             tr(cx, "移除"),
-                                            "Trash",
-                                            t::SWITCH_HEIGHT,
+                                            t::SWITCH_HEIGHT, icon("Trash", t::BODY),
                                         )
                                         .disabled(self.busy)
                                         .on_click(
@@ -1389,7 +1474,7 @@ impl GroupsView {
                             })),
                     ),
             )
-            .child(hint("按地区生成，已有同名组跳过", cx))
+            .child(hint("按「国家-自动」「国家-手动」命名并配国旗;动态组,以后新订阅里这个国家的节点自动进组。", cx))
     }
     fn country_count(&self, country: &GroupCountry) -> usize {
         self.state.as_ref().map_or(0, |s| {
@@ -1446,7 +1531,7 @@ impl GroupsView {
                                         .items_center()
                                         .gap(px(t::GAP))
                                         .text_size(px(t::BODY))
-                                        .font_weight(FontWeight::NORMAL)
+                                        .font_weight(super::theme::MISANS_REGULAR)
                                         .child(super::components::icon_picker::country_icon(
                                             &country.code,
                                             cx,
@@ -1483,7 +1568,12 @@ impl Render for GroupsView {
             }
         }
 
-        let mut root = div().size_full().flex().flex_col().gap(px(t::GAP));
+        let mut root = div()
+            .size_full()
+            .flex()
+            .flex_col()
+            .gap(px(t::GAP))
+            .font_weight(super::theme::MISANS_REGULAR);
         if let Some(error) = &self.error
             && self.draft.is_none()
             && self.confirmation.is_none()
@@ -1502,10 +1592,19 @@ impl Render for GroupsView {
                     .on_click(cx.listener(|this, _, _, cx| this.send(None, cx))),
             );
         }
-        if self.busy && self.state.is_none() {
-            root = root.child(hint("加载中", cx));
+        if self.loading {
+            root = root.child(
+                div()
+                    .min_h(px(t::groups::LOADING_HEIGHT))
+                    .flex()
+                    .items_center()
+                    .justify_center()
+                    .child(components::loading_spinner(t::groups::LOADING_ICON, cx)),
+            );
         }
-        if let Some(state) = &self.state {
+        if let Some(state) = &self.state
+            && !self.loading
+        {
             let state = state.clone();
             let radius = state.app_config.visual.global_radius as f32;
             root = root.child(
@@ -1531,12 +1630,12 @@ impl Render for GroupsView {
                             if !group.builtin() && group.mode == GroupMode::Dynamic && count == 0 {
                                 tr(cx, "空动态组不参与编译").to_owned()
                             } else if group.rule == GroupRule::Direct {
-                                tr(cx, "流量直接连接").to_owned()
+                                tr(cx, "流量不经代理,直接从路由器出去。内核离不开它,停用只是站点集里选不到。").to_owned()
                             } else if group.rule == GroupRule::Block {
-                                tr(cx, "拒绝匹配流量").to_owned()
+                                tr(cx, "命中的流量直接丢弃。").to_owned()
                             } else {
                                 format!(
-                                    "{} · {} {}",
+                                    "{} · {}",
                                     tr(
                                         cx,
                                         if group.mode == GroupMode::Static {
@@ -1545,10 +1644,12 @@ impl Render for GroupsView {
                                             "动态组"
                                         }
                                     ),
-                                    count,
-                                    tr(cx, "个节点")
+                                    tr(cx, "当前 {count} 个节点").replace("{count}", &count.to_string())
                                 )
                             };
+                        let description = if group.rule == GroupRule::UrlTest {
+                            format!("{description} · {} {}s · {} {}ms", tr(cx, "检测间隔"), group.interval_secs, tr(cx, "容差"), group.tolerance_ms)
+                        } else { description };
                         div()
                             .id(("group-card", index))
                             .flex()
@@ -1617,8 +1718,12 @@ impl Render for GroupsView {
                                                         match group.rule {
                                                             GroupRule::Direct
                                                             | GroupRule::Block => "内置",
-                                                            GroupRule::Selector => "手动选择",
-                                                            GroupRule::UrlTest => "自动择优",
+                                                            GroupRule::Selector => {
+                                                                "手动选择（select）"
+                                                            }
+                                                            GroupRule::UrlTest => {
+                                                                "自动择优（url-test）"
+                                                            }
                                                         },
                                                     )),
                                             ),
@@ -1801,6 +1906,34 @@ fn error_text(
     }
 }
 // 搜索只改变可见集合；拖拽仍按稳定 ID 更新完整成员顺序。
+// 批量范围与筛选显示分离，HashSet 的迭代顺序不参与持久成员顺序。
+fn checked_members(pool: &[Member], checked: &HashSet<OutboundId>) -> Vec<OutboundId> {
+    pool.iter()
+        .filter(|m| checked.contains(&m.id))
+        .map(|m| m.id.clone())
+        .collect()
+}
+fn transfer_members(
+    members: &mut Vec<OutboundId>,
+    checked: &mut HashSet<OutboundId>,
+    side: usize,
+    ids: Vec<OutboundId>,
+) {
+    for id in ids {
+        if id == OutboundId::Block {
+            continue;
+        }
+        if side == 0 {
+            if !members.contains(&id) {
+                members.push(id.clone());
+            }
+        } else {
+            members.retain(|m| m != &id);
+        }
+        checked.remove(&id);
+    }
+}
+
 fn reorder_member(members: &mut Vec<OutboundId>, source: &OutboundId, target: &OutboundId) {
     if let (Some(from), Some(to)) = (
         members.iter().position(|m| m == source),
@@ -1815,9 +1948,9 @@ const PLACEHOLDERS: [&str; 9] = [
     "秒",
     "毫秒",
     "留空使用全局地址",
-    "逗号分隔关键词",
-    "搜索节点",
-    "搜索节点",
+    "关键词,用逗号分隔,如:香港,hk",
+    "按名称过滤…",
+    "按名称过滤…",
     "搜索地区",
     "缩放",
 ];
@@ -1860,12 +1993,40 @@ fn group_button(
     let label = label.into();
     components::button(id, "")
         .accessibility_label(label.clone())
-        .font_weight(FontWeight::NORMAL)
+        .font_weight(super::theme::MISANS_REGULAR)
         .child(div().text_size(px(size)).child(label))
 }
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[::core::prelude::v1::test]
+    fn p402_bulk_transfer_keeps_hidden_checks_and_source_order() {
+        // 勾选顺序/搜索都不能改变批量范围；加入和移出后仅清理已处理勾选。
+        let pool: Vec<Member> = ["a", "b", "c"]
+            .into_iter()
+            .map(|name| Member {
+                id: OutboundId::Node(NodeId(name.into())),
+                name: name.into(),
+                subscription: "fixture".into(),
+            })
+            .collect();
+        let mut checked = HashSet::from([pool[2].id.clone(), pool[0].id.clone()]);
+        let visible = pool.iter().filter(|m| m.name == "b").collect::<Vec<_>>();
+        assert_eq!((pool.len(), visible.len()), (3, 1));
+        let ids = checked_members(&pool, &checked);
+        let mut selected = vec![OutboundId::Direct];
+        transfer_members(&mut selected, &mut checked, 0, ids);
+        assert_eq!(
+            selected,
+            vec![OutboundId::Direct, pool[0].id.clone(), pool[2].id.clone()]
+        );
+        assert!(checked.is_empty());
+        checked.extend([pool[0].id.clone(), pool[2].id.clone()]);
+        let ids = checked_members(&pool, &checked);
+        transfer_members(&mut selected, &mut checked, 1, ids);
+        assert_eq!(selected, vec![OutboundId::Direct]);
+        assert!(checked.is_empty());
+    }
     #[::core::prelude::v1::test]
     fn p402_member_reorder_uses_ids_when_filtered() {
         // 筛选出 A/C 时把 C 拖到 A，隐藏的 B 仍保留且保存顺序可预期。

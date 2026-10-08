@@ -823,6 +823,7 @@ impl RenderOnce for IconButton {
         };
         self.button
             .bg(bg)
+            .opacity(if self.disabled { 0.5 } else { 1. })
             .text_color(fg)
             .when(self.primary, |b| b.rounded(px(radius)))
             .when(!self.disabled, |b| {
@@ -1119,3 +1120,28 @@ pub fn help_label(label: &'static str, id: &'static str, help: &'static str, cx:
 
 pub mod tooltip;
 pub use tooltip::with_tooltip;
+
+/// OpenBox .loading-spinner：3px 边框与顶部 accent 弧段，800ms 线性旋转。
+pub fn loading_spinner(size: f32, cx: &App) -> impl IntoElement {
+    use gpui_kit::component::{ActiveTheme, Icon, Sizable, spinner::Spinner};
+    let svg: &[u8] = if size < super::tokens::groups::LOADING_ICON {
+        br##"<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 14 14" fill="none"><path d="M3.11 3.11a5.5 5.5 0 0 1 7.78 0" stroke="currentColor" stroke-width="3"/></svg>"##
+    } else {
+        br##"<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 28 28" fill="none"><path d="M5.16 5.16a12.5 12.5 0 0 1 17.68 0" stroke="currentColor" stroke-width="3"/></svg>"##
+    };
+    div()
+        .relative()
+        .size(px(size))
+        .border_3()
+        .border_color(cx.theme().border)
+        .rounded_full()
+        .child(
+            div().absolute().top(-px(3.)).left(-px(3.)).child(
+                Spinner::new()
+                    .ease(|v| v)
+                    .icon(Icon::default().data(svg).with_size(px(size)))
+                    .color(rgb(super::tokens::ACCENT).into())
+                    .with_size(px(size)),
+            ),
+        )
+}

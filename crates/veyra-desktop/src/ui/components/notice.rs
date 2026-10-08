@@ -117,6 +117,8 @@ impl Render for NoticeCenter {
                         cx.notify();
                     })),
             )
+            // Sonner 通知位于弹窗/下拉层之上；失败时编辑器仍打开，不能被遮住。
+            .map(|toast| deferred(toast).with_priority(gpui_kit::base::POPUP_PRIORITY + 1))
             .into_any_element()
     }
 }

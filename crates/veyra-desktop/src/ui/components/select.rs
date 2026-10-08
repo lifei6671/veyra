@@ -67,6 +67,7 @@ pub struct SelectState {
     label: SharedString,
     width: Pixels,
     height: Pixels,
+    compact: bool,
     disabled: bool,
     pub translated_options: usize,
 }
@@ -87,6 +88,7 @@ impl SelectState {
             label: "".into(),
             width: px(t::SELECT_WIDTH),
             height: px(t::CONTROL),
+            compact: false,
             disabled: false,
             translated_options: usize::MAX,
         }
@@ -165,14 +167,21 @@ pub struct Select {
     label: SharedString,
     style: StyleRefinement,
     disabled: bool,
+    compact: bool,
 }
 impl Select {
+    /// OpenBox 成员筛选的 24px 紧凑样式；两侧共用，保留普通 Select 外观。
+    pub fn compact(mut self) -> Self {
+        self.compact = true;
+        self
+    }
     pub fn new(state: &Entity<SelectState>, label: impl Into<SharedString>) -> Self {
         Self {
             state: state.clone(),
             label: label.into(),
             style: StyleRefinement::default(),
             disabled: false,
+            compact: false,
         }
     }
 }
@@ -192,6 +201,7 @@ impl RenderOnce for Select {
         self.state.update(cx, |s, _| {
             s.label = self.label;
             s.disabled = self.disabled;
+            s.compact = self.compact;
             s.height = self
                 .style
                 .size
@@ -261,27 +271,46 @@ impl Render for SelectState {
                         gpui_kit::base::Button::new("select-trigger")
                             .disabled(self.disabled || self.selection.options.is_empty())
                             .tab_stop(false)
+                            .opacity(if self.disabled { 0.5 } else { 1. })
+                            .font_weight(crate::ui::theme::MISANS_REGULAR)
                             .flex()
                             .w(self.width)
                             .h(self.height)
-                            .text_size(px(if self.height < px(t::CONTROL) {
-                                t::SMALL
+                            .text_size(px(if self.compact && self.height < px(t::CONTROL) {
+                                t::groups::FILTER_TEXT
                             } else {
                                 t::BODY
                             }))
                             .items_center()
                             .justify_between()
-                            .px(px(t::PAD))
+                            .px(px(if self.compact { t::GAP } else { t::PAD }))
+                            .gap(px(t::ROW_GAP))
                             .border_1()
                             .border_color(cx.theme().border)
-                            .rounded(px(t::RADIUS))
-                            .bg(cx.theme().input)
+                            .rounded(px(if self.compact && self.height < px(t::CONTROL) {
+                                t::groups::COMPACT_RADIUS
+                            } else {
+                                t::RADIUS
+                            }))
+                            .bg(if self.compact {
+                                cx.theme().popover
+                            } else {
+                                cx.theme().input
+                            })
                             .text_color(cx.theme().foreground)
                             .cursor_pointer()
                             .focus_visible(|s| s.border_color(rgb(t::ACCENT)))
                             .child(selected)
                             .child(
-                                icon("ChevronDown", 14.).text_color(cx.theme().muted_foreground),
+                                icon(
+                                    "ChevronDown",
+                                    if self.compact {
+                                        t::groups::MEMBER_BADGE_TEXT
+                                    } else {
+                                        t::BODY
+                                    },
+                                )
+                                .text_color(cx.theme().muted_foreground),
                             ),
                     )
                     .content(move |_, _, cx| {
