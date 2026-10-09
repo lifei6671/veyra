@@ -152,6 +152,19 @@ impl SnapshotService {
             .0
             .require(&expected.0)
             .map_err(GroupSaveError::Storage)?;
+        for group in &groups {
+            if group.rule == crate::domain::GroupRule::Failover
+                && group.lanes.len() < 2
+                && !next
+                    .groups
+                    .iter()
+                    .any(|old| old.id == group.id && old.rule == crate::domain::GroupRule::Failover)
+            {
+                return Err(GroupSaveError::Invalid(
+                    crate::domain::GroupIssue::InvalidSettings(group.id.clone()),
+                ));
+            }
+        }
         next.groups = groups;
         next.validate_groups().map_err(GroupSaveError::Invalid)?;
         next.validate()

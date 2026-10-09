@@ -1,3 +1,7 @@
+**P4-03 独立切片 / ACCEPTANCE（2026-10-09）**：主备模型/统一目录/正式 Compiler、生产保存/重建及纯策略/GPUI 编辑器交付；57 项唯一定向测试、Core/Desktop Clippy/build/fmt、锁定 1.14.0 check 通过，旧 Tauri Windows LICENSE 基线 FAIL 保留。真实页签/添加删除/取消、保存失败保草稿重试、重启、拖动排序通过，主用/备用/高级同数据原图留存；完整逐态视觉与150%档位仍 OPEN。原 P2-06 owner 已确认当前唯一入口仅支持真实 Manual pool，Group/Failover 健康探测、Auto/ManualPin/pending→Controller→CAS 尚未接通；未修改其 Runtime/Platform/Helper/IPC/公共 DTO，不伪造 Native 或手动固定结果。owner/预约保留，不 commit/merge/push 或释放；P2-05 ACCEPTANCE、P2-06 DOING 不变。68 卡 DONE27/DOING1/ACCEPTANCE2/READY1/TODO30/DEFERRED7，READY=P0-08，不启动下游。[交付与缺口](P4-03-acceptance.md)。下方历史保留。
+
+**P4-03 领取（2026-10-09）**：基线 `d713fa4621a0816fc56cefd473cf1b52b4b92218`，独立工作树 `/Users/lifeilin/.codex/worktrees/p4-03-failover/veyra` / `dev/p4-03-failover`。owner=Codex · P4-03 Core/Config/GPUI；预约 domain/groups.rs、domain/outbound_catalog.rs、独立 failover 策略与定向测试、Groups 保存校验、ui/groups.rs/i18n/tokens/必要 Groups 接线及本卡文档。P2-06 原 owner 已只读确认这些写范围；Runtime/Platform/Helper/IPC/公共 DTO、manual_runtime/恢复/pending CAS 仍由其持有。当前入口仅支持真实 Manual pool，Group/Failover 的唯一写入口与健康探测能力尚缺，未经单独协调不修改；先交付独立切片，运行期及实际 UI 验收不足时保持 ACCEPTANCE。P2-05 ACCEPTANCE、P2-06 DOING 保持；不操作用户 TUN/系统代理/DNS/路由/订阅，不 push。68卡 DONE27/DOING2/ACCEPTANCE1/READY1/TODO30/DEFERRED7；READY=P0-08。下方历史保留。
+
 **P3-03 最终收口（2026-10-09）**：唯一 WS 安全日志、正式 GPUI/原生导出、99 个唯一定向测试、锁定 1.14.0 与最终 150% 浅色同数据对照通过。用户确认多行拖选跟手且稳定；时间与级别统一 12px 为用户明确修正。独立 Review 无剩余 Finding，自有资源已清理。P3-03 DONE，owner/预约释放；本地独立提交/合并/主分支复验，不 push。68卡 DONE27/DOING1/ACCEPTANCE1/READY2/TODO30/DEFERRED7，READY=P0-08/P4-03；P2-05 ACCEPTANCE 未合并、P2-06 DOING/原 owner 保留。[最终记录](P3-03-acceptance.md)。下方逐轮历史不改写。
 
 **P3-03 真实 GUI 修复与验收（2026-10-09）**：生产单一WS安全日志/GPUI/原生导出及99个唯一定向测试已通过；真实1.14.0与独立Review已执行。用户反馈的多行排序/光标/placeholder已修复，跨行闪烁已消失，即时拖选反馈仍在复验。P3-03 → ACCEPTANCE/owner保留，不提前提交/合并；P2-05 ACCEPTANCE未合并、P2-06 DOING原owner不变。68卡DONE26/DOING1/ACCEPTANCE2/READY2/TODO30/DEFERRED7；READY=P0-08/P4-03。[实际记录](P3-03-acceptance.md)。下方历史不改写。
@@ -16,7 +20,7 @@
 
 ## 1 当前基线与范围
 
-- 新路线共 **61 个 macOS 任务、7 个 Windows 后续任务**。当前完成 **27项**：P0-01至07、P1全部8项、P2-01/P2-02A/P2-02B/P2-03/P2-04、P3-01/P3-03/P3-04、P4-02/P5-04/P5-05/P5-06；P2为 **5/10**、macOS为 **27/61**。P2-04 Host FINAL ACCEPTANCE PASS，P2-04-PENDING-PERSISTENCE-001及前轮P1/P2 Finding CLOSED，Runtime/Platform及Runtime公共契约owner/本卡预约释放；见[Host最终收口](P2-local-proxy.md#p2-04-final-host-closeout)。P4-02 DONE（[本轮记录](P4-02-acceptance.md)）；P5-06 DONE（[最终验收](P5-06-acceptance.md)）；P2-06 DOING；READY=P0-08/P4-03，未领取/未启动；P2-05 ACCEPTANCE，P3-03 DONE；其余任务状态/依赖与历史PASS/FAIL/REWORK/NOT_RUN保持。
+- 新路线共 **61 个 macOS 任务、7 个 Windows 后续任务**。当前完成 **27项**：P0-01至07、P1全部8项、P2-01/P2-02A/P2-02B/P2-03/P2-04、P3-01/P3-03/P3-04、P4-02/P5-04/P5-05/P5-06；P2为 **5/10**、macOS为 **27/61**。P2-04 Host FINAL ACCEPTANCE PASS，P2-04-PENDING-PERSISTENCE-001及前轮P1/P2 Finding CLOSED，Runtime/Platform及Runtime公共契约owner/本卡预约释放；见[Host最终收口](P2-local-proxy.md#p2-04-final-host-closeout)。P4-02 DONE（[本轮记录](P4-02-acceptance.md)）；P5-06 DONE（[最终验收](P5-06-acceptance.md)）；P2-06 DOING；READY=P0-08，未领取/未启动；P4-03 ACCEPTANCE，切片未合并；P2-05 ACCEPTANCE，P3-03 DONE；其余任务状态/依赖与历史PASS/FAIL/REWORK/NOT_RUN保持。
 - 已有 React UI 和旧 Rust 模块是迁移输入，不直接算 GPUI 新路线完成。P0-02 的完成仅指本次明确要求的范围/规则调整，该历史文档动作不计功能实现；现 P1-01 已完成核心抽取，P1-02 已完成类型/原子快照与版本。
 - 当前已建立根 Cargo workspace、单一 Cargo.lock 与 `crates/veyra-core/`；旧入口接共享核心。实际构建/纯测试见 P1-01 记录，不表示原型或真实设备验收完成。
 - 旧 SDLC 状态与 UI 门禁已按用户要求退役；不恢复缺失文件，不补办历史 DCR/UI Contract。当前进度以本目录为准。
@@ -173,7 +177,7 @@ Task：OBG-Px-xx
 | --- | --- | --- | --- | --- | --- |
 | [OBG-P4-01 订阅高级项](P4-configuration.md#obg-p4-01) | P2-01、P2-05 | TODO | — | — | — |
 | [OBG-P4-02 静态/动态组](P4-configuration.md#obg-p4-02) | P2-01、P2-02A、P2-02B、P1-03、P1-04A | DONE | —（本卡owner/预约已释放） | — | [验收修正与交付](P4-02-acceptance.md) |
-| [OBG-P4-03 failover](P4-configuration.md#obg-p4-03) | P4-02、P2-04 | READY | — | — | 依赖均DONE；未领取，协调P2-06 Runtime/DTO owner |
+| [OBG-P4-03 failover](P4-configuration.md#obg-p4-03) | P4-02、P2-04 | ACCEPTANCE | Codex · P4-03 | [切片记录](P4-03-acceptance.md) | Core/Config/GPUI切片及独立Review交付；Runtime owner seam、Native/完整视觉未完成；不合并/释放 |
 | [OBG-P4-04 规则资源](P4-configuration.md#obg-p4-04) | P2-02B、P2-04、P2-05、P1-04A | TODO | — | — | — |
 | [OBG-P4-06 链式代理](P4-configuration.md#obg-p4-06) | P2-02A、P2-02B、P2-05、P2-08 | TODO | — | — | — |
 | [OBG-P4-05A 目标分流/统一目录](P4-configuration.md#obg-p4-05a) | P4-03、P4-04、P4-06 | TODO | — | — | — |

@@ -144,6 +144,23 @@ impl OutboundCatalog {
                     OutboundAvailability::Unavailable(OutboundUnavailableReason::Disabled);
             }
             entries.push(entry);
+            if group.rule == super::GroupRule::Failover {
+                for lane in &group.lanes {
+                    let mut entry =
+                        group_entry(&lane.pool_id(&group.id), lane.members.clone(), None);
+                    entry.display_name = Some(lane.name.clone());
+                    entry.kind = if !lane.manual && lane.members.len() > 1 {
+                        OutboundKind::UrlTest
+                    } else {
+                        OutboundKind::Selector
+                    };
+                    if !group.enabled {
+                        entry.availability =
+                            OutboundAvailability::Unavailable(OutboundUnavailableReason::Disabled);
+                    }
+                    entries.push(entry);
+                }
+            }
         }
         let mut catalog = Self::with_terminals(entries);
         for group in state.groups.iter().filter(|g| g.builtin()) {

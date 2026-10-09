@@ -38,6 +38,10 @@ enum Field {
     Selected,
     Country,
     Scale,
+    LaneName,
+    Timeout,
+    Failure,
+    Recovery,
 }
 #[derive(Clone)]
 struct Member {
@@ -101,11 +105,21 @@ pub struct GroupsView {
     loading: bool,
     error: Option<GroupSaveError>,
     draft: Option<NodeGroup>,
-    inputs: [Entity<InputState>; 9],
+    inputs: [Entity<InputState>; 13],
     _input_events: Vec<gpui_kit::Subscription>,
     language: DesktopLanguage,
     picker: Entity<IconPicker>,
     rule: Entity<SelectState>,
+    lane_mode: Entity<SelectState>,
+    lane_picker: Entity<IconPicker>,
+    active_lane: usize,
+    advanced: bool,
+    deleting_lane: bool,
+    discard_confirm: bool,
+    discard_accepted: bool,
+    original_failover: bool,
+    previous_plain: Option<NodeGroup>,
+    previous_failover: Option<NodeGroup>,
     filters: [Entity<SelectState>; 2],
     filter_values: [String; 2],
     checked: [HashSet<OutboundId>; 2],
@@ -130,11 +144,29 @@ impl GroupsView {
         });
         let rule = cx.new(|cx| {
             SelectState::new(
-                vec!["自动择优（url-test）", "手动选择（select）"],
+                vec![
+                    "自动择优（url-test）",
+                    "手动选择（select）",
+                    "故障转移（failover）",
+                ],
                 Some(IndexPath::new(0)),
                 window,
                 cx,
             )
+        });
+        let lane_mode = cx.new(|cx| {
+            SelectState::new(
+                vec!["自动优选", "手动选择"],
+                Some(IndexPath::new(0)),
+                window,
+                cx,
+            )
+        });
+        let lane_picker = cx.new(|cx| {
+            let mut p = IconPicker::new(String::new(), window, cx);
+            p.expanded = true;
+            p.expanded_width = t::groups::LANE_ICON_WIDTH;
+            p
         });
         let filters = std::array::from_fn(|_| {
             cx.new(|cx| {
@@ -156,25 +188,52 @@ impl GroupsView {
                 }
                 cx.notify();
             }),
-            cx.subscribe(&rule, |this, _, event: &SelectEvent, cx| {
+            cx.subscribe_in(&rule, window, |this, _, event: &SelectEvent, window, cx| {
                 if this.busy {
                     return;
                 }
-                if let (Some(d), SelectEvent::Confirm(Some(v))) = (&mut this.draft, event) {
-                    d.rule = if v.as_ref() == "手动选择（select）" {
-                        GroupRule::Selector
-                    } else {
-                        GroupRule::UrlTest
+                if let SelectEvent::Confirm(Some(v)) = event {
+                    let rule = match v.as_ref() {
+                        "手动选择（select）" => GroupRule::Selector,
+                        "故障转移（failover）" => GroupRule::Failover,
+                        _ => GroupRule::UrlTest,
                     };
+                    this.change_rule(rule, window, cx);
                 }
                 cx.notify();
             }),
         ];
+        input_events.push(
+            cx.subscribe(&lane_mode, |this, _, event: &SelectEvent, cx| {
+                if !this.busy
+                    && let SelectEvent::Confirm(Some(v)) = event
+                    && let Some(lane) = this.active_lane_mut()
+                {
+                    lane.manual = v.as_ref() == "手动选择";
+                    cx.notify();
+                }
+            }),
+        );
+        input_events.push(
+            cx.subscribe(&lane_picker, |this, _, event: &IconPicked, cx| {
+                if !this.busy
+                    && let Some(lane) = this.active_lane_mut()
+                {
+                    lane.icon = event.0.clone();
+                    cx.notify();
+                }
+            }),
+        );
         for (i, input) in inputs.iter().enumerate() {
             input_events.push(
                 cx.subscribe(input, move |this, input, event: &InputEvent, cx| {
                     if matches!(event, InputEvent::Change) {
                         this.error = None;
+                        if i == Field::LaneName as usize
+                            && let Some(lane) = this.active_lane_mut()
+                        {
+                            lane.name = input.read(cx).value().to_string();
+                        }
                         if i == Field::Keywords as usize
                             && let Some(d) = &mut this.draft
                         {
@@ -209,6 +268,16 @@ impl GroupsView {
             language: cx.global::<super::i18n::Locale>().0,
             picker,
             rule,
+            lane_mode,
+            lane_picker,
+            active_lane: 0,
+            advanced: false,
+            deleting_lane: false,
+            discard_confirm: false,
+            discard_accepted: false,
+            original_failover: false,
+            previous_plain: None,
+            previous_failover: None,
             filters,
             filter_values: ["全部".into(), "全部".into()],
             checked: Default::default(),
@@ -334,6 +403,8 @@ impl GroupsView {
             return;
         }
         self.draft = None;
+        self.deleting_lane = false;
+        self.discard_confirm = false;
         self.confirmation = None;
         self.auto_open = false;
         if let Some(f) = self.trigger.take() {
@@ -359,7 +430,15 @@ impl GroupsView {
     fn edit(&mut self, group: NodeGroup, window: &mut Window, cx: &mut Context<Self>) {
         self.trigger = window.focused(cx);
         self.error = None;
-
+        self.active_lane = 0;
+        self.advanced = false;
+        self.deleting_lane = false;
+        self.discard_confirm = false;
+        self.discard_accepted = false;
+        self.original_failover = group.rule == GroupRule::Failover;
+        self.previous_plain = None;
+        self.previous_failover = None;
+        let settings = group.failover.clone().unwrap_or_default();
         let values = [
             group.name.clone(),
             group.interval_secs.to_string(),
@@ -370,6 +449,14 @@ impl GroupsView {
             String::new(),
             String::new(),
             group.icon_scale.to_string(),
+            group
+                .lanes
+                .first()
+                .map(|l| l.name.clone())
+                .unwrap_or_default(),
+            (settings.timeout_ms / 1000).to_string(),
+            settings.failure_threshold.to_string(),
+            (settings.recovery_hold_ms / 1000).to_string(),
         ];
         for (input, value) in self.inputs.iter().zip(values) {
             input.update(cx, |i, cx| i.set_value(value, window, cx));
@@ -380,9 +467,11 @@ impl GroupsView {
         });
         self.rule.update(cx, |s, cx| {
             s.set_selected_index(
-                Some(IndexPath::new(usize::from(
-                    group.rule == GroupRule::Selector,
-                ))),
+                Some(IndexPath::new(match group.rule {
+                    GroupRule::Selector => 1,
+                    GroupRule::Failover => 2,
+                    _ => 0,
+                })),
                 window,
                 cx,
             )
@@ -390,6 +479,7 @@ impl GroupsView {
         self.checked = Default::default();
         self.filter_values = ["全部".into(), "全部".into()];
         self.draft = Some(group);
+        self.sync_lane(window, cx);
         self.refresh_filters(window, cx);
         self.inputs[Field::Name as usize]
             .read(cx)
@@ -398,7 +488,15 @@ impl GroupsView {
         cx.notify();
     }
     fn refresh_filters(&mut self, window: &mut Window, cx: &mut Context<Self>) {
-        let mut options = vec!["全部".to_owned(), "全部节点组".into(), "全部节点".into()];
+        let failover = self
+            .draft
+            .as_ref()
+            .is_some_and(|g| g.rule == GroupRule::Failover);
+        let mut options = if failover {
+            vec!["全部".to_owned()]
+        } else {
+            vec!["全部".to_owned(), "全部节点组".into(), "全部节点".into()]
+        };
         for member in self.members() {
             if !member.subscription.is_empty() && !options.contains(&member.subscription) {
                 options.push(member.subscription);
@@ -407,7 +505,7 @@ impl GroupsView {
         // 同一组件的动态选项：订阅名不要求静态字符串，也不泄漏临时内存。
         for (side, filter) in self.filters.iter().enumerate() {
             filter.update(cx, |s, cx| {
-                s.translated_options = 3;
+                s.translated_options = if failover { 1 } else { 3 };
                 s.set_options(options.clone(), window, cx)
             });
             self.filter_values[side] = "全部".into();
@@ -436,6 +534,17 @@ impl GroupsView {
         cx.notify();
     }
     fn save_draft(&mut self, cx: &mut Context<Self>) {
+        if self.original_failover
+            && !self.discard_accepted
+            && self
+                .draft
+                .as_ref()
+                .is_some_and(|d| d.rule != GroupRule::Failover)
+        {
+            self.discard_confirm = true;
+            cx.notify();
+            return;
+        }
         let (Some(mut draft), Some(state)) = (self.draft.clone(), self.state.as_ref()) else {
             return;
         };
@@ -449,7 +558,7 @@ impl GroupsView {
             return;
         };
         draft.icon_scale = scale;
-        if draft.rule == GroupRule::UrlTest {
+        if matches!(draft.rule, GroupRule::UrlTest | GroupRule::Failover) {
             let (Ok(interval), Ok(tolerance)) = (
                 self.value(Field::Interval, cx).parse(),
                 self.value(Field::Tolerance, cx).parse(),
@@ -462,6 +571,32 @@ impl GroupsView {
             };
             draft.interval_secs = interval;
             draft.tolerance_ms = tolerance;
+        }
+        if draft.rule == GroupRule::Failover {
+            let (Ok(timeout), Ok(failure), Ok(recovery)) = (
+                self.value(Field::Timeout, cx).parse::<u64>(),
+                self.value(Field::Failure, cx).parse::<u32>(),
+                self.value(Field::Recovery, cx).parse::<u64>(),
+            ) else {
+                self.error = Some(GroupSaveError::Invalid(GroupIssue::InvalidSettings(
+                    draft.id,
+                )));
+                cx.notify();
+                return;
+            };
+            let (Some(timeout_ms), Some(recovery_hold_ms)) =
+                (timeout.checked_mul(1000), recovery.checked_mul(1000))
+            else {
+                self.error = Some(GroupSaveError::Invalid(GroupIssue::InvalidSettings(
+                    draft.id,
+                )));
+                cx.notify();
+                return;
+            };
+            let settings = draft.failover.as_mut().expect("failover draft");
+            settings.timeout_ms = timeout_ms;
+            settings.failure_threshold = failure;
+            settings.recovery_hold_ms = recovery_hold_ms;
         }
         let mut groups = state.groups.clone();
         if let Some(g) = groups.iter_mut().find(|g| g.id == draft.id) {
@@ -523,20 +658,27 @@ impl GroupsView {
                     .unwrap_or_default(),
             }
         }));
+        if self
+            .draft
+            .as_ref()
+            .is_some_and(|d| d.rule == GroupRule::Failover)
+        {
+            members.retain(|m| matches!(m.id, OutboundId::Node(_)));
+        }
         members
     }
     fn member_pool(&self, side: usize) -> Vec<Member> {
-        let Some(draft) = &self.draft else {
+        if self.draft.is_none() {
             return vec![];
-        };
+        }
         let all = self.members();
+        let selected = self.draft_members();
         if side == 0 {
             all.into_iter()
-                .filter(|m| !draft.members.contains(&m.id))
+                .filter(|m| !selected.contains(&m.id))
                 .collect::<Vec<_>>()
         } else {
-            draft
-                .members
+            selected
                 .iter()
                 .map(|id| {
                     all.iter()
@@ -579,8 +721,17 @@ impl GroupsView {
         if self.busy {
             return;
         }
+        let active_lane = self.active_lane;
         if let Some(draft) = &mut self.draft {
-            transfer_members(&mut draft.members, &mut self.checked[side], side, ids);
+            let members = if draft.rule == GroupRule::Failover {
+                let Some(lane) = draft.lanes.get_mut(active_lane) else {
+                    return;
+                };
+                &mut lane.members
+            } else {
+                &mut draft.members
+            };
+            transfer_members(members, &mut self.checked[side], side, ids);
         }
         cx.notify();
     }
@@ -686,7 +837,7 @@ impl GroupsView {
                 .w(px(t::groups::RULE_FIELD)),
             cx,
         ));
-        if draft.rule == GroupRule::UrlTest {
+        if matches!(draft.rule, GroupRule::UrlTest | GroupRule::Failover) {
             rules = rules
                 .child(field(
                     "检测间隔",
@@ -703,23 +854,39 @@ impl GroupsView {
                     cx,
                 ))
                 .child(field(
-                    "容差",
+                    if draft.rule == GroupRule::Failover {
+                        "组内延迟容差"
+                    } else {
+                        "容差"
+                    },
                     div()
                         .flex()
                         .items_center()
                         .gap(px(t::ROW_GAP))
                         .child(
-                            div()
-                                .w(px(t::NUMBER_WIDTH))
-                                .child(self.input(Field::Tolerance, cx)),
+                            div().w(px(t::NUMBER_WIDTH)).child(
+                                components::text_input(&self.inputs[Field::Tolerance as usize])
+                                    .disabled(
+                                        self.busy
+                                            || (draft.rule == GroupRule::Failover
+                                                && draft
+                                                    .lanes
+                                                    .iter()
+                                                    .all(|l| l.members.len() <= 1)),
+                                    )
+                                    .border_focus(),
+                            ),
                         )
                         .child(hint("毫秒", cx)),
                     cx,
                 ));
         }
         form = form.child(rules);
-        if draft.rule == GroupRule::UrlTest {
+        if matches!(draft.rule, GroupRule::UrlTest | GroupRule::Failover) {
             form = form.child(field("测速地址", self.input(Field::Url, cx), cx));
+        }
+        if draft.rule == GroupRule::Failover {
+            return form.child(self.failover_editor(cx));
         }
         let tabs = div()
             .flex()
@@ -864,6 +1031,10 @@ impl GroupsView {
     }
     fn member_pane(&self, side: usize, cx: &mut Context<Self>) -> Stateful<Div> {
         let members = self.pane_members(side, cx);
+        let failover = self
+            .draft
+            .as_ref()
+            .is_some_and(|d| d.rule == GroupRule::Failover);
         let title = format!(
             "{} ({})",
             tr(cx, if side == 0 { "可选" } else { "已选" }),
@@ -889,22 +1060,55 @@ impl GroupsView {
                             .font_weight(super::theme::MISANS_MEDIUM)
                             .child(title),
                     )
-                    .child(
-                        div().flex_1().min_w_0().child(
-                            components::text_input(
-                                &self.inputs[if side == 0 {
-                                    Field::Available
-                                } else {
-                                    Field::Selected
-                                } as usize],
+                    .when(
+                        side == 1
+                            && self
+                                .draft
+                                .as_ref()
+                                .is_some_and(|d| d.rule == GroupRule::Failover),
+                        |d| {
+                            d.child(
+                                Select::new(&self.lane_mode, tr(cx, "页签模式"))
+                                    .compact()
+                                    .disabled(self.busy)
+                                    .w(px(t::groups::LANE_MODE_WIDTH))
+                                    .h(px(t::groups::LANE_MODE_HEIGHT)),
                             )
-                            .disabled(self.busy)
-                            .border_focus()
-                            .bg(cx.theme().popover)
-                            .px(px(t::groups::SEARCH_PAD))
-                            .h(px(t::groups::FILTER_HEIGHT))
-                            .text_size(px(t::groups::FILTER_TEXT)),
-                        ),
+                        },
+                    )
+                    .child(
+                        div()
+                            .flex_1()
+                            .min_w_0()
+                            .flex()
+                            .items_center()
+                            .gap(px(t::groups::LANE_SEARCH_GAP))
+                            .when(failover && side == 1, |d| {
+                                d.child(
+                                    icon("MagnifyingGlass", t::groups::LANE_SEARCH_ICON)
+                                        .text_color(cx.theme().muted_foreground),
+                                )
+                            })
+                            .child(
+                                components::text_input(
+                                    &self.inputs[if side == 0 {
+                                        Field::Available
+                                    } else {
+                                        Field::Selected
+                                    } as usize],
+                                )
+                                .flex_1()
+                                .min_w_0()
+                                .disabled(self.busy)
+                                .border_focus()
+                                .bg(cx.theme().popover)
+                                .px(px(t::groups::SEARCH_PAD))
+                                .h(px(t::groups::FILTER_HEIGHT))
+                                .text_size(px(t::groups::FILTER_TEXT))
+                                .when(failover && side == 1, |i| {
+                                    i.border_0().bg(gpui::transparent_black()).px(px(0.))
+                                }),
+                            ),
                     ),
             )
             .child(
@@ -974,6 +1178,8 @@ impl GroupsView {
                         tr(cx, if side == 0 { "加入" } else { "移出" }),
                         if side == 0 {
                             "ChevronRight"
+                        } else if failover {
+                            "ArrowLeft"
                         } else {
                             "ChevronLeft"
                         },
@@ -1020,7 +1226,12 @@ impl GroupsView {
                                 if !this.busy
                                     && let Some(draft) = &mut this.draft
                                 {
-                                    reorder_member(&mut draft.members, &drag.id, &drop_id);
+                                    let members = if draft.rule == GroupRule::Failover {
+                                        &mut draft.lanes[this.active_lane].members
+                                    } else {
+                                        &mut draft.members
+                                    };
+                                    reorder_member(members, &drag.id, &drop_id);
                                     cx.notify();
                                 }
                             },
@@ -1052,7 +1263,7 @@ impl GroupsView {
                                 cx.notify();
                             })),
                     )
-                    .when(side == 1, |d| {
+                    .when(side == 1 && !failover, |d| {
                         d.child(
                             div()
                                 .flex_shrink_0()
@@ -1083,7 +1294,9 @@ impl GroupsView {
                             )
                         },
                     )
-                    .when(side == 0, |d| d.child(div().flex_1()).child(move_button()))
+                    .when(side == 0 || failover, |d| {
+                        d.child(div().flex_1()).child(move_button())
+                    })
             }))
             .when(members.is_empty(), |d| {
                 d.child(
@@ -1108,6 +1321,14 @@ impl GroupsView {
             .rounded(px(t::POPOVER_RADIUS))
             .border_1()
             .border_color(cx.theme().foreground.opacity(0.1))
+            .when(
+                side == 1
+                    && self
+                        .draft
+                        .as_ref()
+                        .is_some_and(|d| d.rule == GroupRule::Failover),
+                |d| d.child(self.lane_header(cx)),
+            )
             .child(head)
             .child(rows)
     }
@@ -1118,7 +1339,13 @@ impl GroupsView {
         let cannot_save =
             busy || self.draft.as_ref().is_some_and(|d| {
                 self.value(Field::Name, cx).trim().is_empty()
-                    || (!d.builtin() && d.mode == GroupMode::Static && d.members.is_empty())
+                    || (!d.builtin()
+                        && d.rule != GroupRule::Failover
+                        && d.mode == GroupMode::Static
+                        && d.members.is_empty())
+                    || (d.rule == GroupRule::Failover
+                        && (d.lanes.len() < if self.original_failover { 1 } else { 2 }
+                            || d.lanes.iter().any(|l| l.members.is_empty())))
             }) || (self.auto_open
                 && (self.auto_codes.is_empty() || !self.auto_rules.iter().any(|v| *v)));
         let title = if editing {
@@ -1633,6 +1860,10 @@ impl Render for GroupsView {
                                 tr(cx, "流量不经代理,直接从路由器出去。内核离不开它,停用只是站点集里选不到。").to_owned()
                             } else if group.rule == GroupRule::Block {
                                 tr(cx, "命中的流量直接丢弃。").to_owned()
+                            } else if group.rule == GroupRule::Failover {
+                                tr(cx,"故障转移 · {lanes} 个页签 · {count} 个节点")
+                                    .replace("{lanes}",&group.lanes.len().to_string())
+                                    .replace("{count}",&group.lanes.iter().flat_map(|l| &l.members).collect::<HashSet<_>>().len().to_string())
                             } else {
                                 format!(
                                     "{} · {}",
@@ -1724,6 +1955,7 @@ impl Render for GroupsView {
                                                             GroupRule::UrlTest => {
                                                                 "自动择优（url-test）"
                                                             }
+                                                            GroupRule::Failover => "故障转移（failover）",
                                                         },
                                                     )),
                                             ),
@@ -1803,6 +2035,9 @@ impl Render for GroupsView {
         if self.draft.is_some() || self.confirmation.is_some() || self.auto_open {
             root = root.child(self.modal(window, cx));
         }
+        if self.deleting_lane || self.discard_confirm {
+            root = root.child(self.lane_confirmation(cx));
+        }
         root
     }
 }
@@ -1855,6 +2090,7 @@ fn error_text(
             GroupIssue::DuplicateName(_) => "分组名称重复",
             GroupIssue::InvalidName(_) => "请输入分组名称",
             GroupIssue::EmptyStatic(_) => "静态组至少添加一个成员",
+            GroupIssue::InvalidLane { .. } => "每条线路至少添加一个成员，页签标识不能重复",
             GroupIssue::InvalidSettings(_) => "请检查检测参数",
             GroupIssue::BlockMember(_) => "拒绝暂不能作为组成员",
             GroupIssue::Graph(_) => "分组引用无效，请检查成员",
@@ -1943,7 +2179,7 @@ fn reorder_member(members: &mut Vec<OutboundId>, source: &OutboundId, target: &O
         members.insert(to, member);
     }
 }
-const PLACEHOLDERS: [&str; 9] = [
+const PLACEHOLDERS: [&str; 13] = [
     "分组名称",
     "秒",
     "毫秒",
@@ -1953,6 +2189,10 @@ const PLACEHOLDERS: [&str; 9] = [
     "按名称过滤…",
     "搜索地区",
     "缩放",
+    "页签名（可选）",
+    "秒",
+    "连续失败次数",
+    "秒",
 ];
 
 /// 与全局快照对齐，拒绝晚到的旧版本；错误后仍保留草稿供用户检查。
@@ -2114,3 +2354,5 @@ mod tests {
         assert!(!text.contains("分组引用无效"));
     }
 }
+
+mod failover_editor;

@@ -47,9 +47,11 @@
 
 **执行与交付**：将 Failover 的出口与 lanes 纳入统一目录；有序 lanes、失败阈值、恢复保持时间、Auto/ManualPin、线路内 manual；复用唯一选择入口和独立 selection_revision。
 
+**2026-10-09 当前结果：ACCEPTANCE**。Core/Config/GPUI 独立切片和真实保存/重建/失败重试交付，独立源码 Review 无剩余 Finding。纯策略模拟时钟项通过；其余 checkbox 包含正式 Runtime/Native/完整 UI 语义，仍未全部满足，不能用策略测试勾成产品完成。原 P2-06 owner 保留唯一 Runtime 写权，本卡 owner/预约保留。详见 [P4-03 交付记录](P4-03-acceptance.md)。
+
 **验收**：
 
-- [ ] 模拟时钟验证连续失败切备、稳定恢复切主、全失败保留错误；不重写 URLTest。
+- [x] 模拟时钟验证连续失败切备、稳定恢复切主、全失败保留错误；不重写 URLTest（纯策略通过，运行接线仍未完成）。
 - [ ] 手动固定使旧探测失效；恢复自动重新探测；迟到结果不覆盖人工选择。
 - [ ] 成员变化、进程重启、pending 不确定及保存失败都有一致结果；自动切换不增加 profile revision。
 - [ ] 主备编辑、手动固定/恢复自动提示和实际选择经过 界面与最小内核集成验证。

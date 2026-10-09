@@ -1,3 +1,7 @@
+**P4-03 独立切片 / ACCEPTANCE（2026-10-09）**：主备模型/统一目录/正式 Compiler、生产保存/重建及纯策略/GPUI 编辑器交付；57 项唯一定向测试、Core/Desktop Clippy/build/fmt、锁定 1.14.0 check 通过，旧 Tauri Windows LICENSE 基线 FAIL 保留。真实页签/添加删除/取消、保存失败保草稿重试、重启、拖动排序通过，主用/备用/高级同数据原图留存；完整逐态视觉与150%档位仍 OPEN。原 P2-06 owner 已确认当前唯一入口仅支持真实 Manual pool，Group/Failover 健康探测、Auto/ManualPin/pending→Controller→CAS 尚未接通；未修改其 Runtime/Platform/Helper/IPC/公共 DTO，不伪造 Native 或手动固定结果。owner/预约保留，不 commit/merge/push 或释放；P2-05 ACCEPTANCE、P2-06 DOING 不变。68 卡 DONE27/DOING1/ACCEPTANCE2/READY1/TODO30/DEFERRED7，READY=P0-08，不启动下游。[交付与缺口](P4-03-acceptance.md)。下方历史保留。
+
+**P4-03 领取（2026-10-09）**：基线 `d713fa4621a0816fc56cefd473cf1b52b4b92218`，独立工作树 `/Users/lifeilin/.codex/worktrees/p4-03-failover/veyra` / `dev/p4-03-failover`。owner=Codex · P4-03 Core/Config/GPUI；预约 domain/groups.rs、domain/outbound_catalog.rs、独立 failover 策略与定向测试、Groups 保存校验、ui/groups.rs/i18n/tokens/必要 Groups 接线及本卡文档。P2-06 原 owner 已只读确认这些写范围；Runtime/Platform/Helper/IPC/公共 DTO、manual_runtime/恢复/pending CAS 仍由其持有。当前入口仅支持真实 Manual pool，Group/Failover 的唯一写入口与健康探测能力尚缺，未经单独协调不修改；先交付独立切片，运行期及实际 UI 验收不足时保持 ACCEPTANCE。P2-05 ACCEPTANCE、P2-06 DOING 保持；不操作用户 TUN/系统代理/DNS/路由/订阅，不 push。68卡 DONE27/DOING2/ACCEPTANCE1/READY1/TODO30/DEFERRED7；READY=P0-08。下方历史保留。
+
 **P3-03 导出反馈追加修正（2026-10-09，完成）**：按用户要求导出失败改为全局 toast，成功/取消均无通知，删除页面永久错误横幅。真实 NSSavePanel 失败/成功/取消与筛选文件回读通过；42 项定向测试、Desktop Clippy/build/fmt/diff 通过，独立 Review 无剩余 Finding。仅 ui/logs.rs 和本次记录，临时修正 owner/预约释放；既有 P3-03 DONE、READY 队列、P2-05 ACCEPTANCE 与 P2-06 DOING/原 owner 不变。自有内核端口/预览已清理；本地增量提交/合并主分支复验，不 push。
 
 **P3-03 最终收口（2026-10-09）**：唯一 WS 安全日志、正式 GPUI/原生导出、99 个唯一定向测试、锁定 1.14.0 与最终 150% 浅色同数据对照通过。用户确认多行拖选跟手且稳定；时间与级别统一 12px 为用户明确修正。独立 Review 无剩余 Finding，自有资源已清理。P3-03 DONE，owner/预约释放；本地独立提交/合并/主分支复验，不 push。68卡 DONE27/DOING1/ACCEPTANCE1/READY2/TODO30/DEFERRED7，READY=P0-08/P4-03；P2-05 ACCEPTANCE 未合并、P2-06 DOING/原 owner 保留。[最终记录](P3-03-acceptance.md)。下方逐轮历史不改写。
@@ -183,18 +187,19 @@ P2-06 已阶段提交 `f2457e6a4e2fe0ac3c9186bc7d17323a70c4c0a8`，仍 DOING、�
 | P1 核心库与桌面壳 | 8 / 8 | 壳层/设置/基础组件视觉 PASS_WITH_TECHNICAL_DIFFERENCES；人工三轮、重启恢复、最终 Tray Quit 与清理 PASS；未实现业务页不计完成 | P1-07 DONE，组合 PASS |
 | P2 本机代理闭环 | 5 / 10 | P2-01/P2-02A/P2-02B/P2-03/P2-04 DONE；Host FINAL ACCEPTANCE PASS，Finding CLOSED | P2-09 未开始 |
 | P3 观测与主页面 | 3 / 8 | P3-01/P3-03/P3-04 DONE | P3-08 未开始 |
-| P4 完整配置能力 | 1 / 9 | P4-02 DONE，P4-03 READY；Chain 在 Routing 前交付 | P4-07 未开始 |
+| P4 完整配置能力 | 1 / 9 | P4-02 DONE，P4-03 ACCEPTANCE；Chain 在 Routing 前交付 | P4-07 未开始 |
 | P5 DNS 与共享 | 3 / 7 | P5-04/P5-05/P5-06 DONE；Rules 在 DNS 后最终闭合 | P5-07 未开始 |
 | P6 macOS TUN 与生命周期 | 0 / 5 | 未开始，按各卡依赖推进 | P6-05 未开始 |
 | P7 数据与发布收尾 | 0 / 5 | 未开始，schema/清理按显式依赖等待 | P7-05 未开始 |
 | Windows W0–W3 | 0 / 7 | 后续排期 DEFERRED | W3-02 未开始 |
 
-macOS：**27 / 61 完成**；READY 2、TODO 30、DOING 1、REVIEW 0、ACCEPTANCE 1、BLOCKED 0。Windows 7 项 DEFERRED 单列，共 68 项。数量不等于工期权重或代码完成百分比；P1-04/P2-02/P4-05 父项被后缀子项替代，不重复计数。
+macOS：**27 / 61 完成**；READY 1、TODO 30、DOING 1、REVIEW 0、ACCEPTANCE 2、BLOCKED 0。Windows 7 项 DEFERRED 单列，共 68 项。数量不等于工期权重或代码完成百分比；P1-04/P2-02/P4-05 父项被后缀子项替代，不重复计数。
 
 ## 2 Active Tasks
 
 | Task | owner / 泳道 | 写范围 / 公共契约 | 实际资源 / 下一动作 |
 | --- | --- | --- | --- |
+| P4-03 · ACCEPTANCE | Codex · Core/Config/GPUI | groups 模型/统一目录/策略/保存/GPUI及共享控件必要外观；Runtime 写入口与探测不接管 | 独立 dev/p4-03-failover；切片及真实编辑交付，待原 owner Runtime 接线、Native 与完整视觉；不 commit/merge/释放 |
 | P2-05 · ACCEPTANCE | Codex Desktop · Core 网络客户端 | 独立dev/p2-05-outbound-clients，未合并；不在本卡写入 | 指定节点Native503已关闭，用户选择等待完整网络组合验收 |
 | P2-06 · DOING | Codex · Runtime/Platform | helper production/IPC、Core Runtime DTO、desktop runtime_service/platform、局部 Cargo 接线、任务文档 | 观测接线增量与真实普通用户受管实例验收通过，P3-01已DONE；root安装/降权、GUI、Helper多轮与重启恢复等原缺口继续后续验收，Runtime/DTO owner保留；见[P2-06接线记录](P2-06-observation-integration.md) |
 
@@ -217,9 +222,9 @@ P3-03 owner/预约已释放，真实日志页、最终 GUI 与独立 Review 通�
 | Task | 依赖满足依据 | owner / 下一动作 |
 | --- | --- | --- |
 | P0-08 · READY | P0-03、P0-05均DONE；后续下载消费P0-06显式client与范围限制 | 未领取；不启动 |
-| P4-03 · READY | P4-02、P2-04均DONE；全量DAG重算新增 | 未领取；Runtime/DTO写范围需协调P2-06 owner，不在本轮启动 |
 
-当前68卡：DONE26 / ACCEPTANCE1 / DOING2 / REVIEW0 / READY2 / TODO30 / BLOCKED0 / DEFERRED7；READY仅P0-08/P4-03，均未领取/未启动；P2-04 DONE、Finding CLOSED保持。P2-06 DOING、Runtime/Platform及Runtime公共契约owner=Codex；P2-07/P6依赖未满足，不转READY。其它状态/显式依赖不变。
+
+当前68卡：DONE27 / ACCEPTANCE2 / DOING1 / REVIEW0 / READY1 / TODO30 / BLOCKED0 / DEFERRED7；READY仅P0-08，未领取/未启动；P4-03 ACCEPTANCE，独立切片未合并；P2-04 DONE、Finding CLOSED保持。P2-06 DOING、Runtime/Platform及Runtime公共契约owner=Codex；P2-07/P6依赖未满足，不转READY。其它状态/显式依赖不变。
 
 **P2-03当前契约**：正式运行配置必须调用P2-02B `compile_product(ProductCompileRequest { state, runtime_intent, default_outbound, resources })`，显式消费 `project_selected_runtime()` 的 `runtime_intent` / `projected_default_target`（转换为 `OutboundId`）；不得继续使用 `application/runtime.rs` 现有ObservationOnly `compile(...)`作为正式运行配置。参见[P2-03任务卡](P2-local-proxy.md#obg-p2-03)。已实现并由Host最终确认功能与视觉“符合”；本轮仅文档收口，不启动下游。
 

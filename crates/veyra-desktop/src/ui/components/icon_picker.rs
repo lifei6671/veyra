@@ -84,6 +84,8 @@ pub struct IconPicked(pub String);
 pub struct IconPicker {
     pub value: String,
     pub expanded: bool,
+    /// React 分组图标与主备页签图标拥有不同的真实字段宽度。
+    pub expanded_width: f32,
     pub disabled: bool,
     search: Entity<InputState>,
     // Kit 的 value 包含 IME 预编辑内容；筛选只消费 Change 事件提交后的值。
@@ -112,6 +114,7 @@ impl IconPicker {
         });
         Self {
             expanded: false,
+            expanded_width: t::groups::ICON_FIELD,
             disabled: false,
             value,
             search,
@@ -156,7 +159,7 @@ impl Render for IconPicker {
                     .ghost()
                     .disabled(self.disabled)
                     .accessibility_label(tr(cx, if self.expanded { "分组图标" } else { "选择测试站点图标" }))
-                    .w(px(if self.expanded { t::groups::ICON_FIELD } else { t::SITE_ICON_WIDTH }))
+                    .w(px(if self.expanded { self.expanded_width } else { t::SITE_ICON_WIDTH }))
                     .h(px(t::CONTROL))
                     .px(px(t::GAP))
                     .rounded(px(t::RADIUS))

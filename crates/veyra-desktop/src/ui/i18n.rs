@@ -48,6 +48,50 @@ pub fn icon_label(language: DesktopLanguage, label: &str) -> String {
     out
 }
 const MESSAGES: &[[&str; 3]] = &[
+    ["组内延迟容差", "Lane latency tolerance", "組內延遲容差"],
+    ["故障转移（failover）", "Failover", "故障轉移（failover）"],
+    ["高级设置", "Advanced settings", "進階設定"],
+    ["连续失败次数", "Consecutive failures", "連續失敗次數"],
+    [
+        "主用恢复后自动切回",
+        "Return to primary when recovered",
+        "主用恢復後自動切回",
+    ],
+    ["恢复主用等待", "Primary recovery wait", "恢復主用等待"],
+    ["主用", "Primary", "主用"],
+    ["备用 {index}", "Backup {index}", "備用 {index}"],
+    ["添加备用页签", "Add backup lane", "新增備用頁籤"],
+    ["删除当前页签", "Delete current lane", "刪除目前頁籤"],
+    ["页签名（可选）", "Lane name (optional)", "頁籤名（可選）"],
+    ["页签模式", "Lane mode", "頁籤模式"],
+    ["自动优选", "Automatic", "自動優選"],
+    ["删除页签", "Delete lane", "刪除頁籤"],
+    ["修改分组规则", "Change group rule", "修改分組規則"],
+    [
+        "当前页签中已有节点，确定删除？",
+        "This lane contains nodes. Delete it?",
+        "目前頁籤中已有節點，確定刪除？",
+    ],
+    [
+        "改为其他分组规则后，现有的主用和备用页签配置会被删除。确定继续？",
+        "Changing the rule deletes the primary and backup lane settings. Continue?",
+        "改為其他分組規則後，現有的主用和備用頁籤設定會被刪除。確定繼續？",
+    ],
+    [
+        "每条线路至少添加一个成员，页签标识不能重复",
+        "Each lane needs a member and a unique ID",
+        "每條線路至少新增一個成員，頁籤識別碼不能重複",
+    ],
+    [
+        "故障转移 · {lanes} 个页签 · {count} 个节点",
+        "Failover · {lanes} lanes · {count} nodes",
+        "故障轉移 · {lanes} 個頁籤 · {count} 個節點",
+    ],
+    [
+        "从左侧选节点加入当前页签；最前面的页签是主用，后面依次备用。单节点页签直接使用，多节点页签可选自动优选或手动选择。",
+        "Add nodes from the left. The first lane is primary; the rest are ordered backups. Multiple nodes can use automatic or manual selection.",
+        "從左側選節點加入目前頁籤；最前面的頁籤是主用，後面依次備用。單節點頁籤直接使用，多節點頁籤可選自動優選或手動選擇。",
+    ],
     ["级别", "Level", "級別"],
     ["类型", "Type", "類型"],
     ["搜索 | Regex", "Search | Regex", "搜尋 | Regex"],

@@ -44,6 +44,13 @@ pub const NUMBER_WIDTH: f32 = 80.;
 pub const SLIDER_WIDTH: f32 = 256.;
 // .panel-settings 局部控件与浮层规格。
 pub const ROW_GAP: f32 = 4.;
+// OpenBox .ob-switch 默认尺寸、关闭色；面板局部覆盖沿用 SWITCH_*。
+pub const OB_SWITCH_WIDTH: f32 = 32.;
+pub const OB_SWITCH_HEIGHT: f32 = 18.;
+pub const OB_SWITCH_THUMB: f32 = 14.;
+pub const OB_SWITCH_PADDING: f32 = 2.;
+pub const OB_SWITCH_TRAVEL: f32 = 14.;
+pub const OB_SWITCH_OFF: u32 = 0xd9dedc;
 pub const SWITCH_WIDTH: f32 = 40.;
 pub const SWITCH_HEIGHT: f32 = 24.;
 pub const SWITCH_THUMB: f32 = 18.;
@@ -347,6 +354,23 @@ pub mod backend {
 
 // OpenBox openbox.css:1311–1465 节点组；原版固定逻辑像素，不取 Kit 默认值。
 pub mod groups {
+    // OpenBox .group-failover-*：只覆盖主备编辑器，不改变普通组。
+    pub const FAILOVER_HINT_TEXT: f32 = 11.;
+    pub const FAILOVER_HINT_LINE: f32 = 15.4;
+    pub const LANE_SEARCH_GAP: f32 = 5.;
+    pub const LANE_SEARCH_ICON: f32 = 13.;
+    pub const LANE_MODE_WIDTH: f32 = 92.;
+    pub const LANE_MODE_HEIGHT: f32 = 28.;
+    pub const LANE_TAB_HEIGHT: f32 = 31.;
+    pub const LANE_TAB_PAD: f32 = 13.;
+    pub const LANE_TAB_BAR: f32 = 39.;
+    pub const LANE_SETTINGS_PAD: f32 = 7.;
+    pub const LANE_ICON_WIDTH: f32 = 145.;
+    pub const LANE_DELETE_WIDTH: f32 = 34.;
+    pub const FAILOVER_MIN_HEIGHT: f32 = 322.;
+    pub const ADVANCED_TIMEOUT: f32 = 120.;
+    pub const ADVANCED_FAILURE: f32 = 140.;
+    pub const ADVANCED_RECOVERY: f32 = 140.;
     pub const COMPACT_RADIUS: f32 = 7.;
     pub const FOOTER_GAP: f32 = 10.;
     pub const PRIMARY_TEXT: f32 = 11.;

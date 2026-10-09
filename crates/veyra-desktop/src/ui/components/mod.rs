@@ -199,6 +199,7 @@ pub fn select(
 pub struct PanelSwitch {
     control: gpui_kit::base::Switch,
     checked: bool,
+    compact: bool,
     id: ElementId,
 }
 impl Disableable for PanelSwitch {
@@ -208,6 +209,11 @@ impl Disableable for PanelSwitch {
     }
 }
 impl PanelSwitch {
+    /// OpenBox 默认 .ob-switch；面板设置仍保留其局部 40×24 覆盖。
+    pub fn compact(mut self) -> Self {
+        self.compact = true;
+        self
+    }
     pub fn on_change(mut self, handler: impl Fn(&bool, &mut Window, &mut App) + 'static) -> Self {
         self.control = self
             .control
@@ -258,12 +264,30 @@ impl RenderOnce for PanelSwitch {
                     2.,
                 ))
             })
+            .when(self.compact, |s| {
+                s.w(px(super::tokens::OB_SWITCH_WIDTH))
+                    .h(px(super::tokens::OB_SWITCH_HEIGHT))
+                    .p(px(super::tokens::OB_SWITCH_PADDING))
+                    .border_0()
+                    .rounded_full()
+                    .bg(rgb(if self.checked {
+                        super::tokens::ACCENT
+                    } else {
+                        super::tokens::OB_SWITCH_OFF
+                    }))
+            })
             .child(
                 div()
-                    .size(px(super::tokens::SWITCH_THUMB))
+                    .size(px(if self.compact {
+                        super::tokens::OB_SWITCH_THUMB
+                    } else {
+                        super::tokens::SWITCH_THUMB
+                    }))
                     .rounded_full()
-                    .bg(thumb)
-                    .ml(px(if self.checked {
+                    .bg(if self.compact { rgb(0xffffff) } else { thumb })
+                    .ml(px(if self.checked && self.compact {
+                        super::tokens::OB_SWITCH_TRAVEL
+                    } else if self.checked {
                         super::tokens::SWITCH_TRAVEL
                     } else {
                         0.
@@ -278,6 +302,7 @@ pub fn toggle(id: &'static str, checked: bool, label: impl Into<SharedString>) -
             .checked(checked)
             .accessibility_label(label),
         checked,
+        compact: false,
     }
 }
 /// Kit 保留点击与键盘行为；焦点装饰在内容裁切层外绘制。
