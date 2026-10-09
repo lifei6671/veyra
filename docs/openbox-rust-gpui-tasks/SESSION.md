@@ -1,3 +1,5 @@
+**P3-03 导出反馈追加修正（2026-10-09，完成）**：按用户要求导出失败改为全局 toast，成功/取消均无通知，删除页面永久错误横幅。真实 NSSavePanel 失败/成功/取消与筛选文件回读通过；42 项定向测试、Desktop Clippy/build/fmt/diff 通过，独立 Review 无剩余 Finding。仅 ui/logs.rs 和本次记录，临时修正 owner/预约释放；既有 P3-03 DONE、READY 队列、P2-05 ACCEPTANCE 与 P2-06 DOING/原 owner 不变。自有内核端口/预览已清理；本地增量提交/合并主分支复验，不 push。
+
 **P3-03 最终收口（2026-10-09）**：唯一 WS 安全日志、正式 GPUI/原生导出、99 个唯一定向测试、锁定 1.14.0 与最终 150% 浅色同数据对照通过。用户确认多行拖选跟手且稳定；时间与级别统一 12px 为用户明确修正。独立 Review 无剩余 Finding，自有资源已清理。P3-03 DONE，owner/预约释放；本地独立提交/合并/主分支复验，不 push。68卡 DONE27/DOING1/ACCEPTANCE1/READY2/TODO30/DEFERRED7，READY=P0-08/P4-03；P2-05 ACCEPTANCE 未合并、P2-06 DOING/原 owner 保留。[最终记录](P3-03-acceptance.md)。下方逐轮历史不改写。
 
 **P3-03 真实 GUI 修复与验收（2026-10-09）**：生产单一WS安全日志/GPUI/原生导出及99个唯一定向测试已通过；真实1.14.0与独立Review已执行。用户反馈的多行排序/光标/placeholder已修复，跨行闪烁已消失，即时拖选反馈仍在复验。P3-03 → ACCEPTANCE/owner保留，不提前提交/合并；P2-05 ACCEPTANCE未合并、P2-06 DOING原owner不变。68卡DONE26/DOING1/ACCEPTANCE2/READY2/TODO30/DEFERRED7；READY=P0-08/P4-03。[实际记录](P3-03-acceptance.md)。下方历史不改写。

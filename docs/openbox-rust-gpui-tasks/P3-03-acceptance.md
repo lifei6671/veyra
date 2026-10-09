@@ -55,3 +55,11 @@ GUI07 在复用旧临时目录时两次 CandidateFailed；只读确认 manual_si
 最终自有 GUI 经产品 Stop 后 mixed/controller/目标端口均关闭；随后只向自有预览父进程发 SIGTERM 清理，不把该操作计为 GUI Quit 验收。正式服务 Quit 的 child/SQLite 清理由两个真实 Native 用例证明。自有 Vite、临时浏览器页和视口已清理，证据/bundle/私有测试数据保留（cleanup-final-12.json）。用户现有网络与其他工作树未修改。
 
 本卡 DONE，owner/预约释放。按授权本地独立 commit → 合并 codex/dist-react-restore → 同范围主分支复验，不 push；合并后命令与实际结果追加在本地 main-final-* 证据，不以预期结果填 PASS。READY 仍为 P0-08/P4-03，未启动下游；P2-05 ACCEPTANCE 未合并，P2-06 DOING/原 owner 保留。
+
+## 用户追加：导出失败 toast，成功安静（2026-10-09）
+
+- 用户明确将导出失败反馈改为全局 toast，成功不提示；取消仍不是失败。只改 ui/logs.rs：复用 NoticeCenter.notify_app，只对 Err 发布固定安全文案，Ok(true)/Ok(false)均无通知；删除 export_error 与永久错误横幅，不影响筛选数据或列表布局。文案继续由全局 i18n 渲染，不拼接错误、文件路径或原始日志。
+- 最终 toast-build-01 真实 macOS/150%/浅色 GUI13：正式受管 mixed 向自有 loopback 204 产生日志；NSSavePanel 选取自有超长文件名触发原子写入错误，toast 显示“日志导出失败，请重试”（gui-toast-failure-13.png）。重试正常文件名成功，实际回读 3 条 info 筛选记录，无通知（gui-toast-success-13.png/txt/log）；Cancel 后无通知（gui-toast-cancel-13.png/txt）。旧 GUI09 的错误横幅截图作为历史保留，不覆盖。
+- 42 个唯一定向测试 PASS（ui 41、真实保存组件 1）；Desktop all-targets Clippy -D warnings、build、workspace fmt 和 diff 检查 PASS，toast-*-01 证据保留。未新增只镜像分支的低价值测试，真实 GUI 验证负责提示行为。
+- 独立 /root/review_p303 只读复核实际代码与三种 GUI 结果，最终无剩余 Finding。仅自有预览/实例，产品 Stop 后 mixed/controller/目标端口关闭，再停止自有预览父进程；不把 SIGTERM 计为 GUI Quit。gui-toast-cleanup-13.json 已记录。
+- P3-03 保持 DONE，追加修正 owner/预约释放；P2-06 Runtime/Helper/IPC 与全局通知样式不改，P2-05/READY 队列不变。用户原任务授权范围内本地增量提交、合并主分支及定向复验，不 push；主分支实际结果另存 toast-main-*。

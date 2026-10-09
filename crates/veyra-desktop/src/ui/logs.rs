@@ -43,7 +43,6 @@ pub struct LogsView {
     visible: bool,
     rows: Vec<Arc<Record>>,
     exporting: bool,
-    export_error: bool,
     _subscriptions: Vec<Subscription>,
     _poll: Task<()>,
 }
@@ -120,7 +119,6 @@ impl LogsView {
             visible: false,
             rows: Vec::new(),
             exporting: false,
-            export_error: false,
             _subscriptions: subscriptions,
             _poll: poll,
         }
@@ -203,7 +201,6 @@ impl LogsView {
         // 点击时的筛选结果快照；后续日志/筛选变化不改变本次导出内容。
         let bytes = self.buffer.export().into_bytes();
         self.exporting = true;
-        self.export_error = false;
         cx.notify();
         let selected = crate::platform::macos::begin_log_export();
         let services = self.services.clone();
@@ -220,7 +217,14 @@ impl LogsView {
             };
             let _ = entity.update(cx, |this, cx| {
                 this.exporting = false;
-                this.export_error = result.is_err();
+                // 导出失败复用全局 toast；成功和取消保持安静，不挤占日志列表。
+                if result.is_err() {
+                    super::components::notice::notify_app(
+                        super::components::Notice::Error,
+                        "日志导出失败，请重试",
+                        cx,
+                    );
+                }
                 cx.notify();
             });
         })
@@ -462,14 +466,6 @@ impl Render for LogsView {
             .size_full()
             .min_h_0()
             .child(toolbar)
-            .when(self.export_error, |d| {
-                d.child(
-                    div()
-                        .p(px(t::GAP))
-                        .text_color(rgb(lt::ERROR))
-                        .child(tr(cx, "日志导出失败，请重试")),
-                )
-            })
             .when(self.message().is_some(), |d| {
                 d.child(div().px(px(t::GAP)).child(tr(cx, self.message().unwrap())))
             })
