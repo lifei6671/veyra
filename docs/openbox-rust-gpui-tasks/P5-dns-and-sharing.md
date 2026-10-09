@@ -75,7 +75,7 @@
 <a id="obg-p5-05"></a>
 ## OBG-P5-05 共享网络编辑与 URI/二维码
 
-**当前状态**：DONE（2026-10-09），本卡owner/预约释放；隔离 `dev/p5-05-share-ui`。150%浅色在线逐态对照、生产持久化/失败保旧/CAS/重建回读、URI/QR解码与独立Review完成，保留具体blur/MiSans技术差异。Runtime保留P2-06归属。见[完整验收](P5-05-acceptance.md)。
+**当前状态**：DONE（2026-10-09），本卡owner/预约释放；隔离 `dev/p5-05-share-ui`。150%浅色在线逐态对照、生产持久化/失败保旧/CAS/重建回读、URI/QR解码与独立Review完成，保留具体blur/MiSans技术差异。Runtime保留P2-06归属。见[完整验收](P5-05-acceptance.md)；[本次启动Finding关闭/拖动及证据限制](P5-05-startup-fix.md)。
 
 **类型**：UI；**依赖**：OBG-P5-04、OBG-P1-04A、OBG-P1-05。**依据/范围**：方案 §2.3、§8.5；共享网络设置、core URI 与 QR 编码。
 
