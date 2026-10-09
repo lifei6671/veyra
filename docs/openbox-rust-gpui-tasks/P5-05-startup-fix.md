@@ -53,3 +53,7 @@ Finding `P5-05-STARTUP-SNAPSHOT-001`：CLOSED。P5-05 保持既有 DONE；本次
 只读 Reviewer `/root/p505_startup_review` 使用项目 code-delivery-review，核对最终 diff、23项原始日志、两个最终 GUI 路径与真实排序/回读。结论：启动 Finding 可关闭，无剩余可操作代码缺陷；上述动态视觉证据限制单独记录，P5-05 保持既有 DONE，不改历史验收。
 
 68卡状态及显式依赖重算：DONE24/DOING1/READY4/TODO32/DEFERRED7；READY=P0-08/P2-05/P3-01/P4-03，均未领取，详见 `dag-final.json`。本次不创建下游任务，不扩大 Runtime 范围。
+
+## 2026-10-09 动态补验增量
+
+旧轮次 NOT_CAPTURED 与构建证据保留。后续用户手势发现完整原卡、松手晃动和排序通知问题，已在隔离 Desktop 范围修正；本轮真实原帧、候选 REWORK、最终构建身份和剩余在线同态对照见 [动态补验记录](P5-05-drag-visual.md)。本段不改变原启动 Finding CLOSED 或 P5-05 既有 DONE。
