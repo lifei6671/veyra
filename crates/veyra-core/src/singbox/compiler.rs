@@ -20,6 +20,10 @@ pub use product::*;
 mod recovery;
 pub use recovery::*;
 
+#[path = "compiler/shared_inbounds.rs"]
+mod shared_inbounds;
+pub use shared_inbounds::*;
+
 const DNS_TAG: &str = "dns-system";
 const API_ADDRESS: &str = "127.0.0.1:9090";
 

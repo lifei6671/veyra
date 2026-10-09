@@ -10,6 +10,8 @@ use std::{
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum UnsupportedProductOption {
+    /// P2-06 owner 接通正式入站/恢复 seam 前，不能悄悄忽略用户已启用配置。
+    SharedInbounds,
     Ipv6Proxy,
     Tun,
     DnsExtras,
@@ -144,6 +146,11 @@ impl SingBoxCompiler {
     ) -> Result<SingBoxPlan, CompileError> {
         let state = request.state;
         state.validate().map_err(|_| CompileError::InvalidProfile)?;
+        if state.app_config.shared_servers.iter().any(|s| s.enabled) {
+            return Err(CompileError::UnsupportedOption(
+                UnsupportedProductOption::SharedInbounds,
+            ));
+        }
         let profile = &state.profile;
         if profile.ipv6_proxy != Ipv6Proxy::Node {
             return Err(CompileError::UnsupportedOption(

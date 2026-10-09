@@ -194,6 +194,8 @@ impl AppState {
 
         super::shares::validate_shares(&self.app_config.subscription_shares)
             .map_err(|_| StateValidationError::InvalidSubscription)?;
+        super::validate_shared_servers(&self.app_config.shared_servers)
+            .map_err(|_| StateValidationError::InvalidSharedServer)?;
         self.app_config
             .visual
             .validate()
@@ -1078,6 +1080,7 @@ impl RouteTarget {
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum StateValidationError {
+    InvalidSharedServer,
     InvalidProfile,
     InvalidVisualPreferences,
     InvalidBehaviorPreferences,
@@ -1101,6 +1104,7 @@ pub enum StateValidationError {
 impl fmt::Display for StateValidationError {
     fn fmt(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
         let message = match self {
+            Self::InvalidSharedServer => "shared inbound configuration is invalid",
             Self::InvalidVisualPreferences => "desktop visual preferences are invalid",
             Self::InvalidBehaviorPreferences => "desktop behavior preferences are invalid",
             Self::InvalidProfile => "profile is invalid",
@@ -1728,6 +1732,9 @@ mod tests {
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 #[serde(deny_unknown_fields)]
 pub struct AppConfig {
+    /// schema v9 的兼容增量；旧文件缺少该字段时保持未启用任何共享入站。
+    #[serde(default)]
+    pub shared_servers: Vec<super::SharedServer>,
     #[serde(default)]
     pub subscription_shares: Vec<super::SubscriptionShare>,
     pub check_updates_on_start: bool,
@@ -1737,6 +1744,7 @@ pub struct AppConfig {
 impl Default for AppConfig {
     fn default() -> Self {
         Self {
+            shared_servers: Vec::new(),
             subscription_shares: Vec::new(),
             check_updates_on_start: true,
             visual: super::DesktopVisualPreferences::default(),
