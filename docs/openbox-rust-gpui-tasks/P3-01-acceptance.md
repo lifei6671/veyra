@@ -61,3 +61,7 @@ Host发现：断流重连等待依赖 `state.events.receiver_count()>0`，只读
 P3-01-HOST-001 **CLOSED**。Host 独立检查最终 controller.rs、WS 客户端及测试，并实际复跑 Observation **24 PASS**、Controller **16 PASS**、P2-03 Runtime **11 PASS**；Core Clippy/build/fmt、git diff --check 全部 PASS。新增的无事件订阅者自动重连测试实测通过；原有独立 Domain/Legacy FAIL 与未执行的 Native/GUI 项目原样保留。Host 未复跑用户真实网络或正式 P2-06 child 生命周期，不能以 loopback 冒充正式实例。
 
 本轮只将可独立复核的 **ACCEPTANCE 检查点**提交到 dev/p3-01-observation。**不提升 P3-01 为 DONE，不释放 Observation owner，不合并 codex/dist-react-restore，不推送。** 仍须 P2-06 原 owner 在正式实例 Ready/Stop/Replace 时消费 bind()/stop() seam，并通过相应真实集成与复核才能收口。
+
+## 正式 Runtime 接线与最终验收（2026-10-09，组合分支）
+
+检查点 b208320 的 ACCEPTANCE 历史不改写。P2-06 原 owner 在 `dev/p2-06-observation-integration` 接入唯一服务，已完成正式受管实例真实四路观测、三指标断流恢复、实例替换与Stop资源清理；两项 owner 回归及独立 Review 通过。P3-01 → **DONE**，Observation owner/预约释放；P2-06 总卡仍DOING。日志真实单路重连、root/helper Native与UI消费证据边界保留；[完整结果与本轮审查](P2-06-observation-integration.md)。仅组合分支本地提交，不合并主分支、不push。

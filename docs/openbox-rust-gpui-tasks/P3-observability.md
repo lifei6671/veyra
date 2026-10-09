@@ -22,7 +22,7 @@
 - [x] 已知终端投影仅使用当前实例可观察身份/来源，未知字段不猜测；切换实例丢弃旧终端信息。
 - [x] 断流、未知内存和慢订阅缺口明确反馈，不显示伪零或阻塞控制命令。
 
-**当前状态：ACCEPTANCE**。以上为生产 ObservationService 对自有 loopback 四流的定向验证，不证明 P2-06 正式 child 生命周期接通。唯一 owner=Codex · Observation；待 Runtime owner 消费现有 InstanceId/受管 endpoint 及 bind/stop seam，公共 DTO 不改、显式依赖不变。[交付、测试与独立Review](P3-01-acceptance.md)。
+**当前状态：DONE（本组合分支）**。原四项生产 Service/WS 验收保留，本轮已补正式 Runtime Ready/Stop/Replace/handoff 接线与锁定真实内核隔离验证，最终独立 Review 通过。Observation owner/本卡预约释放，P2-06 总卡仍 DOING及原owner保留；公共 DTO、collector语义和显式依赖不变。见[接线与最终审查](P2-06-observation-integration.md)及[历史交付](P3-01-acceptance.md)。
 
 <a id="obg-p3-02"></a>
 ## OBG-P3-02 连接列表与详情

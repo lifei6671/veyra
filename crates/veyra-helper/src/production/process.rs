@@ -40,7 +40,7 @@ struct Running {
     lines: mpsc::Receiver<(bool, SocketAddr)>,
     readers: Vec<thread::JoinHandle<()>>,
     end_read: Arc<AtomicBool>,
-    controller: Option<ManagedControllerEndpoint>,
+    controller: Option<std::sync::Arc<ManagedControllerEndpoint>>,
     endpoints: Option<ManagedRuntimeEndpoints>,
 }
 pub(super) struct ProcessPort {
@@ -452,7 +452,7 @@ impl SidecarPort for ProcessPort {
                 {
                     return Err(SidecarPortError);
                 }
-                owned.controller = Some(endpoint);
+                owned.controller = Some(std::sync::Arc::new(endpoint));
                 owned.endpoints = Some(ManagedRuntimeEndpoints { mixed, controller });
                 return Ok(());
             }
@@ -515,6 +515,15 @@ impl SidecarPort for ProcessPort {
             .as_ref()
             .filter(|c| c.identity == *i)
             .and_then(|c| c.endpoints)
+    }
+    fn observation_endpoint(
+        &self,
+        i: &ManagedSidecar,
+    ) -> Option<std::sync::Arc<ManagedControllerEndpoint>> {
+        self.running
+            .as_ref()
+            .filter(|c| c.identity == *i)
+            .and_then(|c| c.controller.clone())
     }
     fn is_alive(&mut self, i: &ManagedSidecar) -> Result<bool, SidecarPortError> {
         Ok(self

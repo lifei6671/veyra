@@ -66,6 +66,13 @@ pub trait SidecarPort {
     fn endpoints(&self, _instance: &ManagedSidecar) -> Option<ManagedRuntimeEndpoints> {
         None
     }
+    /// 只能暴露当前已鉴权 child 的端点；不能用端口号重新构造观测来源。
+    fn observation_endpoint(
+        &self,
+        _instance: &ManagedSidecar,
+    ) -> Option<std::sync::Arc<super::clash_api::ManagedControllerEndpoint>> {
+        None
+    }
     fn is_alive(&mut self, _instance: &ManagedSidecar) -> Result<bool, SidecarPortError> {
         Err(SidecarPortError)
     }
