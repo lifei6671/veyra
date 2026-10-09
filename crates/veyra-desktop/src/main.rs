@@ -8,6 +8,7 @@ mod platform;
 mod preferences;
 mod runtime_service;
 mod services;
+mod shared_network;
 mod state_bridge;
 mod subscriptions;
 mod tray;

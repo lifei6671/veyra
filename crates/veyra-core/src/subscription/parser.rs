@@ -850,8 +850,39 @@ fn parse_uri(uri: &str) -> Result<ProxyNodeDraft, SkippedNode> {
         .split_once('?')
         .unwrap_or((before_fragment, ""));
     let (credentials, host_port) = authority.rsplit_once('@').unwrap_or(("", authority));
+    // Hysteria2 标准分享 URI 可带空路径；只接受单一 /，不吞掉任意路径。
+    let host_port = if protocol == ProxyProtocol::Hysteria2 {
+        host_port.strip_suffix('/').unwrap_or(host_port)
+    } else {
+        host_port
+    };
     let (server, port) = split_host_port(host_port)?;
-    let query = parse_query(query)?;
+    let mut query = parse_query(query)?;
+    // 接纳 Veyra 生成的协议标准别名，仍保留未知字段/重复语义的拒绝边界。
+    if protocol == ProxyProtocol::Vless
+        && let Some(value) = query.remove("encryption")
+        && value != "none"
+    {
+        return Err(SkippedNode::InvalidNode);
+    }
+    let alias = match protocol {
+        ProxyProtocol::Tuic => Some("allow_insecure"),
+        ProxyProtocol::Hysteria2 => Some("insecure"),
+        _ => None,
+    };
+    if let Some(alias) = alias
+        && let Some(value) = query.remove(alias)
+        && query.insert("allowInsecure".into(), value).is_some()
+    {
+        return Err(SkippedNode::InvalidNode);
+    }
+    if protocol == ProxyProtocol::Hysteria2
+        && let Some(value) = query.remove("obfs")
+        && (value != "salamander" || !query.contains_key("obfs-password"))
+    {
+        return Err(SkippedNode::InvalidNode);
+    }
+
     if has_unknown_uri_query(protocol, &query) {
         return Err(SkippedNode::InvalidNode);
     }
@@ -990,7 +1021,10 @@ fn parse_uri_tls(
             allow_insecure,
             reality_public_key: None,
             reality_short_id: None,
-            alpn: Vec::new(),
+            alpn: query
+                .get("alpn")
+                .map(|s| s.split(',').map(str::to_owned).collect())
+                .unwrap_or_default(),
             utls_fingerprint: None,
         })),
         Some("reality") => Ok(Some(TlsOptions {
@@ -998,7 +1032,10 @@ fn parse_uri_tls(
             allow_insecure,
             reality_public_key: Some(required_query_string(query, &["pbk"])?),
             reality_short_id: Some(required_query_string(query, &["sid"])?),
-            alpn: Vec::new(),
+            alpn: query
+                .get("alpn")
+                .map(|s| s.split(',').map(str::to_owned).collect())
+                .unwrap_or_default(),
             utls_fingerprint: None,
         })),
         Some("none") if !allow_insecure && server_name.is_none() => Ok(None),
@@ -1017,7 +1054,10 @@ fn parse_uri_tls(
                 allow_insecure,
                 reality_public_key: None,
                 reality_short_id: None,
-                alpn: Vec::new(),
+                alpn: query
+                    .get("alpn")
+                    .map(|s| s.split(',').map(str::to_owned).collect())
+                    .unwrap_or_default(),
                 utls_fingerprint: None,
             }))
         }
@@ -1077,6 +1117,7 @@ fn parse_uri_options(
     raw: &str,
     query: &BTreeMap<String, String>,
 ) -> Result<ProtocolOptions, SkippedNode> {
+    let raw_encoded = raw;
     let raw = percent_decode(raw);
     match protocol {
         ProxyProtocol::Vmess => {
@@ -1111,7 +1152,9 @@ fn parse_uri_options(
             })
         }
         ProxyProtocol::Socks => {
-            let (username, password) = raw.split_once(':').unwrap_or(("", ""));
+            let (username, password) = raw_encoded.split_once(':').unwrap_or(("", ""));
+            let username = percent_decode(username);
+            let password = percent_decode(password);
             Ok(ProtocolOptions::Socks {
                 version: query
                     .get("version")
@@ -1122,7 +1165,9 @@ fn parse_uri_options(
             })
         }
         ProxyProtocol::Http => {
-            let (username, password) = raw.split_once(':').unwrap_or(("", ""));
+            let (username, password) = raw_encoded.split_once(':').unwrap_or(("", ""));
+            let username = percent_decode(username);
+            let password = percent_decode(password);
             Ok(ProtocolOptions::Http {
                 username: (!username.is_empty()).then(|| username.to_owned()),
                 password: (!password.is_empty()).then(|| password.to_owned()),
@@ -1239,7 +1284,7 @@ fn has_unknown_uri_query(protocol: ProxyProtocol, query: &BTreeMap<String, Strin
             "down_mbps",
             "downmbps",
         ][..],
-        ProxyProtocol::Tuic => &["congestion_control", "udp_relay_mode", "zero_rtt"][..],
+        ProxyProtocol::Tuic => &["congestion_control", "udp_relay_mode", "zero_rtt", "alpn"][..],
         ProxyProtocol::ShadowTls | ProxyProtocol::Snell => &["version"][..],
         ProxyProtocol::Ssh => &["private_key", "private_key_passphrase", "host_key"][..],
         ProxyProtocol::Vmess
@@ -1401,7 +1446,7 @@ fn parse_query(query: &str) -> Result<BTreeMap<String, String>, SkippedNode> {
 }
 
 fn percent_decode(value: &str) -> String {
-    let mut decoded = String::with_capacity(value.len());
+    let mut decoded = Vec::with_capacity(value.len());
     let bytes = value.as_bytes();
     let mut index = 0;
     while index < bytes.len() {
@@ -1410,14 +1455,14 @@ fn percent_decode(value: &str) -> String {
             && let Ok(hex) = std::str::from_utf8(&bytes[index + 1..index + 3])
             && let Ok(byte) = u8::from_str_radix(hex, 16)
         {
-            decoded.push(char::from(byte));
+            decoded.push(byte);
             index += 3;
             continue;
         }
-        decoded.push(char::from(bytes[index]));
+        decoded.push(bytes[index]);
         index += 1;
     }
-    decoded
+    String::from_utf8_lossy(&decoded).into_owned()
 }
 
 fn decode_base64(input: &str) -> Result<String, ParseError> {

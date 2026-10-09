@@ -201,6 +201,20 @@ impl SnapshotService {
                     .ok_or_else(invalid)?
                     .enabled = enabled;
             }
+            SharedServerCommand::Reorder(ids) => {
+                if ids.len() != servers.len() {
+                    return Err(invalid());
+                }
+                let mut ordered = Vec::with_capacity(ids.len());
+                for id in ids {
+                    let index = servers
+                        .iter()
+                        .position(|s| s.id == id)
+                        .ok_or_else(invalid)?;
+                    ordered.push(servers.remove(index));
+                }
+                *servers = ordered;
+            }
             SharedServerCommand::Delete { id } => {
                 let index = servers
                     .iter()

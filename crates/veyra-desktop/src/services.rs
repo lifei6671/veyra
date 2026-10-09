@@ -99,6 +99,32 @@ impl AppServices {
         };
         Ok((services, receiver))
     }
+    pub fn shared_network_command(
+        &self,
+        expected: Option<veyra_core::domain::ConfigVersion>,
+        command: crate::shared_network::Command,
+    ) -> tokio::sync::oneshot::Receiver<crate::shared_network::Completion> {
+        let snapshots = self.snapshots.clone();
+        let (sender, receiver) = tokio::sync::oneshot::channel();
+        self.runtime.spawn_blocking(move || {
+            let _ = sender.send(crate::shared_network::execute(
+                &snapshots, expected, command,
+            ));
+        });
+        receiver
+    }
+    pub fn shared_certificate(
+        &self,
+    ) -> tokio::sync::oneshot::Receiver<Result<veyra_core::domain::SharedTls, &'static str>> {
+        let (sender, receiver) = tokio::sync::oneshot::channel();
+        self.runtime.spawn_blocking(move || {
+            let _ = sender.send(
+                veyra_core::application::shared_inbounds::sharing::generate_shared_certificate()
+                    .map_err(|_| "证书生成失败，请重试"),
+            );
+        });
+        receiver
+    }
     pub fn shares_command(
         &self,
         expected: Option<veyra_core::domain::ConfigVersion>,

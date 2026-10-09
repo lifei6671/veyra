@@ -201,6 +201,12 @@ pub struct PanelSwitch {
     checked: bool,
     id: ElementId,
 }
+impl Disableable for PanelSwitch {
+    fn disabled(mut self, disabled: bool) -> Self {
+        self.control = self.control.disabled(disabled);
+        self
+    }
+}
 impl PanelSwitch {
     pub fn on_change(mut self, handler: impl Fn(&bool, &mut Window, &mut App) + 'static) -> Self {
         self.control = self
@@ -1153,3 +1159,5 @@ pub fn loading_spinner(size: f32, cx: &App) -> impl IntoElement {
             ),
         )
 }
+
+pub mod qr;

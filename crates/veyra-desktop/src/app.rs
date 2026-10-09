@@ -22,6 +22,8 @@ pub struct AppView {
     pub dark: bool,
     pub pages: Pages,
     pub subscriptions: Entity<crate::ui::subscriptions::SubscriptionsView>,
+    pub shared_network: Entity<crate::ui::shared_network::SharedNetworkView>,
+    _shared_network_subscription: Subscription,
     pub groups: Entity<crate::ui::groups::GroupsView>,
     _groups_subscription: Subscription,
     _subscriptions: Subscription,
@@ -96,6 +98,21 @@ impl AppView {
             &subscriptions,
             |this, _, event: &crate::ui::subscriptions::SharesUpdated, cx| {
                 // 分享保存也发布权威快照，避免 Runtime 只读投影把旧配置版本送回页面。
+                this.bridge.leave_page();
+                this.behavior.rebase(&event.0);
+                this.bridge.snapshot = Some(event.0.clone());
+                cx.notify();
+            },
+        );
+        let shared_network = cx.new(|cx| {
+            crate::ui::shared_network::SharedNetworkView::new(services.clone(), window, cx)
+        });
+        pages.get(Route::Settings).update(cx, |page, _| {
+            page.shared_network = Some(shared_network.clone())
+        });
+        let shared_network_subscription = cx.subscribe(
+            &shared_network,
+            |this, _, event: &crate::ui::shared_network::Updated, cx| {
                 this.bridge.leave_page();
                 this.behavior.rebase(&event.0);
                 this.bridge.snapshot = Some(event.0.clone());
@@ -257,6 +274,8 @@ impl AppView {
             _shares_updates: shares_updates,
             groups,
             _groups_subscription: groups_subscription,
+            shared_network,
+            _shared_network_subscription: shared_network_subscription,
             bridge: StateBridge::default(),
             services,
             behavior: Default::default(),
@@ -775,6 +794,8 @@ impl AppView {
             }
         }
         if let Some(state) = &self.bridge.snapshot {
+            self.shared_network
+                .update(cx, |view, cx| view.project(state, cx));
             self.groups.update(cx, |view, cx| view.project(state, cx));
             self.subscriptions
                 .update(cx, |view, cx| view.project(state, cx));

@@ -699,38 +699,10 @@ pub(super) fn share_spinner(id: &'static str, extent: f32, color: Hsla) -> impl 
 }
 
 fn qr_code(url: &str) -> AnyElement {
-    let Ok(code) = qrcode::QrCode::with_error_correction_level(url.as_bytes(), qrcode::EcLevel::M)
-    else {
-        return div().into_any_element();
-    };
-    // 编码完整 URL；线上 PNG 在4px容器 padding内另有一模块 quiet zone，实拍黑区约160px。
-    canvas(
-        |_, _, _| (),
-        move |bounds, _, window, _| {
-            window.paint_quad(fill(bounds, rgb(0xffffff)));
-            let n = code.width();
-            let quiet = t::SUBSCRIPTION_SHARE_QR_QUIET_MODULES;
-            let cell = bounds.size.width / (n as f32 + quiet * 2.);
-            for y in 0..n {
-                for x in 0..n {
-                    if code[(x, y)] == qrcode::Color::Dark {
-                        window.paint_quad(fill(
-                            Bounds::new(
-                                bounds.origin
-                                    + point(cell * (x as f32 + quiet), cell * (y as f32 + quiet)),
-                                size(cell, cell),
-                            ),
-                            rgb(0x000000),
-                        ));
-                    }
-                }
-            }
-        },
+    super::super::components::qr::qr_code(
+        url,
+        t::SUBSCRIPTION_SHARE_QR_SIZE - t::SUBSCRIPTION_SHARE_QR_PADDING * 2.,
     )
-    .size(px(
-        t::SUBSCRIPTION_SHARE_QR_SIZE - t::SUBSCRIPTION_SHARE_QR_PADDING * 2.
-    ))
-    .into_any_element()
 }
 
 #[cfg(test)]

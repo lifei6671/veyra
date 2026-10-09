@@ -14,6 +14,7 @@ pub struct PageView {
     pub panel: Option<Entity<super::panel::PanelView>>,
     pub behavior: Option<Entity<super::behavior_panel::BehaviorPanel>>,
     pub subscriptions: Option<Entity<super::subscriptions::SubscriptionsView>>,
+    pub shared_network: Option<Entity<super::shared_network::SharedNetworkView>>,
     pub groups: Option<Entity<super::groups::GroupsView>>,
     pub backend: Option<Entity<super::backend::BackendView>>,
     behavior_open: bool,
@@ -31,6 +32,7 @@ impl PageView {
             behavior: None,
             subscriptions: None,
             groups: None,
+            shared_network: None,
             backend: None,
             behavior_open: false,
             settings_scroll: ScrollHandle::new(),
@@ -129,6 +131,11 @@ impl Render for PageView {
                                                     )
                                                 });
                                             }
+                                            if category == Category::Share
+                                                && let Some(view) = &this.shared_network
+                                            {
+                                                view.update(cx, |v, cx| v.load(cx));
+                                            }
                                             this.category = category;
                                             // 对应 React 分类栏：选中项必须完整滚入视口。
                                             this.category_scroll.scroll_to_item(i);
@@ -138,6 +145,24 @@ impl Render for PageView {
                                 },
                             )),
                     )
+                    .when(self.category == Category::Share, |d| {
+                        d.child(
+                            super::components::icon_button(
+                                "server-header-add",
+                                crate::ui::i18n::tr(cx, "添加服务器"),
+                                "Plus",
+                                super::tokens::CONTROL,
+                            )
+                            .primary()
+                            .on_click(cx.listener(
+                                |this, _, window, cx| {
+                                    if let Some(view) = &this.shared_network {
+                                        view.update(cx, |v, cx| v.open(None, window, cx));
+                                    }
+                                },
+                            )),
+                        )
+                    })
                     .when(self.category == Category::Groups, |d| {
                         d.children(
                             [
@@ -255,6 +280,16 @@ impl Render for PageView {
                             .min_h_0()
                             .overflow_y_scroll()
                             .child(backend.clone()),
+                    );
+                }
+            } else if self.category == Category::Share {
+                if let Some(view) = &self.shared_network {
+                    content = content.child(
+                        div()
+                            .flex_1()
+                            .min_h_0()
+                            .p(px(super::tokens::GAP))
+                            .child(view.clone()),
                     );
                 }
             } else if self.category == Category::Groups {

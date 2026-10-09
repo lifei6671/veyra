@@ -35,6 +35,7 @@ pub fn icon(name: &str, size: f32) -> Icon {
         "Map" => include_bytes!("../../assets/heroicons/Map.svg"),
         "DevicePhoneMobile" => include_bytes!("../../assets/heroicons/DevicePhoneMobile.svg"),
         "Link" => include_bytes!("../../assets/heroicons/Link.svg"),
+        "QrCode" => include_bytes!("../../assets/heroicons/QrCode.svg"),
         "Share" => include_bytes!("../../assets/heroicons/Share.svg"),
         "ServerStack" => include_bytes!("../../assets/heroicons/ServerStack.svg"),
         "CircleStack" => include_bytes!("../../assets/heroicons/CircleStack.svg"),
