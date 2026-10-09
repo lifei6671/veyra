@@ -26,9 +26,7 @@ thiserror = "=2.0.20"
 tokio = { version = "=1.53.1", features = ["rt-multi-thread", "sync", "time"] }
 tokio-tungstenite = { version = "=0.30.0", default-features = false, features = ["connect"] }
 tracing = "=0.1.44"
-
-[dev-dependencies]
-# 只用于受控loopback HTTPS测试，复用reqwest已经使用的TLS库。
+# 复用已经锁定的 TLS 库校验证书/私钥匹配，不引入新的证书存储。
 rustls = { version = "=0.23.43", default-features = false, features = ["ring", "std", "tls12"] }
 
 [[example]]

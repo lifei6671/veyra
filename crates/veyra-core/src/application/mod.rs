@@ -26,4 +26,5 @@ pub mod owned_child;
 
 pub mod helper_transfer;
 
+pub mod shared_inbounds;
 pub mod shares;

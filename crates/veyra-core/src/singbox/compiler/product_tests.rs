@@ -55,6 +55,32 @@ fn document(s: &AppState) -> Value {
     serde_json::from_slice(generated.as_bytes()).unwrap()
 }
 
+// P2-06 合入共享入站前，正式路径必须明确拒绝，不能把已保存/启用配置静默丢弃。
+#[test]
+fn p504_product_rejects_unintegrated_enabled_shared_inbounds() {
+    let mut s = state();
+    s.app_config.shared_servers.push(SharedServer {
+        id: "home".into(),
+        name: "home".into(),
+        enabled: true,
+        address: "example.invalid".into(),
+        listen: "127.0.0.1".parse().unwrap(),
+        port: 24008,
+        protocol: SharedProtocol::Mixed {
+            username: "".into(),
+            password: "".into(),
+        },
+    });
+    assert!(matches!(
+        plan(&s, &target(), &resources()),
+        Err(CompileError::UnsupportedOption(
+            UnsupportedProductOption::SharedInbounds
+        ))
+    ));
+    s.app_config.shared_servers[0].enabled = false;
+    assert!(plan(&s, &target(), &resources()).is_ok());
+}
+
 #[test]
 fn p202b_catalog_nodes_selector_urltest_direct_block_and_exact_resources() {
     let s = state();

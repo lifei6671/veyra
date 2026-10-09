@@ -36,3 +36,6 @@ pub use groups::*;
 
 pub mod shares;
 pub use shares::SubscriptionShare;
+
+pub mod shared_inbounds;
+pub use shared_inbounds::*;

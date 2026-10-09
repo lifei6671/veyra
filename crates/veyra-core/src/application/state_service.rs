@@ -168,6 +168,56 @@ impl SnapshotService {
         })
     }
     /// 分享配置使用同一个 CAS/原子快照，监听与连接从不进入持久事实。
+    /// 五种入站只保存配置；启用表示参与下次编译，不声称 Runtime 已经 Applied。
+    pub fn edit_shared_server(
+        &self,
+        expected: ConfigVersion,
+        command: super::shared_inbounds::SharedServerCommand,
+    ) -> Result<SaveOutcome<AppState, SnapshotVersion>, AppError> {
+        use super::shared_inbounds::SharedServerCommand;
+        let _guard = self.lock()?;
+        let mut next = self.load_or_initialize()?;
+        next.config_version().0.require(&expected.0)?;
+        let servers = &mut next.app_config.shared_servers;
+        let invalid = || AppError::validation(FieldPath::Snapshot);
+        match command {
+            SharedServerCommand::Create(value) => {
+                if servers.iter().any(|s| s.id == value.id) {
+                    return Err(invalid());
+                }
+                servers.push(value);
+            }
+            SharedServerCommand::Update(value) => {
+                let old = servers
+                    .iter_mut()
+                    .find(|s| s.id == value.id)
+                    .ok_or_else(invalid)?;
+                *old = value;
+            }
+            SharedServerCommand::SetEnabled { id, enabled } => {
+                servers
+                    .iter_mut()
+                    .find(|s| s.id == id)
+                    .ok_or_else(invalid)?
+                    .enabled = enabled;
+            }
+            SharedServerCommand::Delete { id } => {
+                let index = servers
+                    .iter()
+                    .position(|s| s.id == id)
+                    .ok_or_else(invalid)?;
+                servers.remove(index);
+            }
+        }
+        next.validate().map_err(|_| invalid())?;
+        let saved = self.store.commit(&next)?;
+        Ok(SaveOutcome {
+            version: saved.version(),
+            value: saved,
+            effect: ApplyEffect::SavedOnly,
+        })
+    }
+    /// 分享 HTTP 配置使用同一个 CAS/原子快照。
     pub fn save_shares(
         &self,
         expected: ConfigVersion,

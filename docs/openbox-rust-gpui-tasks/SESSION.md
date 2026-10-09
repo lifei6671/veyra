@@ -1,3 +1,7 @@
+**P5-04 最终收口（2026-10-09，当前）**：按用户明确的职责分离范围完成五协议领域/验证、SnapshotService/JsonStateStore CRUD与真实失败保旧/重建回读、TLS资源和端口预检、正式SingBoxCompiler封闭入站产物；10新增测试实际PASS，合并回归去重184PASS/1基线既有FAIL/1辅助入口ignored；固定1.14.0的10正check/5反check/5加载/6bind冲突及退出清理通过。Core/Desktop build/Clippy/fmt通过；旧Tauri Clippy缺Windows LICENSE资源FAIL保留。独立只读Review无可操作Finding。P5-04 → DONE、owner/预约释放；正式Runtime Apply/Restore/回退由P2-06原owner负责，本卡未越权修改，不冒充Applied。68卡 DONE23/DOING1/READY5/TODO32/DEFERRED7；READY=P0-08/P2-05/P3-01/P4-03/P5-05，P5-05只转READY未启动。仅隔离worktree一次本地commit、不push；详见[交付记录与最小Runtime接口](P5-04-acceptance.md)。
+
+**P5-04 领取（2026-10-09，历史）**：Local 模式限定 `/Users/lifeilin/.codex/worktrees/p5-04-shared-inbounds/veyra` / `dev/p5-04-shared-inbounds`，基线 `eec981f34386e1f2461dbba137707ee814b58e4c`、干净。文件/临时 index 暂存/提交对象/index lock 写权限 PASS；会话默认 cwd 仍为主树，所有操作显式指定隔离 worktree，不改主树。P5-04 READY → DOING；owner = Codex · P5-04 Core/Config。预约 `domain/shared_inbounds.rs`、AppConfig 的 shared_servers 字段/校验、`application/shared_inbounds*`、SnapshotService 最小 CAS 保存入口、`singbox/compiler/shared_inbounds*`、Compiler 接口与受控测试、本卡文档/evidence；Core Cargo 仅将既有锁定 rustls 依赖用于证书解析（不改 workspace/锁文件）。P2-06 Runtime/Platform、Helper/IPC、Runtime DTO/恢复契约及其 owner 保留；P5-06 HTTP/token/host/listen 不动；P5-05 UI/URI/QR 不实施。正式入站/恢复/失败回退接线需原 owner 最小协调，不以独立配置加载冒充产品 Applied。自有临时目录、loopback 动态测试端口，禁止系统代理/TUN/现有实例操作。当前 68 卡 DONE22/DOING2/READY4/TODO33/DEFERRED7；READY=P0-08/P2-05/P3-01/P4-03，均未领取。
+
 **P5-06 最终收口 / DONE（2026-10-09，当前）**：最终产品架构为Veyra独立ShareService/Axum HTTP端口、sing-box节点JSON和URL二维码；解除错误P2-06端口依赖。listen/host/LAN生产回归、29唯一定向测试、Clippy/fmt/build、真实GUI功能与150%浅色逐态视觉通过；新增页面快照先完成的启动收敛修复，最终删除无导航重启Ready。最终signed SHA256 `879c5d775ff0adce3c0a80fc313df79c32751ba971632321f8d20485ba652b0b`。独立复核三项P2均关闭，无剩余可执行finding。用户明确接受局部blur、MiSans静态字体及独立监听字段差异，不声称像素完全一致；同机LAN验证不代替第二设备，较早构建托盘证据不重绑最终SHA。所有历史证据保留，本卡owner/预约释放；P2-06 DOING、原owner/范围不变。68卡DONE22/DOING1/ACCEPTANCE0/READY5/TODO33/DEFERRED7，READY队列未变且不启动下游；本轮一次本地增量commit、不push。详见[最终验收记录](P5-06-acceptance.md)。
 
 **P5-06 / ACCEPTANCE（2026-10-09，历史；端口决策已覆盖）**：启动故障真实复现为Store gate Busy；首次全局Accepted/Ready后才发起Runtime Refresh，生产80轮删除重启与真实GUI无需导航Ready。Core9/Desktop19唯一定向测试、最终build/Clippy/fmt通过；旧Tauri Windows资源失败独立保留。真实本地React原生confirm系统截图已补，线上自绘Dialog另列；修正具体分享名称、线上几何/控件/列表。最终signed SHA256 `018f13a57898ea4d3f05198c0165a5c9acf472d75677518ae239077c35d31b91`。独立只读Review无新增阻断代码问题。**用户最新明确监听字段应配置sing-box入站端口，需协调P2-06 owner；现有ShareService HTTP监听不等价，已停止相交修改。** 字体等剩余逐态视觉未闭合，维持ACCEPTANCE、owner不释放。P2-06继续DOING及原范围；不动系统代理/TUN/管理员配置。详见[P5-06当前记录](P5-06-acceptance.md)。68卡DONE21/DOING1/ACCEPTANCE1/READY5/TODO33/DEFERRED7；READY=P0-08/P2-05/P3-01/P4-03/P5-04。历史证据保留，精确范围新本地增量commit，不push。
@@ -140,12 +144,12 @@ P2-06 已阶段提交 `f2457e6a4e2fe0ac3c9186bc7d17323a70c4c0a8`，仍 DOING、�
 | P2 本机代理闭环 | 5 / 10 | P2-01/P2-02A/P2-02B/P2-03/P2-04 DONE；Host FINAL ACCEPTANCE PASS，Finding CLOSED | P2-09 未开始 |
 | P3 观测与主页面 | 0 / 8 | 未开始，基础能力不计完整 DNS/分流 | P3-08 未开始 |
 | P4 完整配置能力 | 1 / 9 | P4-02 DONE，P4-03 READY；Chain 在 Routing 前交付 | P4-07 未开始 |
-| P5 DNS 与共享 | 1 / 7 | P5-06 DONE，P5-04 READY；Rules 在 DNS 后最终闭合 | P5-07 未开始 |
+| P5 DNS 与共享 | 2 / 7 | P5-06/P5-04 DONE，P5-05 READY；Rules 在 DNS 后最终闭合 | P5-07 未开始 |
 | P6 macOS TUN 与生命周期 | 0 / 5 | 未开始，按各卡依赖推进 | P6-05 未开始 |
 | P7 数据与发布收尾 | 0 / 5 | 未开始，schema/清理按显式依赖等待 | P7-05 未开始 |
 | Windows W0–W3 | 0 / 7 | 后续排期 DEFERRED | W3-02 未开始 |
 
-macOS：**22 / 61 完成**；READY 5、TODO 33、DOING 1、REVIEW 0、ACCEPTANCE 0、BLOCKED 0。Windows 7 项 DEFERRED 单列，共 68 项。数量不等于工期权重或代码完成百分比；P1-04/P2-02/P4-05 父项被后缀子项替代，不重复计数。
+macOS：**23 / 61 完成**；READY 5、TODO 32、DOING 1、REVIEW 0、ACCEPTANCE 0、BLOCKED 0。Windows 7 项 DEFERRED 单列，共 68 项。数量不等于工期权重或代码完成百分比；P1-04/P2-02/P4-05 父项被后缀子项替代，不重复计数。
 
 ## 2 Active Tasks
 
@@ -170,12 +174,13 @@ P1-07 已 DONE 并从 Active Tasks 移除，GPUI owner 与本卡资源预约释�
 | P0-08 · READY | P0-03、P0-05均DONE；后续下载消费P0-06显式client与范围限制 | 未领取；不启动 |
 | P2-05 · READY | P2-03、P0-06均DONE | 按依赖/写范围适时领取或并行；仍为 P2-08 前置，协调 Runtime/DTO owner；本轮未启动 |
 | P3-01 · READY | P2-03、P0-07均DONE | 未领取；不启动 |
+| P5-05 · READY | P5-04、P1-04A、P1-05均DONE | 未领取；不启动 |
 | P4-03 · READY | P4-02、P2-04均DONE；全量DAG重算新增 | 未领取；Runtime/DTO写范围需协调P2-06 owner，不在本轮启动 |
-| P5-04 · READY | P2-02B、P2-03均DONE | 未领取；不启动 |
 
 
 
-当前68卡：DONE22 / ACCEPTANCE0 / DOING1 / REVIEW0 / READY5 / TODO33 / BLOCKED0 / DEFERRED7；READY仅P0-08/P2-05/P3-01/P4-03/P5-04，均未领取/未启动；P2-04 DONE、Finding CLOSED保持。P2-06 DOING、Runtime/Platform及Runtime公共契约owner=Codex；P2-07/P6依赖未满足，不转READY。其它状态/显式依赖不变。
+
+当前68卡：DONE23 / ACCEPTANCE0 / DOING1 / REVIEW0 / READY5 / TODO32 / BLOCKED0 / DEFERRED7；READY仅P0-08/P2-05/P3-01/P4-03/P5-05，均未领取/未启动；P2-04 DONE、Finding CLOSED保持。P2-06 DOING、Runtime/Platform及Runtime公共契约owner=Codex；P2-07/P6依赖未满足，不转READY。其它状态/显式依赖不变。
 
 **P2-03当前契约**：正式运行配置必须调用P2-02B `compile_product(ProductCompileRequest { state, runtime_intent, default_outbound, resources })`，显式消费 `project_selected_runtime()` 的 `runtime_intent` / `projected_default_target`（转换为 `OutboundId`）；不得继续使用 `application/runtime.rs` 现有ObservationOnly `compile(...)`作为正式运行配置。参见[P2-03任务卡](P2-local-proxy.md#obg-p2-03)。已实现并由Host最终确认功能与视觉“符合”；本轮仅文档收口，不启动下游。
 
