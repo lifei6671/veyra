@@ -241,7 +241,8 @@ impl TrafficWriter {
             Ok(status)
         }
     }
-    fn stop(&mut self) {
+    /// 排空已接收队列并 join；调用方随后可读取失败批/损失状态。
+    pub fn stop(&mut self) {
         if let Some(worker) = self.worker.take() {
             let _ = self.tx.send(Command::Stop);
             if worker.join().is_err() {

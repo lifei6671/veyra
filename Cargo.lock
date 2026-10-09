@@ -9497,6 +9497,7 @@ dependencies = [
  "objc2-app-kit 0.3.2",
  "objc2-foundation 0.3.2",
  "qrcode",
+ "rusqlite",
  "serde_json",
  "sha2 0.10.9",
  "tokio",

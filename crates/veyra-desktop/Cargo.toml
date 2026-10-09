@@ -22,3 +22,7 @@ objc2 = "=0.6.4"
 objc2-foundation = { version = "=0.3.2", default-features = false, features = ["std", "NSArray", "NSString", "NSURL", "NSData", "NSObject", "NSPathUtilities"] }
 objc2-app-kit = { version = "=0.3.2", default-features = false, features = ["std", "NSOpenPanel", "NSSavePanel", "NSApplication", "NSImage", "NSWindow", "NSResponder", "NSPasteboard", "NSPasteboardItem", "NSWorkspace", "block2"] }
 block2 = "=0.6.2"
+
+[dev-dependencies]
+# 隔离真实内核验收直接核对已锁定 SQLite 的落盘内容。
+rusqlite = { version = "=0.40.2", features = ["bundled"] }

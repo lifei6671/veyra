@@ -163,6 +163,12 @@ impl<P: SidecarPort> ManualRuntime<P> {
     pub fn observation(&self) -> &super::observability::controller::ObservationService {
         &self.observation
     }
+    /// 仅 Desktop composition 启用；helper owner 默认不创建用户统计数据库。
+    /// 首版统计日界固定 UTC，后续存储设置由 P3-06 明确迁移策略。
+    pub fn enable_traffic_storage(&mut self, directory: PathBuf) {
+        self.observation
+            .enable_traffic_storage(directory, chrono_tz::UTC);
+    }
     fn store(&self) -> Result<&RecoveryStore, RuntimeError> {
         self.records
             .as_ref()

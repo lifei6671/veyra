@@ -1,5 +1,44 @@
 # OBG-P3-04 统计存储与容量交付
 
+## 正式统计接线最终验收（2026-10-09）
+
+**状态 DONE**；基线 `472a4f205083d24a43e2174a2c9e3810b1db2476`。用户授权真实记录接线、P2-06 owner协调、独立Review、验收后本地提交/合并并复验，不push。P3-01 DONE、P2-06 DOING不变；本卡Observation/Traffic Storage owner及预约释放。P3-05/P3-06仍TODO，各自剩余依赖未满足。下方检查点与历史FAIL/NOT_RUN保留。
+
+### 正式通路与口径
+
+`Desktop RuntimeService → 正式 ManualRuntime Ready → 原 ObservationService 四WS → /connections 同帧只读记录 / /traffic 原区间bytes → 原 TrafficWriter → traffic/traffic.sqlite3`。
+
+- P2-06 原owner只读确认最小边界，允许本卡添加ManualRuntime统计配置和Desktop composition；不改Helper、IPC、bootstrap/rebind、公共Runtime DTO或系统代理/TUN。Helper默认不打开用户库，Helper记录跨进程投影仍归P2-06；不由Desktop另开采集连接。
+- ConnectionRecords含InstanceId/观测generation、stream_generation/sequence、UTC客户端接收时间、稳定连接ID和累计bytes。Source.epoch为`observation-{generation}`，与包含owner随机nonce的实际InstanceId共同隔离；采样key含流代次/顺序/帧内索引，重放拒绝且SQLite累计checkpoint不重复加。
+- node仅实际`chains[0]` outbound tag，host仅非空metadata.host，client仅实际sourceIP；不等同业务NodeId、设备名或所有者。API没有outbound type，direct为None；缺id/计数不写伪记录，incomplete_records明确报告。来源依据：[1.14.0 connections](https://github.com/SagerNet/sing-box/blob/v1.14.0/experimental/clashapi/connections.go)、[tracker链顺序](https://github.com/SagerNet/sing-box/blob/v1.14.0/common/trafficcontrol/tracker.go)。
+- /traffic保存实际区间bytes，不差分或从速率反推。时间区间为客户端到达间隔近似，非服务器精确窗口；连接增量使用两次已确认累计的接收时间。首次只建baseline，短连接或最后采样后结束的尾量不推断、不用total-attributed拼平。observed和partial不能相加作权威总量。
+- 原批量、队列、去重、重置/维度变化、容量/保留策略不变。正式Desktop统计日界固定UTC并写入库metadata，后续P3-06存储设置另处理变更策略。
+- 仅Ready bind打开DB；候选预检失败保留旧统计，实际Replace/Stop/Recovering/Drop沿原观测stop关闭。先撤销identity并取走writer，旧任务不可再submit；drain/commit/join后返回，DB/文件lease已释放。Handoff为freeze→Stop→封存/release；Quit由实际RuntimeService shutdown走同一Stop，不由隐藏窗口触发。
+- Open/Submit/Commit失败保留只读TrafficStorageStatus并输出固定诊断。已入队不冒充提交，最终失败批/损失状态在join后读取；统计失败不阻止必要的内核Stop。
+
+### 实测与独立Review
+
+原始命令、exit、日志、源码身份、清理与独立Review见 [formal-wiring](evidence/p3-04/formal-wiring/README.md)。Cargo offline，外层600s timeout；相关最终source aggregate `e3a3d297f69da9bf6b6251583de4f667fe72ec01da918792ae38d48ec77796eb`。
+
+| 验证 | 实际结果 |
+| --- | --- |
+| Controller只读源/重连/未知/失败回滚/释放 | 6 PASS；真实四WS fixture与SQLite |
+| Traffic Storage/容量/高基数/DST/重建 | 16 PASS；10000样本/5000组合，5042176bytes，797ms，索引窗口3313μs；每日强度推算仍非24h实跑 |
+| Runtime/Observation定向、Handoff统计关闭 | 7 PASS + Handoff 1 PASS（Runtime fixture；未执行root交接） |
+| Desktop worker定向 | 5 PASS/1 ignored；ignored是真实Quit父test，随后显式执行 |
+| 真实1.14.0 WS→SQLite | 1 PASS：双向observed interval bytes、连接确认下载增量(0,16384)、连接结束、两实例隔离、落盘、writer/Runtime重建回读、Stop/reap/端口/lease释放 |
+| 实际RuntimeService.shutdown | 1 PASS：Ready后唯一writer、Quit回告后真实child端口与SQLite lease释放 |
+| Core/Desktop/Helper production all-targets Clippy、build、fmt/diff | PASS |
+| 旧Tauri Clippy --lib | FAIL：既有Windows libcronet.dll资源缺失；未改变旧配置，不能记PASS |
+
+真实内核复制品1.14.0 darwin/arm64，SHA256 `973388c3f720e918fc64dff7fd75dde14b31cc1aa6fc15855e2f00c5291dd4f4`；只访问测试自有127.0.0.1 HTTP服务，不改变系统代理/TUN。真实连接上传仅建立baseline后零增量，双向连接累计增量由受控WS/SQLite测试验证；不声称实测两方向连接增量。root helper/GUI/完整组合仍NOT_RUN，分别归P2-06/P3-05/06/08及后期组合卡。
+
+独立agent `/root/review_traffic`按code-delivery-review只读源码/调用链/收据，未发现可操作行为Finding，明确支持P3-04 DONE。注释建议已修正，不修改执行逻辑。初始u64 FromSql编译FAIL、CONNECT读取超时、HTTP响应先结束导致无最终连接帧、空AppState Quit fixture CompileFailed以及旧Tauri FAIL日志均保留；真实fixture失败资料归档后清理，本轮6个owned child均退出，成功用例数据库锁/端口释放。没有全量Core/Desktop PASS声明，旧两项Core基线FAIL和Desktop Busy历史不变。
+
+本卡仅后端数据，不增加UI或下钻查询。Task四项现有验收已满足，P3-04 ACCEPTANCE→DONE；本地提交/主分支合并与合并后复验收据追加到本轮evidence，不覆盖本次及旧失败。
+
+## 472a4f2 检查点历史（以下保留原记录）
+
 2026-10-09；owner=Codex · Observation/Traffic Storage。状态 **ACCEPTANCE**，owner保留，不解锁 P3-05/P3-06；唯一依赖仍P3-01 DONE，P2-06 DOING，不新增硬依赖。
 
 隔离 `.worktrees/p3-04-traffic-storage`，分支 `dev/p3-04-traffic-storage`，源码基线 `a410d579b9768de43639d24b42a03afb3b77f236` 加本次未提交diff。仅新Core storage/traffic、模块出口、Core Cargo.toml、Cargo.lock和本卡文档/evidence。主开发树未写入，不改分支/暂存/清理，不push、不尝试Git commit；交Host受管本地checkpoint。

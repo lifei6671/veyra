@@ -119,7 +119,9 @@ impl RuntimeService {
         let worker = thread::spawn(move || {
             let port = ManualSidecarPort::new(root.clone());
             let available = port.kernel_available();
+            let traffic_directory = root.join("traffic");
             let mut owner = ManualRuntime::new(port, snapshots.clone(), root, available);
+            owner.enable_traffic_storage(traffic_directory);
             #[cfg(target_os = "macos")]
             let helper = veyra_helper::production::Client::default();
             #[cfg(not(target_os = "macos"))]
@@ -915,6 +917,80 @@ mod transfer_tests {
 
 #[cfg(all(test, target_os = "macos"))]
 mod quit_tests {
+    // 保护实际 Desktop worker 的 Ready→统计 writer→Quit 完成回告后的 DB/端口释放。
+    #[test]
+    #[ignore = "requires pinned VEYRA_SING_BOX_PATH; real RuntimeService Quit cleanup"]
+    fn traffic_wiring_real_worker_quit_releases_statistics() {
+        use super::*;
+        use veyra_core::{
+            application::state_access::StateAccessGate,
+            domain::AppState,
+            storage::{JsonStateStore, traffic::TrafficWriter},
+        };
+        let root = std::env::temp_dir().join(format!(
+            "veyra-stat-quit-{:?}",
+            veyra_core::domain::StateEpoch::fresh().unwrap()
+        ));
+        let mut value = serde_json::to_value(AppState::empty()).unwrap();
+        let fixture: serde_json::Value = serde_json::from_str(include_str!(
+            "../../veyra-core/tests/fixtures/compiler/p2-02b.json"
+        ))
+        .unwrap();
+        for (key, entry) in fixture.as_object().unwrap() {
+            value[key] = entry.clone();
+        }
+        let mut state: AppState = serde_json::from_value(value).unwrap();
+        state.active_subscription_id =
+            Some(veyra_core::domain::SubscriptionId("subscription".into()));
+        state.default_target = veyra_core::domain::RouteTarget::Direct;
+        state.routes.clear();
+        state.pools.retain(|pool| pool.id.0 == "manual");
+        state.validate().unwrap();
+        let store = JsonStateStore::new(root.join("state.json")).unwrap();
+        store.commit(&state).unwrap();
+        let snapshots = Arc::new(SnapshotService::new(store, StateAccessGate::default()));
+        let (events, mut rx) = tokio::sync::mpsc::unbounded_channel();
+        let service = RuntimeService::new(root.clone(), snapshots, events);
+        assert!(!root.join("traffic").exists());
+        service.submit(1, RuntimeCommand::Start);
+        let until = std::time::Instant::now() + Duration::from_secs(20);
+        let endpoints = loop {
+            if let Ok(AppEvent::Runtime(event)) = rx.try_recv() {
+                if let Some(Err(error)) = event.result {
+                    panic!("start failed: {error:?}");
+                }
+                if let Ok(snapshot) = event.snapshot
+                    && snapshot.runtime.status
+                        == veyra_core::application::runtime_snapshot::RuntimeStatus::Ready
+                {
+                    break snapshot.endpoints.unwrap();
+                }
+            }
+            assert!(std::time::Instant::now() < until, "worker Ready timeout");
+            thread::sleep(Duration::from_millis(30));
+        };
+        assert!(root.join("traffic/traffic.sqlite3").exists());
+        assert!(
+            TrafficWriter::open(&root.join("traffic"), "UTC".parse().unwrap()).is_err(),
+            "one active statistics writer"
+        );
+        service
+            .shutdown()
+            .recv_timeout(Duration::from_secs(15))
+            .unwrap()
+            .unwrap();
+        drop(service);
+        assert!(std::net::TcpStream::connect(endpoints.mixed).is_err());
+        assert!(std::net::TcpStream::connect(endpoints.controller).is_err());
+        TrafficWriter::open(&root.join("traffic"), "UTC".parse().unwrap())
+            .unwrap()
+            .close()
+            .unwrap();
+        eprintln!(
+            "P3_04_REAL_QUIT PASS RuntimeService.shutdown completed; real child ports and SQLite lease released"
+        );
+        std::fs::remove_dir_all(root).unwrap();
+    }
     #[test]
     fn incomplete_owner_quit_reports_unknown_and_manual_start_cannot_create_writer() {
         // 私有root模拟持久半交接；worker不能用空本地Port发布Stopped或绕过fence启动。

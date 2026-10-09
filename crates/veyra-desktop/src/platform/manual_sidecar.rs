@@ -1090,6 +1090,237 @@ mod real_tests {
         fs::remove_dir_all(root).unwrap();
     }
 
+    // P3-04：保护正式 owned Runtime 的双向区间字节、稳定连接下载增量、连接结束、换实例、落盘/重建和退出资源归属。
+    #[test]
+    #[ignore = "requires pinned VEYRA_SING_BOX_PATH; real WS to SQLite statistics"]
+    fn traffic_wiring_real_runtime_sqlite_replace_rebuild_cleanup() {
+        use std::io::Read;
+        use std::net::{TcpListener, TcpStream};
+        use veyra_core::application::observability::controller::Snapshot;
+        use veyra_core::storage::traffic::TrafficWriter;
+        fn wait(
+            owner: &ManualRuntime<RecordingSidecarPort>,
+            what: &str,
+            predicate: impl Fn(&Snapshot) -> bool,
+        ) -> Snapshot {
+            let until = Instant::now() + Duration::from_secs(12);
+            loop {
+                let snapshot = owner.observation().snapshot();
+                if predicate(&snapshot) {
+                    return snapshot;
+                }
+                assert!(Instant::now() < until, "{what}: {snapshot:?}");
+                thread::sleep(Duration::from_millis(30));
+            }
+        }
+        let mut state = pending_fixture();
+        state.default_target = veyra_core::domain::RouteTarget::Direct;
+        let root = std::env::temp_dir().join(format!("veyra-traffic-real-{:?}", state.state_epoch));
+        let traffic_root = root.join("traffic");
+        let store = JsonStateStore::new(root.join("state.json")).unwrap();
+        store.save(&state).unwrap();
+        let snapshots = Arc::new(SnapshotService::new(store, StateAccessGate::default()));
+        let port = RecordingSidecarPort::new(&root);
+        let access = port.inner.clone();
+        let mut owner = ManualRuntime::new(port, snapshots.clone(), root.clone(), true);
+        owner.enable_traffic_storage(traffic_root.clone());
+        assert!(
+            !traffic_root.exists(),
+            "statistics must wait for formal Ready"
+        );
+        owner.execute(RuntimeCommand::Start, |_| {}).unwrap();
+        let first = owner.observation().snapshot().identity.unwrap();
+        assert!(owner.observation().traffic_status().active);
+        wait(&owner, "periodic WS", |s| {
+            s.available[..3].iter().all(|v| *v)
+        });
+        let mixed = owner.snapshot().unwrap().endpoints.unwrap().mixed;
+        let server = TcpListener::bind("127.0.0.1:0").unwrap();
+        server.set_nonblocking(true).unwrap();
+        let destination = server.local_addr().unwrap();
+        let mut client = TcpStream::connect(mixed).unwrap();
+        client
+            .set_read_timeout(Some(Duration::from_secs(4)))
+            .unwrap();
+        client
+            .set_write_timeout(Some(Duration::from_secs(4)))
+            .unwrap();
+        write!(
+            client,
+            "GET http://{destination}/ HTTP/1.1\r\nHost: {destination}\r\n\r\n"
+        )
+        .unwrap();
+        let until = Instant::now() + Duration::from_secs(4);
+        let mut response = loop {
+            match server.accept() {
+                Ok((socket, _)) => break socket,
+                Err(e) if e.kind() == std::io::ErrorKind::WouldBlock => {
+                    assert!(Instant::now() < until);
+                    thread::sleep(Duration::from_millis(20));
+                }
+                Err(e) => panic!("{e}"),
+            }
+        };
+        response
+            .set_read_timeout(Some(Duration::from_secs(4)))
+            .unwrap();
+        response
+            .set_write_timeout(Some(Duration::from_secs(4)))
+            .unwrap();
+        response
+            .write_all(b"HTTP/1.1 200 OK\r\nContent-Length: 32768\r\n\r\n")
+            .unwrap();
+        response.write_all(&vec![b'd'; 8192]).unwrap();
+        let mut header = Vec::new();
+        while !header.ends_with(b"\r\n\r\n") {
+            let mut byte = [0];
+            client.read_exact(&mut byte).unwrap();
+            header.push(byte[0]);
+            assert!(header.len() < 4096);
+        }
+        assert!(String::from_utf8(header).unwrap().contains("200"));
+        let mut received = vec![0; 8192];
+        client.read_exact(&mut received).unwrap();
+        assert!(received.iter().all(|b| *b == b'd'));
+        let baseline = wait(&owner, "first stable connection baseline", |s| {
+            s.connection_records.as_ref().is_some_and(|b| {
+                b.records.iter().any(|r| {
+                    r.upload.is_some_and(|n| n > 0) && r.download.is_some_and(|n| n >= 8192)
+                })
+            })
+        });
+        let record = baseline
+            .connection_records
+            .unwrap()
+            .records
+            .into_iter()
+            .find(|r| r.id.is_some())
+            .unwrap();
+        let connection_id = record.id.unwrap();
+        assert_eq!(record.dimensions.client.as_deref(), Some("127.0.0.1"));
+        assert!(record.dimensions.node.is_some());
+        assert_eq!(
+            record.dimensions.host, None,
+            "IP destination must not be invented as host"
+        );
+        assert_eq!(record.dimensions.direct, None, "API has no outbound type");
+        response.write_all(&vec![b'd'; 16384]).unwrap();
+        let mut received = vec![0; 16384];
+        client.read_exact(&mut received).unwrap();
+        assert!(received.iter().all(|b| *b == b'd'));
+        wait(&owner, "second confirmed cumulative sample", |s| {
+            s.connection_records.as_ref().is_some_and(|b| {
+                b.records.iter().any(|r| {
+                    r.id.as_deref() == Some(&connection_id)
+                        && r.upload.is_some_and(|n| n > 0)
+                        && r.download.is_some_and(|n| n >= 24576)
+                })
+            })
+        });
+        drop(response);
+        drop(client);
+        drop(server);
+        wait(&owner, "connection ended", |s| {
+            s.connection_count == Some(0)
+        });
+        owner.execute(RuntimeCommand::Restart, |_| {}).unwrap();
+        let replacement = owner.observation().snapshot().identity.unwrap();
+        assert_ne!(first.instance_id, replacement.instance_id);
+        assert!(replacement.generation > first.generation);
+        assert!(owner.observation().traffic_status().failure.is_none());
+        wait(&owner, "replacement intervals", |s| s.sequence[0] >= 2);
+        owner.execute(RuntimeCommand::Stop, |_| {}).unwrap();
+        assert!(!owner.observation().traffic_status().active);
+        assert!(owner.observation().traffic_status().failure.is_none());
+        assert!(access.lock().unwrap().owned.is_none());
+        assert!(TcpStream::connect(mixed).is_err());
+        let read = || {
+            let db = rusqlite::Connection::open_with_flags(
+                traffic_root.join("traffic.sqlite3"),
+                rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY,
+            )
+            .unwrap();
+            let total: (i64, i64) = db
+                .query_row(
+                    "SELECT SUM(up),SUM(down) FROM detail WHERE instance=? AND kind='partial'",
+                    [&first.instance_id.0],
+                    |r| Ok((r.get(0)?, r.get(1)?)),
+                )
+                .unwrap();
+            let observed_sources: i64 = db
+                .query_row(
+                    "SELECT COUNT(DISTINCT instance) FROM detail WHERE kind='observed'",
+                    [],
+                    |r| r.get(0),
+                )
+                .unwrap();
+            let conns: i64 = db
+                .query_row(
+                    "SELECT SUM(connections) FROM daily WHERE kind IN ('baseline','partial')",
+                    [],
+                    |r| r.get(0),
+                )
+                .unwrap();
+            let direct: i64 = db
+                .query_row(
+                    "SELECT COUNT(*) FROM detail WHERE direct IS NOT NULL",
+                    [],
+                    |r| r.get(0),
+                )
+                .unwrap();
+            assert_eq!(direct, 0);
+            assert_eq!(conns, 1);
+            assert_eq!(observed_sources, 2);
+            assert_eq!(total, (0, 16384));
+            let observed: (i64, i64) = db
+                .query_row(
+                    "SELECT SUM(up),SUM(down) FROM detail WHERE kind='observed'",
+                    [],
+                    |r| Ok((r.get(0)?, r.get(1)?)),
+                )
+                .unwrap();
+            assert!(
+                observed.0 > 0 && observed.1 >= 24576,
+                "actual interval bytes={observed:?}"
+            );
+            total
+        };
+        let saved = read();
+        // 重建 SQLite writer（真实读取 schema/checkpoint/retention），不复制内存累计值。
+        TrafficWriter::open(&traffic_root, "UTC".parse().unwrap())
+            .unwrap()
+            .close()
+            .unwrap();
+        drop(owner);
+        drop(access);
+        let port = RecordingSidecarPort::new(&root);
+        let access = port.inner.clone();
+        let mut reconstructed = ManualRuntime::new(port, snapshots, root.clone(), true);
+        reconstructed.enable_traffic_storage(traffic_root.clone());
+        assert_eq!(read(), saved);
+        reconstructed
+            .execute(RuntimeCommand::Start, |_| {})
+            .unwrap();
+        let final_mixed = reconstructed.snapshot().unwrap().endpoints.unwrap().mixed;
+        wait(&reconstructed, "reconstructed WS", |s| s.sequence[0] >= 2);
+        // 与 RuntimeService Quit 一致的正式 Stop，然后 owner Drop。
+        reconstructed.execute(RuntimeCommand::Stop, |_| {}).unwrap();
+        drop(reconstructed);
+        assert!(access.lock().unwrap().owned.is_none());
+        assert!(TcpStream::connect(final_mixed).is_err());
+        TrafficWriter::open(&traffic_root, "UTC".parse().unwrap())
+            .unwrap()
+            .close()
+            .unwrap();
+        assert!(!traffic_root.join("traffic.sqlite3-wal").exists());
+        assert!(!traffic_root.join("traffic.sqlite3-shm").exists());
+        eprintln!(
+            "P3_04_REAL PASS up/down_delta={saved:?}; connection end; two instance sources; SQLite writer/Runtime reconstructed; Stop/reap/ports/lease released; root={root:?}"
+        );
+        drop(access);
+        fs::remove_dir_all(root).unwrap();
+    }
+
     fn pending_disk(store: &JsonStateStore) -> Value {
         // 从 state.json 重新加载，而不是把内存快照当作落盘证据。
         let state = store.load().unwrap();

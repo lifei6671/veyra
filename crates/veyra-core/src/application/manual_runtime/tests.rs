@@ -2423,10 +2423,12 @@ fn bootstrap_target_preflight_failure_never_freezes_desktop() {
 #[test]
 fn observation_follows_ready_owner_and_never_failed_candidate() {
     let (mut owner, trace, _store, root) = fixture();
+    owner.enable_traffic_storage(root.join("traffic"));
     let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
     trace.lock().unwrap().observation_address = Some(listener.local_addr().unwrap());
     owner.execute(RuntimeCommand::Start, |_| {}).unwrap();
     let first = owner.observation().snapshot().identity.unwrap();
+    assert!(owner.observation().traffic_status().active);
     assert_eq!(
         Some(first.instance_id.clone()),
         owner.snapshot().unwrap().runtime.instance_id
@@ -2437,12 +2439,18 @@ fn observation_follows_ready_owner_and_never_failed_candidate() {
     trace.lock().unwrap().fail_check = true;
     assert!(owner.execute(RuntimeCommand::Restart, |_| {}).is_err());
     assert_eq!(owner.observation().snapshot().identity, Some(first.clone()));
+    assert!(owner.observation().traffic_status().active);
     trace.lock().unwrap().fail_check = false;
     owner.execute(RuntimeCommand::Restart, |_| {}).unwrap();
     assert_ne!(owner.observation().snapshot().identity, Some(first));
     trace.lock().unwrap().crash = true;
     assert!(owner.execute(RuntimeCommand::Refresh, |_| {}).is_err());
     assert!(owner.observation().snapshot().identity.is_none());
+    assert!(!owner.observation().traffic_status().active);
+    crate::storage::traffic::TrafficWriter::open(&root.join("traffic"), chrono_tz::UTC)
+        .unwrap()
+        .close()
+        .unwrap();
     owner.execute(RuntimeCommand::Stop, |_| {}).unwrap();
     drop(owner);
     std::fs::remove_dir_all(root).unwrap();
@@ -2452,6 +2460,7 @@ fn observation_follows_ready_owner_and_never_failed_candidate() {
 #[test]
 fn observation_stop_failure_clears_source_before_recovery() {
     let (mut owner, trace, _store, root) = fixture();
+    owner.enable_traffic_storage(root.join("traffic"));
     let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
     trace.lock().unwrap().observation_address = Some(listener.local_addr().unwrap());
     owner.execute(RuntimeCommand::Start, |_| {}).unwrap();
@@ -2459,12 +2468,45 @@ fn observation_stop_failure_clears_source_before_recovery() {
     trace.lock().unwrap().fail_stop = true;
     assert!(owner.execute(RuntimeCommand::Stop, |_| {}).is_err());
     assert!(owner.observation().snapshot().identity.is_none());
+    assert!(!owner.observation().traffic_status().active);
+    crate::storage::traffic::TrafficWriter::open(&root.join("traffic"), chrono_tz::UTC)
+        .unwrap()
+        .close()
+        .unwrap();
     assert_eq!(
         owner.snapshot().unwrap().runtime.status,
         crate::application::runtime_snapshot::RuntimeStatus::Recovering
     );
     trace.lock().unwrap().fail_stop = false;
     owner.execute(RuntimeCommand::Stop, |_| {}).unwrap();
+    drop(owner);
+    std::fs::remove_dir_all(root).unwrap();
+}
+
+// 保护正式 handoff 在冻结后、封存/release 前通过现有 Stop 关闭统计，不新增 Helper/IPC 路径。
+#[test]
+fn traffic_storage_handoff_closes_before_release() {
+    let (mut owner, trace, _store, root) = fixture();
+    owner.enable_traffic_storage(root.join("traffic"));
+    let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
+    trace.lock().unwrap().observation_address = Some(listener.local_addr().unwrap());
+    owner.execute(RuntimeCommand::Start, |_| {}).unwrap();
+    assert!(owner.observation().traffic_status().active);
+    let version = owner.handoff_state().unwrap().version();
+    let (ticket, _closed) = owner
+        .prepare_handoff(StateEpoch::fresh().unwrap(), version)
+        .unwrap();
+    assert!(!owner.observation().traffic_status().active);
+    assert!(owner.observation().traffic_status().failure.is_none());
+    assert!(owner.observation().snapshot().identity.is_none());
+    crate::storage::traffic::TrafficWriter::open(&root.join("traffic"), chrono_tz::UTC)
+        .unwrap()
+        .close()
+        .unwrap();
+    assert!(matches!(
+        owner.release_handoff(&ticket).unwrap(),
+        OwnerTransfer::Released { .. }
+    ));
     drop(owner);
     std::fs::remove_dir_all(root).unwrap();
 }

@@ -11,7 +11,12 @@ fn state(id: Identity) -> State {
     let (events, _) = broadcast::channel(EVENT_CAPACITY);
     let mut snapshot = Snapshot::empty(Some(id.clone()), 0);
     snapshot.stream_generation = [1; 4];
-    State { snapshot, events }
+    State {
+        snapshot,
+        events,
+        writer: None,
+        traffic_status: TrafficStorageStatus::default(),
+    }
 }
 // 保护区间增量不差分/不重复累计，counter 回退不产生负数，Unknown 不伪零，以及日志脱敏。
 #[test]
@@ -444,4 +449,199 @@ async fn production_reconnects_without_event_subscribers_and_stop_releases_socke
     println!(
         "P3-01-HOST-001: four authenticated WS; no subscribe; memory reconnect generation 2/frame 128; stop released sockets and did not reconnect"
     );
+}
+
+// 保护真实记录从同一帧进入 SQLite：重复/重连不重加、未知不猜测、停止前排空并回读。
+#[tokio::test]
+async fn connection_records_write_sqlite_and_release_on_stop() {
+    let root = std::env::temp_dir().join(format!(
+        "veyra-stat-seam-{:?}",
+        crate::domain::StateEpoch::fresh().unwrap()
+    ));
+    let mut f = fixture().await;
+    let mut service = ObservationService::new();
+    service.enable_traffic_storage(root.clone(), chrono_tz::UTC);
+    assert!(!root.exists());
+    let identity = service.bind(InstanceId("statistics-owned".into()), f.endpoint.clone());
+    let mut senders = std::collections::HashMap::new();
+    for _ in 0..4 {
+        let (path, sender) = timeout(Duration::from_secs(3), f.accepted.recv())
+            .await
+            .unwrap()
+            .unwrap();
+        assert!(senders.insert(path, sender).is_none());
+    }
+    let frame = |up, down| {
+        serde_json::json!({"uploadTotal":up,"downloadTotal":down,"connections":[
+        {"id":"stable-id","upload":up,"download":down,"chains":["actually-observed","group"],"metadata":{"sourceIP":"127.0.0.7","host":"local.test","processPath":"never-persist-process"}},
+        {"metadata":{}}
+    ]}).to_string()
+    };
+    senders["/connections"]
+        .send(Some(frame(10, 20)))
+        .await
+        .unwrap();
+    wait_for(&service, |s| s.sequence[2] == 1).await;
+    let batch = service.snapshot().connection_records.unwrap();
+    assert_eq!(batch.identity, identity.clone());
+    assert!(batch.sampled_at_ms > 0);
+    assert_eq!(
+        batch.records[0].dimensions.node.as_deref(),
+        Some("actually-observed")
+    );
+    assert_eq!(batch.records[0].dimensions.direct, None);
+    assert_eq!(batch.records[1].id, None);
+    tokio::time::sleep(Duration::from_millis(10)).await;
+    senders["/connections"]
+        .send(Some(frame(30, 60)))
+        .await
+        .unwrap();
+    wait_for(&service, |s| s.sequence[2] == 2).await;
+    // 同一采集代次/序号重放在 Observation fence 拒绝，不能再次提交。
+    assert!(
+        apply(
+            &mut service.state.lock().unwrap(),
+            identity.clone(),
+            Stream::Connections,
+            1,
+            2,
+            &frame(30, 60),
+            1000
+        )
+        .is_err()
+    );
+    // 真实断开后仍只有该单路重连；累计不变时 SQLite 增量为零。
+    senders["/connections"].send(None).await.unwrap();
+    wait_for(&service, |s| s.gaps[2] > 0).await;
+    assert!(service.snapshot().connection_records.is_none());
+    let (path, reconnected) = timeout(Duration::from_secs(3), f.accepted.recv())
+        .await
+        .unwrap()
+        .unwrap();
+    assert_eq!(path, "/connections");
+    reconnected.send(Some(frame(30, 60))).await.unwrap();
+    wait_for(&service, |s| {
+        s.sequence[2] == 1 && s.stream_generation[2] == 2
+    })
+    .await;
+    tokio::time::sleep(Duration::from_millis(10)).await;
+    reconnected.send(Some(frame(50, 100))).await.unwrap();
+    wait_for(&service, |s| s.sequence[2] == 2).await;
+    assert!(f.accepted.try_recv().is_err());
+    service.stop();
+    assert!(!service.traffic_status().active);
+    assert!(service.traffic_status().failure.is_none());
+    assert_eq!(service.traffic_status().incomplete_records, 4);
+    let reopened = TrafficWriter::open(&root, chrono_tz::UTC).unwrap();
+    let db = rusqlite::Connection::open(root.join("traffic.sqlite3")).unwrap();
+    let total: (i64, i64) = db
+        .query_row(
+            "SELECT SUM(up),SUM(down) FROM detail WHERE kind='partial'",
+            [],
+            |r| Ok((r.get(0)?, r.get(1)?)),
+        )
+        .unwrap();
+    assert_eq!(total, (40, 80));
+    let unknown: i64 = db
+        .query_row(
+            "SELECT COUNT(*) FROM detail WHERE direct IS NOT NULL",
+            [],
+            |r| r.get(0),
+        )
+        .unwrap();
+    assert_eq!(unknown, 0);
+    let sources: i64 = db
+        .query_row("SELECT COUNT(DISTINCT instance) FROM detail", [], |r| {
+            r.get(0)
+        })
+        .unwrap();
+    assert_eq!(sources, 1);
+    drop(db);
+    reopened.close().unwrap();
+    service.stop();
+    f.task.abort();
+    let _ = f.task.await;
+    std::fs::remove_dir_all(root).unwrap();
+}
+
+// 保护落盘失败不伪称统计成功，也不阻止必要的观测停止与数据库资源释放。
+#[tokio::test]
+async fn statistics_open_failure_is_explicit_and_does_not_prevent_stop() {
+    let root = std::env::temp_dir().join(format!(
+        "veyra-stat-failure-{:?}",
+        crate::domain::StateEpoch::fresh().unwrap()
+    ));
+    std::fs::write(&root, b"file blocks statistics directory").unwrap();
+    let f = fixture().await;
+    let mut service = ObservationService::new();
+    service.enable_traffic_storage(root.clone(), chrono_tz::UTC);
+    service.bind(
+        InstanceId("ready-with-storage-failure".into()),
+        f.endpoint.clone(),
+    );
+    assert_eq!(
+        service.traffic_status().failure,
+        Some(TrafficStorageFailure::Open)
+    );
+    assert!(!service.traffic_status().active);
+    service.stop();
+    assert!(service.snapshot().identity.is_none());
+    assert_eq!(
+        service.traffic_status().failure,
+        Some(TrafficStorageFailure::Open)
+    );
+    f.task.abort();
+    let _ = f.task.await;
+    std::fs::remove_file(root).unwrap();
+}
+
+// 保护消费 seam 的最终提交错误：Stop 必须报告损失并 join 释放库，而不是伪称落盘成功。
+#[tokio::test]
+async fn statistics_commit_failure_retains_status_and_releases_database() {
+    let root = std::env::temp_dir().join(format!(
+        "veyra-stat-commit-failure-{:?}",
+        crate::domain::StateEpoch::fresh().unwrap()
+    ));
+    let mut f = fixture().await;
+    let mut service = ObservationService::new();
+    service.enable_traffic_storage(root.clone(), chrono_tz::UTC);
+    service.bind(
+        InstanceId("failed-statistics-owned".into()),
+        f.endpoint.clone(),
+    );
+    let db = rusqlite::Connection::open(root.join("traffic.sqlite3")).unwrap();
+    db.execute_batch("CREATE TRIGGER test_failure BEFORE INSERT ON detail BEGIN SELECT RAISE(ABORT,'controlled write failure'); END;").unwrap();
+    let mut senders = std::collections::HashMap::new();
+    for _ in 0..4 {
+        let (path, sender) = timeout(Duration::from_secs(3), f.accepted.recv())
+            .await
+            .unwrap()
+            .unwrap();
+        senders.insert(path, sender);
+    }
+    senders["/traffic"]
+        .send(Some(r#"{"up":11,"down":22}"#.into()))
+        .await
+        .unwrap();
+    wait_for(&service, |s| s.sequence[0] == 1).await;
+    service.stop();
+    let status = service.traffic_status();
+    assert!(!status.active);
+    assert_eq!(status.failure, Some(TrafficStorageFailure::Commit));
+    assert!(status.writer.failed);
+    assert_eq!(status.writer.failed_batch, 1);
+    assert_eq!(status.writer.uncommitted_lost, 1);
+    let count: i64 = db
+        .query_row("SELECT COUNT(*) FROM detail", [], |r| r.get(0))
+        .unwrap();
+    assert_eq!(count, 0, "failed transaction rolled back");
+    db.execute_batch("DROP TRIGGER test_failure").unwrap();
+    drop(db);
+    TrafficWriter::open(&root, chrono_tz::UTC)
+        .unwrap()
+        .close()
+        .unwrap();
+    f.task.abort();
+    let _ = f.task.await;
+    std::fs::remove_dir_all(root).unwrap();
 }

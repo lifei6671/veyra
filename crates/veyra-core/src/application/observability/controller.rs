@@ -3,13 +3,15 @@ use crate::application::runtime_snapshot::InstanceId;
 use crate::singbox::clash_api::{
     ClashApiClient, ClashLogSummary, FixedStream, ManagedControllerEndpoint, parse_log_message,
 };
+use crate::storage::traffic::{self, Count, Dimensions, Sample, Source, TrafficWriter};
 use futures_util::StreamExt;
 use serde::Deserialize;
 use std::{
     collections::VecDeque,
     net::IpAddr,
+    path::PathBuf,
     sync::{Arc, Mutex},
-    time::{Duration, Instant},
+    time::{Duration, Instant, SystemTime, UNIX_EPOCH},
 };
 use tokio::{sync::broadcast, task::JoinHandle};
 use tokio_tungstenite::tungstenite::Message;
@@ -58,6 +60,37 @@ pub struct ObservedClient {
     #[serde(rename = "inboundName")]
     pub inbound_name: Option<String>,
 }
+/// 同一个 /connections 帧的最小只读投影。未知字段不补默认身份或路由。
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct ConnectionRecord {
+    pub id: Option<String>,
+    pub upload: Option<u64>,
+    pub download: Option<u64>,
+    /// node 是 API 实际 chains[0] 的 outbound tag，不是推断的业务 NodeId。
+    pub dimensions: Dimensions,
+}
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct ConnectionRecords {
+    pub identity: Identity,
+    pub stream_generation: u64,
+    pub sequence: u64,
+    pub sampled_at_ms: i64,
+    pub records: Vec<ConnectionRecord>,
+}
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum TrafficStorageFailure {
+    Open,
+    Submit,
+    Commit,
+}
+/// 入队与已提交分开报告；缺 ID/计数的记录不生成伪统计。
+#[derive(Clone, Debug, Default)]
+pub struct TrafficStorageStatus {
+    pub active: bool,
+    pub writer: traffic::Status,
+    pub incomplete_records: u64,
+    pub failure: Option<TrafficStorageFailure>,
+}
 #[derive(Clone, Debug)]
 pub struct Snapshot {
     pub identity: Option<Identity>,
@@ -73,6 +106,7 @@ pub struct Snapshot {
     pub connection_count: Option<usize>,
     /// 活动连接的只读投影，无证据时 None；不猜测 MAC、设备名或所有者。
     pub clients: Option<Vec<ObservedClient>>,
+    pub connection_records: Option<ConnectionRecords>,
     /// 固定 allowlist 摘要，条数和每条字节均有界；不存原始 payload。
     pub logs: VecDeque<ClashLogSummary>,
 }
@@ -91,6 +125,7 @@ impl Snapshot {
             counter_resets: 0,
             connection_count: None,
             clients: None,
+            connection_records: None,
             logs: VecDeque::new(),
         }
     }
@@ -123,6 +158,8 @@ impl Subscription {
 struct State {
     snapshot: Snapshot,
     events: broadcast::Sender<Event>,
+    writer: Option<TrafficWriter>,
+    traffic_status: TrafficStorageStatus,
 }
 impl State {
     fn notify(&mut self, stream: Option<Stream>) {
@@ -150,6 +187,7 @@ impl State {
             Stream::Connections => {
                 self.snapshot.connection_count = None;
                 self.snapshot.clients = None;
+                self.snapshot.connection_records = None;
             }
             Stream::Logs => {}
         }
@@ -162,6 +200,7 @@ pub struct ObservationService {
     state: Arc<Mutex<State>>,
     tasks: Vec<JoinHandle<()>>,
     generation: u64,
+    traffic_storage: Option<(PathBuf, chrono_tz::Tz)>,
 }
 impl Default for ObservationService {
     fn default() -> Self {
@@ -175,9 +214,12 @@ impl ObservationService {
             state: Arc::new(Mutex::new(State {
                 snapshot: Snapshot::empty(None, 0),
                 events,
+                writer: None,
+                traffic_status: TrafficStorageStatus::default(),
             })),
             tasks: Vec::new(),
             generation: 0,
+            traffic_storage: None,
         }
     }
     pub fn snapshot(&self) -> Snapshot {
@@ -200,6 +242,23 @@ impl ObservationService {
     pub fn observed(&self) -> Option<Vec<ObservedClient>> {
         self.snapshot().clients
     }
+    /// Composition 在首次 Ready 之前指定自己的目录；helper 不默认打开用户统计库。
+    pub fn enable_traffic_storage(&mut self, directory: PathBuf, timezone: chrono_tz::Tz) {
+        assert!(self.tasks.is_empty(), "configure statistics before Ready");
+        self.traffic_storage = Some((directory, timezone));
+    }
+    pub fn traffic_status(&self) -> TrafficStorageStatus {
+        let state = self.state.lock().expect("observation state");
+        let mut status = state.traffic_status.clone();
+        if let Some(writer) = &state.writer {
+            status.writer = writer.status();
+            if status.writer.failed {
+                status.active = false;
+                status.failure = Some(TrafficStorageFailure::Commit);
+            }
+        }
+        status
+    }
     pub fn bind(
         &mut self,
         instance_id: InstanceId,
@@ -215,6 +274,19 @@ impl ObservationService {
             let mut state = self.state.lock().expect("observation state");
             let rev = state.snapshot.revision;
             state.snapshot = Snapshot::empty(Some(id.clone()), rev);
+            if let Some((directory, timezone)) = &self.traffic_storage {
+                state.traffic_status = TrafficStorageStatus::default();
+                match TrafficWriter::open(directory, *timezone) {
+                    Ok(writer) => {
+                        state.writer = Some(writer);
+                        state.traffic_status.active = true;
+                    }
+                    Err(_) => {
+                        state.traffic_status.failure = Some(TrafficStorageFailure::Open);
+                        tracing::warn!("traffic storage unavailable");
+                    }
+                }
+            }
             state.notify(None);
         }
         for stream in [
@@ -234,10 +306,26 @@ impl ObservationService {
         for task in self.tasks.drain(..) {
             task.abort();
         }
-        let mut state = self.state.lock().expect("observation state");
-        let revision = state.snapshot.revision;
-        state.snapshot = Snapshot::empty(None, revision);
-        state.notify(None);
+        let writer = {
+            let mut state = self.state.lock().expect("observation state");
+            let revision = state.snapshot.revision;
+            // 先撤销来源、取走 writer：任何旧任务随后取得锁都不能再提交。
+            state.snapshot = Snapshot::empty(None, revision);
+            state.traffic_status.active = false;
+            state.notify(None);
+            state.writer.take()
+        };
+        if let Some(mut writer) = writer {
+            // close 内部 drain/commit/join；离开这里时 DB 与文件 lease 已释放。
+            writer.stop();
+            let status = writer.status();
+            let mut state = self.state.lock().expect("observation state");
+            state.traffic_status.writer = status.clone();
+            if status.failed {
+                state.traffic_status.failure = Some(TrafficStorageFailure::Commit);
+                tracing::warn!("traffic storage commit failed during stop");
+            }
+        }
     }
 }
 impl Drop for ObservationService {
@@ -264,7 +352,34 @@ struct ConnectionsFrame {
 }
 #[derive(Deserialize)]
 struct Connection {
-    metadata: ObservedClient,
+    #[serde(default)]
+    id: Option<String>,
+    #[serde(default)]
+    upload: Option<u64>,
+    #[serde(default)]
+    download: Option<u64>,
+    #[serde(default)]
+    chains: Vec<String>,
+    metadata: ConnectionMetadata,
+}
+#[derive(Deserialize)]
+struct ConnectionMetadata {
+    #[serde(flatten)]
+    client: ObservedClient,
+    host: Option<String>,
+}
+fn bounded_field(value: Option<String>) -> Option<String> {
+    value.filter(|s| !s.is_empty() && s.len() <= 512)
+}
+fn submit(state: &mut State, sample: Sample) {
+    if let Some(writer) = &state.writer
+        && writer.submit(sample).is_err()
+    {
+        if state.traffic_status.failure.is_none() {
+            tracing::warn!("traffic storage rejected a sample");
+        }
+        state.traffic_status.failure = Some(TrafficStorageFailure::Submit);
+    }
 }
 fn apply(
     state: &mut State,
@@ -276,6 +391,14 @@ fn apply(
     interval_ms: u64,
 ) -> Result<(), ()> {
     let s = &mut state.snapshot;
+    let sampled_at_ms = i64::try_from(
+        SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .map_err(|_| ())?
+            .as_millis(),
+    )
+    .map_err(|_| ())?;
+    let mut samples = Vec::new();
     let i = stream.index();
     if s.identity != Some(id.clone())
         || s.stream_generation[i] != generation
@@ -306,6 +429,13 @@ fn apply(
                 session_upload_bytes: upload,
                 session_download_bytes: download,
             });
+            samples.push((
+                "traffic".to_owned(),
+                Count::ObservedInterval {
+                    upload: frame.up,
+                    download: frame.down,
+                },
+            ));
         }
         Stream::Memory => {
             let bytes = serde_json::from_str::<MemoryFrame>(text)
@@ -329,12 +459,48 @@ fn apply(
             let connections = frame.connections.unwrap_or_default();
             s.connection_count = Some(connections.len());
             let mut clients = Vec::new();
-            for c in connections {
-                if c.metadata.source_ip.is_some() && !clients.contains(&c.metadata) {
-                    clients.push(c.metadata);
+            let mut records = Vec::with_capacity(connections.len());
+            for (index, c) in connections.into_iter().enumerate() {
+                let record = ConnectionRecord {
+                    id: bounded_field(c.id),
+                    upload: c.upload,
+                    download: c.download,
+                    dimensions: Dimensions {
+                        node: bounded_field(c.chains.into_iter().next()),
+                        host: bounded_field(c.metadata.host),
+                        client: c.metadata.client.source_ip.map(|ip| ip.to_string()),
+                        // 1.14.0 API 未发布 outbound type；不把 tag 字符串当 Direct 证据。
+                        direct: None,
+                    },
+                };
+                if let (Some(connection_id), Some(upload), Some(download)) =
+                    (&record.id, record.upload, record.download)
+                {
+                    samples.push((
+                        format!("connection:{index}"),
+                        Count::Connection {
+                            id: connection_id.clone(),
+                            upload,
+                            download,
+                            dimensions: record.dimensions.clone(),
+                        },
+                    ));
+                } else {
+                    state.traffic_status.incomplete_records += 1;
+                }
+                records.push(record);
+                if c.metadata.client.source_ip.is_some() && !clients.contains(&c.metadata.client) {
+                    clients.push(c.metadata.client);
                 }
             }
             s.clients = Some(clients);
+            s.connection_records = Some(ConnectionRecords {
+                identity: id.clone(),
+                stream_generation: generation,
+                sequence,
+                sampled_at_ms,
+                records,
+            });
         }
         Stream::Logs => {
             let log = parse_log_message(text).map_err(|_| ())?;
@@ -346,6 +512,21 @@ fn apply(
     }
     s.available[i] = true;
     s.sequence[i] = sequence;
+    for (key, count) in samples {
+        submit(
+            state,
+            Sample {
+                source: Source {
+                    epoch: format!("observation-{}", id.generation),
+                    instance: id.instance_id.0.clone(),
+                },
+                key: format!("{generation}:{sequence}:{key}"),
+                start_ms: sampled_at_ms.saturating_sub(i64::try_from(interval_ms).map_err(|_| ())?),
+                end_ms: sampled_at_ms,
+                count,
+            },
+        );
+    }
     state.notify(Some(stream));
     Ok(())
 }
