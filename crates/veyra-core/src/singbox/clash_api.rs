@@ -451,8 +451,14 @@ impl<'secret> ClashApiClient<'secret> {
         let authorization =
             WebSocketHeaderValue::from_str(&format!("Bearer {}", self.secret.as_str()))
                 .map_err(|_| ClashApiError::Unavailable)?;
+        // 同一日志连接订阅可用的全部级别；页面筛选绝不另建WS。
+        let path = if matches!(stream, FixedStream::Logs) {
+            "/logs?level=trace"
+        } else {
+            stream.path()
+        };
         let mut request = self
-            .url(stream.path(), true)
+            .url(path, true)
             .into_client_request()
             .map_err(|_| ClashApiError::Unavailable)?;
         request
@@ -1004,7 +1010,11 @@ mod tests {
                     .await
                     .expect("bounded header read");
                     let request = std::str::from_utf8(&request).expect("ASCII headers");
-                    let path = stream.path();
+                    let path = if matches!(stream, FixedStream::Logs) {
+                        "/logs?level=trace"
+                    } else {
+                        stream.path()
+                    };
                     assert!(
                         request.starts_with(&format!("GET {path} HTTP/1.1\r\n")),
                         "fixed request path"
@@ -1247,7 +1257,7 @@ mod tests {
             let listener = tokio::net::TcpListener::bind("127.0.0.1:9090")
                 .await.expect("bind fixed bridge fixture");
             let server = tokio::spawn(async move {
-                for path in ["/connections/", "/traffic", "/logs"] {
+                for path in ["/connections/", "/traffic", "/logs?level=trace"] {
                     let (mut stream, _) = timeout(REQUEST_TIMEOUT, listener.accept())
                         .await.expect("bounded fixture accept").expect("accept bridge request");
                     if path == "/traffic" {

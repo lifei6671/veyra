@@ -40,6 +40,29 @@ impl Drop for AppServices {
     }
 }
 impl AppServices {
+    /// 已由NSSavePanel确认的脱敏页面快照，在既有有界blocking worker写文件。
+    pub fn save_log_export(
+        &self,
+        selection: Result<crate::platform::macos::DialogResult, crate::platform::PlatformError>,
+        bytes: Vec<u8>,
+    ) -> tokio::sync::oneshot::Receiver<Result<bool, crate::platform::PlatformError>> {
+        let (sender, receiver) = tokio::sync::oneshot::channel();
+        match selection {
+            Ok(crate::platform::macos::DialogResult::Cancelled) => {
+                let _ = sender.send(Ok(false));
+            }
+            Err(error) => {
+                let _ = sender.send(Err(error));
+            }
+            Ok(crate::platform::macos::DialogResult::Selected(path)) => {
+                self.runtime.spawn_blocking(move || {
+                    let _ = sender
+                        .send(crate::platform::files::save_selected(&path, &bytes).map(|_| true));
+                });
+            }
+        }
+        receiver
+    }
     pub fn new(
         root: PathBuf,
     ) -> Result<(Self, UnboundedReceiver<AppEvent>), Box<dyn std::error::Error>> {
@@ -1099,6 +1122,69 @@ mod behavior_integration_tests {
         release_tx.send(()).unwrap();
         server.join().unwrap();
         assert!(!root.join("state.json").exists());
+        std::fs::remove_dir_all(root).unwrap();
+    }
+}
+
+#[cfg(test)]
+mod log_export_tests {
+    use super::*;
+    use crate::platform::{PlatformError, macos::DialogResult};
+    // 保护原生面板结果进入真实Service/磁盘：取消无错误/无写入，失败保旧，可重试成功。
+    #[test]
+    fn logs_panel_cancel_success_failure_and_retry_write_actual_filtered_bytes() {
+        let root = std::env::temp_dir().join(format!(
+            "veyra-logs-export-{:?}",
+            veyra_core::domain::StateEpoch::fresh().unwrap()
+        ));
+        let (services, _) = AppServices::new(root.clone()).unwrap();
+        let safe = b"4\t12:00:00\tinfo\tdns query example.org\n[REDACTED]".to_vec();
+        let target = root.join("filtered.log");
+        assert_eq!(
+            services
+                .save_log_export(Ok(DialogResult::Cancelled), safe.clone())
+                .blocking_recv()
+                .unwrap(),
+            Ok(false)
+        );
+        assert!(!target.exists());
+        assert_eq!(
+            services
+                .save_log_export(Ok(DialogResult::Selected(target.clone())), safe.clone())
+                .blocking_recv()
+                .unwrap(),
+            Ok(true)
+        );
+        assert_eq!(std::fs::read(&target).unwrap(), safe);
+        assert_eq!(
+            services
+                .save_log_export(
+                    Ok(DialogResult::Selected(
+                        root.join("missing/sub/filtered.log")
+                    )),
+                    safe.clone()
+                )
+                .blocking_recv()
+                .unwrap(),
+            Err(PlatformError::FileWriteFailed)
+        );
+        assert_eq!(std::fs::read(&target).unwrap(), safe);
+        assert_eq!(
+            services
+                .save_log_export(Err(PlatformError::FileDialogUnavailable), safe.clone())
+                .blocking_recv()
+                .unwrap(),
+            Err(PlatformError::FileDialogUnavailable)
+        );
+        assert_eq!(
+            services
+                .save_log_export(Ok(DialogResult::Selected(target.clone())), safe.clone())
+                .blocking_recv()
+                .unwrap(),
+            Ok(true)
+        );
+        assert_eq!(std::fs::read(target).unwrap(), safe);
+        drop(services);
         std::fs::remove_dir_all(root).unwrap();
     }
 }

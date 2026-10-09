@@ -48,6 +48,16 @@ impl DialogResult {
 // This existing AppKit API supports PNG/JPEG filtering without another dependency.
 #[allow(deprecated)]
 pub fn begin_dialog(kind: DialogKind) -> oneshot::Receiver<Result<DialogResult, PlatformError>> {
+    begin_named_dialog(kind, "veyra-platform-evidence.txt")
+}
+pub fn begin_log_export() -> oneshot::Receiver<Result<DialogResult, PlatformError>> {
+    begin_named_dialog(DialogKind::SaveEvidence, "veyra-logs.log")
+}
+#[allow(deprecated)]
+fn begin_named_dialog(
+    kind: DialogKind,
+    name: &str,
+) -> oneshot::Receiver<Result<DialogResult, PlatformError>> {
     let mtm = marker();
     let (tx, rx) = oneshot::channel();
     let panel: Retained<NSSavePanel> = match kind {
@@ -67,7 +77,7 @@ pub fn begin_dialog(kind: DialogKind) -> oneshot::Receiver<Result<DialogResult, 
         }
         DialogKind::SaveEvidence => {
             let save = NSSavePanel::savePanel(mtm);
-            save.setNameFieldStringValue(&NSString::from_str("veyra-platform-evidence.txt"));
+            save.setNameFieldStringValue(&NSString::from_str(name));
             save
         }
     };

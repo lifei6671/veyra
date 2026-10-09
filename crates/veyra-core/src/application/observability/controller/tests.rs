@@ -14,6 +14,7 @@ fn state(id: Identity) -> State {
     State {
         snapshot,
         events,
+        log_events: broadcast::channel(EVENT_CAPACITY).0,
         writer: None,
         traffic_status: TrafficStorageStatus::default(),
     }
@@ -232,7 +233,7 @@ async fn fixture() -> Fixture {
                     let (stream,_)=next.unwrap();let expected=expected.clone();let tx=tx.clone();
                     sockets.spawn(async move {
                         let mut path=String::new();
-                        let mut socket=accept_hdr_async(stream,|request:&Request,response:Response| {assert_eq!(request.headers()["authorization"],expected);path=request.uri().path().into();Ok(response)}).await.unwrap();
+                        let mut socket=accept_hdr_async(stream,|request:&Request,response:Response| {assert!(request.headers()["authorization"]==expected,"fixture authentication rejected");path=request.uri().path().into();if path=="/logs"{assert_eq!(request.uri().query(),Some("level=trace"));}Ok(response)}).await.unwrap();
                         let (send,mut receive)=mpsc::channel::<Option<String>>(8);tx.send((path,send)).await.unwrap();
                         loop {tokio::select! {
                             frame=receive.recv()=>match frame {Some(Some(text))=>{if socket.send(Message::Text(text.into())).await.is_err(){break;}},_=>{let _=socket.close(None).await;break;}},
@@ -644,4 +645,129 @@ async fn statistics_commit_failure_retains_status_and_releases_database() {
     f.task.abort();
     let _ = f.task.await;
     std::fs::remove_dir_all(root).unwrap();
+}
+
+// 保护生产唯一四WS、独立页面暂停/恢复不回补、清空不影响Runtime诊断、慢消费者Gap。
+#[tokio::test]
+async fn log_pages_reuse_real_collector_pause_gap_clear_and_shutdown() {
+    use crate::application::observability::logs::Buffer;
+    let mut fixture = fixture().await;
+    let mut service = ObservationService::new();
+    let reader = service.reader();
+    let mut page = reader.subscribe_logs().unwrap();
+    let mut other = reader.subscribe_logs().unwrap();
+    let identity = service.bind(InstanceId("logs-1".into()), fixture.endpoint.clone());
+    let mut senders = std::collections::HashMap::new();
+    for _ in 0..4 {
+        let (path, send) = timeout(Duration::from_secs(3), fixture.accepted.recv())
+            .await
+            .unwrap()
+            .unwrap();
+        assert!(senders.insert(path, send).is_none());
+    }
+    let mut buffer = Buffer::default();
+    buffer.set_identity(Some(identity.clone()));
+    async fn send(send: &mpsc::Sender<Option<String>>, seq: u64) {
+        send.send(Some(serde_json::json!({"type":"info","payload":format!("dns query item-{seq}.example.org")}).to_string())).await.unwrap();
+    }
+    send(&senders["/logs"], 1).await;
+    wait_for(&service, |s| s.sequence[3] == 1).await;
+    while let Some(message) = page.try_recv() {
+        if let LogDelivery::Record(r) = message {
+            buffer.push(r);
+        }
+    }
+    assert_eq!(buffer.len(), 1);
+    assert_eq!(service.snapshot().logs.len(), 1);
+    buffer.paused = true;
+    send(&senders["/logs"], 2).await;
+    send(&senders["/logs"], 3).await;
+    wait_for(&service, |s| s.sequence[3] == 3).await;
+    // 实际订阅队列已有暂停日志，恢复时切断队列，非buffer flag冒充正确。
+    page.discard_pending();
+    buffer.paused = false;
+    send(&senders["/logs"], 4).await;
+    wait_for(&service, |s| s.sequence[3] == 4).await;
+    while let Some(message) = page.try_recv() {
+        if let LogDelivery::Record(r) = message {
+            buffer.push(r);
+        }
+    }
+    assert_eq!(buffer.len(), 2);
+    assert!(!buffer.export().contains("item-2"));
+    assert!(!buffer.export().contains("item-3"));
+    assert!(buffer.export().contains("item-4"));
+    buffer.clear();
+    assert_eq!(service.snapshot().logs.len(), 4);
+    assert!(buffer.is_empty());
+    for seq in 5..=100 {
+        send(&senders["/logs"], seq).await;
+    }
+    wait_for(&service, |s| s.sequence[3] == 100).await;
+    assert!(matches!(other.try_recv(),Some(LogDelivery::Gap{dropped}) if dropped>0));
+    assert!(
+        fixture.accepted.try_recv().is_err(),
+        "consumers must not open another socket"
+    );
+    service.stop();
+    assert_eq!(reader.log_status().unwrap().identity, None);
+    // 持reader/subscription不会延长owner/资源：drop后弱reader不可用，队列最终Closed。
+    drop(service);
+    timeout(Duration::from_secs(1), async {
+        while reader.log_status().is_some() {
+            tokio::task::yield_now().await;
+        }
+    })
+    .await
+    .unwrap();
+    for _ in 0..128 {
+        if matches!(page.try_recv(), Some(LogDelivery::Closed)) {
+            fixture.task.abort();
+            return;
+        }
+    }
+    panic!("owner shutdown did not close bounded page channel")
+}
+// 保护已读旧日志不能在换实例后发布，新记录正文不进入旧Runtime摘要。
+#[test]
+fn late_log_identity_is_rejected_and_summary_stays_allowlisted() {
+    let current = Identity {
+        instance_id: InstanceId("current".into()),
+        generation: 2,
+    };
+    let mut state = state(current.clone());
+    let old = Identity {
+        instance_id: InstanceId("old".into()),
+        generation: 1,
+    };
+    assert!(
+        apply(
+            &mut state,
+            old,
+            Stream::Logs,
+            1,
+            1,
+            r#"{"type":"info","payload":"dns old"}"#,
+            1000
+        )
+        .is_err()
+    );
+    assert!(state.snapshot.logs.is_empty());
+    let mut sub = LogSubscription {
+        receiver: state.log_events.subscribe(),
+    };
+    apply(
+        &mut state,
+        current.clone(),
+        Stream::Logs,
+        1,
+        1,
+        r#"{"type":"warning","payload":"outbound/direct[owned]: safe detail"}"#,
+        1000,
+    )
+    .unwrap();
+    assert_eq!(state.snapshot.logs[0].message, "sidecar log observed");
+    assert!(
+        matches!(sub.try_recv(),Some(LogDelivery::Record(r)) if r.identity==current && r.body().contains("safe detail"))
+    );
 }

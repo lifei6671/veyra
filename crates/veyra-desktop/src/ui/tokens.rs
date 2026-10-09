@@ -417,3 +417,32 @@ pub mod shared_network {
     pub const EMPTY_PAD: f32 = 56.;
     pub const EMPTY_ICON: f32 = 40.;
 }
+
+/// LogsPage.tsx / openbox.css:657–683：日志页固定工具栏与可见行几何。
+pub mod logs {
+    pub const TOOLBAR: f32 = 48.;
+    pub const SURFACE_ALPHA: f32 = 0.75;
+    pub const SEARCH_ICON: f32 = 15.;
+    pub const EMPTY_HEIGHT: f32 = 160.;
+    pub const BADGE_X: f32 = 7.;
+    pub const BADGE_Y: f32 = 3.;
+    // 级别来自 React 12px；时间按用户2026-10-09明确要求同步至同字号。
+    pub const TAG_FONT: f32 = 12.;
+    pub const DEBUG_BACKGROUND: u32 = 0xf7f7f8c2; // React .level-debug rgba(247,247,248,.76)
+    pub const TIME_BACKGROUND: u32 = 0x70c99621;
+    pub const LEVEL_WIDTH: f32 = 96.;
+    pub const FILTER_WIDTH: f32 = 256.;
+    pub const SEARCH_WIDTH: f32 = 256.;
+    pub const ROW_HEIGHT: f32 = 56.;
+    pub const ROW_PITCH: f32 = 64.;
+    pub const ROW_RADIUS: f32 = 15.8;
+    pub const NUMBER_WIDTH: f32 = 42.;
+    pub const TIME_WIDTH: f32 = 68.;
+    pub const LEVEL_TAG_WIDTH: f32 = 58.;
+    pub const BADGE_RADIUS: f32 = 8.;
+    pub const TOOL_BACKGROUND: u32 = 0xe7e7e7;
+    pub const INFO: u32 = 0x4384c0;
+    pub const WARNING: u32 = 0xa26d1b;
+    pub const ERROR: u32 = 0xc44d4d;
+    pub const DEBUG: u32 = 0x6e7b80;
+}

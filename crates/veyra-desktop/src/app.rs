@@ -28,6 +28,7 @@ pub struct AppView {
     _groups_subscription: Subscription,
     _subscriptions: Subscription,
     _shares_updates: Subscription,
+    pub logs: Entity<crate::ui::logs::LogsView>,
     pub backend: Entity<crate::ui::backend::BackendView>,
     _runtime_subscription: Subscription,
     _profile_subscription: Subscription,
@@ -65,6 +66,10 @@ impl AppView {
     ) -> Self {
         let notice_center = crate::ui::components::notice::NoticeCenter::mount(cx);
         let pages = Pages::new(window, cx);
+        let logs = cx.new(|cx| crate::ui::logs::LogsView::new(&services, window, cx));
+        pages
+            .get(Route::Logs)
+            .update(cx, |page, _| page.logs = Some(logs.clone()));
         let backend = cx.new(|cx| crate::ui::backend::BackendView::new(window, cx));
         pages
             .get(Route::Settings)
@@ -281,6 +286,7 @@ impl AppView {
         );
         let mut view = Self {
             backend,
+            logs,
             _runtime_subscription: runtime_subscription,
             _profile_subscription: profile_subscription,
             tray,
@@ -869,6 +875,8 @@ impl AppView {
         if route == self.route {
             return;
         }
+        self.logs
+            .update(cx, |view, cx| view.set_visible(route == Route::Logs, cx));
         self.bridge.leave_page();
         let visible = route == Route::Settings
             && self.pages.get(Route::Settings).read(cx).category

@@ -10,7 +10,7 @@ use std::{
     collections::VecDeque,
     net::IpAddr,
     path::PathBuf,
-    sync::{Arc, Mutex},
+    sync::{Arc, Mutex, Weak},
     time::{Duration, Instant, SystemTime, UNIX_EPOCH},
 };
 use tokio::{sync::broadcast, task::JoinHandle};
@@ -155,15 +155,85 @@ impl Subscription {
         }
     }
 }
+/// 页面专用有界消息，仅包含安全正文；64 × 4096 bytes 是正文队列上界。
+#[derive(Clone, Debug)]
+pub enum LogDelivery {
+    Record(Arc<super::logs::Record>),
+    Status(LogStatus),
+    Gap { dropped: u64 },
+    Closed,
+}
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct LogStatus {
+    pub identity: Option<Identity>,
+    pub available: bool,
+    pub received: bool,
+    pub sequence: u64,
+    pub stream_generation: u64,
+    pub gaps: u64,
+}
+pub struct LogSubscription {
+    receiver: broadcast::Receiver<LogDelivery>,
+}
+impl LogSubscription {
+    pub fn try_recv(&mut self) -> Option<LogDelivery> {
+        match self.receiver.try_recv() {
+            Ok(message) => Some(message),
+            Err(broadcast::error::TryRecvError::Lagged(dropped)) => {
+                Some(LogDelivery::Gap { dropped })
+            }
+            Err(broadcast::error::TryRecvError::Empty) => None,
+            Err(broadcast::error::TryRecvError::Closed) => Some(LogDelivery::Closed),
+        }
+    }
+    /// 点击恢复/重新进入页时丢掉订阅旧队列，不回放暂停/离页期间日志。
+    pub fn discard_pending(&mut self) {
+        self.receiver = self.receiver.resubscribe();
+    }
+}
+/// Weak 只读句柄不延长 owner、采集任务或统计 writer 生命周期。
+#[derive(Clone)]
+pub struct ObservationReader {
+    state: Weak<Mutex<State>>,
+}
+impl ObservationReader {
+    pub fn log_status(&self) -> Option<LogStatus> {
+        let state = self.state.upgrade()?;
+        Some(state.lock().expect("observation state").log_status())
+    }
+    pub fn subscribe_logs(&self) -> Option<LogSubscription> {
+        let state = self.state.upgrade()?;
+        let receiver = state
+            .lock()
+            .expect("observation state")
+            .log_events
+            .subscribe();
+        Some(LogSubscription { receiver })
+    }
+}
 struct State {
     snapshot: Snapshot,
     events: broadcast::Sender<Event>,
+    log_events: broadcast::Sender<LogDelivery>,
     writer: Option<TrafficWriter>,
     traffic_status: TrafficStorageStatus,
 }
 impl State {
+    fn log_status(&self) -> LogStatus {
+        LogStatus {
+            identity: self.snapshot.identity.clone(),
+            available: self.snapshot.available[Stream::Logs.index()],
+            received: !self.snapshot.logs.is_empty(),
+            sequence: self.snapshot.sequence[Stream::Logs.index()],
+            stream_generation: self.snapshot.stream_generation[Stream::Logs.index()],
+            gaps: self.snapshot.gaps[Stream::Logs.index()],
+        }
+    }
     fn notify(&mut self, stream: Option<Stream>) {
         self.snapshot.revision += 1;
+        if stream.is_none() || stream == Some(Stream::Logs) {
+            let _ = self.log_events.send(LogDelivery::Status(self.log_status()));
+        }
         let _ = self.events.send(Event {
             identity: self.snapshot.identity.clone(),
             revision: self.snapshot.revision,
@@ -214,12 +284,18 @@ impl ObservationService {
             state: Arc::new(Mutex::new(State {
                 snapshot: Snapshot::empty(None, 0),
                 events,
+                log_events: broadcast::channel(EVENT_CAPACITY).0,
                 writer: None,
                 traffic_status: TrafficStorageStatus::default(),
             })),
             tasks: Vec::new(),
             generation: 0,
             traffic_storage: None,
+        }
+    }
+    pub fn reader(&self) -> ObservationReader {
+        ObservationReader {
+            state: Arc::downgrade(&self.state),
         }
     }
     pub fn snapshot(&self) -> Snapshot {
@@ -508,6 +584,9 @@ fn apply(
                 s.logs.pop_front();
             }
             s.logs.push_back(log);
+            // 正文只有在同一实例/流代际/序号已验证后脱敏；Runtime摘要语义保持。
+            let record = super::logs::parse(text, id.clone(), generation, sequence, sampled_at_ms)?;
+            let _ = state.log_events.send(LogDelivery::Record(Arc::new(record)));
         }
     }
     s.available[i] = true;
@@ -558,6 +637,15 @@ async fn collect(
             state.snapshot.stream_generation[stream.index()]
         };
         if let Ok(Some(mut socket)) = client.open_fixed_stream(stream.fixed()).await {
+            if stream == Stream::Logs {
+                let mut current = state.lock().expect("observation state");
+                if current.snapshot.identity != Some(id.clone()) {
+                    return;
+                }
+                // 正常无日志也属连接成功，不能永远显示加载中。
+                current.snapshot.available[stream.index()] = true;
+                current.notify(Some(stream));
+            }
             let mut previous = Instant::now();
             let mut last_received = previous;
             let mut sequence = 0;

@@ -108,20 +108,34 @@ enum Message {
 pub struct RuntimeService {
     sender: mpsc::Sender<Message>,
     worker: Option<thread::JoinHandle<()>>,
+    observation: Arc<
+        std::sync::Mutex<
+            Option<veyra_core::application::observability::controller::ObservationReader>,
+        >,
+    >,
 }
 impl RuntimeService {
+    pub fn observation_reader(
+        &self,
+    ) -> Option<veyra_core::application::observability::controller::ObservationReader> {
+        self.observation.lock().expect("observation reader").clone()
+    }
     pub fn new(
         root: std::path::PathBuf,
         snapshots: Arc<SnapshotService>,
         events: tokio::sync::mpsc::UnboundedSender<AppEvent>,
     ) -> Self {
         let (sender, receiver) = mpsc::channel();
+        let observation = Arc::new(std::sync::Mutex::new(None));
+        let reader_slot = observation.clone();
         let worker = thread::spawn(move || {
             let port = ManualSidecarPort::new(root.clone());
             let available = port.kernel_available();
             let traffic_directory = root.join("traffic");
             let mut owner = ManualRuntime::new(port, snapshots.clone(), root, available);
             owner.enable_traffic_storage(traffic_directory);
+            // P2-06 owner确认：只交付一次 Weak reader，不交出Runtime/统计写权。
+            *reader_slot.lock().expect("observation reader") = Some(owner.observation().reader());
             #[cfg(target_os = "macos")]
             let helper = veyra_helper::production::Client::default();
             #[cfg(not(target_os = "macos"))]
@@ -416,6 +430,7 @@ impl RuntimeService {
         Self {
             sender,
             worker: Some(worker),
+            observation,
         }
     }
     pub fn submit(&self, request: u64, command: RuntimeCommand) {
@@ -1050,5 +1065,211 @@ mod quit_tests {
         );
         assert_eq!(std::fs::read(&path).unwrap(), record);
         std::fs::remove_dir_all(root).unwrap();
+    }
+}
+
+#[cfg(test)]
+mod logs_native_tests {
+    use super::*;
+    use std::io::{Read, Write};
+    use veyra_core::{
+        application::{
+            observability::{
+                controller::{LogDelivery, ObservationReader},
+                logs::Buffer,
+            },
+            runtime_snapshot::RuntimeStatus,
+        },
+        domain::{AppState, RouteTarget, SubscriptionId},
+        storage::JsonStateStore,
+    };
+    fn fixture_state() -> AppState {
+        let mut value = serde_json::to_value(AppState::empty()).unwrap();
+        let fixture: serde_json::Value = serde_json::from_str(include_str!(
+            "../../veyra-core/tests/fixtures/compiler/p2-02b.json"
+        ))
+        .unwrap();
+        for (k, v) in fixture.as_object().unwrap() {
+            value[k] = v.clone();
+        }
+        let mut state: AppState = serde_json::from_value(value).unwrap();
+        state.active_subscription_id = Some(SubscriptionId("subscription".into()));
+        state.default_target = RouteTarget::Direct;
+        state.routes.clear();
+        state.pools.retain(|p| p.id.0 == "manual");
+        state.validate().unwrap();
+        state.app_config.visual.theme_mode = veyra_core::domain::DesktopThemeMode::Light;
+        state
+    }
+    /// 只准备自己指定的隔离GUI目录；真实操作仍由产品GPUI发起。
+    #[test]
+    #[ignore = "local GUI fixture setup only; not acceptance evidence"]
+    fn logs_prepare_owned_gui_fixture() {
+        let root = std::path::PathBuf::from(
+            std::env::var_os("VEYRA_P303_GUI_ROOT").expect("owned GUI root"),
+        );
+        assert!(root.is_absolute() && !root.join("state.json").exists());
+        JsonStateStore::new(root.join("state.json"))
+            .unwrap()
+            .commit(&fixture_state())
+            .unwrap();
+    }
+    fn wait(
+        reader: &ObservationReader,
+        predicate: impl Fn(&veyra_core::application::observability::controller::LogStatus) -> bool,
+    ) {
+        let until = std::time::Instant::now() + Duration::from_secs(4);
+        loop {
+            if reader.log_status().as_ref().is_some_and(&predicate) {
+                return;
+            }
+            assert!(
+                std::time::Instant::now() < until,
+                "real log delivery deadline"
+            );
+            thread::sleep(Duration::from_millis(10));
+        }
+    }
+    // 保护正式AppServices→Runtime唯一/logs→页面Buffer→真实文件导出与Replace/Quit清理。
+    #[test]
+    #[ignore = "requires pinned sing-box 1.14.0; real local managed logs"]
+    fn logs_real_services_pause_export_replace_and_quit() {
+        let root = std::env::temp_dir().join(format!(
+            "veyra-logs-native-{:?}",
+            veyra_core::domain::StateEpoch::fresh().unwrap()
+        ));
+        let state = fixture_state();
+        JsonStateStore::new(root.join("state.json"))
+            .unwrap()
+            .commit(&state)
+            .unwrap();
+        let (services, mut events) = crate::services::AppServices::new(root.clone()).unwrap();
+        services.manual_runtime.submit(1, RuntimeCommand::Start);
+        fn ready(
+            events: &mut tokio::sync::mpsc::UnboundedReceiver<AppEvent>,
+        ) -> veyra_core::singbox::runtime::ManagedRuntimeEndpoints {
+            let until = std::time::Instant::now() + Duration::from_secs(20);
+            loop {
+                if let Ok(AppEvent::Runtime(event)) = events.try_recv() {
+                    if let Some(Err(_)) = event.result {
+                        panic!("owned runtime command failed")
+                    }
+                    if let Ok(snapshot) = event.snapshot
+                        && snapshot.runtime.status == RuntimeStatus::Ready
+                    {
+                        return snapshot.endpoints.unwrap();
+                    }
+                }
+                assert!(std::time::Instant::now() < until, "owned Ready deadline");
+                thread::sleep(Duration::from_millis(20));
+            }
+        }
+        let first = ready(&mut events);
+        let reader = services.manual_runtime.observation_reader().unwrap();
+        wait(&reader, |s| s.available);
+        let mut subscription = reader.subscribe_logs().unwrap();
+        let mut buffer = Buffer::default();
+        buffer.set_identity(reader.log_status().unwrap().identity);
+        let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
+        let target = listener.local_addr().unwrap();
+        let peer = thread::spawn(move || {
+            for _ in 0..3 {
+                let (mut socket, _) = listener.accept().unwrap();
+                socket
+                    .set_read_timeout(Some(Duration::from_secs(4)))
+                    .unwrap();
+                let mut request = [0; 4096];
+                assert!(socket.read(&mut request).unwrap() > 0);
+                socket.write_all(b"HTTP/1.1 204 No Content\r\nContent-Length: 0\r\nConnection: close\r\n\r\n").unwrap();
+            }
+        });
+        let request = || {
+            let before = reader.log_status().unwrap().sequence;
+            let mut c = std::net::TcpStream::connect(first.mixed).unwrap();
+            c.set_read_timeout(Some(Duration::from_secs(4))).unwrap();
+            write!(
+                c,
+                "GET http://{target}/logs HTTP/1.1\r\nHost: {target}\r\nConnection: close\r\n\r\n"
+            )
+            .unwrap();
+            let mut response = Vec::new();
+            c.read_to_end(&mut response).unwrap();
+            assert!(response.starts_with(b"HTTP/1.1 204"));
+            wait(&reader, |s| s.sequence > before);
+        };
+        request();
+        while let Some(message) = subscription.try_recv() {
+            if let LogDelivery::Record(record) = message {
+                buffer.push(record);
+            }
+        }
+        assert!(!buffer.is_empty());
+        assert!(buffer.export().contains("127.0.0.1"));
+        let initial = buffer.len();
+        buffer.paused = true;
+        request();
+        subscription.discard_pending();
+        buffer.paused = false;
+        assert_eq!(buffer.len(), initial);
+        request();
+        while let Some(message) = subscription.try_recv() {
+            if let LogDelivery::Record(record) = message {
+                buffer.push(record);
+            }
+        }
+        assert!(buffer.len() > initial);
+        peer.join().unwrap();
+        buffer.query("outbound.*127\\.0\\.0\\.1");
+        let export = buffer.export();
+        assert!(!export.is_empty());
+        let path = root.join("filtered.log");
+        assert_eq!(
+            services
+                .save_log_export(
+                    Ok(crate::platform::macos::DialogResult::Selected(path.clone())),
+                    export.as_bytes().to_vec()
+                )
+                .blocking_recv()
+                .unwrap(),
+            Ok(true)
+        );
+        assert_eq!(std::fs::read_to_string(&path).unwrap(), export);
+        buffer.clear();
+        assert!(buffer.is_empty());
+        assert!(reader.log_status().unwrap().received);
+        let old = reader.log_status().unwrap().identity;
+        services.manual_runtime.submit(2, RuntimeCommand::Restart);
+        let second = ready(&mut events);
+        wait(&reader, |s| s.available && s.identity != old);
+        assert_ne!(reader.log_status().unwrap().identity, old);
+        buffer.set_identity(reader.log_status().unwrap().identity);
+        while let Some(message) = subscription.try_recv() {
+            if let LogDelivery::Record(record) = message {
+                assert!(
+                    !buffer.push(record.clone())
+                        || Some(record.identity.clone()) == buffer.identity
+                );
+            }
+        }
+        services
+            .manual_runtime
+            .shutdown()
+            .recv_timeout(Duration::from_secs(15))
+            .unwrap()
+            .unwrap();
+        assert_eq!(reader.log_status().unwrap().identity, None);
+        for address in [
+            first.mixed,
+            first.controller,
+            second.mixed,
+            second.controller,
+        ] {
+            assert!(std::net::TcpStream::connect(address).is_err());
+        }
+        drop(services);
+        std::fs::remove_dir_all(root).unwrap();
+        eprintln!(
+            "P3_03_REAL_LOGS PASS: current managed /logs, page pause/export, replacement fence, Quit ports/root cleanup"
+        );
     }
 }

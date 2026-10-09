@@ -16,6 +16,7 @@ pub struct PageView {
     pub subscriptions: Option<Entity<super::subscriptions::SubscriptionsView>>,
     pub shared_network: Option<Entity<super::shared_network::SharedNetworkView>>,
     pub groups: Option<Entity<super::groups::GroupsView>>,
+    pub logs: Option<Entity<super::logs::LogsView>>,
     pub backend: Option<Entity<super::backend::BackendView>>,
     behavior_open: bool,
     settings_scroll: ScrollHandle,
@@ -34,6 +35,7 @@ impl PageView {
             groups: None,
             shared_network: None,
             backend: None,
+            logs: None,
             behavior_open: false,
             settings_scroll: ScrollHandle::new(),
             category_scroll: ScrollHandle::new(),
@@ -50,6 +52,11 @@ impl PageView {
 }
 impl Render for PageView {
     fn render(&mut self, _window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
+        if self.route == Route::Logs
+            && let Some(logs) = &self.logs
+        {
+            return div().size_full().child(logs.clone());
+        }
         if self.route != Route::Settings && !super::components::evidence_visible() {
             return super::components::unavailable(self.route.task(), cx);
         }
