@@ -396,3 +396,22 @@ pub mod groups {
     pub const AUTO_WIDTH: f32 = 576.;
     pub const DYNAMIC_HEIGHT: f32 = 224.;
 }
+
+/// 共享网络：在线 OpenBox 2026-10-09 实测；字段32px、双栏间16px、编辑576px。
+pub mod shared_network {
+    pub const EDIT_WIDTH: f32 = 576.;
+    pub const CODE_WIDTH: f32 = 448.;
+    pub const EDIT_QR: f32 = 176.;
+    pub const CODE_QR: f32 = 224.;
+    pub const CARD_PAD: f32 = 12.;
+    pub const CARD_RADIUS: f32 = 16.;
+    pub const MODAL_RADIUS: f32 = 13.6;
+    pub const HEADER: f32 = 41.;
+    pub const LABEL: f32 = 12.;
+    pub const LABEL_LINE: f32 = 16.;
+    pub const JOIN_BUTTON: f32 = 40.;
+    pub const QR_PAD: f32 = 4.;
+    pub const QR_RADIUS: f32 = 9.;
+    pub const EMPTY_PAD: f32 = 56.;
+    pub const EMPTY_ICON: f32 = 40.;
+}

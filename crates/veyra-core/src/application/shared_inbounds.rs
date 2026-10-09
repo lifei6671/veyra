@@ -6,8 +6,15 @@ use std::net::{SocketAddr, TcpListener, UdpSocket};
 pub enum SharedServerCommand {
     Create(SharedServer),
     Update(SharedServer),
-    SetEnabled { id: String, enabled: bool },
-    Delete { id: String },
+    SetEnabled {
+        id: String,
+        enabled: bool,
+    },
+    Delete {
+        id: String,
+    },
+    /// 完整 ID 排序，拒绝遗漏、重复或外来 ID。
+    Reorder(Vec<String>),
 }
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -73,3 +80,5 @@ pub fn preflight_shared_port(
 #[cfg(test)]
 #[path = "shared_inbounds/tests.rs"]
 mod tests;
+
+pub mod sharing;
