@@ -1,3 +1,5 @@
+**P3-04 当前交付（2026-10-09）**：真实SQLite writer与有类型统计seam、独立测试/测量/只读Review交付；生产per-connection入口缺失，ACCEPTANCE/owner保留。隔离dev/p3-04-traffic-storage，不尝试Git写入，交Host受管checkpoint。DONE25/DOING1/ACCEPTANCE1/READY4/TODO30/DEFERRED7，不解锁P3-05/P3-06，P2-06 owner不变。见[交付](P3-04-acceptance.md)。下方历史不改写。
+
 **P3-01 最终收口（2026-10-09，组合分支）**：正式受管实例最小观测接线与真实隔离验收、最终独立Review通过；P3-01 DONE、Observation owner/预约释放；P2-06仍DOING与原owner保留。68卡DONE25/DOING1/READY5/TODO30/DEFERRED7，READY=P0-08/P2-05/P3-03/P3-04/P4-03，均未启动。仅dev/p2-06-observation-integration本地提交，不修改/合并主开发分支，不push。[完整结果](P2-06-observation-integration.md)。以下逐轮历史保留。
 
 **P2-06 / P3-01 观测接线交付（2026-10-09，待Host Review）**：正式 ManualRuntime 持唯一 ObservationService，Desktop/Helper Port 复用已鉴权 endpoint，Ready bind / 替换和Stop前停止；新增2个owner回归及锁定1.14.0真实四WS/三指标重连/换源/Stop隔离测试通过。Core串行413 PASS/2输入基线既有FAIL/2ignored，Desktop116 PASS/13ignored，helper70 PASS/4ignored、prototype47 PASS；三包check/clippy、build/fmt/diff通过。初始FAIL和基线target误复用的无效对照原样保留并解释。P2-06 DOING、P3-01 ACCEPTANCE、原owners与其它Task不变；本轮无提交，主树未动。[交付及边界](P2-06-observation-integration.md)。
@@ -170,7 +172,7 @@ P2-06 已阶段提交 `f2457e6a4e2fe0ac3c9186bc7d17323a70c4c0a8`，仍 DOING、�
 | P0 基线与可行性 | 7 / 9 | P0-01/03/04/05/06/07完成；P0-06保留未证明组合的明确范围决定，历史限制保留 | P0-09 未开始 |
 | P1 核心库与桌面壳 | 8 / 8 | 壳层/设置/基础组件视觉 PASS_WITH_TECHNICAL_DIFFERENCES；人工三轮、重启恢复、最终 Tray Quit 与清理 PASS；未实现业务页不计完成 | P1-07 DONE，组合 PASS |
 | P2 本机代理闭环 | 5 / 10 | P2-01/P2-02A/P2-02B/P2-03/P2-04 DONE；Host FINAL ACCEPTANCE PASS，Finding CLOSED | P2-09 未开始 |
-| P3 观测与主页面 | 1 / 8 | P3-01 DONE；P3-03/P3-04 READY，未启动 | P3-08 未开始 |
+| P3 观测与主页面 | 1 / 8 | P3-01 DONE；P3-03 READY，P3-04 ACCEPTANCE | P3-08 未开始 |
 | P4 完整配置能力 | 1 / 9 | P4-02 DONE，P4-03 READY；Chain 在 Routing 前交付 | P4-07 未开始 |
 | P5 DNS 与共享 | 3 / 7 | P5-04/P5-05/P5-06 DONE；Rules 在 DNS 后最终闭合 | P5-07 未开始 |
 | P6 macOS TUN 与生命周期 | 0 / 5 | 未开始，按各卡依赖推进 | P6-05 未开始 |
@@ -183,6 +185,7 @@ macOS：**25 / 61 完成**；READY 5、TODO 30、DOING 1、REVIEW 0、ACCEPTANCE
 
 | Task | owner / 泳道 | 写范围 / 公共契约 | 实际资源 / 下一动作 |
 | --- | --- | --- | --- |
+| P3-04 · ACCEPTANCE | Codex · Observation/Traffic Storage | 新storage/traffic、Core依赖/lock、本Task文档/evidence | 缺正式稳定连接记录入口，保留owner；[交付](P3-04-acceptance.md) |
 | P2-06 · DOING | Codex · Runtime/Platform | helper production/IPC、Core Runtime DTO、desktop runtime_service/platform、局部 Cargo 接线、任务文档 | 观测接线增量与真实普通用户受管实例验收通过，P3-01已DONE；root安装/降权、GUI、Helper多轮与重启恢复等原缺口继续后续验收，Runtime/DTO owner保留；见[P2-06接线记录](P2-06-observation-integration.md) |
 
 P5-05 owner/预约已释放，自有GUI已停止、临时请求拦截/视口已清理，原图/bundle/隔离测试数据保留；详见[P5-05验收](P5-05-acceptance.md)。
@@ -204,10 +207,9 @@ P1-07 已 DONE 并从 Active Tasks 移除，GPUI owner 与本卡资源预约释�
 | P0-08 · READY | P0-03、P0-05均DONE；后续下载消费P0-06显式client与范围限制 | 未领取；不启动 |
 | P2-05 · READY | P2-03、P0-06均DONE | 按依赖/写范围适时领取或并行；仍为 P2-08 前置，协调 Runtime/DTO owner；本轮未启动 |
 | P3-03 · READY | P3-01、P1-05均DONE | 未领取；不启动 |
-| P3-04 · READY | P3-01已DONE | 未领取；不启动 |
 | P4-03 · READY | P4-02、P2-04均DONE；全量DAG重算新增 | 未领取；Runtime/DTO写范围需协调P2-06 owner，不在本轮启动 |
 
-当前68卡：DONE25 / ACCEPTANCE0 / DOING1 / REVIEW0 / READY5 / TODO30 / BLOCKED0 / DEFERRED7；READY仅P0-08/P2-05/P3-03/P3-04/P4-03，均未领取/未启动；P2-04 DONE、Finding CLOSED保持。P2-06 DOING、Runtime/Platform及Runtime公共契约owner=Codex；P2-07/P6依赖未满足，不转READY。其它状态/显式依赖不变。
+当前68卡：DONE25 / ACCEPTANCE1 / DOING1 / REVIEW0 / READY4 / TODO30 / BLOCKED0 / DEFERRED7；READY仅P0-08/P2-05/P3-03/P4-03，均未领取/未启动；P2-04 DONE、Finding CLOSED保持。P2-06 DOING、Runtime/Platform及Runtime公共契约owner=Codex；P2-07/P6依赖未满足，不转READY。其它状态/显式依赖不变。
 
 **P2-03当前契约**：正式运行配置必须调用P2-02B `compile_product(ProductCompileRequest { state, runtime_intent, default_outbound, resources })`，显式消费 `project_selected_runtime()` 的 `runtime_intent` / `projected_default_target`（转换为 `OutboundId`）；不得继续使用 `application/runtime.rs` 现有ObservationOnly `compile(...)`作为正式运行配置。参见[P2-03任务卡](P2-local-proxy.md#obg-p2-03)。已实现并由Host最终确认功能与视觉“符合”；本轮仅文档收口，不启动下游。
 

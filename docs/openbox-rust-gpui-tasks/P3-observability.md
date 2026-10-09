@@ -70,6 +70,8 @@
 - [ ] 高基数样本的每日空间、写入/下钻成本有实测；容量清理报告缩短范围，写入时不丢 TopN 以外明细。
 - [ ] UTC、时区、跨日/夏令时、保留期和未提交统计损失边界有定向验证。
 
+**当前状态：ACCEPTANCE**。真实 SQLite writer/schema/定向测试与独立Review交付，缺稳定connection id/累计/维度生产记录入口。owner=Codex · Observation/Traffic Storage保留；P3-05/P3-06不解锁，P2-06无新增硬依赖。见[本次交付](P3-04-acceptance.md)。
+
 <a id="obg-p3-05"></a>
 ## OBG-P3-05 概览、站点测速与图表
 
