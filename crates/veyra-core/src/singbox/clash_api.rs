@@ -57,6 +57,9 @@ impl ManagedControllerEndpoint {
         self.valid
             .store(false, std::sync::atomic::Ordering::Release);
     }
+    pub(crate) fn is_valid(&self) -> bool {
+        self.valid.load(std::sync::atomic::Ordering::Acquire)
+    }
     pub fn address(&self) -> std::net::SocketAddr {
         self.address
     }
@@ -67,8 +70,10 @@ const MAX_STREAM_FRAME_BYTES: usize = 16 * 1024;
 const MAX_STREAM_MESSAGE_BYTES: usize = 16 * 1024;
 
 #[derive(Clone, Copy)]
-enum FixedStream {
+pub(crate) enum FixedStream {
     Traffic,
+    Memory,
+    Connections,
     Logs,
 }
 
@@ -76,6 +81,8 @@ impl FixedStream {
     const fn path(self) -> &'static str {
         match self {
             Self::Traffic => "/traffic",
+            Self::Memory => "/memory",
+            Self::Connections => "/connections",
             Self::Logs => "/logs",
         }
     }
@@ -429,7 +436,7 @@ impl<'secret> ClashApiClient<'secret> {
         }
     }
 
-    async fn open_fixed_stream(
+    pub(crate) async fn open_fixed_stream(
         &self,
         stream: FixedStream,
     ) -> Result<
@@ -451,9 +458,16 @@ impl<'secret> ClashApiClient<'secret> {
         request
             .headers_mut()
             .insert(WEBSOCKET_AUTHORIZATION, authorization);
+        // Connections 是全活动元数据快照，不能沿用小型指标/日志的 16 KiB 上限。
+        // 仍限制原始帧和消息总字节，防止异常 controller 响应无界分配。
+        let (frame_limit, message_limit) = if matches!(stream, FixedStream::Connections) {
+            (1024 * 1024, 1024 * 1024)
+        } else {
+            (MAX_STREAM_FRAME_BYTES, MAX_STREAM_MESSAGE_BYTES)
+        };
         let configuration = WebSocketConfig::default()
-            .max_frame_size(Some(MAX_STREAM_FRAME_BYTES))
-            .max_message_size(Some(MAX_STREAM_MESSAGE_BYTES));
+            .max_frame_size(Some(frame_limit))
+            .max_message_size(Some(message_limit));
         let handshake = timeout(
             REQUEST_TIMEOUT,
             connect_async_with_config(request, Some(configuration), false),
@@ -672,7 +686,7 @@ fn parse_traffic_message(message: &str) -> Result<ClashTrafficCounters, ClashApi
     })
 }
 
-fn parse_log_message(message: &str) -> Result<ClashLogSummary, ClashApiError> {
+pub(crate) fn parse_log_message(message: &str) -> Result<ClashLogSummary, ClashApiError> {
     let response: LogResponse =
         serde_json::from_str(message).map_err(|_| ClashApiError::InvalidResponse)?;
     let _ = response.payload;
@@ -990,10 +1004,7 @@ mod tests {
                     .await
                     .expect("bounded header read");
                     let request = std::str::from_utf8(&request).expect("ASCII headers");
-                    let path = match stream {
-                        FixedStream::Logs => "/logs",
-                        FixedStream::Traffic => "/traffic",
-                    };
+                    let path = stream.path();
                     assert!(
                         request.starts_with(&format!("GET {path} HTTP/1.1\r\n")),
                         "fixed request path"
@@ -1033,6 +1044,9 @@ mod tests {
                         client.read_traffic_once().await,
                         Err(ClashApiError::Unavailable)
                     ),
+                    FixedStream::Memory | FixedStream::Connections => {
+                        unreachable!("legacy test only covers traffic/logs")
+                    }
                 }
                 server.await.expect("fixture completes");
             });

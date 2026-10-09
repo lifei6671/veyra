@@ -1,4 +1,4 @@
-**当前收口更新（2026-10-09）**：P5-05 DONE，GPUI/Core owner释放；[交付/真实UI/独立Review](P5-05-acceptance.md)。68卡DONE24/DOING1/READY4/TODO32/DEFERRED7；READY=P0-08/P2-05/P3-01/P4-03，均未领取。P2-06原owner/DOING、P5-04/P5-06 DONE保持。
+**当前交付更新（2026-10-09）**：P3-01 ACCEPTANCE，Codex · Observation owner保留，正式Runtime生命周期接线待owner；[交付/真实WS/Review](P3-01-acceptance.md)。68卡DONE24/ACCEPTANCE1/DOING1/READY3/TODO32/DEFERRED7；READY=P0-08/P2-05/P4-03。P5-05 DONE、P2-06原owner/DOING不变。
 
 # OpenBox Rust / GPUI 执行任务总表
 
@@ -8,7 +8,7 @@
 
 ## 1 当前基线与范围
 
-- 新路线共 **61 个 macOS 任务、7 个 Windows 后续任务**。当前完成 **24项**：P0-01至07、P1全部8项、P2-01/P2-02A/P2-02B/P2-03/P2-04、P4-02/P5-04/P5-05/P5-06；P2为 **5/10**、macOS为 **24/61**。P2-04 Host FINAL ACCEPTANCE PASS，P2-04-PENDING-PERSISTENCE-001及前轮P1/P2 Finding CLOSED，Runtime/Platform及Runtime公共契约owner/本卡预约释放；见[Host最终收口](P2-local-proxy.md#p2-04-final-host-closeout)。P4-02 DONE（[本轮记录](P4-02-acceptance.md)）；P5-06 DONE（[最终验收](P5-06-acceptance.md)）；P2-06 DOING；READY=P0-08/P2-05/P3-01/P4-03，未领取/未启动；其余任务状态/依赖与历史PASS/FAIL/REWORK/NOT_RUN保持。
+- 新路线共 **61 个 macOS 任务、7 个 Windows 后续任务**。当前完成 **24项**：P0-01至07、P1全部8项、P2-01/P2-02A/P2-02B/P2-03/P2-04、P4-02/P5-04/P5-05/P5-06；P2为 **5/10**、macOS为 **24/61**。P2-04 Host FINAL ACCEPTANCE PASS，P2-04-PENDING-PERSISTENCE-001及前轮P1/P2 Finding CLOSED，Runtime/Platform及Runtime公共契约owner/本卡预约释放；见[Host最终收口](P2-local-proxy.md#p2-04-final-host-closeout)。P4-02 DONE（[本轮记录](P4-02-acceptance.md)）；P5-06 DONE（[最终验收](P5-06-acceptance.md)）；P2-06 DOING；READY=P0-08/P2-05/P4-03，未领取/未启动；其余任务状态/依赖与历史PASS/FAIL/REWORK/NOT_RUN保持。
 - 已有 React UI 和旧 Rust 模块是迁移输入，不直接算 GPUI 新路线完成。P0-02 的完成仅指本次明确要求的范围/规则调整，该历史文档动作不计功能实现；现 P1-01 已完成核心抽取，P1-02 已完成类型/原子快照与版本。
 - 当前已建立根 Cargo workspace、单一 Cargo.lock 与 `crates/veyra-core/`；旧入口接共享核心。实际构建/纯测试见 P1-01 记录，不表示原型或真实设备验收完成。
 - 旧 SDLC 状态与 UI 门禁已按用户要求退役；不恢复缺失文件，不补办历史 DCR/UI Contract。当前进度以本目录为准。
@@ -26,7 +26,7 @@
 | 后期平台实施 | P2-06 checkpoint 后仍 DOING，GUI/Native/Helper 多轮恢复后补；P2-07 SystemProxy、P6-01 TUN/P6-02 恢复与依赖平台任务后做 | 保留接管/恢复与安全归属；前期系统开关禁用，真实能力完成后才开放；不新增 P3–P5 前置 |
 | 最终组合验收 | P2-09/P3-08/P4-07/P5-07/P6-05 仅补未执行 Native 与跨模块完整组合；P7-04 统一 GUI E2E，P7-05 最终包，P7-03 保留包构建/升级职责 | 系统能力、正式安装/真实内核网络、Sleep/Wake 切网真机组合、完整跨页/主题/缩放、6 主页/9 分类/77 API/19 场景整套复验；不承接前期全部局部功能测试 |
 
-P0-08 保留 READY 作路线准备，Windows 7 卡仍 DEFERRED。P2-06 checkpoint `f2457e6a4e2fe0ac3c9186bc7d17323a70c4c0a8` 已存在，但不证明 DONE 或恢复全通过；不继续以复杂崩溃恢复阻塞其它已 READY 功能。仅 OS 授权/正式内核网络的具体验证与完整组合项可记 NOT_RUN/原因/承接卡；选择测速、实际观测/连接操作、主备/Compiler/应用接口、DNS 本地测试/资源下载/应用、分享 HTTP/token 失效/退出清理及真实保存/加载均在各业务卡实现并局部定向验证，不得一并延期。68 卡与 DONE24/DOING1/ACCEPTANCE0/READY4/TODO32/DEFERRED7，已按实际显式依赖重算。
+P0-08 保留 READY 作路线准备，Windows 7 卡仍 DEFERRED。P2-06 checkpoint `f2457e6a4e2fe0ac3c9186bc7d17323a70c4c0a8` 已存在，但不证明 DONE 或恢复全通过；不继续以复杂崩溃恢复阻塞其它已 READY 功能。仅 OS 授权/正式内核网络的具体验证与完整组合项可记 NOT_RUN/原因/承接卡；选择测速、实际观测/连接操作、主备/Compiler/应用接口、DNS 本地测试/资源下载/应用、分享 HTTP/token 失效/退出清理及真实保存/加载均在各业务卡实现并局部定向验证，不得一并延期。68 卡与 DONE24/DOING1/ACCEPTANCE1/READY3/TODO32/DEFERRED7，已按实际显式依赖重算。
 
 ## 2 如何执行与更新
 
@@ -102,7 +102,7 @@ Task：OBG-Px-xx
 
 ## 4 任务状态总表
 
-“估算”在P0出口回填人日及假设；当前macOS61项：**DONE24、ACCEPTANCE0、READY4、DOING1、REVIEW0、TODO32、BLOCKED0**；Windows7项DEFERRED，共68项。P2阶段5/10，macOS24/61。P2-03既有Host收口及Finding CLOSED保持；P2-04经Host独立FINAL ACCEPTANCE PASS，ACCEPTANCE→DONE，P2-04-PENDING-PERSISTENCE-001及前轮P1/P2 Finding均CLOSED，Runtime/Platform及Runtime公共契约owner/本卡预约释放，见[当前收口](P2-local-proxy.md#p2-04-final-host-closeout)。绑定Core source aggregate `987a01782c59d75c913f20a8133fd37df27638951f73cf3168cb2b35c3ff4fa8` 与Desktop harness身份；Host已核验Native/限定故障注入及原14条exit0，并独立新复跑Core371/Desktop85（11 ignored由显式Native父test覆盖）。自然HTTP/OS故障、SIGKILL、无控制线程竞态仍NOT_RUN；历史PASS/FAIL/REWORK保留，不扩大验收。P2-06 READY→DOING，Codex 保留 Runtime/Platform 与 Runtime DTO owner；仅本卡生产执行器/IPC/固定安装部分代码与OS隔离测试交付，已有双向关闭cache交接/半提交重试，已有停止前预检及远程选择fence/IPC/CAS/manifest，新增卸载Archive/新安装隔离闭环；已增加固定来源与OS退出观察后有限正常会话授权；cold-start/预先Stopped来源、未知slot/旧owner人工恢复及同UID信任边界仍OPEN；新增统一产品身份与helper Quit清理，[第八轮记录](P2-local-proxy.md#p2-06-round8)。P4-02 DONE；P5-06 DONE（独立HTTP架构、启动收敛、29唯一定向测试、真实GUI及150%浅色逐态验收完成；保留用户接受技术差异）；READY为P0-08/P2-05/P3-01/P4-03，未领取/启动；原显式依赖不变，其它任务状态不变。原P1-04/P2-02/P4-05父项不重复计数。
+“估算”在P0出口回填人日及假设；当前macOS61项：**DONE24、ACCEPTANCE1、READY3、DOING1、REVIEW0、TODO32、BLOCKED0**；Windows7项DEFERRED，共68项。P2阶段5/10，macOS24/61。P2-03既有Host收口及Finding CLOSED保持；P2-04经Host独立FINAL ACCEPTANCE PASS，ACCEPTANCE→DONE，P2-04-PENDING-PERSISTENCE-001及前轮P1/P2 Finding均CLOSED，Runtime/Platform及Runtime公共契约owner/本卡预约释放，见[当前收口](P2-local-proxy.md#p2-04-final-host-closeout)。绑定Core source aggregate `987a01782c59d75c913f20a8133fd37df27638951f73cf3168cb2b35c3ff4fa8` 与Desktop harness身份；Host已核验Native/限定故障注入及原14条exit0，并独立新复跑Core371/Desktop85（11 ignored由显式Native父test覆盖）。自然HTTP/OS故障、SIGKILL、无控制线程竞态仍NOT_RUN；历史PASS/FAIL/REWORK保留，不扩大验收。P2-06 READY→DOING，Codex 保留 Runtime/Platform 与 Runtime DTO owner；仅本卡生产执行器/IPC/固定安装部分代码与OS隔离测试交付，已有双向关闭cache交接/半提交重试，已有停止前预检及远程选择fence/IPC/CAS/manifest，新增卸载Archive/新安装隔离闭环；已增加固定来源与OS退出观察后有限正常会话授权；cold-start/预先Stopped来源、未知slot/旧owner人工恢复及同UID信任边界仍OPEN；新增统一产品身份与helper Quit清理，[第八轮记录](P2-local-proxy.md#p2-06-round8)。P4-02 DONE；P5-06 DONE（独立HTTP架构、启动收敛、29唯一定向测试、真实GUI及150%浅色逐态验收完成；保留用户接受技术差异）；READY为P0-08/P2-05/P4-03，未领取/启动；原显式依赖不变，其它任务状态不变。原P1-04/P2-02/P4-05父项不重复计数。
 
 ### P0 基线与可行性（9 项）
 
@@ -150,7 +150,7 @@ Task：OBG-Px-xx
 
 | 任务 | 显式依赖 | 状态 | 负责人 | 估算 | 证据 |
 | --- | --- | --- | --- | --- | --- |
-| [OBG-P3-01 观测与事件](P3-observability.md#obg-p3-01) | P2-03、P0-07 | READY | — | — | — |
+| [OBG-P3-01 观测与事件](P3-observability.md#obg-p3-01) | P2-03、P0-07 | ACCEPTANCE | Codex · Observation | 正式生命周期接线待owner | [交付](P3-01-acceptance.md) |
 | [OBG-P3-02 连接](P3-observability.md#obg-p3-02) | P3-01、P2-02A、P2-05、P2-08、P1-04B | TODO | — | — | — |
 | [OBG-P3-03 日志](P3-observability.md#obg-p3-03) | P3-01、P1-05 | TODO | — | — | — |
 | [OBG-P3-04 统计存储](P3-observability.md#obg-p3-04) | P3-01 | TODO | — | — | — |

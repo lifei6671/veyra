@@ -1231,3 +1231,6 @@ mod tests {
         assert!(!stopped.managed_proxy_available);
     }
 }
+
+/// P3-01 持续受管 controller 采集；与旧 IPC 摘要独立，不接管 Runtime 事实。
+pub mod controller;

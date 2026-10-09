@@ -1,3 +1,9 @@
+**P3-01-HOST-001（2026-10-09，当前）**：已修collector无事件订阅时不重连；snapshot/observed只读消费同样持续采集。新增生产四WS/零subscribe/断线重连/stop释放loopback测试1 PASS；observability24 PASS（含新项）、controller16 PASS、Core Clippy/fmt/build/diff PASS。仅本卡Observation写范围；P3-01仍ACCEPTANCE/owner保留、P2-06 owner不改。未再尝试Git写入，待Host checkpoint。[修复证据](evidence/p3-01/host-001/README.md)。
+
+**P3-01 交付（2026-10-09，当前）**：DOING→ACCEPTANCE；唯一 owner=Codex · Observation 保留，仅待正式 Runtime owner 生命周期接线。隔离 `.worktrees/p3-01-observation` / `dev/p3-01-observation`，基线 ed174e6。生产 ClashApiClient/ObservationService 四条 authenticated WS、本地动态端口集成 PASS；23 观测/16 controller/11 P2-03 回归通过，Core all-targets Clippy/fmt/build PASS；domain 45 PASS/1既有 FAIL、Tauri Windows资源 FAIL保留。三项独立review Finding修复/复核关闭。Runtime公共DTO、Cargo workspace/lock及其它DONE代码不改；不做GUI/权限/用户网络操作。[交付与最小接线](P3-01-acceptance.md)。本地commit未生成：Git index.lock写权限被沙箱拒绝，停止Git写入，待Host提交；HEAD仍为ed174e6。
+
+**用户最新决定（2026-10-09）**：P5-05 拖动人工验收可用，不继续补中途动态截图或重复优化；旧 NOT_CAPTURED 原样保留，不倒填 PASS，未来实际体验问题另立任务。P5-05 DONE 不变。
+
 **P5-05 动态视觉增量（2026-10-09，当前）**：用户追加完整原卡、松手不晃动、正常排序静默要求，已修正；最终signed SHA256 `1250c9df1495541c3b136384fa2155d2969f9bef9180554fbe0b6e83c2002e4c`。真实最终held-0072–0079长卡上拖确认完整卡/抓点/等高占位/高度稳定，0080松手恢复且无成功toast；18唯一定向PASS/1ignored，Clippy/fmt/build/diff通过，独立Review无剩余代码Finding。旧错误/根偏移REWORK和NOT_CAPTURED保留。本次补验仍ACCEPTANCE：最终普通下拖/取消held原帧及四条同数据OpenBox中途对照未捕获，不能称整体PASS。P5-05既有DONE与启动Finding CLOSED不改；源码修复预约释放，owner=Codex · Desktop局部证据，保留本次文档/evidence范围；P2-06仍DOING/原owner。DONE24/DOING1/READY4/TODO32/DEFERRED7、READY不变，不领取下游。本地增量commit/合并主树复验、不push，见[本次记录](P5-05-drag-visual.md)。
 
 **P5-05 拖放反馈追加（2026-10-09）**：用户新增报告松手页面晃动，并要求正常排序无toast。预约范围仅追加共享网络页排序保存中的暂存视觉顺序、加载显示和成功通知条件；失败继续回到生产权威快照并提示，Store/Runtime不改。真实帧已捕获但仍绑定先前候选SHA，新增主题继承/反馈修正后需最终构建补验；原版同态及指针证据仍未闭合。
@@ -171,6 +177,7 @@ macOS：**24 / 61 完成**；READY 4、TODO 32、DOING 1、REVIEW 0、ACCEPTANCE
 
 | Task | owner / 泳道 | 写范围 / 公共契约 | 实际资源 / 下一动作 |
 | --- | --- | --- | --- |
+| P3-01 · ACCEPTANCE | Codex · Observation | observability/controller 及其 tests、Clash客户端四流读取、本卡文档 | 四流受控loopback已验；等待Runtime owner传现有InstanceId/endpoint到bind并在stop/replace调用stop；不加P2-06硬依赖 |
 | P2-06 · DOING | Codex · Runtime/Platform | helper production/IPC、Core Runtime DTO、desktop runtime_service/platform、局部 Cargo 接线、任务文档 | checkpoint f2457e6 已提交、仍 DOING；本轮无资源操作；既有实现/限制按下方历史保留，GUI/Native/Helper 多轮及重启恢复后期补齐；当前先协调 P4-02/P5-06 UI 及其它 READY 写范围，不继续以复杂恢复阻塞其它功能，现有安全拒绝保持 |
 
 P5-05 owner/预约已释放，自有GUI已停止、临时请求拦截/视口已清理，原图/bundle/隔离测试数据保留；详见[P5-05验收](P5-05-acceptance.md)。
@@ -191,10 +198,9 @@ P1-07 已 DONE 并从 Active Tasks 移除，GPUI owner 与本卡资源预约释�
 | --- | --- | --- |
 | P0-08 · READY | P0-03、P0-05均DONE；后续下载消费P0-06显式client与范围限制 | 未领取；不启动 |
 | P2-05 · READY | P2-03、P0-06均DONE | 按依赖/写范围适时领取或并行；仍为 P2-08 前置，协调 Runtime/DTO owner；本轮未启动 |
-| P3-01 · READY | P2-03、P0-07均DONE | 未领取；不启动 |
 | P4-03 · READY | P4-02、P2-04均DONE；全量DAG重算新增 | 未领取；Runtime/DTO写范围需协调P2-06 owner，不在本轮启动 |
 
-当前68卡：DONE24 / ACCEPTANCE0 / DOING1 / REVIEW0 / READY4 / TODO32 / BLOCKED0 / DEFERRED7；READY仅P0-08/P2-05/P3-01/P4-03，均未领取/未启动；P2-04 DONE、Finding CLOSED保持。P2-06 DOING、Runtime/Platform及Runtime公共契约owner=Codex；P2-07/P6依赖未满足，不转READY。其它状态/显式依赖不变。
+当前68卡：DONE24 / ACCEPTANCE1 / DOING1 / REVIEW0 / READY3 / TODO32 / BLOCKED0 / DEFERRED7；READY仅P0-08/P2-05/P4-03，均未领取/未启动；P2-04 DONE、Finding CLOSED保持。P2-06 DOING、Runtime/Platform及Runtime公共契约owner=Codex；P2-07/P6依赖未满足，不转READY。其它状态/显式依赖不变。
 
 **P2-03当前契约**：正式运行配置必须调用P2-02B `compile_product(ProductCompileRequest { state, runtime_intent, default_outbound, resources })`，显式消费 `project_selected_runtime()` 的 `runtime_intent` / `projected_default_target`（转换为 `OutboundId`）；不得继续使用 `application/runtime.rs` 现有ObservationOnly `compile(...)`作为正式运行配置。参见[P2-03任务卡](P2-local-proxy.md#obg-p2-03)。已实现并由Host最终确认功能与视觉“符合”；本轮仅文档收口，不启动下游。
 
