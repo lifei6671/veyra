@@ -120,6 +120,14 @@ impl StateBridge {
     /// 页面已经接收的权威快照也能完成首次读取；作废旧全局请求后仍须进入 Ready。
     /// 返回首次 Runtime 观测请求，避免启动时先导航导致观测永远没有发出。
     pub fn accept_page_snapshot(&mut self, state: Box<AppState>) -> Option<u64> {
+        // 页面异步读取可能晚于另一页保存或全局刷新；沿用既有 epoch/双版本事实拒旧。
+        if self.snapshot.as_ref().is_some_and(|current| {
+            state.state_epoch != current.state_epoch
+                || state.config_revision < current.config_revision
+                || state.selection_revision < current.selection_revision
+        }) {
+            return None;
+        }
         self.leave_page();
         self.snapshot = Some(state);
         self.load = LoadState::Ready;
@@ -310,6 +318,78 @@ mod tests {
         assert!(
             b.accept_page_snapshot(Box::new(AppState::empty()))
                 .is_none()
+        );
+        assert!(matches!(b.load, LoadState::Ready));
+        assert_eq!(b.runtime_request, 1);
+    }
+    /// 共享网络及 SharesUpdated 共用此入口：页面抢先必须完成 Busy 启动且只观测一次。
+    #[test]
+    fn shared_network_startup_page_first_ready_and_one_refresh() {
+        let mut b = StateBridge::default();
+        let startup = b.begin();
+        assert!(matches!(b.load, LoadState::Busy));
+        b.leave_page(); // 用户导航到设置
+        let navigation = b.begin();
+        assert!(matches!(b.load, LoadState::Busy));
+        let page = AppState::empty();
+        let mut refreshes = usize::from(b.accept_page_snapshot(Box::new(page.clone())).is_some());
+        for request in [startup, navigation] {
+            let disposition = b.receive(event(request));
+            assert_eq!(disposition, Disposition::StaleGeneration);
+            refreshes += usize::from(b.begin_initial_runtime_refresh(disposition).is_some());
+        }
+        refreshes += usize::from(b.accept_page_snapshot(Box::new(page.clone())).is_some());
+        assert_eq!(refreshes, 1);
+        assert_eq!(b.runtime_request, 1);
+        assert_eq!(b.snapshot.as_deref(), Some(&page));
+        assert!(matches!(b.load, LoadState::Ready));
+    }
+    /// 正常全局先到、页面随后和重复刷新不能重复发起首次 Runtime 观测。
+    #[test]
+    fn shared_network_global_first_page_and_repeated_refresh() {
+        let mut b = StateBridge::default();
+        let page = AppState::empty();
+        let request = b.begin();
+        let disposition = b.receive(AppEvent::Snapshot {
+            request,
+            result: Ok(Box::new(page.clone())),
+        });
+        assert_eq!(b.begin_initial_runtime_refresh(disposition), Some(1));
+        assert!(b.accept_page_snapshot(Box::new(page.clone())).is_none());
+        for _ in 0..3 {
+            let request = b.begin();
+            let disposition = b.receive(AppEvent::Snapshot {
+                request,
+                result: Ok(Box::new(page.clone())),
+            });
+            assert!(b.begin_initial_runtime_refresh(disposition).is_none());
+        }
+        assert_eq!(b.runtime_request, 1);
+        assert!(matches!(b.load, LoadState::Ready));
+    }
+    /// 保护另一页保存、选择更新及替换 epoch 后的权威快照，旧页面不能取消新读取。
+    #[test]
+    fn late_shared_page_cannot_replace_new_state_or_cancel_refresh() {
+        let mut b = StateBridge::default();
+        let mut current = AppState::empty();
+        current.config_revision = 4;
+        current.selection_revision = 3;
+        assert_eq!(b.accept_page_snapshot(Box::new(current.clone())), Some(1));
+        let pending = b.begin();
+        let mut stale = vec![AppState::empty(), current.clone(), current.clone()];
+        stale[1].config_revision -= 1;
+        stale[2].selection_revision -= 1;
+        for old in stale {
+            assert!(b.accept_page_snapshot(Box::new(old)).is_none());
+            assert_eq!(b.snapshot.as_deref(), Some(&current));
+            assert!(matches!(b.load, LoadState::Busy));
+        }
+        assert_eq!(
+            b.receive(AppEvent::Snapshot {
+                request: pending,
+                result: Ok(Box::new(current))
+            }),
+            Disposition::Accepted
         );
         assert!(matches!(b.load, LoadState::Ready));
         assert_eq!(b.runtime_request, 1);

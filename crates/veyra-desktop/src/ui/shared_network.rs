@@ -19,7 +19,7 @@ use gpui_kit::{
     prelude::*,
     *,
 };
-use std::sync::Arc;
+use std::{cell::RefCell, rc::Rc, sync::Arc};
 use veyra_core::{
     application::shared_inbounds::{
         SharedServerCommand,
@@ -34,14 +34,31 @@ struct ServerDrag {
     index: usize,
     name: String,
     version: ConfigVersion,
+    height: Pixels,
 }
 impl Render for ServerDrag {
     fn render(&mut self, _: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
         div()
-            .p(px(t::PAD))
-            .rounded(px(t::RADIUS))
+            .w(px(st::DRAG_WIDTH))
+            .h(self.height)
+            .flex()
+            .items_center()
+            .gap(px(t::GAP))
+            .p(px(st::CARD_PAD))
+            .rounded(px(st::CARD_RADIUS))
+            .border_1()
+            .border_color(cx.theme().primary)
             .bg(cx.theme().popover)
-            .child(self.name.clone())
+            .shadow_lg()
+            .child(icon("Bars3", t::ICON_SMALL))
+            .child(
+                div()
+                    .flex_1()
+                    .min_w_0()
+                    .overflow_hidden()
+                    .text_ellipsis()
+                    .child(self.name.clone()),
+            )
     }
 }
 // 名称、连接地址、端口、UUID、用户名、密码、混淆密码、只读分享链接。
@@ -70,6 +87,9 @@ pub struct SharedNetworkView {
     sharing: Option<SharedServer>,
     scroll: ScrollHandle,
     modal_scroll: ScrollHandle,
+    // 仅拖动中的视觉位置；松手前不改变已保存服务器顺序。
+    drag: Option<(usize, usize)>,
+    card_bounds: Rc<RefCell<Vec<Bounds<Pixels>>>>,
 }
 impl SharedNetworkView {
     pub fn new(
@@ -153,10 +173,19 @@ impl SharedNetworkView {
             sharing: None,
             scroll: ScrollHandle::new(),
             modal_scroll: ScrollHandle::new(),
+            drag: None,
+            card_bounds: Rc::default(),
         }
     }
     pub fn project(&mut self, state: &AppState, cx: &mut Context<Self>) {
         if !self.busy {
+            if self
+                .state
+                .as_ref()
+                .is_some_and(|s| s.config_version() != state.config_version())
+            {
+                self.drag = None;
+            }
             self.state = Some(state.clone());
             cx.notify();
         }
@@ -780,6 +809,9 @@ impl SharedNetworkView {
 }
 impl Render for SharedNetworkView {
     fn render(&mut self, window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
+        if !cx.has_active_drag() {
+            self.drag = None; // 放到列表外或取消后自动恢复原顺序。
+        }
         let mut body = div()
             .id("server-list")
             .track_scroll(&self.scroll)
@@ -819,7 +851,98 @@ impl Render for SharedNetworkView {
                         ),
                 );
             }
-            for (index, server) in state.app_config.shared_servers.iter().enumerate() {
+            let sizes = self.card_bounds.clone();
+            let record_sizes = self.drag.is_none();
+            let mut cards = div()
+                .on_children_prepainted(move |bounds, _, _| {
+                    if record_sizes {
+                        *sizes.borrow_mut() = bounds;
+                    }
+                })
+                .id("server-drag-list")
+                .flex()
+                .flex_col()
+                .gap(px(t::GAP))
+                .on_drag_move(
+                    cx.listener(|this, event: &DragMoveEvent<ServerDrag>, _, cx| {
+                        let drag = event.drag(cx);
+                        if this.busy
+                            || this
+                                .state
+                                .as_ref()
+                                .is_none_or(|s| s.config_version() != drag.version)
+                        {
+                            return;
+                        }
+                        let heights = this
+                            .card_bounds
+                            .borrow()
+                            .iter()
+                            .map(|s| f32::from(s.size.height))
+                            .collect::<Vec<_>>();
+                        let slot = snapped_slot(
+                            f32::from(event.event.position.y - event.bounds.origin.y),
+                            &heights,
+                        );
+                        if this.drag != Some((drag.index, slot)) {
+                            #[cfg(debug_assertions)]
+                            eprintln!("shared drag snap source={} slot={slot}", drag.index);
+                            this.drag = Some((drag.index, slot));
+                            cx.notify();
+                        }
+                    }),
+                )
+                .on_drop(cx.listener(|this, drag: &ServerDrag, _, cx| {
+                    #[cfg(debug_assertions)]
+                    eprintln!(
+                        "shared drag drop source={} target={:?}",
+                        drag.index, this.drag
+                    );
+                    if let Some((source, target)) = this.drag.take()
+                        && source == drag.index
+                        && source != target
+                        && let Some(state) = &this.state
+                        && !this.busy
+                        && state.config_version() == drag.version
+                        && source < state.app_config.shared_servers.len()
+                    {
+                        let ids =
+                            preview_order(state.app_config.shared_servers.len(), source, target)
+                                .into_iter()
+                                .map(|i| state.app_config.shared_servers[i].id.clone())
+                                .collect();
+                        this.send(
+                            Command::Edit(Box::new(SharedServerCommand::Reorder(ids))),
+                            cx,
+                        );
+                    }
+                    cx.notify();
+                }));
+            let order = self.drag.map_or_else(
+                || (0..state.app_config.shared_servers.len()).collect(),
+                |(source, target)| {
+                    preview_order(state.app_config.shared_servers.len(), source, target)
+                },
+            );
+            for index in order {
+                let server = &state.app_config.shared_servers[index];
+                if self.drag.is_some_and(|(source, _)| source == index) {
+                    cards = cards.child(
+                        div()
+                            .id("server-drag-placeholder")
+                            .h(self
+                                .card_bounds
+                                .borrow()
+                                .get(index)
+                                .map_or(px(st::CARD_HEIGHT), |s| s.size.height))
+                            .flex_shrink_0()
+                            .rounded(px(st::CARD_RADIUS))
+                            .border_2()
+                            .border_color(cx.theme().primary.opacity(0.6))
+                            .bg(cx.theme().primary.opacity(0.1)),
+                    );
+                    continue;
+                }
                 let editing = server.clone();
                 let id = server.id.clone();
                 let enabled = server.enabled;
@@ -828,7 +951,7 @@ impl Render for SharedNetworkView {
                 let deleting = server.clone();
                 let version = state.config_version();
                 let protocol = Draft::from_server(server).protocol;
-                body = body.child(
+                cards = cards.child(
                     div()
                         .id(("server-card", index))
                         .flex()
@@ -840,35 +963,53 @@ impl Render for SharedNetworkView {
                         .border_1()
                         .border_color(cx.theme().foreground.opacity(0.1))
                         .opacity(if enabled { 1. } else { 0.5 })
-                        .on_drag(
-                            ServerDrag {
-                                index,
-                                name: server.name.clone(),
-                                version: version.clone(),
-                            },
-                            |drag, _, _, cx| cx.new(|_| drag.clone()),
+                        .child(
+                            div()
+                                .id(("server-drag-handle", index))
+                                .cursor(CursorStyle::OpenHand)
+                                .size(px(t::ICON_SMALL))
+                                .flex_shrink_0()
+                                .child(
+                                    icon("Bars3", t::ICON_SMALL)
+                                        .text_color(cx.theme().muted_foreground),
+                                )
+                                .when(!self.busy, |d| {
+                                    let view = cx.entity().downgrade();
+                                    d.on_drag(
+                                        ServerDrag {
+                                            index,
+                                            name: server.name.clone(),
+                                            version,
+                                            height: self
+                                                .card_bounds
+                                                .borrow()
+                                                .get(index)
+                                                .map_or(px(st::CARD_HEIGHT), |s| s.size.height),
+                                        },
+                                        move |drag, _, window, cx| {
+                                            #[cfg(debug_assertions)]
+                                            eprintln!("shared drag begin source={}", drag.index);
+                                            let _ = view.update(cx, |this, cx| {
+                                                // 首次越过拖动阈值就吸附；快速拖放可能只产生这一次移动。
+                                                let bounds = this.card_bounds.borrow();
+                                                let heights = bounds
+                                                    .iter()
+                                                    .map(|b| f32::from(b.size.height))
+                                                    .collect::<Vec<_>>();
+                                                let top =
+                                                    bounds.first().map_or(px(0.), |b| b.origin.y);
+                                                let slot = snapped_slot(
+                                                    f32::from(window.mouse_position().y - top),
+                                                    &heights,
+                                                );
+                                                this.drag = Some((drag.index, slot));
+                                                cx.notify();
+                                            });
+                                            cx.new(|_| drag.clone())
+                                        },
+                                    )
+                                }),
                         )
-                        .on_drop(cx.listener(move |this, drag: &ServerDrag, _, cx| {
-                            if let Some(state) = &this.state
-                                && !this.busy
-                                && state.config_version() == drag.version
-                                && drag.index < state.app_config.shared_servers.len()
-                            {
-                                let mut ids = state
-                                    .app_config
-                                    .shared_servers
-                                    .iter()
-                                    .map(|s| s.id.clone())
-                                    .collect::<Vec<_>>();
-                                let id = ids.remove(drag.index);
-                                ids.insert(index, id);
-                                this.send(
-                                    Command::Edit(Box::new(SharedServerCommand::Reorder(ids))),
-                                    cx,
-                                );
-                            }
-                        }))
-                        .child(icon("Bars3", t::ICON_SMALL).text_color(cx.theme().muted_foreground))
                         .child(
                             div()
                                 .flex_1()
@@ -970,6 +1111,7 @@ impl Render for SharedNetworkView {
                         ),
                 );
             }
+            body = body.child(cards);
         }
         let mut layout = div().size_full().min_h_0().child(body);
         if self.draft.is_some() {
@@ -1051,5 +1193,47 @@ impl Render for SharedNetworkView {
                 layout.child(self.dialog("扫码连接", st::CODE_WIDTH, content, None, window, cx));
         }
         layout
+    }
+}
+
+// 用真实排版高度吸附到最近行；换行卡片拖动时仍保持完整占位与列表总高度。
+fn snapped_slot(y: f32, heights: &[f32]) -> usize {
+    let mut top = 0.;
+    let mut closest = (0, f32::INFINITY);
+    for (index, height) in heights.iter().enumerate() {
+        let distance = (y - top - height / 2.).abs();
+        if distance <= closest.1 {
+            closest = (index, distance);
+        }
+        top += height + t::GAP;
+    }
+    closest.0
+}
+fn preview_order(len: usize, source: usize, target: usize) -> Vec<usize> {
+    let mut order = (0..len).collect::<Vec<_>>();
+    if source < len && target < len {
+        order.remove(source);
+        order.insert(target, source);
+    }
+    order
+}
+#[cfg(test)]
+mod drag_tests {
+    use super::{preview_order, snapped_slot};
+    /// 占位与提交使用同一排列；包括换行高度，吸附和松手不会丢失 ID。
+    #[test]
+    fn shared_drag_placeholder_snap_and_drop_order() {
+        let heights = [70.; 4];
+        assert_eq!(snapped_slot(-20., &heights), 0);
+        assert_eq!(snapped_slot(73., &heights), 0);
+        assert_eq!(snapped_slot(74., &heights), 1);
+        assert_eq!(snapped_slot(500., &heights), 3);
+        let wrapped = [70., 118., 70., 94.];
+        assert_eq!(snapped_slot(187., &wrapped), 1);
+        assert_eq!(snapped_slot(189., &wrapped), 2);
+        assert_eq!(preview_order(4, 3, 0), vec![3, 0, 1, 2]);
+        assert_eq!(preview_order(4, 0, 3), vec![1, 2, 3, 0]);
+        assert_eq!(preview_order(4, 2, 2), vec![0, 1, 2, 3]);
+        assert_eq!(preview_order(4, 8, 0), vec![0, 1, 2, 3]);
     }
 }

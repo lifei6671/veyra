@@ -98,9 +98,19 @@ impl AppView {
             &subscriptions,
             |this, _, event: &crate::ui::subscriptions::SharesUpdated, cx| {
                 // 分享保存也发布权威快照，避免 Runtime 只读投影把旧配置版本送回页面。
-                this.bridge.leave_page();
-                this.behavior.rebase(&event.0);
-                this.bridge.snapshot = Some(event.0.clone());
+                // 页面快照与全局读取走同一收敛入口；首次观测只由 bridge 发放一次。
+                if let Some(request) = this.bridge.accept_page_snapshot(event.0.clone()) {
+                    this.services.manual_runtime.submit(
+                        request,
+                        veyra_core::application::manual_runtime::RuntimeCommand::Refresh,
+                    );
+                    eprintln!("page snapshot Ready; initial Runtime Refresh request={request}");
+                }
+                if let Some(state) = &this.bridge.snapshot {
+                    this.behavior.rebase(state);
+                    this.subscriptions
+                        .update(cx, |view, cx| view.project(state, cx));
+                }
                 cx.notify();
             },
         );
@@ -113,9 +123,19 @@ impl AppView {
         let shared_network_subscription = cx.subscribe(
             &shared_network,
             |this, _, event: &crate::ui::shared_network::Updated, cx| {
-                this.bridge.leave_page();
-                this.behavior.rebase(&event.0);
-                this.bridge.snapshot = Some(event.0.clone());
+                // 页面快照与全局读取走同一收敛入口；首次观测只由 bridge 发放一次。
+                if let Some(request) = this.bridge.accept_page_snapshot(event.0.clone()) {
+                    this.services.manual_runtime.submit(
+                        request,
+                        veyra_core::application::manual_runtime::RuntimeCommand::Refresh,
+                    );
+                    eprintln!("page snapshot Ready; initial Runtime Refresh request={request}");
+                }
+                if let Some(state) = &this.bridge.snapshot {
+                    this.behavior.rebase(state);
+                    this.shared_network
+                        .update(cx, |view, cx| view.project(state, cx));
+                }
                 cx.notify();
             },
         );
@@ -608,12 +628,14 @@ impl AppView {
                     .subscriptions
                     .update(cx, |view, cx| view.complete(&request, result, window, cx));
                 if let Some(state) = state {
-                    self.behavior.rebase(&state);
                     if let Some(request) = self.bridge.accept_page_snapshot(state) {
                         self.services.manual_runtime.submit(
                             request,
                             veyra_core::application::manual_runtime::RuntimeCommand::Refresh,
                         );
+                    }
+                    if let Some(state) = &self.bridge.snapshot {
+                        self.behavior.rebase(state);
                     }
                     self.project_behavior(window, cx);
                 }
@@ -778,6 +800,7 @@ impl AppView {
                         request,
                         veyra_core::application::manual_runtime::RuntimeCommand::Refresh,
                     );
+                    eprintln!("global snapshot Ready; initial Runtime Refresh request={request}");
                 }
                 if let Some(state) = &self.bridge.snapshot {
                     self.visual.restore(&state.app_config.visual);
@@ -829,6 +852,16 @@ impl AppView {
     }
     pub fn refresh(&mut self, cx: &mut Context<Self>) {
         let request = self.bridge.begin();
+        // 仅 debug 实机证据延迟全局回调投递（仍是真实 Store 读取），复用既有 evidence_refresh。
+        #[cfg(debug_assertions)]
+        if self.bridge.snapshot.is_none()
+            && let Ok(delay) = std::env::var("VEYRA_EVIDENCE_STARTUP_DELAY_MS")
+            && let Ok(delay) = delay.parse::<u64>()
+        {
+            self.services.evidence_refresh(request, delay);
+            cx.notify();
+            return;
+        }
         self.services.refresh(request);
         cx.notify();
     }

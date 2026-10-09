@@ -181,7 +181,7 @@ Task：OBG-Px-xx
 | [OBG-P5-02 DNS 过滤](P5-dns-and-sharing.md#obg-p5-02) | P5-01、P2-05 | TODO | — | — | — |
 | [OBG-P5-03 DNS 观测/热更边界](P5-dns-and-sharing.md#obg-p5-03) | P5-02、P3-01、P4-05C | TODO | — | — | — |
 | [OBG-P5-04 五种共享入站](P5-dns-and-sharing.md#obg-p5-04) | P2-02B、P2-03 | DONE | —（本卡 owner 已释放） | — | [五协议Core/Store/Compiler及真实加载；独立Review](P5-04-acceptance.md) |
-| [OBG-P5-05 共享 UI/URI](P5-dns-and-sharing.md#obg-p5-05) | P5-04、P1-04A、P1-05 | DONE | 已释放 | — | [116定向PASS/真实UI/URI/QR/Review](P5-05-acceptance.md) |
+| [OBG-P5-05 共享 UI/URI](P5-dns-and-sharing.md#obg-p5-05) | P5-04、P1-04A、P1-05 | DONE | 已释放 | — | [116定向PASS/真实UI/URI/QR/Review](P5-05-acceptance.md)；[启动Finding关闭/拖动证据](P5-05-startup-fix.md) |
 | [OBG-P5-06 订阅分享](P5-dns-and-sharing.md#obg-p5-06) | P2-01、P1-05、P1-04A | DONE | — | — | [独立HTTP/启动收敛/逐态验收与独立复核](P5-06-acceptance.md) |
 | [OBG-P5-07 DNS/共享验收](P5-dns-and-sharing.md#obg-p5-07) | P5-01、P5-02、P5-03、P5-04、P5-05、P5-06、P4-07 | TODO | — | — | — |
 

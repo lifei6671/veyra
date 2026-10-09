@@ -403,6 +403,9 @@ pub mod shared_network {
     pub const CODE_WIDTH: f32 = 448.;
     pub const EDIT_QR: f32 = 176.;
     pub const CODE_QR: f32 = 224.;
+    // 用户本轮要求：拖动卡片预览、原位占位和按行吸附；静止布局不变。
+    pub const CARD_HEIGHT: f32 = 70.;
+    pub const DRAG_WIDTH: f32 = 360.;
     pub const CARD_PAD: f32 = 12.;
     pub const CARD_RADIUS: f32 = 16.;
     pub const MODAL_RADIUS: f32 = 13.6;
