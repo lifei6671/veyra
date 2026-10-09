@@ -167,6 +167,20 @@ impl SnapshotService {
             effect: ApplyEffect::SavedOnly,
         })
     }
+    /// 分享配置使用同一个 CAS/原子快照，监听与连接从不进入持久事实。
+    pub fn save_shares(
+        &self,
+        expected: ConfigVersion,
+        shares: Vec<crate::domain::SubscriptionShare>,
+    ) -> Result<AppState, AppError> {
+        let _guard = self.lock()?;
+        let mut next = self.load_or_initialize()?;
+        next.config_version().0.require(&expected.0)?;
+        next.app_config.subscription_shares = shares;
+        next.validate()
+            .map_err(|_| AppError::validation(FieldPath::Snapshot))?;
+        self.store.commit(&next).map_err(Into::into)
+    }
     /// Restores business facts only. Imported concurrency tokens are discarded; both counters
     /// start at zero in the new epoch. A mismatch on either current counter rejects replacement.
     pub fn replace(

@@ -25,6 +25,7 @@ pub struct AppView {
     pub groups: Entity<crate::ui::groups::GroupsView>,
     _groups_subscription: Subscription,
     _subscriptions: Subscription,
+    _shares_updates: Subscription,
     pub backend: Entity<crate::ui::backend::BackendView>,
     _runtime_subscription: Subscription,
     _profile_subscription: Subscription,
@@ -80,6 +81,7 @@ impl AppView {
         );
         let subscriptions =
             cx.new(|cx| crate::ui::subscriptions::SubscriptionsView::new(window, cx));
+        subscriptions.update(cx, |view, _| view.attach_shares(services.clone()));
         pages.get(Route::Settings).update(cx, |page, _| {
             page.subscriptions = Some(subscriptions.clone())
         });
@@ -88,6 +90,16 @@ impl AppView {
             |this, _, event: &crate::ui::subscriptions::SubscriptionsEvent, _| {
                 this.services
                     .subscription_command(event.request.clone(), event.command.clone());
+            },
+        );
+        let shares_updates = cx.subscribe(
+            &subscriptions,
+            |this, _, event: &crate::ui::subscriptions::SharesUpdated, cx| {
+                // 分享保存也发布权威快照，避免 Runtime 只读投影把旧配置版本送回页面。
+                this.bridge.leave_page();
+                this.behavior.rebase(&event.0);
+                this.bridge.snapshot = Some(event.0.clone());
+                cx.notify();
             },
         );
         let groups = cx.new(|cx| crate::ui::groups::GroupsView::new(window, cx));
@@ -217,6 +229,7 @@ impl AppView {
         .detach();
         let tray_quit = cx.on_app_quit(|view, cx| {
             view.tray.prepare_quit();
+            view.services.shares.shutdown();
             let done = view.services.manual_runtime.shutdown();
             cx.background_executor().spawn(async move {
                 // 退出等待有界Runtime清理；失败是Unknown，不能记录成已停止。
@@ -241,6 +254,7 @@ impl AppView {
             pages,
             subscriptions,
             _subscriptions: subscriptions_listener,
+            _shares_updates: shares_updates,
             groups,
             _groups_subscription: groups_subscription,
             bridge: StateBridge::default(),
@@ -266,11 +280,8 @@ impl AppView {
             _receiver: foreground,
             _tray_quit: tray_quit,
         };
+        // 首次全局读取完成后再启动 Runtime 观测，避免独立 worker 抢占 Store gate。
         view.refresh(cx);
-        view.runtime_command(
-            veyra_core::application::manual_runtime::RuntimeCommand::Refresh,
-            cx,
-        );
         view
     }
     fn platform_notice(
@@ -578,9 +589,13 @@ impl AppView {
                     .subscriptions
                     .update(cx, |view, cx| view.complete(&request, result, window, cx));
                 if let Some(state) = state {
-                    self.bridge.leave_page();
                     self.behavior.rebase(&state);
-                    self.bridge.snapshot = Some(state);
+                    if let Some(request) = self.bridge.accept_page_snapshot(state) {
+                        self.services.manual_runtime.submit(
+                            request,
+                            veyra_core::application::manual_runtime::RuntimeCommand::Refresh,
+                        );
+                    }
                     self.project_behavior(window, cx);
                 }
             }
@@ -737,7 +752,14 @@ impl AppView {
                 }
             }
             event => {
-                self.bridge.receive(event);
+                let disposition = self.bridge.receive(event);
+                // 只消费既有 Runtime 接口，不改变 owner、恢复或锁合同。
+                if let Some(request) = self.bridge.begin_initial_runtime_refresh(disposition) {
+                    self.services.manual_runtime.submit(
+                        request,
+                        veyra_core::application::manual_runtime::RuntimeCommand::Refresh,
+                    );
+                }
                 if let Some(state) = &self.bridge.snapshot {
                     self.visual.restore(&state.app_config.visual);
                     self.behavior.rebase(state);

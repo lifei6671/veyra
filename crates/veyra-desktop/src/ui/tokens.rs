@@ -161,7 +161,10 @@ pub const SUBSCRIPTION_TEXT_BUTTON: f32 = 11.;
 pub const SUBSCRIPTION_SKIPPED_GAP: f32 = 3.;
 pub const SUBSCRIPTION_EMPTY_GAP: f32 = 5.;
 pub const SUBSCRIPTION_NODE_EMPTY: f32 = 60.;
+// 在线订阅读取区 .py-14 / .loading-md 实测。
+pub const SUBSCRIPTION_LOADING_PADDING: f32 = 56.;
 pub const SUBSCRIPTION_LOADING_FONT: f32 = 13.;
+pub const SUBSCRIPTION_LOADING_SIZE: f32 = 24.;
 
 // .subscription-source-options / .switch-input page-local CSS overrides.
 pub const SUBSCRIPTION_OPTIONS_HEIGHT: f32 = 28.;
@@ -244,18 +247,51 @@ pub const REFERENCE_GHOST_HOVER_DARK: u32 = 0x130f0f;
 
 pub const REFERENCE_BUTTON_FOCUS_OFFSET: f32 = 2.;
 
-// 本机OpenBox分享Modal actual Tailwind级联：max-w-3xl、gap-5、1fr/.9fr。
+// 用户指定在线 OpenBox 2026-10-09 实测分享弹窗；旧 React/CSS 候选基线保留在 evidence。
+// 768px、1:0.9 双栏、20px gap、32px按钮和176px二维码来自实际 computed style。
+pub const SUBSCRIPTION_SHARE_FOOTER_GAP: f32 = 8.;
+pub const SUBSCRIPTION_SHARE_BUTTON_GAP: f32 = 6.;
+pub const SUBSCRIPTION_SHARE_CANCEL_RADIUS: f32 = 9.3;
+pub const SUBSCRIPTION_SHARE_SAVE_HEIGHT: f32 = 32.;
+pub const SUBSCRIPTION_SHARE_SAVE_PADDING: f32 = 12.;
+pub const SUBSCRIPTION_SHARE_SAVE_RADIUS: f32 = 9.3;
+pub const SUBSCRIPTION_SHARE_SAVE_WEIGHT: f32 = 520.;
+pub const SUBSCRIPTION_SHARE_SURFACE: u32 = 0xffffffe6;
+// 在线 modal 无边框，checkbox 无浏览器默认 margin，QR 使用4px内边距。
+pub const SUBSCRIPTION_SHARE_BORDER: f32 = 0.;
+pub const SUBSCRIPTION_SHARE_CHECK_MARGIN: f32 = 0.;
+pub const SUBSCRIPTION_SHARE_QR_TOP: f32 = 0.;
 pub const SUBSCRIPTION_SHARE_EDITOR_WIDTH: f32 = 768.;
 pub const SUBSCRIPTION_SHARE_COLUMNS_GAP: f32 = 20.;
-pub const SUBSCRIPTION_SHARE_LEFT_FRACTION: f32 = 10. / 19.;
+pub const SUBSCRIPTION_SHARE_LEFT_FRACTION: f32 = 1. / 1.9;
 pub const SUBSCRIPTION_SHARE_BODY_HEIGHT: f32 = 368.;
 pub const SUBSCRIPTION_SHARE_FOOTER: f32 = 53.;
 pub const SUBSCRIPTION_SHARE_ROW_HEIGHT: f32 = 38.;
 pub const SUBSCRIPTION_SHARE_LIST_MAX_HEIGHT: f32 = 320.;
 pub const SUBSCRIPTION_SHARE_CHECKBOX: f32 = 20.;
-pub const SUBSCRIPTION_SHARE_PROTOCOL_WIDTH: f32 = 83.;
+pub const SUBSCRIPTION_SHARE_PROTOCOL_WIDTH: f32 = 83.125;
 pub const SUBSCRIPTION_SHARE_COPY_WIDTH: f32 = 40.;
 pub const SUBSCRIPTION_SHARE_QR_SIZE: f32 = 176.;
+// React 分享卡片、表单与 QRCodeSVG 容器；监听说明沿用相同排版。
+pub const SUBSCRIPTION_SHARE_CARD_HEIGHT: f32 = 60.;
+pub const SUBSCRIPTION_SHARE_TEXT_GAP: f32 = 2.;
+pub const SUBSCRIPTION_SHARE_META_FONT: f32 = 12.;
+pub const SUBSCRIPTION_SHARE_FIELD_FONT: f32 = 12.;
+pub const SUBSCRIPTION_SHARE_BODY_FONT: f32 = 14.;
+pub const SUBSCRIPTION_SHARE_CHECK_RADIUS: f32 = 9.3;
+pub const SUBSCRIPTION_SHARE_LINK_HEIGHT: f32 = 32.;
+pub const SUBSCRIPTION_SHARE_QR_PADDING: f32 = 4.;
+pub const SUBSCRIPTION_SHARE_QR_RADIUS: f32 = 16.;
+pub const SUBSCRIPTION_SHARE_QR_QUIET_MODULES: f32 = 1.;
+pub const SUBSCRIPTION_SHARE_CHECK_MARK: f32 = 12.;
+// 2026-10-09 指定在线参考站点的 Dialog computed style；不同于仓库旧 window.confirm。
+// oklch 色值转为 sRGB：text(.35519 .032 262.988)、error(.7176 .221 22.18)、cancel(.93 0 0)。
+pub const SUBSCRIPTION_SHARE_CONFIRM_RADIUS: f32 = 13.6;
+pub const SUBSCRIPTION_SHARE_CONFIRM_BUTTON_RADIUS: f32 = 9.3;
+pub const SUBSCRIPTION_SHARE_CONFIRM_TEXT: u32 = 0x333c4d;
+pub const SUBSCRIPTION_SHARE_CONFIRM_ERROR: u32 = 0xff5861;
+pub const SUBSCRIPTION_SHARE_CONFIRM_CANCEL: u32 = 0xe8e8e8;
+pub const SUBSCRIPTION_SHARE_CONFIRM_OVERLAY: u32 = 0x00000066;
 
 /// OpenBox .backend-card/.backend-badge/.backend-service-actions (openbox.css:2313–2352).
 pub mod backend {

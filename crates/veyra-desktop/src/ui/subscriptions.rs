@@ -1,4 +1,5 @@
 //! P2-01 的 OpenBox 视觉迁移；所有业务仍通过同一个 AppServices/request generation。
+mod sharing;
 use super::{
     components::{button, text_input},
     i18n::tr,
@@ -27,6 +28,9 @@ use veyra_core::{
     domain::AppState,
 };
 
+pub struct SharesUpdated(pub Box<AppState>);
+impl EventEmitter<SharesUpdated> for SubscriptionsView {}
+
 pub struct SubscriptionsEvent {
     pub request: Request,
     pub command: Command,
@@ -48,7 +52,15 @@ pub struct SubscriptionsView {
     // DNS折叠只属于UI，不能推进请求generation或持久版本。
     dns_expanded: bool,
     share_collapsed: bool,
-    // 分享弹窗是只读UI壳，不能生成token、二维码或向Core发送命令。
+    // 分享草稿与正式服务快照分离，失败不清空编辑内容。
+    share_services: Option<std::sync::Arc<crate::services::AppServices>>,
+    shares: Vec<veyra_core::domain::SubscriptionShare>,
+    share_draft: Option<veyra_core::domain::SubscriptionShare>,
+    share_busy: bool,
+    share_error: Option<veyra_core::application::shares::ShareError>,
+    share_failed_mutation: bool,
+    share_confirm: Option<veyra_core::application::shares::ShareCommand>,
+    share_version: Option<veyra_core::domain::ConfigVersion>,
     share_editor_open: bool,
     share_inputs: Vec<Entity<InputState>>,
     // 本机OpenBox collapse仅作200ms grid高度过渡，不额外淡入淡出，也不进入Model。
@@ -111,6 +123,16 @@ impl SubscriptionsView {
                 cx.notify();
             }
         }));
+        let share_inputs: Vec<_> = (0..4)
+            .map(|_| cx.new(|cx| InputState::new(window, cx)))
+            .collect();
+        for input in &share_inputs {
+            inputs.push(cx.subscribe(input, |_, _, event: &InputEvent, cx| {
+                if matches!(event, InputEvent::Change) {
+                    cx.notify();
+                }
+            }));
+        }
         Self {
             model: Model::default(),
             name,
@@ -126,10 +148,16 @@ impl SubscriptionsView {
             refreshing: None,
             dns_expanded: false,
             share_collapsed: false,
+            share_services: None,
+            shares: vec![],
+            share_draft: None,
+            share_busy: false,
+            share_error: None,
+            share_failed_mutation: false,
+            share_confirm: None,
+            share_version: None,
             share_editor_open: false,
-            share_inputs: (0..3)
-                .map(|_| cx.new(|cx| InputState::new(window, cx)))
-                .collect(),
+            share_inputs,
             collapse_motion: HashMap::new(),
             editor_page: EditorPage::Source,
             editor_content_height: px(480.),
@@ -159,6 +187,7 @@ impl SubscriptionsView {
             self.loading = false;
             // 与 React 页面重新挂载一致：离页后旧写入可在后台完成，回页重新读事实版本。
             if visible {
+                // 共享 Store 的 gate 不等待：先完成页面读取，再恢复分享监听，避免首次加载互相报 Busy。
                 self.send(Command::Load, cx);
             }
             cx.notify();
@@ -166,6 +195,8 @@ impl SubscriptionsView {
     }
     pub fn project(&mut self, state: &AppState, cx: &mut Context<Self>) {
         self.model.project(state);
+        self.shares = state.app_config.subscription_shares.clone();
+        self.share_version = Some(state.config_version());
         cx.notify();
     }
     pub fn complete(
@@ -176,6 +207,7 @@ impl SubscriptionsView {
         cx: &mut Context<Self>,
     ) -> Option<Box<AppState>> {
         let accepted = self.model.accepts(request);
+        let loading = self.loading;
         if accepted {
             self.load_error = self.loading && result.is_err();
         }
@@ -195,6 +227,9 @@ impl SubscriptionsView {
                     cx,
                 );
             }
+        }
+        if accepted && loading && state.is_some() {
+            self.share_send(None, cx);
         }
         if state.is_some() && self.model.editor_open {
             let view = cx.entity().downgrade();
@@ -279,9 +314,18 @@ impl SubscriptionsView {
         cx.notify();
     }
     fn render_modal(&mut self, window: &mut Window, cx: &mut Context<Self>) -> AnyElement {
-        let palette = SettingsColors::from_theme(cx);
         let share = self.share_editor_open;
-        let busy = !share && self.model.busy();
+        let palette = if share {
+            SettingsColors::sharing(cx)
+        } else {
+            SettingsColors::from_theme(cx)
+        };
+        let header_height = t::DIALOG_HEADER;
+        let busy = if share {
+            self.share_busy
+        } else {
+            self.model.busy()
+        };
         let footer_height = if share {
             t::SUBSCRIPTION_SHARE_FOOTER
         } else {
@@ -290,17 +334,29 @@ impl SubscriptionsView {
         let title = tr(
             cx,
             if share {
-                "新增订阅分享"
+                if self
+                    .share_draft
+                    .as_ref()
+                    .is_some_and(|d| self.shares.iter().any(|s| s.id == d.id))
+                {
+                    "编辑订阅分享"
+                } else {
+                    "新增订阅分享"
+                }
             } else if self.model.editing.is_some() {
                 "修改订阅"
             } else {
                 "添加订阅或节点"
             },
         );
-        let available_body =
-            window.viewport_size().height * 0.9 - px(t::DIALOG_HEADER + footer_height);
+        let maximum = window.viewport_size().height * 0.9;
+        let available_body = (if share {
+            maximum.min(px(520.))
+        } else {
+            maximum
+        }) - px(header_height + footer_height);
         let header = div()
-            .h(px(t::DIALOG_HEADER))
+            .h(px(header_height))
             .flex_shrink_0()
             .px(px(t::SECTION_PADDING))
             .py(px(t::GAP))
@@ -326,8 +382,8 @@ impl SubscriptionsView {
                 )
                 .text_color(palette.text)
                 .openbox_ghost(palette.button_hover(), palette.text)
-                .mr(-px(t::GAP))
-                .disabled(busy)
+                .when(!share, |b| b.mr(-px(t::GAP)))
+                .disabled(busy && !share)
                 .on_click(|_, window, cx| {
                     window.dispatch_action(Box::new(gpui_kit::component::dialog::Cancel), cx)
                 }),
@@ -342,7 +398,7 @@ impl SubscriptionsView {
             .on_children_prepainted(move |bounds, _, cx| {
                 let natural = bounds.iter().map(|b| b.size.height).sum::<Pixels>()
                     + px(t::SECTION_PADDING * 2.);
-                let height = natural.min(available_body) + px(t::DIALOG_HEADER);
+                let height = natural.min(available_body) + px(header_height);
                 let view = view.clone();
                 cx.defer(move |cx| {
                     let _ = view.update(cx, |this, cx| {
@@ -375,7 +431,12 @@ impl SubscriptionsView {
             .flex()
             .flex_col()
             .min_h_0()
-            .rounded(px(t::SUBSCRIPTION_EDITOR_RADIUS))
+            .when(share, |surface| surface.border_0())
+            .rounded(px(if share {
+                t::SUBSCRIPTION_SHARE_CONFIRM_RADIUS
+            } else {
+                t::SUBSCRIPTION_EDITOR_RADIUS
+            }))
             .bg(palette.solid)
             .text_color(palette.text)
             .overflow_hidden()
@@ -386,7 +447,7 @@ impl SubscriptionsView {
                     .track_scroll(&self.editor_scroll)
                     .flex()
                     .flex_col()
-                    .h(self.editor_content_height - px(t::DIALOG_HEADER))
+                    .h(self.editor_content_height - px(header_height))
                     .max_h(available_body)
                     .min_h_0()
                     .overflow_y_scroll()
@@ -396,10 +457,10 @@ impl SubscriptionsView {
             .child(self.footer(cx));
         gpui_kit::base::Dialog::new(cx)
             .focus_handle(self.modal_focus.clone())
-            .close_on_escape(!busy)
-            .close_on_backdrop_press(!busy)
+            .close_on_escape(share || !busy)
+            .close_on_backdrop_press(share || !busy)
             .on_ok(|_, _, _| false)
-            .on_cancel(move |_, _, _| !busy)
+            .on_cancel(move |_, _, _| share || !busy)
             .backdrop(div().size_full().bg(cx.theme().overlay))
             .popup(gpui_kit::base::DialogPopup::new().child(surface))
             .on_close(cx.listener(|this, _, window, cx| {
@@ -906,9 +967,10 @@ impl SubscriptionsView {
         }
         body
     }
-    fn share_panel(&self, p: SettingsColors, cx: &mut Context<Self>) -> Div {
+    fn share_panel(&self, _p: SettingsColors, cx: &mut Context<Self>) -> Div {
+        let p = SettingsColors::sharing(cx);
         let target = if self.share_collapsed { 0. } else { 1. };
-        let (height, opacity) = self
+        let (height, _opacity) = self
             .collapse_motion
             .get("share")
             .map_or((target, target), |motion| motion.value(Instant::now()));
@@ -958,7 +1020,7 @@ impl SubscriptionsView {
                                         div()
                                             .text_size(px(t::SECTION_TITLE))
                                             .line_height(px(t::SECTION_LINE))
-                                            .font_weight(FontWeight::SEMIBOLD)
+                                            .font_weight(super::theme::MISANS_SEMIBOLD)
                                             .child(tr(cx, "订阅分享")),
                                     )
                                     .child(
@@ -975,7 +1037,8 @@ impl SubscriptionsView {
                             )
                             .child(
                                 hint(tr(cx, "生成可供其他设备或代理软件直接使用的订阅链接"), p)
-                                    .line_height(px(t::SUBSCRIPTION_LABEL_LINE))
+                                    .text_size(px(t::SUBSCRIPTION_SHARE_META_FONT))
+                                    .line_height(px(t::SECTION_PADDING))
                                     .mt(px(t::ROW_GAP)),
                             )
                             .on_click(cx.listener(|this, _, _, cx| {
@@ -999,11 +1062,15 @@ impl SubscriptionsView {
                     )
                     .child(
                         icon_action("subscription-share-add", "添加订阅分享", "Plus", p, cx)
-                            .primary()
-                            .disabled(self.model.list.is_empty() || self.model.busy())
-                            .with_tooltip(tr(cx, "只读界面预览；订阅分享将在后续任务开放"))
+                            .bg(rgb(t::PRIMARY_BUTTON_BG))
+                            .text_color(rgb(t::PRIMARY_BUTTON_TEXT))
+                            .openbox_ghost(
+                                rgb(t::PRIMARY_BUTTON_HOVER).into(),
+                                rgb(t::PRIMARY_BUTTON_TEXT).into(),
+                            )
+                            .disabled(self.share_busy)
                             .on_click(cx.listener(|this, _, window, cx| {
-                                this.share_editor_open = true;
+                                this.open_share(None, window, cx);
                                 this.editor_scroll = ScrollHandle::new();
                                 this.share_scroll = ScrollHandle::new();
                                 this.modal_trigger = window.focused(cx);
@@ -1012,187 +1079,7 @@ impl SubscriptionsView {
                             })),
                     ),
             )
-            .when(height > 0., |d| {
-                d.child(
-                    div()
-                        .h(px(t::SUBSCRIPTION_NODE_EMPTY * height))
-                        .overflow_hidden()
-                        .child(
-                            div()
-                                .h(px(t::SUBSCRIPTION_NODE_EMPTY))
-                                .opacity(opacity)
-                                .flex_shrink_0()
-                                .pt(px(t::PAD))
-                                .px(px(t::SECTION_PADDING))
-                                .pb(px(t::SECTION_PADDING))
-                                .flex()
-                                .items_center()
-                                .justify_center()
-                                .text_color(p.muted)
-                                .text_size(px(t::BODY))
-                                .child(tr(cx, "暂无订阅分享，点右上角「添加」创建")),
-                        ),
-                )
-            })
-    }
-    fn share_editor(&mut self, window: &mut Window, cx: &mut Context<Self>) -> Div {
-        let p = SettingsColors::from_theme(cx);
-        for (input, key) in self.share_inputs.iter().zip([
-            "例如:手机代理订阅",
-            "当前地址",
-            "订阅分享将在后续任务开放",
-        ]) {
-            input.update(cx, |state, cx| {
-                state.set_placeholder(tr(cx, key), window, cx)
-            });
-        }
-        let input = |ix: usize| {
-            text_input(&self.share_inputs[ix])
-                .disabled(true)
-                .border_focus()
-                .bg(p.solid)
-                .border_color(p.line)
-                .text_color(p.text)
-        };
-        let modal_width = px(t::SUBSCRIPTION_SHARE_EDITOR_WIDTH)
-            .min(window.viewport_size().width - px(t::SECTION_PADDING * 2.));
-        let left_width = (modal_width
-            - px(t::SECTION_PADDING * 2. + t::SUBSCRIPTION_SHARE_COLUMNS_GAP))
-            * t::SUBSCRIPTION_SHARE_LEFT_FRACTION;
-        let mut subscriptions = div()
-            .id("subscription-share-list")
-            .flex()
-            .flex_col()
-            .w_full()
-            .min_h_0()
-            .h(px((self.model.list.len() as f32
-                * t::SUBSCRIPTION_SHARE_ROW_HEIGHT)
-                .min(t::SUBSCRIPTION_SHARE_LIST_MAX_HEIGHT)))
-            .pr(px(t::ROW_GAP))
-            .overflow_y_scroll()
-            .track_scroll(&self.share_scroll);
-        for (ix, item) in self.model.list.iter().enumerate() {
-            subscriptions = subscriptions.child(
-                div()
-                    .flex()
-                    .items_center()
-                    .h(px(t::SUBSCRIPTION_SHARE_ROW_HEIGHT))
-                    .flex_shrink_0()
-                    .gap(px(t::GAP))
-                    .border_b_1()
-                    .border_color(p.text.opacity(0.1))
-                    .when(ix == 0, |d| d.border_t_1())
-                    .child(
-                        gpui_kit::base::Button::new(("subscription-share-check", ix))
-                            .accessibility_label(format!(
-                                "{} · {}",
-                                item.name,
-                                tr(cx, "选择要分享的订阅")
-                            ))
-                            .disabled(true)
-                            .size(px(t::SUBSCRIPTION_SHARE_CHECKBOX))
-                            .border_1()
-                            .border_color(p.line)
-                            .rounded(px(t::SUBSCRIPTION_CHECKBOX_RADIUS)),
-                    )
-                    .child(
-                        div()
-                            .flex_1()
-                            .min_w_0()
-                            .overflow_hidden()
-                            .text_ellipsis()
-                            .text_size(px(t::BODY))
-                            .child(item.name.clone()),
-                    )
-                    .child(hint(format!("{} {}", item.node_count, tr(cx, "个节点")), p)),
-            );
-        }
-        let host = div()
-            .flex()
-            .w_full()
-            .min_w_0()
-            .child(
-                unavailable_select(
-                    "subscription-share-protocol",
-                    "http://",
-                    t::SUBSCRIPTION_SHARE_PROTOCOL_WIDTH,
-                    p,
-                    cx,
-                )
-                .rounded_r(px(0.))
-                .flex_shrink_0(),
-            )
-            .child(div().flex_1().min_w_0().child(input(1).rounded_l(px(0.))));
-        let link = div()
-            .flex()
-            .w_full()
-            .min_w_0()
-            .child(
-                div()
-                    .flex_1()
-                    .min_w_0()
-                    .child(input(2).rounded_r(px(0.)).font_family("SFMono-Regular")),
-            )
-            .child(
-                icon_action(
-                    "subscription-share-copy",
-                    "复制分享链接",
-                    "ClipboardDocument",
-                    p,
-                    cx,
-                )
-                .disabled(true)
-                .w(px(t::SUBSCRIPTION_SHARE_COPY_WIDTH))
-                .rounded_l(px(0.))
-                .bg(p.base200())
-                .with_tooltip(tr(cx, "订阅分享将在后续任务开放")),
-            );
-        // 保留原版二维码区域的尺寸与位置；明确不可用，禁止制造可扫码的假分享地址。
-        let qr = div()
-            .size(px(t::SUBSCRIPTION_SHARE_QR_SIZE))
-            .rounded(cx.theme().radius_lg)
-            .bg(rgb(0xffffff))
-            .p(px(t::ROW_GAP))
-            .flex()
-            .items_center()
-            .justify_center()
-            .child(
-                div()
-                    .size_full()
-                    .flex()
-                    .items_center()
-                    .justify_center()
-                    .text_color(rgb(t::SUBSCRIPTION_UNTESTED))
-                    .text_size(px(t::SUBSCRIPTION_LABEL_FONT))
-                    .child(tr(cx, "二维码暂不可用")),
-            );
-        div()
-            .flex()
-            .gap(px(t::SUBSCRIPTION_SHARE_COLUMNS_GAP))
-            .w_full()
-            .min_h(px(t::SUBSCRIPTION_SHARE_BODY_HEIGHT))
-            .child(
-                div()
-                    .w(left_width)
-                    .flex_shrink_0()
-                    .flex()
-                    .flex_col()
-                    .gap(px(t::GAP))
-                    .child(label(tr(cx, "选择要分享的订阅")))
-                    .child(subscriptions),
-            )
-            .child(
-                div()
-                    .flex_1()
-                    .min_w_0()
-                    .flex()
-                    .flex_col()
-                    .gap(px(t::PAD))
-                    .child(field(tr(cx, "标题"), input(0)))
-                    .child(field(tr(cx, "域名或 IP"), host))
-                    .child(field(tr(cx, "分享链接"), link))
-                    .child(div().flex().justify_center().child(qr)),
-            )
+            .when(height > 0., |d| d.child(self.share_rows(p, cx)))
     }
     fn rules_shell(&self, cx: &App) -> Div {
         let p = SettingsColors::from_theme(cx);
@@ -1627,21 +1514,36 @@ impl SubscriptionsView {
             .child(table)
     }
     fn footer(&mut self, cx: &mut Context<Self>) -> Div {
-        let p = SettingsColors::from_theme(cx);
+        let p = if self.share_editor_open {
+            SettingsColors::sharing(cx)
+        } else {
+            SettingsColors::from_theme(cx)
+        };
         let share = self.share_editor_open;
-        let busy = !share && self.model.busy();
+        let busy = if share {
+            self.share_busy
+        } else {
+            self.model.busy()
+        };
         let input = self.input(cx);
-        let disabled = share
-            || busy
-            || self.editor_page != EditorPage::Source
-            || input.name.trim().is_empty()
-            || (self.model.editing.is_none()
-                && input.sources.iter().all(|source| match source {
-                    PreviewSource::Url(value) | PreviewSource::Pasted(value) => {
-                        value.trim().is_empty()
-                    }
-                }))
-            || (self.model.editing.is_none() && self.model.status == Status::Saved);
+        let disabled = if share {
+            busy || self
+                .share_draft
+                .as_ref()
+                .is_none_or(|d| d.subscription_ids.is_empty())
+                || self.share_inputs[0].read(cx).value().trim().is_empty()
+                || self.share_inputs[1].read(cx).value().trim().is_empty()
+        } else {
+            busy || self.editor_page != EditorPage::Source
+                || input.name.trim().is_empty()
+                || (self.model.editing.is_none()
+                    && input.sources.iter().all(|source| match source {
+                        PreviewSource::Url(value) | PreviewSource::Pasted(value) => {
+                            value.trim().is_empty()
+                        }
+                    }))
+                || (self.model.editing.is_none() && self.model.status == Status::Saved)
+        };
         div()
             .min_h(px(if share {
                 t::SUBSCRIPTION_SHARE_FOOTER
@@ -1652,12 +1554,16 @@ impl SubscriptionsView {
             .flex()
             .items_center()
             .text_size(px(t::SUBSCRIPTION_TEXT_BUTTON))
-            .font_weight(FontWeight::SEMIBOLD)
+            .font_weight(if share {
+                super::theme::MISANS_SEMIBOLD
+            } else {
+                FontWeight::SEMIBOLD
+            })
             .justify_end()
             .gap(px(t::GAP))
             .px(px(t::SECTION_PADDING))
             .py(px(t::GAP))
-            .when(share, |d| d.pt(px(t::PAD)))
+            .when(share, |d| d.gap(px(t::SUBSCRIPTION_SHARE_FOOTER_GAP)))
             .border_t_1()
             .border_color(p.text.opacity(0.1))
             .child(
@@ -1672,19 +1578,30 @@ impl SubscriptionsView {
                         .into(),
                         p.text,
                     )
-                    .disabled(busy)
+                    .disabled(busy && !share)
                     .w(px(t::SUBSCRIPTION_FOOTER_BUTTON))
                     .px(px(t::PAD))
                     .bg(p.base200())
                     .rounded(px(t::SUBSCRIPTION_CONTROL_RADIUS))
                     .text_color(p.text)
-                    .font_weight(FontWeight::SEMIBOLD)
+                    .font_weight(if share {
+                        super::theme::MISANS_SEMIBOLD
+                    } else {
+                        FontWeight::SEMIBOLD
+                    })
+                    .when(share, |b| {
+                        b.font_weight(super::theme::MISANS_SEMIBOLD)
+                            .text_size(px(t::BODY))
+                            .mt(px(t::ROW_GAP))
+                            .rounded(px(t::SUBSCRIPTION_SHARE_CANCEL_RADIUS))
+                    })
                     .on_click(|_, w, cx| {
                         w.dispatch_action(Box::new(gpui_kit::component::dialog::Cancel), cx)
                     }),
             )
             .child(
-                button("subscription-save", tr(cx, "保存"))
+                button("subscription-save", if share { "" } else { tr(cx, "保存") })
+                    .accessibility_label(tr(cx, "保存"))
                     .w(px(t::SUBSCRIPTION_FOOTER_BUTTON))
                     .px(px(t::PAD))
                     .custom(
@@ -1721,10 +1638,48 @@ impl SubscriptionsView {
                         )
                     })
                     .reference_focus(rgb(t::PRIMARY_BUTTON_BG).into())
-                    .font_weight(FontWeight::SEMIBOLD)
+                    .font_weight(if share {
+                        super::theme::MISANS_SEMIBOLD
+                    } else {
+                        FontWeight::SEMIBOLD
+                    })
                     .disabled(disabled)
-                    .when(busy, |b| b.child(Spinner::new().with_size(px(t::BODY))))
-                    .when(share, |b| b.tooltip(tr(cx, "订阅分享将在后续任务开放")))
+                    .when(busy && !share, |b| {
+                        b.child(Spinner::new().with_size(px(t::BODY)))
+                    })
+                    .when(share, |b| {
+                        // 在线 .btn-sm 使用14px字、32px高；禁用状态沿用实际颜色，不再二次透明。
+                        b.w_auto()
+                            .min_w(px(t::SUBSCRIPTION_FOOTER_BUTTON))
+                            .h(px(t::SUBSCRIPTION_SHARE_SAVE_HEIGHT))
+                            .px(px(t::SUBSCRIPTION_SHARE_SAVE_PADDING))
+                            .rounded(px(t::SUBSCRIPTION_SHARE_SAVE_RADIUS))
+                            .text_size(px(t::BODY))
+                            .mt(px(t::ROW_GAP))
+                            .font_weight(FontWeight(t::SUBSCRIPTION_SHARE_SAVE_WEIGHT))
+                            .when(!disabled, |b| {
+                                b.reference_hover(
+                                    rgb(t::PRIMARY_BUTTON_BG).into(),
+                                    rgb(t::PRIMARY_BUTTON_HOVER).into(),
+                                    rgb(t::PRIMARY_BUTTON_TEXT).into(),
+                                )
+                            })
+                            .child(
+                                div()
+                                    .flex()
+                                    .items_center()
+                                    .gap(px(t::SUBSCRIPTION_SHARE_BUTTON_GAP))
+                                    .when(busy, |d| {
+                                        d.child(sharing::share_spinner(
+                                            "share-save-loading",
+                                            t::BODY,
+                                            p.text.opacity(0.2),
+                                        ))
+                                    })
+                                    .child(tr(cx, "保存")),
+                            )
+                            .on_click(cx.listener(|this, _, _, cx| this.save_share(cx)))
+                    })
                     .when(!share, |b| {
                         b.on_click(cx.listener(|this, _, window, cx| {
                             this.name.read(cx).focus_handle(cx).focus(window, cx);
@@ -2032,6 +1987,18 @@ struct SettingsColors {
     field: Hsla,
 }
 impl SettingsColors {
+    // 指定在线分享区域使用 base-content 和 base-100；保留其它页面的既有主题。
+    fn sharing(cx: &App) -> Self {
+        let mut p = Self::from_theme(cx);
+        if !p.dark {
+            p.text = rgb(t::SUBSCRIPTION_SHARE_CONFIRM_TEXT).into();
+            p.muted = p.text.opacity(0.55);
+            p.line = p.text.opacity(0.2);
+            p.surface = rgba(t::SUBSCRIPTION_SHARE_SURFACE).into();
+            p.solid = p.surface;
+        }
+        p
+    }
     // 本机 OpenBox base-200；Dark复用全局Theme，Light按实际CSS灰阶。
     fn base200(self) -> Hsla {
         if self.dark {
@@ -2214,26 +2181,20 @@ impl Render for SubscriptionsView {
                     }
                 }
             });
-        if self.loading && self.model.busy() && !self.model.editor_open {
-            return page.child(
+        // 在线首次加载保留分享卡，仅订阅列表区域显示 spinner；弹窗仍挂在固定视口层。
+        let loading = self.loading && self.model.busy() && !self.model.editor_open;
+        page = page.child(self.share_panel(p, cx));
+        if loading {
+            page = page.child(
                 div()
-                    .min_h(px(t::SUBSCRIPTION_EMPTY_HEIGHT))
-                    .rounded(cx.theme().radius_lg)
-                    .bg(p.surface)
+                    .py(px(t::SUBSCRIPTION_LOADING_PADDING))
                     .flex()
-                    .items_center()
-                    .text_size(px(t::SUBSCRIPTION_TEXT_BUTTON))
-                    .font_weight(FontWeight::SEMIBOLD)
                     .justify_center()
-                    .gap(px(t::GAP))
-                    .text_color(p.muted)
-                    .child(Spinner::new().with_size(px(t::BODY)))
-                    .child(
-                        div()
-                            .text_size(px(t::SUBSCRIPTION_LOADING_FONT))
-                            .font_weight(FontWeight::MEDIUM)
-                            .child(tr(cx, "正在加载订阅数据")),
-                    ),
+                    .child(sharing::share_spinner(
+                        "subscription-list-loading",
+                        t::SUBSCRIPTION_LOADING_SIZE,
+                        SettingsColors::sharing(cx).text,
+                    )),
             );
         }
         if self.load_error
@@ -2280,8 +2241,8 @@ impl Render for SubscriptionsView {
                     ),
             );
         }
-        page = page.child(self.share_panel(p, cx));
-        if self.model.list.is_empty() && !matches!(self.model.status, Status::Error(_)) {
+        if !loading && self.model.list.is_empty() && !matches!(self.model.status, Status::Error(_))
+        {
             page = page.child(
                 div()
                     .min_h(px(t::SUBSCRIPTION_EMPTY_HEIGHT))
@@ -2306,7 +2267,7 @@ impl Render for SubscriptionsView {
                     .child(hint(tr(cx, "点右上角「添加」创建"), p)),
             );
         }
-        for item in self.model.list.clone() {
+        for item in self.model.list.clone().into_iter().filter(|_| !loading) {
             let id = item.id.clone();
             let is_collapsed = self.collapsed.contains(&id);
             let refresh_id = id.clone();
@@ -2545,6 +2506,9 @@ impl Render for SubscriptionsView {
                     .track_scroll(&self.page_scroll)
                     .child(page),
             );
+        if self.share_confirm.is_some() {
+            root = root.child(self.share_confirmation(cx));
+        }
         if self.model.editor_open || self.share_editor_open {
             root = root.child(self.render_modal(window, cx));
         }

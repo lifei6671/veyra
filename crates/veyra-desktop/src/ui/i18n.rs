@@ -48,6 +48,52 @@ pub fn icon_label(language: DesktopLanguage, label: &str) -> String {
     out
 }
 const MESSAGES: &[[&str; 3]] = &[
+    ["删除订阅分享", "Delete subscription share", "刪除訂閱分享"],
+    ["修改订阅分享", "Edit subscription share", "修改訂閱分享"],
+    [
+        "重新生成分享链接",
+        "Regenerate share link",
+        "重新產生分享連結",
+    ],
+    ["启用订阅分享", "Enable subscription share", "啟用訂閱分享"],
+    ["停用订阅分享", "Disable subscription share", "停用訂閱分享"],
+    ["编辑订阅分享", "Edit subscription share", "編輯訂閱分享"],
+    [
+        "分享监听失败：地址不可用或端口已占用",
+        "Cannot listen: address unavailable or port in use",
+        "分享監聽失敗：位址不可用或連接埠已佔用",
+    ],
+    [
+        "请检查名称、订阅、监听地址与分享端口",
+        "Check name, subscriptions, bind address and advertised port",
+        "請檢查名稱、訂閱、監聽位址與分享連接埠",
+    ],
+    [
+        "所选订阅包含无法无损导出的节点",
+        "Selected subscriptions contain nodes that cannot be exported losslessly",
+        "所選訂閱包含無法無損匯出的節點",
+    ],
+    [
+        "分享操作失败，请重试；原配置已保留",
+        "Sharing failed. Retry; previous configuration is preserved",
+        "分享操作失敗，請重試；原設定已保留",
+    ],
+    [
+        "确定删除订阅分享「{name}」吗？删除后链接将失效。",
+        "Delete subscription share “{name}”? Its link will stop working.",
+        "確定刪除訂閱分享「{name}」嗎？刪除後連結將失效。",
+    ],
+    [
+        "重新生成「{name}」的链接？旧链接会立即失效，已经导入的设备要重新添加。",
+        "Regenerate the link for “{name}”? The old link will stop working immediately. Devices must import the new link.",
+        "重新產生「{name}」的連結？舊連結會立即失效，已經匯入的裝置要重新加入。",
+    ],
+    ["分享监听地址", "Share listen address", "分享監聽位址"],
+    [
+        "仅提供 HTTP。127.0.0.1 仅本机；局域网可监听 0.0.0.0，右侧填写本机局域网 IP 与相同端口。",
+        "HTTP only. 127.0.0.1 is local-only. For LAN, listen on 0.0.0.0 and enter this device’s LAN IP with the same port on the right.",
+        "僅提供 HTTP。127.0.0.1 僅本機；區域網路可監聽 0.0.0.0，右側填寫本機區域網路 IP 與相同連接埠。",
+    ],
     [
         "请添加国家地区",
         "Add a country or region",

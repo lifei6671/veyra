@@ -153,6 +153,25 @@ fn parse_json_candidates(
                 skipped.push(SkippedNode::InvalidNode);
                 continue 'candidates;
             }
+            // 分享沿用 Compiler 的 sing-box 节点序列化，规范化其封闭别名。
+            if object.get("type").and_then(Value::as_str) == Some("tuic")
+                && !move_alias(object, "zero_rtt_handshake", "zero_rtt", valid_bool)
+            {
+                skipped.push(SkippedNode::InvalidNode);
+                continue 'candidates;
+            }
+            if hysteria2 && object.get("obfs").is_some_and(Value::is_object) {
+                let obfs = object["obfs"].as_object().unwrap();
+                if obfs.len() != 2
+                    || obfs.get("type").and_then(Value::as_str) != Some("salamander")
+                    || !obfs.get("password").is_some_and(valid_nonempty_string)
+                {
+                    skipped.push(SkippedNode::InvalidNode);
+                    continue 'candidates;
+                }
+                let password = obfs["password"].clone();
+                object.insert("obfs".into(), password);
+            }
             if !normalize_websocket_aliases(object) {
                 skipped.push(SkippedNode::InvalidNode);
                 continue 'candidates;

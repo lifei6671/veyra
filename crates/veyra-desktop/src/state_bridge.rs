@@ -117,6 +117,24 @@ pub struct StateBridge {
     pub synthetic_accepted: u64,
 }
 impl StateBridge {
+    /// 页面已经接收的权威快照也能完成首次读取；作废旧全局请求后仍须进入 Ready。
+    /// 返回首次 Runtime 观测请求，避免启动时先导航导致观测永远没有发出。
+    pub fn accept_page_snapshot(&mut self, state: Box<AppState>) -> Option<u64> {
+        self.leave_page();
+        self.snapshot = Some(state);
+        self.load = LoadState::Ready;
+        self.begin_initial_runtime_refresh(Disposition::Accepted)
+    }
+    /// 首次有效快照到达后才开始 Runtime 观测；错误/陈旧回调不启动，成功仅启动一次。
+    pub fn begin_initial_runtime_refresh(&mut self, disposition: Disposition) -> Option<u64> {
+        if disposition != Disposition::Accepted
+            || !matches!(self.load, LoadState::Ready)
+            || self.runtime_request != 0
+        {
+            return None;
+        }
+        Some(self.begin_runtime(veyra_core::application::manual_runtime::RuntimeCommand::Refresh))
+    }
     pub fn begin_runtime(
         &mut self,
         command: veyra_core::application::manual_runtime::RuntimeCommand,
@@ -247,6 +265,54 @@ mod tests {
             request,
             result: Ok(Box::new(AppState::empty())),
         }
+    }
+    /// 保护真实启动编排的同一个判定入口：失败和过期读取不启动 Runtime。
+    #[test]
+    fn initial_runtime_refresh_waits_for_accepted_ready_and_runs_once() {
+        let mut b = StateBridge::default();
+        assert!(
+            b.begin_initial_runtime_refresh(Disposition::Accepted)
+                .is_none()
+        );
+        let old = b.begin();
+        let current = b.begin();
+        let disposition = b.receive(event(old));
+        assert!(b.begin_initial_runtime_refresh(disposition).is_none());
+        let disposition = b.receive(AppEvent::Snapshot {
+            request: current,
+            result: Err(AppError::new(
+                veyra_core::domain::AppErrorCode::StorageFailed,
+            )),
+        });
+        assert!(b.begin_initial_runtime_refresh(disposition).is_none());
+        let retry = b.begin();
+        let disposition = b.receive(event(retry));
+        assert_eq!(b.begin_initial_runtime_refresh(disposition), Some(1));
+        let next = b.begin();
+        let disposition = b.receive(event(next));
+        assert!(b.begin_initial_runtime_refresh(disposition).is_none());
+        assert!(matches!(b.load, LoadState::Ready));
+    }
+    /// 保护慢启动时先进入订阅页：页面读取成功后不再卡住全局 Loading。
+    #[test]
+    fn page_snapshot_finishes_startup_before_stale_global_completion() {
+        let mut b = StateBridge::default();
+        let pending = b.begin();
+        b.leave_page();
+        let pending_after_navigation = b.begin();
+        assert_eq!(b.accept_page_snapshot(Box::new(AppState::empty())), Some(1));
+        assert!(matches!(b.load, LoadState::Ready));
+        for request in [pending, pending_after_navigation] {
+            let disposition = b.receive(event(request));
+            assert_eq!(disposition, Disposition::StaleGeneration);
+            assert!(b.begin_initial_runtime_refresh(disposition).is_none());
+        }
+        assert!(
+            b.accept_page_snapshot(Box::new(AppState::empty()))
+                .is_none()
+        );
+        assert!(matches!(b.load, LoadState::Ready));
+        assert_eq!(b.runtime_request, 1);
     }
     // Protect navigation, out-of-order reads and replacement-state isolation.
     #[test]

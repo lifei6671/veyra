@@ -33,3 +33,6 @@ pub use outbound_graph::{OutboundGraphError, validate_outbound_graph};
 
 mod groups;
 pub use groups::*;
+
+pub mod shares;
+pub use shares::SubscriptionShare;

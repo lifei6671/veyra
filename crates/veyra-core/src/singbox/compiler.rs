@@ -793,6 +793,55 @@ macro_rules! make_node {
     };
 }
 
+/// 只输出节点的订阅文档，不带本机控制器、路由、监听或源 URL。
+/// 导出后走既有 parser 校验逐字段等价，避免悄悄丢失凭据/传输选项。
+pub fn subscription_document(nodes: &[&ProxyNode]) -> Result<Vec<u8>, CompileError> {
+    let mut outbounds = Vec::new();
+    for node in nodes {
+        let mut value = if let ProtocolOptions::WireGuard {
+            private_key,
+            peer_public_key,
+            pre_shared_key,
+            local_addresses,
+            mtu,
+            reserved,
+        } = &node.options
+        {
+            serde_json::json!({"type":"wireguard", "server":node.server, "server_port":node.port,
+                "private_key":private_key, "peer_public_key":peer_public_key,
+                "pre_shared_key":pre_shared_key, "local_addresses":local_addresses,
+                "mtu":mtu, "reserved":reserved})
+        } else {
+            serde_json::to_value(node_outbound(node)?)
+                .map_err(|_| CompileError::SerializationFailed)?
+        };
+        value["tag"] = node.name.clone().into();
+        outbounds.push(value);
+    }
+    let document = serde_json::to_string(&serde_json::json!({"outbounds":outbounds}))
+        .map_err(|_| CompileError::SerializationFailed)?;
+    if !nodes.is_empty() {
+        let parsed = crate::subscription::parse_subscription(&document)
+            .map_err(|_| CompileError::UnsupportedNodeProtocol)?;
+        if !parsed.skipped.is_empty()
+            || parsed.nodes.len() != nodes.len()
+            || parsed.nodes.iter().zip(nodes).any(|(a, b)| {
+                a.name != b.name
+                    || a.protocol != b.protocol
+                    || a.server != b.server
+                    || a.port != b.port
+                    || a.options != b.options
+                    || a.transport.as_ref().unwrap_or(&Transport::Tcp)
+                        != b.transport.as_ref().unwrap_or(&Transport::Tcp)
+                    || a.tls != b.tls
+            })
+        {
+            return Err(CompileError::UnsupportedNodeProtocol);
+        }
+    }
+    Ok(document.into_bytes())
+}
+
 fn node_outbound(node: &ProxyNode) -> Result<CoreOutbound, CompileError> {
     Ok(match &node.options {
         ProtocolOptions::Socks {
@@ -2064,6 +2113,17 @@ mod tests {
             options,
             transport: None,
             tls: with_tls.then(tls),
+        }
+    }
+    /// 保护所有现有节点协议的分享内容可用既有导入器回读。
+    #[test]
+    fn shares_export_all_protocols_roundtrip() {
+        for node in protocol_nodes() {
+            assert!(
+                subscription_document(&[&node]).is_ok(),
+                "{:?}",
+                node.protocol
+            );
         }
     }
     fn protocol_nodes() -> Vec<ProxyNode> {
