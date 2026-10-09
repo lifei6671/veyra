@@ -11,6 +11,8 @@ use crate::{
 use std::sync::Mutex;
 #[derive(Default)]
 struct Trace {
+    observation_address: Option<std::net::SocketAddr>,
+    observation_endpoint: Option<Arc<crate::singbox::clash_api::ManagedControllerEndpoint>>,
     next: u64,
     active: Option<u64>,
     checks: usize,
@@ -48,6 +50,15 @@ struct Trace {
 }
 struct Mock(Arc<Mutex<Trace>>);
 impl SidecarPort for Mock {
+    fn observation_endpoint(
+        &self,
+        instance: &ManagedSidecar,
+    ) -> Option<Arc<crate::singbox::clash_api::ManagedControllerEndpoint>> {
+        let t = self.0.lock().unwrap();
+        (t.active == Some(instance.identity()))
+            .then(|| t.observation_endpoint.clone())
+            .flatten()
+    }
     fn write_selector(
         &mut self,
         i: &ManagedSidecar,
@@ -115,6 +126,12 @@ impl SidecarPort for Mock {
     }
     fn check(&mut self, c: &GeneratedConfig) -> Result<(), SidecarPortError> {
         let mut t = self.0.lock().unwrap();
+        if let Some(address) = t.observation_address {
+            t.observation_endpoint = Some(Arc::new(
+                crate::singbox::clash_api::ManagedControllerEndpoint::from_owned_child(address, c)
+                    .unwrap(),
+            ));
+        }
         t.checks += 1;
         t.events.push("check".into());
         t.config = Some(serde_json::from_slice(c.as_bytes()).unwrap());
@@ -2400,4 +2417,54 @@ fn bootstrap_target_preflight_failure_never_freezes_desktop() {
         owner.execute(RuntimeCommand::Stop, |_| {}).unwrap();
         std::fs::remove_dir_all(root).unwrap();
     }
+}
+
+// 保护重复 Start 不重置观测、候选预检失败保留旧观测、替换与未知状态清除旧来源。
+#[test]
+fn observation_follows_ready_owner_and_never_failed_candidate() {
+    let (mut owner, trace, _store, root) = fixture();
+    let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
+    trace.lock().unwrap().observation_address = Some(listener.local_addr().unwrap());
+    owner.execute(RuntimeCommand::Start, |_| {}).unwrap();
+    let first = owner.observation().snapshot().identity.unwrap();
+    assert_eq!(
+        Some(first.instance_id.clone()),
+        owner.snapshot().unwrap().runtime.instance_id
+    );
+    owner.execute(RuntimeCommand::Start, |_| {}).unwrap();
+    owner.execute(RuntimeCommand::Refresh, |_| {}).unwrap();
+    assert_eq!(owner.observation().snapshot().identity, Some(first.clone()));
+    trace.lock().unwrap().fail_check = true;
+    assert!(owner.execute(RuntimeCommand::Restart, |_| {}).is_err());
+    assert_eq!(owner.observation().snapshot().identity, Some(first.clone()));
+    trace.lock().unwrap().fail_check = false;
+    owner.execute(RuntimeCommand::Restart, |_| {}).unwrap();
+    assert_ne!(owner.observation().snapshot().identity, Some(first));
+    trace.lock().unwrap().crash = true;
+    assert!(owner.execute(RuntimeCommand::Refresh, |_| {}).is_err());
+    assert!(owner.observation().snapshot().identity.is_none());
+    owner.execute(RuntimeCommand::Stop, |_| {}).unwrap();
+    drop(owner);
+    std::fs::remove_dir_all(root).unwrap();
+}
+
+// 停止失败时不能继续把仍存活但归属不明的 child 观测当作 Ready 数据。
+#[test]
+fn observation_stop_failure_clears_source_before_recovery() {
+    let (mut owner, trace, _store, root) = fixture();
+    let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
+    trace.lock().unwrap().observation_address = Some(listener.local_addr().unwrap());
+    owner.execute(RuntimeCommand::Start, |_| {}).unwrap();
+    assert!(owner.observation().snapshot().identity.is_some());
+    trace.lock().unwrap().fail_stop = true;
+    assert!(owner.execute(RuntimeCommand::Stop, |_| {}).is_err());
+    assert!(owner.observation().snapshot().identity.is_none());
+    assert_eq!(
+        owner.snapshot().unwrap().runtime.status,
+        crate::application::runtime_snapshot::RuntimeStatus::Recovering
+    );
+    trace.lock().unwrap().fail_stop = false;
+    owner.execute(RuntimeCommand::Stop, |_| {}).unwrap();
+    drop(owner);
+    std::fs::remove_dir_all(root).unwrap();
 }

@@ -120,6 +120,9 @@ pub struct ManualRuntime<P> {
     kernel_available: bool,
     nonce: String,
     fallbacks: Vec<PoolId>,
+    observation: super::observability::controller::ObservationService,
+    // 同步 Runtime worker 的观测执行器；不拥有业务事实或另一个内核实例。
+    observation_executor: Option<tokio::runtime::Runtime>,
 }
 impl<P: SidecarPort> ManualRuntime<P> {
     pub fn new(
@@ -152,7 +155,13 @@ impl<P: SidecarPort> ManualRuntime<P> {
             kernel_available,
             nonce: digest(&random),
             fallbacks: vec![],
+            observation: super::observability::controller::ObservationService::new(),
+            observation_executor: None,
         }
+    }
+    /// 只读订阅入口；绑定和停止始终由当前 Runtime owner 管理。
+    pub fn observation(&self) -> &super::observability::controller::ObservationService {
+        &self.observation
     }
     fn store(&self) -> Result<&RecoveryStore, RuntimeError> {
         self.records
@@ -293,6 +302,9 @@ impl<P: SidecarPort> ManualRuntime<P> {
             self.started = None;
             self.active = None;
         }
+        if !matches!(self.facts.current, RuntimeState::Ready { .. }) {
+            self.observation.stop();
+        }
         result
     }
     fn execute_inner(
@@ -301,6 +313,7 @@ impl<P: SidecarPort> ManualRuntime<P> {
         publish: &mut impl FnMut(ManualRuntimeSnapshot),
     ) -> Result<RuntimeResult, RuntimeError> {
         if command == RuntimeCommand::Stop {
+            self.observation.stop();
             self.sidecar.stop().map_err(|_| {
                 self.facts.current = RuntimeState::Recovering { instance: None };
                 self.started = None;
@@ -339,6 +352,7 @@ impl<P: SidecarPort> ManualRuntime<P> {
             match self.sidecar.refresh_alive() {
                 Ok(true) => {}
                 Ok(false) => {
+                    self.observation.stop();
                     self.active = None;
                     self.started = None;
                     self.facts.current = RuntimeState::Failed { instance_id: None };
@@ -347,6 +361,7 @@ impl<P: SidecarPort> ManualRuntime<P> {
                     }
                 }
                 Err(_) => {
+                    self.observation.stop();
                     self.facts.current = RuntimeState::Recovering { instance: None };
                     self.started = None;
                     return Err(RuntimeError::StopFailed);
@@ -472,6 +487,7 @@ impl<P: SidecarPort> ManualRuntime<P> {
             .active
             .as_ref()
             .map(|a| a.plan.artifact_index().expect("product index").clone());
+        self.observation.stop();
         self.sidecar.stop_old_writer().map_err(|_| {
             self.facts.current = RuntimeState::Recovering { instance: None };
             self.started = None;
@@ -893,6 +909,33 @@ impl<P: SidecarPort> ManualRuntime<P> {
             applied_version: config,
         };
         self.started = Some(Instant::now());
+        // 必须等 check/run、鉴权 Ready 和选择核对全部完成后绑定。
+        let endpoint = self
+            .sidecar
+            .with_active_port(|port, child| Ok(port.observation_endpoint(child)))
+            .ok()
+            .flatten()
+            .flatten();
+        self.observation.stop();
+        if let Some(endpoint) = endpoint {
+            if self.observation_executor.is_none() {
+                self.observation_executor = tokio::runtime::Builder::new_multi_thread()
+                    .worker_threads(1)
+                    .thread_name("veyra-observation")
+                    .enable_all()
+                    .build()
+                    .ok();
+            }
+            if let Some(executor) = &self.observation_executor {
+                let _entered = executor.enter();
+                let RuntimeState::Ready { instance_id, .. } = &self.facts.current else {
+                    unreachable!()
+                };
+                self.observation.bind(instance_id.clone(), endpoint);
+            } else {
+                tracing::warn!("observation executor unavailable; metrics remain unknown");
+            }
+        }
     }
     fn controller_confirm(
         &mut self,
@@ -953,12 +996,14 @@ impl<P: SidecarPort> ManualRuntime<P> {
         match self.sidecar.refresh_alive() {
             Ok(true) => {}
             Ok(false) => {
+                self.observation.stop();
                 self.facts.current = RuntimeState::Failed { instance_id: None };
                 self.active = None;
                 self.started = None;
                 return Err(SelectionError::StaleInstance);
             }
             Err(_) => {
+                self.observation.stop();
                 self.facts.current = RuntimeState::Recovering { instance: None };
                 self.started = None;
                 return Err(SelectionError::StaleInstance);
@@ -1084,3 +1129,13 @@ mod tests;
 mod handoff;
 
 mod remote_selection;
+
+impl<P> Drop for ManualRuntime<P> {
+    fn drop(&mut self) {
+        self.observation.stop();
+        // 允许 owner 在 async 测试/宿主中释放；不能阻塞另一个 Tokio executor。
+        if let Some(executor) = self.observation_executor.take() {
+            executor.shutdown_background();
+        }
+    }
+}

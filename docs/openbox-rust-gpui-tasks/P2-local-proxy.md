@@ -200,6 +200,8 @@ cleanup NOT_RUN：沙箱拒绝`ps`进程身份查询（Operation not permitted�
 - [ ] 任意执行路径/PID/命令、过期实例请求被拒绝；不添加永久请求日志。
 - [ ] 管理员安装/卸载、root 拥有目录、child 实际用户及控制器事件通路有真实证据；授权拒绝仍可手动代理。
 
+**2026-10-09 观测接线增量**：P2-06 保持 DOING。正式 ManualRuntime/两个生产 Port 已接 P3-01 唯一 ObservationService；普通用户锁定真实内核四WS/三指标重连/替换/Stop隔离通过，root/GUI NOT_RUN。未修改本卡验收勾选或P2-07状态。见[本轮交付](P2-06-observation-integration.md)。
+
 <a id="obg-p2-07"></a>
 ## OBG-P2-07 系统代理、多服务与崩溃恢复
 

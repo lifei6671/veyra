@@ -95,7 +95,7 @@ struct OwnedChild {
     lines: Receiver<Listener>,
     readers: Vec<thread::JoinHandle<()>>,
     endpoints: Option<ManagedRuntimeEndpoints>,
-    controller: Option<ManagedControllerEndpoint>,
+    controller: Option<std::sync::Arc<ManagedControllerEndpoint>>,
 }
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum Listener {
@@ -442,7 +442,7 @@ impl SidecarPort for ManualSidecarPort {
                     return Err(SidecarPortError);
                 }
                 owned.endpoints = Some(ManagedRuntimeEndpoints { mixed, controller });
-                owned.controller = Some(endpoint);
+                owned.controller = Some(std::sync::Arc::new(endpoint));
                 eprintln!(
                     "manual-runtime ready instance={} pid={} pgid={} mixed={} controller={}",
                     instance.identity(),
@@ -461,6 +461,15 @@ impl SidecarPort for ManualSidecarPort {
             .as_ref()
             .filter(|c| c.identity == *instance)
             .and_then(|c| c.endpoints)
+    }
+    fn observation_endpoint(
+        &self,
+        instance: &ManagedSidecar,
+    ) -> Option<std::sync::Arc<ManagedControllerEndpoint>> {
+        self.owned
+            .as_ref()
+            .filter(|c| c.identity == *instance)
+            .and_then(|c| c.controller.clone())
     }
     fn is_alive(&mut self, instance: &ManagedSidecar) -> Result<bool, SidecarPortError> {
         let owned = self.owned_mut(instance)?;
@@ -860,6 +869,12 @@ mod real_tests {
         fn endpoints(&self, instance: &ManagedSidecar) -> Option<ManagedRuntimeEndpoints> {
             self.inner.lock().unwrap().endpoints(instance)
         }
+        fn observation_endpoint(
+            &self,
+            instance: &ManagedSidecar,
+        ) -> Option<Arc<ManagedControllerEndpoint>> {
+            self.inner.lock().unwrap().observation_endpoint(instance)
+        }
         fn is_alive(&mut self, instance: &ManagedSidecar) -> Result<bool, SidecarPortError> {
             self.inner.lock().unwrap().is_alive(instance)
         }
@@ -941,6 +956,140 @@ mod real_tests {
         state.validate().unwrap();
         state
     }
+    // 保护正式 Runtime 的四路真实观测、断流未知/重连、替换隔离及 Stop 清理。
+    // 仅显式锁定内核、自己的 loopback listener/child；不访问公网或主机代理设置。
+    #[test]
+    #[ignore = "requires pinned VEYRA_SING_BOX_PATH; isolated real kernel observation"]
+    fn observation_real_runtime_four_streams_reconnect_replace_stop() {
+        use std::io::Read;
+        use std::net::{TcpListener, TcpStream};
+        use veyra_core::application::observability::controller::Snapshot;
+        fn wait(
+            owner: &ManualRuntime<RecordingSidecarPort>,
+            what: &str,
+            predicate: impl Fn(&Snapshot) -> bool,
+        ) -> Snapshot {
+            let until = Instant::now() + Duration::from_secs(12);
+            loop {
+                let snapshot = owner.observation().snapshot();
+                if predicate(&snapshot) {
+                    return snapshot;
+                }
+                assert!(Instant::now() < until, "{what}: {snapshot:?}");
+                thread::sleep(Duration::from_millis(50));
+            }
+        }
+        struct Resume(u32);
+        impl Drop for Resume {
+            fn drop(&mut self) {
+                unsafe {
+                    libc::kill(self.0 as i32, libc::SIGCONT);
+                }
+            }
+        }
+        let mut state = pending_fixture();
+        state.default_target = veyra_core::domain::RouteTarget::Direct;
+        let root = std::env::temp_dir().join(format!("veyra-observation-{:?}", state.state_epoch));
+        let store = JsonStateStore::new(root.join("state.json")).unwrap();
+        store.save(&state).unwrap();
+        let snapshots = Arc::new(SnapshotService::new(store, StateAccessGate::default()));
+        let port = RecordingSidecarPort::new(&root);
+        let access = port.inner.clone();
+        let mut owner = ManualRuntime::new(port, snapshots, root.clone(), true);
+        owner.execute(RuntimeCommand::Start, |_| {}).unwrap();
+        let first = owner.observation().snapshot().identity.unwrap();
+        assert_eq!(
+            Some(first.instance_id.clone()),
+            owner.snapshot().unwrap().runtime.instance_id
+        );
+        wait(&owner, "three periodic streams", |s| {
+            s.available[..3].iter().all(|x| *x)
+        });
+        // 真实代理请求只发往本测试监听器；保持连接跨过 connections 的采样周期。
+        let server = TcpListener::bind("127.0.0.1:0").unwrap();
+        server.set_nonblocking(true).unwrap();
+        let destination = server.local_addr().unwrap();
+        let mixed = owner.snapshot().unwrap().endpoints.unwrap().mixed;
+        let mut client = TcpStream::connect(mixed).unwrap();
+        client
+            .set_read_timeout(Some(Duration::from_secs(3)))
+            .unwrap();
+        write!(
+            client,
+            "GET http://{destination}/ HTTP/1.1\r\nHost: {destination}\r\n\r\n"
+        )
+        .unwrap();
+        let until = Instant::now() + Duration::from_secs(5);
+        let mut response = loop {
+            match server.accept() {
+                Ok((socket, _)) => break socket,
+                Err(e) if e.kind() == std::io::ErrorKind::WouldBlock => {
+                    assert!(Instant::now() < until, "own HTTP listener not reached");
+                    thread::sleep(Duration::from_millis(20));
+                }
+                Err(e) => panic!("{e}"),
+            }
+        };
+        response
+            .set_write_timeout(Some(Duration::from_secs(3)))
+            .unwrap();
+        response
+            .write_all(b"HTTP/1.1 200 OK\r\nContent-Length: 65536\r\n\r\n")
+            .unwrap();
+        response.write_all(&[b'x'; 32768]).unwrap();
+        let mut received = [0; 8192];
+        assert!(client.read(&mut received).unwrap() > 0);
+        let observed = wait(&owner, "four real WS and local connection", |s| {
+            s.available.iter().all(|x| *x)
+                && s.sequence.iter().all(|x| *x > 0)
+                && s.connection_count.is_some_and(|n| n > 0)
+                && s.traffic
+                    .as_ref()
+                    .is_some_and(|t| t.session_download_bytes > 0)
+        });
+        assert!(observed.memory_bytes.is_some_and(|n| n > 0));
+        assert!(owner.observation().observed().is_some());
+        eprintln!("REAL_OBSERVATION four-streams {observed:?}");
+        let pid = access.lock().unwrap().owned.as_ref().unwrap().child.id();
+        let resume = Resume(pid);
+        assert_eq!(unsafe { libc::kill(pid as i32, libc::SIGSTOP) }, 0);
+        let unknown = wait(&owner, "stalled metrics become unknown", |s| {
+            s.available[..3].iter().all(|x| !*x)
+        });
+        assert!(
+            unknown.memory_bytes.is_none()
+                && unknown.clients.is_none()
+                && unknown.traffic.as_ref().is_none_or(|t| t.interval_ms == 0)
+        );
+        drop(resume);
+        let resumed = wait(&owner, "real metrics reconnect", |s| {
+            s.available[..3].iter().all(|x| *x)
+                && (0..3).all(|i| s.stream_generation[i] > observed.stream_generation[i])
+        });
+        assert_eq!(resumed.identity, Some(first.clone()));
+        eprintln!("REAL_OBSERVATION resumed {resumed:?}");
+        drop(response);
+        drop(client);
+        drop(server);
+        owner.execute(RuntimeCommand::Restart, |_| {}).unwrap();
+        let replacement = owner.observation().snapshot().identity.unwrap();
+        assert_ne!(replacement.instance_id, first.instance_id);
+        wait(&owner, "replacement metrics", |s| {
+            s.available[..3].iter().all(|x| *x)
+        });
+        owner.execute(RuntimeCommand::Stop, |_| {}).unwrap();
+        assert!(owner.observation().snapshot().identity.is_none());
+        thread::sleep(Duration::from_millis(200));
+        let stopped = owner.observation().snapshot();
+        assert!(stopped.identity.is_none() && stopped.available.iter().all(|x| !*x));
+        assert!(stopped.clients.is_none() && stopped.logs.is_empty());
+        assert!(access.lock().unwrap().owned.is_none());
+        eprintln!("REAL_OBSERVATION replacement/stop cleared and reaped");
+        drop(owner);
+        drop(access);
+        fs::remove_dir_all(root).unwrap();
+    }
+
     fn pending_disk(store: &JsonStateStore) -> Value {
         // 从 state.json 重新加载，而不是把内存快照当作落盘证据。
         let state = store.load().unwrap();
