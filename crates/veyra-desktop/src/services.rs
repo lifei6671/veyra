@@ -460,6 +460,118 @@ mod tests {
         drop(rebound);
         std::fs::remove_dir_all(root).unwrap();
     }
+    /// 保护删除分享后重建正式 Service 的首次全局读取；不靠导航或延时恢复。
+    #[test]
+    fn sharing_deleted_restart_initial_snapshot_reaches_ready() {
+        use veyra_core::application::shares::{ShareCommand, ShareService};
+        let root = std::env::temp_dir().join(format!(
+            "veyra-p506-startup-{:?}",
+            veyra_core::domain::StateEpoch::fresh().unwrap()
+        ));
+        let (services, _) = AppServices::new(root.clone()).unwrap();
+        use veyra_core::application::subscription_management::preview::{
+            PreviewInput, PreviewSource,
+        };
+        let input = PreviewInput {
+            name: "owned".into(),
+            description: String::new(),
+            sources: vec![PreviewSource::Pasted(
+                "socks5://127.0.0.1:1080#owned".into(),
+            )],
+        };
+        services.runtime.block_on(async {
+            let preview = services.subscriptions.preview(&input).await.unwrap();
+            services
+                .subscriptions
+                .save_preview(input, &preview)
+                .await
+                .unwrap();
+        });
+        let state = services.snapshots.snapshot().unwrap();
+        let mut share = ShareService::draft().unwrap();
+        share.subscription_ids = vec![state.subscriptions[0].id.clone()];
+        share.name = "startup-owned".into();
+        share.enabled = false;
+        let state = services
+            .shares_command(
+                Some(state.config_version()),
+                Some(ShareCommand::Save(share.clone())),
+            )
+            .blocking_recv()
+            .unwrap()
+            .unwrap();
+        services
+            .shares_command(
+                Some(state.config_version()),
+                Some(ShareCommand::Delete(share.id)),
+            )
+            .blocking_recv()
+            .unwrap()
+            .unwrap();
+        drop(services);
+        let before = std::fs::read(root.join("state.json")).unwrap();
+        let mut failures = 0;
+        for iteration in 0..80 {
+            let (services, mut rx) = AppServices::new(root.clone()).unwrap();
+            let mut bridge = StateBridge::default();
+            services.refresh(bridge.begin());
+            services.runtime.block_on(async {
+                tokio::time::timeout(std::time::Duration::from_secs(5), async {
+                    while matches!(bridge.load, LoadState::Busy) {
+                        let event = rx.recv().await.unwrap();
+                        if let AppEvent::Snapshot {
+                            result: Err(ref error),
+                            ..
+                        } = event
+                        {
+                            eprintln!("restart={iteration} initial_snapshot_error={error:?}");
+                        }
+                        bridge.receive(event);
+                    }
+                })
+                .await
+                .unwrap();
+            });
+            if !matches!(bridge.load, LoadState::Ready) {
+                failures += 1;
+            }
+            assert!(
+                bridge
+                    .snapshot
+                    .as_ref()
+                    .unwrap()
+                    .app_config
+                    .subscription_shares
+                    .is_empty()
+            );
+            // 与 composition root 相同：首次读取完成才投递 Runtime Refresh。
+            let request = bridge
+                .begin_initial_runtime_refresh(Disposition::Accepted)
+                .unwrap();
+            services.manual_runtime.submit(
+                request,
+                veyra_core::application::manual_runtime::RuntimeCommand::Refresh,
+            );
+            services.runtime.block_on(async {
+                tokio::time::timeout(std::time::Duration::from_secs(5), async {
+                    while bridge.runtime_operation.is_some() {
+                        bridge.receive(rx.recv().await.unwrap());
+                    }
+                })
+                .await
+                .unwrap();
+            });
+            assert!(bridge.runtime_result.as_ref().unwrap().is_ok());
+            assert!(matches!(bridge.load, LoadState::Ready));
+            drop(services);
+            assert_eq!(std::fs::read(root.join("state.json")).unwrap(), before);
+        }
+        std::fs::remove_dir_all(root).unwrap();
+        assert_eq!(
+            failures, 0,
+            "initial global reads failed without navigation"
+        );
+    }
     // Protect real StateStore errors/retry through the production channel and runtime.
     #[test]
     fn real_store_empty_error_retry_and_late_delivery() {

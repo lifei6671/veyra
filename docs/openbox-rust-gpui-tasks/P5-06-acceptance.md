@@ -1,6 +1,82 @@
 # OBG-P5-06 订阅分享交付与局部验收
 
-## 2026-10-08 验收修正（当前）
+## 2026-10-09 启动修复与最终复核（当前）
+
+**ACCEPTANCE，owner 保留。** 基于 `7a6eb7dc6ede8b7d68a6eee7c81a67a0b5926176` 的本地增量；不 push。P2-06 继续 DOING、原 owner/Runtime/Platform/Helper/IPC/公共 DTO 范围不变。本轮没有修改 Core、Cargo 或用户系统代理/TUN/管理员配置。
+
+### 启动故障根因与修复
+
+使用自有目录中的生产 SubscriptionManager → ShareService → SnapshotService → JsonStateStore 创建订阅、保存分享、删除分享，再重建 AppServices。旧启动顺序80轮在第36轮真实失败：`StorageFailed / 数据未能保存或读取 / detail: Some(Busy)`，同时 Runtime Refresh 成功，磁盘字节未变化；见 [原始失败](evidence/p5-06-sharing/final-20261009/repro-startup.log)。
+
+`AppServices::new` 的 shares.restore 与全局 snapshot 在同一单 blocking-worker 队列中串行；AppView 同时向 RuntimeService 的独立线程发出首次 Refresh，后者读取同一 StateAccessGate。SnapshotService 的 try_lock 在竞争时返回 Busy，StateBridge 将这一实际失败保持为 Error；没有新读取就不会自动转 Ready。这是启动读顺序的锁竞争，不是磁盘读取/迁移失败，也没有证据表明是运行态恢复失败。
+
+最小修复仅在 Desktop 编排：首次全局快照 Accepted 且 Ready 后才调用既有 Runtime Refresh；错误/陈旧回调不启动，后续回调不重复启动。AppView 与测试共用 `begin_initial_runtime_refresh`。没有新增 sleep、延长延时、吞错误或修改 Gate/Runtime 契约。生产删除重启80轮均 Ready；另一个测试保护 Error/陈旧回调/成功重试/只启动一次。最终 GUI 删除重启仍停留 Overview，日志顺序为 `Snapshot Accepted → snapshot_loaded=true → Runtime Refreshed`，无需导航。
+
+### 当前产品阻断：监听字段语义
+
+用户最初接受保留“监听地址”布局差异，随后明确纠正：**此字段应配置 sing-box 入站端口，需协调 owner**。后者是当前有效要求，不能把先前接受解释为批准独立 HTTP 语义。
+
+现有 `SubscriptionShare.listen` 实际由 ShareService 的 TcpListener/Axum 绑定以提供 `/sub/{token}`；并非 sing-box 入站。两个服务不能直接绑定同一端口。停止相交修改，不能通过改标签冒充入站配置。最小协调：P2-06 owner 确认入站字段、保存/应用接口及公共 DTO 归属；P5-06 消费已确认接口，同时明确分享 HTTP endpoint 的独立监听/复用方案。未发送其它任务消息，未占用或修改其范围。当前测试只证明已有 HTTP 实现，不证明新的入站配置要求。
+
+### 测试与构建
+
+| 检查 | 本轮实际结果 |
+| --- | --- |
+| Core shares | 9 PASS |
+| Desktop sharing | 5 PASS，含生产80轮删除重启 |
+| Desktop subscriptions:: | 7 PASS，与sharing重叠3项；最后视觉修改后再次执行 |
+| Desktop state_bridge:: | 9 PASS，新增1项 |
+| Desktop real_store_empty_error_retry_and_late_delivery | 1 PASS |
+| Core/Desktop all-targets Clippy、Desktop build、workspace fmt | PASS；最后视觉修改后再次执行 |
+| 指定旧Tauri fmt | PASS |
+| 指定旧Tauri Clippy | FAIL 101，Windows libcronet.dll缺失；历史LICENSE失败独立保留，不扩范围 |
+
+合计 **Core9 + Desktop19 = 28个唯一定向测试**，没有将重复或过滤零项计为通过。命令/退出码与原始日志见 [checks](evidence/p5-06-sharing/final-20261009/checks.json)、[checks-final](evidence/p5-06-sharing/final-20261009/checks-final.json)、[checks-online](evidence/p5-06-sharing/final-20261009/checks-online.json)。初始fixture Invalid、旧启动Busy、旧翻译key测试及中间编译失败均保留，不改写历史结果。
+
+最终正常构建、无分享延时注入的 ad-hoc executable SHA256：`018f13a57898ea4d3f05198c0165a5c9acf472d75677518ae239077c35d31b91`。Cargo原始SHA256：`8d2a3c42f27a89b6eb19cc5164a1b247408c50320215dea4f98e9b3235ed3e54`。见 [build.json](evidence/p5-06-sharing/final-20261009/build.json)、[final-bundle](evidence/p5-06-sharing/final-20261009/final-bundle/)。此前 build4/pre-online 构建及其GUI图分开保存，不绑定到最终SHA。
+
+### 真实 GUI 与功能结果
+
+固定 macOS、现有150%显示设置、Light、逻辑内容1280×720，scale factor2；不更改用户显示/系统网络设置。两条自有订阅、loopback测试端口及随机测试Token，不含用户凭据。
+
+| 场景 | 本轮结果与范围 |
+| --- | --- |
+| 启动全局读取 | 最终构建 Ready，无页面导航；删除后重启同样通过，[日志](evidence/p5-06-sharing/final-20261009/gui-delete-restart-final.log) |
+| 真端口冲突失败保旧、刷新保错、释放后原草稿保存 | build4生产链路实际操作；旧文件字节不变、旧18787 HTTP200；释放后18786 HTTP200、18787拒绝；[失败](evidence/p5-06-sharing/final-20261009/gui-bind-failure.json)、[重试与重启](evidence/p5-06-sharing/final-20261009/gui-retry-restart.json) |
+| 轮换确认 | build4真实GUI操作，旧URL404、新URL200，Token改变；[结果](evidence/p5-06-sharing/final-20261009/gui-rotation.json) |
+| 托盘正常退出 | 用户操作测试实例并回复“已退出”；PID67396退出、18786/18787拒绝且可重绑，[结果](evidence/p5-06-sharing/final-20261009/gui-user-tray-quit.json)；后续构建替换用SIGTERM，单列且不冒充托盘证据 |
+| 删除、空态、删除后重启 | 最终构建shares为空，18786/18787拒绝，重启无需导航Ready；[删除](evidence/p5-06-sharing/final-20261009/gui-delete-online-final.json)、[重启](evidence/p5-06-sharing/final-20261009/gui-delete-restart-online-final.json) |
+| 新建、多选、保存禁用 | 最终GUI可选两项、空标题保持禁用；当前字段语义阻断，未继续保存新入站配置 |
+| 加载、保存忙碌完整最终逐态对照 | 本轮最终构建未取得对应线上原图，NOT_RUN；10-08旧证据保留但不冒充本轮完成 |
+
+### 视觉事实、原生截图与差异
+
+用户指定在线 `http://192.168.1.6:3036` 为一比一目标。实际页面为带 `data-v-*` 的自绘Dialog，而仓库 `SubscriptionSettings.tsx` 仍用 window.confirm，二者不是同一视觉基线。线上使用独立标签页、只对该标签拦截只读分享/订阅响应以提供相同自有fixture，未写线上后端。实际DOM/CSS取值后修正：编辑宽768、栏间20、比例1:0.9、字段14px、checkbox20px白底、QR176、按钮32px、确认框512px及名称模板；列表去掉额外框，名称/所选订阅同行，host及URL用Menlo。具体tokens集中定义，未改变全局组件外观。
+
+本地真实 React 组件以隔离API fixture加载，没有替换确认实现；macOS `screencapture` 取得两张真实浏览器原生确认图，不用CDP截图，不合成图，无需新增屏幕录制权限。删除/轮换取消后返回页面。原生浏览器框有来源标题、系统字体及默认确定按钮，线上自绘框与GPUI Dialog为应用布局；不得声称三者逐像素相同。GPUI/线上确认默认Enter没有触发操作的观察记录，不扩大为全部键盘行为通过。
+
+| 状态/来源 | 本轮证据 |
+| --- | --- |
+| 本地React原生删除/轮换 | [删除](evidence/p5-06-sharing/final-20261009/react-window-confirm-delete-system.png)、[轮换](evidence/p5-06-sharing/final-20261009/react-window-confirm-rotate-full-system.png) |
+| 在线真实自绘删除/轮换 | [删除](evidence/p5-06-sharing/final-20261009/react-delete-native.png)、[轮换](evidence/p5-06-sharing/final-20261009/react-rotate-native.png)；历史文件名native仅表示系统截图方式，内容不是window.confirm |
+| 在线编辑同订阅fixture | [在线](evidence/p5-06-sharing/final-20261009/online-edit-final-system.png) |
+| 最终GPUI空态 | [空态](evidence/p5-06-sharing/final-20261009/gpui-empty-online-final-system.png)；最终列表/删除确认本次保存图误捕前台，标为无效、不计视觉通过，实际点击与删除磁盘结果另有记录 |
+| 最终GPUI新建/多选 | [新建](evidence/p5-06-sharing/final-20261009/gpui-new-online-final-system.png)、[多选](evidence/p5-06-sharing/final-20261009/gpui-selected-online-final-system.png) |
+| build4失败/刷新保错 | [失败](evidence/p5-06-sharing/final-20261009/gpui-save-failed.png)、[刷新](evidence/p5-06-sharing/final-20261009/gpui-refresh-retains-error.png) |
+
+截图复核发现一批全屏截图捕获了前台Codex或未激活浏览器页，已保留为 `invalid-*` 并从有效清单排除。原生轮换在激活测试标签后用系统截图重拍并目视核验；GPUI新建/多选/空态/删除后启动用新进程当前窗口ID5306系统截图重拍并核验。最终列表与删除确认图未重拍，不以失败图冒充证据。
+
+**视觉未通过最终验收，不宣称95%或完全一致。** 仍可见字体字重（尤其标题/按钮）、周围页面背景/节点区域、二维码编码/quiet-zone和部分控件细节差异；字体技术差异不能自动豁免肉眼可见偏差。最终编辑/加载/忙碌/失败整套相同状态对照尚未完成。监听字段应接入sing-box入站的新语义与owner边界先行协调，再继续逐态修正及复测。
+
+### 独立复核与收尾
+
+[独立Review](evidence/p5-06-sharing/final-20261009/independent-review.md)：独立agent只读最终diff与实际日志，未发现本轮新增P0–P2并发/状态/异步回调问题；确认未跨P2-06保留范围。其未独立执行GUI，不据此宣称视觉通过。用户新确认的字段语义冲突列为当前产品blocker。
+
+自有应用/端口/React服务器关闭、临时node_modules链接移除、独立浏览器标签关闭及视口恢复；原图、日志、bundle及自有已删除分享的测试目录保留，[cleanup](evidence/p5-06-sharing/final-20261009/cleanup.json)。截图SHA256清单见 [manifest](evidence/p5-06-sharing/final-20261009/screenshots-sha256.json)。证据沿用仓库约定本地保留、不强制纳入Git；文档及源码按精确范围提交新本地commit。
+
+当前最小剩余项：**P2-06 owner协调入站字段/服务归属；完成剩余逐态视觉修正和本轮最终构建验证**。P5-06维持ACCEPTANCE、不释放owner；68卡计数与Ready Queue不变。
+
+## 2026-10-08 验收修正（历史）
 
 **状态仍为 ACCEPTANCE，未释放本卡 owner。** 原提交 `9cf86ad860075c392b68766a73db4084e20f2256` 与下方首轮记录、候选图和失败证据全部保留。本轮只修正分享交互与局部外观；Core/Runtime/Helper/IPC/Runtime DTO 未修改，不操作系统代理、TUN 或管理员配置。
 

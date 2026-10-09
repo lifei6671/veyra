@@ -280,11 +280,8 @@ impl AppView {
             _receiver: foreground,
             _tray_quit: tray_quit,
         };
+        // 首次全局读取完成后再启动 Runtime 观测，避免独立 worker 抢占 Store gate。
         view.refresh(cx);
-        view.runtime_command(
-            veyra_core::application::manual_runtime::RuntimeCommand::Refresh,
-            cx,
-        );
         view
     }
     fn platform_notice(
@@ -751,7 +748,14 @@ impl AppView {
                 }
             }
             event => {
-                self.bridge.receive(event);
+                let disposition = self.bridge.receive(event);
+                // 只消费既有 Runtime 接口，不改变 owner、恢复或锁合同。
+                if let Some(request) = self.bridge.begin_initial_runtime_refresh(disposition) {
+                    self.services.manual_runtime.submit(
+                        request,
+                        veyra_core::application::manual_runtime::RuntimeCommand::Refresh,
+                    );
+                }
                 if let Some(state) = &self.bridge.snapshot {
                     self.visual.restore(&state.app_config.visual);
                     self.behavior.rebase(state);

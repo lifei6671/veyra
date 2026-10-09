@@ -79,14 +79,14 @@ const MESSAGES: &[[&str; 3]] = &[
         "分享操作失敗，請重試；原設定已保留",
     ],
     [
-        "确定删除订阅分享？",
-        "Delete this subscription share?",
-        "確定刪除訂閱分享？",
+        "确定删除订阅分享「{name}」吗？删除后链接将失效。",
+        "Delete subscription share “{name}”? Its link will stop working.",
+        "確定刪除訂閱分享「{name}」嗎？刪除後連結將失效。",
     ],
     [
-        "重新生成分享链接？旧链接将立即失效。",
-        "Regenerate this link? The old link will stop working immediately.",
-        "重新產生分享連結？舊連結將立即失效。",
+        "重新生成「{name}」的链接？旧链接会立即失效，已经导入的设备要重新添加。",
+        "Regenerate the link for “{name}”? The old link will stop working immediately. Devices must import the new link.",
+        "重新產生「{name}」的連結？舊連結會立即失效，已經匯入的裝置要重新加入。",
     ],
     ["监听地址", "Listen address", "監聽位址"],
     [

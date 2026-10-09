@@ -180,7 +180,7 @@ Task：OBG-Px-xx
 | [OBG-P5-03 DNS 观测/热更边界](P5-dns-and-sharing.md#obg-p5-03) | P5-02、P3-01、P4-05C | TODO | — | — | — |
 | [OBG-P5-04 五种共享入站](P5-dns-and-sharing.md#obg-p5-04) | P2-02B、P2-03 | READY | — | — | — |
 | [OBG-P5-05 共享 UI/URI](P5-dns-and-sharing.md#obg-p5-05) | P5-04、P1-04A、P1-05 | TODO | — | — | — |
-| [OBG-P5-06 订阅分享](P5-dns-and-sharing.md#obg-p5-06) | P2-01、P1-05、P1-04A | ACCEPTANCE | Codex · Core/Config + GPUI | — | [重试修正/GUI补验、视觉及启动剩余项](P5-06-acceptance.md) |
+| [OBG-P5-06 订阅分享](P5-dns-and-sharing.md#obg-p5-06) | P2-01、P1-05、P1-04A | ACCEPTANCE | Codex · Core/Config + GPUI | — | [启动已修复/视觉剩余、入站字段待owner协调](P5-06-acceptance.md) |
 | [OBG-P5-07 DNS/共享验收](P5-dns-and-sharing.md#obg-p5-07) | P5-01、P5-02、P5-03、P5-04、P5-05、P5-06、P4-07 | TODO | — | — | — |
 
 ### P6 macOS TUN 与生命周期（5 项）

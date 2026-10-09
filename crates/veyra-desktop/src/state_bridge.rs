@@ -117,6 +117,16 @@ pub struct StateBridge {
     pub synthetic_accepted: u64,
 }
 impl StateBridge {
+    /// 首次有效快照到达后才开始 Runtime 观测；错误/陈旧回调不启动，成功仅启动一次。
+    pub fn begin_initial_runtime_refresh(&mut self, disposition: Disposition) -> Option<u64> {
+        if disposition != Disposition::Accepted
+            || !matches!(self.load, LoadState::Ready)
+            || self.runtime_request != 0
+        {
+            return None;
+        }
+        Some(self.begin_runtime(veyra_core::application::manual_runtime::RuntimeCommand::Refresh))
+    }
     pub fn begin_runtime(
         &mut self,
         command: veyra_core::application::manual_runtime::RuntimeCommand,
@@ -247,6 +257,33 @@ mod tests {
             request,
             result: Ok(Box::new(AppState::empty())),
         }
+    }
+    /// 保护真实启动编排的同一个判定入口：失败和过期读取不启动 Runtime。
+    #[test]
+    fn initial_runtime_refresh_waits_for_accepted_ready_and_runs_once() {
+        let mut b = StateBridge::default();
+        assert!(
+            b.begin_initial_runtime_refresh(Disposition::Accepted)
+                .is_none()
+        );
+        let old = b.begin();
+        let current = b.begin();
+        let disposition = b.receive(event(old));
+        assert!(b.begin_initial_runtime_refresh(disposition).is_none());
+        let disposition = b.receive(AppEvent::Snapshot {
+            request: current,
+            result: Err(AppError::new(
+                veyra_core::domain::AppErrorCode::StorageFailed,
+            )),
+        });
+        assert!(b.begin_initial_runtime_refresh(disposition).is_none());
+        let retry = b.begin();
+        let disposition = b.receive(event(retry));
+        assert_eq!(b.begin_initial_runtime_refresh(disposition), Some(1));
+        let next = b.begin();
+        let disposition = b.receive(event(next));
+        assert!(b.begin_initial_runtime_refresh(disposition).is_none());
+        assert!(matches!(b.load, LoadState::Ready));
     }
     // Protect navigation, out-of-order reads and replacement-state isolation.
     #[test]

@@ -244,47 +244,50 @@ pub const REFERENCE_GHOST_HOVER_DARK: u32 = 0x130f0f;
 
 pub const REFERENCE_BUTTON_FOCUS_OFFSET: f32 = 2.;
 
-// SubscriptionSettings.tsx / openbox.css:1274–1292 分享弹窗。
-// React 分享弹窗沿用全局 primary/compact 的实际 CSS 级联。
+// 用户指定在线 OpenBox 2026-10-09 实测分享弹窗；旧 React/CSS 候选基线保留在 evidence。
+// 768px、1:0.9 双栏、20px gap、32px按钮和176px二维码来自实际 computed style。
 pub const SUBSCRIPTION_SHARE_LINE: f32 = 20.;
-pub const SUBSCRIPTION_SHARE_FOOTER_GAP: f32 = 10.;
-pub const SUBSCRIPTION_SHARE_BUTTON_GAP: f32 = 7.;
-pub const SUBSCRIPTION_SHARE_CANCEL_RADIUS: f32 = 8.;
-pub const SUBSCRIPTION_SHARE_SAVE_HEIGHT: f32 = 36.;
-pub const SUBSCRIPTION_SHARE_SAVE_PADDING: f32 = 15.;
-pub const SUBSCRIPTION_SHARE_SAVE_RADIUS: f32 = 11.;
-pub const SUBSCRIPTION_SHARE_SAVE_WEIGHT: f32 = 750.;
+pub const SUBSCRIPTION_SHARE_FOOTER_GAP: f32 = 8.;
+pub const SUBSCRIPTION_SHARE_BUTTON_GAP: f32 = 6.;
+pub const SUBSCRIPTION_SHARE_CANCEL_RADIUS: f32 = 9.3;
+pub const SUBSCRIPTION_SHARE_SAVE_HEIGHT: f32 = 32.;
+pub const SUBSCRIPTION_SHARE_SAVE_PADDING: f32 = 12.;
+pub const SUBSCRIPTION_SHARE_SAVE_RADIUS: f32 = 9.3;
+pub const SUBSCRIPTION_SHARE_SAVE_WEIGHT: f32 = 520.;
 pub const SUBSCRIPTION_SHARE_SUBTITLE_GAP: f32 = 5.;
 pub const SUBSCRIPTION_SHARE_ADD_TEXT: u32 = 0xffffff;
-// React .ob-modal border、原生 checkbox margin 与 QR 顶部 padding。
-pub const SUBSCRIPTION_SHARE_BORDER: f32 = 1.;
-pub const SUBSCRIPTION_SHARE_CHECK_MARGIN: f32 = 4.;
-pub const SUBSCRIPTION_SHARE_QR_TOP: f32 = 2.;
-pub const SUBSCRIPTION_SHARE_EDITOR_WIDTH: f32 = 736.;
-pub const SUBSCRIPTION_SHARE_COLUMNS_GAP: f32 = 24.;
-pub const SUBSCRIPTION_SHARE_LEFT_FRACTION: f32 = 0.5;
-pub const SUBSCRIPTION_SHARE_BODY_HEIGHT: f32 = 320.;
+// 在线 modal 无边框，checkbox 无浏览器默认 margin，QR 使用4px内边距。
+pub const SUBSCRIPTION_SHARE_BORDER: f32 = 0.;
+pub const SUBSCRIPTION_SHARE_CHECK_MARGIN: f32 = 0.;
+pub const SUBSCRIPTION_SHARE_QR_TOP: f32 = 0.;
+pub const SUBSCRIPTION_SHARE_EDITOR_WIDTH: f32 = 768.;
+pub const SUBSCRIPTION_SHARE_COLUMNS_GAP: f32 = 20.;
+pub const SUBSCRIPTION_SHARE_LEFT_FRACTION: f32 = 1. / 1.9;
+pub const SUBSCRIPTION_SHARE_BODY_HEIGHT: f32 = 368.;
 pub const SUBSCRIPTION_SHARE_FOOTER: f32 = 53.;
-pub const SUBSCRIPTION_SHARE_ROW_HEIGHT: f32 = 42.;
+pub const SUBSCRIPTION_SHARE_ROW_HEIGHT: f32 = 38.;
 pub const SUBSCRIPTION_SHARE_LIST_MAX_HEIGHT: f32 = 320.;
-pub const SUBSCRIPTION_SHARE_CHECKBOX: f32 = 16.;
-pub const SUBSCRIPTION_SHARE_PROTOCOL_WIDTH: f32 = 82.;
-pub const SUBSCRIPTION_SHARE_COPY_WIDTH: f32 = 38.;
-pub const SUBSCRIPTION_SHARE_QR_SIZE: f32 = 164.;
+pub const SUBSCRIPTION_SHARE_CHECKBOX: f32 = 20.;
+pub const SUBSCRIPTION_SHARE_PROTOCOL_WIDTH: f32 = 83.125;
+pub const SUBSCRIPTION_SHARE_COPY_WIDTH: f32 = 40.;
+pub const SUBSCRIPTION_SHARE_QR_SIZE: f32 = 176.;
 // React 分享卡片、表单与 QRCodeSVG 容器；监听说明沿用相同排版。
-pub const SUBSCRIPTION_SHARE_CARD_LIGHT: u32 = 0xededeead;
-pub const SUBSCRIPTION_SHARE_CARD_DARK: u32 = 0xffffff0b;
 pub const SUBSCRIPTION_SHARE_CARD_HEIGHT: f32 = 60.;
-pub const SUBSCRIPTION_SHARE_CARD_RADIUS: f32 = 11.;
 pub const SUBSCRIPTION_SHARE_TEXT_GAP: f32 = 2.;
-pub const SUBSCRIPTION_SHARE_META_FONT: f32 = 11.;
+pub const SUBSCRIPTION_SHARE_META_FONT: f32 = 12.;
 pub const SUBSCRIPTION_SHARE_FIELD_FONT: f32 = 12.;
-pub const SUBSCRIPTION_SHARE_BODY_FONT: f32 = 13.;
-pub const SUBSCRIPTION_SHARE_CHECK_RADIUS: f32 = 3.;
-pub const SUBSCRIPTION_SHARE_LINK_HEIGHT: f32 = 34.;
-pub const SUBSCRIPTION_SHARE_QR_PADDING: f32 = 8.;
-// 原版 window.confirm 由系统呈现，GPUI 使用既有 Dialog 的紧凑确认宽度。
-pub const SUBSCRIPTION_SHARE_CONFIRM_WIDTH: f32 = 420.;
+pub const SUBSCRIPTION_SHARE_BODY_FONT: f32 = 14.;
+pub const SUBSCRIPTION_SHARE_CHECK_RADIUS: f32 = 9.3;
+pub const SUBSCRIPTION_SHARE_LINK_HEIGHT: f32 = 32.;
+pub const SUBSCRIPTION_SHARE_QR_PADDING: f32 = 4.;
+// 2026-10-09 指定在线参考站点的 Dialog computed style；不同于仓库旧 window.confirm。
+// oklch 色值转为 sRGB：text(.35519 .032 262.988)、error(.7176 .221 22.18)、cancel(.93 0 0)。
+pub const SUBSCRIPTION_SHARE_CONFIRM_RADIUS: f32 = 13.6;
+pub const SUBSCRIPTION_SHARE_CONFIRM_BUTTON_RADIUS: f32 = 9.3;
+pub const SUBSCRIPTION_SHARE_CONFIRM_TEXT: u32 = 0x333c4d;
+pub const SUBSCRIPTION_SHARE_CONFIRM_ERROR: u32 = 0xff5861;
+pub const SUBSCRIPTION_SHARE_CONFIRM_CANCEL: u32 = 0xe8e8e8;
+pub const SUBSCRIPTION_SHARE_CONFIRM_OVERLAY: u32 = 0x00000066;
 
 /// OpenBox .backend-card/.backend-badge/.backend-service-actions (openbox.css:2313–2352).
 pub mod backend {

@@ -316,7 +316,7 @@ impl SubscriptionsView {
     fn render_modal(&mut self, window: &mut Window, cx: &mut Context<Self>) -> AnyElement {
         let palette = SettingsColors::from_theme(cx);
         let share = self.share_editor_open;
-        let header_height = if share { 48. } else { t::DIALOG_HEADER };
+        let header_height = t::DIALOG_HEADER;
         let busy = if share {
             self.share_busy
         } else {
@@ -364,11 +364,7 @@ impl SubscriptionsView {
             .child(
                 div()
                     .text_size(px(t::SECTION_TITLE))
-                    .line_height(px(if share {
-                        t::SUBSCRIPTION_SHARE_LINE
-                    } else {
-                        t::SECTION_LINE
-                    }))
+                    .line_height(px(t::SECTION_LINE))
                     .font_weight(FontWeight::BOLD)
                     .text_color(palette.text)
                     .child(title),
@@ -431,10 +427,12 @@ impl SubscriptionsView {
             .flex()
             .flex_col()
             .min_h_0()
-            .when(share, |surface| {
-                surface.border_1().border_color(palette.line)
-            })
-            .rounded(px(t::SUBSCRIPTION_EDITOR_RADIUS))
+            .when(share, |surface| surface.border_0())
+            .rounded(px(if share {
+                t::SUBSCRIPTION_SHARE_CONFIRM_RADIUS
+            } else {
+                t::SUBSCRIPTION_EDITOR_RADIUS
+            }))
             .bg(palette.solid)
             .text_color(palette.text)
             .overflow_hidden()
@@ -1581,7 +1579,9 @@ impl SubscriptionsView {
                         FontWeight::SEMIBOLD
                     })
                     .when(share, |b| {
-                        b.font_weight(super::theme::MISANS_REGULAR)
+                        b.font_weight(super::theme::MISANS_SEMIBOLD)
+                            .text_size(px(t::BODY))
+                            .mt(px(t::ROW_GAP))
                             .rounded(px(t::SUBSCRIPTION_SHARE_CANCEL_RADIUS))
                     })
                     .on_click(|_, w, cx| {
@@ -1637,20 +1637,22 @@ impl SubscriptionsView {
                         b.child(Spinner::new().with_size(px(t::BODY)))
                     })
                     .when(share, |b| {
-                        // React 分享弹窗使用全局 primary-button，不能套订阅编辑器的局部覆盖。
+                        // 在线 .btn-sm 使用14px字、32px高；禁用状态沿用实际颜色，不再二次透明。
                         b.w_auto()
                             .min_w(px(t::SUBSCRIPTION_FOOTER_BUTTON))
                             .h(px(t::SUBSCRIPTION_SHARE_SAVE_HEIGHT))
                             .px(px(t::SUBSCRIPTION_SHARE_SAVE_PADDING))
                             .rounded(px(t::SUBSCRIPTION_SHARE_SAVE_RADIUS))
-                            .text_size(px(t::SUBSCRIPTION_SHARE_META_FONT))
+                            .text_size(px(t::BODY))
+                            .mt(px(t::ROW_GAP))
                             .font_weight(FontWeight(t::SUBSCRIPTION_SHARE_SAVE_WEIGHT))
-                            .reference_hover(
-                                rgb(t::ACCENT_STRONG).into(),
-                                rgb(t::ACCENT_STRONG).into(),
-                                rgb(t::SUBSCRIPTION_SHARE_ADD_TEXT).into(),
-                            )
-                            .opacity(if disabled { 0.5 } else { 1. })
+                            .when(!disabled, |b| {
+                                b.reference_hover(
+                                    rgb(t::PRIMARY_BUTTON_BG).into(),
+                                    rgb(t::PRIMARY_BUTTON_HOVER).into(),
+                                    rgb(t::PRIMARY_BUTTON_TEXT).into(),
+                                )
+                            })
                             .child(
                                 div()
                                     .flex()

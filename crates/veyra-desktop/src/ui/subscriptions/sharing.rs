@@ -248,15 +248,7 @@ impl SubscriptionsView {
                     .justify_between()
                     .gap(px(t::PAD))
                     .min_h(px(t::SUBSCRIPTION_SHARE_CARD_HEIGHT))
-                    .p(px(t::GAP))
-                    .border_1()
-                    .border_color(p.line)
-                    .rounded(px(t::SUBSCRIPTION_SHARE_CARD_RADIUS))
-                    .bg(if p.dark {
-                        rgba(t::SUBSCRIPTION_SHARE_CARD_DARK)
-                    } else {
-                        rgba(t::SUBSCRIPTION_SHARE_CARD_LIGHT)
-                    })
+                    .py(px(t::GAP))
                     .child(
                         div()
                             .flex()
@@ -266,13 +258,23 @@ impl SubscriptionsView {
                             .flex_1()
                             .child(
                                 div()
-                                    .font_weight(super::super::theme::MISANS_MEDIUM)
+                                    .flex()
+                                    .items_center()
                                     .text_size(px(t::BODY))
-                                    .child(share.name.clone()),
+                                    .child(
+                                        div()
+                                            .font_weight(super::super::theme::MISANS_MEDIUM)
+                                            .child(share.name.clone()),
+                                    )
+                                    .child(
+                                        hint(format!(" · {names}"), p)
+                                            .text_size(px(t::SUBSCRIPTION_SHARE_META_FONT)),
+                                    ),
                             )
-                            .child(hint(names, p).text_size(px(t::SUBSCRIPTION_SHARE_META_FONT)))
                             .child(
-                                hint(share.url(), p).text_size(px(t::SUBSCRIPTION_SHARE_META_FONT)),
+                                hint(share.url(), p)
+                                    .font_family("Menlo")
+                                    .text_size(px(t::SUBSCRIPTION_SHARE_META_FONT)),
                             ),
                     )
                     .child(actions),
@@ -283,46 +285,121 @@ impl SubscriptionsView {
     pub(super) fn share_confirmation(&self, cx: &mut Context<Self>) -> AnyElement {
         let command = self.share_confirm.clone().unwrap();
         let deleting = matches!(command, ShareCommand::Delete(_));
-        let key = if deleting {
-            "确定删除订阅分享？"
-        } else {
-            "重新生成分享链接？旧链接将立即失效。"
+        let id = match &command {
+            ShareCommand::Delete(id) | ShareCommand::Regenerate(id) => id,
+            _ => unreachable!("only delete and regenerate require confirmation"),
         };
+        let Some(share) = self.shares.iter().find(|share| &share.id == id) else {
+            return div().into_any_element();
+        };
+        // 名称是用户数据；仅翻译模板，保持 React confirm 的具体操作对象。
+        let key = if deleting {
+            "确定删除订阅分享「{name}」吗？删除后链接将失效。"
+        } else {
+            "重新生成「{name}」的链接？旧链接会立即失效，已经导入的设备要重新添加。"
+        };
+        let message = tr(cx, key).replace("{name}", &share.name);
         let p = SettingsColors::from_theme(cx);
+        let text = if cx.theme().mode.is_dark() {
+            p.text
+        } else {
+            rgb(t::SUBSCRIPTION_SHARE_CONFIRM_TEXT).into()
+        };
+        let confirm_button = |id, label, danger| {
+            button(id, label)
+                .h(px(t::CONTROL))
+                .px(px(t::PAD))
+                .text_size(px(t::BODY))
+                .line_height(px(t::BODY_LINE))
+                .font_weight(super::super::theme::MISANS_SEMIBOLD)
+                .rounded(px(t::SUBSCRIPTION_SHARE_CONFIRM_BUTTON_RADIUS))
+                .bg(if danger {
+                    rgb(t::SUBSCRIPTION_SHARE_CONFIRM_ERROR)
+                } else {
+                    rgb(t::SUBSCRIPTION_SHARE_CONFIRM_CANCEL)
+                })
+                .text_color(if danger { rgb(0x000000).into() } else { text })
+        };
         let surface = div()
-            .w(px(t::SUBSCRIPTION_SHARE_CONFIRM_WIDTH))
-            .p(px(t::SECTION_PADDING))
-            .rounded(px(t::POPOVER_RADIUS))
+            .w(px(t::DIALOG_WIDTH))
+            .rounded(px(t::SUBSCRIPTION_SHARE_CONFIRM_RADIUS))
+            .overflow_hidden()
             .bg(p.solid)
-            .text_color(p.text)
+            .text_color(text)
+            .font_weight(super::super::theme::MISANS_REGULAR)
             .flex()
             .flex_col()
-            .gap(px(t::PAD))
-            .child(tr(cx, key))
             .child(
                 div()
+                    .h(px(t::DIALOG_HEADER))
+                    .px(px(t::SECTION_PADDING))
+                    .flex()
+                    .items_center()
+                    .justify_between()
+                    .border_b_1()
+                    .border_color(text.opacity(0.1))
+                    .child(
+                        div()
+                            .text_size(px(t::SECTION_TITLE))
+                            .line_height(px(t::SECTION_LINE))
+                            .font_weight(FontWeight::BOLD)
+                            .child(tr(cx, "确定")),
+                    )
+                    .child(
+                        super::super::components::icon_button(
+                            "share-confirm-close",
+                            tr(cx, "关闭"),
+                            "XMark",
+                            t::SWITCH_HEIGHT,
+                        )
+                        .mr(-px(t::GAP))
+                        .text_color(text)
+                        .on_click(cx.listener(|this, _, _, cx| {
+                            this.share_confirm = None;
+                            cx.notify();
+                        })),
+                    ),
+            )
+            .child(
+                div()
+                    .p(px(t::SECTION_PADDING))
+                    .text_size(px(t::BODY))
+                    .line_height(px(t::BODY_LINE))
+                    .child(message),
+            )
+            .child(
+                div()
+                    .px(px(t::SECTION_PADDING))
+                    .py(px(t::GAP))
+                    .border_t_1()
+                    .border_color(text.opacity(0.1))
                     .flex()
                     .justify_end()
                     .gap(px(t::GAP))
                     .child(
-                        button("share-dismiss", tr(cx, "取消")).on_click(cx.listener(
-                            |this, _, _, cx| {
+                        confirm_button("share-dismiss", tr(cx, "取消"), false).on_click(
+                            cx.listener(|this, _, _, cx| {
                                 this.share_confirm = None;
                                 cx.notify();
-                            },
-                        )),
+                            }),
+                        ),
                     )
                     .child(
-                        button("share-confirm", tr(cx, "确定")).on_click(cx.listener(
-                            move |this, _, _, cx| {
+                        confirm_button("share-confirm", tr(cx, "确定"), true).on_click(
+                            cx.listener(move |this, _, _, cx| {
                                 this.share_confirm = None;
                                 this.share_send(Some(command.clone()), cx);
-                            },
-                        )),
+                            }),
+                        ),
                     ),
             );
         gpui_kit::base::Dialog::new(cx)
             .open(true)
+            .backdrop(
+                div()
+                    .size_full()
+                    .bg(rgba(t::SUBSCRIPTION_SHARE_CONFIRM_OVERLAY)),
+            )
             .on_ok(|_, _, _| false)
             .popup(gpui_kit::base::DialogPopup::new().child(surface))
             .on_close(cx.listener(|this, _, _, cx| {
@@ -345,8 +422,8 @@ impl SubscriptionsView {
         let input = |ix| {
             text_input(&self.share_inputs[ix])
                 .border_focus()
-                .text_size(px(t::SUBSCRIPTION_SHARE_FIELD_FONT))
-                .font_weight(super::super::theme::MISANS_MEDIUM)
+                .text_size(px(t::BODY))
+                .font_weight(super::super::theme::MISANS_REGULAR)
                 .bg(p.solid)
                 .border_color(p.line)
                 .text_color(p.text)
@@ -380,17 +457,14 @@ impl SubscriptionsView {
                         gpui_kit::base::Button::new(("subscription-share-check", ix))
                             .accessibility_label(item.name.clone())
                             .size(px(t::SUBSCRIPTION_SHARE_CHECKBOX))
-                            // 对齐浏览器 checkbox 默认左 margin 4px、18px 网格轨道。
+                            // 在线 checkbox-sm 是20px，不保留旧原生 checkbox 的 margin。
                             .ml(px(t::SUBSCRIPTION_SHARE_CHECK_MARGIN))
                             .mr(-px(t::SUBSCRIPTION_SHARE_CHECK_MARGIN / 2.))
                             .border_1()
                             .border_color(p.line)
                             .rounded(px(t::SUBSCRIPTION_SHARE_CHECK_RADIUS))
-                            .bg(if checked {
-                                rgb(t::ACCENT_STRONG).into()
-                            } else {
-                                p.solid
-                            })
+                            .bg(p.solid)
+                            .text_color(p.text)
                             .when(checked, |b| {
                                 b.child(super::super::icons::icon("Check", t::BODY))
                             })
@@ -421,7 +495,7 @@ impl SubscriptionsView {
                         .readonly(true)
                         // React 在本机 SFMono/Consolas 不可用时实际解析为 Menlo。
                         .font_family("Menlo")
-                        .text_size(px(t::SUBSCRIPTION_SHARE_META_FONT))
+                        .text_size(px(t::BODY))
                         .rounded_r(px(0.)),
                 ),
             )
@@ -464,10 +538,12 @@ impl SubscriptionsView {
                     .flex_col()
                     .child(
                         div()
-                            .pb(px(t::SUBSCRIPTION_SHARE_FIELD_FONT))
+                            .pb(px(t::GAP))
                             .border_b_1()
                             .border_color(p.line)
                             .text_size(px(t::SUBSCRIPTION_SHARE_FIELD_FONT))
+                            .line_height(px(t::SECTION_PADDING))
+                            .font_weight(super::super::theme::MISANS_MEDIUM)
                             .child(tr(cx, "选择要分享的订阅")),
                     )
                     .child(choices)
@@ -494,7 +570,7 @@ impl SubscriptionsView {
                     .min_w_0()
                     .flex()
                     .flex_col()
-                    .gap(px(t::SECTION_PADDING))
+                    .gap(px(t::PAD))
                     .child(share_field(tr(cx, "标题"), input(0)))
                     .child(share_field(
                         tr(cx, "域名或 IP"),
@@ -511,7 +587,11 @@ impl SubscriptionsView {
                                 .rounded_r(px(0.))
                                 .h(px(t::SUBSCRIPTION_SHARE_LINK_HEIGHT)),
                             )
-                            .child(div().flex_1().child(input(1).rounded_l(px(0.)))),
+                            .child(
+                                div()
+                                    .flex_1()
+                                    .child(input(1).font_family("Menlo").rounded_l(px(0.))),
+                            ),
                     ))
                     .child(share_field(tr(cx, "分享链接"), link))
                     .child(
@@ -547,6 +627,7 @@ fn share_field(text: &str, input: impl IntoElement) -> Div {
         .text_size(px(t::SUBSCRIPTION_SHARE_FIELD_FONT))
         .line_height(px(t::SECTION_PADDING))
         .font_weight(super::super::theme::MISANS_MEDIUM)
+        .gap(px(t::ROW_GAP))
         .child(text.to_owned())
         .child(input)
 }
@@ -623,8 +704,8 @@ mod tests {
             "请检查名称、订阅、监听地址与分享端口",
             "所选订阅包含无法无损导出的节点",
             "分享操作失败，请重试；原配置已保留",
-            "确定删除订阅分享？",
-            "重新生成分享链接？旧链接将立即失效。",
+            "确定删除订阅分享「{name}」吗？删除后链接将失效。",
+            "重新生成「{name}」的链接？旧链接会立即失效，已经导入的设备要重新添加。",
             "仅提供 HTTP；分享端口须与监听一致，外部可达性取决于网络",
         ] {
             assert_ne!(crate::ui::i18n::translate(English, key), key, "{key}");
