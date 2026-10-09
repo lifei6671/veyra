@@ -127,7 +127,7 @@ impl SubscriptionsView {
             .pb(px(t::SECTION_PADDING))
             .gap(px(t::GAP));
         if self.share_busy {
-            body = body.child(super::super::components::loading_spinner(t::BODY, cx));
+            body = body.child(share_spinner("share-list-loading", t::BODY, p.text));
         }
         if self.share_error.is_some() && !self.share_editor_open {
             body = body.child(self.share_error_view(cx));
@@ -299,7 +299,7 @@ impl SubscriptionsView {
             "重新生成「{name}」的链接？旧链接会立即失效，已经导入的设备要重新添加。"
         };
         let message = tr(cx, key).replace("{name}", &share.name);
-        let p = SettingsColors::from_theme(cx);
+        let p = SettingsColors::sharing(cx);
         let text = if cx.theme().mode.is_dark() {
             p.text
         } else {
@@ -409,7 +409,7 @@ impl SubscriptionsView {
             .into_any_element()
     }
     pub(super) fn share_editor(&mut self, window: &mut Window, cx: &mut Context<Self>) -> Div {
-        let p = SettingsColors::from_theme(cx);
+        let p = SettingsColors::sharing(cx);
         let Some(draft) = self.share_draft.clone() else {
             return div();
         };
@@ -426,6 +426,7 @@ impl SubscriptionsView {
                 .font_weight(super::super::theme::MISANS_REGULAR)
                 .bg(p.solid)
                 .border_color(p.line)
+                .rounded(px(t::SUBSCRIPTION_SHARE_CANCEL_RADIUS))
                 .text_color(p.text)
         };
         let width = px(t::SUBSCRIPTION_SHARE_EDITOR_WIDTH)
@@ -452,7 +453,7 @@ impl SubscriptionsView {
                     .gap(px(t::GAP))
                     .min_h(px(t::SUBSCRIPTION_SHARE_ROW_HEIGHT))
                     .border_b_1()
-                    .border_color(p.line)
+                    .border_color(p.text.opacity(0.1))
                     .child(
                         gpui_kit::base::Button::new(("subscription-share-check", ix))
                             .accessibility_label(item.name.clone())
@@ -463,10 +464,13 @@ impl SubscriptionsView {
                             .border_1()
                             .border_color(p.line)
                             .rounded(px(t::SUBSCRIPTION_SHARE_CHECK_RADIUS))
-                            .bg(p.solid)
+                            .bg(rgba(0))
                             .text_color(p.text)
                             .when(checked, |b| {
-                                b.child(super::super::icons::icon("Check", t::BODY))
+                                // 在线 DaisyUI checkbox 的 12px polygon 旋转45°，不是 Heroicons 细描边。
+                                b.child(gpui_kit::component::Icon::default().data(
+                                    br#"<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 12"><path fill="currentColor" transform="rotate(45 6 6)" d="M2.4 12V9.6H6V0H8.4V12Z"/></svg>"#.as_slice(),
+                                ).with_size(px(t::SUBSCRIPTION_SHARE_CHECK_MARK)))
                             })
                             .on_click(cx.listener(move |this, _, _, cx| {
                                 if let Some(d) = &mut this.share_draft {
@@ -521,7 +525,7 @@ impl SubscriptionsView {
             .size(px(t::SUBSCRIPTION_SHARE_QR_SIZE))
             .p(px(t::SUBSCRIPTION_SHARE_QR_PADDING))
             .bg(rgb(0xffffff))
-            .rounded(px(t::SUBSCRIPTION_SHARE_QR_PADDING))
+            .rounded(px(t::SUBSCRIPTION_SHARE_QR_RADIUS))
             .child(qr_code(&url));
         div()
             .font_weight(super::super::theme::MISANS_REGULAR)
@@ -540,19 +544,19 @@ impl SubscriptionsView {
                         div()
                             .pb(px(t::GAP))
                             .border_b_1()
-                            .border_color(p.line)
+                            .border_color(p.text.opacity(0.1))
                             .text_size(px(t::SUBSCRIPTION_SHARE_FIELD_FONT))
                             .line_height(px(t::SECTION_PADDING))
                             .font_weight(super::super::theme::MISANS_MEDIUM)
                             .child(tr(cx, "选择要分享的订阅")),
                     )
                     .child(choices)
-                    .child(share_field(tr(cx, "监听地址"), input(3)).mt(px(t::GAP)))
+                    .child(share_field(tr(cx, "分享监听地址"), input(3)).mt(px(t::GAP)))
                     .child(
                         hint(
                             tr(
                                 cx,
-                                "仅提供 HTTP；分享端口须与监听一致，外部可达性取决于网络",
+                                "仅提供 HTTP。127.0.0.1 仅本机；局域网可监听 0.0.0.0，右侧填写本机局域网 IP 与相同端口。",
                             ),
                             p,
                         )
@@ -590,6 +594,7 @@ impl SubscriptionsView {
                             .child(
                                 div()
                                     .flex_1()
+                                    .ml(-px(1.))
                                     .child(input(1).font_family("Menlo").rounded_l(px(0.))),
                             ),
                     ))
@@ -631,24 +636,88 @@ fn share_field(text: &str, input: impl IntoElement) -> Div {
         .child(text.to_owned())
         .child(input)
 }
+/// 线上 DaisyUI loading-spinner：24px viewBox、r=9.5、3px圆头描边，2秒旋转与1.5秒变长。
+/// GPUI SVG不执行SMIL，直接在同一6秒周期中画等价圆弧；三个真实加载位置共用。
+pub(super) fn share_spinner(id: &'static str, extent: f32, color: Hsla) -> impl IntoElement {
+    div().size(px(extent)).with_animation(
+        id,
+        Animation::new(Duration::from_secs(6))
+            .repeat()
+            .with_easing(|v| v),
+        move |element, progress| {
+            element.child(
+                canvas(
+                    |_, _, _| (),
+                    move |bounds, _, window, _| {
+                        let phase = (progress * 4.).fract();
+                        let (dash, offset) = if phase < 0.475 {
+                            (42. * phase / 0.475, -16. * phase / 0.475)
+                        } else {
+                            (42., -16. - 43. * (phase - 0.475) / 0.525)
+                        };
+                        if dash > 0. {
+                            let scale = extent / 24.;
+                            let radius = 9.5 * scale;
+                            let stroke = 3. * scale;
+                            let start = std::f32::consts::TAU * progress * 3. - offset / 9.5;
+                            let sweep = dash / 9.5;
+                            let center = bounds.origin + point(px(extent / 2.), px(extent / 2.));
+                            let at = |angle: f32| {
+                                center + point(px(radius * angle.cos()), px(radius * angle.sin()))
+                            };
+                            let from = at(start);
+                            let to = at(start + sweep);
+                            let mut path = PathBuilder::stroke(px(stroke));
+                            path.move_to(from);
+                            path.arc_to(
+                                point(px(radius), px(radius)),
+                                px(0.),
+                                sweep > std::f32::consts::PI,
+                                true,
+                                to,
+                            );
+                            window.paint_path(path.build().expect("valid loading SVG arc"), color);
+                            for end in [from, to] {
+                                window.paint_quad(
+                                    fill(
+                                        Bounds::new(
+                                            end - point(px(stroke / 2.), px(stroke / 2.)),
+                                            size(px(stroke), px(stroke)),
+                                        ),
+                                        color,
+                                    )
+                                    .corner_radii(px(stroke / 2.)),
+                                );
+                            }
+                        }
+                    },
+                )
+                .size(px(extent)),
+            )
+        },
+    )
+}
+
 fn qr_code(url: &str) -> AnyElement {
     let Ok(code) = qrcode::QrCode::with_error_correction_level(url.as_bytes(), qrcode::EcLevel::M)
     else {
         return div().into_any_element();
     };
-    // 与 React QRCodeSVG 一样编码完整 URL；白边由容器提供，不用装饰图案替代码点。
+    // 编码完整 URL；线上 PNG 在4px容器 padding内另有一模块 quiet zone，实拍黑区约160px。
     canvas(
         |_, _, _| (),
         move |bounds, _, window, _| {
             window.paint_quad(fill(bounds, rgb(0xffffff)));
             let n = code.width();
-            let cell = bounds.size.width / n as f32;
+            let quiet = t::SUBSCRIPTION_SHARE_QR_QUIET_MODULES;
+            let cell = bounds.size.width / (n as f32 + quiet * 2.);
             for y in 0..n {
                 for x in 0..n {
                     if code[(x, y)] == qrcode::Color::Dark {
                         window.paint_quad(fill(
                             Bounds::new(
-                                bounds.origin + point(cell * x as f32, cell * y as f32),
+                                bounds.origin
+                                    + point(cell * (x as f32 + quiet), cell * (y as f32 + quiet)),
                                 size(cell, cell),
                             ),
                             rgb(0x000000),
@@ -692,7 +761,7 @@ mod tests {
     fn sharing_labels_have_three_languages() {
         use veyra_core::domain::DesktopLanguage::*;
         for key in [
-            "监听地址",
+            "分享监听地址",
             "编辑订阅分享",
             "停用订阅分享",
             "启用订阅分享",
@@ -706,7 +775,7 @@ mod tests {
             "分享操作失败，请重试；原配置已保留",
             "确定删除订阅分享「{name}」吗？删除后链接将失效。",
             "重新生成「{name}」的链接？旧链接会立即失效，已经导入的设备要重新添加。",
-            "仅提供 HTTP；分享端口须与监听一致，外部可达性取决于网络",
+            "仅提供 HTTP。127.0.0.1 仅本机；局域网可监听 0.0.0.0，右侧填写本机局域网 IP 与相同端口。",
         ] {
             assert_ne!(crate::ui::i18n::translate(English, key), key, "{key}");
             assert_ne!(

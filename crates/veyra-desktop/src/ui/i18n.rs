@@ -88,11 +88,11 @@ const MESSAGES: &[[&str; 3]] = &[
         "Regenerate the link for “{name}”? The old link will stop working immediately. Devices must import the new link.",
         "重新產生「{name}」的連結？舊連結會立即失效，已經匯入的裝置要重新加入。",
     ],
-    ["监听地址", "Listen address", "監聽位址"],
+    ["分享监听地址", "Share listen address", "分享監聽位址"],
     [
-        "仅提供 HTTP；分享端口须与监听一致，外部可达性取决于网络",
-        "HTTP only. Advertised and listening ports must match; external access depends on the network.",
-        "僅提供 HTTP；分享連接埠須與監聽一致，外部可達性取決於網路",
+        "仅提供 HTTP。127.0.0.1 仅本机；局域网可监听 0.0.0.0，右侧填写本机局域网 IP 与相同端口。",
+        "HTTP only. 127.0.0.1 is local-only. For LAN, listen on 0.0.0.0 and enter this device’s LAN IP with the same port on the right.",
+        "僅提供 HTTP。127.0.0.1 僅本機；區域網路可監聽 0.0.0.0，右側填寫本機區域網路 IP 與相同連接埠。",
     ],
     [
         "请添加国家地区",

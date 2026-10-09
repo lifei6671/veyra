@@ -589,9 +589,13 @@ impl AppView {
                     .subscriptions
                     .update(cx, |view, cx| view.complete(&request, result, window, cx));
                 if let Some(state) = state {
-                    self.bridge.leave_page();
                     self.behavior.rebase(&state);
-                    self.bridge.snapshot = Some(state);
+                    if let Some(request) = self.bridge.accept_page_snapshot(state) {
+                        self.services.manual_runtime.submit(
+                            request,
+                            veyra_core::application::manual_runtime::RuntimeCommand::Refresh,
+                        );
+                    }
                     self.project_behavior(window, cx);
                 }
             }

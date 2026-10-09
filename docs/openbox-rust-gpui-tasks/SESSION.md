@@ -1,4 +1,6 @@
-**P5-06 / ACCEPTANCE（2026-10-09，当前）**：启动故障真实复现为Store gate Busy；首次全局Accepted/Ready后才发起Runtime Refresh，生产80轮删除重启与真实GUI无需导航Ready。Core9/Desktop19唯一定向测试、最终build/Clippy/fmt通过；旧Tauri Windows资源失败独立保留。真实本地React原生confirm系统截图已补，线上自绘Dialog另列；修正具体分享名称、线上几何/控件/列表。最终signed SHA256 `018f13a57898ea4d3f05198c0165a5c9acf472d75677518ae239077c35d31b91`。独立只读Review无新增阻断代码问题。**用户最新明确监听字段应配置sing-box入站端口，需协调P2-06 owner；现有ShareService HTTP监听不等价，已停止相交修改。** 字体等剩余逐态视觉未闭合，维持ACCEPTANCE、owner不释放。P2-06继续DOING及原范围；不动系统代理/TUN/管理员配置。详见[P5-06当前记录](P5-06-acceptance.md)。68卡DONE21/DOING1/ACCEPTANCE1/READY5/TODO33/DEFERRED7；READY=P0-08/P2-05/P3-01/P4-03/P5-04。历史证据保留，精确范围新本地增量commit，不push。
+**P5-06 最终收口 / DONE（2026-10-09，当前）**：最终产品架构为Veyra独立ShareService/Axum HTTP端口、sing-box节点JSON和URL二维码；解除错误P2-06端口依赖。listen/host/LAN生产回归、29唯一定向测试、Clippy/fmt/build、真实GUI功能与150%浅色逐态视觉通过；新增页面快照先完成的启动收敛修复，最终删除无导航重启Ready。最终signed SHA256 `879c5d775ff0adce3c0a80fc313df79c32751ba971632321f8d20485ba652b0b`。独立复核三项P2均关闭，无剩余可执行finding。用户明确接受局部blur、MiSans静态字体及独立监听字段差异，不声称像素完全一致；同机LAN验证不代替第二设备，较早构建托盘证据不重绑最终SHA。所有历史证据保留，本卡owner/预约释放；P2-06 DOING、原owner/范围不变。68卡DONE22/DOING1/ACCEPTANCE0/READY5/TODO33/DEFERRED7，READY队列未变且不启动下游；本轮一次本地增量commit、不push。详见[最终验收记录](P5-06-acceptance.md)。
+
+**P5-06 / ACCEPTANCE（2026-10-09，历史；端口决策已覆盖）**：启动故障真实复现为Store gate Busy；首次全局Accepted/Ready后才发起Runtime Refresh，生产80轮删除重启与真实GUI无需导航Ready。Core9/Desktop19唯一定向测试、最终build/Clippy/fmt通过；旧Tauri Windows资源失败独立保留。真实本地React原生confirm系统截图已补，线上自绘Dialog另列；修正具体分享名称、线上几何/控件/列表。最终signed SHA256 `018f13a57898ea4d3f05198c0165a5c9acf472d75677518ae239077c35d31b91`。独立只读Review无新增阻断代码问题。**用户最新明确监听字段应配置sing-box入站端口，需协调P2-06 owner；现有ShareService HTTP监听不等价，已停止相交修改。** 字体等剩余逐态视觉未闭合，维持ACCEPTANCE、owner不释放。P2-06继续DOING及原范围；不动系统代理/TUN/管理员配置。详见[P5-06当前记录](P5-06-acceptance.md)。68卡DONE21/DOING1/ACCEPTANCE1/READY5/TODO33/DEFERRED7；READY=P0-08/P2-05/P3-01/P4-03/P5-04。历史证据保留，精确范围新本地增量commit，不push。
 
 **P5-06 验收修正 / ACCEPTANCE（2026-10-08，历史）**：保留9cf86ad8；读取按钮改“刷新”，刷新成功不抹去失败写操作，原草稿Save实际重试。Core9/Desktop8个唯一定向测试、build/Clippy/fmt PASS；旧Tauri本轮先报Windows libcronet.dll缺失exit101，历史LICENSE FAIL保留。最终无分享测试延迟签名SHA256 `d8d65d1b3f8277310ea08c43401c3ce324dc7241a77c525d0f9b9f31f3173b49`。真实GUI绑定冲突保旧/刷新保错/释放后Save200、用户托盘退出后PID及监听释放、删除确认与重启磁盘空态均补验；同Token/URL React与GPUI各状态原图、Vision二维码同URL留存。React原生确认参考原图缺失、启动瞬间读取失败原因和最终视觉逐项结论仍OPEN，不能DONE/释放owner。临时资源清理完成，最终bundle作为本地证据保留；本轮独立增量commit、不push。见[当前记录](P5-06-acceptance.md)。68卡DONE21/DOING1/ACCEPTANCE1/READY5/TODO33/DEFERRED7；READY=P0-08/P2-05/P3-01/P4-03/P5-04。P2-06 owner及P4状态不变，未领取下游。下方旧轮次按历史结果保留。
 
@@ -115,7 +117,7 @@ P2-06 已阶段提交 `f2457e6a4e2fe0ac3c9186bc7d17323a70c4c0a8`，仍 DOING、�
 
 **前轮候选（2026-10-07，历史）：build37完整订阅UI候选新增只读Share弹窗、4px表单间距、38px分享列表与长页面modal分层。真实浅深色Source/Rules上下/DNS/Nodes/Share、11项滚动、busy/error/stale及三语已核对；Core304/Desktop70/outbound9与九项检查、独立Review PASS。Host全页视觉仍PENDING；P2-01 ACCEPTANCE、Finding OPEN、owner保留。未来能力控件保持禁用；periodic开启等条件分支未开放，不宣称全业务UI已验收。DAG68不变，仅P0-08 READY，无下游/commit/push。见[build37候选](evidence/p2-01/all-ui-20261007-111729/BUILD37-FULL-UI-CANDIDATE.md)。**
 
-最后更新：2026-10-08。
+最后更新：2026-10-09。
 
 **前轮候选（2026-10-07，历史）：完整页面候选 build29-final 按本机 actual OpenBox 逐控件修复按钮 hover/focus、说明、DNS/Rules、saved Nodes table、modal与动画；Core304/Desktop70/outbound9及九项验证、Independent Review PASS。完整矩阵与真实浅深色截图已采集，Host Visual仍PENDING；最后交接因Mac锁屏待解锁核验。P2-01 ACCEPTANCE、Finding OPEN、owner保留；仅P0-08 READY，无下游启动。见[build29全控件修复](evidence/p2-01/full-reaudit-20261007-094122/BUILD29-CONTROLS-REWORK.md)。**
 
@@ -138,19 +140,20 @@ P2-06 已阶段提交 `f2457e6a4e2fe0ac3c9186bc7d17323a70c4c0a8`，仍 DOING、�
 | P2 本机代理闭环 | 5 / 10 | P2-01/P2-02A/P2-02B/P2-03/P2-04 DONE；Host FINAL ACCEPTANCE PASS，Finding CLOSED | P2-09 未开始 |
 | P3 观测与主页面 | 0 / 8 | 未开始，基础能力不计完整 DNS/分流 | P3-08 未开始 |
 | P4 完整配置能力 | 1 / 9 | P4-02 DONE，P4-03 READY；Chain 在 Routing 前交付 | P4-07 未开始 |
-| P5 DNS 与共享 | 0 / 7 | P5-06 ACCEPTANCE，P5-04 READY；Rules 在 DNS 后最终闭合 | P5-07 未开始 |
+| P5 DNS 与共享 | 1 / 7 | P5-06 DONE，P5-04 READY；Rules 在 DNS 后最终闭合 | P5-07 未开始 |
 | P6 macOS TUN 与生命周期 | 0 / 5 | 未开始，按各卡依赖推进 | P6-05 未开始 |
 | P7 数据与发布收尾 | 0 / 5 | 未开始，schema/清理按显式依赖等待 | P7-05 未开始 |
 | Windows W0–W3 | 0 / 7 | 后续排期 DEFERRED | W3-02 未开始 |
 
-macOS：**21 / 61 完成**；READY 5、TODO 33、DOING 1、REVIEW 0、ACCEPTANCE 1、BLOCKED 0。Windows 7 项 DEFERRED 单列，共 68 项。数量不等于工期权重或代码完成百分比；P1-04/P2-02/P4-05 父项被后缀子项替代，不重复计数。
+macOS：**22 / 61 完成**；READY 5、TODO 33、DOING 1、REVIEW 0、ACCEPTANCE 0、BLOCKED 0。Windows 7 项 DEFERRED 单列，共 68 项。数量不等于工期权重或代码完成百分比；P1-04/P2-02/P4-05 父项被后缀子项替代，不重复计数。
 
 ## 2 Active Tasks
 
 | Task | owner / 泳道 | 写范围 / 公共契约 | 实际资源 / 下一动作 |
 | --- | --- | --- | --- |
-| P5-06 · ACCEPTANCE | Codex · Core/Config + GPUI | shares 专属领域/Service、AppState/SnapshotService 分享字段、Desktop 分享 UI/Worker、QR 局部依赖 | 独立 worktree；GUI删除/绑定重试/用户托盘Quit补验已完成；React原生确认参考图、启动读取失败原因与最终视觉结论待闭合；资源清理/最终bundle见验收记录；不写 Runtime/Helper/IPC/Runtime DTO |
 | P2-06 · DOING | Codex · Runtime/Platform | helper production/IPC、Core Runtime DTO、desktop runtime_service/platform、局部 Cargo 接线、任务文档 | checkpoint f2457e6 已提交、仍 DOING；本轮无资源操作；既有实现/限制按下方历史保留，GUI/Native/Helper 多轮及重启恢复后期补齐；当前先协调 P4-02/P5-06 UI 及其它 READY 写范围，不继续以复杂恢复阻塞其它功能，现有安全拒绝保持 |
+
+P5-06 本卡 Core/Config + GPUI owner/预约已释放；自有监听与进程清理，测试数据/日志/原图/bundle保留，详见[最终验收](P5-06-acceptance.md)。
 
 P4-02 本卡Core/Config + GPUI owner/预约已释放，本轮自有测试App/数据/harness已清理（见cleanup.json），原轮资源与用户资源未改动。P2-04 Runtime/Platform及Runtime公共契约owner/本卡预约已释放；P2-03既有预约释放保持，其历史文档收口不追认现场清理。
 
@@ -172,7 +175,7 @@ P1-07 已 DONE 并从 Active Tasks 移除，GPUI owner 与本卡资源预约释�
 
 
 
-当前68卡：DONE21 / ACCEPTANCE1 / DOING1 / REVIEW0 / READY5 / TODO33 / BLOCKED0 / DEFERRED7；READY仅P0-08/P2-05/P3-01/P4-03/P5-04，均未领取/未启动；P2-04 DONE、Finding CLOSED保持。P2-06 DOING、Runtime/Platform及Runtime公共契约owner=Codex；P2-07/P6依赖未满足，不转READY。其它状态/显式依赖不变。
+当前68卡：DONE22 / ACCEPTANCE0 / DOING1 / REVIEW0 / READY5 / TODO33 / BLOCKED0 / DEFERRED7；READY仅P0-08/P2-05/P3-01/P4-03/P5-04，均未领取/未启动；P2-04 DONE、Finding CLOSED保持。P2-06 DOING、Runtime/Platform及Runtime公共契约owner=Codex；P2-07/P6依赖未满足，不转READY。其它状态/显式依赖不变。
 
 **P2-03当前契约**：正式运行配置必须调用P2-02B `compile_product(ProductCompileRequest { state, runtime_intent, default_outbound, resources })`，显式消费 `project_selected_runtime()` 的 `runtime_intent` / `projected_default_target`（转换为 `OutboundId`）；不得继续使用 `application/runtime.rs` 现有ObservationOnly `compile(...)`作为正式运行配置。参见[P2-03任务卡](P2-local-proxy.md#obg-p2-03)。已实现并由Host最终确认功能与视觉“符合”；本轮仅文档收口，不启动下游。
 

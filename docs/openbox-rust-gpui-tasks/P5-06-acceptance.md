@@ -1,6 +1,87 @@
 # OBG-P5-06 订阅分享交付与局部验收
 
-## 2026-10-09 启动修复与最终复核（当前）
+## 2026-10-09 最终产品架构与验收收口（当前）
+
+**DONE / PASS_WITH_ACCEPTED_TECHNICAL_DIFFERENCES。** 基于 `820526cf02fb3ccc26fd87a7c600109149d4e3b0` 的本地增量；本卡 Core/Config + GPUI owner/预约释放，不 push、不领取下游。以下旧决策、失败和候选证据全部保留为历史，不覆盖本节。
+
+### 产品语义与边界
+
+Veyra 自身的 ShareService/Axum 独立监听 HTTP 端口；GET `/sub/{token}` 返回 sing-box 节点订阅 JSON；二维码编码分享 URL，供其它客户端获取并导入。`listen` 是实际 HTTP bind socket，`host` 是对外 URL authority；URL 使用保存的 host、协议和 token，不把 `0.0.0.0` 当成客户端地址。sing-box 入站只处理代理连接，P5-04/P5-05 独立负责其配置。**解除先前错误的 P2-06 端口依赖阻断。** ShareService、SubscriptionShare、Axum 和独立端口配置保留；本轮不修改 RuntimeService/Platform/Helper/IPC/公共 DTO、Core 生产实现或 Cargo。P2-06 保持 DOING、原 owner/写范围不变。
+
+新增生产 Service/Store 测试保护 wildcard bind 与 advertised host 分离：`listen=0.0.0.0:端口`、`host=192.168.1.20:相同端口`，本地 GET 返回200/JSON；通配 advertised host、端口0拒绝且保旧。真实 GUI 又使用当前 en0 地址与相同独立端口保存，通过本机 LAN 接口地址 GET200；见 `final-lan-interface.json`。这是同一 Mac 对自身 LAN 接口的访问，**不是第二台设备或公网可达性证明**；跨设备/网络组合留在 P5-07。仅 HTTP，没有证书时不开放 HTTPS。
+
+字段三语说明明确“分享监听地址”：127.0.0.1 仅本机；局域网可监听0.0.0.0，右侧填写本机局域网IP与相同端口。线上没有此字段，用户已接受保留；最终产品架构再次确认独立端口能力。
+
+### 启动根因与本轮修复
+
+前轮生产80轮删除重启在第36轮捕获 StateAccessGate `Busy`：Runtime 独立线程首次 Refresh 与全局 snapshot 竞争；不是磁盘读失败、迁移失败或已证实的运行态恢复错误。既有修复将首次 Runtime Refresh 放在 Accepted/Ready 快照后，本轮真实生产80轮回归再次执行通过。
+
+本轮独立复核在自有 Store FIFO 读取背压下又定位一个真实导航分支：启动尚 Busy 时进入订阅页，页面权威快照先到，`leave_page()` 作废旧全局请求并把无快照的 Busy 置 Idle；随后只赋 snapshot，没有 Ready/首次 Runtime 观测。旧回调被正确拒绝却没有收敛路径，原 `loading-final-busy.png` 左下仍为“正在读取服务状态”。
+
+最小修复仅 Desktop：订阅页面回调先由 `view.complete` 验证请求归属；被接受的快照通过 `StateBridge::accept_page_snapshot` 作废旧全局读取、设置快照并进入 Ready，再经既有 once-only 判定启动首次 Runtime Refresh。旧页面回调仍返回None；旧全局回调仍拒绝；无 sleep、延时注入、自动重试或吞错。新增回归覆盖“Busy→导航→页面成功→两条旧global回调→仍Ready且Runtime只启动一次”。正式 GUI 慢启动复验无分享错误、Runtime Refreshed；本次实际由global先完成，精确page先完成分支由测试覆盖，二者不混称。最终删除后无导航重启在 Overview 直接 snapshot_loaded=true、Runtime request1 Refreshed。
+
+### 本轮实际工程验证
+
+| 检查 | 结果 |
+| --- | --- |
+| Core `shares` | 10 PASS，含新 wildcard/host 生产HTTP回归 |
+| Desktop `sharing` | 5 PASS，含生产80轮删除重启；末次源码后复跑 |
+| Desktop `subscriptions` | 7 PASS，与sharing重叠3项；加载修正后复跑 |
+| Desktop `state_bridge::` | 10 PASS，含本轮页面先完成启动回归 |
+| Core/Desktop all-targets Clippy、正式Desktop build、workspace fmt、diff check | PASS，末次源码后执行 |
+| 指定旧 Tauri fmt | PASS |
+| 指定旧 Tauri Clippy | FAIL101：Windows LICENSE 资源缺失；既有libcronet.dll失败另保留，不扩大本卡范围 |
+
+合计 **Core10 + Desktop19 = 29个唯一定向测试**，不累加重复执行，不把过滤零项计为通过。本轮没有重跑历史 `real_store_empty_error_retry_and_late_delivery`，不计入29。命令/退出码/原始日志：`checks.json`、`checks-final.json`、`checks-qr-final.json`、`checks-loading-final-valid.json`、`checks-loading-review.json`、`checks-startup-page-final.json`、`legacy-checks.json`。中间缺失token编译失败、误用Desktop `--lib` 无target失败及无效忙碌采图原样保留，不改写成PASS。
+
+### 真实 GUI / 功能链路
+
+证据均在 [architecture-final-20261009](evidence/p5-06-sharing/architecture-final-20261009/)，生产链路仍为 GPUI→Worker→ShareService→SnapshotService→JsonStateStore。仅自有状态目录/端口/测试Token，不操作用户系统代理/TUN/管理员配置。
+
+| 场景 | 本轮实际结果与证据 |
+| --- | --- |
+| 真端口冲突、失败保旧、失败后刷新、原草稿重存 | 占用自有18786，旧18787 HTTP200/2节点；失败保草稿，刷新不抹去错误；释放后同草稿保存200、18787关闭。`final-retry.json`、`final-save-failed.png`、`final-failed-refresh.png` |
+| 轮换取消/确定 | 取消保留旧URL；确定后旧token404、新200。`final-rotation.json`、`final-rotate-confirm.png` |
+| LAN监听/URL | wildcard监听、en0 advertised同端口，直接GET200/2节点；旧18786关闭。`final-lan-interface.json` |
+| 正常托盘退出 | 用户亲手退出 Architecture Final；进程消失且18785/86/87关闭。`final-tray-exit.json`；绑定签名SHA `6fc4e13fb92da02d93e0576f143d5e4b4855050ff6a4991fa6b1eb7fb9cbe805`，不伪称对后续每个SHA重复操作 |
+| 保存中 | 真实自有HTTP订阅刷新占用生产worker，分享Save排队；系统截图显示禁用Save与spinner。`final-busy-valid.png`、修正spinner后的`loading-final-busy.png`；未改变产品超时。后一轮刷新成功引起版本变化，保存正确拒绝，刷新版本后原草稿再Save成功，不计为首次Save成功 |
+| 加载与旧列表重载 | 自有Store FIFO背压；先保留分享卡、订阅区spinner；已有列表重载时旧卡隐藏，模型未清空；加载中可打开新建且未选择订阅时Save禁用。`loading-final-first.png`、`loading-final-retained-list.png`、`loading-final-new-before-ready.png` |
+| 最终构建编辑/HTTP/删除 | `accepted-edit.png`、`accepted-http.json`200/2节点、`accepted-delete-confirm.png`具体名称、`accepted-delete.json`磁盘shares0/18784关闭、`accepted-empty.png` |
+| 最终慢启动/删除后无导航重启 | `accepted-slow-start.log`、`accepted-slow-start-ready.png`；`accepted-deleted-restart.log`、`accepted-deleted-restart.png`、`accepted-restart.json`，Overview直接Ready/Runtime Refreshed |
+
+### 150%浅色逐态视觉结论
+
+固定 macOS、用户当前150%显示设置、浅色、逻辑内容1280×720、scale factor2。真实在线 `http://192.168.1.6:3036` 为目标；仓库React源码/CSS保留用于语义及级联溯源。在线目前为带data-v属性的自绘Dialog，仓库React仍是window.confirm，差异明确分列。在线独立标签仅以自有fixture拦截响应，保存/删除响应也本地完成，未写线上后端；结束恢复视口并关闭标签。系统 `screencapture` 取得真实窗口图，没有合成参考图；无新增屏幕录制授权。
+
+本輪逐项修正颜色、字体CSS字重、卡片/输入边框、checkbox SVG polygon、radius、QR quiet zone、disabled/hover、局部加载布局及spinner。分享标题16/24 semibold、说明12/16，主色/文字/线色分别来自在线计算值；编辑框768、栏间20、双栏1:0.9、字段14、按钮32、checkbox20、QR176、确认框512；输入radius9.3、QRradius16。spinner复用线上24px圆路径、stroke3、2秒旋转/1.5秒dash，不再使用旧静态/不同色图形。所有固定值沿用tokens与页面局部palette，不覆盖无关页面主题。
+
+| 状态 | 在线原图 | GPUI有效图 / 结论 |
+| --- | --- | --- |
+| 分享列表 | online-list.png | final-list.png；标题/说明/动作/行内容与局部颜色对照通过 |
+| 新建 | online-new.png | final-new.png；空值、禁用保存、输入/取消通过 |
+| 编辑 | online-edit.png | qr-final-edit.png、accepted-edit.png；几何/颜色/字段/按钮通过，字体与模糊见下方已接受差异 |
+| 多订阅选择 | online-selection.png | final-selection.png；20px选框、勾选几何/行边界与选择行为通过 |
+| 链接与QR | online-edit.png | qr-final-edit.png；Vision分别解码为完全相同URL；black bbox线上319px/GPUI320px（2x），quiet zone已修复；不同QR mask不宣称bitmap相同，见qr-final-decode.json/qr-margins.json |
+| 加载 | online-loading-matched.png | loading-final-first.png、loading-final-retained-list.png；分享卡保留、列表区136px/24px spinner；旧整页loading候选不计通过 |
+| 保存中 | online-saving.png | loading-final-busy.png；spinner/disabled按钮对照，真实生产worker排队 |
+| 保存失败/刷新/再次保存 | online-save-failed.png | final-save-failed.png、final-failed-refresh.png；原草稿可修改、重试；GPUI明确常驻错误与刷新入口保护用户要求，不把在线瞬态反馈冒称一致 |
+| 删除/轮换确认 | online-delete-confirm.png、online-rotate-confirm.png | final-delete-confirm.png、final-rotate-confirm.png；具体名称、512px布局、取消/确定按钮及实际行为通过 |
+| 删除空态 | online-empty.png | final-empty.png、accepted-empty.png；卡片标题、说明、添加及居中空文本通过 |
+
+用户明确接受的技术差异：① 在线局部 `backdrop-filter:blur(10px)`，GPUI当前后端只有窗口级材质，半透明弹窗会透出清晰背景文字；② 在线MiSans4.003网页分片可变字体，GPUI使用已登记MiSans4.009静态字体，标题笔画仍较粗；不把CSS weight相同说成字体像素相同。用户接受监听字段差异，最终架构要求保留。QR编码mask差异以同URL实际解码和尺寸/quiet zone核验；不要求二维码位图相同。
+
+仓库React原生window.confirm的macOS系统截图仍保留于前轮 `final-20261009/react-window-confirm-delete-system.png`、`react-window-confirm-rotate-full-system.png`；原生来源标题/系统字体/默认确定焦点属于浏览器系统区域，与线上/GPUI自绘Dialog不等价。线上和GPUI默认Enter未触发操作的观察保留，不声称所有键盘路径都通过；取消/确定实际鼠标行为已验。最终结论为本卡应用自绘区域逐态对齐通过，保留用户接受的技术差异，**不宣称像素完全一致或全应用95%相似度**；其它页面、主题/缩放和跨模块组合不由本卡截图代验。
+
+### 构建、独立复核、交付
+
+最终正常构建，无产品延时注入，ad-hoc executable SHA256：`879c5d775ff0adce3c0a80fc313df79c32751ba971632321f8d20485ba652b0b`，见 `accepted-build.json` / `accepted-bundle/`。此前6fc4功能/托盘版、b52b二维码版、f222加载版分别保留构建身份；末次仅Desktop启动快照收敛改变，既有Service/端口/退出生命周期实现未变。最终版另实测编辑/HTTP/删除/无导航重启，不把旧截图替换为新SHA截图。
+
+独立agent按 code-delivery-review 只读最终diff、测试原始日志、构建身份及真实截图；发现的整页加载、旧列表与spinner共显、页面快照抢先导致启动不收敛三项P2均已修复复核。最终无剩余可执行P0–P3发现；其没有亲自操作GUI，图像/日志结果复核与主agent实际操作分开记录。分享restore与Runtime后续try_lock竞争没有新失败复现，不凭假设改受保护锁/Runtime合同。见 `independent-review.md`。
+
+所有自有测试监听18783–18787关闭、临时FIFO恢复普通文件、浏览器自有标签关闭；最终测试进程使用SIGTERM清理，单列为cleanup而非托盘正常退出。自有状态、截图、日志、失败候选与各版bundle全部保留；截图SHA256清单为 `screenshots-sha256.json`。证据按仓库约定本地留存、不强制纳入Git。旧Windows资源缺失独立记录；没有本卡未完成阻断。68卡重算：DONE22 / DOING1 / ACCEPTANCE0 / READY5 / TODO33 / DEFERRED7；READY仍为P0-08/P2-05/P3-01/P4-03/P5-04，未启动。P5-06完成后释放owner，P2-06不变。
+
+
+## 2026-10-09 启动修复与最终复核（历史；监听字段决策已被下述最终架构覆盖）
 
 **ACCEPTANCE，owner 保留。** 基于 `7a6eb7dc6ede8b7d68a6eee7c81a67a0b5926176` 的本地增量；不 push。P2-06 继续 DOING、原 owner/Runtime/Platform/Helper/IPC/公共 DTO 范围不变。本轮没有修改 Core、Cargo 或用户系统代理/TUN/管理员配置。
 

@@ -88,7 +88,7 @@
 <a id="obg-p5-06"></a>
 ## OBG-P5-06 订阅分享服务与界面
 
-**当前状态**：ACCEPTANCE（2026-10-09）。启动gate竞争已定位修复，80轮生产重启及最终GUI无需导航Ready；Core9/Desktop19唯一测试与build/Clippy/fmt通过，原生React确认框系统截图已补。线上视觉修正与独立Review已完成本轮增量，但逐态视觉尚未闭合。用户最新要求监听字段配置sing-box入站端口，现有ShareService HTTP监听语义不符，停止相交修改并待P2-06 owner协调；原owner与代码范围保留。见[当前结果/协调边界](P5-06-acceptance.md)，不得标DONE。
+**当前状态**：DONE（2026-10-09），本卡 Core/Config + GPUI owner/预约释放。Veyra ShareService独立HTTP服务与sing-box代理入站分离，错误P2-06依赖已解除；listen/host/LAN、150%浅色逐态视觉、最终正式构建及独立复核通过，保留用户接受的局部blur、MiSans静态字体和监听字段差异。最终signed SHA256 `879c5d775ff0adce3c0a80fc313df79c32751ba971632321f8d20485ba652b0b`。P2-06 DOING及原范围不变，不启动下游、不push。见[最终验收记录](P5-06-acceptance.md)。
 
 **类型**：按需服务与 UI；**依赖**：OBG-P2-01、OBG-P1-05、OBG-P1-04A。**依据/范围**：方案 §8.5、§13；core shares、订阅分享弹窗；API 51–55。
 
@@ -103,8 +103,9 @@
 - [x] 不凭 URL 前缀声称 HTTPS/外网可达；复制与二维码一致，敏感内容不进入日志。
 - [x] GUI 删除/绑定冲突/原草稿Save重试/正常托盘Quit与磁盘恢复补验。
 - [x] 启动瞬时读取失败定位及回归；本地React原生确认参考图取得（与线上自绘Dialog分列）。
-- [ ] 监听字段按用户最新要求接入sing-box入站端口；P2-06 owner协调公共接口/保存应用边界及分享HTTP服务归属。
-- [ ] 150%浅色最终逐态视觉修正和最终构建复验；其它主题/缩放归组合卡。
+- [x] 最终架构确认：独立分享HTTP监听和端口配置，不依赖P2-06 Runtime/Helper；P5-04/P5-05负责sing-box共享入站。
+- [x] listen/host/URL及局域网分享语义本轮核查；实际网卡地址同机GET通过，第二设备/公网可达性未测试。
+- [x] 150%浅色最终逐态视觉修正、正式构建和独立复核通过；已接受技术差异明确记录，其它主题/缩放归组合卡。
 
 <a id="obg-p5-07"></a>
 ## OBG-P5-07 DNS 与共享阶段验收

@@ -357,3 +357,42 @@ fn shares_immediate_restart_after_http_connection_close() {
     assert_eq!(f.get(&share.url()).unwrap().0, 200);
     reopened.shutdown();
 }
+
+/// 保护局域网配置的事实归属：通配地址用于 bind，具体地址用于 URL/二维码。
+/// HTTP 用自有 loopback 请求验证服务；不将它声称为第二设备的 LAN 验收。
+#[test]
+fn shares_wildcard_listener_keeps_advertised_address_separate() {
+    let f = Fixture::new();
+    let mut share = f.draft();
+    let port = share.listen.port();
+    share.listen = SocketAddr::from(([0, 0, 0, 0], port));
+    share.host = format!("192.168.1.20:{port}");
+    assert!(share.validate().is_ok());
+    assert!(
+        share
+            .url()
+            .starts_with(&format!("http://192.168.1.20:{port}/sub/"))
+    );
+    let url = share.url();
+    let saved = f.execute(ShareCommand::Save(share.clone()));
+    assert_eq!(saved.app_config.subscription_shares[0].url(), url);
+    let response = f
+        .get(&format!("http://127.0.0.1:{port}/sub/{}", share.token))
+        .unwrap();
+    assert_eq!(response.0, 200);
+    let document: serde_json::Value = serde_json::from_str(&response.1).unwrap();
+    assert!(document["outbounds"].is_array());
+    for host in [format!("0.0.0.0:{port}"), "192.168.1.20:0".into()] {
+        share.host = host;
+        assert!(share.validate().is_err());
+    }
+    assert_eq!(
+        f.snapshots
+            .snapshot()
+            .unwrap()
+            .app_config
+            .subscription_shares[0]
+            .url(),
+        url
+    );
+}
