@@ -1,3 +1,11 @@
+**P5-05 动态视觉增量（2026-10-09，当前）**：用户追加完整原卡、松手不晃动、正常排序静默要求，已修正；最终signed SHA256 `1250c9df1495541c3b136384fa2155d2969f9bef9180554fbe0b6e83c2002e4c`。真实最终held-0072–0079长卡上拖确认完整卡/抓点/等高占位/高度稳定，0080松手恢复且无成功toast；18唯一定向PASS/1ignored，Clippy/fmt/build/diff通过，独立Review无剩余代码Finding。旧错误/根偏移REWORK和NOT_CAPTURED保留。本次补验仍ACCEPTANCE：最终普通下拖/取消held原帧及四条同数据OpenBox中途对照未捕获，不能称整体PASS。P5-05既有DONE与启动Finding CLOSED不改；源码修复预约释放，owner=Codex · Desktop局部证据，保留本次文档/evidence范围；P2-06仍DOING/原owner。DONE24/DOING1/READY4/TODO32/DEFERRED7、READY不变，不领取下游。本地增量commit/合并主树复验、不push，见[本次记录](P5-05-drag-visual.md)。
+
+**P5-05 拖放反馈追加（2026-10-09）**：用户新增报告松手页面晃动，并要求正常排序无toast。预约范围仅追加共享网络页排序保存中的暂存视觉顺序、加载显示和成功通知条件；失败继续回到生产权威快照并提示，Store/Runtime不改。真实帧已捕获但仍绑定先前候选SHA，新增主题继承/反馈修正后需最终构建补验；原版同态及指针证据仍未闭合。
+
+**P5-05 动态视觉补验范围调整（2026-10-09）**：用户完成手动拖动并指出浮层须为完整原卡片；明确追加最小修正。owner=Codex · Desktop拖动；预约 `ui/shared_network.rs` 完整卡片复用与源尺寸/手柄锚点、无用局部Token清理及本次文档/evidence。不改排序生产链路或P2-06。旧录像未覆盖此次手动手势，动态项继续NOT_CAPTURED，修正后重新录制；不把用户反馈当成中途帧。
+
+**P5-05 动态视觉补验领取（2026-10-09）**：基线d64f77c；dev/p5-05-drag-visual，owner=Codex · 局部视觉验收。仅本次文档/evidence写范围，无产品源码修改；真实macOS/150%浅色/自有4条数据，中途帧和OpenBox同态对照后独立Review。动态项保持NOT_CAPTURED直至有效证据确认；P5-05既有DONE和启动Finding CLOSED不变，P2-06原owner/DOING不变，不push。
+
 **P5-05 启动修复收口（2026-10-09）**：Finding P5-05-STARTUP-SNAPSHOT-001 CLOSED；共享网络与 SharesUpdated 复用 accept_page_snapshot，拒旧结果并重投影；23唯一定向PASS，最终真实macOS页面先到/全局先到各首次Refresh=1。按用户要求实现真实行高占位/吸附，实际拖放/取消/磁盘回读通过；动态占位中途帧 NOT_CAPTURED 单列，不冒充视觉验收。独立Review无剩余代码问题；P5-05既有DONE、修复owner/预约释放，P2-06 DOING及原范围不变。DONE24/DOING1/READY4/TODO32/DEFERRED7，READY未变；本地独立commit/合并/主树复验、不push。见[本次记录](P5-05-startup-fix.md)。
 
 **P5-05 启动回归修复领取（2026-10-09，历史）**：Finding P5-05-STARTUP-SNAPSHOT-001 OPEN；P5-05保持DONE。原生新worktree `p5-05-startup-drag`，分支 `dev/p5-05-startup-drag`，基线e56c732。owner=Codex · Desktop修复；预约app.rs/StateBridge定向回归/shared_network拖动交互及局部Tokens/本次记录。复用accept_page_snapshot，不改Runtime/Helper/IPC/公共DTO或五协议/Store/URI/QR；补占位与吸附，真实macOS验证、独立Review后独立commit合并。P2-06 DOING及原owner保留，历史证据不覆盖。

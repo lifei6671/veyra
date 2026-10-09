@@ -32,33 +32,25 @@ impl EventEmitter<Updated> for SharedNetworkView {}
 #[derive(Clone)]
 struct ServerDrag {
     index: usize,
-    name: String,
+    server: SharedServer,
+    view: Entity<SharedNetworkView>,
     version: ConfigVersion,
-    height: Pixels,
+    size: Size<Pixels>,
+    offset: Point<Pixels>,
 }
 impl Render for ServerDrag {
     fn render(&mut self, _: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
-        div()
-            .w(px(st::DRAG_WIDTH))
-            .h(self.height)
-            .flex()
-            .items_center()
-            .gap(px(t::GAP))
-            .p(px(st::CARD_PAD))
-            .rounded(px(st::CARD_RADIUS))
-            .border_1()
-            .border_color(cx.theme().primary)
-            .bg(cx.theme().popover)
-            .shadow_lg()
-            .child(icon("Bars3", t::ICON_SMALL))
-            .child(
-                div()
-                    .flex_1()
-                    .min_w_0()
-                    .overflow_hidden()
-                    .text_ellipsis()
-                    .child(self.name.clone()),
+        self.view.clone().update(cx, |view, cx| {
+            // GPUI 直接指定浮层根的位置；把抓取点偏移放在内部卡片，避免根布局覆盖。
+            div().w(self.size.width).h(self.size.height).child(
+                view.server_card(&self.server, self.index, self.version.clone(), true, cx)
+                    .w(self.size.width)
+                    .h(self.size.height)
+                    .absolute()
+                    .left(self.offset.x)
+                    .top(self.offset.y),
             )
+        })
     }
 }
 // 名称、连接地址、端口、UUID、用户名、密码、混淆密码、只读分享链接。
@@ -89,9 +81,190 @@ pub struct SharedNetworkView {
     modal_scroll: ScrollHandle,
     // 仅拖动中的视觉位置；松手前不改变已保存服务器顺序。
     drag: Option<(usize, usize)>,
+    drag_grab: Point<Pixels>,
+    // 松手至生产保存完成之间仅保持视觉排列；成功/失败均由返回快照替换。
+    pending_reorder: Option<(usize, usize)>,
     card_bounds: Rc<RefCell<Vec<Bounds<Pixels>>>>,
 }
 impl SharedNetworkView {
+    // 列表与拖动浮层使用同一张完整卡片：标题、协议/地址/端口和操作区均保持一致。
+    fn server_card(
+        &self,
+        server: &SharedServer,
+        index: usize,
+        version: ConfigVersion,
+        preview: bool,
+        cx: &mut Context<Self>,
+    ) -> Stateful<Div> {
+        let editing = server.clone();
+        let id = server.id.clone();
+        let enabled = server.enabled;
+        let copy = shared_server_uri(server);
+        let sharing = server.clone();
+        let deleting = server.clone();
+        let protocol = Draft::from_server(server).protocol;
+        div()
+            .id(("server-card", index))
+            // 浮层独立绘制，显式继承 shell 的字体和前景色，避免退回系统黑色字体。
+            .font_family(cx.theme().font_family.clone())
+            .text_color(cx.theme().foreground)
+            .font_weight(super::theme::MISANS_REGULAR)
+            .text_size(px(t::BODY))
+            .flex()
+            .items_center()
+            .gap(px(t::GAP))
+            .p(px(st::CARD_PAD))
+            .rounded(px(st::CARD_RADIUS))
+            .bg(cx.theme().popover)
+            .border_1()
+            .border_color(cx.theme().foreground.opacity(0.1))
+            .opacity(if enabled { 1. } else { 0.5 })
+            .child(
+                div()
+                    .id(("server-drag-handle", index))
+                    .cursor(CursorStyle::OpenHand)
+                    .size(px(t::ICON_SMALL))
+                    .flex_shrink_0()
+                    .child(icon("Bars3", t::ICON_SMALL).text_color(cx.theme().muted_foreground))
+                    .when(!self.busy && !preview, |d| {
+                        let view = cx.entity().downgrade();
+                        d.on_mouse_down(
+                            MouseButton::Left,
+                            cx.listener(move |this, event: &MouseDownEvent, _, _| {
+                                // 记录按下时的抓取点，而非越过阈值后的鼠标位置。
+                                this.drag_grab =
+                                    event.position - this.card_bounds.borrow()[index].origin;
+                            }),
+                        )
+                        .on_drag(
+                            ServerDrag {
+                                index,
+                                server: server.clone(),
+                                view: cx.entity(),
+                                version,
+                                size: Size::default(),
+                                offset: Point::default(),
+                            },
+                            move |drag, cursor_offset, window, cx| {
+                                #[cfg(debug_assertions)]
+                                eprintln!("shared drag begin source={}", drag.index);
+                                let _ = view.update(cx, |this, cx| {
+                                    // 首次越过拖动阈值就吸附；快速拖放可能只产生这一次移动。
+                                    let bounds = this.card_bounds.borrow();
+                                    let heights = bounds
+                                        .iter()
+                                        .map(|b| f32::from(b.size.height))
+                                        .collect::<Vec<_>>();
+                                    let top = bounds.first().map_or(px(0.), |b| b.origin.y);
+                                    let slot = snapped_slot(
+                                        f32::from(window.mouse_position().y - top),
+                                        &heights,
+                                    );
+                                    this.drag = Some((drag.index, slot));
+                                    cx.notify();
+                                });
+                                // GPUI 默认锚点属于手柄；完整卡片使用原卡左上角，保持按住位置不跳。
+                                let bounds = drag.view.read(cx).card_bounds.borrow()[drag.index];
+                                let mut preview = drag.clone();
+                                preview.size = bounds.size;
+                                preview.offset = cursor_offset - drag.view.read(cx).drag_grab;
+                                cx.new(|_| preview)
+                            },
+                        )
+                    }),
+            )
+            .child(
+                div()
+                    .flex_1()
+                    .min_w_0()
+                    .flex()
+                    .flex_col()
+                    .gap(px(4.))
+                    .child(
+                        div()
+                            .text_size(px(t::SECTION_TITLE))
+                            .line_height(px(t::SECTION_LINE))
+                            .child(server.name.clone()),
+                    )
+                    .child(
+                        div()
+                            .flex()
+                            .flex_wrap()
+                            .gap_x(px(12.))
+                            .text_size(px(st::LABEL))
+                            .line_height(px(st::LABEL_LINE))
+                            .text_color(cx.theme().foreground.opacity(0.6))
+                            .child(PROTOCOLS[protocol])
+                            .child(format!("{} {}", tr(cx, "端口"), server.port))
+                            .child(server.address.clone()),
+                    ),
+            )
+            .child(
+                components::icon_button(
+                    ("server-scan", index),
+                    tr(cx, "扫码"),
+                    "QrCode",
+                    t::CONTROL,
+                )
+                .on_click(cx.listener(move |this, _, _, cx| {
+                    this.sharing = Some(sharing.clone());
+                    cx.notify();
+                })),
+            )
+            .child(
+                components::icon_button(
+                    ("server-copy", index),
+                    tr(cx, "复制链接"),
+                    "ClipboardDocument",
+                    t::CONTROL,
+                )
+                .on_click(move |_, _, cx| Self::copy(copy.clone(), cx)),
+            )
+            .child(
+                components::icon_button(
+                    ("server-power", index),
+                    tr(cx, if enabled { "停用" } else { "启用" }),
+                    "Power",
+                    t::CONTROL,
+                )
+                .when(enabled, |b| b.text_color(rgb(t::ACCENT_STRONG)))
+                .disabled(self.busy)
+                .on_click(cx.listener(move |this, _, _, cx| {
+                    this.send(
+                        Command::Edit(Box::new(SharedServerCommand::SetEnabled {
+                            id: id.clone(),
+                            enabled: !enabled,
+                        })),
+                        cx,
+                    )
+                })),
+            )
+            .child(
+                components::icon_button(
+                    ("server-edit", index),
+                    tr(cx, "编辑服务器"),
+                    "PencilSquare",
+                    t::CONTROL,
+                )
+                .disabled(self.busy)
+                .on_click(cx.listener(move |this, _, window, cx| {
+                    this.open(Some(editing.clone()), window, cx)
+                })),
+            )
+            .child(
+                components::icon_button(
+                    ("server-delete", index),
+                    tr(cx, "删除服务器"),
+                    "Trash",
+                    t::CONTROL,
+                )
+                .disabled(self.busy)
+                .on_click(cx.listener(move |this, _, _, cx| {
+                    this.deleting = Some(deleting.clone());
+                    cx.notify();
+                })),
+            )
+    }
     pub fn new(
         services: Arc<crate::services::AppServices>,
         window: &mut Window,
@@ -174,6 +347,8 @@ impl SharedNetworkView {
             scroll: ScrollHandle::new(),
             modal_scroll: ScrollHandle::new(),
             drag: None,
+            drag_grab: Point::default(),
+            pending_reorder: None,
             card_bounds: Rc::default(),
         }
     }
@@ -291,6 +466,7 @@ impl SharedNetworkView {
         }
         let read = matches!(command, Command::Read);
         let saving = matches!(command, Command::Save(..));
+        let reorder = matches!(&command, Command::Edit(c) if matches!(c.as_ref(), SharedServerCommand::Reorder(_)));
         let expected = self.state.as_ref().map(AppState::config_version);
         let receiver = self.services.shared_network_command(expected, command);
         self.busy = true;
@@ -301,6 +477,7 @@ impl SharedNetworkView {
             if let Ok(completion) = receiver.await {
                 let _ = view.update(cx, |this, cx| {
                     this.busy = false;
+                    this.pending_reorder = None;
                     if let Some(s) = completion.snapshot {
                         this.state = Some(s.clone());
                         cx.emit(Updated(Box::new(s)));
@@ -316,11 +493,14 @@ impl SharedNetworkView {
                                     this.draft = None;
                                     this.generation += 1;
                                 }
-                                components::notice::notify_app(
-                                    components::notice::Notice::Success,
-                                    "已保存，待应用",
-                                    cx,
-                                );
+                                // 排序成功静默收敛；其它保存仍区分“已保存”和“已应用”。
+                                if !reorder {
+                                    components::notice::notify_app(
+                                        components::notice::Notice::Success,
+                                        "已保存，待应用",
+                                        cx,
+                                    );
+                                }
                             }
                         }
                         Err(e) => {
@@ -337,6 +517,7 @@ impl SharedNetworkView {
             } else {
                 let _ = view.update(cx, |this, cx| {
                     this.busy = false;
+                    this.pending_reorder = None;
                     this.error = Some("数据未能保存或读取");
                     cx.notify();
                 });
@@ -824,7 +1005,7 @@ impl Render for SharedNetworkView {
             .font_weight(super::theme::MISANS_REGULAR)
             .text_size(px(t::BODY))
             .when(self.error.is_some(), |d| d.child(self.error_view(cx)));
-        if self.busy || self.state.is_none() {
+        if self.busy && self.pending_reorder.is_none() || self.state.is_none() {
             body = body.child(div().p(px(t::SECTION_PADDING)).child(tr(cx, "加载中")));
         }
         if let Some(state) = &self.state {
@@ -852,7 +1033,7 @@ impl Render for SharedNetworkView {
                 );
             }
             let sizes = self.card_bounds.clone();
-            let record_sizes = self.drag.is_none();
+            let record_sizes = self.drag.is_none() && self.pending_reorder.is_none();
             let mut cards = div()
                 .on_children_prepainted(move |bounds, _, _| {
                     if record_sizes {
@@ -911,6 +1092,7 @@ impl Render for SharedNetworkView {
                                 .into_iter()
                                 .map(|i| state.app_config.shared_servers[i].id.clone())
                                 .collect();
+                        this.pending_reorder = Some((source, target));
                         this.send(
                             Command::Edit(Box::new(SharedServerCommand::Reorder(ids))),
                             cx,
@@ -918,7 +1100,7 @@ impl Render for SharedNetworkView {
                     }
                     cx.notify();
                 }));
-            let order = self.drag.map_or_else(
+            let order = self.drag.or(self.pending_reorder).map_or_else(
                 || (0..state.app_config.shared_servers.len()).collect(),
                 |(source, target)| {
                     preview_order(state.app_config.shared_servers.len(), source, target)
@@ -943,173 +1125,8 @@ impl Render for SharedNetworkView {
                     );
                     continue;
                 }
-                let editing = server.clone();
-                let id = server.id.clone();
-                let enabled = server.enabled;
-                let copy = shared_server_uri(server);
-                let sharing = server.clone();
-                let deleting = server.clone();
-                let version = state.config_version();
-                let protocol = Draft::from_server(server).protocol;
-                cards = cards.child(
-                    div()
-                        .id(("server-card", index))
-                        .flex()
-                        .items_center()
-                        .gap(px(t::GAP))
-                        .p(px(st::CARD_PAD))
-                        .rounded(px(st::CARD_RADIUS))
-                        .bg(cx.theme().popover)
-                        .border_1()
-                        .border_color(cx.theme().foreground.opacity(0.1))
-                        .opacity(if enabled { 1. } else { 0.5 })
-                        .child(
-                            div()
-                                .id(("server-drag-handle", index))
-                                .cursor(CursorStyle::OpenHand)
-                                .size(px(t::ICON_SMALL))
-                                .flex_shrink_0()
-                                .child(
-                                    icon("Bars3", t::ICON_SMALL)
-                                        .text_color(cx.theme().muted_foreground),
-                                )
-                                .when(!self.busy, |d| {
-                                    let view = cx.entity().downgrade();
-                                    d.on_drag(
-                                        ServerDrag {
-                                            index,
-                                            name: server.name.clone(),
-                                            version,
-                                            height: self
-                                                .card_bounds
-                                                .borrow()
-                                                .get(index)
-                                                .map_or(px(st::CARD_HEIGHT), |s| s.size.height),
-                                        },
-                                        move |drag, _, window, cx| {
-                                            #[cfg(debug_assertions)]
-                                            eprintln!("shared drag begin source={}", drag.index);
-                                            let _ = view.update(cx, |this, cx| {
-                                                // 首次越过拖动阈值就吸附；快速拖放可能只产生这一次移动。
-                                                let bounds = this.card_bounds.borrow();
-                                                let heights = bounds
-                                                    .iter()
-                                                    .map(|b| f32::from(b.size.height))
-                                                    .collect::<Vec<_>>();
-                                                let top =
-                                                    bounds.first().map_or(px(0.), |b| b.origin.y);
-                                                let slot = snapped_slot(
-                                                    f32::from(window.mouse_position().y - top),
-                                                    &heights,
-                                                );
-                                                this.drag = Some((drag.index, slot));
-                                                cx.notify();
-                                            });
-                                            cx.new(|_| drag.clone())
-                                        },
-                                    )
-                                }),
-                        )
-                        .child(
-                            div()
-                                .flex_1()
-                                .min_w_0()
-                                .flex()
-                                .flex_col()
-                                .gap(px(4.))
-                                .child(
-                                    div()
-                                        .text_size(px(t::SECTION_TITLE))
-                                        .line_height(px(t::SECTION_LINE))
-                                        .child(server.name.clone()),
-                                )
-                                .child(
-                                    div()
-                                        .flex()
-                                        .flex_wrap()
-                                        .gap_x(px(12.))
-                                        .text_size(px(st::LABEL))
-                                        .line_height(px(st::LABEL_LINE))
-                                        .text_color(cx.theme().foreground.opacity(0.6))
-                                        .child(PROTOCOLS[protocol])
-                                        .child(format!("{} {}", tr(cx, "端口"), server.port))
-                                        .child(server.address.clone()),
-                                ),
-                        )
-                        .child(
-                            components::icon_button(
-                                ("server-scan", index),
-                                tr(cx, "扫码"),
-                                "QrCode",
-                                t::CONTROL,
-                            )
-                            .on_click(cx.listener(
-                                move |this, _, _, cx| {
-                                    this.sharing = Some(sharing.clone());
-                                    cx.notify();
-                                },
-                            )),
-                        )
-                        .child(
-                            components::icon_button(
-                                ("server-copy", index),
-                                tr(cx, "复制链接"),
-                                "ClipboardDocument",
-                                t::CONTROL,
-                            )
-                            .on_click(move |_, _, cx| Self::copy(copy.clone(), cx)),
-                        )
-                        .child(
-                            components::icon_button(
-                                ("server-power", index),
-                                tr(cx, if enabled { "停用" } else { "启用" }),
-                                "Power",
-                                t::CONTROL,
-                            )
-                            .when(enabled, |b| b.text_color(rgb(t::ACCENT_STRONG)))
-                            .disabled(self.busy)
-                            .on_click(cx.listener(
-                                move |this, _, _, cx| {
-                                    this.send(
-                                        Command::Edit(Box::new(SharedServerCommand::SetEnabled {
-                                            id: id.clone(),
-                                            enabled: !enabled,
-                                        })),
-                                        cx,
-                                    )
-                                },
-                            )),
-                        )
-                        .child(
-                            components::icon_button(
-                                ("server-edit", index),
-                                tr(cx, "编辑服务器"),
-                                "PencilSquare",
-                                t::CONTROL,
-                            )
-                            .disabled(self.busy)
-                            .on_click(cx.listener(
-                                move |this, _, window, cx| {
-                                    this.open(Some(editing.clone()), window, cx)
-                                },
-                            )),
-                        )
-                        .child(
-                            components::icon_button(
-                                ("server-delete", index),
-                                tr(cx, "删除服务器"),
-                                "Trash",
-                                t::CONTROL,
-                            )
-                            .disabled(self.busy)
-                            .on_click(cx.listener(
-                                move |this, _, _, cx| {
-                                    this.deleting = Some(deleting.clone());
-                                    cx.notify();
-                                },
-                            )),
-                        ),
-                );
+                cards =
+                    cards.child(self.server_card(server, index, state.config_version(), false, cx));
             }
             body = body.child(cards);
         }
