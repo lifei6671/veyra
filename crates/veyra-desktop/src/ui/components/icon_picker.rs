@@ -86,6 +86,8 @@ pub struct IconPicker {
     pub expanded: bool,
     /// React 分组图标与主备页签图标拥有不同的真实字段宽度。
     pub expanded_width: f32,
+    /// React 页签图标的空值文案与分组图标不同，清空选项仍为“无”。
+    pub empty_label: &'static str,
     pub disabled: bool,
     search: Entity<InputState>,
     // Kit 的 value 包含 IME 预编辑内容；筛选只消费 Change 事件提交后的值。
@@ -115,6 +117,7 @@ impl IconPicker {
         Self {
             expanded: false,
             expanded_width: t::groups::ICON_FIELD,
+            empty_label: "无",
             disabled: false,
             value,
             search,
@@ -159,6 +162,8 @@ impl Render for IconPicker {
                     .ghost()
                     .disabled(self.disabled)
                     .accessibility_label(tr(cx, if self.expanded { "分组图标" } else { "选择测试站点图标" }))
+                    .font_weight(super::super::theme::MISANS_REGULAR)
+                    .text_size(px(t::BODY))
                     .w(px(if self.expanded { self.expanded_width } else { t::SITE_ICON_WIDTH }))
                     .h(px(t::CONTROL))
                     .px(px(t::GAP))
@@ -175,7 +180,7 @@ impl Render for IconPicker {
                             .when(!self.expanded,|d|d.justify_around())
                             .children(current.map(|e| img(e.image.clone()).size(px(if self.expanded {t::ICON_SMALL}else{20.}))))
                             .when(self.expanded&&current.is_none(),|d|d.child(div().w(px(t::ICON)).text_color(cx.theme().muted_foreground).child("—")))
-                            .when(self.expanded, |d| d.child(div().flex_1().min_w_0().overflow_hidden().text_ellipsis().child(current.map_or_else(||tr(cx,"无").to_owned(), |e|e.labels[match language {veyra_core::domain::DesktopLanguage::SimplifiedChinese=>0,veyra_core::domain::DesktopLanguage::English=>1,veyra_core::domain::DesktopLanguage::TraditionalChinese=>2}].clone()))))
+                            .when(self.expanded, |d| d.child(div().flex_1().min_w_0().overflow_hidden().text_ellipsis().child(current.map_or_else(||tr(cx,self.empty_label).to_owned(), |e|e.labels[match language {veyra_core::domain::DesktopLanguage::SimplifiedChinese=>0,veyra_core::domain::DesktopLanguage::English=>1,veyra_core::domain::DesktopLanguage::TraditionalChinese=>2}].clone()))))
                             .child(icon("ChevronDown", 12.).text_color(cx.theme().foreground)),
                     ),
             )

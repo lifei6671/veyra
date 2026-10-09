@@ -104,19 +104,18 @@ impl SnapshotService {
         let _guard = self.lock()?;
         self.load_or_initialize()
     }
-    /// Runtime selector 写入的窄范围例外：版本/epoch核对与有超时的PUT/GET共用业务写gate。
-    /// 不能复读后释放再PUT，否则新pending可在间隙发布。此锁不覆盖child生命周期或cache复制。
-    pub(crate) fn with_selection_write<T>(
+    /// PUT/GET 与配置、选择两个 CAS 同处短 writer gate，防止成员保存插入间隙。
+    pub(crate) fn with_controller_write<T>(
         &self,
-        expected: &SelectionVersion,
+        config: &ConfigVersion,
+        selection: &SelectionVersion,
         write: impl FnOnce() -> T,
     ) -> Result<T, AppError> {
         let _guard = self.lock()?;
         let _writer = self.store.lock_unfenced_writer()?;
-        self.load_or_initialize()?
-            .selection_version()
-            .0
-            .require(&expected.0)?;
+        let state = self.load_or_initialize()?;
+        state.config_version().0.require(&config.0)?;
+        state.selection_version().0.require(&selection.0)?;
         Ok(write())
     }
     pub fn append(
@@ -165,7 +164,42 @@ impl SnapshotService {
                 ));
             }
         }
+        let old_selectors = next.runtime_groups();
         next.groups = groups;
+        // 未知 pending 必须仍可按实际 Controller 值核对；拒绝破坏它的配置编辑。
+        let selectors = next.runtime_groups();
+        for (id, selection) in &next.group_selections {
+            if let Some(pending) = &selection.pending
+                && !selectors.iter().any(|g| {
+                    g.id == *id
+                        && matches!(g.selection, SelectionPolicy::Manual { .. })
+                        && g.members.contains(&pending.member)
+                        // 保留旧确认/编译默认的完整成员与顺序，不能把未知旧值变成第三值。
+                        && old_selectors.iter().any(|old| old.id == *id && old == g)
+                })
+            {
+                return Err(GroupSaveError::Invalid(
+                    crate::domain::GroupIssue::InvalidSettings(id.clone()),
+                ));
+            }
+        }
+        next.group_selections.retain(|id, selection| {
+            let Some(selector) = selectors
+                .iter()
+                .find(|g| g.id == *id && matches!(g.selection, SelectionPolicy::Manual { .. }))
+            else {
+                return false;
+            };
+            if selection
+                .selected
+                .as_ref()
+                .is_some_and(|m| !selector.members.contains(m))
+            {
+                selection.selected = None;
+                selection.mode = crate::domain::GroupSelectionMode::Auto;
+            }
+            true
+        });
         next.validate_groups().map_err(GroupSaveError::Invalid)?;
         next.validate()
             .map_err(|_| GroupSaveError::Storage(AppError::validation(FieldPath::Snapshot)))?;
@@ -281,6 +315,9 @@ impl SnapshotService {
                 *pending_node_id = None;
             }
         }
+        for selection in replacement.group_selections.values_mut() {
+            selection.pending = None;
+        }
         replacement.profile.validate()?;
         replacement.state_epoch = StateEpoch::fresh()?;
         replacement.config_revision = 0;
@@ -380,7 +417,7 @@ impl SelectionService {
         pool: PoolId,
         requested: NodeId,
     ) -> Result<SaveOutcome<NodeId, SelectionVersion>, AppError> {
-        self.stage_manual(expected, pool, requested, ManualStage::Begin)
+        self.stage_manual(expected, pool, requested, ManualStage::Begin, None)
     }
     /// 只有同版本、同 pending 请求才允许提交 controller 的确认结果。
     pub fn confirm_manual_pending(
@@ -389,7 +426,7 @@ impl SelectionService {
         pool: PoolId,
         requested: NodeId,
     ) -> Result<SaveOutcome<NodeId, SelectionVersion>, AppError> {
-        self.stage_manual(expected, pool, requested, ManualStage::Confirm)
+        self.stage_manual(expected, pool, requested, ManualStage::Confirm, None)
     }
     /// 调用者须已读回旧 confirmed；CAS 防止清掉另一请求。
     pub fn clear_manual_pending(
@@ -398,7 +435,77 @@ impl SelectionService {
         pool: PoolId,
         requested: NodeId,
     ) -> Result<SaveOutcome<NodeId, SelectionVersion>, AppError> {
-        self.stage_manual(expected, pool, requested, ManualStage::Clear)
+        self.stage_manual(expected, pool, requested, ManualStage::Clear, None)
+    }
+    /// Group/lane 的 pending/confirm/clear 使用同一快照 CAS；mode 只在 confirm 后生效。
+    pub(crate) fn stage_group(
+        &self,
+        config: ConfigVersion,
+        expected: SelectionVersion,
+        selector: PoolId,
+        requested: crate::domain::GroupSelectionIntent,
+        confirm: Option<bool>,
+    ) -> Result<SelectionVersion, AppError> {
+        let _guard = self.snapshots.lock()?;
+        let mut next = self.snapshots.load_or_initialize()?;
+        next.config_version().0.require(&config.0)?;
+        next.selection_version().0.require(&expected.0)?;
+        if !next.runtime_groups().iter().any(|g| {
+            g.id == selector
+                && g.members.contains(&requested.member)
+                && matches!(g.selection, SelectionPolicy::Manual { .. })
+        }) {
+            return Err(AppError::validation(FieldPath::Snapshot));
+        }
+        if confirm.is_none()
+            && (next.group_selections.values().any(|s| s.pending.is_some())
+                || next.pools.iter().any(|p| {
+                    matches!(
+                        p.selection,
+                        SelectionPolicy::Manual {
+                            pending_node_id: Some(_),
+                            ..
+                        }
+                    )
+                }))
+        {
+            return Err(AppError::new(AppErrorCode::RevisionConflict));
+        }
+        let entry = next.group_selections.entry(selector).or_default();
+        if let Some(confirm) = confirm {
+            if entry.pending.as_ref() != Some(&requested) {
+                return Err(AppError::new(AppErrorCode::RevisionConflict));
+            }
+            if confirm {
+                entry.selected = Some(requested.member);
+                entry.mode = requested.mode;
+            }
+            entry.pending = None;
+        } else {
+            entry.pending = Some(requested);
+        }
+        let saved = self.snapshots.store.commit(&next)?;
+        Ok(saved.selection_version())
+    }
+    pub(crate) fn stage_node(
+        &self,
+        config: &ConfigVersion,
+        expected: SelectionVersion,
+        pool: PoolId,
+        node: NodeId,
+        confirm: Option<bool>,
+    ) -> Result<SaveOutcome<NodeId, SelectionVersion>, AppError> {
+        self.stage_manual(
+            expected,
+            pool,
+            node,
+            match confirm {
+                None => ManualStage::Begin,
+                Some(true) => ManualStage::Confirm,
+                Some(false) => ManualStage::Clear,
+            },
+            Some(config),
+        )
     }
     fn stage_manual(
         &self,
@@ -406,10 +513,14 @@ impl SelectionService {
         pool_id: PoolId,
         requested: NodeId,
         stage: ManualStage,
+        config: Option<&ConfigVersion>,
     ) -> Result<SaveOutcome<NodeId, SelectionVersion>, AppError> {
         let _guard = self.snapshots.lock()?;
         let mut next = self.snapshots.load_or_initialize()?;
         next.selection_version().0.require(&expected.0)?;
+        if let Some(config) = config {
+            next.config_version().0.require(&config.0)?;
+        }
         let pool = next
             .pools
             .iter_mut()

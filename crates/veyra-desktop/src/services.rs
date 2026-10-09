@@ -168,6 +168,29 @@ impl AppServices {
         });
         receiver
     }
+    /// GPUI 不获得 Controller；所有 Group 操作投递同一个 Runtime worker。
+    pub fn groups_runtime_command(&self, event: crate::ui::groups::GroupsRuntimeEvent) {
+        let request = event.request;
+        let reply = if let Some(selection) = event.selection {
+            self.manual_runtime.select_manual(selection)
+        } else {
+            self.manual_runtime
+                .reconcile_selection(event.instance, event.expected, event.group)
+        };
+        let snapshots = self.snapshots.clone();
+        let sender = self.sender.clone();
+        self.runtime.spawn_blocking(move || {
+            let result = reply.recv().unwrap_or(Err(
+                veyra_core::application::manual_runtime::SelectionError::StaleInstance,
+            ));
+            let snapshot = snapshots.snapshot().ok().map(Box::new);
+            let _ = sender.send(AppEvent::GroupSelection {
+                request,
+                result,
+                snapshot,
+            });
+        });
+    }
     pub fn groups_command(&self, event: crate::ui::groups::GroupsEvent) {
         let snapshots = self.snapshots.clone();
         let sender = self.sender.clone();

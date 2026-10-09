@@ -961,3 +961,68 @@ fn p202b_projection_profile_custom_rule_outside_runtime_closure_is_rejected() {
         CompileError::InvalidRouteTarget
     );
 }
+
+#[test]
+fn p403_health_projection_flattens_nested_urltest_without_selection_contract() {
+    // 保护嵌套池健康批次不会进入 URLTest checking 空结果；派生 selector 不能获得用户写权。
+    let mut s = state();
+    let automatic = s
+        .pools
+        .iter()
+        .find(|p| matches!(p.selection, SelectionPolicy::UrlTest { .. }))
+        .unwrap()
+        .id
+        .clone();
+    let mut group = NodeGroup::fresh().unwrap();
+    group.name = "主备".into();
+    group.rule = GroupRule::Failover;
+    group.failover = Some(FailoverSettings::default());
+    group.lanes = vec![
+        FailoverLane {
+            id: "primary".into(),
+            name: String::new(),
+            icon: String::new(),
+            members: vec![OutboundId::Pool(automatic)],
+            manual: true,
+        },
+        FailoverLane {
+            id: "backup".into(),
+            name: String::new(),
+            icon: String::new(),
+            members: vec![OutboundId::Node(s.nodes[0].id.clone()), OutboundId::Direct],
+            manual: false,
+        },
+    ];
+    s.groups = vec![group.clone()];
+    let compiled = plan(&s, &OutboundId::Pool(group.id.clone()), &resources()).unwrap();
+    let index = compiled.artifact_index().unwrap();
+    for lane in &group.lanes {
+        let id = lane.pool_id(&group.id);
+        let tag = index.group_health.get(&id).unwrap();
+        assert!(
+            index
+                .group_tag(&PoolId(tag.trim_start_matches("pool-").into()))
+                .is_none()
+        );
+        let health = compiled
+            .document
+            .outbounds
+            .iter()
+            .find_map(|o| match o {
+                CoreOutbound::Selector(v) if v.tag == *tag => Some(v),
+                _ => None,
+            })
+            .unwrap();
+        assert!(!health.outbounds.is_empty());
+        assert!(
+            health
+                .outbounds
+                .iter()
+                .all(|tag| tag.starts_with("node-") || tag == "direct")
+        );
+        assert!(health.default.is_none());
+    }
+    // auto 选路仍是原生 URLTest；完整恢复 artifact 保持封闭校验。
+    assert!(compiled.document.outbounds.iter().any(|o|matches!(o,CoreOutbound::Urltest(v) if v.tag==pool_tag(&group.lanes[1].pool_id(&group.id).0))));
+    assert!(SingBoxPlan::recover(&compiled.recovery_bytes().unwrap(), &resources()).is_ok());
+}

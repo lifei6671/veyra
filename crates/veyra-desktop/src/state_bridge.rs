@@ -15,6 +15,14 @@ pub struct InstanceToken {
     pub generation: u64,
 }
 pub enum AppEvent {
+    GroupSelection {
+        request: u64,
+        result: Result<
+            veyra_core::domain::SelectionVersion,
+            veyra_core::application::manual_runtime::SelectionError,
+        >,
+        snapshot: Option<Box<AppState>>,
+    },
     Groups {
         request: u64,
         result: Result<Box<AppState>, veyra_core::application::state_service::GroupSaveError>,
@@ -206,7 +214,8 @@ impl StateBridge {
                 }
                 Disposition::Accepted
             }
-            AppEvent::Groups { .. }
+            AppEvent::GroupSelection { .. }
+            | AppEvent::Groups { .. }
             | AppEvent::Subscriptions { .. }
             | AppEvent::BehaviorSaved { .. }
             | AppEvent::BackendProfile { .. }

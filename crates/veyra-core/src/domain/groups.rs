@@ -79,6 +79,28 @@ impl NodeGroup {
         }
     }
 }
+/// 已确认模式与 pending 意图区分；未知 Controller 响应不能提前改变 mode。
+#[derive(Clone, Copy, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
+#[serde(rename_all = "snake_case")]
+pub enum GroupSelectionMode {
+    #[default]
+    Auto,
+    ManualPin,
+}
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct GroupSelectionIntent {
+    pub member: OutboundId,
+    pub mode: GroupSelectionMode,
+}
+#[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct GroupSelection {
+    pub selected: Option<OutboundId>,
+    pub mode: GroupSelectionMode,
+    pub pending: Option<GroupSelectionIntent>,
+}
+
 /// 主用与有序备用共用同一数据结构；首条是主用，稳定 ID 不随排序/改名变化。
 #[derive(Clone, Debug, Deserialize, Serialize, Eq, PartialEq)]
 #[serde(deny_unknown_fields)]
@@ -396,6 +418,33 @@ impl AppState {
                     .is_err()
             {
                 return Err(GroupIssue::Referenced(OutboundId::Pool(id.clone())));
+            }
+        }
+        for (id, selection) in &self.group_selections {
+            let selectors = self.runtime_groups();
+            let selector = selectors
+                .iter()
+                .find(|g| g.id == *id && matches!(g.selection, SelectionPolicy::Manual { .. }))
+                .ok_or_else(|| GroupIssue::InvalidSettings(id.clone()))?;
+            if selection.pending.as_ref().is_some_and(|p| {
+                !selector.members.contains(&p.member)
+                    || (p.mode == GroupSelectionMode::ManualPin
+                        && !self
+                            .groups
+                            .iter()
+                            .any(|g| g.id == *id && g.rule == GroupRule::Failover))
+            }) || selection
+                .selected
+                .as_ref()
+                .is_some_and(|m| !selector.members.contains(m))
+                || (selection.mode == GroupSelectionMode::ManualPin
+                    && (!self
+                        .groups
+                        .iter()
+                        .any(|g| g.id == *id && g.rule == GroupRule::Failover)
+                        || selection.selected.is_none()))
+            {
+                return Err(GroupIssue::InvalidSettings(id.clone()));
             }
         }
         Ok(())

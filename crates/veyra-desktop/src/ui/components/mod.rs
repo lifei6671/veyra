@@ -310,7 +310,7 @@ pub fn toggle(id: &'static str, checked: bool, label: impl Into<SharedString>) -
 pub struct PanelButton {
     button: Button,
     tooltip: Option<SharedString>,
-    id: &'static str,
+    id: ElementId,
     radius: f32,
     disabled: bool,
     reference_hover: Option<[Hsla; 3]>,
@@ -376,14 +376,11 @@ impl RenderOnce for PanelButton {
         // 与 Kit Button 在同一父元素 scope 读取它的稳定焦点 id；放入 child 后
         // scope 已进入 Button/content，会读到另一个 handle 且被 overflow 裁切。
         if let Some([normal, hover, foreground]) = self.reference_hover {
-            let state = window.use_keyed_state(
-                (ElementId::from(self.id), "reference-hover"),
-                cx,
-                |_, _| false,
-            );
+            let state =
+                window.use_keyed_state((self.id.clone(), "reference-hover"), cx, |_, _| false);
             let hovered = !self.disabled && *state.read(cx);
             let bg = gpui_kit::base::motion::transition(
-                (self.id, "reference-bg"),
+                (self.id.clone(), "reference-bg"),
                 if hovered { hover } else { normal },
                 reference_button_transition(),
                 window,
@@ -413,7 +410,7 @@ impl RenderOnce for PanelButton {
         let tooltip = self.tooltip;
         let button = RenderOnce::render(self.button, window, cx).into_any_element();
         let focus = window
-            .use_keyed_state(self.id, cx, |_, cx| cx.focus_handle())
+            .use_keyed_state(self.id.clone(), cx, |_, cx| cx.focus_handle())
             .read(cx)
             .clone();
         let focused =
@@ -450,11 +447,12 @@ impl RenderOnce for PanelButton {
             })
     }
 }
-pub fn button(id: &'static str, label: impl Into<SharedString>) -> PanelButton {
+pub fn button(id: impl Into<ElementId>, label: impl Into<SharedString>) -> PanelButton {
     use gpui_kit::component::FocusableExt as _;
     let label = label.into();
+    let id = id.into();
     PanelButton {
-        id,
+        id: id.clone(),
         tooltip: None,
         radius: super::tokens::RADIUS,
         disabled: false,
@@ -583,7 +581,7 @@ pub fn navigation_item(
         .when(collapsed, |b| b.justify_center())
         .when(active, |b| b.bg(rgb(active_bg)).text_color(foreground));
     PanelButton {
-        id,
+        id: id.into(),
         tooltip: None,
         button,
         disabled: false,
@@ -1186,3 +1184,86 @@ pub fn loading_spinner(size: f32, cx: &App) -> impl IntoElement {
 }
 
 pub mod qr;
+
+/// 原 React shared.EmptyState 的 compact 状态，复用当前主题与全局语言。
+pub fn empty_state(icon: &'static str, title: &str, text: &str, cx: &App) -> Div {
+    use super::tokens::{self as t, status as s};
+    div()
+        .min_h(px(s::EMPTY_HEIGHT))
+        .w_full()
+        .flex()
+        .flex_col()
+        .items_center()
+        .justify_center()
+        .text_center()
+        .child(
+            div()
+                .size(px(s::EMPTY_ICON_BOX))
+                .rounded(px(s::EMPTY_ICON_RADIUS))
+                .bg(if cx.theme().mode.is_dark() {
+                    rgb(s::EMPTY_ACCENT_DARK).opacity(s::EMPTY_ALPHA_DARK)
+                } else {
+                    rgb(t::ACCENT).opacity(s::EMPTY_ALPHA)
+                })
+                .text_color(rgb(t::ACCENT_STRONG))
+                .text_size(px(s::EMPTY_ICON_TEXT))
+                .flex()
+                .items_center()
+                .justify_center()
+                .child(icon),
+        )
+        .child(
+            div()
+                .mt(px(s::EMPTY_TITLE_MARGIN))
+                .mb(px(s::EMPTY_TEXT_MARGIN))
+                .text_size(px(t::BODY))
+                .font_weight(FontWeight::BOLD)
+                .child(tr(cx, title).to_owned()),
+        )
+        .child(
+            div()
+                .max_w(px(s::EMPTY_TEXT_WIDTH))
+                .text_size(px(s::EMPTY_TEXT_SIZE))
+                .line_height(px(s::EMPTY_TEXT_LINE))
+                .text_color(cx.theme().muted_foreground)
+                .child(tr(cx, text).to_owned()),
+        )
+}
+/// 原 React shared.ErrorState：错误内容及重试动作来自调用方的真实服务结果。
+pub fn error_state(title: &str, message: &str, action: impl IntoElement, cx: &App) -> Div {
+    use super::tokens::{self as t, status as s};
+    div()
+        .w_full()
+        .max_w(px(s::ERROR_WIDTH))
+        .mx_auto()
+        .mb(px(t::PAD))
+        .p(px(t::SECTION_PADDING))
+        .rounded(cx.theme().radius_lg)
+        .bg(cx.theme().popover)
+        .flex()
+        .items_center()
+        .gap(px(s::ERROR_GAP))
+        .child(
+            super::icons::icon("ExclamationTriangle", t::SUBSCRIPTION_EMPTY_ICON)
+                .text_color(rgb(t::SUBSCRIPTION_ERROR)),
+        )
+        .child(
+            div()
+                .flex_1()
+                .min_w_0()
+                .child(
+                    div()
+                        .text_size(px(t::BODY))
+                        .font_weight(FontWeight::BOLD)
+                        .child(tr(cx, title).to_owned()),
+                )
+                .child(
+                    div()
+                        .mt(px(t::SUBSCRIPTION_SKIPPED_GAP))
+                        .text_size(px(t::SUBSCRIPTION_TEXT_BUTTON))
+                        .text_color(cx.theme().muted_foreground)
+                        .child(tr(cx, message).to_owned()),
+                ),
+        )
+        .child(action)
+}

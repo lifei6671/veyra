@@ -236,6 +236,7 @@ mod tests {
             }],
             pools: Vec::new(),
             groups: Vec::new(),
+            group_selections: Default::default(),
             routes: Vec::new(),
         }
     }

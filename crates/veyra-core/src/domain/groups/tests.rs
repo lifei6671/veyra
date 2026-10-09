@@ -915,3 +915,35 @@ fn p403_config_and_instance_replacement_reject_old_member_probe() {
         FailoverDecision::StaleProbe
     );
 }
+
+// 无关组选择推进全局版本时，只废弃旧 probe，连续失败仍可按下一批到阈值。
+#[test]
+fn p403_rebind_selection_preserves_threshold_and_rejects_late_probe() {
+    let (mut policy, mut version) = policy_fixture();
+    let first = policy.begin_probe();
+    assert_eq!(
+        policy.observe(
+            &first,
+            Some("primary"),
+            &[("primary".into(), false), ("backup".into(), true)],
+            0
+        ),
+        FailoverDecision::Keep
+    );
+    let late = policy.begin_probe();
+    version.0.revision += 1;
+    policy.rebind_selection(version.clone());
+    assert_eq!(
+        policy.observe(
+            &late,
+            Some("primary"),
+            &[("primary".into(), true), ("backup".into(), true)],
+            10
+        ),
+        FailoverDecision::StaleProbe
+    );
+    let second = policy.begin_probe();
+    assert!(
+        matches!(policy.observe(&second,Some("primary"),&[("primary".into(),false),("backup".into(),true)],20),FailoverDecision::Select{lane_id,..} if lane_id == "backup")
+    );
+}

@@ -83,3 +83,7 @@ Host 核查基线 d713fa4 的唯一隔离分支、Group/OutboundCatalog/Failover
 Host 查阅同数据 GPUI/React 主用、备用原图，确认主窗口与编辑区已有实际图像证据；暂不把未完整对齐的 hover/focus/disabled/loading/空/错误状态、150% 系统档位和完整视觉宣布 PASS。原始 GUI 失败保草稿、重试、重建与成员顺序收据为实现者实操证据，Host 未亲自操作 GUI。配置 check 不是实例切换；纯 FailoverPolicy 的 Auto/ManualPin 不是已完成 Runtime write authority。
 
 与 P2-06 owner 边界保持：本轮仅 Group/Config/GPUI 独立切片，无新增已授权 Runtime 公共契约、pending/Controller/Helper/IPC 修改；其健康探测、手动固定与恢复自动、selection_revision/pending 不确定读回、正式 1.14.0 实际切换仍 NOT_RUN。**P4-03 保持 ACCEPTANCE、owner 保留，下游不解锁；当前 commit 仅为有证据的检查点，不标 DONE、不合并 codex/dist-react-restore、不 push。** P2-05 ACCEPTANCE、P2-06 DOING 均不改变。
+
+## 正式 Runtime 后续交付（2026-10-09）
+
+[新组合树的 Runtime/Native/GUI 记录](P4-03-runtime-acceptance.md)补齐本页旧的运行接线缺口；本页历史 NOT_RUN/FAIL/OPEN 不改写。当前仍 ACCEPTANCE，未提交增量/合并/释放 owner。

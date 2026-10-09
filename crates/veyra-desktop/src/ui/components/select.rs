@@ -2,7 +2,7 @@
 use crate::ui::i18n::tr;
 use crate::ui::{icons::icon, tokens as t};
 use gpui_kit::{
-    base::{Popover, Select as BaseSelect},
+    base::{Popover, Select as BaseSelect, StyledExt},
     component::{ActiveTheme, IndexPath},
     prelude::*,
     *,
@@ -68,6 +68,7 @@ pub struct SelectState {
     width: Pixels,
     height: Pixels,
     compact: bool,
+    trigger_style: StyleRefinement,
     disabled: bool,
     pub translated_options: usize,
 }
@@ -89,6 +90,7 @@ impl SelectState {
             width: px(t::SELECT_WIDTH),
             height: px(t::CONTROL),
             compact: false,
+            trigger_style: StyleRefinement::default(),
             disabled: false,
             translated_options: usize::MAX,
         }
@@ -202,6 +204,7 @@ impl RenderOnce for Select {
             s.label = self.label;
             s.disabled = self.disabled;
             s.compact = self.compact;
+            s.trigger_style = self.style.clone();
             s.height = self
                 .style
                 .size
@@ -300,6 +303,7 @@ impl Render for SelectState {
                             .text_color(cx.theme().foreground)
                             .cursor_pointer()
                             .focus_visible(|s| s.border_color(rgb(t::ACCENT)))
+                            .refine_style(&self.trigger_style)
                             .child(selected)
                             .child(
                                 icon(

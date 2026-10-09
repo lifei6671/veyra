@@ -48,6 +48,85 @@ pub fn icon_label(language: DesktopLanguage, label: &str) -> String {
     out
 }
 const MESSAGES: &[[&str; 3]] = &[
+    ["选择线路", "Select lane", "選擇線路"],
+    [
+        "留空 = 用「分流与策略 → 其他」里的全局地址",
+        "Leave empty to use the global URL in Routing & Policy → Other",
+        "留空 = 用「分流與策略 → 其他」裡的全域地址",
+    ],
+    ["手动固定", "Manual pin", "手動固定"],
+    ["恢复自动", "Resume automatic", "恢復自動"],
+    ["切换中", "Switching", "切換中"],
+    ["选择已确认", "Selection confirmed", "選擇已確認"],
+    [
+        "选择待确认，请核对",
+        "Selection pending; reconcile",
+        "選擇待確認，請核對",
+    ],
+    [
+        "请先启动并应用当前配置",
+        "Start and apply the current configuration",
+        "請先啟動並套用目前設定",
+    ],
+    ["全部线路不可用", "All lanes unavailable", "全部線路不可用"],
+    [
+        "固定线路不可用",
+        "Pinned lane unavailable",
+        "固定線路不可用",
+    ],
+    ["线路检测失败", "Lane check failed", "線路檢測失敗"],
+    ["正在检测线路", "Checking lanes", "正在檢測線路"],
+    ["核对选择", "Reconcile selection", "核對選擇"],
+    [
+        "实例已更换，请重新操作",
+        "Instance replaced; try again",
+        "實例已更換，請重新操作",
+    ],
+    [
+        "选择已变化，请重新操作",
+        "Selection changed; try again",
+        "選擇已變化，請重新操作",
+    ],
+    [
+        "配置已变化，请重新应用",
+        "Configuration changed; apply again",
+        "設定已變化，請重新套用",
+    ],
+    [
+        "线路或成员已变化",
+        "Lane or member changed",
+        "線路或成員已變化",
+    ],
+    [
+        "切换失败，保留原选择",
+        "Switch failed; previous selection retained",
+        "切換失敗，保留原選擇",
+    ],
+    [
+        "选择保存失败，尚未切换",
+        "Selection save failed; not switched",
+        "選擇儲存失敗，尚未切換",
+    ],
+    [
+        "已切换，但保存失败，请核对",
+        "Switched; save failed; reconcile",
+        "已切換，但儲存失敗，請核對",
+    ],
+    [
+        "原选择已读回，但保存失败，请核对",
+        "Previous selection read; save failed; reconcile",
+        "原選擇已讀回，但儲存失敗，請核對",
+    ],
+    [
+        "选择已确认，但恢复记录保存失败",
+        "Selection confirmed; recovery save failed",
+        "選擇已確認，但恢復記錄儲存失敗",
+    ],
+    [
+        "无法读取选择，请重试",
+        "Cannot read selection; try again",
+        "無法讀取選擇，請重試",
+    ],
     ["组内延迟容差", "Lane latency tolerance", "組內延遲容差"],
     ["故障转移（failover）", "Failover", "故障轉移（failover）"],
     ["高级设置", "Advanced settings", "進階設定"],
@@ -449,9 +528,9 @@ const MESSAGES: &[[&str; 3]] = &[
         "勾選左側節點並加入",
     ],
     [
-        "内置出口仅可改名和图标",
-        "Edit built-in name and icon",
-        "內建出口僅可改名和圖示",
+        "内置出站只能改名字和图标。",
+        "Built-in outbounds only allow editing the name and icon.",
+        "內建出站只能改名字和圖示。",
     ],
     ["添加分组", "Add group", "新增分組"],
     ["修改分组", "Edit group", "修改分組"],
@@ -1630,6 +1709,17 @@ const MESSAGES: &[[&str; 3]] = &[
     ["Loading · 本地状态", "Loading local state", "載入本機狀態"],
     ["本地状态", "Local state", "本機狀態"],
     ["读取失败", "Load failed", "讀取失敗"],
+    [
+        "出站节点加载失败",
+        "Outbound groups could not be loaded",
+        "出站節點載入失敗",
+    ],
+    ["没有出站分组", "No outbound groups", "沒有出站分組"],
+    [
+        "点击右上角添加分组。",
+        "Click Add group at the top right.",
+        "點擊右上角新增分組。",
+    ],
     ["关闭通知", "Dismiss notification", "關閉通知"],
     [
         "行为偏好正在保存",

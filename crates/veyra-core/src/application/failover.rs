@@ -127,6 +127,16 @@ impl FailoverPolicy {
         self.invalidate(selection);
         self.mode = FailoverMode::Auto;
     }
+    /// 无关组推进全局选择版本只废弃探测，不清本组连续失败或主用恢复计时。
+    pub fn rebind_selection(&mut self, selection: SelectionVersion) {
+        self.token.selection = selection;
+        self.token.generation = self
+            .token
+            .generation
+            .checked_add(1)
+            .expect("probe generation exhausted");
+        self.probe_pending = false;
+    }
     /// owner 完成/清除 pending 后同步版本；旧批结果即刻失效。
     pub fn invalidate(&mut self, selection: SelectionVersion) {
         self.token.selection = selection;

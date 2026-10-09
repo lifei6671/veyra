@@ -8,7 +8,7 @@ use std::{
 use veyra_core::application::{
     manual_runtime::{
         ManualRuntime, ManualRuntimeSnapshot, ManualSelectionRequest, RuntimeCommand, RuntimeError,
-        RuntimeResult, SelectionError,
+        RuntimeResult, SelectionChoice, SelectionError,
     },
     state_service::SnapshotService,
 };
@@ -22,7 +22,7 @@ pub struct RuntimeEvent {
 enum Message {
     Operation(u64, RuntimeCommand),
     Selection(
-        ManualSelectionRequest,
+        ManualSelectionRequest<SelectionChoice>,
         mpsc::Sender<Result<veyra_core::domain::SelectionVersion, SelectionError>>,
     ),
     #[cfg(target_os = "macos")]
@@ -103,6 +103,12 @@ enum Message {
             Result<Option<veyra_core::application::runtime_recovery::OwnerTransfer>, RuntimeError>,
         >,
     ),
+    Reconcile(
+        veyra_core::application::runtime_snapshot::InstanceId,
+        veyra_core::domain::SnapshotVersion,
+        veyra_core::domain::PoolId,
+        mpsc::Sender<Result<veyra_core::domain::SelectionVersion, SelectionError>>,
+    ),
     Quit(mpsc::Sender<Result<(), RuntimeError>>),
 }
 pub struct RuntimeService {
@@ -148,6 +154,7 @@ impl RuntimeService {
             let bootstrap_touched = false;
             let (mut request, mut sequence) = (0, 0);
             let mut previous = None;
+            let clock = std::time::Instant::now();
             loop {
                 let message = receiver.recv_timeout(Duration::from_millis(250));
                 let mut emit = |snapshot, result| {
@@ -162,6 +169,15 @@ impl RuntimeService {
                 match message {
                     #[cfg(target_os = "macos")]
                     Ok(Message::Helper(command, reply)) => {
+                        if matches!(
+                            *command,
+                            veyra_core::application::helper_protocol::Command::Start { .. }
+                                | veyra_core::application::helper_protocol::Command::Apply { .. }
+                        ) && let Err(error) = helper_group_admission(&snapshots)
+                        {
+                            let _ = reply.send(Err(error));
+                            continue;
+                        }
                         // 本worker从未确认Commit时，不以磁盘Frozen或空child槽推导启动能力。
                         if !bootstrap_committed
                             && matches!(*command, veyra_core::application::helper_protocol::Command::Start { .. } | veyra_core::application::helper_protocol::Command::Apply { .. })
@@ -256,6 +272,10 @@ impl RuntimeService {
                     }
                     #[cfg(target_os = "macos")]
                     Ok(Message::Transfer(id, expected, direction, reply)) => {
+                        if let Err(error) = helper_group_admission(&snapshots) {
+                            let _ = reply.send(Err(error));
+                            continue;
+                        }
                         use veyra_core::application::helper_protocol::{Command, Error, Response};
                         let result = veyra_core::application::helper_transfer::transfer(
                             &mut owner,
@@ -274,6 +294,10 @@ impl RuntimeService {
                     }
                     #[cfg(target_os = "macos")]
                     Ok(Message::BootstrapCommit(expected, reply)) => {
+                        if let Err(error) = helper_group_admission(&snapshots) {
+                            let _ = reply.send(Err(error));
+                            continue;
+                        }
                         bootstrap_touched = true;
                         use veyra_core::application::helper_protocol::{Command, Error, Response};
                         let result = veyra_core::application::helper_transfer::commit_bootstrap(
@@ -292,6 +316,10 @@ impl RuntimeService {
                     }
                     #[cfg(target_os = "macos")]
                     Ok(Message::RebindCommit(expected, reply)) => {
+                        if let Err(error) = helper_group_admission(&snapshots) {
+                            let _ = reply.send(Err(error));
+                            continue;
+                        }
                         bootstrap_touched = true;
                         use veyra_core::application::helper_protocol::{Command, Error, Response};
                         let result = veyra_core::application::helper_transfer::commit_rebind(
@@ -310,6 +338,10 @@ impl RuntimeService {
                     }
                     #[cfg(target_os = "macos")]
                     Ok(Message::RebindPrepare(id, expected, reply)) => {
+                        if let Err(error) = helper_group_admission(&snapshots) {
+                            let _ = reply.send(Err(error));
+                            continue;
+                        }
                         bootstrap_touched = true;
                         use veyra_core::application::helper_protocol::{Command, Error, Response};
                         let result = veyra_core::application::helper_transfer::prepare_rebind(
@@ -328,6 +360,10 @@ impl RuntimeService {
                     }
                     #[cfg(target_os = "macos")]
                     Ok(Message::BootstrapPrepare(id, expected, reply)) => {
+                        if let Err(error) = helper_group_admission(&snapshots) {
+                            let _ = reply.send(Err(error));
+                            continue;
+                        }
                         bootstrap_touched = true;
                         use veyra_core::application::helper_protocol::{Command, Error, Response};
                         let result = veyra_core::application::helper_transfer::prepare_bootstrap(
@@ -345,6 +381,11 @@ impl RuntimeService {
                         let _ = reply.send(result);
                     }
                     Ok(Message::FirstFreeze(id, installation, expected, reply)) => {
+                        #[cfg(target_os = "macos")]
+                        if helper_group_admission(&snapshots).is_err() {
+                            let _ = reply.send(Err(RuntimeError::SelectionPending));
+                            continue;
+                        }
                         // 与Manual Start/Select同一worker。丢失reply不撤销已经落盘的冻结。
                         let _ =
                             reply.send(owner.freeze_first_bootstrap(id, installation, expected));
@@ -386,6 +427,13 @@ impl RuntimeService {
                         }
                         break;
                     }
+                    Ok(Message::Reconcile(instance, expected, group, reply)) => {
+                        let result = owner.reconcile_selection(instance, expected, group);
+                        let _ = reply.send(result);
+                        let snapshot = owner.snapshot();
+                        previous = Some(snapshot.clone());
+                        emit(snapshot, None);
+                    }
                     Ok(Message::Selection(selection, reply)) => {
                         let result = owner.select_manual(selection);
                         let _ = reply.send(result);
@@ -417,6 +465,7 @@ impl RuntimeService {
                     }
                     Err(mpsc::RecvTimeoutError::Timeout) if request != 0 => {
                         let result = owner.execute(RuntimeCommand::Refresh, |_| {});
+                        owner.poll_failover(clock.elapsed().as_millis() as u64);
                         let snapshot = owner.snapshot();
                         if previous.as_ref() != Some(&snapshot) {
                             previous = Some(snapshot.clone());
@@ -433,16 +482,34 @@ impl RuntimeService {
             observation,
         }
     }
+    pub fn reconcile_selection(
+        &self,
+        instance: veyra_core::application::runtime_snapshot::InstanceId,
+        expected: veyra_core::domain::SnapshotVersion,
+        group: veyra_core::domain::PoolId,
+    ) -> mpsc::Receiver<Result<veyra_core::domain::SelectionVersion, SelectionError>> {
+        let (tx, rx) = mpsc::channel();
+        let _ = self
+            .sender
+            .send(Message::Reconcile(instance, expected, group, tx));
+        rx
+    }
     pub fn submit(&self, request: u64, command: RuntimeCommand) {
         let _ = self.sender.send(Message::Operation(request, command));
     }
     /// 后续 Proxy UI 消费的业务 ID 入口，与应用命令共用一个 worker，无法传 endpoint/tag。
-    #[expect(dead_code, reason = "P2-04 API; Proxy UI consumer belongs to P2-08")]
-    pub fn select_manual(
+    pub fn select_manual<T: Into<SelectionChoice>>(
         &self,
-        selection: ManualSelectionRequest,
+        selection: ManualSelectionRequest<T>,
     ) -> mpsc::Receiver<Result<veyra_core::domain::SelectionVersion, SelectionError>> {
         let (tx, rx) = mpsc::channel();
+        let selection = ManualSelectionRequest {
+            instance: selection.instance,
+            config: selection.config,
+            expected: selection.expected,
+            pool: selection.pool,
+            node: selection.node.into(),
+        };
         let _ = self.sender.send(Message::Selection(selection, tx));
         rx
     }
@@ -1271,5 +1338,167 @@ mod logs_native_tests {
         eprintln!(
             "P3_03_REAL_LOGS PASS: current managed /logs, page pause/export, replacement fence, Quit ports/root cleanup"
         );
+    }
+}
+
+/// P2-06 原 owner 确认：Helper 尚无 Group 选择/编排协议，桌面正式变更链明确拒绝。
+#[cfg(target_os = "macos")]
+fn helper_group_admission(
+    snapshots: &SnapshotService,
+) -> Result<(), veyra_core::application::helper_protocol::Error> {
+    use veyra_core::{application::helper_protocol::Error, domain::GroupRule};
+    let state = snapshots.snapshot().map_err(|_| Error::Unavailable)?;
+    if !state.group_selections.is_empty()
+        || state
+            .groups
+            .iter()
+            .any(|g| g.rule == GroupRule::Failover && g.enabled)
+    {
+        Err(Error::HandoffRequired)
+    } else {
+        Ok(())
+    }
+}
+
+#[cfg(all(test, target_os = "macos"))]
+mod p403_helper_admission_tests {
+    use super::*;
+    use veyra_core::{
+        application::{
+            helper_protocol::{Command, Configuration, Error},
+            helper_transfer::TransferDirection,
+            state_access::StateAccessGate,
+        },
+        domain::*,
+        storage::{JsonStateStore, StateStore},
+    };
+    #[test]
+    fn p403_helper_rejects_every_mutating_admission_before_freeze_or_rpc() {
+        // 保护主备事实不进入尚未实现 Group 事务的 Helper；拒绝不能停 child 或落盘 fence。
+        let root = std::env::temp_dir().join(format!(
+            "p403-helper-admission-{:?}",
+            StateEpoch::fresh().unwrap()
+        ));
+        let mut state = AppState::empty();
+        let mut group = NodeGroup::fresh().unwrap();
+        group.rule = GroupRule::Failover;
+        group.name = "主备".into();
+        group.mode = GroupMode::Static;
+        group.members.clear();
+        group.lanes = vec![FailoverLane {
+            id: "primary".into(),
+            name: String::new(),
+            icon: String::new(),
+            members: vec![OutboundId::Direct],
+            manual: true,
+        }];
+        group.failover = Some(FailoverSettings::default());
+        state.groups.push(group);
+        state.validate().unwrap();
+        let store = JsonStateStore::new(root.join("state.json")).unwrap();
+        store.save(&state).unwrap();
+        let snapshots = Arc::new(SnapshotService::new(
+            store.clone(),
+            StateAccessGate::default(),
+        ));
+        let (events, _rx) = tokio::sync::mpsc::unbounded_channel();
+        let service = RuntimeService::new(root.clone(), snapshots.clone(), events);
+        let version = state.version();
+        for command in [
+            Command::Start {
+                request_id: 1,
+                expected: version.clone(),
+                config: Configuration {
+                    state: Box::new(state.clone()),
+                },
+            },
+            Command::Apply {
+                request_id: 2,
+                instance: 1,
+                expected: version.clone(),
+                config: Configuration {
+                    state: Box::new(state.clone()),
+                },
+            },
+        ] {
+            assert_eq!(
+                service
+                    .helper_request(command)
+                    .recv_timeout(Duration::from_secs(2))
+                    .unwrap(),
+                Err(Error::HandoffRequired)
+            );
+        }
+        for direction in [TransferDirection::ToHelper, TransferDirection::ToDesktop] {
+            assert_eq!(
+                service
+                    .transfer_owner(StateEpoch::fresh().unwrap(), version.clone(), direction)
+                    .recv_timeout(Duration::from_secs(2))
+                    .unwrap(),
+                Err(Error::HandoffRequired)
+            );
+        }
+        assert_eq!(
+            service
+                .prepare_bootstrap(StateEpoch::fresh().unwrap(), version.clone())
+                .recv_timeout(Duration::from_secs(2))
+                .unwrap(),
+            Err(Error::HandoffRequired)
+        );
+        assert_eq!(
+            service
+                .commit_bootstrap(version.clone())
+                .recv_timeout(Duration::from_secs(2))
+                .unwrap(),
+            Err(Error::HandoffRequired)
+        );
+        assert_eq!(
+            service
+                .prepare_rebind(StateEpoch::fresh().unwrap(), version.clone())
+                .recv_timeout(Duration::from_secs(2))
+                .unwrap(),
+            Err(Error::HandoffRequired)
+        );
+        assert_eq!(
+            service
+                .commit_rebind(version.clone())
+                .recv_timeout(Duration::from_secs(2))
+                .unwrap(),
+            Err(Error::HandoffRequired)
+        );
+        assert_eq!(
+            service
+                .freeze_first_bootstrap(
+                    StateEpoch::fresh().unwrap(),
+                    StateEpoch::fresh().unwrap(),
+                    version
+                )
+                .recv_timeout(Duration::from_secs(2))
+                .unwrap(),
+            Err(RuntimeError::SelectionPending)
+        );
+        assert_eq!(
+            service
+                .owner_transfer()
+                .recv_timeout(Duration::from_secs(2))
+                .unwrap(),
+            Ok(None)
+        );
+        assert_eq!(store.load().unwrap(), state);
+        assert!(!root.join("runtime/owner-transfer.json").exists());
+        assert!(!root.join("runtime/owner-incarnation.json").exists());
+        // 不改变旧普通池 admission；只读 owner 查询、正常本地 Stop/退出仍可运行。
+        let ordinary = AppState::empty();
+        snapshots.replace(state.version(), ordinary).unwrap();
+        assert!(helper_group_admission(&snapshots).is_ok());
+        assert_eq!(
+            service
+                .shutdown()
+                .recv_timeout(Duration::from_secs(2))
+                .unwrap(),
+            Ok(())
+        );
+        drop(service);
+        std::fs::remove_dir_all(root).unwrap();
     }
 }

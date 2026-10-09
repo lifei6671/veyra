@@ -1,3 +1,5 @@
+**P4-03 正式 Runtime 集成交付（2026-10-09，仍 ACCEPTANCE）**：新组合树 `dev/p4-03-runtime` / `/Users/lifeilin/.codex/worktrees/p4-03-runtime/veyra`，输入检查点 `2f8e20fb2f3d082ffc439512dde140455665fecb`。与 P2-06 原 owner 精确协调后，唯一 ManualRuntime 选择入口已接 Group/Manual lane、真实健康编排、Auto/ManualPin/完整版本 pending→Controller→读回→CAS、重建恢复及 GPUI 真实反馈；107 个唯一定向测试、固定1.14.0 Native 1项、Core/Desktop Clippy/build/fmt/diff通过。独立 Review 及原 owner 生命周期复核无剩余所查 Finding；Review 核读证据，未亲自重跑。macOS显示设置依用户答复保持，加载/忙碌/错误/空/实际切换/重试有真实截图。旧Tauri Clippy缺Windows libcronet.dll FAIL与完整95%视觉OPEN保留，故不DONE、不增量commit/merge/主树复验/释放owner、不push。P2-05 ACCEPTANCE、P2-06 DOING及原owner保持，不解锁下游。[本轮记录](P4-03-runtime-acceptance.md)。下方历史保留。
+
 **P4-03 独立切片 / ACCEPTANCE（2026-10-09）**：主备模型/统一目录/正式 Compiler、生产保存/重建及纯策略/GPUI 编辑器交付；57 项唯一定向测试、Core/Desktop Clippy/build/fmt、锁定 1.14.0 check 通过，旧 Tauri Windows LICENSE 基线 FAIL 保留。真实页签/添加删除/取消、保存失败保草稿重试、重启、拖动排序通过，主用/备用/高级同数据原图留存；完整逐态视觉与150%档位仍 OPEN。原 P2-06 owner 已确认当前唯一入口仅支持真实 Manual pool，Group/Failover 健康探测、Auto/ManualPin/pending→Controller→CAS 尚未接通；未修改其 Runtime/Platform/Helper/IPC/公共 DTO，不伪造 Native 或手动固定结果。owner/预约保留，不 commit/merge/push 或释放；P2-05 ACCEPTANCE、P2-06 DOING 不变。68 卡 DONE27/DOING1/ACCEPTANCE2/READY1/TODO30/DEFERRED7，READY=P0-08，不启动下游。[交付与缺口](P4-03-acceptance.md)。下方历史保留。
 
 **P4-03 领取（2026-10-09）**：基线 `d713fa4621a0816fc56cefd473cf1b52b4b92218`，独立工作树 `/Users/lifeilin/.codex/worktrees/p4-03-failover/veyra` / `dev/p4-03-failover`。owner=Codex · P4-03 Core/Config/GPUI；预约 domain/groups.rs、domain/outbound_catalog.rs、独立 failover 策略与定向测试、Groups 保存校验、ui/groups.rs/i18n/tokens/必要 Groups 接线及本卡文档。P2-06 原 owner 已只读确认这些写范围；Runtime/Platform/Helper/IPC/公共 DTO、manual_runtime/恢复/pending CAS 仍由其持有。当前入口仅支持真实 Manual pool，Group/Failover 的唯一写入口与健康探测能力尚缺，未经单独协调不修改；先交付独立切片，运行期及实际 UI 验收不足时保持 ACCEPTANCE。P2-05 ACCEPTANCE、P2-06 DOING 保持；不操作用户 TUN/系统代理/DNS/路由/订阅，不 push。68卡 DONE27/DOING2/ACCEPTANCE1/READY1/TODO30/DEFERRED7；READY=P0-08。下方历史保留。
@@ -177,7 +179,7 @@ Task：OBG-Px-xx
 | --- | --- | --- | --- | --- | --- |
 | [OBG-P4-01 订阅高级项](P4-configuration.md#obg-p4-01) | P2-01、P2-05 | TODO | — | — | — |
 | [OBG-P4-02 静态/动态组](P4-configuration.md#obg-p4-02) | P2-01、P2-02A、P2-02B、P1-03、P1-04A | DONE | —（本卡owner/预约已释放） | — | [验收修正与交付](P4-02-acceptance.md) |
-| [OBG-P4-03 failover](P4-configuration.md#obg-p4-03) | P4-02、P2-04 | ACCEPTANCE | Codex · P4-03 | [切片记录](P4-03-acceptance.md) | Core/Config/GPUI切片及独立Review交付；Runtime owner seam、Native/完整视觉未完成；不合并/释放 |
+| [OBG-P4-03 failover](P4-configuration.md#obg-p4-03) | P4-02、P2-04 | ACCEPTANCE | Codex · P4-03；Runtime原owner保留 | [Runtime交付](P4-03-runtime-acceptance.md) | 正式Runtime/受控Native/局部GUI及独立Review交付；旧Tauri Clippy FAIL、完整视觉OPEN；不合并/释放 |
 | [OBG-P4-04 规则资源](P4-configuration.md#obg-p4-04) | P2-02B、P2-04、P2-05、P1-04A | TODO | — | — | — |
 | [OBG-P4-06 链式代理](P4-configuration.md#obg-p4-06) | P2-02A、P2-02B、P2-05、P2-08 | TODO | — | — | — |
 | [OBG-P4-05A 目标分流/统一目录](P4-configuration.md#obg-p4-05a) | P4-03、P4-04、P4-06 | TODO | — | — | — |

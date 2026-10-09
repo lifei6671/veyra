@@ -49,6 +49,10 @@
 
 **2026-10-09 当前结果：ACCEPTANCE**。Core/Config/GPUI 独立切片和真实保存/重建/失败重试交付，独立源码 Review 无剩余 Finding。纯策略模拟时钟项通过；其余 checkbox 包含正式 Runtime/Native/完整 UI 语义，仍未全部满足，不能用策略测试勾成产品完成。原 P2-06 owner 保留唯一 Runtime 写权，本卡 owner/预约保留。详见 [P4-03 交付记录](P4-03-acceptance.md)。
 
+**2026-10-09 正式 Runtime 增量：仍 ACCEPTANCE**。经原 P2-06 owner 精确协调，真实唯一选择入口/健康编排/Auto与ManualPin/pending完整CAS/读回重建/GPUI实际反馈已完成定向验证；107唯一定向PASS、固定1.14.0 Native 1 PASS、独立Review所查无Finding。旧Tauri Clippy缺libcronet.dll FAIL及完整95%视觉OPEN保留，不提前DONE/commit/merge/释放；[本轮完整收据](P4-03-runtime-acceptance.md)。以下旧checkbox保留历史，当前逐项结果以新收据为准。
+
+**2026-10-09 UI REWORK：仍 ACCEPTANCE**。按用户反馈修正卡片/添加/修改布局并补齐完整 React shell 同数据证据；新增浮层 Native pending/核对/Auto、保存失败/重试实操通过，独立复核零 Finding。完整95%与旧Clippy边界未关闭，不提交合并或释放；[最新收据](P4-03-ui-rework.md)。
+
 **验收**：
 
 - [x] 模拟时钟验证连续失败切备、稳定恢复切主、全失败保留错误；不重写 URLTest（纯策略通过，运行接线仍未完成）。

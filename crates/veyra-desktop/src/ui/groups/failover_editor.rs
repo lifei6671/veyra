@@ -209,7 +209,7 @@ impl GroupsView {
                 }))
             }));
         div().flex().flex_col().gap(px(t::PAD))
-            .child(div().flex().child(group_button("failover-advanced",tr(cx,"高级设置"),t::SMALL).ghost().h(px(t::groups::CARD_ACTION))
+            .child(div().flex().child(group_button("failover-advanced",tr(cx,"高级设置"),t::SMALL).ghost().reference_hover(gpui::transparent_black(), cx.theme().input, cx.theme().foreground).h(px(t::groups::CARD_ACTION))
                 .disabled(self.busy).child(icon(if self.advanced { "ChevronUp" } else { "ChevronDown" },t::groups::LANE_SEARCH_ICON))
                 .on_click(cx.listener(|this,_,_,cx| { this.advanced = !this.advanced; cx.notify(); }))))
             .when(self.advanced,|d| d.child(advanced))
@@ -311,7 +311,12 @@ impl GroupsView {
                         .w(px(t::groups::LANE_ICON_WIDTH))
                         .child(self.lane_picker.clone()),
                 )
-                .child(div().flex_1().child(self.input(Field::LaneName, cx)))
+                .child(
+                    div().flex_1().child(
+                        self.input(Field::LaneName, cx)
+                            .h(px(t::groups::LANE_SETTINGS_HEIGHT)),
+                    ),
+                )
                 .child(
                     components::icon_button(
                         "delete-lane",
@@ -319,7 +324,7 @@ impl GroupsView {
                         "Trash",
                         t::groups::LANE_DELETE_WIDTH,
                     )
-                    .h(px(t::CONTROL))
+                    .h(px(t::groups::LANE_SETTINGS_HEIGHT))
                     .disabled(self.busy || draft.lanes.is_empty())
                     .on_click(cx.listener(|this, _, window, cx| {
                         if this.draft_members().is_empty() {
