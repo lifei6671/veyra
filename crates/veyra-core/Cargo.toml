@@ -14,6 +14,8 @@ legacy-test-support = []
 p0-06-prototype = []
 
 [dependencies]
+# 日志页面有界正则与采集入口脱敏；复用 workspace 已锁定版本。
+regex = "=1.13.1"
 # P3-04：真实 SQLite 与 IANA 统计日期（包含夏令时）。
 rusqlite = { version = "=0.40.2", features = ["bundled"] }
 chrono = { version = "=0.4.45", default-features = false, features = ["std"] }

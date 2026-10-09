@@ -48,6 +48,29 @@ pub fn icon_label(language: DesktopLanguage, label: &str) -> String {
     out
 }
 const MESSAGES: &[[&str; 3]] = &[
+    ["级别", "Level", "級別"],
+    ["类型", "Type", "類型"],
+    ["搜索 | Regex", "Search | Regex", "搜尋 | Regex"],
+    ["格式化查询", "Format query", "格式化查詢"],
+    [
+        "正则表达式格式不正确",
+        "Invalid regular expression",
+        "正則表達式格式不正確",
+    ],
+    ["已暂停", "Paused", "已暫停"],
+    ["暂停", "Pause", "暫停"],
+    ["继续", "Resume", "繼續"],
+    ["内核未运行", "Core is not running", "核心未執行"],
+    ["日志连接失败", "Log connection failed", "日誌連線失敗"],
+    ["正在连接日志", "Connecting to logs", "正在連線日誌"],
+    [
+        "日志导出失败，请重试",
+        "Log export failed. Please retry.",
+        "日誌匯出失敗，請重試",
+    ],
+    ["暂无日志", "No logs yet", "暫無日誌"],
+    ["没有匹配的日志", "No matching logs", "沒有符合的日誌"],
+    ["已丢弃", "Dropped", "已丟棄"],
     [
         "此地址只适用于本机或局域网，外网连接请填写公网 IP 或域名。",
         "This address works only locally or on your LAN. Use a public IP or domain for remote access.",

@@ -579,14 +579,18 @@ impl Render for AppView {
                             .flex_col()
                             .flex_1()
                             .min_h_0()
-                            .when(self.route != Route::Settings, |d| {
-                                d.p(px(t::GAP)).rounded(px(radius))
-                            })
-                            .when(self.route != Route::Settings, |d| {
-                                d.overflow_y_scroll()
-                                    .track_scroll(&self.page_scroll)
-                                    .vertical_scrollbar(&self.page_scroll)
-                            })
+                            .when(
+                                self.route != Route::Settings && self.route != Route::Logs,
+                                |d| d.p(px(t::GAP)).rounded(px(radius)),
+                            )
+                            .when(
+                                self.route != Route::Settings && self.route != Route::Logs,
+                                |d| {
+                                    d.overflow_y_scroll()
+                                        .track_scroll(&self.page_scroll)
+                                        .vertical_scrollbar(&self.page_scroll)
+                                },
+                            )
                             // 页面已拥有固定视口：复用 GPUI 缓存边界，避免动画每帧
                             // 在父布局测量时展开整棵控件树；尺寸/实体变化仍会重绘。
                             .child(if window.is_a11y_active() {

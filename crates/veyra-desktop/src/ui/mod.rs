@@ -20,3 +20,5 @@ pub mod backend;
 pub mod groups;
 
 pub mod shared_network;
+
+pub mod logs;
