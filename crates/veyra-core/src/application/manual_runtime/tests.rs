@@ -2589,6 +2589,12 @@ fn p403_group_pin_lane_manual_resume_and_restart_are_selection_only() {
     use crate::domain::*;
     let (mut owner, trace, store, root) = p403_fixture();
     owner.execute(RuntimeCommand::Start, |_| {}).unwrap();
+    // P2-05 整合：主备默认出口仍发布实际 applied 节点，选择不更换实例能力。
+    let source = owner.outbound_proxy_source();
+    let applied_proxy = source.current().unwrap();
+    for id in ["a", "b", "c"] {
+        assert!(applied_proxy.nodes.contains_key(&NodeId(id.into())));
+    }
     let state = store.load().unwrap();
     let group = &state.groups[0];
     let outer = group.id.clone();
@@ -2636,9 +2642,15 @@ fn p403_group_pin_lane_manual_resume_and_restart_are_selection_only() {
         store.load().unwrap().group_selections[&outer].mode,
         GroupSelectionMode::Auto
     );
+    assert!(applied_proxy.is_valid());
+    assert_eq!(
+        source.current().unwrap().instance_id(),
+        applied_proxy.instance_id()
+    );
     let old = owner.snapshot().unwrap().runtime.instance_id;
     owner.execute(RuntimeCommand::Restart, |_| {}).unwrap();
     assert_ne!(owner.snapshot().unwrap().runtime.instance_id, old);
+    assert!(!applied_proxy.is_valid());
     assert_eq!(
         owner.snapshot().unwrap().confirmed_group_selections[&primary],
         OutboundId::Node(NodeId("b".into()))
@@ -2993,6 +3005,8 @@ fn p403_reconcile_inactive_child_case(fail_stop: bool) {
     use crate::domain::*;
     let (mut owner, trace, store, root) = p403_fixture();
     owner.execute(RuntimeCommand::Start, |_| {}).unwrap();
+    let source = owner.outbound_proxy_source();
+    let applied_proxy = source.current().unwrap();
     let group = store.load().unwrap().groups[0].clone();
     trace.lock().unwrap().read_failures.push_back(true);
     assert_eq!(
@@ -3028,6 +3042,9 @@ fn p403_reconcile_inactive_child_case(fail_stop: bool) {
     assert!(after.runtime.applied_version.is_none());
     assert!(after.runtime.instance_id.is_none());
     assert!(after.endpoints.is_none());
+    // 失活/清理失败不能让下载和 NodeId 测速继续使用旧主备实例。
+    assert!(!applied_proxy.is_valid());
+    assert!(source.current().is_none());
     assert!(after.uptime_seconds.is_none());
     assert!(owner.failover.is_empty());
     assert!(after.failover_status.is_empty());
@@ -3047,4 +3064,34 @@ fn p403_reconcile_exited_child_clears_ready_and_keeps_pending() {
 #[test]
 fn p403_reconcile_cleanup_failure_clears_ready_and_keeps_pending() {
     p403_reconcile_inactive_child_case(true);
+}
+
+// 保护 Ready 能力的生命周期，预检失败保留最后有效实例，换实例/Stop/未知退出撤销。
+#[test]
+fn outbound_source_tracks_ready_replace_stop_and_crash() {
+    let (mut owner, trace, _store, root) = fixture();
+    let source = owner.outbound_proxy_source();
+    assert!(source.current().is_none());
+    owner.execute(RuntimeCommand::Start, |_| {}).unwrap();
+    let first = source.current().unwrap();
+    assert!(first.is_valid());
+    assert_eq!(
+        first.address(),
+        owner.snapshot().unwrap().endpoints.unwrap().mixed
+    );
+    trace.lock().unwrap().fail_check = true;
+    assert!(owner.execute(RuntimeCommand::Restart, |_| {}).is_err());
+    assert!(first.is_valid());
+    trace.lock().unwrap().fail_check = false;
+    owner.execute(RuntimeCommand::Restart, |_| {}).unwrap();
+    assert!(!first.is_valid());
+    let second = source.current().unwrap();
+    assert_ne!(first.instance_id, second.instance_id);
+    trace.lock().unwrap().crash = true;
+    assert!(owner.execute(RuntimeCommand::Refresh, |_| {}).is_err());
+    assert!(!second.is_valid());
+    assert!(source.current().is_none());
+    owner.execute(RuntimeCommand::Stop, |_| {}).unwrap();
+    drop(owner);
+    std::fs::remove_dir_all(root).unwrap();
 }

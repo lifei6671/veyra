@@ -343,15 +343,17 @@ fn custom_resolver_failure_does_not_fall_back_to_system_localhost() {
 #[test]
 fn direct_ignores_all_proxy_environment_in_an_isolated_child() {
     if let Ok(source) = std::env::var("P006_ENV_CHILD_SOURCE") {
-        let dns = Arc::new(FixtureResolver::default());
+        let client = OutboundClient::new(
+            RoutePolicy::Direct,
+            &FetchClientOptions {
+                timeout: Duration::from_secs(1),
+                ..Default::default()
+            },
+        )
+        .unwrap();
         assert!(
             runtime()
-                .block_on(fetch_on_client(
-                    &client(&RoutePolicy::Direct, dns, Duration::from_secs(1)),
-                    &source,
-                    HeaderMap::new(),
-                    Duration::from_secs(1)
-                ))
+                .block_on(client.fetch(&source, ConditionalHeaders::default()))
                 .is_ok()
         );
         return;
@@ -541,4 +543,203 @@ fn downgrade_userinfo_redirect_limit_and_read_total_timeout_are_bounded() {
             .is_err()
     );
     assert!(start.elapsed() < Duration::from_secs(1));
+}
+
+// 保护正式 OutboundClient 的 Direct HTTPS / redirect / TLS / 容量契约。
+#[test]
+fn production_client_direct_tls_redirect_and_failure_causes() {
+    let target = serve(true, |_| response("production marker"));
+    let next = tls_url("b.p006.test", &target);
+    let source = serve(true, move |_| redirect(&next));
+    let dns = Arc::new(FixtureResolver::default());
+    let policy = RoutePolicy::Direct;
+    let typed = OutboundClient {
+        client: client(&policy, dns.clone(), Duration::from_secs(2)),
+        policy,
+        timeout: Duration::from_secs(2),
+    };
+    let FetchResult::Modified { body, .. } = runtime()
+        .block_on(typed.fetch(
+            &tls_url("a.p006.test", &source),
+            ConditionalHeaders::default(),
+        ))
+        .unwrap()
+    else {
+        panic!()
+    };
+    assert_eq!(body, "production marker");
+    assert_eq!(*dns.calls.lock().unwrap(), ["a.p006.test", "b.p006.test"]);
+    for request in source
+        .requests
+        .lock()
+        .unwrap()
+        .iter()
+        .chain(target.requests.lock().unwrap().iter())
+    {
+        assert!(!has_credential(request, "authorization"));
+        assert!(!has_credential(request, "cookie"));
+    }
+    let invalid_tls =
+        OutboundClient::with_resolver(RoutePolicy::Direct, &FetchClientOptions::default(), dns)
+            .unwrap();
+    let error = runtime()
+        .block_on(invalid_tls.fetch(
+            &tls_url("a.p006.test", &source),
+            ConditionalHeaders::default(),
+        ))
+        .unwrap_err();
+    assert!(matches!(
+        error,
+        OutboundError::Fetch(FetchError::CertificateInvalid)
+    ));
+    let large = serve(false, |_| response(&"x".repeat(4 * 1024 * 1024 + 1)));
+    assert_eq!(
+        runtime().block_on(typed.resource(&format!("http://{}/", large.address))),
+        Err(OutboundError::Fetch(FetchError::BodyTooLarge))
+    );
+}
+
+// 保护正式 bootstrap 的固定 TLS 上游、真实 A、FakeIP 与失败无系统 DNS fallback。
+#[test]
+fn production_bootstrap_https_json_and_fakeip_rejection() {
+    for (answer, success) in [("1.1.1.1", true), ("198.18.0.1", false)] {
+        let upstream = serve(true, move |_| {
+            response(&format!(
+                r#"{{"Status":0,"Answer":[{{"type":1,"data":"{answer}"}}]}}"#
+            ))
+        });
+        let dns = BootstrapResolver {
+            client: client(
+                &RoutePolicy::Direct,
+                Arc::new(FixtureResolver::default()),
+                Duration::from_secs(2),
+            ),
+            observations: Default::default(),
+            timeout: Duration::from_secs(2),
+            endpoint: tls_url("a.p006.test", &upstream),
+            upstream_ip: upstream.address.ip(),
+            fixture_skip_route_validation: true,
+        };
+        let result = runtime().block_on(dns.resolve("source.test".parse().unwrap()));
+        assert_eq!(result.is_ok(), success);
+        let observations = dns.observations();
+        assert_eq!(observations.len(), 1);
+        assert!(observations[0].tls_verified);
+        assert_eq!(observations[0].upstream_peer, Some(upstream.address));
+        let requests = upstream.requests.lock().unwrap();
+        assert!(requests[0].contains("name=source.test&type=A"));
+        assert!(!requests[0].contains("authorization"));
+    }
+}
+
+// 保护已绑定代理的 in-flight 取消、旧 client 拒绝及失效不换 Direct。
+#[test]
+fn production_proxy_revoke_cancels_inflight_and_old_client() {
+    let started = Arc::new(AtomicBool::new(false));
+    let observed = started.clone();
+    let proxy_server = serve(false, move |_| {
+        observed.store(true, Ordering::Release);
+        thread::sleep(Duration::from_millis(250));
+        response("late marker")
+    });
+    let proxy = RunningProxy::ready("managed-fixture".into(), proxy_server.address).unwrap();
+    let typed = OutboundClient::new(
+        RoutePolicy::ViaRunningProxy(proxy.clone()),
+        &FetchClientOptions::default(),
+    )
+    .unwrap();
+    let revoke = proxy.clone();
+    let task = thread::spawn(move || {
+        while !started.load(Ordering::Acquire) {
+            thread::sleep(Duration::from_millis(2));
+        }
+        revoke.invalidate();
+    });
+    assert_eq!(
+        runtime().block_on(typed.fetch(
+            "http://127.0.0.1:9/synthetic-secret",
+            ConditionalHeaders::default()
+        )),
+        Err(OutboundError::ProxyUnavailable)
+    );
+    task.join().unwrap();
+    assert_eq!(
+        runtime().block_on(typed.resource("http://127.0.0.1:9/")),
+        Err(OutboundError::ProxyUnavailable)
+    );
+    assert_eq!(proxy_server.requests.lock().unwrap().len(), 1);
+    assert!(!format!("{proxy:?}").contains("token"));
+}
+
+// 保护完整生产 HTTP→Bootstrap→HTTPS 错误链，避免把 TLS/HTTP/DNS 都折成未知。
+#[test]
+fn production_bootstrap_failures_reach_typed_fetch_errors() {
+    for (body, expected) in [
+        (r#"{"Status":3}"#, FetchError::DnsStatus(3)),
+        (r#"{"Status":0,"Answer":[]}"#, FetchError::NoDnsAddress),
+        ("not json", FetchError::InvalidDnsResponse),
+        (
+            r#"{"Status":0,"Answer":[{"type":1,"data":"198.18.0.1"}]}"#,
+            FetchError::FakeIpAddress,
+        ),
+    ] {
+        let upstream = serve(true, move |_| response(body));
+        let resolver = BootstrapResolver {
+            client: client(
+                &RoutePolicy::Direct,
+                Arc::new(FixtureResolver::default()),
+                Duration::from_secs(2),
+            ),
+            observations: Default::default(),
+            timeout: Duration::from_secs(2),
+            endpoint: tls_url("a.p006.test", &upstream),
+            upstream_ip: upstream.address.ip(),
+            fixture_skip_route_validation: true,
+        };
+        let typed = OutboundClient::with_resolver(
+            RoutePolicy::Direct,
+            &FetchClientOptions {
+                timeout: Duration::from_secs(2),
+                ..Default::default()
+            },
+            Arc::new(resolver),
+        )
+        .unwrap();
+        assert_eq!(
+            runtime().block_on(typed.fetch(
+                "https://unresolvable.p006.test/?token=synthetic-only",
+                ConditionalHeaders::default()
+            )),
+            Err(OutboundError::Fetch(expected))
+        );
+    }
+    let upstream = serve(true, |_| response(r#"{"Status":0}"#));
+    let options = FetchClientOptions {
+        timeout: Duration::from_secs(2),
+        ..Default::default()
+    };
+    let resolver = BootstrapResolver {
+        client: client_builder(
+            &RoutePolicy::Direct,
+            Arc::new(FixtureResolver::default()),
+            options.timeout,
+        )
+        .unwrap()
+        .build()
+        .unwrap(),
+        observations: Default::default(),
+        timeout: options.timeout,
+        endpoint: tls_url("a.p006.test", &upstream),
+        upstream_ip: upstream.address.ip(),
+        fixture_skip_route_validation: true,
+    };
+    let typed =
+        OutboundClient::with_resolver(RoutePolicy::Direct, &options, Arc::new(resolver)).unwrap();
+    assert_eq!(
+        runtime().block_on(typed.fetch(
+            "https://unresolvable.p006.test/?token=synthetic-only",
+            ConditionalHeaders::default()
+        )),
+        Err(OutboundError::Fetch(FetchError::CertificateInvalid))
+    );
 }

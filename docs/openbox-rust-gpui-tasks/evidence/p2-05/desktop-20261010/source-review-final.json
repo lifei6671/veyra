@@ -1,0 +1,24 @@
+{
+  "head": "bda8be5c469dcbd6093a28fd4fd549be70c22194",
+  "source_hashes": {
+    "crates/veyra-core/Cargo.toml": "910de17ea6a680a09e1c3d30bad10b6c81e96e976524117bcd4752f54330df72",
+    "crates/veyra-core/examples/p0_06_outbound.rs": "59496e6eb1c48cb2d7b55f1543e2767bd85fbcfe6888675b369fbcacd641bb5d",
+    "crates/veyra-core/src/application/manual_runtime.rs": "430212681c83bc753ec8b4046b67ba9207ccf4087c974599a64fab7b81643536",
+    "crates/veyra-core/src/application/manual_runtime/tests.rs": "6ad0c9961daf17af6acd28bc6c0f4cee494ebe15eb0f4ec16236ee0871525223",
+    "crates/veyra-core/src/application/mod.rs": "f3fca75bd81ba84ca368f5983c34b66b4a11e6af4fedd6533e2f059fef9d512d",
+    "crates/veyra-core/src/application/network.rs": "7e64c7c2bfc91d3ff1bc537010f078c172eda8e2031c8694c129b65a5158f489",
+    "crates/veyra-core/src/application/network/tests.rs": "5c74ea35d50308835ed498a38d9948ccfb7f72592c4ad9651d0fa0cb5ea8e2ec",
+    "crates/veyra-core/src/application/subscription_management.rs": "c71c7676e43e0aa8bee47bc0f47fcbe25e7472c0a40bfec3293f5b1fc9b9e5d1",
+    "crates/veyra-core/src/application/subscription_management/preview.rs": "1bfb550849f5c926b4e0a3ec3b0051860a1206826d2e89de2b01f70dc0fba243",
+    "crates/veyra-core/src/singbox/clash_api.rs": "3429033bf9cbc6e87aae425721a31c91743aa7eed43f504c0d5984ca5902a9e3",
+    "crates/veyra-core/src/subscription/fetch.rs": "ce3766113efd05b6775b0ec7b4a1655050e5a07ec7c1f66296df520405938892",
+    "crates/veyra-core/src/subscription/mod.rs": "3c58a0530bfeff3b49d97eefda4de64189717407d1938c4de35bd5966737e7ff",
+    "crates/veyra-core/src/subscription/outbound.rs": "dc9a416cbca830325935757abdb173c01ff5b99d57b0e3011c879216a6d14a7d",
+    "crates/veyra-core/src/subscription/outbound/tests.rs": "fbf5b737508a1153c9af1521f72bc4fa7ce1553c986dcbad37f72f9643002e1c",
+    "crates/veyra-desktop/src/app.rs": "aaf2ad2c8830ec9e87783301d382e12d77ac15f3427402e1ba73e6b13f8a4aa0",
+    "crates/veyra-desktop/src/runtime_service.rs": "680973968e22909facbb5383c9da20370e2a1533f8410696fdf31492a1ab0677",
+    "crates/veyra-desktop/src/services.rs": "50917b2ebaf306af0d3d8a0cedf6ff33704b5eb71c4b6c57bcff843f449b1933",
+    "src-tauri/src/lib.rs": "f8f04c7ce5f4e81a5185fd387adaa272c78efc1cfce1e6795aa4d60adbc19fe7"
+  },
+  "unchanged_since_native_and_review": true
+}

@@ -32,7 +32,7 @@ fn main() {
             },
             Err(error)=>("FAIL",None,Vec::new(),Some(format!("{error:?}"))),
         };
-        let proxy=match &policy{RoutePolicy::Direct=>None,RoutePolicy::ViaRunningProxy(p)=>Some(serde_json::json!({"instance_id":p.instance_id,"address":p.address()}))};
+        let proxy=match &policy{RoutePolicy::Direct=>None,RoutePolicy::ViaRunningProxy(p)=>Some(serde_json::json!({"instance_id":p.instance_id(),"address":p.address()}))};
         println!("{}",serde_json::json!({"event":"p0_06_outbound","policy":if proxy.is_none(){"Direct"}else{"ViaRunningProxy"},"explicit_proxy":proxy,"endpoint":source,"TLS_enabled":source.starts_with("https://"),"outcome":outcome,"body":body,"hops":hops,"dns":resolver.observations(),"error":error,"silent_fallback":false,"subscription_dependencies":0}));
         if outcome=="FAIL" {std::process::exit(1);}
     });

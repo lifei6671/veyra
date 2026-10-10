@@ -151,6 +151,7 @@ pub struct ManualRuntime<P> {
     observation: super::observability::controller::ObservationService,
     // 同步 Runtime worker 的观测执行器；不拥有业务事实或另一个内核实例。
     observation_executor: Option<tokio::runtime::Runtime>,
+    outbound_proxy: crate::subscription::outbound::ProxySource,
     failover: BTreeMap<PoolId, failover_runtime::Runner>,
     failover_results: std::sync::mpsc::Receiver<failover_runtime::ProbeResult>,
     failover_sender: std::sync::mpsc::Sender<failover_runtime::ProbeResult>,
@@ -196,6 +197,7 @@ impl<P: SidecarPort> ManualRuntime<P> {
             fallbacks: vec![],
             observation: super::observability::controller::ObservationService::new(),
             observation_executor: None,
+            outbound_proxy: Default::default(),
         }
     }
     /// 只读订阅入口；绑定和停止始终由当前 Runtime owner 管理。
@@ -371,6 +373,7 @@ impl<P: SidecarPort> ManualRuntime<P> {
             self.active = None;
         }
         if !matches!(self.facts.current, RuntimeState::Ready { .. }) {
+            self.invalidate_outbound();
             self.observation.stop();
         }
         result
@@ -381,6 +384,7 @@ impl<P: SidecarPort> ManualRuntime<P> {
         publish: &mut impl FnMut(ManualRuntimeSnapshot),
     ) -> Result<RuntimeResult, RuntimeError> {
         if command == RuntimeCommand::Stop {
+            self.invalidate_outbound();
             self.observation.stop();
             self.sidecar.stop().map_err(|_| {
                 self.facts.current = RuntimeState::Recovering { instance: None };
@@ -420,6 +424,7 @@ impl<P: SidecarPort> ManualRuntime<P> {
             match self.sidecar.refresh_alive() {
                 Ok(true) => {}
                 Ok(false) => {
+                    self.invalidate_outbound();
                     self.observation.stop();
                     self.active = None;
                     self.started = None;
@@ -429,6 +434,7 @@ impl<P: SidecarPort> ManualRuntime<P> {
                     }
                 }
                 Err(_) => {
+                    self.invalidate_outbound();
                     self.observation.stop();
                     self.facts.current = RuntimeState::Recovering { instance: None };
                     self.started = None;
@@ -555,6 +561,7 @@ impl<P: SidecarPort> ManualRuntime<P> {
             .active
             .as_ref()
             .map(|a| a.plan.artifact_index().expect("product index").clone());
+        self.invalidate_outbound();
         self.observation.stop();
         self.sidecar.stop_old_writer().map_err(|_| {
             self.facts.current = RuntimeState::Recovering { instance: None };
@@ -1067,7 +1074,17 @@ impl<P: SidecarPort> ManualRuntime<P> {
             .ok()
             .flatten()
             .flatten();
+        self.invalidate_outbound();
         self.observation.stop();
+        if let Some(address) = self.sidecar.endpoints().map(|e| e.mixed)
+            && let RuntimeState::Ready { instance_id, .. } = &self.facts.current
+            && let Ok(mut proxy) =
+                crate::subscription::outbound::RunningProxy::ready(instance_id.0.clone(), address)
+        {
+            proxy.controller = endpoint.clone();
+            proxy.nodes = plan.artifact_index().expect("product index").nodes.clone();
+            self.outbound_proxy.publish(proxy);
+        }
         if let Some(endpoint) = endpoint {
             if self.observation_executor.is_none() {
                 self.observation_executor = tokio::runtime::Builder::new_multi_thread()
@@ -1125,6 +1142,7 @@ impl<P: SidecarPort> ManualRuntime<P> {
         match self.sidecar.refresh_alive() {
             Ok(true) => Ok(()),
             result => {
+                self.invalidate_outbound();
                 self.observation.stop();
                 self.invalidate_failover();
                 self.failover_status.clear();
@@ -1332,9 +1350,25 @@ mod handoff;
 
 mod remote_selection;
 
+impl<P> ManualRuntime<P> {
+    pub fn bind_outbound_proxy_source(
+        &mut self,
+        source: crate::subscription::outbound::ProxySource,
+    ) {
+        self.invalidate_outbound();
+        self.outbound_proxy = source;
+    }
+    pub fn outbound_proxy_source(&self) -> crate::subscription::outbound::ProxySource {
+        self.outbound_proxy.clone()
+    }
+    fn invalidate_outbound(&self) {
+        self.outbound_proxy.revoke();
+    }
+}
 impl<P> Drop for ManualRuntime<P> {
     fn drop(&mut self) {
         self.failover.clear();
+        self.invalidate_outbound();
         self.observation.stop();
         // 允许 owner 在 async 测试/宿主中释放；不能阻塞另一个 Tokio executor。
         if let Some(executor) = self.observation_executor.take() {

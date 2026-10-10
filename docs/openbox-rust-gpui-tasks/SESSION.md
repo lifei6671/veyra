@@ -1,3 +1,13 @@
+**P2-05 最新 Host 最终收口（2026-10-10，DONE）**：同一 WorkRun `work-23397-1791600619806627-237`，Host受用户委托，按2026-10-08分期规则正式作 `SCOPED_ACCEPTANCE_WITH_EXPLICIT_DEFERRED_PLATFORM_VERIFICATION` 决定。正式客户端与局部功能/Native/GPUI通过；Host核18/18源码SHA一致，指定Native1 PASS/exit0、独立Review0可信源码Finding、清理/用户网络保护收据通过；另独立CommandRun `command-23397-1791602919967485-251` Core network4 + clash_api16 PASS/exit0，diff检查PASS。P2-05 ACCEPTANCE→DONE、本卡owner释放/剩余0；P2-06 DOING及单一Runtime/DTO owner保留。68卡 **DONE31 / ACCEPTANCE0 / DOING1 / READY5 / TODO24 / DEFERRED7**，macOS31/61、P2 6/10；READY恰P2-08/P3-05/P4-01/P4-04/P5-01，未领取/未启动，P2-07仍缺P2-06保持TODO。物理Direct UNVERIFIED、SystemProxy ON NOT_RUN、正式受管TUN/完整组合由P2-07/P2-09/P6-01/P6-05承接，原第2项保持未勾选；macOS15仍归P7，不宣称150%档位。原用户等待组合与本轮ACCEPTANCE交接均保留历史，本次由Host明确审定收口。见[完整决定/源码与收据SHA/验证边界](P2-05-host-closeout.md)。本次仅必要文档，未commit/merge/push；待Host再次独立Review后受管Git收口。
+
+**以下带日期的旧“当前/本轮”、ACCEPTANCE及计数均为当时快照，保留原文；现态以本段、唯一任务行及当前Active Tasks/Ready Queue为准。**
+
+**P2-05 本轮最终实机结果（2026-10-10，ACCEPTANCE）**：本候选唯一指定 Native 1 PASS（exit0），定向复跑 Core50 PASS、Desktop build/all-targets Clippy/fmt exit0；真实订阅添加/刷新/失败保旧/保存草稿重试/重启/语言草稿、主备Controller选择、P3日志、同PID托盘恢复与正常退出通过。独立Review及完整收据见[本轮实机验收](P2-05-desktop-acceptance.md)。当前默认macOS显示配置经用户确认，非额外150%设置；物理Direct UNVERIFIED、SystemProxy ON NOT_RUN、历史HTTP503和Legacy Clippy FAIL101保留。后续P2-07/P2-09/P6-01/P6-05组合单列，旧等待组合决定未取消，Host收口前保持ACCEPTANCE/owner，无commit/merge/push/下游。68卡DONE30/ACCEPTANCE1/DOING1/READY0/TODO29/DEFERRED7，P2-06 DOING/Runtime owner不变。
+
+**以下本轮之前的说明保留为当时快照；本轮实机结果以上段及新验收记录为准。**
+
+**P2-05 最新主分支整合（2026-10-10，工程完成 / ACCEPTANCE）**：Host 新树 `dev/p2-05-main-integration` / `.worktrees/p2-05-main-integration`，输入/当前HEAD `bda8be5c469dcbd6093a28fd4fd549be70c22194`。有界移植 e530837 正式客户端与旧dirty Native修复，保留最新 P4-03/Observation；225唯一定向PASS（Core212/Desktop13）、三包all-targets Clippy/check/build与fmt PASS；Legacy Windows libcronet.dll FAIL101、零过滤不计PASS、本候选Native/GUI NOT_RUN。182旧同名PASS加1个由main替换的新选择契约PASS；旧183/旧Native1仅作历史。实现者自查0代码Finding，独立Review待Host；原树/主树只读保留，未操作用户网络。P2-05继续ACCEPTANCE与本卡owner保留，P2-06 DOING/原Runtime DTO owner不变；68卡DONE30/ACCEPTANCE1/DOING1/READY0/TODO29/DEFERRED7，不解锁下游、不commit/merge/push。见[整合结果及Codex Desktop/Reviewer提示词](P2-05-integration-acceptance.md)。
+
 **P0-09 当前文档验收 / DONE（2026-10-10）**：同一WorkRun `work-23397-1791598715449274-213`，Host建树CommandRun `command-23397-1791598722823333-214`；基线主HEAD/隔离HEAD `b90f612d828dcb1e957cbd0755f1738f5e43206a`，分支 `dev/p0-09-stage-estimate`。用户正式批准首版macOS15+，维持兼容目标；固定P0-08内核minOS26.0和15未实机验收事实保留，兼容资产取得/构建与最低设备验证归P7-03/P6-05/P7-05。已按授权只读核验主树历史原索引/全文件SHA，四项文档验收、本轮校验及独立Review通过，owner/文档预约释放。DONE30 / ACCEPTANCE1 / DOING1 / READY0 / TODO29 / DEFERRED7，macOS30/61；P2-05 ACCEPTANCE、P2-06 DOING及原owner不变，P7-05仍TODO，READY=[]。P1～P7正式剩余163–326人日/中点244.5，已含一次4–9兼容增量；Windows49–97、Linux条件38–76，不等于日历工期。见[阶段验收与逐卡估算](P0-09-stage-review.md)、[验证](evidence/p0-09/validation.json)、[本轮独立Review](evidence/p0-09/REVIEW.md)。全部写入隔离树，主树仅授权历史证据只读，无缓存修改；未stage/commit/merge/push/发布，Host独立收口。
 
 **以下“当前交付”历史流各段保留当时原文；本轮状态以上段和下方Active Tasks/Ready Queue为准。**
@@ -207,7 +217,7 @@ P2-06 已阶段提交 `f2457e6a4e2fe0ac3c9186bc7d17323a70c4c0a8`，仍 DOING、�
 | --- | --- | --- | --- |
 | P0 基线与可行性 | 9 / 9 | P0-01～09 DONE；原型限制保留，15+路线已决定、兼容尚未验收 | P0-09 DONE；阶段审计与逐卡重估完成 |
 | P1 核心库与桌面壳 | 8 / 8 | 壳层/设置/基础组件视觉 PASS_WITH_TECHNICAL_DIFFERENCES；人工三轮、重启恢复、最终 Tray Quit 与清理 PASS；未实现业务页不计完成 | P1-07 DONE，组合 PASS |
-| P2 本机代理闭环 | 5 / 10 | P2-01/P2-02A/P2-02B/P2-03/P2-04 DONE；Host FINAL ACCEPTANCE PASS，Finding CLOSED | P2-09 未开始 |
+| P2 本机代理闭环 | 6 / 10 | P2-01/P2-02A/P2-02B/P2-03/P2-04/P2-05 DONE；P2-05按Host限定范围收口，系统延期项保留 | P2-09 未开始 |
 | P3 观测与主页面 | 3 / 8 | P3-01/P3-03/P3-04 DONE | P3-08 未开始 |
 | P4 完整配置能力 | 2 / 9 | P4-02/P4-03 DONE；Chain 在 Routing 前交付 | P4-07 未开始 |
 | P5 DNS 与共享 | 3 / 7 | P5-04/P5-05/P5-06 DONE；Rules 在 DNS 后最终闭合 | P5-07 未开始 |
@@ -215,14 +225,15 @@ P2-06 已阶段提交 `f2457e6a4e2fe0ac3c9186bc7d17323a70c4c0a8`，仍 DOING、�
 | P7 数据与发布收尾 | 0 / 5 | 未开始，schema/清理按显式依赖等待 | P7-05 未开始 |
 | Windows W0–W3 | 0 / 7 | 后续排期 DEFERRED | W3-02 未开始 |
 
-macOS：**30 / 61 完成**；READY 0、TODO 29、DOING 1、REVIEW 0、ACCEPTANCE 1、BLOCKED 0。Windows 7 项 DEFERRED 单列，共 68 项。数量不等于工期权重或代码完成百分比；P1-04/P2-02/P4-05 父项被后缀子项替代，不重复计数。
+macOS：**31 / 61 完成**；READY 5、TODO 24、DOING 1、REVIEW 0、ACCEPTANCE 0、BLOCKED 0。Windows 7 项 DEFERRED 单列，共 68 项。数量不等于工期权重或代码完成百分比；P1-04/P2-02/P4-05 父项被后缀子项替代，不重复计数。
 
 ## 2 Active Tasks
 
 | Task | owner / 泳道 | 写范围 / 公共契约 | 实际资源 / 下一动作 |
 | --- | --- | --- | --- |
-| P2-05 · ACCEPTANCE | Codex Desktop · Core 网络客户端 | 独立dev/p2-05-outbound-clients，未合并；不在本卡写入 | 指定节点Native503已关闭，用户选择等待完整网络组合验收 |
 | P2-06 · DOING | Codex · Runtime/Platform | helper production/IPC、Core Runtime DTO、desktop runtime_service/platform、局部 Cargo 接线、任务文档 | 观测接线增量与真实普通用户受管实例验收通过，P3-01已DONE；root安装/降权、GUI、Helper多轮与重启恢复等原缺口继续后续验收，Runtime/DTO owner保留；见[P2-06接线记录](P2-06-observation-integration.md) |
+
+P2-05 已经 Host 限定范围验收 DONE 并移出当前 Active Tasks，本卡 owner 释放；此前 ACCEPTANCE/等待完整网络组合的活动记录属于上方历史交接。完整系统出口延期项及本轮明确决定见[Host收口](P2-05-host-closeout.md)。本次仅文档，没有新进程/网络/GUI资源操作；未commit/merge/push。
 
 P0-09文档owner/预约已释放；本轮无产品/OS/GUI资源，仅文档与两个被忽略收据交Host独立收口。P0-08 owner/预约已释放；原ZIP与Downloads App/evidence保留，本次GUI及系统XPC均退出，没有管理员helper或网络变更。
 
@@ -244,7 +255,11 @@ P3-03 owner/预约已释放，真实日志页、最终 GUI 与独立 Review 通�
 
 | Task | 依赖满足依据 | owner / 下一动作 |
 | --- | --- | --- |
-| — | 当前无未领取且依赖已满足任务 | P0-09 DONE/owner释放；P7-05仍缺P7-03/P7-04，保持TODO |
+| P2-08 | P2-02A、P2-04、P2-05、P1-04B 全部DONE；P2-05由本轮Host收口满足 | 未领取/未启动；领取前协调P2-06 Runtime/DTO owner |
+| P3-05 | P3-01、P3-04、P1-04B、P2-05 全部DONE；P2-05由本轮Host收口满足 | 未领取/未启动；按原写范围接正式概览/站点测速 |
+| P4-01 | P2-01、P2-05 全部DONE；P2-05由本轮Host收口满足 | 未领取/未启动；按原订阅高级项范围领取 |
+| P4-04 | P2-02B、P2-04、P2-05、P1-04A 全部DONE；P2-05由本轮Host收口满足 | 未领取/未启动；按原规则资源范围领取 |
+| P5-01 | P2-02B、P2-03、P2-05、P0-07、P1-04A 全部DONE；P2-05由本轮Host收口满足 | 未领取/未启动；领取前核对Runtime应用契约owner |
 
 
 历史统计（P0-08领取前、P4-03旧ACCEPTANCE）：DONE27 / ACCEPTANCE2 / DOING1 / REVIEW0 / READY1 / TODO30 / BLOCKED0 / DEFERRED7；当时READY仅P0-08，未领取/未启动；P4-03当时ACCEPTANCE，独立切片未合并；P2-04 DONE、Finding CLOSED保持。P2-06 DOING、Runtime/Platform及Runtime公共契约owner=Codex；P2-07/P6依赖未满足，不转READY。其它状态/显式依赖不变。

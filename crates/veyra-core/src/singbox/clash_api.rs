@@ -218,6 +218,8 @@ pub enum ClashApiError {
     Unavailable,
     #[error("managed Clash API returned an invalid response")]
     InvalidResponse,
+    #[error("controller request failed: {0:?}")]
+    Request(crate::subscription::FetchError),
 }
 
 /// 只借用当前受管实例的不可复制 secret，不能被构造为任意 HTTP client。
@@ -286,6 +288,55 @@ impl<'secret> ClashApiClient<'secret> {
         (response.hello == "clash")
             .then_some(())
             .ok_or(ClashApiError::InvalidResponse)
+    }
+
+    /// 仅当前受管 controller 的封闭节点测速 GET，不修改 selector。
+    pub(crate) async fn node_delay(
+        &self,
+        tag: &str,
+        target: &str,
+        timeout: Duration,
+    ) -> Result<Option<u64>, ClashApiError> {
+        let mut url = selector_url_at(&self.url("/", false), tag)?;
+        url.path_segments_mut()
+            .map_err(|_| ClashApiError::Unavailable)?
+            .push("delay");
+        url.query_pairs_mut()
+            .append_pair("url", target)
+            .append_pair("timeout", &timeout.as_millis().to_string());
+        let authorization = self.authorization()?;
+        let mut response = self
+            .client
+            .get(url)
+            .timeout(timeout)
+            .header(AUTHORIZATION, authorization)
+            .send()
+            .await
+            .map_err(|e| ClashApiError::Request(crate::subscription::fetch::request_error(e)))?;
+        if !response.status().is_success() {
+            return Err(ClashApiError::Request(
+                crate::subscription::FetchError::HttpStatus(response.status().as_u16()),
+            ));
+        }
+        let mut bytes = Vec::new();
+        while let Some(chunk) = response
+            .chunk()
+            .await
+            .map_err(|e| ClashApiError::Request(crate::subscription::fetch::request_error(e)))?
+        {
+            if bytes.len() + chunk.len() > 65536 {
+                return Err(ClashApiError::InvalidResponse);
+            }
+            bytes.extend_from_slice(&chunk);
+        }
+        #[derive(Deserialize)]
+        struct Delay {
+            delay: u64,
+        }
+        let value: Delay =
+            serde_json::from_slice(&bytes).map_err(|_| ClashApiError::InvalidResponse)?;
+        self.authorization()?; // 迟到响应不能授权已撤销的 controller。
+        Ok((value.delay > 0).then_some(value.delay))
     }
 
     /// 只读取累计流量和连接数量；每个连接对象在解析时被 `IgnoredAny` 丢弃。
