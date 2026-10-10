@@ -10,7 +10,7 @@ description = "Veyra shared business core"
 # Normal builds retain the production configuration whitelist.
 [features]
 legacy-test-support = []
-# P0-06仅显式原型入口；尚不接入正式订阅/Runtime配置。
+# P0-06 历史公网 harness；正式客户端本身无 feature gate。
 p0-06-prototype = []
 
 [dependencies]
@@ -29,7 +29,7 @@ reqwest = { version = "=0.12.28", default-features = false, features = ["json", 
 sha2 = { version = "=0.10.9", default-features = false }
 getrandom = "=0.4.3"
 thiserror = "=2.0.20"
-tokio = { version = "=1.53.1", features = ["rt-multi-thread", "sync", "time"] }
+tokio = { version = "=1.53.1", features = ["rt-multi-thread", "sync", "time", "process"] }
 tokio-tungstenite = { version = "=0.30.0", default-features = false, features = ["connect"] }
 tracing = "=0.1.44"
 # 复用已经锁定的 TLS 库校验证书/私钥匹配，不引入新的证书存储。

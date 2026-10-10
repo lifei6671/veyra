@@ -487,7 +487,9 @@ mod tests {
         assert_eq!(fs::read(&path).unwrap(), bytes);
         assert_eq!(
             run(m.refresh_direct(id.clone(), None, state.config_version())),
-            Err(SubscriptionOperationError::FetchFailed)
+            Err(SubscriptionOperationError::Network(
+                crate::subscription::FetchError::ConnectionRefused
+            ))
         );
         assert_eq!(fs::read(&path).unwrap(), bytes);
         assert_eq!(m.store.load().unwrap(), state);

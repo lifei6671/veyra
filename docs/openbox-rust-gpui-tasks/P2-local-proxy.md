@@ -171,6 +171,14 @@ cleanup NOT_RUN：沙箱拒绝`ps`进程身份查询（Operation not permitted�
 <a id="obg-p2-05"></a>
 ## OBG-P2-05 下载、测速和 IP 查询的出站策略
 
+**最新 Host 验收（2026-10-10）：P2-05 DONE，`SCOPED_ACCEPTANCE_WITH_EXPLICIT_DEFERRED_PLATFORM_VERIFICATION`，本卡 owner 释放。** 正式客户端和本轮局部功能/Native/GPUI已验收，完整决定、源码/收据SHA及延期归属见[Host收口](P2-05-host-closeout.md)。原第2项保持未勾选：物理Direct UNVERIFIED、SystemProxy ON NOT_RUN、生产TUN/完整组合由P2-07/P2-09/P6-01/P6-05承接；不将后期卡反向作为本卡依赖。下方2026-10-09/10交接及ACCEPTANCE说明均为决定前的历史原文，保留旧用户决定与失败，不覆盖本次Host明确收口。
+
+**P2-05 本轮最终实机结果（2026-10-10，ACCEPTANCE）**：本候选唯一指定 Native 1 PASS（exit0），定向复跑 Core50 PASS、Desktop build/all-targets Clippy/fmt exit0；真实订阅添加/刷新/失败保旧/保存草稿重试/重启/语言草稿、主备Controller选择、P3日志、同PID托盘恢复与正常退出通过。独立Review及完整收据见[本轮实机验收](P2-05-desktop-acceptance.md)。当前默认macOS显示配置经用户确认，非额外150%设置；物理Direct UNVERIFIED、SystemProxy ON NOT_RUN、历史HTTP503和Legacy Clippy FAIL101保留。后续P2-07/P2-09/P6-01/P6-05组合单列，旧等待组合决定未取消，Host收口前保持ACCEPTANCE/owner，无commit/merge/push/下游。68卡DONE30/ACCEPTANCE1/DOING1/READY0/TODO29/DEFERRED7，P2-06 DOING/Runtime owner不变。
+
+以下整合快照及原验收勾选保留；不自行勾选系统组合或改DONE。
+
+**2026-10-10 当前整合 / ACCEPTANCE**：指定 `dev/p2-05-main-integration`（bda8be5）有界移植 e530837 与旧未提交 Native fixture 修复，保留最新 P4-03/Observation 和 P2-06 原 owner。225 个唯一定向 PASS、三包 all-targets Clippy/check/build/fmt 通过；Legacy Windows资源 Clippy FAIL101，本候选 Native/GUI NOT_RUN，物理Direct旧UNVERIFIED/SystemProxy ON旧NOT_RUN。用户等待完整网络组合的决定不取消，不DONE/解锁/commit/merge/push。见[精确结果、分期判断与Host补验](P2-05-integration-acceptance.md)。以下原验收勾选不改写。
+
 **类型**：网络客户端；**依赖**：OBG-P2-03、OBG-P0-06。**依据/范围**：方案 §8.9；core 下载/GeoIp/控制器客户端；API 30。
 
 **泳道 / 写范围**：Runtime/Platform；下载/GeoIP/测速网络客户端与出站策略。
@@ -179,10 +187,11 @@ cleanup NOT_RUN：沙箱拒绝`ps`进程身份查询（Operation not permitted�
 
 **验收**：
 
-- [ ] 初次订阅、无有效代理及明确选择代理下载的路径符合策略；失败不静默换路。
+- [x] 初次订阅、无有效代理及明确选择代理下载的路径符合策略；失败不静默换路。
 - [ ] 系统代理下真实出口符合设计；TUN 专用规则保留 P0 证据并在 P6 用生产实现复验。
-- [ ] 跨源不传递认证头，凭据 URL 不降级明文；日志/诊断无订阅秘密。
-- [ ] 测速/IP 请求使用指定目标路径，失败保留未知状态；地理查询不发送多余凭据。
+  本项平台子验证延期，原覆盖保留且清单仍显示未完成：SystemProxy ON NOT_RUN由P2-07/P2-09承接，物理Direct UNVERIFIED及正式受管TUN由P6-01/P6-05复验。按2026-10-08分期规则与Host本轮明确决定，本卡已完成的客户端/局部验收可DONE；本项没有假勾PASS，详见[逐项结果](P2-05-host-closeout.md#原卡逐项结果与延期归属)。
+- [x] 跨源不传递认证头，凭据 URL 不降级明文；日志/诊断无订阅秘密。
+- [x] 测速/IP 请求使用指定目标路径，失败保留未知状态；地理查询不发送多余凭据。
 
 <a id="obg-p2-06"></a>
 ## OBG-P2-06 生产 helper 与最小 IPC

@@ -21,6 +21,7 @@ pub struct AppServices {
     pub manual_runtime: crate::runtime_service::RuntimeService,
     pub snapshots: Arc<SnapshotService>,
     pub shares: Arc<veyra_core::application::shares::ShareService>,
+    pub network: Arc<veyra_core::application::network::NetworkService>,
     pub subscriptions: Arc<veyra_core::application::subscription_management::SubscriptionManager>,
     // Profile 保存复用 Core CAS writer；选择服务继续由各功能按契约接入。
     pub profiles: Arc<ProfileService>,
@@ -35,11 +36,17 @@ impl Drop for AppServices {
     fn drop(&mut self) {
         // Runtime 销毁会等待 blocking worker；先消费 Core 已有关闭信号取消下载，
         // 避免退出线程等待完整网络 timeout。普通窗口隐藏不销毁 AppServices。
-        self.subscriptions.request_closing();
-        self.shares.shutdown();
+        self.request_closing();
     }
 }
 impl AppServices {
+    /// 真正 Quit 与服务释放共用；隐藏窗口不关闭网络 Service。
+    pub fn request_closing(&self) {
+        self.subscriptions.request_closing();
+        self.network.shutdown();
+        self.shares.shutdown();
+    }
+
     /// 已由NSSavePanel确认的脱敏页面快照，在既有有界blocking worker写文件。
     pub fn save_log_export(
         &self,
@@ -76,18 +83,22 @@ impl AppServices {
         #[cfg(test)]
         WRITERS_CREATED.set(WRITERS_CREATED.get() + 1);
         let (sender, receiver) = unbounded_channel();
-        let subscriptions = Arc::new(
+        let mut subscriptions =
             veyra_core::application::subscription_management::SubscriptionManager::new(
                 root.join("state.json"),
                 gate.clone(),
-            )?,
-        );
+            )?;
         let snapshots = Arc::new(snapshots);
         let manual_runtime = crate::runtime_service::RuntimeService::new(
             root.clone(),
             snapshots.clone(),
             sender.clone(),
         );
+        subscriptions.bind_managed_proxy_source(manual_runtime.outbound_proxy_source());
+        let subscriptions = Arc::new(subscriptions);
+        let network = Arc::new(veyra_core::application::network::NetworkService::new(
+            manual_runtime.outbound_proxy_source(),
+        ));
         let runtime = Builder::new_multi_thread()
             .worker_threads(2)
             .max_blocking_threads(1)
@@ -108,6 +119,7 @@ impl AppServices {
             shares,
 
             manual_runtime,
+            network,
             subscriptions,
             profiles: Arc::new(ProfileService::new((*snapshots).clone())),
             preferences: Arc::new(DesktopPreferencesService::new((*snapshots).clone())),

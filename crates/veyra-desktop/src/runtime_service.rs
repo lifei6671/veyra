@@ -114,6 +114,7 @@ enum Message {
 pub struct RuntimeService {
     sender: mpsc::Sender<Message>,
     worker: Option<thread::JoinHandle<()>>,
+    outbound_proxy: veyra_core::subscription::outbound::ProxySource,
     observation: Arc<
         std::sync::Mutex<
             Option<veyra_core::application::observability::controller::ObservationReader>,
@@ -121,6 +122,9 @@ pub struct RuntimeService {
     >,
 }
 impl RuntimeService {
+    pub fn outbound_proxy_source(&self) -> veyra_core::subscription::outbound::ProxySource {
+        self.outbound_proxy.clone()
+    }
     pub fn observation_reader(
         &self,
     ) -> Option<veyra_core::application::observability::controller::ObservationReader> {
@@ -132,6 +136,8 @@ impl RuntimeService {
         events: tokio::sync::mpsc::UnboundedSender<AppEvent>,
     ) -> Self {
         let (sender, receiver) = mpsc::channel();
+        let outbound_proxy = veyra_core::subscription::outbound::ProxySource::default();
+        let source = outbound_proxy.clone();
         let observation = Arc::new(std::sync::Mutex::new(None));
         let reader_slot = observation.clone();
         let worker = thread::spawn(move || {
@@ -139,6 +145,7 @@ impl RuntimeService {
             let available = port.kernel_available();
             let traffic_directory = root.join("traffic");
             let mut owner = ManualRuntime::new(port, snapshots.clone(), root, available);
+            owner.bind_outbound_proxy_source(source);
             owner.enable_traffic_storage(traffic_directory);
             // P2-06 owner确认：只交付一次 Weak reader，不交出Runtime/统计写权。
             *reader_slot.lock().expect("observation reader") = Some(owner.observation().reader());
@@ -479,6 +486,7 @@ impl RuntimeService {
         Self {
             sender,
             worker: Some(worker),
+            outbound_proxy,
             observation,
         }
     }
@@ -1132,6 +1140,425 @@ mod quit_tests {
         );
         assert_eq!(std::fs::read(&path).unwrap(), record);
         std::fs::remove_dir_all(root).unwrap();
+    }
+    // 保护正式 Desktop composition：首次导入/保旧、Ready mixed 网络、出口及关闭撤销。
+    // 仅 opt-in，使用固定 sing-box、自有隔离目录与真实公共 API；不改系统网络。
+    #[test]
+    #[ignore = "requires pinned VEYRA_SING_BOX_PATH; P2-05 real production service network"]
+    fn outbound_clients_real_production_services() {
+        use super::*;
+        use std::{
+            io::{Read, Write},
+            net::TcpListener,
+            os::fd::AsRawFd,
+        };
+        use veyra_core::{
+            application::{
+                network::{GeoIpProvider, NetworkError, RequestedPath},
+                subscription_management::{
+                    SubscriptionOperationError,
+                    preview::{PreviewInput, PreviewSource},
+                },
+            },
+            domain::AppState,
+            storage::JsonStateStore,
+        };
+        let root = std::env::temp_dir().join(format!(
+            "veyra-p205-real-{:?}",
+            veyra_core::domain::StateEpoch::fresh().unwrap()
+        ));
+        let (services, _rx) = crate::services::AppServices::new(root.clone()).unwrap();
+        let rt = tokio::runtime::Builder::new_current_thread()
+            .enable_all()
+            .build()
+            .unwrap();
+        let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+        let address = listener.local_addr().unwrap();
+        let server = thread::spawn(move || {
+            for status in [200, 200, 503] {
+                let (mut socket, _) = listener.accept().unwrap();
+                socket
+                    .set_read_timeout(Some(Duration::from_secs(3)))
+                    .unwrap();
+                let mut bytes = [0; 8192];
+                let received = socket.read(&mut bytes).unwrap();
+                assert!(received > 0);
+                let body = "socks5://127.0.0.1:1080#isolated-node";
+                let response = format!(
+                    "HTTP/1.1 {status} Fixture\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{body}",
+                    body.len()
+                );
+                socket.write_all(response.as_bytes()).unwrap();
+            }
+        });
+        let input = PreviewInput {
+            name: "first-import".into(),
+            description: String::new(),
+            sources: vec![PreviewSource::Url(format!("http://{address}/subscription"))],
+        };
+        let imported = rt.block_on(async {
+            let preview = services.subscriptions.preview(&input).await.unwrap();
+            services
+                .subscriptions
+                .save_preview(input, &preview)
+                .await
+                .unwrap()
+        });
+        assert_eq!(imported.subscriptions.len(), 1);
+        let before = std::fs::read(root.join("state.json")).unwrap();
+        let current = services.snapshots.snapshot().unwrap();
+        let refresh = rt.block_on(services.subscriptions.refresh_direct(
+            imported.subscriptions[0].id.clone(),
+            None,
+            current.config_version(),
+        ));
+        assert_eq!(
+            refresh,
+            Err(SubscriptionOperationError::Network(
+                veyra_core::subscription::FetchError::HttpStatus(503)
+            ))
+        );
+        assert_eq!(before, std::fs::read(root.join("state.json")).unwrap());
+        server.join().unwrap();
+        eprintln!(
+            "P2_05_FIRST_IMPORT_REFRESH PASS production preview/save and HTTP503 preserves old disk bytes"
+        );
+        let unavailable = rt.block_on(
+            services
+                .network
+                .exit_ip(GeoIpProvider::IpWhoIs, RequestedPath::ViaRunningProxy),
+        );
+        assert_eq!(unavailable, Err(NetworkError::ProxyUnavailable));
+        let direct = rt.block_on(
+            services
+                .network
+                .exit_ip(GeoIpProvider::IpWhoIs, RequestedPath::Direct),
+        );
+        eprintln!("P2_05_DIRECT_NATIVE {direct:?} (physical Direct never inferred from no_proxy)");
+        drop(services);
+        let network_root = root.join("running");
+        let mut value = serde_json::to_value(AppState::empty()).unwrap();
+        let fixture: serde_json::Value = serde_json::from_str(include_str!(
+            "../../veyra-core/tests/fixtures/compiler/p2-02b.json"
+        ))
+        .unwrap();
+        for (key, entry) in fixture.as_object().unwrap() {
+            value[key] = entry.clone();
+        }
+        let mut state: AppState = serde_json::from_value(value).unwrap();
+        state.active_subscription_id =
+            Some(veyra_core::domain::SubscriptionId("subscription".into()));
+        state.default_target = veyra_core::domain::RouteTarget::Direct;
+        state.routes.clear();
+        state.pools.retain(|p| p.id.0 == "manual");
+        // 本测试自己的 HTTP 节点与目标；不改变用户代理/TUN，也不依赖外部节点。
+        let node_listener = TcpListener::bind("127.0.0.1:0").unwrap();
+        let node_address = node_listener.local_addr().unwrap();
+        state.nodes[0].protocol = veyra_core::domain::ProxyProtocol::Http;
+        state.nodes[0].server = "127.0.0.1".into();
+        state.nodes[0].port = node_address.port();
+        state.nodes[0].options = veyra_core::domain::ProtocolOptions::Http {
+            username: None,
+            password: None,
+            tls: false,
+        };
+        state.nodes[0].tls = None;
+        state.validate().unwrap();
+        JsonStateStore::new(network_root.join("state.json"))
+            .unwrap()
+            .commit(&state)
+            .unwrap();
+        let (services, mut rx) = crate::services::AppServices::new(network_root.clone()).unwrap();
+        services.manual_runtime.submit(1, RuntimeCommand::Start);
+        let until = std::time::Instant::now() + Duration::from_secs(20);
+        let first = loop {
+            if let Ok(AppEvent::Runtime(event)) = rx.try_recv() {
+                if let Some(Err(error)) = event.result {
+                    panic!("start failed: {error:?}");
+                }
+                if let Ok(snapshot) = event.snapshot
+                    && snapshot.runtime.status
+                        == veyra_core::application::runtime_snapshot::RuntimeStatus::Ready
+                {
+                    break snapshot;
+                }
+            }
+            assert!(std::time::Instant::now() < until, "worker Ready timeout");
+            thread::sleep(Duration::from_millis(30));
+        };
+        let source = services.manual_runtime.outbound_proxy_source();
+        let old = source.current().unwrap();
+        assert_eq!(old.instance_id(), first.runtime.instance_id.unwrap().0);
+        assert_eq!(old.address(), first.endpoints.unwrap().mixed);
+        eprintln!(
+            "P2_05_READY instance={} mixed={}",
+            old.instance_id(),
+            old.address()
+        );
+        let mut native_results_valid = true;
+        for provider in [
+            GeoIpProvider::IpSb,
+            GeoIpProvider::IpWhoIs,
+            GeoIpProvider::IpApiIs,
+        ] {
+            let exit = rt.block_on(
+                services
+                    .network
+                    .exit_ip(provider, RequestedPath::ViaRunningProxy),
+            );
+            let geo = rt.block_on(services.network.geo_ip(
+                provider,
+                "8.8.8.8".parse().unwrap(),
+                RequestedPath::ViaRunningProxy,
+            ));
+            native_results_valid &= exit.is_ok()
+                && geo.as_ref().is_ok_and(|v| {
+                    v.info.ip == "8.8.8.8".parse::<std::net::IpAddr>().unwrap()
+                        && v.info.asn == Some(15169)
+                });
+            eprintln!("P2_05_NATIVE_EXIT provider={provider:?} result={exit:?}");
+            eprintln!("P2_05_NATIVE_GEO provider={provider:?} target=8.8.8.8 result={geo:?}");
+        }
+        // ipapi.is 当前实网的 schema 单独留证；目标仅为公共测试 IP，不是订阅来源。
+        let client = veyra_core::subscription::outbound::OutboundClient::new(
+            veyra_core::subscription::outbound::RoutePolicy::ViaRunningProxy(
+                source.current().unwrap(),
+            ),
+            &veyra_core::subscription::FetchClientOptions {
+                timeout: Duration::from_secs(10),
+                ..Default::default()
+            },
+        )
+        .unwrap();
+        let schema = rt.block_on(client.resource("https://api.ipapi.is/?q=8.8.8.8"));
+        if let Ok(veyra_core::subscription::FetchResult::Modified { body, .. }) = schema {
+            eprintln!("P2_05_IPAPI_PUBLIC_TARGET_RESPONSE {body}");
+        }
+        let site = rt.block_on(services.network.site_latency(
+            "https://www.gstatic.com/generate_204",
+            Duration::from_secs(10),
+            RequestedPath::ViaRunningProxy,
+        ));
+        native_results_valid &= site.as_ref().is_ok_and(|v| v.milliseconds.is_some());
+        eprintln!("P2_05_NATIVE_SITE {site:?}");
+        fn accept_fixture(listener: &TcpListener) -> std::net::TcpStream {
+            listener.set_nonblocking(true).unwrap();
+            let until = std::time::Instant::now() + Duration::from_secs(5);
+            loop {
+                if let Ok((socket, _)) = listener.accept() {
+                    // macOS accept 继承监听的 O_NONBLOCK。poll accept 后显式切回
+                    // blocking，read_timeout 才能等待 TLS 字节，而不是立即 WouldBlock。
+                    let before = unsafe { libc::fcntl(socket.as_raw_fd(), libc::F_GETFL) };
+                    assert!(before >= 0);
+                    socket.set_nonblocking(false).unwrap();
+                    let after = unsafe { libc::fcntl(socket.as_raw_fd(), libc::F_GETFL) };
+                    assert!(after >= 0);
+                    assert_eq!(after & libc::O_NONBLOCK, 0);
+                    eprintln!(
+                        "P2_05_ACCEPT_MODE inherited_nonblocking={} blocking_after_fix={}",
+                        before & libc::O_NONBLOCK != 0,
+                        after & libc::O_NONBLOCK == 0
+                    );
+                    socket
+                        .set_read_timeout(Some(Duration::from_secs(10)))
+                        .unwrap();
+                    socket
+                        .set_write_timeout(Some(Duration::from_secs(10)))
+                        .unwrap();
+                    return socket;
+                }
+                assert!(
+                    std::time::Instant::now() < until,
+                    "owned node fixture accept timeout"
+                );
+                thread::sleep(Duration::from_millis(2));
+            }
+        }
+        fn fixture_headers(socket: &mut std::net::TcpStream) -> Vec<u8> {
+            let mut bytes = Vec::new();
+            while !bytes.ends_with(b"\r\n\r\n") && bytes.len() < 8192 {
+                let mut byte = [0];
+                socket.read_exact(&mut byte).unwrap();
+                bytes.push(byte[0]);
+            }
+            bytes
+        }
+        // 小包立即写出，避免 fixture 的转发缓冲影响 TLS 握手；仅记录 byte count。
+        fn relay(mut input: std::net::TcpStream, mut output: std::net::TcpStream) -> usize {
+            let mut bytes = [0; 4096];
+            let mut count = 0;
+            loop {
+                match input.read(&mut bytes) {
+                    Ok(0) => break,
+                    Ok(n) => {
+                        if let Err(error) = output.write_all(&bytes[..n]) {
+                            eprintln!("P2_05_NODE_RELAY bytes={count} write={:?}", error.kind());
+                            break;
+                        }
+                        if count == 0 {
+                            eprintln!(
+                                "P2_05_NODE_FIRST_BYTES bytes={n} tls_record_type={}",
+                                bytes[0]
+                            );
+                        }
+                        count += n;
+                    }
+                    Err(error) => {
+                        eprintln!("P2_05_NODE_RELAY bytes={count} read={:?}", error.kind());
+                        break;
+                    }
+                }
+            }
+            eprintln!("P2_05_NODE_RELAY_COMPLETE bytes={count}");
+            let _ = output.shutdown(std::net::Shutdown::Write);
+            count
+        }
+        let fixture_upstream = first.endpoints.as_ref().unwrap().mixed;
+        // 从本测试实际加载的私有候选读取 tag，只记录公开目标和脱敏请求。
+        // 不读取历史 last_successful，不以 tag 替代下方正式 NodeId 调用。
+        let applied_config: serde_json::Value = serde_json::from_slice(
+            &std::fs::read(network_root.join("runtime/configs/candidate-1/config.json")).unwrap(),
+        )
+        .unwrap();
+        let applied_node = applied_config["outbounds"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|v| {
+                v["type"] == "http"
+                    && v["server"] == "127.0.0.1"
+                    && v["server_port"].as_u64() == Some(u64::from(node_address.port()))
+            })
+            .unwrap();
+        let tag = applied_node["tag"].as_str().unwrap();
+        let controller = first.endpoints.as_ref().unwrap().controller;
+        assert_eq!(tag, "node-a"); // 固定本测试 NodeId=a 的实际 applied tag。
+        let request_url = format!(
+            "http://{controller}/proxies/{tag}/delay?url=https%3A%2F%2Fwww.gstatic.com%2Fgenerate_204&timeout=10000"
+        );
+        eprintln!(
+            "P2_05_CONTROLLER_REQUEST method=GET url={request_url} authorization=REDACTED node_id={} applied_tag={tag} instance={}",
+            state.nodes[0].id.0,
+            old.instance_id()
+        );
+        let node_started = std::time::Instant::now();
+        let proxy_fixture = thread::spawn(move || {
+            eprintln!(
+                "P2_05_PHASE fixture waiting {}ms",
+                node_started.elapsed().as_millis()
+            );
+            let mut socket = accept_fixture(&node_listener);
+            let connect = String::from_utf8(fixture_headers(&mut socket)).unwrap();
+            eprintln!(
+                "P2_05_PHASE node CONNECT received {}ms",
+                node_started.elapsed().as_millis()
+            );
+            assert!(
+                connect.starts_with("CONNECT www.gstatic.com:443 "),
+                "unexpected target: {connect}"
+            );
+            // 固定 fixture 拓扑：node→自有HTTP代理→同一实例mixed(default Direct)。
+            // 不用用户系统DNS返回的FakeIP；不改变TUN，也不证明物理直连。
+            // TLS目标和证书校验始终由真实内核负责，无失败换路。
+            let mut target = std::net::TcpStream::connect(fixture_upstream).unwrap();
+            target
+                .set_read_timeout(Some(Duration::from_secs(10)))
+                .unwrap();
+            target
+                .set_write_timeout(Some(Duration::from_secs(10)))
+                .unwrap();
+            target
+                .write_all(
+                    b"CONNECT www.gstatic.com:443 HTTP/1.1\r\nHost: www.gstatic.com:443\r\n\r\n",
+                )
+                .unwrap();
+            let upstream_response = String::from_utf8(fixture_headers(&mut target)).unwrap();
+            assert!(upstream_response.starts_with("HTTP/1.1 200"));
+            eprintln!(
+                "P2_05_NODE_FIXED_UPSTREAM mixed={fixture_upstream} target=www.gstatic.com:443 response={upstream_response:?}"
+            );
+            socket
+                .write_all(b"HTTP/1.1 200 Connection established\r\n\r\n")
+                .unwrap();
+            eprintln!(
+                "P2_05_PHASE CONNECT response sent {}ms",
+                node_started.elapsed().as_millis()
+            );
+            eprintln!("P2_05_NODE_PEER {:?}", target.peer_addr());
+            let input = socket.try_clone().unwrap();
+            let output = target.try_clone().unwrap();
+            let transfer = thread::spawn(move || relay(input, output));
+            let downstream = relay(target, socket);
+            let upstream = transfer.join().unwrap();
+            (connect, upstream, downstream)
+        });
+        let node = rt.block_on(services.network.node_latency(
+            &state.nodes[0].id,
+            "https://www.gstatic.com/generate_204",
+            Duration::from_secs(10),
+        ));
+        eprintln!(
+            "P2_05_PHASE node controller returned {}ms {node:?}",
+            node_started.elapsed().as_millis()
+        );
+        let proxy_receipt = proxy_fixture.join();
+        native_results_valid &= node.as_ref().is_ok_and(|v| v.milliseconds.is_some())
+            && proxy_receipt
+                .as_ref()
+                .is_ok_and(|(_, up, down)| *up > 0 && *down > 0);
+        eprintln!(
+            "P2_05_NATIVE_NODE owned HTTP node={node_address} target=https://www.gstatic.com/generate_204 result={node:?} proxy_receipt={proxy_receipt:?}"
+        );
+        services.manual_runtime.submit(2, RuntimeCommand::Restart);
+        let until = std::time::Instant::now() + Duration::from_secs(20);
+        let second = loop {
+            if let Ok(AppEvent::Runtime(event)) = rx.try_recv()
+                && let Ok(snapshot) = event.snapshot
+                && snapshot.runtime.status
+                    == veyra_core::application::runtime_snapshot::RuntimeStatus::Ready
+                && snapshot
+                    .runtime
+                    .instance_id
+                    .as_ref()
+                    .is_some_and(|id| id.0 != old.instance_id())
+            {
+                break snapshot;
+            }
+            assert!(std::time::Instant::now() < until, "replace timeout");
+            thread::sleep(Duration::from_millis(30));
+        };
+        assert!(!old.is_valid());
+        let second_proxy = source.current().unwrap();
+        services.request_closing();
+        services
+            .manual_runtime
+            .shutdown()
+            .recv_timeout(Duration::from_secs(15))
+            .unwrap()
+            .unwrap();
+        assert!(!second_proxy.is_valid());
+        assert!(source.current().is_none());
+        for endpoints in [first.endpoints.unwrap(), second.endpoints.unwrap()] {
+            assert!(std::net::TcpStream::connect(endpoints.mixed).is_err());
+            assert!(std::net::TcpStream::connect(endpoints.controller).is_err());
+        }
+        assert_eq!(
+            rt.block_on(services.network.site_latency(
+                "http://127.0.0.1:9",
+                Duration::from_secs(1),
+                RequestedPath::Direct
+            )),
+            Err(NetworkError::Closed)
+        );
+        drop(services);
+        std::fs::remove_dir_all(&root).unwrap();
+        assert!(
+            native_results_valid,
+            "provider/site/node Native request failed; see real network results"
+        );
+        eprintln!(
+            "P2_05_NATIVE_CLEANUP PASS replace revoked old identity; Quit revoked source; own child listeners closed and isolated root removed"
+        );
     }
 }
 

@@ -64,23 +64,27 @@ pub fn run() {
             let observations = (*app.state::<InMemoryRuntimeObservations>()).clone();
             let state_gate = StateAccessGate::default();
             let handle = tauri::async_runtime::handle().inner().clone();
-            let mut subscriptions = SubscriptionManager::new(
+            let subscriptions = SubscriptionManager::new(
                 app_local_data_root.join("state.json"),
                 state_gate.clone(),
             )?;
-            subscriptions.set_system_proxy_url_reader(|| {
-                platform::windows::system_proxy::read_subscription_proxy_url()
-                    .map_err(|_| application::subscription_management::SubscriptionOperationError::SystemProxyUnavailable)
-            });
+            // P2-05：旧 ObservationOnly Runtime 没有可撤销 Ready 能力；
+            // System/ManagedCore 明确不可用，不能以第三方代理或历史端口冒充正式路径。
             let subscriptions = Arc::new(subscriptions);
             let scheduler = Arc::new(
-                application::subscription_scheduler::SubscriptionScheduler::start(Arc::clone(
-                    &subscriptions,
-                ), &handle),
+                application::subscription_scheduler::SubscriptionScheduler::start(
+                    Arc::clone(&subscriptions),
+                    &handle,
+                ),
             );
             let port_data_root = app_local_data_root.clone();
             let runtime = Arc::new(ManagedObservationRuntimeController::new(
-                move || platform::observation_sidecar::ObservationSidecarPort::new(resource_root.clone(), port_data_root.clone()),
+                move || {
+                    platform::observation_sidecar::ObservationSidecarPort::new(
+                        resource_root.clone(),
+                        port_data_root.clone(),
+                    )
+                },
                 handle,
                 app_local_data_root.clone(),
                 observations.clone(),
@@ -96,7 +100,6 @@ pub fn run() {
                 )
                 .map_err(|_| "failed to initialize proxy routing manager")?,
             );
-            subscriptions.set_managed_proxy_port(runtime.managed_proxy_port());
             let subscription_events = app.handle().clone();
             subscriptions.install_change_sink(Arc::new(move |event| {
                 if subscription_events

@@ -277,7 +277,7 @@ impl AppView {
         .detach();
         let tray_quit = cx.on_app_quit(|view, cx| {
             view.tray.prepare_quit();
-            view.services.shares.shutdown();
+            view.services.request_closing();
             let done = view.services.manual_runtime.shutdown();
             cx.background_executor().spawn(async move {
                 // 退出等待有界Runtime清理；失败是Unknown，不能记录成已停止。

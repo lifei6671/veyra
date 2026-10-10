@@ -62,17 +62,39 @@ pub enum FetchResult {
 pub enum FetchError {
     InvalidUrl,
     RequestFailed,
-    InvalidStatus,
     BodyTooLarge,
     InvalidBody,
+    InvalidTlsPolicy,
+    DirectPathUnverified,
+    FakeIpAddress,
+    DnsStatus(u32),
+    NoDnsAddress,
+    InvalidDnsResponse,
+    Timeout,
+    DnsFailed,
+    TlsFailed,
+    CertificateInvalid,
+    ConnectionRefused,
+    ConnectFailed,
+    ReadFailed,
+    HttpStatus(u16),
+    RedirectLimit,
 }
+
+impl std::fmt::Display for FetchError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{self:?}")
+    }
+}
+impl std::error::Error for FetchError {}
 
 #[cfg(test)]
 pub fn build_client() -> Result<Client, FetchError> {
     build_client_with_options(&FetchClientOptions::default())
 }
 
-pub fn build_client_with_options(options: &FetchClientOptions) -> Result<Client, FetchError> {
+#[cfg(test)]
+fn build_client_with_options(options: &FetchClientOptions) -> Result<Client, FetchError> {
     client_builder_with_options(options)?
         .build()
         .map_err(|_| FetchError::RequestFailed)
@@ -113,7 +135,8 @@ pub async fn fetch_subscription(
     fetch_subscription_with_timeout(client, source, conditional, TOTAL_TIMEOUT).await
 }
 
-pub async fn fetch_subscription_with_options(
+#[cfg(test)]
+async fn fetch_subscription_with_options(
     source: &str,
     conditional: ConditionalHeaders,
     options: &FetchClientOptions,
@@ -122,6 +145,7 @@ pub async fn fetch_subscription_with_options(
     fetch_subscription_with_timeout(&client, source, conditional, options.timeout).await
 }
 
+#[cfg(test)]
 async fn fetch_subscription_with_timeout(
     client: &Client,
     source: &str,
@@ -152,10 +176,17 @@ pub(crate) async fn fetch_subscription_on_client(
     validate_url(&initial, None)?;
     tokio::time::timeout(
         total_timeout,
-        fetch_with_redirects(client, initial, conditional, source_credentials, observe),
+        fetch_with_redirects(
+            client,
+            initial,
+            conditional,
+            source_credentials,
+            observe,
+            (false, false),
+        ),
     )
     .await
-    .map_err(|_| FetchError::RequestFailed)?
+    .map_err(|_| FetchError::Timeout)?
 }
 
 async fn fetch_with_redirects(
@@ -164,11 +195,22 @@ async fn fetch_with_redirects(
     conditional: ConditionalHeaders,
     source_credentials: HeaderMap,
     mut observe: impl FnMut(&Url, Option<SocketAddr>),
+    (accept_success, direct): (bool, bool),
 ) -> Result<FetchResult, FetchError> {
     let initial_origin = origin(&initial);
     let initial_scheme = initial.scheme().to_owned();
     let mut current = initial;
     for redirects in 0..=MAX_REDIRECTS {
+        if direct {
+            let address = current.host_str().and_then(|host| {
+                host.trim_matches(['[', ']'])
+                    .parse::<std::net::IpAddr>()
+                    .ok()
+            });
+            if let Some(address) = address {
+                super::outbound::ensure_direct_address(address).await?;
+            }
+        }
         let mut request = client.get(current.clone());
         if origin(&current) == initial_origin {
             // 包含Authorization/Cookie及其它source credential；跨origin全部剥离。
@@ -180,10 +222,7 @@ async fn fetch_with_redirects(
                 request = request.header(IF_MODIFIED_SINCE, last_modified);
             }
         }
-        let mut response = request
-            .send()
-            .await
-            .map_err(|_| FetchError::RequestFailed)?;
+        let mut response = request.send().await.map_err(request_error)?;
         observe(&current, response.remote_addr());
         let validators_match_source = origin(&current) == initial_origin;
         if response.status() == StatusCode::NOT_MODIFIED {
@@ -202,7 +241,7 @@ async fn fetch_with_redirects(
         }
         if response.status().is_redirection() {
             if redirects == MAX_REDIRECTS {
-                return Err(FetchError::RequestFailed);
+                return Err(FetchError::RedirectLimit);
             }
             let location = response
                 .headers()
@@ -210,7 +249,11 @@ async fn fetch_with_redirects(
                 .and_then(|value| value.to_str().ok())
                 .ok_or(FetchError::RequestFailed)?;
             let next = current.join(location).map_err(|_| FetchError::InvalidUrl)?;
-            validate_url(&next, Some(&initial_scheme))?;
+            if accept_success {
+                validate_resource_url(&next, Some(&initial_scheme))?;
+            } else {
+                validate_url(&next, Some(&initial_scheme))?;
+            }
             current = next;
             continue;
         }
@@ -221,16 +264,14 @@ async fn fetch_with_redirects(
             metadata.etag = None;
             metadata.last_modified = None;
         }
-        if response.status() != StatusCode::OK {
-            return Err(FetchError::InvalidStatus);
+        if response.status() != StatusCode::OK
+            && !(accept_success && response.status().is_success())
+        {
+            return Err(FetchError::HttpStatus(response.status().as_u16()));
         }
 
         let mut bytes = Vec::new();
-        while let Some(chunk) = response
-            .chunk()
-            .await
-            .map_err(|_| FetchError::RequestFailed)?
-        {
+        while let Some(chunk) = response.chunk().await.map_err(request_error)? {
             if bytes.len().saturating_add(chunk.len()) > MAX_BODY_BYTES {
                 return Err(FetchError::BodyTooLarge);
             }
@@ -245,6 +286,110 @@ async fn fetch_with_redirects(
         });
     }
     Err(FetchError::RequestFailed)
+}
+
+// 正式客户端入口；所有 redirect 继续同一 Direct 可用性检查与实例取消。
+pub(crate) async fn fetch_routed_on_client(
+    client: &Client,
+    source: &str,
+    conditional: ConditionalHeaders,
+    timeout: Duration,
+    direct: bool,
+    accept_success: bool,
+) -> Result<FetchResult, FetchError> {
+    let initial = Url::parse(source).map_err(|_| FetchError::InvalidUrl)?;
+    if accept_success {
+        validate_resource_url(&initial, None)?;
+    } else {
+        validate_source_url(source)?;
+    }
+    tokio::time::timeout(
+        timeout,
+        fetch_with_redirects(
+            client,
+            initial,
+            conditional,
+            HeaderMap::new(),
+            |_, _| {},
+            (accept_success, direct),
+        ),
+    )
+    .await
+    .map_err(|_| FetchError::Timeout)?
+}
+
+/// 只记录类型化真实失败原因。reqwest 错误的 Display 可含秘密 URL，禁止转发。
+pub(crate) fn request_error(error: reqwest::Error) -> FetchError {
+    if error.is_timeout() {
+        return FetchError::Timeout;
+    }
+    if let Some(status) = error.status() {
+        return FetchError::HttpStatus(status.as_u16());
+    }
+    let mut source = std::error::Error::source(&error);
+    while let Some(cause) = source {
+        if let Some(reason) = cause.downcast_ref::<FetchError>() {
+            return *reason;
+        }
+        if cause
+            .downcast_ref::<super::outbound::BootstrapDnsError>()
+            .is_some()
+        {
+            return FetchError::DnsFailed;
+        }
+        if let Some(tls) = cause.downcast_ref::<rustls::Error>() {
+            return if matches!(tls, rustls::Error::InvalidCertificate(_)) {
+                FetchError::CertificateInvalid
+            } else {
+                FetchError::TlsFailed
+            };
+        }
+        if let Some(io) = cause.downcast_ref::<std::io::Error>() {
+            if io.kind() == std::io::ErrorKind::ConnectionRefused {
+                return FetchError::ConnectionRefused;
+            }
+            if let Some(tls) = io.get_ref().and_then(|v| v.downcast_ref::<rustls::Error>()) {
+                return if matches!(tls, rustls::Error::InvalidCertificate(_)) {
+                    FetchError::CertificateInvalid
+                } else {
+                    FetchError::TlsFailed
+                };
+            }
+        }
+        // hyper-rustls 把握手 io::Error 再包进 io::Error::other；
+        // Error::source 会跳过内部包装，必须读 get_ref 才能保留证书原因。
+        source = if let Some(inner) = cause
+            .downcast_ref::<std::io::Error>()
+            .and_then(std::io::Error::get_ref)
+        {
+            Some(inner)
+        } else {
+            cause.source()
+        };
+    }
+    if error.is_connect() {
+        FetchError::ConnectFailed
+    } else if error.is_body() {
+        FetchError::ReadFailed
+    } else {
+        FetchError::RequestFailed
+    }
+}
+
+pub(crate) fn validate_resource_url(
+    url: &Url,
+    initial_scheme: Option<&str>,
+) -> Result<(), FetchError> {
+    if url.as_str().len() > 8192
+        || !url.username().is_empty()
+        || url.password().is_some()
+        || url.host_str().is_none()
+        || !matches!(url.scheme(), "http" | "https")
+        || (initial_scheme == Some("https") && url.scheme() != "https")
+    {
+        return Err(FetchError::InvalidUrl);
+    }
+    Ok(())
 }
 
 pub fn validate_source_url(source: &str) -> Result<(), FetchError> {
@@ -666,7 +811,7 @@ mod tests {
             ));
         server.join().expect("server exits");
 
-        assert_eq!(result, Err(FetchError::RequestFailed));
+        assert_eq!(result, Err(FetchError::Timeout));
     }
 
     #[test]

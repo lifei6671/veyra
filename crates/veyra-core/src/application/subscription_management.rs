@@ -2,9 +2,8 @@ pub mod preview;
 
 use std::{
     collections::{HashMap, HashSet},
-    num::NonZeroU16,
     sync::{
-        Arc, Mutex, RwLock,
+        Arc, Mutex,
         atomic::{AtomicBool, Ordering},
     },
     time::{Duration, SystemTime, UNIX_EPOCH},
@@ -28,10 +27,11 @@ use crate::{
     storage::{JsonStateStore, StateStore},
     subscription::{
         ConditionalHeaders, DocumentError, DocumentErrorCode, FetchClientOptions, FetchError,
-        FetchResult, fetch_subscription_with_options, parse_exact_document, parse_subscription,
-        validate_source_url,
+        FetchResult, parse_exact_document, parse_subscription, validate_source_url,
     },
 };
+
+use crate::subscription::outbound::{OutboundClient, OutboundError, ProxySource, RoutePolicy};
 
 const MAX_CONTENT_BYTES: usize = 4 * 1024 * 1024;
 
@@ -309,6 +309,7 @@ pub enum SubscriptionOperationError {
     InvalidInput,
     Busy,
     FetchFailed,
+    Network(FetchError),
     ParseFailed,
     NormalizationFailed,
     ValidationFailed,
@@ -331,6 +332,9 @@ impl std::fmt::Display for SubscriptionOperationError {
             Self::InvalidInput => "subscription input is invalid",
             Self::Busy => "subscription state is busy",
             Self::FetchFailed => "subscription fetch failed",
+            Self::Network(error) => {
+                return write!(formatter, "subscription request failed: {error:?}");
+            }
             Self::ParseFailed => "subscription parsing failed",
             Self::NormalizationFailed => "subscription normalization failed",
             Self::ValidationFailed => "subscription candidate is invalid",
@@ -359,8 +363,7 @@ pub struct SubscriptionManager {
     closing_tx: tokio::sync::watch::Sender<bool>,
     process_deadlines: Mutex<HashMap<String, u64>>,
     change_sink: Mutex<Option<SubscriptionChangeSink>>,
-    managed_proxy_port: RwLock<Option<NonZeroU16>>,
-    system_proxy_url: fn() -> Result<String, SubscriptionOperationError>,
+    managed_proxy: ProxySource,
     identity_source: fn() -> Result<[u8; 16], ()>,
     clock: fn() -> Result<u64, ()>,
 }
@@ -380,18 +383,10 @@ impl SubscriptionManager {
             closing_tx,
             process_deadlines: Mutex::new(HashMap::new()),
             change_sink: Mutex::new(None),
-            managed_proxy_port: RwLock::new(None),
-            system_proxy_url: || Err(SubscriptionOperationError::SystemProxyUnavailable),
+            managed_proxy: Default::default(),
             identity_source: system_identity,
             clock: system_clock_ms,
         })
-    }
-
-    pub fn set_system_proxy_url_reader(
-        &mut self,
-        reader: fn() -> Result<String, SubscriptionOperationError>,
-    ) {
-        self.system_proxy_url = reader;
     }
 
     pub fn list(&self) -> Result<Vec<SubscriptionSummary>, SubscriptionOperationError> {
@@ -1522,11 +1517,8 @@ impl SubscriptionManager {
         }
     }
 
-    pub fn set_managed_proxy_port(&self, port: Option<NonZeroU16>) {
-        *self
-            .managed_proxy_port
-            .write()
-            .expect("managed subscription proxy port lock") = port;
+    pub fn bind_managed_proxy_source(&mut self, source: ProxySource) {
+        self.managed_proxy = source;
     }
 
     fn ensure_commit_open(&self) -> Result<(), SubscriptionOperationError> {
@@ -1559,20 +1551,18 @@ impl SubscriptionManager {
             Some(UpdateRouteOverride::ManagedCore) => SubscriptionProxyMode::ManagedCore,
             None => remote.proxy_mode,
         };
-        let proxy_url = match mode {
-            SubscriptionProxyMode::Direct => None,
-            SubscriptionProxyMode::System => Some((self.system_proxy_url)()?),
-            SubscriptionProxyMode::ManagedCore => {
-                let port = *self
-                    .managed_proxy_port
-                    .read()
-                    .expect("managed subscription proxy port lock");
-                Some(format!(
-                    "http://127.0.0.1:{}",
-                    port.ok_or(SubscriptionOperationError::ProxyUnavailable)?
-                        .get()
-                ))
+        let policy = match mode {
+            SubscriptionProxyMode::Direct => RoutePolicy::Direct,
+            // 历史 System 值不再授权第三方代理，也不 reinterpret 成 Direct。
+            SubscriptionProxyMode::System => {
+                return Err(SubscriptionOperationError::SystemProxyUnavailable);
             }
+            SubscriptionProxyMode::ManagedCore => RoutePolicy::ViaRunningProxy(
+                self.managed_proxy
+                    .current()
+                    .filter(|proxy| proxy.is_valid())
+                    .ok_or(SubscriptionOperationError::ProxyUnavailable)?,
+            ),
         };
         if self.is_closing() {
             return Err(SubscriptionOperationError::Busy);
@@ -1581,10 +1571,11 @@ impl SubscriptionManager {
         let options = FetchClientOptions {
             user_agent: remote.user_agent.clone(),
             timeout: Duration::from_secs(u64::from(remote.timeout_seconds)),
-            proxy_url,
+            proxy_url: None,
             verify_tls: remote.verify_tls,
         };
-        let fetch = fetch_subscription_with_options(url, conditional, &options);
+        let client = OutboundClient::new(policy, &options).map_err(map_outbound_error)?;
+        let fetch = client.fetch(url, conditional);
         match select(
             Box::pin(closing.wait_for(|closing| *closing)),
             Box::pin(fetch),
@@ -1595,7 +1586,7 @@ impl SubscriptionManager {
                 let _ = result;
                 Err(SubscriptionOperationError::Busy)
             }
-            Either::Right((result, _)) => result.map_err(map_fetch_error),
+            Either::Right((result, _)) => result.map_err(map_outbound_error),
         }
     }
 
@@ -1659,8 +1650,7 @@ impl SubscriptionManager {
             closing_tx,
             process_deadlines: Mutex::new(HashMap::new()),
             change_sink: Mutex::new(None),
-            managed_proxy_port: RwLock::new(None),
-            system_proxy_url: || Err(SubscriptionOperationError::SystemProxyUnavailable),
+            managed_proxy: Default::default(),
             identity_source,
             clock,
         }
@@ -2066,6 +2056,7 @@ fn map_document_subscription_error(error: SubscriptionOperationError) -> Documen
             DocumentOperationError::UnsupportedClashProviders
         }
         SubscriptionOperationError::FetchFailed
+        | SubscriptionOperationError::Network(_)
         | SubscriptionOperationError::CacheUnavailable
         | SubscriptionOperationError::IdentityFailed
         | SubscriptionOperationError::ProxyUnavailable
@@ -2162,8 +2153,13 @@ fn map_url_error(_: FetchError) -> SubscriptionOperationError {
     SubscriptionOperationError::InvalidInput
 }
 
-fn map_fetch_error(_: FetchError) -> SubscriptionOperationError {
-    SubscriptionOperationError::FetchFailed
+fn map_outbound_error(error: OutboundError) -> SubscriptionOperationError {
+    match error {
+        OutboundError::ProxyUnavailable | OutboundError::InvalidProxy => {
+            SubscriptionOperationError::ProxyUnavailable
+        }
+        OutboundError::Fetch(error) => SubscriptionOperationError::Network(error),
+    }
 }
 
 fn map_replacement_error(error: ProviderReplacementError) -> SubscriptionOperationError {
@@ -2247,9 +2243,9 @@ mod tests {
     // Protects System-mode downloads: platform lookup failures must reach the caller
     // before any HTTP request, and the entrypoint's reader must be the sole source.
     #[test]
-    fn system_download_uses_injected_reader_and_preserves_unavailability() {
+    fn legacy_system_download_reports_unsupported_without_network_io() {
         let path = isolated_state_file("system-proxy-reader");
-        let mut manager = manager(path.clone());
+        let manager = manager(path.clone());
         let remote = RemoteRequestOptions {
             proxy_mode: SubscriptionProxyMode::System,
             ..RemoteRequestOptions::default_remote()
@@ -2266,16 +2262,6 @@ mod tests {
                 None
             )),
             Err(SubscriptionOperationError::SystemProxyUnavailable)
-        );
-        manager.set_system_proxy_url_reader(|| Err(SubscriptionOperationError::ProxyUnavailable));
-        assert_eq!(
-            runtime.block_on(manager.fetch_remote(
-                "https://example.invalid/sub",
-                ConditionalHeaders::default(),
-                &remote,
-                None
-            )),
-            Err(SubscriptionOperationError::ProxyUnavailable)
         );
         if let Some(parent) = path.parent() {
             let _ = std::fs::remove_dir_all(parent);
@@ -3234,7 +3220,9 @@ mod tests {
                 .build()
                 .expect("test runtime")
                 .block_on(manager.update(imported.id.clone(), None)),
-            Err(SubscriptionOperationError::FetchFailed)
+            Err(SubscriptionOperationError::Network(
+                FetchError::ConnectionRefused
+            ))
         );
         let state = manager.store.load().expect("load failed attempt marker");
         assert_eq!(state.subscriptions[0].last_attempt_at_ms, Some(2_000));
@@ -3825,7 +3813,9 @@ mod tests {
                     remote_request: None,
                     update_policy: None,
                 })),
-            Err(SubscriptionOperationError::FetchFailed)
+            Err(SubscriptionOperationError::Network(FetchError::HttpStatus(
+                500
+            )))
         );
         failed_server.join().expect("failed-url fixture exits");
         let after_failure = manager.store.load().expect("load after failed URL");
@@ -3944,7 +3934,10 @@ mod tests {
                 )),
             Err(SubscriptionOperationError::ProxyUnavailable)
         );
-        manager.set_managed_proxy_port(NonZeroU16::new(address.port()));
+        manager.managed_proxy.publish(
+            crate::subscription::outbound::RunningProxy::ready("fixture-instance".into(), address)
+                .unwrap(),
+        );
         let update = tokio::runtime::Builder::new_multi_thread()
             .worker_threads(2)
             .enable_all()
