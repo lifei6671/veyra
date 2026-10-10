@@ -1,3 +1,7 @@
+**P0-09 当前文档验收 / DONE（2026-10-10）**：同一WorkRun `work-23397-1791598715449274-213`，Host建树CommandRun `command-23397-1791598722823333-214`；基线主HEAD/隔离HEAD `b90f612d828dcb1e957cbd0755f1738f5e43206a`，分支 `dev/p0-09-stage-estimate`。用户正式批准首版macOS15+，维持兼容目标；固定P0-08内核minOS26.0和15未实机验收事实保留，兼容资产取得/构建与最低设备验证归P7-03/P6-05/P7-05。已按授权只读核验主树历史原索引/全文件SHA，四项文档验收、本轮校验及独立Review通过，owner/文档预约释放。DONE30 / ACCEPTANCE1 / DOING1 / READY0 / TODO29 / DEFERRED7，macOS30/61；P2-05 ACCEPTANCE、P2-06 DOING及原owner不变，P7-05仍TODO，READY=[]。P1～P7正式剩余163–326人日/中点244.5，已含一次4–9兼容增量；Windows49–97、Linux条件38–76，不等于日历工期。见[阶段验收与逐卡估算](P0-09-stage-review.md)、[验证](evidence/p0-09/validation.json)、[本轮独立Review](evidence/p0-09/REVIEW.md)。全部写入隔离树，主树仅授权历史证据只读，无缓存修改；未stage/commit/merge/push/发布，Host独立收口。
+
+**以下“当前交付”历史流各段保留当时原文；本轮状态以上段和下方Active Tasks/Ready Queue为准。**
+
 **P0-08 最终 macOS DONE（2026-10-10，当前）**：原浏览器候选ZIP一致，Finder独立Downloads解压保留quarantine；实际用户正常单应用授权，真实GPUI窗口/交互、关闭→用户托盘恢复/退出及系统voluntary exit0/全部PID清理通过；独立Review无剩余代码Finding。本卡owner/预约释放，原FAIL和未截图的授权中间页/托盘菜单边界保留，GitHub远端资产下载仍NOT_RUN，无push/发布。P2-05 ACCEPTANCE、P2-06 DOING及原owner不变。68卡显式依赖重算：DONE29 / ACCEPTANCE1 / DOING1 / READY1 / TODO29 / DEFERRED7，无环；READY仅P0-09，未领取/启动。macOS29/61、P0为8/9。见[最终验收](P0-08-acceptance.md)。已本地独立提交f0fb874、测试夹具修复8e7bfde并合并1cd477e；主分支更新8/8/build/Core Clippy/fmt及包8/8通过，原首轮测试FAIL保留，见[Git/主分支收口](evidence/p0-08/main-revalidation-20261010/README.md)。下方旧日期计数保留历史，以本段和任务行为准。
 
 **P0-08 Desktop 接管 / ACCEPTANCE（2026-10-10，首轮历史）**：固定来源/版本检查、二进制下载/取消/大小/SHA256、手动交接与真实 Apple Silicon 原型包工程复核完成；修复 Python 优化模式跳过校验，Rust8/Python8及构建/Core Clippy/fmt/四二进制与外壳签名验证通过。真实 Edge loopback ZIP 下载与 quarantine PASS；GitHub 尚无 Release，远端下载 NOT_RUN。Finder 首开日志出现 Gatekeeper denial/amfid -423、无已确认 GUI，正常单应用授权/托盘退出仍 NOT_RUN；不能将静态签名通过当作可运行。P0-08 保持独立分支、ACCEPTANCE/owner；P2-05 ACCEPTANCE、P2-06 DOING 不变，不提交/合并/push/发布。68卡重新计算：DONE28 / ACCEPTANCE2 / DOING1 / READY0 / TODO30 / DEFERRED7，无环，无新增 READY。[验收记录](P0-08-acceptance.md)。下方带日期及旧计数保留历史，以本段和任务行为准。
@@ -201,7 +205,7 @@ P2-06 已阶段提交 `f2457e6a4e2fe0ac3c9186bc7d17323a70c4c0a8`，仍 DOING、�
 
 | 里程碑 | DONE / 任务数 | 当前结果 | 组合验收 |
 | --- | --- | --- | --- |
-| P0 基线与可行性 | 8 / 9 | P0-01/03/04/05/06/07完成；P0-06保留未证明组合的明确范围决定，历史限制保留 | P0-09 未开始 |
+| P0 基线与可行性 | 9 / 9 | P0-01～09 DONE；原型限制保留，15+路线已决定、兼容尚未验收 | P0-09 DONE；阶段审计与逐卡重估完成 |
 | P1 核心库与桌面壳 | 8 / 8 | 壳层/设置/基础组件视觉 PASS_WITH_TECHNICAL_DIFFERENCES；人工三轮、重启恢复、最终 Tray Quit 与清理 PASS；未实现业务页不计完成 | P1-07 DONE，组合 PASS |
 | P2 本机代理闭环 | 5 / 10 | P2-01/P2-02A/P2-02B/P2-03/P2-04 DONE；Host FINAL ACCEPTANCE PASS，Finding CLOSED | P2-09 未开始 |
 | P3 观测与主页面 | 3 / 8 | P3-01/P3-03/P3-04 DONE | P3-08 未开始 |
@@ -211,7 +215,7 @@ P2-06 已阶段提交 `f2457e6a4e2fe0ac3c9186bc7d17323a70c4c0a8`，仍 DOING、�
 | P7 数据与发布收尾 | 0 / 5 | 未开始，schema/清理按显式依赖等待 | P7-05 未开始 |
 | Windows W0–W3 | 0 / 7 | 后续排期 DEFERRED | W3-02 未开始 |
 
-macOS：**29 / 61 完成**；READY 1、TODO 29、DOING 1、REVIEW 0、ACCEPTANCE 1、BLOCKED 0。Windows 7 项 DEFERRED 单列，共 68 项。数量不等于工期权重或代码完成百分比；P1-04/P2-02/P4-05 父项被后缀子项替代，不重复计数。
+macOS：**30 / 61 完成**；READY 0、TODO 29、DOING 1、REVIEW 0、ACCEPTANCE 1、BLOCKED 0。Windows 7 项 DEFERRED 单列，共 68 项。数量不等于工期权重或代码完成百分比；P1-04/P2-02/P4-05 父项被后缀子项替代，不重复计数。
 
 ## 2 Active Tasks
 
@@ -220,7 +224,7 @@ macOS：**29 / 61 完成**；READY 1、TODO 29、DOING 1、REVIEW 0、ACCEPTANCE
 | P2-05 · ACCEPTANCE | Codex Desktop · Core 网络客户端 | 独立dev/p2-05-outbound-clients，未合并；不在本卡写入 | 指定节点Native503已关闭，用户选择等待完整网络组合验收 |
 | P2-06 · DOING | Codex · Runtime/Platform | helper production/IPC、Core Runtime DTO、desktop runtime_service/platform、局部 Cargo 接线、任务文档 | 观测接线增量与真实普通用户受管实例验收通过，P3-01已DONE；root安装/降权、GUI、Helper多轮与重启恢复等原缺口继续后续验收，Runtime/DTO owner保留；见[P2-06接线记录](P2-06-observation-integration.md) |
 
-P0-08 owner/预约已释放；原ZIP与Downloads App/evidence保留，本次GUI及系统XPC均退出，没有管理员helper或网络变更。
+P0-09文档owner/预约已释放；本轮无产品/OS/GUI资源，仅文档与两个被忽略收据交Host独立收口。P0-08 owner/预约已释放；原ZIP与Downloads App/evidence保留，本次GUI及系统XPC均退出，没有管理员helper或网络变更。
 
 P5-05 owner/预约已释放，自有GUI已停止、临时请求拦截/视口已清理，原图/bundle/隔离测试数据保留；详见[P5-05验收](P5-05-acceptance.md)。
 
@@ -240,7 +244,7 @@ P3-03 owner/预约已释放，真实日志页、最终 GUI 与独立 Review 通�
 
 | Task | 依赖满足依据 | owner / 下一动作 |
 | --- | --- | --- |
-| P0-09 | P0-01～P0-08全部DONE | 未领取；汇总原型身份/限制并重新估算，不启动正式发布 |
+| — | 当前无未领取且依赖已满足任务 | P0-09 DONE/owner释放；P7-05仍缺P7-03/P7-04，保持TODO |
 
 
 历史统计（P0-08领取前、P4-03旧ACCEPTANCE）：DONE27 / ACCEPTANCE2 / DOING1 / REVIEW0 / READY1 / TODO30 / BLOCKED0 / DEFERRED7；当时READY仅P0-08，未领取/未启动；P4-03当时ACCEPTANCE，独立切片未合并；P2-04 DONE、Finding CLOSED保持。P2-06 DOING、Runtime/Platform及Runtime公共契约owner=Codex；P2-07/P6依赖未满足，不转READY。其它状态/显式依赖不变。
@@ -249,7 +253,7 @@ P3-03 owner/预约已释放，真实日志页、最终 GUI 与独立 Review 通�
 
 ## 4 Blocked
 
-没有BLOCKED任务；P2-04 DONE、P2-04-PENDING-PERSISTENCE-001及前轮P1/P2 Finding CLOSED，owner/预约已释放；P2-06 DOING并保留Runtime/Platform owner。P2-04独立Git提交隔离曾BLOCKED，仅为当时版本控制基线阻断；现已随七任务提交链整合解除，不将已验收Task改为BLOCKED。P2-03-BACKEND-BASIC-SETTINGS-004/P2-03-VISUAL-FULL-PAGE-002/P2-03-VISUAL-FIDELITY-003 CLOSED，Host已确认Basic2 build功能与视觉“符合”；BUSY-001历史不改写。P2-01-VISUAL-FULL-PAGE-001 CLOSED，Host已确认build38-final完整页面“符合”。P0-05原卡真实GUI owner缺口已关闭，E按原始定义PASS；executable/service/root-total-deadline均optional hardening NOT_RUN。历史macOS15实机、字体/blur/截图等限制保留于原任务证据，不伪造新结果。
+没有BLOCKED状态任务；P0-09的最低OS决定/原证据追溯已闭合并DONE，兼容构建和15真机未验收归P7-03/P6-05/P7-05，不等于当前包支持15。P2-04 DONE、P2-04-PENDING-PERSISTENCE-001及前轮P1/P2 Finding CLOSED，owner/预约已释放；P2-06 DOING并保留Runtime/Platform owner。P2-04独立Git提交隔离曾BLOCKED，仅为当时版本控制基线阻断；现已随七任务提交链整合解除，不将已验收Task改为BLOCKED。P2-03-BACKEND-BASIC-SETTINGS-004/P2-03-VISUAL-FULL-PAGE-002/P2-03-VISUAL-FIDELITY-003 CLOSED，Host已确认Basic2 build功能与视觉“符合”；BUSY-001历史不改写。P2-01-VISUAL-FULL-PAGE-001 CLOSED，Host已确认build38-final完整页面“符合”。P0-05原卡真实GUI owner缺口已关闭，E按原始定义PASS；executable/service/root-total-deadline均optional hardening NOT_RUN。历史macOS15实机、字体/blur/截图等限制保留于原任务证据，不伪造新结果。
 
 ## 5 基线与验证记录
 
@@ -257,6 +261,7 @@ P3-03 owner/预约已释放，真实日志页、最终 GUI 与独立 Review 通�
 
 | 字段 | 当前基线 / 按日期保留的验证记录 |
 | --- | --- |
+| P0-09当前输入 | `b90f612d828dcb1e957cbd0755f1738f5e43206a`；`dev/p0-09-stage-estimate`，WorkRun work-23397-1791598715449274-213，仅隔离树文档 |
 | P0-06 本次验证 | [完整出站/范围调查](evidence/p0-06/20261006-144632/README.md)：新增9、默认core294/feature303串行、subscription68/bridge14/observation1、helper47与指定check/clippy/fmt/diff PASS；真实Direct/自有mixed两HTTPS均返回104.28.196.30，route仍utun7仅外部TUN观测。四组合UNSUPPORTED/INCOMPLETE明示；cleanup/主网络hash/P005保护/独立review PASS；原并行Document Busy与初轮fixture/clippy FAIL保留 |
 | 历史分支 / Host收口时提交基线 | `codex/dist-react-restore` / `0230aa72539375b622422e0e76e009a399b81669`；P2-01～P2-04基础仍有大量未提交/未跟踪内容，当前index无已暂存修改。P2-04 DONE但独立可重建提交隔离BLOCKED，未stage/commit、index不动；待Host后续基线整合，无下游启动 |
 | 当前分支 / 文档同步起点 | `codex/dist-react-restore` / `fdb8930a010ed321e496caa62a98257c64031b8a`；七任务提交链与远端历史合并已完成，产品文件树与 `dcc9b7b2` 一致；本轮仅四份文档同步，`.gitignore`、`AGENTS.md`、`.DS_Store` 保持原样 |
