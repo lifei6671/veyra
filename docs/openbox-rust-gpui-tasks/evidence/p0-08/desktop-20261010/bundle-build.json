@@ -1,0 +1,12 @@
+{
+  "command": [
+    "python3",
+    "tools/p0-08-package.py",
+    "build",
+    "--kernel-archive",
+    "/private/tmp/veyra-p402-check-20261008/sing-box.tar.gz",
+    "--output",
+    "target/p0-08-desktop"
+  ],
+  "exit_code": 0
+}

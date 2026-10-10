@@ -1,0 +1,124 @@
+Window: "隐私与安全", App: 系统设置.
+0 标准窗口 隐私与安全, ID: Main, Secondary Actions: Raise
+	1 分离组 Main, SidebarNavigationSplitView
+		2 滚动区 Secondary Actions: Scroll Up, Scroll Down
+			3 列表 Description: 边栏, ID: com.apple.settings.sidebar.collectionView
+				4 row (selectable)
+				5 row (selectable) 李飞麟、Apple账户
+				6 row (selectable) 家人共享
+				7 row (selectable)
+				8 row (selectable) Wi-Fi
+				9 row (selectable) 蓝牙
+				10 row (selectable) 网络
+				11 row (selectable) VPN
+				12 row (selectable) 电池
+				13 row (selectable)
+				14 row (selectable) 通用
+				15 row (selectable) 无障碍
+				16 row (selectable) 菜单栏
+				17 row (selectable) 聚焦
+				18 row (selectable) 墙纸
+				19 row (selectable) 外观
+				20 row (selectable) 显示器
+				21 row (selectable) 桌面与程序坞
+				22 row (selectable) Siri
+				23 row (selectable)
+				24 row (selectable) 通知
+				25 row (selectable) 声效
+				26 row (selectable) 专注模式
+				27 row (selectable) 屏幕时间
+				28 row (selectable)
+				29 row (selectable) 锁屏
+				30 row (selected) 隐私与安全
+				31 row (selectable) 触控ID与密码
+				32 row (selectable) 用户与群组
+				33 row (selectable)
+				34 row (selectable) 互联网账户
+				35 row (selectable) 钱包与Apple Pay
+				36 row (selectable) Game Center
+				37 row (selectable) iCloud
+				38 row (selectable)
+				39 row (selectable) 键盘
+				40 row (selectable) 触控板
+				41 row (selectable) 打印机与扫描仪
+			42 滚动条 (settable, float) 0.90625
+				43 值指示器 (settable, float) 0.90625
+				44 增箭头按钮
+				45 减箭头按钮
+				46 增页面按钮
+				47 减页面按钮
+		48 搜索文本栏 (settable) 搜索
+			49 按钮 搜索
+		50 分离器 (disabled, settable, float) 232
+		51 滚动区 Secondary Actions: Scroll Up, Scroll Down, Cancel
+			52 container
+				53 text 隐私 控制哪些App可访问你的数据、位置、相机和麦克风，以及管理安全保护。进一步了解…
+			54 按钮 Description: 定位服务、1, ID: 定位服务_Navigator, 0
+			55 container
+				56 按钮 Description: 访问网页浏览器的通行密钥、1个可完全访问, ID: 访问网页浏览器的通行密钥_Navigator, 1
+				57 按钮 Description: 家庭、无, ID: 家庭_Navigator, 0
+				58 按钮 Description: 联系人、无, ID: 联系人_Navigator, 0
+				59 按钮 Description: 媒体与Apple Music、4个App, ID: 媒体与Apple Music_Navigator, 4
+				60 按钮 Description: 日历、无, ID: 日历_Navigator, 0
+				61 按钮 Description: 提醒事项、无, ID: 提醒事项_Navigator, 0
+				62 按钮 Description: 完全磁盘访问权限、1个可完全访问, ID: 完全磁盘访问权限_Navigator, 13
+				63 按钮 Description: 文件与文件夹、10个App, ID: 文件与文件夹_Navigator, 0
+				64 按钮 Description: 照片、1个可完全访问, ID: 照片_Navigator, 0
+			65 container
+				66 按钮 Description: 本地网络、19, ID: 本地网络_Navigator, 19
+				67 按钮 Description: 开发者工具、0, ID: 开发者工具_Navigator, 1
+				68 按钮 Description: 蓝牙、1, ID: 蓝牙_Navigator, 1
+				69 按钮 Description: 录屏与系统录音、8, ID: 录屏与系统录音_Navigator, 0
+				70 按钮 Description: 麦克风、3, ID: 麦克风_Navigator, 4
+				71 按钮 Description: 设备控制和数据访问、8, ID: 设备控制和数据访问_Navigator, 8
+				72 按钮 Description: 摄像头、0, ID: 摄像头_Navigator, 0
+				73 按钮 Description: 输入监控、1, ID: 输入监控_Navigator, 1
+				74 按钮 Description: 语音识别、0, ID: 语音识别_Navigator, 0
+				75 按钮 Description: 远程桌面、0, ID: 远程桌面_Navigator, 0
+				76 按钮 Description: 运动与健身、0, ID: 运动与健身_Navigator, 0
+				77 按钮 Description: 专注模式、1, ID: 专注模式_Navigator, 1
+				78 按钮 Description: 自动化、3, ID: 自动化_Navigator, 0
+				79 按钮 Description: App管理、1, ID: App管理_Navigator, 5
+			80 按钮 (disabled) Description: 敏感内容警告、打开, Help: 敏感内容警告已通过“屏幕时间”设置中的“通信安全”启用。, ID: Sensitive Content Warning_Navigator
+			81 按钮 Description: 屏蔽的联系人, ID: 屏蔽的联系人_Navigator, 0
+			82 container
+				83 按钮 Description: 分析与改进, ID: 分析与改进_Navigator, 0
+				84 按钮 Description: Apple广告, ID: Apple广告_Navigator, 0
+			85 标题 安全性
+			86 弹出式按钮 允许以下来源的应用程序, Value: App Store与已知开发者
+			87 container
+				88 按钮 已阻止“VeyraPrototype.app”以保护Mac。, Description: 仍要打开
+				89 文本 Apple无法验证“VeyraPrototype.app”是否包含可能危害Mac安全或泄漏隐私的恶意软件。
+			90 container
+				91 按钮 文件保险箱、打开
+				92 按钮 配件、询问
+				93 按钮 后台安全改进
+			94 按钮 Description: 锁定模式、关闭, ID: Lockdown Mode_Navigator
+			95 文本 Mac可以通过对App和功能应用安全限制来降低数字威胁风险。此模式主要面对容易遇到高风险状况的人，例如记者、活动人士和公众人物。
+			96 按钮 高级…
+			97 按钮 帮助
+			98 滚动条 (settable, float) 0
+				99 值指示器 (settable, float) 0
+				100 增箭头按钮
+				101 减箭头按钮
+				102 增页面按钮
+				103 减页面按钮
+	104 工具栏
+		105 container
+			106 按钮 Description: 返回, ID: chevron.backward
+			107 菜单按钮 (disabled) Description: 前进, ID: chevron.forward
+	108 关闭按钮
+	109 缩放按钮
+	110 最小化按钮
+	111 文本 隐私与安全
+112 menu bar
+	113 系统设置
+	114 编辑
+	115 显示
+	116 窗口
+	117 帮助
+
+Selected:
+	30 row (selected)
+
+Note: Pay special attention to the content selected by the user. If the user asks a question or refers to the content they are looking at on-screen, they might be referring to the selected content (but they might be referring to something else that's visible, too).

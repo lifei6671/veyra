@@ -1,0 +1,341 @@
+Timestamp               Ty Process[PID:TID]
+2026-10-10 09:44:41.521 Df syspolicyd[670:6483fc] [com.apple.syspolicy.exec:default] GK evaluateScanResult: 2, PST: (path: 42df07999542ac2), (team: (null)), (id: me.veyra.gpui-prototype), (bundle_id: me.veyra.gpui-prototype), 0, 0, 1, 0, 0, 0, 0
+2026-10-10 09:44:41.521 Df syspolicyd[670:6483fc] [com.apple.syspolicy.exec:default] Found provenance data on target: TA(67f88f0024e0de1a, 2), PST: (path: 42df07999542ac2), (team: (null)), (id: me.veyra.gpui-prototype), (bundle_id: me.veyra.gpui-prototype)
+2026-10-10 09:44:41.521 Df syspolicyd[670:6483fc] [com.apple.syspolicy.exec:default] Created provenance data for target: TA(67f88f0024e0de1a, 2), PST: (path: 42df07999542ac2), (team: (null)), (id: me.veyra.gpui-prototype), (bundle_id: me.veyra.gpui-prototype)
+2026-10-10 09:45:10.271 Df syspolicyd[670:648ecb] [com.apple.syspolicy.exec:default] GK evaluateScanResult: 2, PST: (path: feef47cf11a3d61a), (team: (null)), (id: me.veyra.gpui-prototype), (bundle_id: me.veyra.gpui-prototype), 0, 0, 1, 0, 0, 0, 0
+2026-10-10 09:45:10.272 Df syspolicyd[670:648ecb] [com.apple.syspolicy.exec:default] Found provenance data on target: TA(67f88f0024e0de1a, 2), PST: (path: feef47cf11a3d61a), (team: (null)), (id: me.veyra.gpui-prototype), (bundle_id: me.veyra.gpui-prototype)
+2026-10-10 09:45:10.272 Df syspolicyd[670:648ecb] [com.apple.syspolicy.exec:default] Created provenance data for target: TA(67f88f0024e0de1a, 2), PST: (path: feef47cf11a3d61a), (team: (null)), (id: me.veyra.gpui-prototype), (bundle_id: me.veyra.gpui-prototype)
+2026-10-10 09:45:12.496 Df syspolicyd[670:648dbe] [com.apple.syspolicy.exec:default] GK evaluateScanResult: 2, PST: (path: 167a5a234b526f25), (team: (null)), (id: me.veyra.gpui-prototype), (bundle_id: me.veyra.gpui-prototype), 0, 0, 1, 0, 0, 0, 0
+2026-10-10 09:45:12.497 Df syspolicyd[670:648dbe] [com.apple.syspolicy.exec:default] Found provenance data on target: TA(67f88f0024e0de1a, 2), PST: (path: 167a5a234b526f25), (team: (null)), (id: me.veyra.gpui-prototype), (bundle_id: me.veyra.gpui-prototype)
+2026-10-10 09:45:12.497 Df syspolicyd[670:648dbe] [com.apple.syspolicy.exec:default] Created provenance data for target: TA(67f88f0024e0de1a, 2), PST: (path: 167a5a234b526f25), (team: (null)), (id: me.veyra.gpui-prototype), (bundle_id: me.veyra.gpui-prototype)
+2026-10-10 09:46:53.142 Df CoreServicesUIAgent[917:649c1b] [com.apple.launchservices:uiagent] -[GKQuarantineResolver malwareCheckEnded:result:forURL:]: XProtect finished executable analysis {
+    XProtectCaspianContext =     {
+        LSDownloadContentTypeKey = "public.zip-archive";
+        LSDownloadCorrectedMIMETypeKey = "application/zip";
+        LSDownloadDepressRisk = 0;
+        LSDownloadDestinationURLKey = "file:///Users/lifeilin/wx_lifeilin/github.com/lifei6671/veyra/.worktrees/p0-08-update-distribution/target/p0-08-browser-download/VeyraPrototype-0.1.0-macos-arm64.zip";
+        LSDownloadRiskCategoryKey = LSRiskCategoryMayContainUnsafeExecutable;
+        LSDownloadRiskLevelKey = 3;
+        LSDownloadSuggestedFilenameKey = "VeyraPrototype-0.1.0-macos-arm64.zip";
+        "context:uti" = "public.zip-archive";
+        operation = "operation:lsopen";
+    };
+    XProtectMalwareType = 0;
+}
+2026-10-10 09:46:54.020 E  ArchiveService[10664:649dff] [com.apple.libsystem.sandbox:] sandbox_extension_issue_file failed for /.nofollow/Users/lifeilin/wx_lifeilin/github.com/lifei6671/veyra/.worktrees/p0-08-update-distribution/target/p0-08-browser-download/VeyraPrototype.app: 1 (Operation not permitted)
+2026-10-10 09:46:54.046 Df lsd[924:649e03] [com.apple.appinstallation:TransactionLog] me.veyra.gpui-prototype/Unknown Persona:5:5:1:1:Building bundle record for app
+2026-10-10 09:46:54.046 Df lsd[924:649e03] [com.apple.appinstallation:TransactionLog] me.veyra.gpui-prototype/Unknown Persona:5:5:2:1:Built bundle record for app
+2026-10-10 09:46:54.047 Df lsd[924:649e03] [com.apple.appinstallation:TransactionLog] me.veyra.gpui-prototype/Unknown Persona:5:4:2:1:_LSServerRegisterItemInfo result = 0
+2026-10-10 09:46:54.053 Df siriactionsd[964:649ab7] [com.apple.shortcuts:Daemon] Firing event: <distributed notification: com.apple.LaunchServices.applicationRegistered, userInfo: [AnyHashable("bundleIDs"): <__NSSingleObjectArrayI 0x7ce2d6f0c0>(
+me.veyra.gpui-prototype
+)
+, AnyHashable("isPlaceholder"): 0]>
+2026-10-10 09:46:54.060 Df dmd[945:1cbc] Received xpc stream event (distributed notification matching) with name: com.apple.LaunchServices.applicationRegistered user info: {
+    bundleIDs =     (
+        "me.veyra.gpui-prototype"
+    );
+    isPlaceholder = 0;
+}
+2026-10-10 09:46:54.213 Df linkd[936:649d99] [com.apple.appintents:IndexCoordinator] Starting task: Audit: Bundles: me.veyra.gpui-prototype
+2026-10-10 09:46:54.282 Df linkd[936:649d99] [com.apple.appintents:Indexing] Looking for bundle: me.veyra.gpui-prototype
+2026-10-10 09:46:54.291 Df linkd[936:649d99] [com.apple.appintents:IndexCoordinator] Finished task: Audit: Bundles: me.veyra.gpui-prototype
+2026-10-10 09:47:07.876 Df lsd[924:649fff] [com.apple.appinstallation:TransactionLog] me.veyra.gpui-prototype/Unknown Persona:5:5:1:1:Building bundle record for app
+2026-10-10 09:47:07.877 Df lsd[924:649fff] [com.apple.appinstallation:TransactionLog] me.veyra.gpui-prototype/Unknown Persona:5:5:2:1:Built bundle record for app
+2026-10-10 09:47:07.878 Df lsd[924:649fff] [com.apple.appinstallation:TransactionLog] me.veyra.gpui-prototype/Unknown Persona:5:4:2:1:_LSServerRegisterItemInfo result = 0
+2026-10-10 09:47:07.880 Df siriactionsd[964:649e46] [com.apple.shortcuts:Daemon] Firing event: <distributed notification: com.apple.LaunchServices.applicationRegistered, userInfo: [AnyHashable("bundleIDs"): <__NSSingleObjectArrayI 0x7ce2d6e9f0>(
+me.veyra.gpui-prototype
+)
+, AnyHashable("isPlaceholder"): 0]>
+2026-10-10 09:47:07.884 Df lsd[924:64a003] [com.apple.securityd:SecWarning] SecTranslocateCreateSecureDirectoryForURL: created /private/var/folders/sq/9tr34l617h5fp65hjxgvly140000gn/T/AppTranslocation/A391D83A-FFD2-4259-B943-9DF86781B60B/d/VeyraPrototype.app
+2026-10-10 09:47:07.894 Df runningboardd[601:649bbd] [com.apple.runningboard:general] Launch request for app<application.me.veyra.gpui-prototype.35333272.35333278(501)>[0] is using uid 501 (divined from auid 501 euid 501)
+2026-10-10 09:47:07.894 Df runningboardd[601:649bbd] [com.apple.runningboard:ttl] Acquiring assertion targeting app<application.me.veyra.gpui-prototype.35333272.35333278(501)> from originator [osservice<com.apple.coreservices.uiagent(501)>:917] with description <RBSAssertionDescriptor| "LS launch me.veyra.gpui-prototype" ID:601-917-61547 target:app<application.me.veyra.gpui-prototype.35333272.35333278(501)> attributes:[
+	<RBSDomainAttribute| domain:"com.apple.launchservicesd" name:"LaunchRoleUserInteractive" sourceEnvironment:"(null)">
+	]>
+2026-10-10 09:47:07.894 Df runningboardd[601:649bbd] [com.apple.runningboard:ttl] Assertion 601-917-61547 (target:app<application.me.veyra.gpui-prototype.35333272.35333278(501)>) will be created as active
+2026-10-10 09:47:07.894 Df runningboardd[601:649bbd] [com.apple.runningboard:process] Checking PreventLaunch: global:0 exPath:/private/var/folders/sq/9tr34l617h5fp65hjxgvly140000gn/T/AppTranslocation/A391D83A-FFD2-4259-B943-9DF86781B60B/d/VeyraPrototype.app/Contents/MacOS/veyra-gpui-prototype predicates:(null) allow:(null)
+2026-10-10 09:47:07.894 Df runningboardd[601:649bbd] [com.apple.runningboard:job] Creating and launching job for: app<application.me.veyra.gpui-prototype.35333272.35333278(501)>
+2026-10-10 09:47:07.894 Df runningboardd[601:649bbd] [com.apple.runningboard:general] _mutateContextIfNeeded called for me.veyra.gpui-prototype
+2026-10-10 09:47:07.894 Df runningboardd[601:649bbd] [com.apple.runningboard:job] app<application.me.veyra.gpui-prototype.35333272.35333278(501)>: -[RBPersonaManager personaForIdentity:context:personaUID:personaUniqueString:] required 0.000000 ms (wallclock); resolved to {4294967295, (null)}
+2026-10-10 09:47:07.899 Df dmd[945:1cbc] Received xpc stream event (distributed notification matching) with name: com.apple.LaunchServices.applicationRegistered user info: {
+    bundleIDs =     (
+        "me.veyra.gpui-prototype"
+    );
+    isPlaceholder = 0;
+}
+2026-10-10 09:47:07.902 Df linkd[936:649e2a] [com.apple.appintents:IndexCoordinator] Starting task: Audit: Bundles: me.veyra.gpui-prototype
+2026-10-10 09:47:07.905 Df amfid[542:649b88] /private/var/folders/sq/9tr34l617h5fp65hjxgvly140000gn/T/AppTranslocation/A391D83A-FFD2-4259-B943-9DF86781B60B/d/VeyraPrototype.app/Contents/MacOS/veyra-gpui-prototype not valid: Error Domain=AppleMobileFileIntegrityError Code=-423 "The file is adhoc signed or signed by an unknown certificate chain" UserInfo={NSURL=file:///private/var/folders/sq/9tr34l617h5fp65hjxgvly140000gn/T/AppTranslocation/A391D83A-FFD2-4259-B943-9DF86781B60B/d/VeyraPrototype.app/Contents/MacOS/veyra-gpui-prototype, NSLocalizedDescription=The file is adhoc signed or signed by an unknown certificate chain}
+2026-10-10 09:47:07.907 Df runningboardd[601:649bbd] [com.apple.runningboard:process] [app<application.me.veyra.gpui-prototype.35333272.35333278(501)>:10726] is not RunningBoard jetsam managed.
+2026-10-10 09:47:07.907 Df runningboardd[601:649bbd] [com.apple.runningboard:process] [app<application.me.veyra.gpui-prototype.35333272.35333278(501)>:10726] This process will not be managed.
+2026-10-10 09:47:07.907 Df runningboardd[601:649bbd] [com.apple.runningboard:ttl] Now tracking process: [app<application.me.veyra.gpui-prototype.35333272.35333278(501)>:10726]
+2026-10-10 09:47:07.907 Df runningboardd[601:649c5e] [com.apple.runningboard:monitor] Calculated state for app<application.me.veyra.gpui-prototype.35333272.35333278(501)>: running-active (role: UserInteractive) (endowments: <private>)
+2026-10-10 09:47:07.907 Df runningboardd[601:649bbd] [com.apple.runningboard:assertion] Using default underlying assertion for app: [app<application.me.veyra.gpui-prototype.35333272.35333278(501)>:10726]
+2026-10-10 09:47:07.907 Df gamepolicyd[755:649d85] [com.apple.runningboard:process] Hit the server for a process handle b02f33d000029e6 that resolved to: [app<application.me.veyra.gpui-prototype.35333272.35333278(501)>:10726]
+2026-10-10 09:47:07.907 Df runningboardd[601:649bbd] [com.apple.runningboard:ttl] Acquiring assertion targeting [app<application.me.veyra.gpui-prototype.35333272.35333278(501)>:10726] from originator [app<application.me.veyra.gpui-prototype.35333272.35333278(501)>:10726] with description <RBSAssertionDescriptor| "RB Underlying Assertion" ID:601-601-61548 target:10726 attributes:[
+	<RBSDomainAttribute| domain:"com.apple.underlying" name:"defaultUnderlyingAppAssertion" sourceEnvironment:"(null)">,
+	<RBSAcquisitionCompletionAttribute| policy:AfterApplication>
+	]>
+2026-10-10 09:47:07.908 Df runningboardd[601:649bbd] [com.apple.runningboard:ttl] Assertion 601-601-61548 (target:[app<application.me.veyra.gpui-prototype.35333272.35333278(501)>:10726]) will be created as active
+2026-10-10 09:47:07.908 Df runningboardd[601:649d87] [com.apple.runningboard:process] [app<application.me.veyra.gpui-prototype.35333272.35333278(501)>:10726] Ignoring jetsam update because this process is not memory-managed
+2026-10-10 09:47:07.908 Df runningboardd[601:649d87] [com.apple.runningboard:process] [app<application.me.veyra.gpui-prototype.35333272.35333278(501)>:10726] Ignoring suspend because this process is not lifecycle managed
+2026-10-10 09:47:07.908 Df runningboardd[601:649d87] [com.apple.runningboard:ttl] [app<application.me.veyra.gpui-prototype.35333272.35333278(501)>:10726] Set darwin role to: UserInteractive
+2026-10-10 09:47:07.908 Df runningboardd[601:649d87] [com.apple.runningboard:process] [app<application.me.veyra.gpui-prototype.35333272.35333278(501)>:10726] Ignoring GPU update because this process is not GPU managed
+2026-10-10 09:47:07.908 Df runningboardd[601:649d87] [com.apple.runningboard:process] [app<application.me.veyra.gpui-prototype.35333272.35333278(501)>:10726] Ignoring memory limit update because this process is not memory-managed
+2026-10-10 09:47:07.908 Df runningboardd[601:649c5d] [com.apple.runningboard:general] [app<application.me.veyra.gpui-prototype.35333272.35333278(501)>:10726] reported to RB as running
+2026-10-10 09:47:07.908 Df runningboardd[601:649c5d] [com.apple.runningboard:monitor] Calculated state for app<application.me.veyra.gpui-prototype.35333272.35333278(501)>: running-active (role: UserInteractive) (endowments: <private>)
+2026-10-10 09:47:07.909 Df gamepolicyd[755:649d85] [com.apple.runningboard:monitor] Received state update for 10726 (app<application.me.veyra.gpui-prototype.35333272.35333278(501)>, running-active-NotVisible
+2026-10-10 09:47:07.909 Df gamepolicyd[755:649bc0] [com.apple.runningboard:monitor] Received state update for 10726 (app<application.me.veyra.gpui-prototype.35333272.35333278(501)>, running-active-NotVisible
+2026-10-10 09:47:07.910 Df runningboardd[601:649c5e] [com.apple.runningboard:ttl] Acquiring assertion targeting [app<application.me.veyra.gpui-prototype.35333272.35333278(501)>:10726] from originator [osservice<com.apple.coreservices.launchservicesd>:567] with description <RBSAssertionDescriptor| "foregroundApp:10726" ID:601-567-61549 target:10726 attributes:[
+	<RBSDomainAttribute| domain:"com.apple.launchservicesd" name:"RoleUserInteractiveNonFocal" sourceEnvironment:"(null)">
+	]>
+2026-10-10 09:47:07.910 Df runningboardd[601:649c5e] [com.apple.runningboard:ttl] Assertion 601-567-61549 (target:[app<application.me.veyra.gpui-prototype.35333272.35333278(501)>:10726]) will be created as active
+2026-10-10 09:47:07.910 Df runningboardd[601:649c5e] [com.apple.runningboard:monitor] Calculated state for app<application.me.veyra.gpui-prototype.35333272.35333278(501)>: running-active (role: UserInteractive) (endowments: <private>)
+2026-10-10 09:47:07.910 Df loginwindow[599:12e0] [com.apple.loginwindow.logging:Standard] -[Application _updateInformationInternal] | Got App URL: file:///Users/lifeilin/wx_lifeilin/github.com/lifei6671/veyra/.worktrees/p0-08-update-distribution/target/p0-08-browser-download/VeyraPrototype.app/
+2026-10-10 09:47:07.910 Df runningboardd[601:649c5e] [com.apple.runningboard:ttl] Invalidating assertion 601-917-61547 (target:app<application.me.veyra.gpui-prototype.35333272.35333278(501)>) from originator [osservice<com.apple.coreservices.uiagent(501)>:917]
+2026-10-10 09:47:07.911 Df lsd[619:649d6c] [com.apple.launchservices:default] register container file:///private/var/folders/sq/9tr34l617h5fp65hjxgvly140000gn/T/AppTranslocation/A391D83A-FFD2-4259-B943-9DF86781B60B/d/VeyraPrototype.app/
+2026-10-10 09:47:07.916 Df distnoted[902:64a040] [com.apple.distnoted:diagnostic] register name: com.apple.sharedfilelist.change object: com.apple.LSSharedFileList.ApplicationRecentDocuments/me.veyra.gpui-prototype token: 19500000056 pid: 1270
+2026-10-10 09:47:07.917 E  sharedfilelistd[985:64a068] [com.apple.sharedfilelist:default] SharedFileList com.apple.LSSharedFileList.ApplicationRecentDocuments/me.veyra.gpui-prototype failed to load.
+2026-10-10 09:47:07.917 Df loginwindow[599:12e0] [com.apple.loginwindow.logging:Standard] -[Application setState:] | enter: <Application: 0x7c02442d00: VeyraPrototype> state 2
+2026-10-10 09:47:07.917 Df loginwindow[599:12e0] [com.apple.loginwindow.logging:TAL] -[PersistentAppsSupport applicationReady:] | App: VeyraPrototype, ready, updating active tracking timer
+2026-10-10 09:47:07.917 Df loginwindow[599:12e0] [com.apple.loginwindow.logging:Standard] -[ApplicationManager checkInAppContext:eventData:] | ApplicationManager: Checked in app : VeyraPrototype
+2026-10-10 09:47:07.925 Df lsd[619:64a065] [com.apple.appinstallation:TransactionLog] me.veyra.gpui-prototype/Unknown Persona:5:5:1:1:Building bundle record for app
+2026-10-10 09:47:07.925 Df lsd[619:64a065] [com.apple.appinstallation:TransactionLog] me.veyra.gpui-prototype/Unknown Persona:5:5:2:1:Built bundle record for app
+2026-10-10 09:47:07.926 Df lsd[619:64a065] [com.apple.appinstallation:TransactionLog] me.veyra.gpui-prototype/Unknown Persona:5:4:2:1:_LSServerRegisterItemInfo result = 0
+2026-10-10 09:47:07.928 Df runningboardd[601:649d87] [com.apple.runningboard:process] [app<application.me.veyra.gpui-prototype.35333272.35333278(501)>:10726] Ignoring jetsam update because this process is not memory-managed
+2026-10-10 09:47:07.928 Df runningboardd[601:649d87] [com.apple.runningboard:process] [app<application.me.veyra.gpui-prototype.35333272.35333278(501)>:10726] Ignoring suspend because this process is not lifecycle managed
+2026-10-10 09:47:07.928 Df runningboardd[601:649d87] [com.apple.runningboard:process] [app<application.me.veyra.gpui-prototype.35333272.35333278(501)>:10726] Ignoring GPU update because this process is not GPU managed
+2026-10-10 09:47:07.928 Df runningboardd[601:649d87] [com.apple.runningboard:process] [app<application.me.veyra.gpui-prototype.35333272.35333278(501)>:10726] Ignoring memory limit update because this process is not memory-managed
+2026-10-10 09:47:07.928 Df runningboardd[601:649d87] [com.apple.runningboard:process] [app<application.me.veyra.gpui-prototype.35333272.35333278(501)>:10726] Ignoring jetsam update because this process is not memory-managed
+2026-10-10 09:47:07.928 Df runningboardd[601:649d87] [com.apple.runningboard:process] [app<application.me.veyra.gpui-prototype.35333272.35333278(501)>:10726] Ignoring suspend because this process is not lifecycle managed
+2026-10-10 09:47:07.928 Df runningboardd[601:649d87] [com.apple.runningboard:process] [app<application.me.veyra.gpui-prototype.35333272.35333278(501)>:10726] Ignoring GPU update because this process is not GPU managed
+2026-10-10 09:47:07.928 Df runningboardd[601:649d87] [com.apple.runningboard:process] [app<application.me.veyra.gpui-prototype.35333272.35333278(501)>:10726] Ignoring memory limit update because this process is not memory-managed
+2026-10-10 09:47:07.928 Df runningboardd[601:649c5c] [com.apple.runningboard:assertion] Successfully acquired underlying assertion for [app<application.me.veyra.gpui-prototype.35333272.35333278(501)>:10726]
+2026-10-10 09:47:07.929 Df nehelper[652:6477cc] [com.apple.networkextension:] Received an apps installed notification with bundle IDs (
+    "me.veyra.gpui-prototype"
+)
+2026-10-10 09:47:07.931 Df lsd[619:64a065] [com.apple.appinstallation:TransactionLog] me.veyra.gpui-prototype/Unknown Persona:5:5:1:1:Building bundle record for app
+2026-10-10 09:47:07.931 Df lsd[619:64a065] [com.apple.appinstallation:TransactionLog] me.veyra.gpui-prototype/Unknown Persona:5:5:2:1:Built bundle record for app
+2026-10-10 09:47:07.931 Df lsd[619:64a065] [com.apple.appinstallation:TransactionLog] me.veyra.gpui-prototype/Unknown Persona:5:4:2:1:_LSServerRegisterItemInfo result = 0
+2026-10-10 09:47:07.931 Df lsd[619:64a065] [com.apple.launchservices:default] register container file:///var/folders/sq/9tr34l617h5fp65hjxgvly140000gn/T/AppTranslocation/A391D83A-FFD2-4259-B943-9DF86781B60B/d/VeyraPrototype.app/
+2026-10-10 09:47:07.934 Df nehelper[652:6477cc] [com.apple.networkextension:] Received an apps installed notification with bundle IDs (
+    "me.veyra.gpui-prototype"
+)
+2026-10-10 09:47:07.936 Df lsd[619:64a065] [com.apple.appinstallation:TransactionLog] me.veyra.gpui-prototype/Unknown Persona:5:5:1:1:Building bundle record for app
+2026-10-10 09:47:07.936 Df lsd[619:64a065] [com.apple.appinstallation:TransactionLog] me.veyra.gpui-prototype/Unknown Persona:5:5:2:1:Built bundle record for app
+2026-10-10 09:47:07.936 Df lsd[619:64a065] [com.apple.appinstallation:TransactionLog] me.veyra.gpui-prototype/Unknown Persona:5:4:2:1:_LSServerRegisterItemInfo result = 0
+2026-10-10 09:47:07.939 Df nehelper[652:6477cc] [com.apple.networkextension:] Received an apps installed notification with bundle IDs (
+    "me.veyra.gpui-prototype"
+)
+2026-10-10 09:47:07.959 Df runningboardd[601:649c5e] [com.apple.runningboard:process] [app<application.me.veyra.gpui-prototype.35333272.35333278(501)>:10726] Ignoring jetsam update because this process is not memory-managed
+2026-10-10 09:47:07.959 Df runningboardd[601:649c5e] [com.apple.runningboard:process] [app<application.me.veyra.gpui-prototype.35333272.35333278(501)>:10726] Ignoring suspend because this process is not lifecycle managed
+2026-10-10 09:47:07.959 Df runningboardd[601:649c5e] [com.apple.runningboard:ttl] [app<application.me.veyra.gpui-prototype.35333272.35333278(501)>:10726] Set darwin role to: UserInteractiveNonFocal
+2026-10-10 09:47:07.959 Df runningboardd[601:649c5e] [com.apple.runningboard:process] [app<application.me.veyra.gpui-prototype.35333272.35333278(501)>:10726] Ignoring GPU update because this process is not GPU managed
+2026-10-10 09:47:07.959 Df runningboardd[601:649c5e] [com.apple.runningboard:process] [app<application.me.veyra.gpui-prototype.35333272.35333278(501)>:10726] Ignoring memory limit update because this process is not memory-managed
+2026-10-10 09:47:07.959 Df runningboardd[601:649c5d] [com.apple.runningboard:monitor] Calculated state for app<application.me.veyra.gpui-prototype.35333272.35333278(501)>: running-active (role: UserInteractiveNonFocal) (endowments: <private>)
+2026-10-10 09:47:08.001 Df linkd[936:649e2a] [com.apple.appintents:Indexing] Looking for bundle: me.veyra.gpui-prototype
+2026-10-10 09:47:08.011 Df linkd[936:649e2a] [com.apple.appintents:IndexCoordinator] Finished task: Audit: Bundles: me.veyra.gpui-prototype
+2026-10-10 09:47:08.013 Df gamepolicyd[755:64a05f] [com.apple.runningboard:monitor] Received state update for 10726 (app<application.me.veyra.gpui-prototype.35333272.35333278(501)>, running-active-NotVisible
+2026-10-10 09:47:08.220 Df lsd[924:649fff] [com.apple.launchservices:default] register container file:///private/var/folders/sq/9tr34l617h5fp65hjxgvly140000gn/T/AppTranslocation/A391D83A-FFD2-4259-B943-9DF86781B60B/d/VeyraPrototype.app/
+2026-10-10 09:47:08.220 Df lsd[924:649fff] [com.apple.launchservices:default] register container file:///private/var/folders/sq/9tr34l617h5fp65hjxgvly140000gn/T/AppTranslocation/A391D83A-FFD2-4259-B943-9DF86781B60B/d/VeyraPrototype.app/
+2026-10-10 09:47:08.228 Df lsd[924:649fff] [com.apple.appinstallation:TransactionLog] me.veyra.gpui-prototype/Unknown Persona:5:5:1:1:Building bundle record for app
+2026-10-10 09:47:08.228 Df lsd[924:649fff] [com.apple.appinstallation:TransactionLog] me.veyra.gpui-prototype/Unknown Persona:5:5:2:1:Built bundle record for app
+2026-10-10 09:47:08.228 Df lsd[924:649fff] [com.apple.appinstallation:TransactionLog] me.veyra.gpui-prototype/Unknown Persona:5:4:2:1:_LSServerRegisterItemInfo result = 0
+2026-10-10 09:47:08.229 Df siriactionsd[964:649e44] [com.apple.shortcuts:Daemon] Firing event: <distributed notification: com.apple.LaunchServices.applicationRegistered, userInfo: [AnyHashable("bundleIDs"): <__NSSingleObjectArrayI 0x7ce2d6e9f0>(
+me.veyra.gpui-prototype
+)
+, AnyHashable("isPlaceholder"): 0]>
+2026-10-10 09:47:08.231 Df dmd[945:1cbc] Received xpc stream event (distributed notification matching) with name: com.apple.LaunchServices.applicationRegistered user info: {
+    bundleIDs =     (
+        "me.veyra.gpui-prototype"
+    );
+    isPlaceholder = 0;
+}
+2026-10-10 09:47:08.232 Df lsd[924:649fff] [com.apple.appinstallation:TransactionLog] me.veyra.gpui-prototype/Unknown Persona:5:5:1:1:Building bundle record for app
+2026-10-10 09:47:08.232 Df lsd[924:649fff] [com.apple.appinstallation:TransactionLog] me.veyra.gpui-prototype/Unknown Persona:5:5:2:1:Built bundle record for app
+2026-10-10 09:47:08.233 Df lsd[924:649fff] [com.apple.appinstallation:TransactionLog] me.veyra.gpui-prototype/Unknown Persona:5:4:2:1:_LSServerRegisterItemInfo result = 0
+2026-10-10 09:47:08.233 Df siriactionsd[964:649e45] [com.apple.shortcuts:Daemon] Firing event: <distributed notification: com.apple.LaunchServices.applicationRegistered, userInfo: [AnyHashable("bundleIDs"): <__NSSingleObjectArrayI 0x7ce2d6e9f0>(
+me.veyra.gpui-prototype
+)
+, AnyHashable("isPlaceholder"): 0]>
+2026-10-10 09:47:08.234 Df linkd[936:649e2a] [com.apple.appintents:IndexCoordinator] Starting task: Audit: Bundles: me.veyra.gpui-prototype
+2026-10-10 09:47:08.235 Df dmd[945:1cbc] Received xpc stream event (distributed notification matching) with name: com.apple.LaunchServices.applicationRegistered user info: {
+    bundleIDs =     (
+        "me.veyra.gpui-prototype"
+    );
+    isPlaceholder = 0;
+}
+2026-10-10 09:47:08.335 Df linkd[936:649e2a] [com.apple.appintents:Indexing] Looking for bundle: me.veyra.gpui-prototype
+2026-10-10 09:47:08.346 Df linkd[936:649e2a] [com.apple.appintents:IndexCoordinator] Finished task: Audit: Bundles: me.veyra.gpui-prototype
+2026-10-10 09:47:08.346 Df linkd[936:64a08c] [com.apple.appintents:IndexCoordinator] Starting task: Audit: Bundles: me.veyra.gpui-prototype
+2026-10-10 09:47:08.390 Df linkd[936:64a08c] [com.apple.appintents:Indexing] Looking for bundle: me.veyra.gpui-prototype
+2026-10-10 09:47:08.401 Df linkd[936:64a08c] [com.apple.appintents:IndexCoordinator] Finished task: Audit: Bundles: me.veyra.gpui-prototype
+2026-10-10 09:47:08.525 Df nehelper[652:6477cc] [com.apple.networkextension:] Removing UUIDs for (
+    "me.veyra.gpui-prototype"
+)
+2026-10-10 09:47:08.528 Df nehelper[652:64a080] [com.apple.networkextension:] Handling an apps installed notification with bundle IDs (
+    "me.veyra.gpui-prototype"
+)
+2026-10-10 09:47:08.533 Df nehelper[652:6477cc] [com.apple.networkextension:] com.apple.preferences.networkprivacy-CDD3AC0C-9330-4F02-BAC6-2C23D7EE7E09: Populating the cache with 1 UUID(s) for me.veyra.gpui-prototype
+2026-10-10 09:47:08.561 Df nesessionmanager[573:6477d1] [com.apple.networkextension:] UUID: Found for me.veyra.gpui-prototype: (
+    "665E0065-9653-3B21-8D29-4C7D6E1DA6C4"
+)
+2026-10-10 09:47:08.753 Df syspolicyd[670:64a066] [com.apple.syspolicy.exec:default] GK evaluateScanResult: 0, PST: (path: e3ad5cf69ca27522), (team: (null)), (id: me.veyra.gpui-prototype), (bundle_id: me.veyra.gpui-prototype), 1, 0, 1, 0, 0, 0, 0
+2026-10-10 09:47:08.753 Df syspolicyd[670:64a066] [com.apple.syspolicy.exec:default] Prompt shown (6, 0), waiting for response: PST: (path: e3ad5cf69ca27522), (team: (null)), (id: me.veyra.gpui-prototype), (bundle_id: me.veyra.gpui-prototype)
+2026-10-10 09:47:13.416 Df runningboardd[601:649c5d] [com.apple.runningboard:assertion] Assertion did invalidate due to timeout: 601-601-61548 (target:[app<application.me.veyra.gpui-prototype.35333272.35333278(501)>:10726])
+2026-10-10 09:47:13.617 Df runningboardd[601:649c5c] [com.apple.runningboard:process] [app<application.me.veyra.gpui-prototype.35333272.35333278(501)>:10726] Ignoring jetsam update because this process is not memory-managed
+2026-10-10 09:47:13.617 Df runningboardd[601:649c5c] [com.apple.runningboard:process] [app<application.me.veyra.gpui-prototype.35333272.35333278(501)>:10726] Ignoring suspend because this process is not lifecycle managed
+2026-10-10 09:47:13.617 Df runningboardd[601:649c5c] [com.apple.runningboard:process] [app<application.me.veyra.gpui-prototype.35333272.35333278(501)>:10726] Ignoring GPU update because this process is not GPU managed
+2026-10-10 09:47:13.617 Df runningboardd[601:649c5c] [com.apple.runningboard:process] [app<application.me.veyra.gpui-prototype.35333272.35333278(501)>:10726] Ignoring memory limit update because this process is not memory-managed
+2026-10-10 09:47:13.623 Df runningboardd[601:649d86] [com.apple.runningboard:monitor] Calculated state for app<application.me.veyra.gpui-prototype.35333272.35333278(501)>: running-active (role: UserInteractiveNonFocal) (endowments: <private>)
+2026-10-10 09:47:13.623 Df gamepolicyd[755:649d85] [com.apple.runningboard:monitor] Received state update for 10726 (app<application.me.veyra.gpui-prototype.35333272.35333278(501)>, running-active-NotVisible
+2026-10-10 09:47:18.579 Df lsd[924:649cb6] [com.apple.appinstallation:TransactionLog] me.veyra.gpui-prototype/Unknown Persona:5:5:1:1:Building bundle record for app
+2026-10-10 09:47:18.579 Df lsd[924:649cb6] [com.apple.appinstallation:TransactionLog] me.veyra.gpui-prototype/Unknown Persona:5:5:2:1:Built bundle record for app
+2026-10-10 09:47:18.580 Df lsd[924:649cb6] [com.apple.appinstallation:TransactionLog] me.veyra.gpui-prototype/Unknown Persona:5:4:2:1:_LSServerRegisterItemInfo result = 0
+2026-10-10 09:47:18.583 Df siriactionsd[964:649e45] [com.apple.shortcuts:Daemon] Firing event: <distributed notification: com.apple.LaunchServices.applicationRegistered, userInfo: [AnyHashable("isPlaceholder"): 0, AnyHashable("bundleIDs"): <__NSSingleObjectArrayI 0x7ce2d6e790>(
+me.veyra.gpui-prototype
+)
+]>
+2026-10-10 09:47:18.584 Df dmd[945:1cbc] Received xpc stream event (distributed notification matching) with name: com.apple.LaunchServices.applicationRegistered user info: {
+    bundleIDs =     (
+        "me.veyra.gpui-prototype"
+    );
+    isPlaceholder = 0;
+}
+2026-10-10 09:47:18.586 Df linkd[936:649fea] [com.apple.appintents:IndexCoordinator] Starting task: Audit: Bundles: me.veyra.gpui-prototype
+2026-10-10 09:47:18.643 Df linkd[936:649fea] [com.apple.appintents:Indexing] Looking for bundle: me.veyra.gpui-prototype
+2026-10-10 09:47:18.675 Df linkd[936:649fea] [com.apple.appintents:IndexCoordinator] Finished task: Audit: Bundles: me.veyra.gpui-prototype
+2026-10-10 09:47:29.544 Df syspolicyd[670:64a066] [com.apple.syspolicy.exec:default] Adding Gatekeeper denial breadcrumb (open): PST: (path: e3ad5cf69ca27522), (team: (null)), (id: me.veyra.gpui-prototype), (bundle_id: me.veyra.gpui-prototype)
+2026-10-10 09:47:29.563 Df syspolicyd[670:64a066] [com.apple.syspolicy.exec:default] Created provenance data for target: TA(3e51244d44f83641, 0), PST: (path: e3ad5cf69ca27522), (team: (null)), (id: me.veyra.gpui-prototype), (bundle_id: me.veyra.gpui-prototype)
+2026-10-10 09:47:29.563 Df syspolicyd[670:64a066] [com.apple.syspolicy.exec:default] Wrote provenance data on target: TA(3e51244d44f83641, 0), PST: (path: e3ad5cf69ca27522), (team: (null)), (id: me.veyra.gpui-prototype), (bundle_id: me.veyra.gpui-prototype)
+2026-10-10 09:47:29.564 Df launchd[1:649de1] [gui/501 [100016]:] service inactive: application.me.veyra.gpui-prototype.35333272.35333278
+2026-10-10 09:47:29.565 Df runningboardd[601:64a2e4] [com.apple.runningboard:ttl] [app<application.me.veyra.gpui-prototype.35333272.35333278(501)>:10726] termination reported by launchd (9, 8, 9)
+2026-10-10 09:47:29.565 Df runningboardd[601:64a2e4] [com.apple.runningboard:process] Removing process: [app<application.me.veyra.gpui-prototype.35333272.35333278(501)>:10726]
+2026-10-10 09:47:29.565 Df runningboardd[601:64a2e4] [com.apple.runningboard:job] Removing launch job for: [app<application.me.veyra.gpui-prototype.35333272.35333278(501)>:10726]
+2026-10-10 09:47:29.565 Df launchd[1:64a057] [gui/501 [100016]:] removing service: application.me.veyra.gpui-prototype.35333272.35333278
+2026-10-10 09:47:29.565 Df runningboardd[601:64a2e4] [com.apple.runningboard:job] Removed job for [app<application.me.veyra.gpui-prototype.35333272.35333278(501)>:10726]
+2026-10-10 09:47:29.565 Df runningboardd[601:64a2e4] [com.apple.runningboard:process] Removing assertions for terminated process: [app<application.me.veyra.gpui-prototype.35333272.35333278(501)>:10726]
+2026-10-10 09:47:29.566 Df runningboardd[601:649d87] [com.apple.runningboard:monitor] Calculated state for app<application.me.veyra.gpui-prototype.35333272.35333278(501)>: none (role: None) (endowments: (null))
+2026-10-10 09:47:29.566 Df runningboardd[601:649c5e] [com.apple.runningboard:monitor] Calculated state for app<application.me.veyra.gpui-prototype.35333272.35333278(501)>: none (role: None) (endowments: (null))
+2026-10-10 09:47:29.569 Df gamepolicyd[755:649bc0] [com.apple.runningboard:monitor] Received state update for 10726 (app<application.me.veyra.gpui-prototype.35333272.35333278(501)>, none-NotVisible
+2026-10-10 09:47:29.569 Df launchservicesd[567:649cb9] [com.apple.runningboard:process] Hit the server for a process handle b02f33d000029e6 that resolved to: [app<application.me.veyra.gpui-prototype.35333272.35333278(501)>:10726]
+2026-10-10 09:47:29.572 Df loginwindow[599:12e0] [com.apple.loginwindow.logging:AppExit] -[ApplicationManager handleCASEvent:withData:] | CAS notification for appDeath for me.veyra.gpui-prototype with asn: LSASN:{0x0-0x3c03c0} for bundle path: /Users/lifeilin/wx_lifeilin/github.com/lifei6671/veyra/.worktrees/p0-08-update-distribution/target/p0-08-browser-download/VeyraPrototype.app with URL: file:///Users/lifeilin/wx_lifeilin/github.com/lifei6671/veyra/.worktrees/p0-08-update-distribution/target/p0-08-browser-download/VeyraPrototype.app/
+2026-10-10 09:47:29.572 Df loginwindow[599:12e0] [com.apple.loginwindow.logging:Standard] -[Application setState:] | enter: <Application: 0x7c02442d00: VeyraPrototype> state 3
+2026-10-10 09:47:29.572 Df loginwindow[599:12e0] [com.apple.loginwindow.logging:TAL] -[PersistentAppsSupport applicationQuit:] | for app:VeyraPrototype, _appTrackingState = 2
+2026-10-10 09:47:29.572 Df loginwindow[599:12e0] [com.apple.loginwindow.logging:TAL] -[PersistentAppsSupport applicationQuit:] | App: VeyraPrototype, quit, updating active tracking timer
+2026-10-10 09:47:29.573 Df loginwindow[599:12e0] [com.apple.loginwindow.logging:Standard] -[Application setState:] | enter: <Application: 0x7c02442d00: VeyraPrototype> state 4
+2026-10-10 09:47:29.573 Df loginwindow[599:12e0] [com.apple.loginwindow.logging:TAL] -[PersistentAppsSupport applicationQuit:] | for app:VeyraPrototype, _appTrackingState = 2
+2026-10-10 09:47:29.573 Df loginwindow[599:12e0] [com.apple.loginwindow.logging:TAL] -[PersistentAppsSupport applicationQuit:] | App: VeyraPrototype, quit, updating active tracking timer
+2026-10-10 09:47:35.885 Df lsd[924:649fff] [com.apple.appinstallation:TransactionLog] me.veyra.gpui-prototype/Unknown Persona:5:5:1:1:Building bundle record for app
+2026-10-10 09:47:35.885 Df lsd[924:649fff] [com.apple.appinstallation:TransactionLog] me.veyra.gpui-prototype/Unknown Persona:5:5:2:1:Built bundle record for app
+2026-10-10 09:47:35.886 Df lsd[924:649fff] [com.apple.appinstallation:TransactionLog] me.veyra.gpui-prototype/Unknown Persona:5:4:2:1:_LSServerRegisterItemInfo result = 0
+2026-10-10 09:47:35.891 Df siriactionsd[964:64a2a0] [com.apple.shortcuts:Daemon] Firing event: <distributed notification: com.apple.LaunchServices.applicationRegistered, userInfo: [AnyHashable("isPlaceholder"): 0, AnyHashable("bundleIDs"): <__NSSingleObjectArrayI 0x7ce2d6ea00>(
+me.veyra.gpui-prototype
+)
+]>
+2026-10-10 09:47:35.892 Df lsd[924:649fff] [com.apple.securityd:SecWarning] SecTranslocateCreateSecureDirectoryForURL: created /private/var/folders/sq/9tr34l617h5fp65hjxgvly140000gn/T/AppTranslocation/47021E19-918B-4C54-BB97-B37AA5293714/d/VeyraPrototype.app
+2026-10-10 09:47:35.905 Df dmd[945:1cbc] Received xpc stream event (distributed notification matching) with name: com.apple.LaunchServices.applicationRegistered user info: {
+    bundleIDs =     (
+        "me.veyra.gpui-prototype"
+    );
+    isPlaceholder = 0;
+}
+2026-10-10 09:47:35.908 Df runningboardd[601:649c5c] [com.apple.runningboard:general] Launch request for app<application.me.veyra.gpui-prototype.35333272.35333278(501)>[0] is using uid 501 (divined from auid 501 euid 501)
+2026-10-10 09:47:35.908 Df runningboardd[601:649c5c] [com.apple.runningboard:ttl] Acquiring assertion targeting app<application.me.veyra.gpui-prototype.35333272.35333278(501)> from originator [osservice<com.apple.coreservices.uiagent(501)>:917] with description <RBSAssertionDescriptor| "LS launch me.veyra.gpui-prototype" ID:601-917-61568 target:app<application.me.veyra.gpui-prototype.35333272.35333278(501)> attributes:[
+	<RBSDomainAttribute| domain:"com.apple.launchservicesd" name:"LaunchRoleUserInteractiveNonFocal" sourceEnvironment:"(null)">
+	]>
+2026-10-10 09:47:35.908 Df runningboardd[601:649c5c] [com.apple.runningboard:ttl] Assertion 601-917-61568 (target:app<application.me.veyra.gpui-prototype.35333272.35333278(501)>) will be created as active
+2026-10-10 09:47:35.909 Df runningboardd[601:649c5c] [com.apple.runningboard:process] Checking PreventLaunch: global:0 exPath:/private/var/folders/sq/9tr34l617h5fp65hjxgvly140000gn/T/AppTranslocation/47021E19-918B-4C54-BB97-B37AA5293714/d/VeyraPrototype.app/Contents/MacOS/veyra-gpui-prototype predicates:(null) allow:(null)
+2026-10-10 09:47:35.909 Df runningboardd[601:649c5c] [com.apple.runningboard:job] Creating and launching job for: app<application.me.veyra.gpui-prototype.35333272.35333278(501)>
+2026-10-10 09:47:35.909 Df runningboardd[601:649c5c] [com.apple.runningboard:general] _mutateContextIfNeeded called for me.veyra.gpui-prototype
+2026-10-10 09:47:35.909 Df runningboardd[601:649c5c] [com.apple.runningboard:job] app<application.me.veyra.gpui-prototype.35333272.35333278(501)>: -[RBPersonaManager personaForIdentity:context:personaUID:personaUniqueString:] required 0.000954 ms (wallclock); resolved to {4294967295, (null)}
+2026-10-10 09:47:35.909 Df launchd[1:64a476] Coalition Cache Hit: app<application.me.veyra.gpui-prototype.35333272.35333278(501)> [37137]
+2026-10-10 09:47:35.912 Df linkd[936:64a08b] [com.apple.appintents:IndexCoordinator] Starting task: Audit: Bundles: me.veyra.gpui-prototype
+2026-10-10 09:47:35.918 Df amfid[542:649b88] /private/var/folders/sq/9tr34l617h5fp65hjxgvly140000gn/T/AppTranslocation/47021E19-918B-4C54-BB97-B37AA5293714/d/VeyraPrototype.app/Contents/MacOS/veyra-gpui-prototype not valid: Error Domain=AppleMobileFileIntegrityError Code=-423 "The file is adhoc signed or signed by an unknown certificate chain" UserInfo={NSURL=file:///private/var/folders/sq/9tr34l617h5fp65hjxgvly140000gn/T/AppTranslocation/47021E19-918B-4C54-BB97-B37AA5293714/d/VeyraPrototype.app/Contents/MacOS/veyra-gpui-prototype, NSLocalizedDescription=The file is adhoc signed or signed by an unknown certificate chain}
+2026-10-10 09:47:35.920 Df runningboardd[601:649c5c] [com.apple.runningboard:process] [app<application.me.veyra.gpui-prototype.35333272.35333278(501)>:10840] is not RunningBoard jetsam managed.
+2026-10-10 09:47:35.920 Df runningboardd[601:649c5c] [com.apple.runningboard:process] [app<application.me.veyra.gpui-prototype.35333272.35333278(501)>:10840] This process will not be managed.
+2026-10-10 09:47:35.920 Df runningboardd[601:649c5c] [com.apple.runningboard:ttl] Now tracking process: [app<application.me.veyra.gpui-prototype.35333272.35333278(501)>:10840]
+2026-10-10 09:47:35.920 Df runningboardd[601:64a2e4] [com.apple.runningboard:monitor] Calculated state for app<application.me.veyra.gpui-prototype.35333272.35333278(501)>: running-active (role: UserInteractiveNonFocal) (endowments: <private>)
+2026-10-10 09:47:35.920 Df runningboardd[601:649c5c] [com.apple.runningboard:assertion] Using default underlying assertion for app: [app<application.me.veyra.gpui-prototype.35333272.35333278(501)>:10840]
+2026-10-10 09:47:35.920 Df runningboardd[601:649c5c] [com.apple.runningboard:ttl] Acquiring assertion targeting [app<application.me.veyra.gpui-prototype.35333272.35333278(501)>:10840] from originator [app<application.me.veyra.gpui-prototype.35333272.35333278(501)>:10840] with description <RBSAssertionDescriptor| "RB Underlying Assertion" ID:601-601-61569 target:10840 attributes:[
+	<RBSDomainAttribute| domain:"com.apple.underlying" name:"defaultUnderlyingAppAssertion" sourceEnvironment:"(null)">,
+	<RBSAcquisitionCompletionAttribute| policy:AfterApplication>
+	]>
+2026-10-10 09:47:35.920 Df runningboardd[601:649c5c] [com.apple.runningboard:ttl] Assertion 601-601-61569 (target:[app<application.me.veyra.gpui-prototype.35333272.35333278(501)>:10840]) will be created as active
+2026-10-10 09:47:35.920 Df gamepolicyd[755:649bc0] [com.apple.runningboard:process] Hit the server for a process handle 58bc84000002a58 that resolved to: [app<application.me.veyra.gpui-prototype.35333272.35333278(501)>:10840]
+2026-10-10 09:47:35.920 Df gamepolicyd[755:649bc0] [com.apple.runningboard:monitor] Received state update for 10840 (app<application.me.veyra.gpui-prototype.35333272.35333278(501)>, running-active-NotVisible
+2026-10-10 09:47:35.920 Df runningboardd[601:64a2ee] [com.apple.runningboard:process] [app<application.me.veyra.gpui-prototype.35333272.35333278(501)>:10840] Ignoring jetsam update because this process is not memory-managed
+2026-10-10 09:47:35.920 Df runningboardd[601:64a2ee] [com.apple.runningboard:process] [app<application.me.veyra.gpui-prototype.35333272.35333278(501)>:10840] Ignoring suspend because this process is not lifecycle managed
+2026-10-10 09:47:35.920 Df runningboardd[601:64a2ee] [com.apple.runningboard:ttl] [app<application.me.veyra.gpui-prototype.35333272.35333278(501)>:10840] Set darwin role to: UserInteractiveNonFocal
+2026-10-10 09:47:35.920 Df runningboardd[601:64a2ee] [com.apple.runningboard:process] [app<application.me.veyra.gpui-prototype.35333272.35333278(501)>:10840] Ignoring GPU update because this process is not GPU managed
+2026-10-10 09:47:35.920 Df runningboardd[601:64a2ee] [com.apple.runningboard:process] [app<application.me.veyra.gpui-prototype.35333272.35333278(501)>:10840] Ignoring memory limit update because this process is not memory-managed
+2026-10-10 09:47:35.920 Df runningboardd[601:649c5e] [com.apple.runningboard:general] [app<application.me.veyra.gpui-prototype.35333272.35333278(501)>:10840] reported to RB as running
+2026-10-10 09:47:35.920 Df runningboardd[601:649c5d] [com.apple.runningboard:monitor] Calculated state for app<application.me.veyra.gpui-prototype.35333272.35333278(501)>: running-active (role: UserInteractiveNonFocal) (endowments: <private>)
+2026-10-10 09:47:35.921 Df gamepolicyd[755:64a231] [com.apple.runningboard:monitor] Received state update for 10840 (app<application.me.veyra.gpui-prototype.35333272.35333278(501)>, running-active-NotVisible
+2026-10-10 09:47:35.921 Df lsd[619:649d6c] [com.apple.launchservices:default] register container file:///private/var/folders/sq/9tr34l617h5fp65hjxgvly140000gn/T/AppTranslocation/47021E19-918B-4C54-BB97-B37AA5293714/d/VeyraPrototype.app/
+2026-10-10 09:47:35.921 Df runningboardd[601:649c5e] [com.apple.runningboard:ttl] Acquiring assertion targeting [app<application.me.veyra.gpui-prototype.35333272.35333278(501)>:10840] from originator [osservice<com.apple.coreservices.launchservicesd>:567] with description <RBSAssertionDescriptor| "foregroundApp:10840" ID:601-567-61570 target:10840 attributes:[
+	<RBSDomainAttribute| domain:"com.apple.launchservicesd" name:"RoleUserInteractiveNonFocal" sourceEnvironment:"(null)">
+	]>
+2026-10-10 09:47:35.921 Df runningboardd[601:649c5e] [com.apple.runningboard:ttl] Assertion 601-567-61570 (target:[app<application.me.veyra.gpui-prototype.35333272.35333278(501)>:10840]) will be created as active
+2026-10-10 09:47:35.921 Df runningboardd[601:649c5e] [com.apple.runningboard:ttl] Invalidating assertion 601-917-61568 (target:app<application.me.veyra.gpui-prototype.35333272.35333278(501)>) from originator [osservice<com.apple.coreservices.uiagent(501)>:917]
+2026-10-10 09:47:35.922 Df runningboardd[601:64a2ef] [com.apple.runningboard:monitor] Calculated state for app<application.me.veyra.gpui-prototype.35333272.35333278(501)>: running-active (role: UserInteractiveNonFocal) (endowments: <private>)
+2026-10-10 09:47:35.922 Df loginwindow[599:12e0] [com.apple.loginwindow.logging:Standard] -[Application _updateInformationInternal] | Got App URL: file:///Users/lifeilin/wx_lifeilin/github.com/lifei6671/veyra/.worktrees/p0-08-update-distribution/target/p0-08-browser-download/VeyraPrototype.app/
+2026-10-10 09:47:35.922 Df runningboardd[601:64a2ee] [com.apple.runningboard:process] [app<application.me.veyra.gpui-prototype.35333272.35333278(501)>:10840] Ignoring jetsam update because this process is not memory-managed
+2026-10-10 09:47:35.922 Df runningboardd[601:64a2ee] [com.apple.runningboard:process] [app<application.me.veyra.gpui-prototype.35333272.35333278(501)>:10840] Ignoring suspend because this process is not lifecycle managed
+2026-10-10 09:47:35.922 Df runningboardd[601:64a2ee] [com.apple.runningboard:process] [app<application.me.veyra.gpui-prototype.35333272.35333278(501)>:10840] Ignoring GPU update because this process is not GPU managed
+2026-10-10 09:47:35.922 Df runningboardd[601:64a2ee] [com.apple.runningboard:process] [app<application.me.veyra.gpui-prototype.35333272.35333278(501)>:10840] Ignoring memory limit update because this process is not memory-managed
+2026-10-10 09:47:35.922 Df runningboardd[601:64a2ee] [com.apple.runningboard:process] [app<application.me.veyra.gpui-prototype.35333272.35333278(501)>:10840] Ignoring jetsam update because this process is not memory-managed
+2026-10-10 09:47:35.922 Df runningboardd[601:64a2ee] [com.apple.runningboard:process] [app<application.me.veyra.gpui-prototype.35333272.35333278(501)>:10840] Ignoring suspend because this process is not lifecycle managed
+2026-10-10 09:47:35.922 Df runningboardd[601:64a2ee] [com.apple.runningboard:process] [app<application.me.veyra.gpui-prototype.35333272.35333278(501)>:10840] Ignoring GPU update because this process is not GPU managed
+2026-10-10 09:47:35.922 Df runningboardd[601:64a2ee] [com.apple.runningboard:process] [app<application.me.veyra.gpui-prototype.35333272.35333278(501)>:10840] Ignoring memory limit update because this process is not memory-managed
+2026-10-10 09:47:35.922 Df runningboardd[601:649c5c] [com.apple.runningboard:assertion] Successfully acquired underlying assertion for [app<application.me.veyra.gpui-prototype.35333272.35333278(501)>:10840]
+2026-10-10 09:47:35.923 Df lsd[619:64a4d5] [com.apple.launchservices:default] register container file:///var/folders/sq/9tr34l617h5fp65hjxgvly140000gn/T/AppTranslocation/47021E19-918B-4C54-BB97-B37AA5293714/d/VeyraPrototype.app/
+2026-10-10 09:47:35.924 Df distnoted[902:64a040] [com.apple.distnoted:diagnostic] register name: com.apple.sharedfilelist.change object: com.apple.LSSharedFileList.ApplicationRecentDocuments/me.veyra.gpui-prototype token: 19700000057 pid: 1270
+2026-10-10 09:47:35.930 Df lsd[619:64a4d5] [com.apple.appinstallation:TransactionLog] me.veyra.gpui-prototype/Unknown Persona:5:5:1:1:Building bundle record for app
+2026-10-10 09:47:35.930 Df lsd[619:64a4d5] [com.apple.appinstallation:TransactionLog] me.veyra.gpui-prototype/Unknown Persona:5:5:2:1:Built bundle record for app
+2026-10-10 09:47:35.930 Df loginwindow[599:12e0] [com.apple.loginwindow.logging:Standard] -[Application setState:] | enter: <Application: 0x7c02442d00: VeyraPrototype> state 2
+2026-10-10 09:47:35.930 Df loginwindow[599:12e0] [com.apple.loginwindow.logging:TAL] -[PersistentAppsSupport applicationReady:] | App: VeyraPrototype, ready, updating active tracking timer
+2026-10-10 09:47:35.930 Df loginwindow[599:12e0] [com.apple.loginwindow.logging:Standard] -[ApplicationManager checkInAppContext:eventData:] | ApplicationManager: Checked in app : VeyraPrototype
+2026-10-10 09:47:35.931 Df lsd[619:64a4d5] [com.apple.appinstallation:TransactionLog] me.veyra.gpui-prototype/Unknown Persona:5:4:2:1:_LSServerRegisterItemInfo result = 0
+2026-10-10 09:47:35.931 Df nehelper[652:64a080] [com.apple.networkextension:] Received an apps installed notification with bundle IDs (
+    "me.veyra.gpui-prototype"
+)
+2026-10-10 09:47:35.934 Df lsd[619:64a4d5] [com.apple.appinstallation:TransactionLog] me.veyra.gpui-prototype/Unknown Persona:5:5:1:1:Building bundle record for app
+2026-10-10 09:47:35.934 Df lsd[619:64a4d5] [com.apple.appinstallation:TransactionLog] me.veyra.gpui-prototype/Unknown Persona:5:5:2:1:Built bundle record for app
+2026-10-10 09:47:35.935 Df lsd[619:64a4d5] [com.apple.appinstallation:TransactionLog] me.veyra.gpui-prototype/Unknown Persona:5:4:2:1:_LSServerRegisterItemInfo result = 0
+2026-10-10 09:47:35.935 Df nehelper[652:64a4e4] [com.apple.networkextension:] Received an apps installed notification with bundle IDs (
+    "me.veyra.gpui-prototype"
+)
+2026-10-10 09:47:35.952 Df linkd[936:64a08b] [com.apple.appintents:Indexing] Looking for bundle: me.veyra.gpui-prototype
+2026-10-10 09:47:35.959 Df linkd[936:64a08b] [com.apple.appintents:IndexCoordinator] Finished task: Audit: Bundles: me.veyra.gpui-prototype
+2026-10-10 09:47:36.025 Df gamepolicyd[755:649d85] [com.apple.runningboard:monitor] Received state update for 10840 (app<application.me.veyra.gpui-prototype.35333272.35333278(501)>, running-active-NotVisible
+2026-10-10 09:47:36.028 Df runningboardd[601:649c5d] [com.apple.runningboard:process] [app<application.me.veyra.gpui-prototype.35333272.35333278(501)>:10840] Ignoring jetsam update because this process is not memory-managed
+2026-10-10 09:47:36.028 Df runningboardd[601:649c5d] [com.apple.runningboard:process] [app<application.me.veyra.gpui-prototype.35333272.35333278(501)>:10840] Ignoring suspend because this process is not lifecycle managed
+2026-10-10 09:47:36.028 Df runningboardd[601:649c5d] [com.apple.runningboard:process] [app<application.me.veyra.gpui-prototype.35333272.35333278(501)>:10840] Ignoring GPU update because this process is not GPU managed
+2026-10-10 09:47:36.028 Df runningboardd[601:649c5d] [com.apple.runningboard:process] [app<application.me.veyra.gpui-prototype.35333272.35333278(501)>:10840] Ignoring memory limit update because this process is not memory-managed
+2026-10-10 09:47:36.028 Df runningboardd[601:64a2ef] [com.apple.runningboard:monitor] Calculated state for app<application.me.veyra.gpui-prototype.35333272.35333278(501)>: running-active (role: UserInteractiveNonFocal) (endowments: <private>)
+2026-10-10 09:47:36.031 Df gamepolicyd[755:649bc0] [com.apple.runningboard:monitor] Received state update for 10840 (app<application.me.veyra.gpui-prototype.35333272.35333278(501)>, running-active-NotVisible
+2026-10-10 09:47:36.530 Df nehelper[652:64a080] [com.apple.networkextension:] Removing UUIDs for (
+    "me.veyra.gpui-prototype"
+)
+2026-10-10 09:47:36.534 Df nehelper[652:64a4e4] [com.apple.networkextension:] Handling an apps installed notification with bundle IDs (
+    "me.veyra.gpui-prototype"
+)
+2026-10-10 09:47:36.541 Df nehelper[652:64a4e4] [com.apple.networkextension:] com.apple.preferences.networkprivacy-CDD3AC0C-9330-4F02-BAC6-2C23D7EE7E09: Populating the cache with 1 UUID(s) for me.veyra.gpui-prototype
+2026-10-10 09:47:38.205 Df launchd[1:64a476] [gui/501 [100016]:] service inactive: application.me.veyra.gpui-prototype.35333272.35333278
+2026-10-10 09:47:38.206 Df runningboardd[601:64a2e4] [com.apple.runningboard:ttl] [app<application.me.veyra.gpui-prototype.35333272.35333278(501)>:10840] termination reported by launchd (9, 8, 9)
+2026-10-10 09:47:38.206 Df runningboardd[601:64a2e4] [com.apple.runningboard:process] Removing process: [app<application.me.veyra.gpui-prototype.35333272.35333278(501)>:10840]
+2026-10-10 09:47:38.206 Df runningboardd[601:64a2e4] [com.apple.runningboard:job] Removing launch job for: [app<application.me.veyra.gpui-prototype.35333272.35333278(501)>:10840]
+2026-10-10 09:47:38.206 Df launchd[1:64a057] [gui/501 [100016]:] removing service: application.me.veyra.gpui-prototype.35333272.35333278
+2026-10-10 09:47:38.206 Df runningboardd[601:64a2e4] [com.apple.runningboard:job] Removed job for [app<application.me.veyra.gpui-prototype.35333272.35333278(501)>:10840]
+2026-10-10 09:47:38.206 Df runningboardd[601:64a2e4] [com.apple.runningboard:process] Removing assertions for terminated process: [app<application.me.veyra.gpui-prototype.35333272.35333278(501)>:10840]
+2026-10-10 09:47:38.207 Df runningboardd[601:64a2e4] [com.apple.runningboard:monitor] Calculated state for app<application.me.veyra.gpui-prototype.35333272.35333278(501)>: none (role: None) (endowments: (null))
+2026-10-10 09:47:38.207 Df runningboardd[601:64a2ee] [com.apple.runningboard:monitor] Calculated state for app<application.me.veyra.gpui-prototype.35333272.35333278(501)>: none (role: None) (endowments: (null))
+2026-10-10 09:47:38.208 Df gamepolicyd[755:649bc0] [com.apple.runningboard:monitor] Received state update for 10840 (app<application.me.veyra.gpui-prototype.35333272.35333278(501)>, none-NotVisible
+2026-10-10 09:47:38.208 Df launchservicesd[567:64a364] [com.apple.runningboard:process] Hit the server for a process handle 58bc84000002a58 that resolved to: [app<application.me.veyra.gpui-prototype.35333272.35333278(501)>:10840]
+2026-10-10 09:47:38.210 Df loginwindow[599:12e0] [com.apple.loginwindow.logging:AppExit] -[ApplicationManager handleCASEvent:withData:] | CAS notification for appDeath for me.veyra.gpui-prototype with asn: LSASN:{0x0-0x3c13c1} for bundle path: /Users/lifeilin/wx_lifeilin/github.com/lifei6671/veyra/.worktrees/p0-08-update-distribution/target/p0-08-browser-download/VeyraPrototype.app with URL: file:///Users/lifeilin/wx_lifeilin/github.com/lifei6671/veyra/.worktrees/p0-08-update-distribution/target/p0-08-browser-download/VeyraPrototype.app/
+2026-10-10 09:47:38.210 Df loginwindow[599:12e0] [com.apple.loginwindow.logging:Standard] -[Application setState:] | enter: <Application: 0x7c02442d00: VeyraPrototype> state 3
+2026-10-10 09:47:38.210 Df loginwindow[599:12e0] [com.apple.loginwindow.logging:TAL] -[PersistentAppsSupport applicationQuit:] | for app:VeyraPrototype, _appTrackingState = 2
+2026-10-10 09:47:38.210 Df loginwindow[599:12e0] [com.apple.loginwindow.logging:TAL] -[PersistentAppsSupport applicationQuit:] | App: VeyraPrototype, quit, updating active tracking timer
+2026-10-10 09:47:38.211 Df loginwindow[599:12e0] [com.apple.loginwindow.logging:Standard] -[Application setState:] | enter: <Application: 0x7c02442d00: VeyraPrototype> state 4
+2026-10-10 09:47:38.211 Df loginwindow[599:12e0] [com.apple.loginwindow.logging:TAL] -[PersistentAppsSupport applicationQuit:] | for app:VeyraPrototype, _appTrackingState = 2
+2026-10-10 09:47:38.211 Df loginwindow[599:12e0] [com.apple.loginwindow.logging:TAL] -[PersistentAppsSupport applicationQuit:] | App: VeyraPrototype, quit, updating active tracking timer
+2026-10-10 09:48:06.706 Df log[10948:64a86d] [com.apple.log:] log run noninteractively, parent: 10938 (Python), args: '/usr/bin/log' 'show' '--last' '5m' '--style' 'compact' '--predicate' 'eventMessage CONTAINS "VeyraPrototype" OR eventMessage CONTAINS "me.veyra.gpui-prototype"'

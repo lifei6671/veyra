@@ -1,0 +1,28 @@
+{
+  "result": "PASS_NATIVE_PROTOTYPE",
+  "time": "2026-10-10T10:05:11.134258+08:00",
+  "zip_sha256": "fdb7472d4792bf4f7f88568f3c1f288746da5efcf55cdf0bded7b28262221a26",
+  "first_open": "Finder double click browser ZIP copy extracted by Archive Utility; first warning captured; Done clicked; normal per-app Open Anyway available; user completed authentication and opening",
+  "authorization_operator": "actual user",
+  "intermediate_authorization_dialog_screenshot": "NOT_CAPTURED_USER_COMPLETED",
+  "gui": "PASS_REAL_WINDOW",
+  "interaction": "Chinese paste, theme switch, synthetic tray state toggle PASS",
+  "close": "CUA real close button -> hide; process preserved",
+  "tray_restore": "PASS_USER_OPERATED; user confirmed actual tray 显示窗口; screenshot captured same PID with text/state retained",
+  "tray_menu_screenshot": "NOT_CAPTURED_NATIVE_TARGET_LIMITATION",
+  "tray_quit": "PASS_USER_OPERATED; user confirmed actual tray 退出; system voluntary exit log and absence independently observed",
+  "pid": 16877,
+  "system_xpc_pids": [
+    16892,
+    16893
+  ],
+  "all_owned_processes": "ABSENT",
+  "helper_installed_or_run": false,
+  "quarantine": "PRESERVED; OS per-app authorization flags 0081 -> 00c1; ZIP 0081 unchanged; no xattr write",
+  "gatekeeper": "assessments enabled",
+  "sip": "enabled",
+  "github_remote_asset_download": "NOT_RUN_NO_RELEASE_ASSETS",
+  "existing_production_veyra": "NOT_TOUCHED",
+  "system_proxy_tun_route_dns": "NO_MUTATING_ACTIONS",
+  "source_or_signature_changed": false
+}

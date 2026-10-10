@@ -1,0 +1,10 @@
+{
+  "command": [
+    "target/debug/examples/p0_08_update",
+    "inspect",
+    "0.0.0",
+    "target/p0-08-desktop/github-release-fixture.json",
+    "target/p0-08-desktop/veyra-release.json"
+  ],
+  "exit_code": 0
+}

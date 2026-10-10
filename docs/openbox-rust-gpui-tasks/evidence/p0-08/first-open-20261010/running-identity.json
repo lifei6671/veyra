@@ -1,0 +1,121 @@
+{
+  "time": "2026-10-10T10:02:22.434543+08:00",
+  "user_authorization": "User replied \u5df2\u5b8c\u6210\u7cfb\u7edf\u6388\u6743\u5e76\u6253\u5f00; password and confirmation performed by actual user; intermediate confirmation screenshots not captured",
+  "pid": 16877,
+  "uid": 501,
+  "app": "/Users/lifeilin/Downloads/Veyra-P0-08-first-open-20261010/VeyraPrototype.app",
+  "running_app": "/private/var/folders/sq/9tr34l617h5fp65hjxgvly140000gn/T/AppTranslocation/5538C23D-4491-4E2A-87CD-5DC718F14407/d/VeyraPrototype.app",
+  "hashes": {
+    "/Users/lifeilin/Downloads/Veyra-P0-08-first-open-20261010/VeyraPrototype.app": {
+      "Contents/Info.plist": "aa9f11eca3bbb5a92413b1bc5761605e8c384c3d216afcaafe0208ab6db9f8f0",
+      "Contents/_CodeSignature/CodeResources": "bbc4265e1cfdee5d8a027ea5082962b18082aaa717f968776b01aea83bf89fc7",
+      "Contents/MacOS/veyra-gpui-prototype": "367e25f453abc580b779ee7508f3f050b71074ae9f57c7e11188f54b3d640954",
+      "Contents/Resources/package-manifest.json": "c5dae3af0e40f036181a42ace37cf08175ad93b480feca6dbc6cd0ca8838f872",
+      "Contents/Resources/sing-box-LICENSE": "650d5e3b99a446fb38e820fa87a49562e0c79eab868fff58618ac487a58e554c",
+      "Contents/Resources/icon.icns": "af28963110b1043e3d25cca68ab5ef01f3779205427b89770abe1600202aa0fd",
+      "Contents/Resources/Veyra-LICENSE": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
+      "Contents/Resources/INSTALLATION.md": "68ec02d8e7a2a4d33d625ef6b9b3272a553be393a4f2d4881ffbc157beddee7b",
+      "Contents/Resources/bin/veyra-update-prototype": "f0286b61e661b2a8bc8f38c6e2a0736cfc00c1a7f864c5b008434b2dffd98af6",
+      "Contents/Resources/helper/veyra-sing-box": "973388c3f720e918fc64dff7fd75dde14b31cc1aa6fc15855e2f00c5291dd4f4",
+      "Contents/Resources/helper/veyra-helper-prototype": "98cf1e89d8e5acc7c8943da0af9bbe80fab1672e1676572e8dccd5676946c6c4"
+    },
+    "/private/var/folders/sq/9tr34l617h5fp65hjxgvly140000gn/T/AppTranslocation/5538C23D-4491-4E2A-87CD-5DC718F14407/d/VeyraPrototype.app": {
+      "Contents/Info.plist": "aa9f11eca3bbb5a92413b1bc5761605e8c384c3d216afcaafe0208ab6db9f8f0",
+      "Contents/_CodeSignature/CodeResources": "bbc4265e1cfdee5d8a027ea5082962b18082aaa717f968776b01aea83bf89fc7",
+      "Contents/MacOS/veyra-gpui-prototype": "367e25f453abc580b779ee7508f3f050b71074ae9f57c7e11188f54b3d640954",
+      "Contents/Resources/package-manifest.json": "c5dae3af0e40f036181a42ace37cf08175ad93b480feca6dbc6cd0ca8838f872",
+      "Contents/Resources/sing-box-LICENSE": "650d5e3b99a446fb38e820fa87a49562e0c79eab868fff58618ac487a58e554c",
+      "Contents/Resources/icon.icns": "af28963110b1043e3d25cca68ab5ef01f3779205427b89770abe1600202aa0fd",
+      "Contents/Resources/Veyra-LICENSE": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
+      "Contents/Resources/INSTALLATION.md": "68ec02d8e7a2a4d33d625ef6b9b3272a553be393a4f2d4881ffbc157beddee7b",
+      "Contents/Resources/bin/veyra-update-prototype": "f0286b61e661b2a8bc8f38c6e2a0736cfc00c1a7f864c5b008434b2dffd98af6",
+      "Contents/Resources/helper/veyra-sing-box": "973388c3f720e918fc64dff7fd75dde14b31cc1aa6fc15855e2f00c5291dd4f4",
+      "Contents/Resources/helper/veyra-helper-prototype": "98cf1e89d8e5acc7c8943da0af9bbe80fab1672e1676572e8dccd5676946c6c4"
+    }
+  },
+  "commands": [
+    {
+      "argv": [
+        "xattr",
+        "-p",
+        "com.apple.quarantine",
+        "/Users/lifeilin/Downloads/Veyra-P0-08-first-open-20261010/VeyraPrototype.app"
+      ],
+      "exit": 0,
+      "stdout": "00c1;6ac998ed;Edge;BD4479A9-E9E8-4BEC-A8F5-41E4B65E9FD1\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "codesign",
+        "--verify",
+        "--deep",
+        "--strict",
+        "--verbose=4",
+        "/Users/lifeilin/Downloads/Veyra-P0-08-first-open-20261010/VeyraPrototype.app"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "/Users/lifeilin/Downloads/Veyra-P0-08-first-open-20261010/VeyraPrototype.app: valid on disk\n/Users/lifeilin/Downloads/Veyra-P0-08-first-open-20261010/VeyraPrototype.app: satisfies its Designated Requirement\n"
+    },
+    {
+      "argv": [
+        "xattr",
+        "-p",
+        "com.apple.quarantine",
+        "/private/var/folders/sq/9tr34l617h5fp65hjxgvly140000gn/T/AppTranslocation/5538C23D-4491-4E2A-87CD-5DC718F14407/d/VeyraPrototype.app"
+      ],
+      "exit": 0,
+      "stdout": "00c1;6ac998ed;Edge;BD4479A9-E9E8-4BEC-A8F5-41E4B65E9FD1\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "codesign",
+        "--verify",
+        "--deep",
+        "--strict",
+        "--verbose=4",
+        "/private/var/folders/sq/9tr34l617h5fp65hjxgvly140000gn/T/AppTranslocation/5538C23D-4491-4E2A-87CD-5DC718F14407/d/VeyraPrototype.app"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "/private/var/folders/sq/9tr34l617h5fp65hjxgvly140000gn/T/AppTranslocation/5538C23D-4491-4E2A-87CD-5DC718F14407/d/VeyraPrototype.app: valid on disk\n/private/var/folders/sq/9tr34l617h5fp65hjxgvly140000gn/T/AppTranslocation/5538C23D-4491-4E2A-87CD-5DC718F14407/d/VeyraPrototype.app: satisfies its Designated Requirement\n"
+    },
+    {
+      "argv": [
+        "ps",
+        "-p",
+        "16877",
+        "-o",
+        "pid,ppid,uid,etime,comm"
+      ],
+      "exit": 0,
+      "stdout": "  PID  PPID   UID ELAPSED COMM\n16877     1   501   00:30 /private/var/folders/sq/9tr34l617h5fp65hjxgvly140000gn/T/AppTranslocation/5538C23D-4491-4E2A-87CD-5DC718F14407/d/VeyraPrototype.app/Contents/MacOS/veyra-gpui-prototype\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "lsof",
+        "-a",
+        "-p",
+        "16877",
+        "-d",
+        "txt"
+      ],
+      "exit": 0,
+      "stdout": "COMMAND     PID     USER   FD   TYPE DEVICE  SIZE/OFF                NODE NAME\nveyra-gpu 16877 lifeilin  txt    REG   46,7  88233920            35335004 /private/var/folders/sq/9tr34l617h5fp65hjxgvly140000gn/T/AppTranslocation/5538C23D-4491-4E2A-87CD-5DC718F14407/d/VeyraPrototype.app/Contents/MacOS/veyra-gpui-prototype\nveyra-gpu 16877 lifeilin  txt    REG   1,17     77368            32753422 /private/var/db/diagnostics/logd/.plist-cache.rlCU0fg8\nveyra-gpu 16877 lifeilin  txt    REG   1,17    139612            32771339 /private/var/folders/sq/9tr34l617h5fp65hjxgvly140000gn/C/com.apple.IntlDataCache.le.kbdx\nveyra-gpu 16877 lifeilin  txt    REG   1,17    258762 1152921500312220747 /System/Library/Keyboard Layouts/AppleKeyboardLayouts.bundle/Contents/Resources/InfoPlist.loctable\nveyra-gpu 16877 lifeilin  txt    REG   1,17     19328              301859 /private/var/folders/sq/9tr34l617h5fp65hjxgvly140000gn/C/com.apple.scriptmanager2.le.cache\nveyra-gpu 16877 lifeilin  txt    REG   1,17   4129840 1152921500312609216 /usr/lib/dyld\nveyra-gpu 16877 lifeilin  txt    REG   1,17       110 1152921500312109332 /System/Library/CoreServices/SystemVersion.bundle/English.lproj/SystemVersion.strings\nveyra-gpu 16877 lifeilin  txt    REG   1,17    330112 1152921500312609234 /usr/lib/libobjc-trampolines.dylib\nveyra-gpu 16877 lifeilin  txt    REG   1,17  36103568 1152921500312619766 /usr/share/icu/icudt78l.dat\nveyra-gpu 16877 lifeilin  txt    REG   1,17   1631720 1152921500312220745 /System/Library/Keyboard Layouts/AppleKeyboardLayouts.bundle/Contents/Resources/AppleKeyboardLayouts-L.dat\nveyra-gpu 16877 lifeilin  txt    REG   1,17     72407 1152921500312150841 /System/Library/Frameworks/AppKit.framework/Versions/C/Resources/Common.loctable\nveyra-gpu 16877 lifeilin  txt    REG   1,17   2338064 1152921500312148470 /System/Library/Fonts/Helvetica.ttc\nveyra-gpu 16877 lifeilin  txt    REG   1,17    273496 1152921500312297252 /System/Library/PrivateFrameworks/DesignLibrary.framework/Versions/A/Resources/Assets.car\nveyra-gpu 16877 lifeilin  txt    REG   1,17    540672            31871714 /private/var/folders/sq/9tr34l617h5fp65hjxgvly140000gn/C/me.veyra.gpui-prototype/com.apple.metal/32024/libraries.data\nveyra-gpu 16877 lifeilin  txt    REG   1,17     25252 1152921500312151082 /System/Library/Frameworks/AppKit.framework/Versions/C/Resources/WindowTabs.loctable\nveyra-gpu 16877 lifeilin  txt    REG   1,17    147456            31871719 /private/var/folders/sq/9tr34l617h5fp65hjxgvly140000gn/C/me.veyra.gpui-prototype/com.apple.metal/16777235_467/functions.data\nveyra-gpu 16877 lifeilin  txt    REG   1,17   3364328 1152921500312108978 /System/Library/CoreServices/SystemAppearance.bundle/Contents/Resources/Assets.car\nveyra-gpu 16877 lifeilin  txt    REG   1,17    720896            32756502 /private/var/folders/sq/9tr34l617h5fp65hjxgvly140000gn/C/com.apple.iconservices/store.index\nveyra-gpu 16877 lifeilin  txt    REG   1,17     50020 1152921500312285403 /System/Library/PrivateFrameworks/CoreEmoji.framework/Versions/A/Resources/emoji.dat\nveyra-gpu 16877 lifeilin  txt    REG   1,17    139749 1152921500312285405 /System/Library/PrivateFrameworks/CoreEmoji.framework/Versions/A/Resources/emojimeta.dat\nveyra-gpu 16877 lifeilin  txt    REG   1,17    768520 1152921500312148458 /System/Library/Fonts/CJKSymbolsFallback.ttc\nveyra-gpu 16877 lifeilin  txt    REG   1,17    236480            32721380 /private/var/db/timezone/tz/2026d.1.0/icutz/icutz44l.dat\nveyra-gpu 16877 lifeilin  txt    REG   1,17    167690            35276431 /private/var/db/analyticsd/events.allowlist\nveyra-gpu 16877 lifeilin  txt    REG   1,17    137016 1152921500312109011 /System/Library/CoreServices/SystemAppearance.bundle/Contents/Resources/SystemAppearance.car\nveyra-gpu 16877 lifeilin  txt    REG   1,17   7916504 1152921500312108972 /System/Library/CoreServices/SystemAppearance.bundle/Contents/Resources/Aqua.car\nveyra-gpu 16877 lifeilin  txt    REG   1,17   2976648 1152921500312109000 /System/Library/CoreServices/SystemAppearance.bundle/Contents/Resources/FauxVibrantLight.car\nveyra-gpu 16877 lifeilin  txt    REG   1,17   6223976 1152921500312109025 /System/Library/CoreServices/SystemAppearance.bundle/Contents/Resources/VibrantLight.car\nveyra-gpu 16877 lifeilin  txt    REG   1,17      7023 1152921500312150926 /System/Library/Frameworks/AppKit.framework/Versions/C/Resources/InputManager.loctable\nveyra-gpu 16877 lifeilin  txt    REG   1,17    186898 1152921500312150934 /System/Library/Frameworks/AppKit.framework/Versions/C/Resources/MenuCommands.loctable\nveyra-gpu 16877 lifeilin  txt    REG   1,17 117215048 1152921500312374732 /System/Library/PrivateFrameworks/SFSymbols.framework/Versions/A/Resources/CoreGlyphs.bundle/Contents/Resources/Assets.car\nveyra-gpu 16877 lifeilin  txt    REG   1,17  24825080 1152921500312374771 /System/Library/PrivateFrameworks/SFSymbols.framework/Versions/A/Resources/CoreGlyphsPrivate.bundle/Contents/Resources/Assets.car\nveyra-gpu 16877 lifeilin  txt    REG   1,17   7795064 1152921500312108984 /System/Library/CoreServices/SystemAppearance.bundle/Contents/Resources/DarkAqua.car\nveyra-gpu 16877 lifeilin  txt    REG   1,17  30193360 1152921500312136335 /System/Library/Extensions/AGXMetalG16X.bundle/Contents/Resources/ds.binary.metallib.g16s-b0\nveyra-gpu 16877 lifeilin  txt    REG   1,17   7872432 1152921500312148546 /System/Library/Fonts/SFNS.ttf\nveyra-gpu 16877 lifeilin  txt    REG   1,17   1057128 1152921500312148548 /System/Library/Fonts/SFNSItalic.ttf\nveyra-gpu 16877 lifeilin  txt    REG   1,17  61473880 1152921500312316798 /System/Library/PrivateFrameworks/FontServices.framework/Versions/A/Resources/Reserved/PingFangUI.ttc\nveyra-gpu 16877 lifeilin  txt    REG   1,17 192120460 1152921500312148442 /System/Library/Fonts/Apple Color Emoji.ttc\nveyra-gpu 16877 lifeilin  txt    REG   1,17     73240 1152921500312108996 /System/Library/CoreServices/SystemAppearance.bundle/Contents/Resources/FauxVibrantDark.car\nveyra-gpu 16877 lifeilin  txt    REG   1,17        92 1152921500312153186 /System/Library/Frameworks/ApplicationServices.framework/Versions/A/Frameworks/HIServices.framework/Versions/A/Resources/RoleDescriptions-BBBAA77A32-C4EBFEA440.strings\nveyra-gpu 16877 lifeilin  txt    REG   1,15    243840              252218 /System/Volumes/Preboot/Cryptexes/OS/usr/lib/libMetalMetricsInterpose.dylib\nveyra-gpu 16877 lifeilin  txt    REG   1,17   6742984 1152921500312109015 /System/Library/CoreServices/SystemAppearance.bundle/Contents/Resources/VibrantDark.car\nveyra-gpu 16877 lifeilin  txt    REG   1,17    142603 1152921500312153187 /System/Library/Frameworks/ApplicationServices.framework/Versions/A/Frameworks/HIServices.framework/Versions/A/Resources/RoleDescriptions.loctable\nveyra-gpu 16877 lifeilin  txt    REG   1,17    126220 1152921500312150691 /System/Library/Frameworks/AppKit.framework/Versions/C/Resources/Accessibility.loctable\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "pgrep",
+        "-P",
+        "16877"
+      ],
+      "exit": 1,
+      "stdout": "",
+      "stderr": ""
+    }
+  ]
+}

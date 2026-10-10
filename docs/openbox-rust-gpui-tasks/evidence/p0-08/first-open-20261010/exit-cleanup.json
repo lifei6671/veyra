@@ -1,0 +1,83 @@
+{
+  "time": "2026-10-10T10:04:49.295839+08:00",
+  "user_quit": "\u5df2\u901a\u8fc7\u6258\u76d8\u9000\u51fa",
+  "commands": [
+    {
+      "argv": [
+        "ps",
+        "-p",
+        "16877",
+        "-o",
+        "pid,ppid,uid,etime,comm"
+      ],
+      "exit": 1,
+      "stdout": "  PID  PPID   UID ELAPSED COMM\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "pgrep",
+        "-alf",
+        "veyra-gpui-prototype|veyra-helper-prototype|veyra-update-prototype|veyra-sing-box"
+      ],
+      "exit": 1,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "spctl",
+        "--status"
+      ],
+      "exit": 0,
+      "stdout": "assessments enabled\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "csrutil",
+        "status"
+      ],
+      "exit": 0,
+      "stdout": "System Integrity Protection status: enabled.\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "xattr",
+        "-p",
+        "com.apple.quarantine",
+        "/Users/lifeilin/Downloads/Veyra-P0-08-first-open-20261010/VeyraPrototype.app"
+      ],
+      "exit": 0,
+      "stdout": "00c1;6ac998ed;Edge;BD4479A9-E9E8-4BEC-A8F5-41E4B65E9FD1\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "xattr",
+        "-p",
+        "com.apple.quarantine",
+        "/Users/lifeilin/Downloads/Veyra-P0-08-first-open-20261010/VeyraPrototype-0.1.0-macos-arm64.zip"
+      ],
+      "exit": 0,
+      "stdout": "0081;6ac998ed;Edge;BD4479A9-E9E8-4BEC-A8F5-41E4B65E9FD1\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "xattr",
+        "-p",
+        "com.apple.quarantine",
+        "/Users/lifeilin/wx_lifeilin/github.com/lifei6671/veyra/.worktrees/p0-08-update-distribution/target/p0-08-browser-download/VeyraPrototype-0.1.0-macos-arm64.zip"
+      ],
+      "exit": 0,
+      "stdout": "0081;6ac998ed;Edge;BD4479A9-E9E8-4BEC-A8F5-41E4B65E9FD1\n",
+      "stderr": ""
+    }
+  ],
+  "services": {
+    "/Library/PrivilegedHelperTools": [],
+    "/Library/LaunchDaemons": []
+  }
+}

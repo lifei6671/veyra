@@ -1,0 +1,6 @@
+Browser tab: 27601526, Title: "Releases · lifei6671/veyra", URL: "https://github.com/lifei6671/veyra/releases".
+The following is a diff from the previous accessibility tree with ~ and + representing changed and added elements, respectively. Removed elements are summarized by ID range.
+~						12 pop up button (collapsed) Switch repository ( option shift r ), Secondary Actions: Expand
++						81 link Octotree: Bookmark
+~			23 link Description: You have unread notifications ( g then n ), Value: github.com/notifications
+The focused UI element is 0 AXWebArea Releases · lifei6671/veyra, URL: github.com/lifei6671/veyra/releases

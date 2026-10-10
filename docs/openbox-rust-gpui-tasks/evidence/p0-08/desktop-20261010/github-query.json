@@ -1,0 +1,17 @@
+{
+  "command": [
+    "curl",
+    "--noproxy",
+    "*",
+    "-sS",
+    "--connect-timeout",
+    "10",
+    "--max-time",
+    "30",
+    "-D",
+    "docs/openbox-rust-gpui-tasks/evidence/p0-08/desktop-20261010/github-headers.txt",
+    "https://api.github.com/repos/lifei6671/veyra/releases/latest"
+  ],
+  "exit_code": 0,
+  "stderr": ""
+}

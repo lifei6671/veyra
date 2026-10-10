@@ -1,0 +1,21 @@
+test_corrupt_kernel_is_rejected_before_execution (test_p0_08_package.PackageTests.test_corrupt_kernel_is_rejected_before_execution)
+包内内核被改动时拒绝，不执行破损文件或把签名当作摘要。 ... ok
+test_final_signed_bundle_matches_embedded_resources (test_p0_08_package.PackageTests.test_final_signed_bundle_matches_embedded_resources)
+用户交接包含四个最终arm64 ad-hoc文件，完整资源封印有效。 ... ok
+test_missing_or_extra_resource_is_rejected (test_p0_08_package.PackageTests.test_missing_or_extra_resource_is_rejected)
+用户拿到缺组件或夹入未知资源的包不能被判为完整。 ... ok
+test_mixed_application_version_is_rejected (test_p0_08_package.PackageTests.test_mixed_application_version_is_rejected)
+Info.plist与内嵌发行版本不同不能被交接。 ... ok
+test_optimized_python_still_rejects_wrong_archive_and_corrupt_bundle (test_p0_08_package.PackageTests.test_optimized_python_still_rejects_wrong_archive_and_corrupt_bundle)
+优化解释器不能跳过内核来源或包摘要检查，交付仍须拒绝。 ... ok
+test_signed_manifest_tampering_is_rejected (test_p0_08_package.PackageTests.test_signed_manifest_tampering_is_rejected)
+资源摘要一致但封印清单被改动时仍由最终codesign拒绝。 ... ok
+test_wrong_official_archive_is_rejected_without_build_or_output (test_p0_08_package.PackageTests.test_wrong_official_archive_is_rejected_without_build_or_output)
+错误内核来源在提取/执行/构建前被拒绝。 ... ok
+test_zip_roundtrip_keeps_final_signature_and_resources (test_p0_08_package.PackageTests.test_zip_roundtrip_keeps_final_signature_and_resources)
+打包/解压后仍是同一最终可验证包，不仅验证打包前目录。 ... ok
+
+----------------------------------------------------------------------
+Ran 8 tests in 3.555s
+
+OK

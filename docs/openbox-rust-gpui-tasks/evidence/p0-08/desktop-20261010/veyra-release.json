@@ -1,0 +1,15 @@
+{
+  "app_version": "0.1.0",
+  "asset_name": "VeyraPrototype-0.1.0-macos-arm64.zip",
+  "cargo_lock_sha256": "ab84206070be0a857ea6b08c7acc8a22e392844030381b85535cd3e81319b0b5",
+  "helper_version": "0.1.0",
+  "minimum_system_version": "26.0",
+  "platform": "macos-arm64",
+  "repository": "lifei6671/veyra",
+  "resources_version": "0.1.0",
+  "schema": 1,
+  "sha256": "fdb7472d4792bf4f7f88568f3c1f288746da5efcf55cdf0bded7b28262221a26",
+  "sing_box_version": "1.14.0",
+  "size": 54830834,
+  "source_commit": "733b6ea3d20b23ba90bb933971a08b076bc0caa3"
+}

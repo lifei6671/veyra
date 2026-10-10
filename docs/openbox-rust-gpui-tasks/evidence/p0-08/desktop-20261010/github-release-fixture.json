@@ -1,0 +1,19 @@
+{
+  "assets": [
+    {
+      "browser_download_url": "https://github.com/lifei6671/veyra/releases/download/v0.1.0/VeyraPrototype-0.1.0-macos-arm64.zip",
+      "name": "VeyraPrototype-0.1.0-macos-arm64.zip",
+      "size": 54830834
+    },
+    {
+      "browser_download_url": "https://github.com/lifei6671/veyra/releases/download/v0.1.0/veyra-release.json",
+      "name": "veyra-release.json",
+      "size": 547
+    }
+  ],
+  "body": "P0-08 工程候选：GPUI 能力原型；helper 只作嵌入版本绑定，不安装/启用。下载校验后手动交接；正式 UI/升级由 P6/P7 承接。此文件为本地 fixture，无实际 Release。",
+  "draft": false,
+  "html_url": "https://github.com/lifei6671/veyra/releases/tag/v0.1.0",
+  "prerelease": false,
+  "tag_name": "v0.1.0"
+}

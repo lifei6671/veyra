@@ -1,0 +1,46 @@
+{
+  "app_quarantine": {
+    "command": [
+      "xattr",
+      "-p",
+      "com.apple.quarantine",
+      "/Users/lifeilin/wx_lifeilin/github.com/lifei6671/veyra/.worktrees/p0-08-update-distribution/target/p0-08-browser-download/VeyraPrototype.app"
+    ],
+    "exit_code": 0,
+    "stdout": "0081;6ac998ed;Edge;BD4479A9-E9E8-4BEC-A8F5-41E4B65E9FD1\n",
+    "stderr": ""
+  },
+  "app_xattr": {
+    "command": [
+      "xattr",
+      "-lx",
+      "/Users/lifeilin/wx_lifeilin/github.com/lifei6671/veyra/.worktrees/p0-08-update-distribution/target/p0-08-browser-download/VeyraPrototype.app"
+    ],
+    "exit_code": 0,
+    "stdout": "com.apple.quarantine:\n00000000  30 30 38 31 3B 36 61 63 39 39 38 65 64 3B 45 64  |0081;6ac998ed;Ed|\n00000010  67 65 3B 42 44 34 34 37 39 41 39 2D 45 39 45 38  |ge;BD4479A9-E9E8|\n00000020  2D 34 42 45 43 2D 41 38 46 35 2D 34 31 45 34 42  |-4BEC-A8F5-41E4B|\n00000030  36 35 45 39 46 44 31                             |65E9FD1|\n00000037\n",
+    "stderr": ""
+  },
+  "codesign": {
+    "command": [
+      "codesign",
+      "--verify",
+      "--deep",
+      "--strict",
+      "--verbose=2",
+      "/Users/lifeilin/wx_lifeilin/github.com/lifei6671/veyra/.worktrees/p0-08-update-distribution/target/p0-08-browser-download/VeyraPrototype.app"
+    ],
+    "exit_code": 0,
+    "stdout": "",
+    "stderr": "/Users/lifeilin/wx_lifeilin/github.com/lifei6671/veyra/.worktrees/p0-08-update-distribution/target/p0-08-browser-download/VeyraPrototype.app: valid on disk\n/Users/lifeilin/wx_lifeilin/github.com/lifei6671/veyra/.worktrees/p0-08-update-distribution/target/p0-08-browser-download/VeyraPrototype.app: satisfies its Designated Requirement\n"
+  },
+  "before_processes": {
+    "command": [
+      "ps",
+      "-axo",
+      "pid,ppid,command"
+    ],
+    "exit_code": 0,
+    "stdout": "",
+    "stderr": ""
+  }
+}

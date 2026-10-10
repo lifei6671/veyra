@@ -39,6 +39,11 @@ rustls = { version = "=0.23.43", default-features = false, features = ["ring", "
 name = "p0_06_outbound"
 required-features = ["p0-06-prototype"]
 
+# P0-08 独立分发探针只消费已有公开出站 builder，不进入正式服务/DTO。
+[[example]]
+name = "p0_08_update"
+required-features = ["p0-06-prototype"]
+
 [target.'cfg(unix)'.dependencies]
 # 复用 workspace 已有 libc；恢复文件按现有 Platform 方式 O_NOFOLLOW 打开。
 libc = "0.2"

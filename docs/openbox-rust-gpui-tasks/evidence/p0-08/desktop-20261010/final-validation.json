@@ -1,0 +1,163 @@
+{
+  "cards": 68,
+  "counts": {
+    "DONE": 28,
+    "ACCEPTANCE": 2,
+    "TODO": 30,
+    "DOING": 1,
+    "DEFERRED": 7
+  },
+  "ready": [],
+  "acyclic": true,
+  "references": [
+    {
+      "source": "P0-08-acceptance.md",
+      "target": "evidence/p0-08/desktop-20261010/takeover.json",
+      "exists": true
+    },
+    {
+      "source": "P0-08-acceptance.md",
+      "target": "P0-08-installation.md",
+      "exists": true
+    },
+    {
+      "source": "P0-08-acceptance.md",
+      "target": "evidence/p0-08/desktop-20261010/REVIEW.md",
+      "exists": true
+    },
+    {
+      "source": "P0-08-acceptance.md",
+      "target": "evidence/p0-08/desktop-20261010/update-tests.log",
+      "exists": true
+    },
+    {
+      "source": "P0-08-acceptance.md",
+      "target": "evidence/p0-08/desktop-20261010/bundle-build.json",
+      "exists": true
+    },
+    {
+      "source": "P0-08-acceptance.md",
+      "target": "evidence/p0-08/desktop-20261010/build-receipt.json",
+      "exists": true
+    },
+    {
+      "source": "P0-08-acceptance.md",
+      "target": "evidence/p0-08/desktop-20261010/package-tests.log",
+      "exists": true
+    },
+    {
+      "source": "P0-08-acceptance.md",
+      "target": "evidence/p0-08/desktop-20261010/core-clippy.log",
+      "exists": true
+    },
+    {
+      "source": "P0-08-acceptance.md",
+      "target": "evidence/p0-08/desktop-20261010/fmt.json",
+      "exists": true
+    },
+    {
+      "source": "P0-08-acceptance.md",
+      "target": "evidence/p0-08/desktop-20261010/legacy-clippy.log",
+      "exists": true
+    },
+    {
+      "source": "P0-08-acceptance.md",
+      "target": "evidence/p0-08/desktop-20261010/final-static-verify.log",
+      "exists": true
+    },
+    {
+      "source": "P0-08-acceptance.md",
+      "target": "evidence/p0-08/desktop-20261010/manifest-inspect.log",
+      "exists": true
+    },
+    {
+      "source": "P0-08-acceptance.md",
+      "target": "evidence/p0-08/desktop-20261010/build-inputs.json",
+      "exists": true
+    },
+    {
+      "source": "P0-08-acceptance.md",
+      "target": "evidence/p0-08/desktop-20261010/build-receipt.json",
+      "exists": true
+    },
+    {
+      "source": "P0-08-acceptance.md",
+      "target": "evidence/p0-08/desktop-20261010/github-no-releases.png",
+      "exists": true
+    },
+    {
+      "source": "P0-08-acceptance.md",
+      "target": "evidence/p0-08/desktop-20261010/github-latest.json",
+      "exists": true
+    },
+    {
+      "source": "P0-08-acceptance.md",
+      "target": "evidence/p0-08/desktop-20261010/browser-download-complete.png",
+      "exists": true
+    },
+    {
+      "source": "P0-08-acceptance.md",
+      "target": "evidence/p0-08/desktop-20261010/browser-artifact.json",
+      "exists": true
+    },
+    {
+      "source": "P0-08-acceptance.md",
+      "target": "evidence/p0-08/desktop-20261010/before-first-open.json",
+      "exists": true
+    },
+    {
+      "source": "P0-08-acceptance.md",
+      "target": "evidence/p0-08/desktop-20261010/first-open-system.log",
+      "exists": true
+    },
+    {
+      "source": "P0-08-acceptance.md",
+      "target": "evidence/p0-08/desktop-20261010/first-open-no-window.png",
+      "exists": true
+    },
+    {
+      "source": "P0-08-acceptance.md",
+      "target": "evidence/p0-08/desktop-20261010/macos-result.json",
+      "exists": true
+    }
+  ],
+  "commands": {
+    "diff-check": {
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    "protected-sources": {
+      "command": [
+        "git",
+        "diff",
+        "--exit-code",
+        "733b6ea3d20b23ba90bb933971a08b076bc0caa3",
+        "--",
+        "Cargo.toml",
+        "Cargo.lock",
+        "src-tauri",
+        "crates/veyra-core/src",
+        "crates/veyra-desktop",
+        "crates/veyra-helper",
+        "crates/veyra-gpui-prototype"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    }
+  },
+  "build_input_count": 120,
+  "build_input_mismatches": [],
+  "fixture_listener_remaining": false,
+  "main_status_unchanged": true,
+  "main_head": "733b6ea3d20b23ba90bb933971a08b076bc0caa3",
+  "commit": "NOT_RUN_ACCEPTANCE",
+  "merge": "NOT_RUN_ACCEPTANCE",
+  "main_verification": "NOT_RUN_NOT_MERGED"
+}

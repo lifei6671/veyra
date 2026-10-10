@@ -1,0 +1,18 @@
+{
+  "command": [
+    "cargo",
+    "+1.99.0",
+    "clippy",
+    "--offline",
+    "--locked",
+    "-p",
+    "veyra-core",
+    "--features",
+    "p0-06-prototype",
+    "--all-targets",
+    "--",
+    "-D",
+    "warnings"
+  ],
+  "exit_code": 0
+}

@@ -1,0 +1,12 @@
+{
+  "command": [
+    "cargo",
+    "+1.99.0",
+    "fmt",
+    "--manifest-path",
+    "src-tauri/Cargo.toml",
+    "--",
+    "--check"
+  ],
+  "exit_code": 0
+}

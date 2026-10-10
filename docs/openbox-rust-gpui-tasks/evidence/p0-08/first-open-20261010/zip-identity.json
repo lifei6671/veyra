@@ -1,0 +1,19 @@
+{
+  "time": "2026-10-10T09:59:05.851062+08:00",
+  "source": "/Users/lifeilin/wx_lifeilin/github.com/lifei6671/veyra/.worktrees/p0-08-update-distribution/target/p0-08-browser-download/VeyraPrototype-0.1.0-macos-arm64.zip",
+  "copy": "/Users/lifeilin/Downloads/Veyra-P0-08-first-open-20261010/VeyraPrototype-0.1.0-macos-arm64.zip",
+  "size": 54830834,
+  "sha256": "fdb7472d4792bf4f7f88568f3c1f288746da5efcf55cdf0bded7b28262221a26",
+  "copy_sha256": "fdb7472d4792bf4f7f88568f3c1f288746da5efcf55cdf0bded7b28262221a26",
+  "copy_command_exit": 0,
+  "quarantine": {
+    "/Users/lifeilin/wx_lifeilin/github.com/lifei6671/veyra/.worktrees/p0-08-update-distribution/target/p0-08-browser-download/VeyraPrototype-0.1.0-macos-arm64.zip": {
+      "exit": 0,
+      "value": "0081;6ac998ed;Edge;BD4479A9-E9E8-4BEC-A8F5-41E4B65E9FD1"
+    },
+    "/Users/lifeilin/Downloads/Veyra-P0-08-first-open-20261010/VeyraPrototype-0.1.0-macos-arm64.zip": {
+      "exit": 0,
+      "value": "0081;6ac998ed;Edge;BD4479A9-E9E8-4BEC-A8F5-41E4B65E9FD1"
+    }
+  }
+}

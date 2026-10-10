@@ -1,0 +1,18 @@
+{
+  "timestamp": "2026-10-10T01:43:44.372568+00:00",
+  "execution": "cancelled",
+  "head": "733b6ea3d20b23ba90bb933971a08b076bc0caa3",
+  "branch": "dev/p0-08-update-distribution",
+  "files": {
+    "crates/veyra-core/Cargo.toml": "9e0f447ca4a04e2b56819474dabfb57d33c7a17550e61bff3d40e9ad1d29f522",
+    "crates/veyra-core/examples/p0_08_update.rs": "2cdfa3123f296b23dd1e356f49df8125109a647878c89d1ca797f999cbaa119a",
+    "crates/veyra-core/examples/p0_08/update.rs": "3116ac6155b7d321ef41e352d35905d7effdbbc946a4288419f1f09bd47cdd09",
+    "crates/veyra-core/examples/p0_08/tests.rs": "548138e755b8e86cefc8a3b205f2bf738620c81ba59b0fb38306c36bd3c6bfc8",
+    "tools/p0-08-package.py": "01ac0c791c0675076fa2641e8fc1283512571766c9c79369503ee2e22a210b12",
+    "tools/tests/test_p0_08_package.py": "98e163e10ce860782c6317f9409ebde2dd96af0be8e5467f5fce7a09a97cecf8",
+    "docs/openbox-rust-gpui-tasks/P0-08-installation.md": "68ec02d8e7a2a4d33d625ef6b9b3272a553be393a4f2d4881ffbc157beddee7b",
+    "docs/openbox-rust-gpui-tasks/SESSION.md": "36c662cf9ec9ad35a9a419c58df53868d91b0dde33d2d5c50d8fdb3d47c18e6d",
+    "docs/openbox-rust-gpui-tasks/IMPLEMENTATION_PHASES.md": "1705836508c61f31f025da68d19059a6f5242d7e06dcc8d4c28fffa9c8a8b1ed"
+  },
+  "main_status": "?? tools/tests/__pycache__/\n"
+}

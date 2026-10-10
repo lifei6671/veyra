@@ -1,3 +1,7 @@
+**P0-08 最终 macOS DONE（2026-10-10，当前）**：原浏览器候选ZIP一致，Finder独立Downloads解压保留quarantine；实际用户正常单应用授权，真实GPUI窗口/交互、关闭→用户托盘恢复/退出及系统voluntary exit0/全部PID清理通过；独立Review无剩余代码Finding。本卡owner/预约释放，原FAIL和未截图的授权中间页/托盘菜单边界保留，GitHub远端资产下载仍NOT_RUN，无push/发布。P2-05 ACCEPTANCE、P2-06 DOING及原owner不变。68卡显式依赖重算：DONE29 / ACCEPTANCE1 / DOING1 / READY1 / TODO29 / DEFERRED7，无环；READY仅P0-09，未领取/启动。macOS29/61、P0为8/9。见[最终验收](P0-08-acceptance.md)。本地提交/合并后定向复验另记收口收据。下方旧日期计数保留历史，以本段和任务行为准。
+
+**P0-08 Desktop 接管 / ACCEPTANCE（2026-10-10，首轮历史）**：固定来源/版本检查、二进制下载/取消/大小/SHA256、手动交接与真实 Apple Silicon 原型包工程复核完成；修复 Python 优化模式跳过校验，Rust8/Python8及构建/Core Clippy/fmt/四二进制与外壳签名验证通过。真实 Edge loopback ZIP 下载与 quarantine PASS；GitHub 尚无 Release，远端下载 NOT_RUN。Finder 首开日志出现 Gatekeeper denial/amfid -423、无已确认 GUI，正常单应用授权/托盘退出仍 NOT_RUN；不能将静态签名通过当作可运行。P0-08 保持独立分支、ACCEPTANCE/owner；P2-05 ACCEPTANCE、P2-06 DOING 不变，不提交/合并/push/发布。68卡重新计算：DONE28 / ACCEPTANCE2 / DOING1 / READY0 / TODO30 / DEFERRED7，无环，无新增 READY。[本轮交付与真实边界](P0-08-acceptance.md)。下方带日期及旧计数保留历史，以本段和任务行为准。
+
 **P4-03 FINAL DONE / 视觉人工审批（2026-10-10）**：Host 独立核验54/54原图哈希和React/GPUI同数据浅色1280×720逐态、主备运行反馈，正式审批视觉 PASS；最终UI18唯一定向PASS、Clippy/build/fmt/diff PASS，前轮Runtime107定向PASS及固定1.14.0 Native1PASS原证据保留，独立只读Review0 Finding。已批准不透明白色弹窗/字体栅格化/原生标题栏差异、Legacy Windows libcronet.dll Clippy基线FAIL、深色/其他缩放 NOT_RUN均保留。P4-03 DONE、owner/预约释放、无额外依赖立即解锁；P2-05 ACCEPTANCE、P2-06 DOING/其Runtime owner不变。进入本地commit→合并主开发分支→定向验证；不push。见[视觉审批与54张原图](P4-03-visual-final.md)、[Runtime交付](P4-03-runtime-acceptance.md)。
 
 **P4-03 正式 Runtime 集成交付（2026-10-09，仍 ACCEPTANCE）**：新组合树 `dev/p4-03-runtime` / `/Users/lifeilin/.codex/worktrees/p4-03-runtime/veyra`，输入检查点 `2f8e20fb2f3d082ffc439512dde140455665fecb`。与 P2-06 原 owner 精确协调后，唯一 ManualRuntime 选择入口已接 Group/Manual lane、真实健康编排、Auto/ManualPin/完整版本 pending→Controller→读回→CAS、重建恢复及 GPUI 真实反馈；107 个唯一定向测试、固定1.14.0 Native 1项、Core/Desktop Clippy/build/fmt/diff通过。独立 Review 及原 owner 生命周期复核无剩余所查 Finding；Review 核读证据，未亲自重跑。macOS显示设置依用户答复保持，加载/忙碌/错误/空/实际切换/重试有真实截图。旧Tauri Clippy缺Windows libcronet.dll FAIL与完整95%视觉OPEN保留，故不DONE、不增量commit/merge/主树复验/释放owner、不push。P2-05 ACCEPTANCE、P2-06 DOING及原owner保持，不解锁下游。[本轮记录](P4-03-runtime-acceptance.md)。下方历史保留。
@@ -131,8 +135,8 @@ Task：OBG-Px-xx
 | [OBG-P0-05 本地 helper 原型](P0-feasibility.md#obg-p0-05) | P0-03、P0-04 | DONE | —（owner 已释放） | — | [原型历史](evidence/p0-05/README.md)；[Desktop 批准/启动失败/清理](evidence/p0-05/desktop-privileged-20261006-113208/README.md)；[新路径取消/复制修复/待批准](evidence/p0-05/desktop-pathfix-20261006-120343/README.md)；[旧现场清理/read_frame Status PASS/child readiness timeout](evidence/p0-05/desktop-readframe-fix-20261006-132202/README.md) ；[readiness child_exited / FD3 open权限拒绝 / cleanup PASS](evidence/p0-05/desktop-readiness-diagnostics-20261006-134101/README.md) ；[FD3真实probe历史与当时E扩展缺项](evidence/p0-05/desktop-fd3-pipe-20261006-135940/README.md)；[真实 GUI owner 最终验收](evidence/p0-05/gui-owner-final-20261006-142752/README.md) |
 | [OBG-P0-06 自身出站原型](P0-feasibility.md#obg-p0-06) | P0-04、P0-05 | DONE | —（owner 已释放） | — | [出站/范围调查](P0-feasibility.md#p0-06-delivery) |
 | [OBG-P0-07 观测/DNS/诊断能力](P0-feasibility.md#obg-p0-07) | P0-01、P0-04 | DONE | Codex /root | — | [能力核实](P0-feasibility.md#p0-07-delivery) |
-| [OBG-P0-08 更新与分发路线](P0-feasibility.md#obg-p0-08) | P0-03、P0-05 | READY | — | — | — |
-| [OBG-P0-09 出口与重新估算](P0-feasibility.md#obg-p0-09) | P0-01、P0-02、P0-03、P0-04、P0-05、P0-06、P0-07、P0-08 | TODO | — | — | — |
+| [OBG-P0-08 更新与分发路线](P0-feasibility.md#obg-p0-08) | P0-03、P0-05 | DONE | —（owner 已释放） | — | [工程与最终macOS首开验收](P0-08-acceptance.md) |
+| [OBG-P0-09 出口与重新估算](P0-feasibility.md#obg-p0-09) | P0-01、P0-02、P0-03、P0-04、P0-05、P0-06、P0-07、P0-08 | READY | — | — | P0-01～08全部DONE，待领取 |
 
 ### P1 核心库与桌面壳（8 项）
 

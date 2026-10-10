@@ -1,0 +1,12 @@
+Window: "", App: CoreServicesUIAgent.
+0 系统对话框 Description: 警告, Secondary Actions: Raise
+	1 图像 警告
+	2 text 未打开“VeyraPrototype.app” Apple无法验证“VeyraPrototype.app”是否包含可能危害Mac安全或泄漏隐私的恶意软件。
+	3 按钮 帮助
+	4 按钮 完成, ID: action-button--997
+	5 按钮 移到废纸篓, ID: action-button--992
+6 menu bar
+	7 CoreServicesUIAgent
+	8 编辑
+
+The focused UI element is 0 系统对话框 Description: 警告, Secondary Actions: Raise
