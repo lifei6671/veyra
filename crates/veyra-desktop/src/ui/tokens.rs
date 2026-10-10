@@ -44,6 +44,13 @@ pub const NUMBER_WIDTH: f32 = 80.;
 pub const SLIDER_WIDTH: f32 = 256.;
 // .panel-settings 局部控件与浮层规格。
 pub const ROW_GAP: f32 = 4.;
+// OpenBox .ob-switch 默认尺寸、关闭色；面板局部覆盖沿用 SWITCH_*。
+pub const OB_SWITCH_WIDTH: f32 = 32.;
+pub const OB_SWITCH_HEIGHT: f32 = 18.;
+pub const OB_SWITCH_THUMB: f32 = 14.;
+pub const OB_SWITCH_PADDING: f32 = 2.;
+pub const OB_SWITCH_TRAVEL: f32 = 14.;
+pub const OB_SWITCH_OFF: u32 = 0xd9dedc;
 pub const SWITCH_WIDTH: f32 = 40.;
 pub const SWITCH_HEIGHT: f32 = 24.;
 pub const SWITCH_THUMB: f32 = 18.;
@@ -347,8 +354,30 @@ pub mod backend {
 
 // OpenBox openbox.css:1311–1465 节点组；原版固定逻辑像素，不取 Kit 默认值。
 pub mod groups {
+    // OpenBox .group-failover-*：只覆盖主备编辑器，不改变普通组。
+    pub const FAILOVER_HINT_TEXT: f32 = 11.;
+    pub const FAILOVER_HINT_LINE: f32 = 20.;
+    pub const LANE_SEARCH_GAP: f32 = 5.;
+    pub const LANE_SEARCH_ICON: f32 = 13.;
+    pub const LANE_MODE_WIDTH: f32 = 92.;
+    pub const LANE_MODE_HEIGHT: f32 = 28.;
+    pub const LANE_MODE_TEXT: f32 = 10.;
+    pub const LANE_HEAD_HEIGHT: f32 = 38.;
+    pub const LANE_SETTINGS_HEIGHT: f32 = 36.;
+    pub const LANE_TAB_HEIGHT: f32 = 31.;
+    pub const LANE_TAB_PAD: f32 = 13.;
+    pub const LANE_TAB_BAR: f32 = 39.;
+    pub const LANE_SETTINGS_PAD: f32 = 7.;
+    pub const LANE_ICON_WIDTH: f32 = 145.;
+    pub const LANE_DELETE_WIDTH: f32 = 34.;
+    pub const FAILOVER_MIN_HEIGHT: f32 = 322.;
+    pub const ADVANCED_TIMEOUT: f32 = 120.;
+    pub const ADVANCED_FAILURE: f32 = 140.;
+    pub const ADVANCED_RECOVERY: f32 = 140.;
     pub const COMPACT_RADIUS: f32 = 7.;
     pub const FOOTER_GAP: f32 = 10.;
+    // OpenBox .compact-button / .primary-button gap。
+    pub const FOOTER_CONTENT_GAP: f32 = 7.;
     pub const PRIMARY_TEXT: f32 = 11.;
     pub const HINT_LINE: f32 = 16.;
     pub const FOOTER_BUTTON_PAD: f32 = 14.;
@@ -378,9 +407,17 @@ pub mod groups {
     pub const SCALE_RESET: f32 = 52.;
     pub const TABS_WIDTH: f32 = 124.;
     pub const MODAL_WIDTH: f32 = 896.;
+    // P4-02 已批准不透明 surface 替代 GPUI 无法等价实现的 backdrop blur。
+    // 只降低 alpha 会让列表文字清晰穿透，与原版模糊背景不同。
+    pub const MODAL_ALPHA: f32 = 1.;
+    pub const AUTO_MODAL_ALPHA: f32 = 0.94;
     pub const HEADER: f32 = 41.;
     pub const FOOTER: f32 = 49.;
+    pub const TITLE_LINE: f32 = 20.;
+    pub const RUNTIME_WIDTH: f32 = 380.;
     pub const CARD_HEIGHT: f32 = 60.;
+    // .group-card background: var(--surface)，浅色为白色 75%。
+    pub const CARD_ALPHA: f32 = 0.75;
     pub const CARD_PAD_Y: f32 = 11.;
     pub const CARD_ICON: f32 = 18.;
     pub const CARD_ACTION: f32 = 30.;
@@ -445,4 +482,25 @@ pub mod logs {
     pub const WARNING: u32 = 0xa26d1b;
     pub const ERROR: u32 = 0xc44d4d;
     pub const DEBUG: u32 = 0x6e7b80;
+}
+
+/// OpenBox shared EmptyState / ErrorState，CSS 915–920、1506–1510。
+pub mod status {
+    pub const EMPTY_ACCENT_DARK: u32 = 0x57c98b;
+    pub const EMPTY_ALPHA: f32 = 0.13;
+    pub const EMPTY_ALPHA_DARK: f32 = 0.14;
+    pub const EMPTY_HEIGHT: f32 = 180.;
+    pub const EMPTY_ICON_BOX: f32 = 52.;
+    pub const EMPTY_ICON_RADIUS: f32 = 17.;
+    pub const EMPTY_ICON_TEXT: f32 = 20.;
+    pub const EMPTY_TITLE_MARGIN: f32 = 14.;
+    pub const EMPTY_TEXT_MARGIN: f32 = 5.;
+    pub const EMPTY_TEXT_WIDTH: f32 = 380.;
+    pub const EMPTY_TEXT_SIZE: f32 = 10.;
+    pub const EMPTY_TEXT_LINE: f32 = 17.;
+    pub const ERROR_WIDTH: f32 = 720.;
+    pub const ERROR_GAP: f32 = 13.;
+    pub const RETRY_HEIGHT: f32 = 36.;
+    pub const RETRY_PADDING: f32 = 15.;
+    pub const RETRY_RADIUS: f32 = 11.;
 }

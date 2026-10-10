@@ -4,6 +4,45 @@ use crate::domain::{AppState, ConfigVersion, PoolId, SelectionVersion};
 use std::collections::BTreeMap;
 
 pub const RECOVERY_FORMAT: u32 = 1;
+pub(super) fn health_tag(id: &PoolId) -> String {
+    pool_tag(&format!("failover-health-{}", id.0))
+}
+/// 从已校验 Compiler 图派生叶子，嵌套 pool/URLTest 也不会重新进入 group checking 锁。
+pub(super) fn health_members(document: &Document, tag: &str) -> Result<Vec<String>, CompileError> {
+    fn visit(
+        document: &Document,
+        tag: &str,
+        seen: &mut BTreeSet<String>,
+        leaves: &mut BTreeSet<String>,
+    ) -> Result<(), CompileError> {
+        if !seen.insert(tag.into()) {
+            return Ok(());
+        }
+        let members = document.outbounds.iter().find_map(|o| match o {
+            CoreOutbound::Selector(s) if s.tag == tag => Some(&s.outbounds),
+            CoreOutbound::Urltest(s) if s.tag == tag => Some(&s.outbounds),
+            _ => None,
+        });
+        if let Some(members) = members {
+            for member in members {
+                visit(document, member, seen, leaves)?;
+            }
+        } else if document.outbounds.iter().any(|o| o.tag() == tag)
+            || document.endpoints.iter().any(|o| o.tag == tag)
+        {
+            leaves.insert(tag.into());
+        } else {
+            return Err(CompileError::InvalidFinalConfiguration);
+        }
+        Ok(())
+    }
+    let mut leaves = BTreeSet::new();
+    visit(document, tag, &mut BTreeSet::new(), &mut leaves)?;
+    if leaves.is_empty() {
+        return Err(CompileError::InvalidFinalConfiguration);
+    }
+    Ok(leaves.into_iter().collect())
+}
 #[derive(Clone, Debug, Serialize, Deserialize, Eq, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct AppliedPool {
@@ -23,8 +62,23 @@ pub struct AppliedArtifactIndex {
     /// 组 selector 可含节点、组或 Direct，保持用户顺序；旧节点池选择契约不变。
     #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
     pub groups: BTreeMap<PoolId, Vec<OutboundId>>,
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub group_health: BTreeMap<PoolId, String>,
 }
 impl AppliedArtifactIndex {
+    /// Group 使用 OutboundId；禁止将 group/lane tag 伪装为 NodeId。
+    pub fn group_member_tag(&self, selector: &PoolId, member: &OutboundId) -> Option<String> {
+        self.groups
+            .get(selector)?
+            .contains(member)
+            .then(|| outbound_tag(member))
+    }
+    pub fn group_tag(&self, selector: &PoolId) -> Option<String> {
+        self.groups
+            .contains_key(selector)
+            .then(|| pool_tag(&selector.0))
+    }
+
     pub(super) fn compile(state: &AppState, intent: &RuntimeIntent) -> Self {
         let pools = intent
             .pools
@@ -63,6 +117,17 @@ impl AppliedArtifactIndex {
             config: state.config_version(),
             selection: state.selection_version(),
             pools,
+            group_health: state
+                .groups
+                .iter()
+                .filter(|g| g.rule == crate::domain::GroupRule::Failover)
+                .flat_map(|g| g.lanes.iter().map(|l| l.pool_id(&g.id)))
+                .filter(|id| intent.groups.iter().any(|g| g.id == *id))
+                .map(|id| {
+                    let tag = health_tag(&id);
+                    (id, tag)
+                })
+                .collect(),
             groups: intent
                 .groups
                 .iter()
@@ -103,8 +168,17 @@ impl AppliedArtifactIndex {
                 }
             })
             .collect();
-        if selectors.len() != self.pools.len() + self.groups.len() {
+        if selectors.len() != self.pools.len() + self.groups.len() + self.group_health.len() {
             return Err(invalid);
+        }
+        for (id, tag) in &self.group_health {
+            let probe = selectors.iter().find(|s| s.tag == *tag).ok_or(invalid)?;
+            if *tag != health_tag(id)
+                || probe.default.is_some()
+                || probe.outbounds != health_members(document, &pool_tag(&id.0))?
+            {
+                return Err(invalid);
+            }
         }
         for (id, members) in &self.groups {
             let selector = selectors

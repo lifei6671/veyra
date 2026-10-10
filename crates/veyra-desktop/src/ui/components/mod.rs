@@ -33,6 +33,8 @@ impl PanelInput {
     }
     // 当前图标搜索框有 CSS 局部 focus 颜色/offset，输入语义仍由 Kit 管理。
     pub fn focus_style(mut self, color: Hsla, offset: f32) -> Self {
+        // 显式的 CSS focus 覆盖优先于通用 accent border；透明色可保留 outline: 0。
+        self.border_focus = false;
         self.focus_style = Some((color, offset));
         self
     }
@@ -120,6 +122,7 @@ impl RenderOnce for PanelInput {
                             };
                             gpui_kit::base::Button::new((if increment { "number-up" } else { "number-down" }, state.entity_id()))
                                 .tab_stop(false)
+                                .disabled(self.disabled || self.readonly)
                                 .accessibility_label(tr(cx, if increment { "增加数值" } else { "减少数值" }))
                                 .w(px(t::SPINNER_WIDTH))
                                 .h(px(t::SPINNER_HEIGHT / 2.))
@@ -199,6 +202,7 @@ pub fn select(
 pub struct PanelSwitch {
     control: gpui_kit::base::Switch,
     checked: bool,
+    compact: bool,
     id: ElementId,
 }
 impl Disableable for PanelSwitch {
@@ -208,6 +212,11 @@ impl Disableable for PanelSwitch {
     }
 }
 impl PanelSwitch {
+    /// OpenBox 默认 .ob-switch；面板设置仍保留其局部 40×24 覆盖。
+    pub fn compact(mut self) -> Self {
+        self.compact = true;
+        self
+    }
     pub fn on_change(mut self, handler: impl Fn(&bool, &mut Window, &mut App) + 'static) -> Self {
         self.control = self
             .control
@@ -258,12 +267,30 @@ impl RenderOnce for PanelSwitch {
                     2.,
                 ))
             })
+            .when(self.compact, |s| {
+                s.w(px(super::tokens::OB_SWITCH_WIDTH))
+                    .h(px(super::tokens::OB_SWITCH_HEIGHT))
+                    .p(px(super::tokens::OB_SWITCH_PADDING))
+                    .border_0()
+                    .rounded_full()
+                    .bg(rgb(if self.checked {
+                        super::tokens::ACCENT
+                    } else {
+                        super::tokens::OB_SWITCH_OFF
+                    }))
+            })
             .child(
                 div()
-                    .size(px(super::tokens::SWITCH_THUMB))
+                    .size(px(if self.compact {
+                        super::tokens::OB_SWITCH_THUMB
+                    } else {
+                        super::tokens::SWITCH_THUMB
+                    }))
                     .rounded_full()
-                    .bg(thumb)
-                    .ml(px(if self.checked {
+                    .bg(if self.compact { rgb(0xffffff) } else { thumb })
+                    .ml(px(if self.checked && self.compact {
+                        super::tokens::OB_SWITCH_TRAVEL
+                    } else if self.checked {
                         super::tokens::SWITCH_TRAVEL
                     } else {
                         0.
@@ -278,6 +305,7 @@ pub fn toggle(id: &'static str, checked: bool, label: impl Into<SharedString>) -
             .checked(checked)
             .accessibility_label(label),
         checked,
+        compact: false,
     }
 }
 /// Kit 保留点击与键盘行为；焦点装饰在内容裁切层外绘制。
@@ -285,7 +313,7 @@ pub fn toggle(id: &'static str, checked: bool, label: impl Into<SharedString>) -
 pub struct PanelButton {
     button: Button,
     tooltip: Option<SharedString>,
-    id: &'static str,
+    id: ElementId,
     radius: f32,
     disabled: bool,
     reference_hover: Option<[Hsla; 3]>,
@@ -351,14 +379,11 @@ impl RenderOnce for PanelButton {
         // 与 Kit Button 在同一父元素 scope 读取它的稳定焦点 id；放入 child 后
         // scope 已进入 Button/content，会读到另一个 handle 且被 overflow 裁切。
         if let Some([normal, hover, foreground]) = self.reference_hover {
-            let state = window.use_keyed_state(
-                (ElementId::from(self.id), "reference-hover"),
-                cx,
-                |_, _| false,
-            );
+            let state =
+                window.use_keyed_state((self.id.clone(), "reference-hover"), cx, |_, _| false);
             let hovered = !self.disabled && *state.read(cx);
             let bg = gpui_kit::base::motion::transition(
-                (self.id, "reference-bg"),
+                (self.id.clone(), "reference-bg"),
                 if hovered { hover } else { normal },
                 reference_button_transition(),
                 window,
@@ -388,7 +413,7 @@ impl RenderOnce for PanelButton {
         let tooltip = self.tooltip;
         let button = RenderOnce::render(self.button, window, cx).into_any_element();
         let focus = window
-            .use_keyed_state(self.id, cx, |_, cx| cx.focus_handle())
+            .use_keyed_state(self.id.clone(), cx, |_, cx| cx.focus_handle())
             .read(cx)
             .clone();
         let focused =
@@ -425,11 +450,12 @@ impl RenderOnce for PanelButton {
             })
     }
 }
-pub fn button(id: &'static str, label: impl Into<SharedString>) -> PanelButton {
+pub fn button(id: impl Into<ElementId>, label: impl Into<SharedString>) -> PanelButton {
     use gpui_kit::component::FocusableExt as _;
     let label = label.into();
+    let id = id.into();
     PanelButton {
-        id,
+        id: id.clone(),
         tooltip: None,
         radius: super::tokens::RADIUS,
         disabled: false,
@@ -558,7 +584,7 @@ pub fn navigation_item(
         .when(collapsed, |b| b.justify_center())
         .when(active, |b| b.bg(rgb(active_bg)).text_color(foreground));
     PanelButton {
-        id,
+        id: id.into(),
         tooltip: None,
         button,
         disabled: false,
@@ -730,8 +756,14 @@ pub struct IconButton {
     disabled: bool,
     primary: bool,
     reference_ghost: Option<(Hsla, Hsla)>,
+    retain_disabled_appearance: bool,
 }
 impl IconButton {
+    /// 编辑器提交期间仍阻断操作，但保留 React 的正常颜色。
+    pub fn retain_disabled_appearance(mut self) -> Self {
+        self.retain_disabled_appearance = true;
+        self
+    }
     /// 复用 OpenBox btn-primary btn-square；禁用只阻断操作，不另加透明度改变参考颜色。
     pub fn primary(mut self) -> Self {
         self.primary = true;
@@ -837,7 +869,11 @@ impl RenderOnce for IconButton {
         };
         self.button
             .bg(bg)
-            .opacity(if self.disabled { 0.5 } else { 1. })
+            .opacity(if self.disabled && !self.retain_disabled_appearance {
+                0.5
+            } else {
+                1.
+            })
             .text_color(fg)
             .when(self.primary, |b| b.rounded(px(radius)))
             .when(!self.disabled, |b| {
@@ -903,6 +939,7 @@ pub fn icon_button_content(
         disabled: false,
         primary: false,
         reference_ghost: None,
+        retain_disabled_appearance: false,
         button: gpui_kit::base::Button::new(id)
             .accessibility_label(label)
             .size(px(size))
@@ -1161,3 +1198,86 @@ pub fn loading_spinner(size: f32, cx: &App) -> impl IntoElement {
 }
 
 pub mod qr;
+
+/// 原 React shared.EmptyState 的 compact 状态，复用当前主题与全局语言。
+pub fn empty_state(icon: &'static str, title: &str, text: &str, cx: &App) -> Div {
+    use super::tokens::{self as t, status as s};
+    div()
+        .min_h(px(s::EMPTY_HEIGHT))
+        .w_full()
+        .flex()
+        .flex_col()
+        .items_center()
+        .justify_center()
+        .text_center()
+        .child(
+            div()
+                .size(px(s::EMPTY_ICON_BOX))
+                .rounded(px(s::EMPTY_ICON_RADIUS))
+                .bg(if cx.theme().mode.is_dark() {
+                    rgb(s::EMPTY_ACCENT_DARK).opacity(s::EMPTY_ALPHA_DARK)
+                } else {
+                    rgb(t::ACCENT).opacity(s::EMPTY_ALPHA)
+                })
+                .text_color(rgb(t::ACCENT_STRONG))
+                .text_size(px(s::EMPTY_ICON_TEXT))
+                .flex()
+                .items_center()
+                .justify_center()
+                .child(icon),
+        )
+        .child(
+            div()
+                .mt(px(s::EMPTY_TITLE_MARGIN))
+                .mb(px(s::EMPTY_TEXT_MARGIN))
+                .text_size(px(t::BODY))
+                .font_weight(FontWeight::BOLD)
+                .child(tr(cx, title).to_owned()),
+        )
+        .child(
+            div()
+                .max_w(px(s::EMPTY_TEXT_WIDTH))
+                .text_size(px(s::EMPTY_TEXT_SIZE))
+                .line_height(px(s::EMPTY_TEXT_LINE))
+                .text_color(cx.theme().muted_foreground)
+                .child(tr(cx, text).to_owned()),
+        )
+}
+/// 原 React shared.ErrorState：错误内容及重试动作来自调用方的真实服务结果。
+pub fn error_state(title: &str, message: &str, action: impl IntoElement, cx: &App) -> Div {
+    use super::tokens::{self as t, status as s};
+    div()
+        .w_full()
+        .max_w(px(s::ERROR_WIDTH))
+        .mx_auto()
+        .mb(px(t::PAD))
+        .p(px(t::SECTION_PADDING))
+        .rounded(cx.theme().radius_lg)
+        .bg(cx.theme().popover)
+        .flex()
+        .items_center()
+        .gap(px(s::ERROR_GAP))
+        .child(
+            super::icons::icon("ExclamationTriangle", t::SUBSCRIPTION_EMPTY_ICON)
+                .text_color(rgb(t::SUBSCRIPTION_ERROR)),
+        )
+        .child(
+            div()
+                .flex_1()
+                .min_w_0()
+                .child(
+                    div()
+                        .text_size(px(t::BODY))
+                        .font_weight(FontWeight::BOLD)
+                        .child(tr(cx, title).to_owned()),
+                )
+                .child(
+                    div()
+                        .mt(px(t::SUBSCRIPTION_SKIPPED_GAP))
+                        .text_size(px(t::SUBSCRIPTION_TEXT_BUTTON))
+                        .text_color(cx.theme().muted_foreground)
+                        .child(tr(cx, message).to_owned()),
+                ),
+        )
+        .child(action)
+}

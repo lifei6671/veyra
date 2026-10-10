@@ -25,7 +25,7 @@ pub struct AppView {
     pub shared_network: Entity<crate::ui::shared_network::SharedNetworkView>,
     _shared_network_subscription: Subscription,
     pub groups: Entity<crate::ui::groups::GroupsView>,
-    _groups_subscription: Subscription,
+    _groups_subscription: [Subscription; 2],
     _subscriptions: Subscription,
     _shares_updates: Subscription,
     pub logs: Entity<crate::ui::logs::LogsView>,
@@ -152,6 +152,12 @@ impl AppView {
             &groups,
             |this, _, event: &crate::ui::groups::GroupsEvent, _| {
                 this.services.groups_command(event.clone())
+            },
+        );
+        let groups_runtime_subscription = cx.subscribe(
+            &groups,
+            |this, _, event: &crate::ui::groups::GroupsRuntimeEvent, _| {
+                this.services.groups_runtime_command(event.clone())
             },
         );
         let panel = cx.new(|cx| crate::ui::panel::PanelView::new(window, cx));
@@ -299,7 +305,7 @@ impl AppView {
             _subscriptions: subscriptions_listener,
             _shares_updates: shares_updates,
             groups,
-            _groups_subscription: groups_subscription,
+            _groups_subscription: [groups_subscription, groups_runtime_subscription],
             shared_network,
             _shared_network_subscription: shared_network_subscription,
             bridge: StateBridge::default(),
@@ -609,6 +615,27 @@ impl AppView {
                 }
                 self.project_runtime(cx);
             }
+            AppEvent::GroupSelection {
+                request,
+                result,
+                snapshot,
+            } => {
+                self.groups.update(cx, |view, cx| {
+                    view.complete_runtime(request, result, window, cx)
+                });
+                if let Some(state) = snapshot
+                    && self.bridge.snapshot.as_ref().is_none_or(|old| {
+                        old.state_epoch == state.state_epoch
+                            && old.config_revision <= state.config_revision
+                            && old.selection_revision <= state.selection_revision
+                    })
+                {
+                    self.groups.update(cx, |view, cx| view.project(&state, cx));
+                    self.bridge.snapshot = Some(state);
+                    self.project_behavior(window, cx);
+                }
+                self.project_runtime(cx);
+            }
             AppEvent::Groups {
                 request,
                 result,
@@ -837,6 +864,9 @@ impl AppView {
         self.tray.project(self.bridge.snapshot.as_deref(), None);
     }
     fn project_runtime(&mut self, cx: &mut Context<Self>) {
+        self.groups.update(cx, |view, cx| {
+            view.project_runtime(self.bridge.runtime.clone(), cx)
+        });
         self.backend.update(cx, |view, cx| {
             view.snapshot = self.bridge.runtime.clone();
             view.operation = self.bridge.runtime_operation;

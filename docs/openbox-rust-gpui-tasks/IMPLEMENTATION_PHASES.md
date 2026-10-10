@@ -1,3 +1,11 @@
+**P4-03 FINAL DONE / 视觉人工审批（2026-10-10）**：Host 独立核验54/54原图哈希和React/GPUI同数据浅色1280×720逐态、主备运行反馈，正式审批视觉 PASS；最终UI18唯一定向PASS、Clippy/build/fmt/diff PASS，前轮Runtime107定向PASS及固定1.14.0 Native1PASS原证据保留，独立只读Review0 Finding。已批准不透明白色弹窗/字体栅格化/原生标题栏差异、Legacy Windows libcronet.dll Clippy基线FAIL、深色/其他缩放 NOT_RUN均保留。P4-03 DONE、owner/预约释放、无额外依赖立即解锁；P2-05 ACCEPTANCE、P2-06 DOING/其Runtime owner不变。进入本地commit→合并主开发分支→定向验证；不push。见[视觉审批与54张原图](P4-03-visual-final.md)、[Runtime交付](P4-03-runtime-acceptance.md)。
+
+**P4-03 正式 Runtime 集成交付（2026-10-09，仍 ACCEPTANCE）**：新组合树 `dev/p4-03-runtime` / `/Users/lifeilin/.codex/worktrees/p4-03-runtime/veyra`，输入检查点 `2f8e20fb2f3d082ffc439512dde140455665fecb`。与 P2-06 原 owner 精确协调后，唯一 ManualRuntime 选择入口已接 Group/Manual lane、真实健康编排、Auto/ManualPin/完整版本 pending→Controller→读回→CAS、重建恢复及 GPUI 真实反馈；107 个唯一定向测试、固定1.14.0 Native 1项、Core/Desktop Clippy/build/fmt/diff通过。独立 Review 及原 owner 生命周期复核无剩余所查 Finding；Review 核读证据，未亲自重跑。macOS显示设置依用户答复保持，加载/忙碌/错误/空/实际切换/重试有真实截图。旧Tauri Clippy缺Windows libcronet.dll FAIL与完整95%视觉OPEN保留，故不DONE、不增量commit/merge/主树复验/释放owner、不push。P2-05 ACCEPTANCE、P2-06 DOING及原owner保持，不解锁下游。[本轮记录](P4-03-runtime-acceptance.md)。下方历史保留。
+
+**P4-03 独立切片 / ACCEPTANCE（2026-10-09）**：主备模型/统一目录/正式 Compiler、生产保存/重建及纯策略/GPUI 编辑器交付；57 项唯一定向测试、Core/Desktop Clippy/build/fmt、锁定 1.14.0 check 通过，旧 Tauri Windows LICENSE 基线 FAIL 保留。真实页签/添加删除/取消、保存失败保草稿重试、重启、拖动排序通过，主用/备用/高级同数据原图留存；完整逐态视觉与150%档位仍 OPEN。原 P2-06 owner 已确认当前唯一入口仅支持真实 Manual pool，Group/Failover 健康探测、Auto/ManualPin/pending→Controller→CAS 尚未接通；未修改其 Runtime/Platform/Helper/IPC/公共 DTO，不伪造 Native 或手动固定结果。owner/预约保留，不 commit/merge/push 或释放；P2-05 ACCEPTANCE、P2-06 DOING 不变。68 卡 DONE27/DOING1/ACCEPTANCE2/READY1/TODO30/DEFERRED7，READY=P0-08，不启动下游。[交付与缺口](P4-03-acceptance.md)。下方历史保留。
+
+**P4-03 领取（2026-10-09）**：基线 `d713fa4621a0816fc56cefd473cf1b52b4b92218`，独立工作树 `/Users/lifeilin/.codex/worktrees/p4-03-failover/veyra` / `dev/p4-03-failover`。owner=Codex · P4-03 Core/Config/GPUI；预约 domain/groups.rs、domain/outbound_catalog.rs、独立 failover 策略与定向测试、Groups 保存校验、ui/groups.rs/i18n/tokens/必要 Groups 接线及本卡文档。P2-06 原 owner 已只读确认这些写范围；Runtime/Platform/Helper/IPC/公共 DTO、manual_runtime/恢复/pending CAS 仍由其持有。当前入口仅支持真实 Manual pool，Group/Failover 的唯一写入口与健康探测能力尚缺，未经单独协调不修改；先交付独立切片，运行期及实际 UI 验收不足时保持 ACCEPTANCE。P2-05 ACCEPTANCE、P2-06 DOING 保持；不操作用户 TUN/系统代理/DNS/路由/订阅，不 push。68卡 DONE27/DOING2/ACCEPTANCE1/READY1/TODO30/DEFERRED7；READY=P0-08。下方历史保留。
+
 **P3-03 最终收口（2026-10-09）**：唯一 WS 安全日志、正式 GPUI/原生导出、99 个唯一定向测试、锁定 1.14.0 与最终 150% 浅色同数据对照通过。用户确认多行拖选跟手且稳定；时间与级别统一 12px 为用户明确修正。独立 Review 无剩余 Finding，自有资源已清理。P3-03 DONE，owner/预约释放；本地独立提交/合并/主分支复验，不 push。68卡 DONE27/DOING1/ACCEPTANCE1/READY2/TODO30/DEFERRED7，READY=P0-08/P4-03；P2-05 ACCEPTANCE 未合并、P2-06 DOING/原 owner 保留。[最终记录](P3-03-acceptance.md)。下方逐轮历史不改写。
 
 **P3-03 真实 GUI 修复与验收（2026-10-09）**：生产单一WS安全日志/GPUI/原生导出及99个唯一定向测试已通过；真实1.14.0与独立Review已执行。用户反馈的多行排序/光标/placeholder已修复，跨行闪烁已消失，即时拖选反馈仍在复验。P3-03 → ACCEPTANCE/owner保留，不提前提交/合并；P2-05 ACCEPTANCE未合并、P2-06 DOING原owner不变。68卡DONE26/DOING1/ACCEPTANCE2/READY2/TODO30/DEFERRED7；READY=P0-08/P4-03。[实际记录](P3-03-acceptance.md)。下方历史不改写。
@@ -16,7 +24,7 @@
 
 ## 1 当前基线与范围
 
-- 新路线共 **61 个 macOS 任务、7 个 Windows 后续任务**。当前完成 **27项**：P0-01至07、P1全部8项、P2-01/P2-02A/P2-02B/P2-03/P2-04、P3-01/P3-03/P3-04、P4-02/P5-04/P5-05/P5-06；P2为 **5/10**、macOS为 **27/61**。P2-04 Host FINAL ACCEPTANCE PASS，P2-04-PENDING-PERSISTENCE-001及前轮P1/P2 Finding CLOSED，Runtime/Platform及Runtime公共契约owner/本卡预约释放；见[Host最终收口](P2-local-proxy.md#p2-04-final-host-closeout)。P4-02 DONE（[本轮记录](P4-02-acceptance.md)）；P5-06 DONE（[最终验收](P5-06-acceptance.md)）；P2-06 DOING；READY=P0-08/P4-03，未领取/未启动；P2-05 ACCEPTANCE，P3-03 DONE；其余任务状态/依赖与历史PASS/FAIL/REWORK/NOT_RUN保持。
+- 新路线共 **61 个 macOS 任务、7 个 Windows 后续任务**。当前完成 **28项**：P0-01至07、P1全部8项、P2-01/P2-02A/P2-02B/P2-03/P2-04、P3-01/P3-03/P3-04、P4-02/P4-03/P5-04/P5-05/P5-06；P2为 **5/10**、macOS为 **27/61**。P2-04 Host FINAL ACCEPTANCE PASS，P2-04-PENDING-PERSISTENCE-001及前轮P1/P2 Finding CLOSED，Runtime/Platform及Runtime公共契约owner/本卡预约释放；见[Host最终收口](P2-local-proxy.md#p2-04-final-host-closeout)。P4-02 DONE（[本轮记录](P4-02-acceptance.md)）；P5-06 DONE（[最终验收](P5-06-acceptance.md)）；P2-06 DOING；READY=P0-08，未领取/未启动；P4-03 DONE，最终视觉已批准；P2-05 ACCEPTANCE，P3-03 DONE；其余任务状态/依赖与历史PASS/FAIL/REWORK/NOT_RUN保持。
 - 已有 React UI 和旧 Rust 模块是迁移输入，不直接算 GPUI 新路线完成。P0-02 的完成仅指本次明确要求的范围/规则调整，该历史文档动作不计功能实现；现 P1-01 已完成核心抽取，P1-02 已完成类型/原子快照与版本。
 - 当前已建立根 Cargo workspace、单一 Cargo.lock 与 `crates/veyra-core/`；旧入口接共享核心。实际构建/纯测试见 P1-01 记录，不表示原型或真实设备验收完成。
 - 旧 SDLC 状态与 UI 门禁已按用户要求退役；不恢复缺失文件，不补办历史 DCR/UI Contract。当前进度以本目录为准。
@@ -34,7 +42,7 @@
 | 后期平台实施 | P2-06 checkpoint 后仍 DOING，GUI/Native/Helper 多轮恢复后补；P2-07 SystemProxy、P6-01 TUN/P6-02 恢复与依赖平台任务后做 | 保留接管/恢复与安全归属；前期系统开关禁用，真实能力完成后才开放；不新增 P3–P5 前置 |
 | 最终组合验收 | P2-09/P3-08/P4-07/P5-07/P6-05 仅补未执行 Native 与跨模块完整组合；P7-04 统一 GUI E2E，P7-05 最终包，P7-03 保留包构建/升级职责 | 系统能力、正式安装/真实内核网络、Sleep/Wake 切网真机组合、完整跨页/主题/缩放、6 主页/9 分类/77 API/19 场景整套复验；不承接前期全部局部功能测试 |
 
-P0-08 保留 READY 作路线准备，Windows 7 卡仍 DEFERRED。P2-06 checkpoint `f2457e6a4e2fe0ac3c9186bc7d17323a70c4c0a8` 已存在，但不证明 DONE 或恢复全通过；不继续以复杂崩溃恢复阻塞其它已 READY 功能。仅 OS 授权/正式内核网络的具体验证与完整组合项可记 NOT_RUN/原因/承接卡；选择测速、实际观测/连接操作、主备/Compiler/应用接口、DNS 本地测试/资源下载/应用、分享 HTTP/token 失效/退出清理及真实保存/加载均在各业务卡实现并局部定向验证，不得一并延期。68 卡与 DONE27/DOING1/ACCEPTANCE1/READY2/TODO30/DEFERRED7，已按实际显式依赖重算。
+P0-08 保留 READY 作路线准备，Windows 7 卡仍 DEFERRED。P2-06 checkpoint `f2457e6a4e2fe0ac3c9186bc7d17323a70c4c0a8` 已存在，但不证明 DONE 或恢复全通过；不继续以复杂崩溃恢复阻塞其它已 READY 功能。仅 OS 授权/正式内核网络的具体验证与完整组合项可记 NOT_RUN/原因/承接卡；选择测速、实际观测/连接操作、主备/Compiler/应用接口、DNS 本地测试/资源下载/应用、分享 HTTP/token 失效/退出清理及真实保存/加载均在各业务卡实现并局部定向验证，不得一并延期。68 卡与 DONE28/DOING1/ACCEPTANCE1/READY1/TODO30/DEFERRED7，已按实际显式依赖重算。
 
 ## 2 如何执行与更新
 
@@ -173,7 +181,7 @@ Task：OBG-Px-xx
 | --- | --- | --- | --- | --- | --- |
 | [OBG-P4-01 订阅高级项](P4-configuration.md#obg-p4-01) | P2-01、P2-05 | TODO | — | — | — |
 | [OBG-P4-02 静态/动态组](P4-configuration.md#obg-p4-02) | P2-01、P2-02A、P2-02B、P1-03、P1-04A | DONE | —（本卡owner/预约已释放） | — | [验收修正与交付](P4-02-acceptance.md) |
-| [OBG-P4-03 failover](P4-configuration.md#obg-p4-03) | P4-02、P2-04 | READY | — | — | 依赖均DONE；未领取，协调P2-06 Runtime/DTO owner |
+| [OBG-P4-03 failover](P4-configuration.md#obg-p4-03) | P4-02、P2-04 | DONE | —（本卡owner/预约已释放；P2-06 Runtime owner保留） | 已验收 | [最终视觉批复](P4-03-visual-final.md) |
 | [OBG-P4-04 规则资源](P4-configuration.md#obg-p4-04) | P2-02B、P2-04、P2-05、P1-04A | TODO | — | — | — |
 | [OBG-P4-06 链式代理](P4-configuration.md#obg-p4-06) | P2-02A、P2-02B、P2-05、P2-08 | TODO | — | — | — |
 | [OBG-P4-05A 目标分流/统一目录](P4-configuration.md#obg-p4-05a) | P4-03、P4-04、P4-06 | TODO | — | — | — |

@@ -450,6 +450,7 @@ fn manual_fixture() -> (
 fn request(owner: &ManualRuntime<Mock>, node: &str) -> ManualSelectionRequest {
     let s = owner.snapshot().unwrap();
     ManualSelectionRequest {
+        config: s.runtime.applied_version.clone().unwrap(),
         instance: s.runtime.instance_id.unwrap(),
         expected: s.confirmed_selection_version.unwrap(),
         pool: PoolId("manual".into()),
@@ -744,6 +745,7 @@ fn startup_reconcile_matching_different_and_invalid_target() {
         let mut invalid = ConfirmedSelection {
             version: state.selection_version(),
             nodes: BTreeMap::from([(PoolId("manual".into()), NodeId("deleted".into()))]),
+            groups: BTreeMap::new(),
         };
         invalid.version.0.revision += 1;
         let (fallback, warnings) = ManualRuntime::<Mock>::selection_for(
@@ -1007,16 +1009,23 @@ fn incompatible_or_incomplete_recovery_is_unavailable() {
         std::fs::remove_dir_all(root).unwrap();
     }
 }
-// 保护同epoch saved12/applied11时合法选择仍可确认，且不会把配置版本推进为已应用。
+// P4-03 新契约：配置变化后旧选择请求拒绝，不能覆盖新配置的成员或选择事实。
 #[test]
-fn selection_with_unapplied_profile_preserves_applied_config() {
+fn selection_rejects_unapplied_config_without_controller_write() {
     let (mut owner, _, store, root) = manual_fixture();
     owner.execute(RuntimeCommand::Start, |_| {}).unwrap();
     let before = owner.snapshot().unwrap();
     let mut state = store.load().unwrap();
     state.profile.reject_quic = !state.profile.reject_quic;
     let saved = store.commit(&state).unwrap();
-    owner.select_manual(request(&owner, "b")).unwrap();
+    assert_eq!(
+        owner.select_manual(request(&owner, "b")),
+        Err(SelectionError::ConfigChanged)
+    );
+    assert_eq!(
+        store.load().unwrap().selection_revision,
+        state.selection_revision
+    );
     let after = owner.snapshot().unwrap();
     assert_eq!(
         after.runtime.applied_version,
@@ -1385,6 +1394,7 @@ fn pending_uncovered_restore_rejects_manifest_failure_new_pool_before_prepare() 
         trace.lock().unwrap().read_failures.push_back(true);
         assert_eq!(
             owner.select_manual(ManualSelectionRequest {
+                config: ready.runtime.applied_version.clone().unwrap(),
                 instance: ready.runtime.instance_id.unwrap(),
                 expected: ready.confirmed_selection_version.unwrap(),
                 pool: PoolId("new-manual".into()),
@@ -2283,6 +2293,7 @@ fn first_bootstrap_freeze_is_durable_idempotent_and_incarnation_bound() {
     assert!(owner.execute(RuntimeCommand::Start, |_| {}).is_err());
     assert_eq!(
         owner.select_manual(ManualSelectionRequest {
+            config: version.config.clone(),
             instance: InstanceId("unstarted".into()),
             expected: version.selection.clone(),
             pool: PoolId("manual".into()),
@@ -2509,4 +2520,531 @@ fn traffic_storage_handoff_closes_before_release() {
     ));
     drop(owner);
     std::fs::remove_dir_all(root).unwrap();
+}
+
+// P4-03：保护稳定 Group/线路身份、真实事务顺序及选择与配置版本分离。
+fn p403_fixture() -> (
+    ManualRuntime<Mock>,
+    Arc<Mutex<Trace>>,
+    JsonStateStore,
+    PathBuf,
+) {
+    use crate::domain::*;
+    let (owner, trace, store, root) = manual_fixture();
+    let mut state = store.load().unwrap();
+    let mut group = NodeGroup::fresh().unwrap();
+    group.id = PoolId("failover".into());
+    group.name = "主备".into();
+    group.rule = GroupRule::Failover;
+    group.members.clear();
+    group.mode = GroupMode::Static;
+    group.failover = Some(FailoverSettings::default());
+    group.lanes = vec![
+        FailoverLane {
+            id: "primary".into(),
+            name: String::new(),
+            icon: String::new(),
+            members: vec![
+                OutboundId::Node(NodeId("a".into())),
+                OutboundId::Node(NodeId("b".into())),
+            ],
+            manual: true,
+        },
+        FailoverLane {
+            id: "backup".into(),
+            name: String::new(),
+            icon: String::new(),
+            members: vec![OutboundId::Node(NodeId("c".into()))],
+            manual: false,
+        },
+    ];
+    state.groups = vec![group];
+    state.default_target = RouteTarget::Pool(PoolId("failover".into()));
+    state.active_subscription_id = Some(SubscriptionId("subscription".into()));
+    state.routes.clear();
+    store.save(&state).unwrap();
+    (owner, trace, store, root)
+}
+fn p403_request(
+    owner: &ManualRuntime<Mock>,
+    selector: PoolId,
+    member: OutboundId,
+    mode: crate::domain::GroupSelectionMode,
+) -> ManualSelectionRequest<GroupChoice> {
+    let s = owner.snapshot().unwrap();
+    ManualSelectionRequest {
+        instance: s.runtime.instance_id.unwrap(),
+        config: s.runtime.applied_version.unwrap(),
+        expected: s.confirmed_selection_version.unwrap(),
+        pool: selector,
+        node: GroupChoice {
+            group: PoolId("failover".into()),
+            member,
+            mode,
+        },
+    }
+}
+#[test]
+fn p403_group_pin_lane_manual_resume_and_restart_are_selection_only() {
+    use crate::domain::*;
+    let (mut owner, trace, store, root) = p403_fixture();
+    owner.execute(RuntimeCommand::Start, |_| {}).unwrap();
+    let state = store.load().unwrap();
+    let group = &state.groups[0];
+    let outer = group.id.clone();
+    let primary = group.lanes[0].pool_id(&outer);
+    let backup = group.lanes[1].pool_id(&outer);
+    let request = p403_request(
+        &owner,
+        outer.clone(),
+        OutboundId::Pool(backup.clone()),
+        GroupSelectionMode::ManualPin,
+    );
+    owner.select_manual(request).unwrap();
+    let pinned = store.load().unwrap();
+    assert_eq!(pinned.config_revision, state.config_revision);
+    assert_eq!(pinned.selection_revision, state.selection_revision + 2);
+    assert_eq!(
+        pinned.group_selections[&outer].mode,
+        GroupSelectionMode::ManualPin
+    );
+    owner
+        .select_manual(p403_request(
+            &owner,
+            primary.clone(),
+            OutboundId::Node(NodeId("b".into())),
+            GroupSelectionMode::Auto,
+        ))
+        .unwrap();
+    assert_eq!(
+        owner.snapshot().unwrap().confirmed_group_selections[&outer],
+        OutboundId::Pool(backup)
+    );
+    assert_eq!(
+        store.load().unwrap().group_selections[&outer].mode,
+        GroupSelectionMode::ManualPin
+    );
+    owner
+        .select_manual(p403_request(
+            &owner,
+            outer.clone(),
+            OutboundId::Pool(primary.clone()),
+            GroupSelectionMode::Auto,
+        ))
+        .unwrap();
+    assert_eq!(
+        store.load().unwrap().group_selections[&outer].mode,
+        GroupSelectionMode::Auto
+    );
+    let old = owner.snapshot().unwrap().runtime.instance_id;
+    owner.execute(RuntimeCommand::Restart, |_| {}).unwrap();
+    assert_ne!(owner.snapshot().unwrap().runtime.instance_id, old);
+    assert_eq!(
+        owner.snapshot().unwrap().confirmed_group_selections[&primary],
+        OutboundId::Node(NodeId("b".into()))
+    );
+    assert!(trace.lock().unwrap().writes >= 3);
+    assert_eq!(store.load().unwrap().config_revision, state.config_revision);
+    owner.execute(RuntimeCommand::Stop, |_| {}).unwrap();
+    std::fs::remove_dir_all(root).unwrap();
+}
+#[test]
+fn p403_group_failure_retains_mode_and_pending_reads_actual_without_retry() {
+    use crate::domain::*;
+    let (mut owner, trace, store, root) = p403_fixture();
+    owner.execute(RuntimeCommand::Start, |_| {}).unwrap();
+    let group = store.load().unwrap().groups[0].clone();
+    let backup = OutboundId::Pool(group.lanes[1].pool_id(&group.id));
+    trace.lock().unwrap().write_failures.push_back(true);
+    assert_eq!(
+        owner.select_manual(p403_request(
+            &owner,
+            group.id.clone(),
+            backup.clone(),
+            GroupSelectionMode::ManualPin
+        )),
+        Err(SelectionError::ControllerWrite)
+    );
+    assert_eq!(
+        store.load().unwrap().group_selections[&group.id].mode,
+        GroupSelectionMode::Auto
+    );
+    assert!(
+        store.load().unwrap().group_selections[&group.id]
+            .pending
+            .is_none()
+    );
+    trace.lock().unwrap().read_failures.push_back(true);
+    assert_eq!(
+        owner.select_manual(p403_request(
+            &owner,
+            group.id.clone(),
+            backup.clone(),
+            GroupSelectionMode::ManualPin
+        )),
+        Err(SelectionError::ControllerReadBack)
+    );
+    assert_eq!(
+        store.load().unwrap().group_selections[&group.id].mode,
+        GroupSelectionMode::Auto
+    );
+    assert!(
+        store.load().unwrap().group_selections[&group.id]
+            .pending
+            .is_some()
+    );
+    let snapshot = owner.snapshot().unwrap();
+    assert_eq!(
+        snapshot.saved_selection_version,
+        store.load().unwrap().selection_version()
+    );
+    assert!(snapshot.confirmed_selection_version.is_none());
+    let writes = trace.lock().unwrap().writes;
+    owner
+        .execute(RuntimeCommand::ReconcileSelection, |_| {})
+        .unwrap();
+    assert_eq!(trace.lock().unwrap().writes, writes);
+    assert_eq!(
+        store.load().unwrap().group_selections[&group.id].mode,
+        GroupSelectionMode::ManualPin
+    );
+    assert_eq!(
+        owner.snapshot().unwrap().confirmed_group_selections[&group.id],
+        backup
+    );
+    owner.execute(RuntimeCommand::Stop, |_| {}).unwrap();
+    std::fs::remove_dir_all(root).unwrap();
+}
+#[test]
+fn p403_group_confirmation_disk_failure_and_config_conflict_keep_truth() {
+    use crate::domain::*;
+    let (mut owner, trace, store, root) = p403_fixture();
+    owner.execute(RuntimeCommand::Start, |_| {}).unwrap();
+    let group = store.load().unwrap().groups[0].clone();
+    let backup = OutboundId::Pool(group.lanes[1].pool_id(&group.id));
+    trace.lock().unwrap().save_obstacle = Some(root.join("state.tmp"));
+    assert_eq!(
+        owner.select_manual(p403_request(
+            &owner,
+            group.id.clone(),
+            backup.clone(),
+            GroupSelectionMode::ManualPin
+        )),
+        Err(SelectionError::ConfirmationSaveFailed)
+    );
+    assert!(
+        store.load().unwrap().group_selections[&group.id]
+            .pending
+            .is_some()
+    );
+    std::fs::remove_dir(root.join("state.tmp")).unwrap();
+    let writes = trace.lock().unwrap().writes;
+    owner
+        .execute(RuntimeCommand::ReconcileSelection, |_| {})
+        .unwrap();
+    assert_eq!(trace.lock().unwrap().writes, writes);
+    let request = p403_request(&owner, group.id.clone(), backup, GroupSelectionMode::Auto);
+    let mut state = store.load().unwrap();
+    state.groups[0].lanes[0].members.reverse();
+    store.commit(&state).unwrap();
+    assert_eq!(
+        owner.select_manual(request),
+        Err(SelectionError::ConfigChanged)
+    );
+    assert_eq!(trace.lock().unwrap().writes, writes);
+    owner.execute(RuntimeCommand::Stop, |_| {}).unwrap();
+    std::fs::remove_dir_all(root).unwrap();
+}
+
+// 保护配置编辑不会破坏未知 pending，也不会把无效 pin 偷偷固定到默认主用。
+#[test]
+fn p403_edit_pending_guard_and_invalid_pin_returns_auto() {
+    use crate::domain::*;
+    let (mut owner, trace, store, root) = p403_fixture();
+    owner.execute(RuntimeCommand::Start, |_| {}).unwrap();
+    let group = store.load().unwrap().groups[0].clone();
+    let backup = OutboundId::Pool(group.lanes[1].pool_id(&group.id));
+    trace.lock().unwrap().read_failures.push_back(true);
+    assert_eq!(
+        owner.select_manual(p403_request(
+            &owner,
+            group.id.clone(),
+            backup,
+            GroupSelectionMode::ManualPin
+        )),
+        Err(SelectionError::ControllerReadBack)
+    );
+    let before = store.load().unwrap();
+    let mut groups = before.groups.clone();
+    groups[0].lanes.pop();
+    assert!(
+        owner
+            .snapshots
+            .save_groups(before.config_version(), groups.clone())
+            .is_err()
+    );
+    assert_eq!(store.load().unwrap(), before);
+    // requested 仍存在也不能移除旧确认（此处为编译默认主用），或改变默认顺序。
+    let mut remove_old = before.groups.clone();
+    remove_old[0].lanes.remove(0);
+    assert!(
+        owner
+            .snapshots
+            .save_groups(before.config_version(), remove_old)
+            .is_err()
+    );
+    let mut reorder = before.groups.clone();
+    reorder[0].lanes.reverse();
+    assert!(
+        owner
+            .snapshots
+            .save_groups(before.config_version(), reorder)
+            .is_err()
+    );
+    assert_eq!(store.load().unwrap(), before);
+    owner
+        .execute(RuntimeCommand::ReconcileSelection, |_| {})
+        .unwrap();
+    let before = store.load().unwrap();
+    let saved = owner
+        .snapshots
+        .save_groups(before.config_version(), groups)
+        .unwrap()
+        .value;
+    assert_eq!(
+        saved.group_selections[&group.id].mode,
+        GroupSelectionMode::Auto
+    );
+    assert!(saved.group_selections[&group.id].selected.is_none());
+    assert_eq!(saved.selection_revision, before.selection_revision + 1);
+    assert_eq!(saved.config_revision, before.config_revision + 1);
+    owner.execute(RuntimeCommand::Stop, |_| {}).unwrap();
+    std::fs::remove_dir_all(root).unwrap();
+}
+// 保护旧 Group manifest 升级后仍能恢复；明确默认值随后通过当前 child GET 核对。
+#[test]
+fn p403_old_group_manifest_without_group_section_is_readable() {
+    let (mut owner, _, store, root) = p403_fixture();
+    owner.execute(RuntimeCommand::Start, |_| {}).unwrap();
+    owner.execute(RuntimeCommand::Stop, |_| {}).unwrap();
+    let path = root.join("runtime/last-applied.json");
+    let mut manifest: serde_json::Value =
+        serde_json::from_slice(&std::fs::read(&path).unwrap()).unwrap();
+    manifest["confirmed_selection"]
+        .as_object_mut()
+        .unwrap()
+        .remove("groups");
+    std::fs::write(&path, serde_json::to_vec(&manifest).unwrap()).unwrap();
+    assert!(owner.load_recovery(&store.load().unwrap()).is_ok());
+    owner
+        .execute(RuntimeCommand::RestoreLastSuccessful, |_| {})
+        .unwrap();
+    assert_eq!(
+        owner.snapshot().unwrap().confirmed_group_selections.len(),
+        3
+    );
+    owner.execute(RuntimeCommand::Stop, |_| {}).unwrap();
+    std::fs::remove_dir_all(root).unwrap();
+}
+
+#[test]
+fn p403_plain_selector_rejects_pin_before_pending_or_controller() {
+    // 普通组只能选择成员；非法 pin 必须在 Controller 前拒绝，而不是写后卡 pending。
+    use crate::domain::*;
+    let (mut owner, trace, store, root) = p403_fixture();
+    let mut state = store.load().unwrap();
+    state.groups[0].rule = GroupRule::Selector;
+    state.groups[0].members = vec![
+        OutboundId::Node(NodeId("a".into())),
+        OutboundId::Node(NodeId("b".into())),
+    ];
+    state.groups[0].lanes.clear();
+    state.groups[0].failover = None;
+    store.commit(&state).unwrap();
+    owner.execute(RuntimeCommand::Start, |_| {}).unwrap();
+    let state = store.load().unwrap();
+    let before = trace.lock().unwrap().writes;
+    let group = state.groups[0].id.clone();
+    assert_eq!(
+        owner.select_manual(p403_request(
+            &owner,
+            group.clone(),
+            OutboundId::Node(NodeId("b".into())),
+            GroupSelectionMode::ManualPin
+        )),
+        Err(SelectionError::InvalidMember)
+    );
+    assert_eq!(trace.lock().unwrap().writes, before);
+    assert_eq!(store.load().unwrap(), state);
+    assert!(
+        SelectionService::new(owner.snapshots.as_ref().clone())
+            .stage_group(
+                state.config_version(),
+                state.selection_version(),
+                group,
+                GroupSelectionIntent {
+                    member: OutboundId::Node(NodeId("b".into())),
+                    mode: GroupSelectionMode::ManualPin
+                },
+                None
+            )
+            .is_err()
+    );
+    assert_eq!(store.load().unwrap(), state);
+    owner.execute(RuntimeCommand::Stop, |_| {}).unwrap();
+    std::fs::remove_dir_all(root).unwrap();
+}
+
+// 核对使用原快照；读取 Controller 期间的配置保存不得被重新绑定为已确认选择。
+#[test]
+fn p403_reconcile_keeps_request_fence_during_concurrent_save() {
+    use crate::domain::*;
+    let (mut owner, trace, store, root) = p403_fixture();
+    owner.execute(RuntimeCommand::Start, |_| {}).unwrap();
+    let group = store.load().unwrap().groups[0].clone();
+    let backup = OutboundId::Pool(group.lanes[1].pool_id(&group.id));
+    trace.lock().unwrap().read_failures.push_back(true);
+    assert_eq!(
+        owner.select_manual(p403_request(
+            &owner,
+            group.id.clone(),
+            backup,
+            GroupSelectionMode::ManualPin
+        )),
+        Err(SelectionError::ControllerReadBack)
+    );
+    let snapshot = owner.snapshot().unwrap();
+    let instance = snapshot.runtime.instance_id.unwrap();
+    let expected = store.load().unwrap().version();
+    let reads = trace.lock().unwrap().reads;
+    let mut stale = expected.clone();
+    stale.selection.0.revision -= 1;
+    assert_eq!(
+        owner.reconcile_selection(instance.clone(), stale, group.id.clone()),
+        Err(SelectionError::StaleVersion)
+    );
+    assert_eq!(trace.lock().unwrap().reads, reads);
+    let mut changed = store.load().unwrap();
+    changed.groups[0].name = "保存后的名字".into();
+    trace.lock().unwrap().business_on_read = Some(changed);
+    let writes = trace.lock().unwrap().writes;
+    assert_eq!(
+        owner.reconcile_selection(instance.clone(), expected.clone(), group.id.clone()),
+        Err(SelectionError::Pending)
+    );
+    assert_eq!(trace.lock().unwrap().writes, writes);
+    assert!(
+        store.load().unwrap().group_selections[&group.id]
+            .pending
+            .is_some()
+    );
+    assert_eq!(
+        owner.reconcile_selection(instance, expected, group.id),
+        Err(SelectionError::ConfigChanged)
+    );
+    owner.execute(RuntimeCommand::Stop, |_| {}).unwrap();
+    std::fs::remove_dir_all(root).unwrap();
+}
+
+// candidate 已确认 pending 后，后续读回失败仍可按最新已确认快照回退成功版。
+#[test]
+fn p403_pending_confirm_then_read_failure_rolls_back_with_latest_version() {
+    let (mut owner, trace, store, root) = manual_fixture();
+    owner.execute(RuntimeCommand::Start, |_| {}).unwrap();
+    owner.execute(RuntimeCommand::Stop, |_| {}).unwrap();
+    let state = store.load().unwrap();
+    let pending = SelectionService::new((*owner.snapshots).clone())
+        .begin_manual_pending(
+            state.selection_version(),
+            PoolId("manual".into()),
+            NodeId("b".into()),
+        )
+        .unwrap();
+    {
+        let mut t = trace.lock().unwrap();
+        t.cache_choices
+            .insert("pool-manual".into(), "node-b".into());
+        t.read_failures.extend([false, true]);
+    }
+    assert_eq!(
+        owner.execute(RuntimeCommand::ApplySaved, |_| {}),
+        Err(RuntimeError::CandidateRolledBack(
+            CandidateFailure::SelectionReconcile
+        ))
+    );
+    let saved = store.load().unwrap();
+    assert_eq!(saved.selection_revision, pending.version.0.revision + 1);
+    assert!(!ManualRuntime::<Mock>::has_pending(&saved));
+    assert_eq!(
+        owner.snapshot().unwrap().confirmed_selection_version,
+        Some(saved.selection_version())
+    );
+    assert_eq!(
+        owner.snapshot().unwrap().runtime.status,
+        crate::application::runtime_snapshot::RuntimeStatus::Ready
+    );
+    owner.execute(RuntimeCommand::Stop, |_| {}).unwrap();
+    std::fs::remove_dir_all(root).unwrap();
+}
+
+// 核对时 child 退出/清理失败，不得发布旧 Ready，也不得清除不确定 pending。
+fn p403_reconcile_inactive_child_case(fail_stop: bool) {
+    use crate::application::runtime_snapshot::RuntimeStatus;
+    use crate::domain::*;
+    let (mut owner, trace, store, root) = p403_fixture();
+    owner.execute(RuntimeCommand::Start, |_| {}).unwrap();
+    let group = store.load().unwrap().groups[0].clone();
+    trace.lock().unwrap().read_failures.push_back(true);
+    assert_eq!(
+        owner.select_manual(p403_request(
+            &owner,
+            group.id.clone(),
+            OutboundId::Pool(group.lanes[1].pool_id(&group.id)),
+            GroupSelectionMode::ManualPin
+        )),
+        Err(SelectionError::ControllerReadBack)
+    );
+    let before = store.load().unwrap();
+    let instance = owner.snapshot().unwrap().runtime.instance_id.unwrap();
+    let (reads, writes) = {
+        let mut t = trace.lock().unwrap();
+        t.crash = true;
+        t.fail_stop = fail_stop;
+        (t.reads, t.writes)
+    };
+    assert_eq!(
+        owner.reconcile_selection(instance, before.version(), group.id.clone()),
+        Err(SelectionError::StaleInstance)
+    );
+    let after = owner.snapshot().unwrap();
+    assert_eq!(
+        after.runtime.status,
+        if fail_stop {
+            RuntimeStatus::Recovering
+        } else {
+            RuntimeStatus::Failed
+        }
+    );
+    assert!(after.runtime.applied_version.is_none());
+    assert!(after.runtime.instance_id.is_none());
+    assert!(after.endpoints.is_none());
+    assert!(after.uptime_seconds.is_none());
+    assert!(owner.failover.is_empty());
+    assert!(after.failover_status.is_empty());
+    assert_eq!(store.load().unwrap(), before);
+    {
+        let t = trace.lock().unwrap();
+        assert_eq!((t.reads, t.writes), (reads, writes));
+    }
+    trace.lock().unwrap().fail_stop = false;
+    owner.execute(RuntimeCommand::Stop, |_| {}).unwrap();
+    std::fs::remove_dir_all(root).unwrap();
+}
+#[test]
+fn p403_reconcile_exited_child_clears_ready_and_keeps_pending() {
+    p403_reconcile_inactive_child_case(false);
+}
+#[test]
+fn p403_reconcile_cleanup_failure_clears_ready_and_keeps_pending() {
+    p403_reconcile_inactive_child_case(true);
 }

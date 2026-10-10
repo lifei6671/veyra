@@ -10,6 +10,7 @@ pub fn icon(name: &str, size: f32) -> Icon {
         "Bars3" => include_bytes!("../../assets/heroicons/Bars3.svg"),
         "ClipboardDocument" => include_bytes!("../../assets/heroicons/ClipboardDocument.svg"),
         "NoSymbol" => include_bytes!("../../assets/heroicons/NoSymbol.svg"),
+        "ArrowLeft" => include_bytes!("../../assets/heroicons/ArrowLeft.svg"),
         "ArrowRight" => include_bytes!("../../assets/heroicons/ArrowRight.svg"),
         "Plus" => include_bytes!("../../assets/heroicons/Plus.svg"),
         "CheckCircle" => include_bytes!("../../assets/heroicons/CheckCircle.svg"),

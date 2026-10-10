@@ -10,6 +10,7 @@ use super::{
 use crate::{
     domain::{
         AppState, ConfigVersion, NodeId, OutboundId, PoolId, SelectionPolicy, SelectionVersion,
+        SnapshotVersion,
     },
     singbox::{
         LoopbackListener, ManagedCacheFile, ProductCompileRequest, ProductRuntimeResources,
@@ -64,11 +65,33 @@ pub enum RuntimeError {
     RollbackFailed(CandidateFailure),
 }
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub struct ManualSelectionRequest {
+pub struct ManualSelectionRequest<T = NodeId> {
     pub instance: InstanceId,
     pub expected: SelectionVersion,
     pub pool: PoolId,
-    pub node: NodeId,
+    pub node: T,
+    pub config: ConfigVersion,
+}
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct GroupChoice {
+    pub group: PoolId,
+    pub member: OutboundId,
+    pub mode: crate::domain::GroupSelectionMode,
+}
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub enum SelectionChoice {
+    Node(NodeId),
+    Group(GroupChoice),
+}
+impl From<NodeId> for SelectionChoice {
+    fn from(v: NodeId) -> Self {
+        Self::Node(v)
+    }
+}
+impl From<GroupChoice> for SelectionChoice {
+    fn from(v: GroupChoice) -> Self {
+        Self::Group(v)
+    }
 }
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum SelectionError {
@@ -100,11 +123,16 @@ pub struct ManualRuntimeSnapshot {
     pub uptime_seconds: Option<u64>,
     pub kernel_available: bool,
     pub recovery: RecoveryAvailability,
+    /// 与 runtime.saved_version 同次读取，包含 pending；不代表已确认或已应用。
+    pub saved_selection_version: SelectionVersion,
     pub confirmed_selection_version: Option<SelectionVersion>,
     pub pending_selection: Option<PendingSelection>,
     pub pending_selections: Vec<PendingSelection>,
     pub selection_fallbacks: Vec<PoolId>,
     pub confirmed_manual_selections: BTreeMap<PoolId, NodeId>,
+    pub group_selections: BTreeMap<PoolId, crate::domain::GroupSelection>,
+    pub confirmed_group_selections: BTreeMap<PoolId, OutboundId>,
+    pub failover_status: BTreeMap<PoolId, FailoverStatus>,
 }
 struct ActivePlan {
     plan: SingBoxPlan,
@@ -123,6 +151,11 @@ pub struct ManualRuntime<P> {
     observation: super::observability::controller::ObservationService,
     // 同步 Runtime worker 的观测执行器；不拥有业务事实或另一个内核实例。
     observation_executor: Option<tokio::runtime::Runtime>,
+    failover: BTreeMap<PoolId, failover_runtime::Runner>,
+    failover_results: std::sync::mpsc::Receiver<failover_runtime::ProbeResult>,
+    failover_sender: std::sync::mpsc::Sender<failover_runtime::ProbeResult>,
+    failover_status: BTreeMap<PoolId, FailoverStatus>,
+    failover_generation: u64,
 }
 impl<P: SidecarPort> ManualRuntime<P> {
     pub fn new(
@@ -142,7 +175,13 @@ impl<P: SidecarPort> ManualRuntime<P> {
             });
         let mut random = [0u8; 16];
         getrandom::fill(&mut random).expect("OS randomness for Runtime owner");
+        let (failover_sender, failover_results) = std::sync::mpsc::channel();
         Self {
+            failover: BTreeMap::new(),
+            failover_results,
+            failover_sender,
+            failover_status: BTreeMap::new(),
+            failover_generation: 0,
             sidecar: SidecarRuntime::new_dynamic(port),
             snapshots,
             records,
@@ -202,7 +241,7 @@ impl<P: SidecarPort> ManualRuntime<P> {
         &self,
         state: &AppState,
     ) -> Result<(LastAppliedManifest, SingBoxPlan), RuntimeError> {
-        let (m, bytes) = self
+        let (mut m, bytes) = self
             .store()?
             .load(&state.state_epoch)
             .map_err(RuntimeError::RecoveryUnavailable)?;
@@ -211,6 +250,14 @@ impl<P: SidecarPort> ManualRuntime<P> {
         let index = plan
             .artifact_index()
             .ok_or(RuntimeError::RecoveryUnavailable(RecoveryError::Corrupt))?;
+        // v1 旧 Group 记录没有 Group section：采用 compiler 明确默认值后逐 selector GET 对账。
+        if m.confirmed_selection.groups.is_empty() && !index.groups.is_empty() {
+            m.confirmed_selection.groups = index
+                .groups
+                .iter()
+                .map(|(id, members)| (id.clone(), members[0].clone()))
+                .collect();
+        }
         if index.config != m.config
             || index.selection != m.plan_selection
             || m.confirmed_selection.nodes.iter().any(|(id, node)| {
@@ -220,6 +267,11 @@ impl<P: SidecarPort> ManualRuntime<P> {
                     .is_none_or(|p| !p.members.contains_key(node))
             })
             || index.pools.len() != m.confirmed_selection.nodes.len()
+            || index.groups.len() != m.confirmed_selection.groups.len()
+            || m.confirmed_selection
+                .groups
+                .iter()
+                .any(|(id, m)| index.group_member_tag(id, m).is_none())
         {
             return Err(RuntimeError::RecoveryUnavailable(RecoveryError::Corrupt));
         }
@@ -239,21 +291,28 @@ impl<P: SidecarPort> ManualRuntime<P> {
         };
         let ready = matches!(self.facts.current, RuntimeState::Ready { .. });
         let pending = Self::pending_in(&state);
+        let all_clear = !Self::has_pending(&state);
         Ok(ManualRuntimeSnapshot {
             runtime: RuntimeSnapshot::from_owner(state.config_version(), &self.facts),
             endpoints: ready.then(|| self.sidecar.endpoints()).flatten(),
             uptime_seconds: self.started.map(|s| s.elapsed().as_secs()),
             kernel_available: self.kernel_available,
             recovery,
-            confirmed_selection_version: pending
-                .is_empty()
+            saved_selection_version: state.selection_version(),
+            confirmed_selection_version: all_clear
                 .then(|| self.active.as_ref().map(|a| a.selection.version.clone()))
                 .flatten(),
             pending_selection: pending.first().cloned(),
             pending_selections: pending.clone(),
             selection_fallbacks: self.fallbacks.clone(),
-            confirmed_manual_selections: pending
-                .is_empty()
+            group_selections: state.group_selections.clone(),
+            confirmed_group_selections: self
+                .active
+                .as_ref()
+                .map(|a| a.selection.groups.clone())
+                .unwrap_or_default(),
+            failover_status: self.failover_status.clone(),
+            confirmed_manual_selections: all_clear
                 .then_some(&self.active)
                 .and_then(|a| a.as_ref())
                 .map(|a| {
@@ -272,6 +331,9 @@ impl<P: SidecarPort> ManualRuntime<P> {
         command: RuntimeCommand,
         mut publish: impl FnMut(ManualRuntimeSnapshot),
     ) -> Result<RuntimeResult, RuntimeError> {
+        if command != RuntimeCommand::Refresh {
+            self.invalidate_failover();
+        }
         if !matches!(command, RuntimeCommand::Stop | RuntimeCommand::Refresh)
             && !self
                 .store()?
@@ -448,7 +510,7 @@ impl<P: SidecarPort> ManualRuntime<P> {
         } else {
             true
         };
-        if !restore_cache_trusted && !Self::pending_in(&state).is_empty() {
+        if !restore_cache_trusted && Self::has_pending(&state) {
             return Err(RuntimeError::SelectionPending);
         }
         let generated = plan
@@ -480,7 +542,7 @@ impl<P: SidecarPort> ManualRuntime<P> {
             .map_err(|_| RuntimeError::StateUnavailable)
             .and_then(|latest| {
                 Self::require_pending_coverage(&plan, &latest)?;
-                if !restore_cache_trusted && !Self::pending_in(&latest).is_empty() {
+                if !restore_cache_trusted && Self::has_pending(&latest) {
                     return Err(RuntimeError::SelectionPending);
                 }
                 Ok(())
@@ -584,7 +646,7 @@ impl<P: SidecarPort> ManualRuntime<P> {
                 .snapshots
                 .snapshot()
                 .map_err(|_| RuntimeError::StateUnavailable)?;
-            if !Self::pending_in(&latest).is_empty() {
+            if Self::has_pending(&latest) {
                 return Err(RuntimeError::SelectionPending);
             }
             if let Some((mut m, previous)) = recovery {
@@ -609,7 +671,8 @@ impl<P: SidecarPort> ManualRuntime<P> {
                         .commit_prepared()
                         .map_err(|_| RuntimeError::CandidateFailed)?;
                     // 即使pending在prepare/run期间才出现，rollback cache也没有核对它的来源。
-                    self.reconcile(&previous, &m.confirmed_selection, &state, false)?;
+                    // candidate 已核对的选择可能推进 revision；回退绑定清理后无 pending 的快照。
+                    self.reconcile(&previous, &m.confirmed_selection, &latest, false)?;
                     self.mark_ready(previous);
                     Ok::<_, RuntimeError>(())
                 })();
@@ -718,7 +781,18 @@ impl<P: SidecarPort> ManualRuntime<P> {
         } else {
             prior.expect("historical selection").version.clone()
         };
-        (ConfirmedSelection { version, nodes }, fallbacks)
+        (
+            ConfirmedSelection {
+                version,
+                nodes,
+                groups: Self::group_selection_for(plan, state, prior, &mut fallbacks),
+            },
+            fallbacks,
+        )
+    }
+    fn has_pending(state: &AppState) -> bool {
+        !Self::pending_in(state).is_empty()
+            || state.group_selections.values().any(|s| s.pending.is_some())
     }
     fn pending_in(state: &AppState) -> Vec<PendingSelection> {
         state
@@ -761,6 +835,13 @@ impl<P: SidecarPort> ManualRuntime<P> {
     }
     fn require_pending_coverage(plan: &SingBoxPlan, state: &AppState) -> Result<(), RuntimeError> {
         let index = plan.artifact_index().expect("product index");
+        if state.group_selections.iter().any(|(id, s)| {
+            s.pending
+                .as_ref()
+                .is_some_and(|p| index.group_member_tag(id, &p.member).is_none())
+        }) {
+            return Err(RuntimeError::SelectionPending);
+        }
         if Self::pending_in(state).iter().any(|pending| {
             index
                 .pools
@@ -770,6 +851,55 @@ impl<P: SidecarPort> ManualRuntime<P> {
             return Err(RuntimeError::SelectionPending);
         }
         Ok(())
+    }
+    /// 用户核对绑定原请求快照；Core 不得把旧请求重新绑定到并行保存后的版本。
+    pub fn reconcile_selection(
+        &mut self,
+        instance: InstanceId,
+        expected: SnapshotVersion,
+        group: PoolId,
+    ) -> Result<SelectionVersion, SelectionError> {
+        let snapshot = self
+            .snapshot()
+            .map_err(|_| SelectionError::StateUnavailable)?;
+        if snapshot.runtime.instance_id.as_ref() != Some(&instance)
+            || !matches!(self.facts.current, RuntimeState::Ready { .. })
+        {
+            return Err(SelectionError::StaleInstance);
+        }
+        self.selection_child_alive()?;
+        let state = self
+            .snapshots
+            .snapshot()
+            .map_err(|_| SelectionError::StateUnavailable)?;
+        if state.config_version() != expected.config
+            || snapshot.runtime.applied_version.as_ref() != Some(&expected.config)
+        {
+            return Err(SelectionError::ConfigChanged);
+        }
+        if state.selection_version() != expected.selection {
+            return Err(SelectionError::StaleVersion);
+        }
+        let active = self.active.as_ref().ok_or(SelectionError::Pending)?;
+        if active
+            .plan
+            .artifact_index()
+            .unwrap()
+            .group_tag(&group)
+            .is_none()
+        {
+            return Err(SelectionError::InvalidMember);
+        }
+        let plan = active.plan.clone();
+        let prior = active.selection.clone();
+        self.reconcile(&plan, &prior, &state, true)
+            .map_err(|_| SelectionError::Pending)?;
+        self.commit_confirmed_selection()
+            .map_err(|_| SelectionError::RecoveryRecordFailed)?;
+        self.snapshot()
+            .map_err(|_| SelectionError::StateUnavailable)?
+            .confirmed_selection_version
+            .ok_or(SelectionError::Pending)
     }
     fn reconcile(
         &mut self,
@@ -786,12 +916,14 @@ impl<P: SidecarPort> ManualRuntime<P> {
             .snapshots
             .snapshot()
             .map_err(|_| RuntimeError::StateUnavailable)?;
-        if current.state_epoch != state.state_epoch {
+        if current.config_version() != state.config_version()
+            || current.selection_version() != state.selection_version()
+        {
             return Err(RuntimeError::SelectionReconcileFailed);
         }
         // 不只检查将要遍历的组：active/recovery plan 缺任一 pending 时不得 GET/PUT/CAS。
         Self::require_pending_coverage(plan, &current)?;
-        if !pending_cache_trusted && !Self::pending_in(&current).is_empty() {
+        if !pending_cache_trusted && Self::has_pending(&current) {
             return Err(RuntimeError::SelectionPending);
         }
         let service = SelectionService::new((*self.snapshots).clone());
@@ -842,17 +974,25 @@ impl<P: SidecarPort> ManualRuntime<P> {
                 let old_tag = pool.members.get(&old_node);
                 let saved = if actual == *requested_tag {
                     let saved = service
-                        .confirm_manual_pending(
+                        .stage_node(
+                            &current.config_version(),
                             current.selection_version(),
                             id.clone(),
                             requested.clone(),
+                            Some(true),
                         )
                         .map_err(|_| RuntimeError::SelectionPending)?;
                     *node = requested;
                     saved
                 } else if old_tag.is_some_and(|tag| actual == *tag) {
                     let saved = service
-                        .clear_manual_pending(current.selection_version(), id.clone(), requested)
+                        .stage_node(
+                            &current.config_version(),
+                            current.selection_version(),
+                            id.clone(),
+                            requested,
+                            Some(false),
+                        )
                         .map_err(|_| RuntimeError::SelectionPending)?;
                     *node = old_node;
                     saved
@@ -864,13 +1004,16 @@ impl<P: SidecarPort> ManualRuntime<P> {
                     .snapshots
                     .snapshot()
                     .map_err(|_| RuntimeError::StateUnavailable)?;
-                if current.selection_version() != saved.version {
+                if current.selection_version() != saved.version
+                    || current.config_version() != state.config_version()
+                {
                     return Err(RuntimeError::SelectionPending);
                 }
                 selection.version = saved.version;
                 fallbacks.retain(|pool| pool != id);
             } else if actual != pool.members[node] {
                 self.controller_confirm(
+                    &current.config_version(),
                     &pool.runtime_tag,
                     &pool.members[node],
                     &current.selection_version(),
@@ -884,15 +1027,17 @@ impl<P: SidecarPort> ManualRuntime<P> {
                 })?;
             }
         }
+        self.reconcile_groups(plan, &mut current, &mut selection, pending_cache_trusted)?;
         let latest = self
             .snapshots
             .snapshot()
             .map_err(|_| RuntimeError::StateUnavailable)?;
         // 最终 Ready gate：即使循环期间出现新 pending，也不能漏过全量业务事实。
-        if !Self::pending_in(&latest).is_empty() {
+        if Self::has_pending(&latest) {
             return Err(RuntimeError::SelectionPending);
         }
         if latest.selection_version() != current.selection_version()
+            || latest.config_version() != current.config_version()
             || latest.state_epoch != state.state_epoch
         {
             return Err(RuntimeError::SelectionReconcileFailed);
@@ -945,13 +1090,14 @@ impl<P: SidecarPort> ManualRuntime<P> {
     }
     fn controller_confirm(
         &mut self,
+        config: &ConfigVersion,
         pool: &str,
         node: &str,
         expected: &SelectionVersion,
     ) -> Result<(), SelectionError> {
         let snapshots = self.snapshots.clone();
         snapshots
-            .with_selection_write(expected, || {
+            .with_controller_write(config, expected, || {
                 self.sidecar
                     .with_active_port(|p, c| p.write_selector(c, pool, node))
                     .map_err(|_| SelectionError::ControllerWrite)?
@@ -974,10 +1120,30 @@ impl<P: SidecarPort> ManualRuntime<P> {
                 }
             })?
     }
+    /// 选择与核对共用现有失活处理；退出后立即撤销观测和探测，保留业务 pending。
+    fn selection_child_alive(&mut self) -> Result<(), SelectionError> {
+        match self.sidecar.refresh_alive() {
+            Ok(true) => Ok(()),
+            result => {
+                self.observation.stop();
+                self.invalidate_failover();
+                self.failover_status.clear();
+                self.started = None;
+                if result == Ok(false) {
+                    self.facts.current = RuntimeState::Failed { instance_id: None };
+                    self.active = None;
+                } else {
+                    // 清理失败仍由旧 owner 持有资源，保留恢复计划供 Stop 重试。
+                    self.facts.current = RuntimeState::Recovering { instance: None };
+                }
+                Err(SelectionError::StaleInstance)
+            }
+        }
+    }
     /// 当前 Manual 的唯一业务入口；未来编排器同样经 owner 调用，UI 不接收 tag。
-    pub fn select_manual(
+    pub fn select_manual<T: Into<SelectionChoice>>(
         &mut self,
-        request: ManualSelectionRequest,
+        request: ManualSelectionRequest<T>,
     ) -> Result<SelectionVersion, SelectionError> {
         if !self
             .records
@@ -999,27 +1165,12 @@ impl<P: SidecarPort> ManualRuntime<P> {
             return Err(SelectionError::StaleInstance);
         }
         let applied_version = applied_version.clone();
-        match self.sidecar.refresh_alive() {
-            Ok(true) => {}
-            Ok(false) => {
-                self.observation.stop();
-                self.facts.current = RuntimeState::Failed { instance_id: None };
-                self.active = None;
-                self.started = None;
-                return Err(SelectionError::StaleInstance);
-            }
-            Err(_) => {
-                self.observation.stop();
-                self.facts.current = RuntimeState::Recovering { instance: None };
-                self.started = None;
-                return Err(SelectionError::StaleInstance);
-            }
-        }
+        self.selection_child_alive()?;
         let state = self
             .snapshots
             .snapshot()
             .map_err(|_| SelectionError::StateUnavailable)?;
-        if !Self::pending_in(&state).is_empty() {
+        if Self::has_pending(&state) {
             return Err(SelectionError::Pending);
         }
         if state.selection_version() != request.expected
@@ -1030,9 +1181,28 @@ impl<P: SidecarPort> ManualRuntime<P> {
         {
             return Err(SelectionError::StaleVersion);
         }
-        if state.state_epoch != applied_version.0.epoch {
+        if state.config_version() != request.config || request.config != applied_version {
             return Err(SelectionError::ConfigChanged);
         }
+        let node = match request.node.into() {
+            SelectionChoice::Group(choice) => {
+                return self.select_group(
+                    request.instance,
+                    request.config,
+                    request.expected,
+                    request.pool,
+                    choice,
+                );
+            }
+            SelectionChoice::Node(node) => node,
+        };
+        let request = ManualSelectionRequest {
+            instance: request.instance,
+            config: request.config,
+            expected: request.expected,
+            pool: request.pool,
+            node,
+        };
         let active = self.active.as_ref().expect("ready plan");
         let pool = active
             .plan
@@ -1058,7 +1228,13 @@ impl<P: SidecarPort> ManualRuntime<P> {
         let old = pool.members[&active.selection.nodes[&request.pool]].clone();
         let service = SelectionService::new((*self.snapshots).clone());
         let pending = service
-            .begin_manual_pending(request.expected, request.pool.clone(), request.node.clone())
+            .stage_node(
+                &request.config,
+                request.expected,
+                request.pool.clone(),
+                request.node.clone(),
+                None,
+            )
             .map_err(|e| {
                 if e.code() == crate::domain::AppErrorCode::RevisionConflict {
                     SelectionError::StaleVersion
@@ -1066,8 +1242,12 @@ impl<P: SidecarPort> ManualRuntime<P> {
                     SelectionError::PendingSaveFailed
                 }
             })?;
-        if let Err(error) = self.controller_confirm(&pool.runtime_tag, &node_tag, &pending.version)
-        {
+        if let Err(error) = self.controller_confirm(
+            &request.config,
+            &pool.runtime_tag,
+            &node_tag,
+            &pending.version,
+        ) {
             if error == SelectionError::ControllerWrite {
                 // PUT 的错误响应本身不能证明没有切换；额外 GET 确认旧值才可清 pending。
                 let actual = self
@@ -1075,7 +1255,13 @@ impl<P: SidecarPort> ManualRuntime<P> {
                     .with_active_port(|p, c| p.read_selector(c, &pool.runtime_tag));
                 if matches!(actual, Ok(Some(ref tag)) if *tag == old) {
                     let cleared = service
-                        .clear_manual_pending(pending.version, request.pool, request.node)
+                        .stage_node(
+                            &request.config,
+                            pending.version,
+                            request.pool,
+                            request.node,
+                            Some(false),
+                        )
                         .map_err(|_| SelectionError::PendingClearFailed)?;
                     self.active
                         .as_mut()
@@ -1089,7 +1275,13 @@ impl<P: SidecarPort> ManualRuntime<P> {
         }
         // read-back 已确认切换，commit 失败保留磁盘 pending，不补偿、不宣称旧值仍在运行。
         let saved = service
-            .confirm_manual_pending(pending.version, request.pool.clone(), request.node.clone())
+            .stage_node(
+                &request.config,
+                pending.version,
+                request.pool.clone(),
+                request.node.clone(),
+                Some(true),
+            )
             .map_err(|_| SelectionError::ConfirmationSaveFailed)?;
         let active = self.active.as_mut().expect("same serial instance");
         active.selection.nodes.insert(request.pool, request.node);
@@ -1132,12 +1324,17 @@ impl<P: SidecarPort> ManualRuntime<P> {
 #[path = "manual_runtime/tests.rs"]
 mod tests;
 
+mod failover_runtime;
+mod group_selection;
+pub use failover_runtime::FailoverStatus;
+
 mod handoff;
 
 mod remote_selection;
 
 impl<P> Drop for ManualRuntime<P> {
     fn drop(&mut self) {
+        self.failover.clear();
         self.observation.stop();
         // 允许 owner 在 async 测试/宿主中释放；不能阻塞另一个 Tokio executor。
         if let Some(executor) = self.observation_executor.take() {

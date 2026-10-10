@@ -87,6 +87,9 @@ impl JsonStateStore {
                 *pending_node_id = None;
             }
         }
+        for selection in state.group_selections.values_mut() {
+            selection.pending = None;
+        }
         state.state_epoch =
             crate::domain::StateEpoch::fresh().map_err(|_| StateStoreError::WriteFailed)?;
         state.config_revision = 0;
@@ -230,6 +233,9 @@ struct StoredStateV9 {
     pools: Vec<NodePool>,
     #[serde(default)]
     groups: Vec<crate::domain::NodeGroup>,
+    #[serde(default, skip_serializing_if = "std::collections::BTreeMap::is_empty")]
+    group_selections:
+        std::collections::BTreeMap<crate::domain::PoolId, crate::domain::GroupSelection>,
     routes: Vec<RoutePolicy>,
 }
 
@@ -250,6 +256,7 @@ impl From<&AppState> for StoredStateV9 {
             nodes: state.nodes.clone(),
             pools: state.pools.clone(),
             groups: state.groups.clone(),
+            group_selections: state.group_selections.clone(),
             routes: state.routes.clone(),
         }
     }
@@ -277,6 +284,7 @@ impl TryFrom<StoredStateV9> for AppState {
             nodes: stored.nodes,
             pools: stored.pools,
             groups: stored.groups,
+            group_selections: stored.group_selections,
             routes: stored.routes,
         })
     }
@@ -405,6 +413,7 @@ mod tests {
             }],
             pools: Vec::new(),
             groups: Vec::new(),
+            group_selections: Default::default(),
             routes: Vec::new(),
         }
     }

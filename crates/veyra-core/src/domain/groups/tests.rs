@@ -1,4 +1,5 @@
 use super::*;
+use crate::application::failover::*;
 use crate::{
     application::{
         selected_subscription::project_selected_runtime,
@@ -538,4 +539,411 @@ fn p402_existing_unavailable_base_pool_keeps_snapshot_contract() {
     state.default_target = RouteTarget::Pool(id.clone());
     state.routes[0].target = RouteTarget::Pool(id);
     assert!(state.validate().is_ok());
+}
+
+fn failover_group(s: &AppState) -> NodeGroup {
+    let mut g = group("p403", vec![]);
+    g.rule = GroupRule::Failover;
+    g.failover = Some(FailoverSettings::default());
+    g.lanes = vec![
+        FailoverLane {
+            id: "primary".into(),
+            name: "主用".into(),
+            icon: "HK".into(),
+            members: vec![
+                OutboundId::Node(s.nodes[0].id.clone()),
+                OutboundId::Node(s.nodes[1].id.clone()),
+            ],
+            manual: false,
+        },
+        FailoverLane {
+            id: "backup".into(),
+            name: "备用".into(),
+            icon: "US".into(),
+            members: vec![OutboundId::Node(s.nodes[1].id.clone())],
+            manual: true,
+        },
+    ];
+    g
+}
+#[test]
+fn p403_failover_compiles_outer_selector_and_ordered_stable_lane_groups() {
+    // 保护主备语义：外层不被简化为 URLTest，内层遵守自动/手动与组健康参数。
+    let mut s = state();
+    let mut g = failover_group(&s);
+    g.test_url = "http://127.0.0.1:3033/health".into();
+    g.interval_secs = 19;
+    g.tolerance_ms = 37;
+    s.groups = vec![g.clone()];
+    s.default_target = RouteTarget::Pool(g.id.clone());
+    s.validate_groups().unwrap();
+    let doc = runtime_document(&s);
+    let outs = doc["outbounds"].as_array().unwrap();
+    let find = |id: &PoolId| {
+        outs.iter()
+            .find(|o| o["tag"] == format!("pool-{}", id.0))
+            .unwrap()
+    };
+    let primary = g.lanes[0].pool_id(&g.id);
+    let backup = g.lanes[1].pool_id(&g.id);
+    assert_eq!(find(&g.id)["type"], "selector");
+    assert_eq!(
+        find(&g.id)["outbounds"],
+        json!([format!("pool-{}", primary.0), format!("pool-{}", backup.0)])
+    );
+    assert_eq!(find(&primary)["type"], "urltest");
+    assert_eq!(find(&primary)["url"], g.test_url);
+    assert_eq!(find(&primary)["interval"], "19s");
+    assert_eq!(find(&primary)["tolerance"], 37);
+    assert_eq!(find(&backup)["type"], "selector");
+    g.lanes.reverse();
+    g.name = "改名".into();
+    assert_eq!(g.lanes[1].pool_id(&g.id), primary);
+    assert!(
+        OutboundCatalog::from_state(&s)
+            .require_available(&g.outbound_id())
+            .is_ok()
+    );
+}
+#[test]
+fn p403_invalid_lanes_settings_members_and_graph_fail_closed() {
+    // 保存非法线路不猜测直连；沿用统一目录的自引用/循环/悬空检查。
+    let mut s = state();
+    let valid = failover_group(&s);
+    s.groups = vec![valid.clone()];
+    for mutate in [0, 1, 2, 3, 4, 5, 6, 7] {
+        s.groups[0] = valid.clone();
+        match mutate {
+            0 => s.groups[0].lanes[0].members.clear(),
+            1 => s.groups[0].lanes[1].id = "primary".into(),
+            2 => s.groups[0].failover.as_mut().unwrap().failure_threshold = 0,
+            3 => s.groups[0].failover.as_mut().unwrap().timeout_ms = 0,
+            4 => s.groups[0].lanes[0].members = vec![valid.outbound_id()],
+            5 => s.groups[0].lanes[0].members = vec![OutboundId::Node(NodeId("missing".into()))],
+            6 => s.groups[0].lanes[0].members = vec![OutboundId::Block],
+            7 => s.groups[0].interval_secs = 0,
+            _ => unreachable!(),
+        }
+        assert!(s.validate_groups().is_err(), "case {mutate}");
+    }
+    s.groups[0] = valid.clone();
+    let mut child = group("child403", vec![valid.outbound_id()]);
+    s.groups[0].lanes[0].members = vec![child.outbound_id()];
+    s.groups.push(child.clone());
+    assert!(matches!(
+        s.validate_groups(),
+        Err(GroupIssue::Graph(OutboundGraphError::Cycle(_)))
+    ));
+    child.members = vec![OutboundId::Direct];
+    child.id = valid.lanes[0].pool_id(&valid.id);
+    s.groups = vec![valid, child];
+    assert!(matches!(
+        s.validate_groups(),
+        Err(GroupIssue::DuplicateId(_))
+    ));
+}
+#[test]
+fn p403_real_store_failover_roundtrip_conflict_failure_and_old_group_compatibility() {
+    // 保护真实保存/重启、旧组可读、CAS冲突和IO失败保旧；选择版本保持不变。
+    let root = std::env::temp_dir().join(NodeGroup::fresh().unwrap().id.0);
+    std::fs::create_dir(&root).unwrap();
+    let path = root.join("state.json");
+    let initial = state();
+    let initial = JsonStateStore::new(path.clone())
+        .unwrap()
+        .commit(&initial)
+        .unwrap();
+    let reopen = || {
+        SnapshotService::new(
+            JsonStateStore::new(path.clone()).unwrap(),
+            StateAccessGate::default(),
+        )
+    };
+    let g = failover_group(&initial);
+    let saved = reopen()
+        .save_groups(initial.config_version(), vec![g.clone()])
+        .unwrap()
+        .value;
+    assert_eq!(reopen().snapshot().unwrap(), saved);
+    assert_eq!(saved.selection_revision, initial.selection_revision);
+    let bytes = std::fs::read(&path).unwrap();
+    assert!(
+        reopen()
+            .save_groups(initial.config_version(), vec![g.clone()])
+            .is_err()
+    );
+    std::fs::create_dir(path.with_extension("tmp")).unwrap();
+    let mut changed = g.clone();
+    changed.lanes.reverse();
+    assert!(
+        reopen()
+            .save_groups(saved.config_version(), vec![changed.clone()])
+            .is_err()
+    );
+    assert_eq!(std::fs::read(&path).unwrap(), bytes);
+    std::fs::remove_dir(path.with_extension("tmp")).unwrap();
+    let next = reopen()
+        .save_groups(saved.config_version(), vec![changed.clone()])
+        .unwrap()
+        .value;
+    assert_eq!(reopen().snapshot().unwrap().groups, vec![changed]);
+    let mut old = serde_json::to_value(group("old403", vec![OutboundId::Direct])).unwrap();
+    old.as_object_mut().unwrap().remove("lanes");
+    old.as_object_mut().unwrap().remove("failover");
+    let old: NodeGroup = serde_json::from_value(old).unwrap();
+    assert!(old.lanes.is_empty());
+    assert!(old.failover.is_none());
+    reopen()
+        .save_groups(next.config_version(), vec![old])
+        .unwrap();
+    std::fs::remove_dir_all(root).unwrap();
+}
+fn policy_fixture() -> (FailoverPolicy, SelectionVersion) {
+    let s = state();
+    let g = failover_group(&s);
+    let version = s.selection_version();
+    (
+        FailoverPolicy::new(
+            crate::application::runtime_snapshot::InstanceId("p403-owned".into()),
+            &g,
+            version.clone(),
+            s.config_version(),
+        )
+        .unwrap(),
+        version,
+    )
+}
+fn health(primary: bool, backup: bool) -> Vec<(String, bool)> {
+    vec![("primary".into(), primary), ("backup".into(), backup)]
+}
+fn selected(d: FailoverDecision) -> String {
+    if let FailoverDecision::Select { lane_id, .. } = d {
+        lane_id
+    } else {
+        panic!("expected proposal, got {d:?}")
+    }
+}
+
+fn observe(
+    p: &mut FailoverPolicy,
+    current: &str,
+    health: (bool, bool),
+    now: u64,
+) -> FailoverDecision {
+    let token = p.begin_probe();
+    p.observe(
+        &token,
+        Some(current),
+        &self::health(health.0, health.1),
+        now,
+    )
+}
+#[test]
+fn p403_fake_clock_threshold_restore_and_interrupted_recovery() {
+    // 保护连续失败次数与主用连续恢复等待，无真实分钟级等待。
+    let (mut p, _) = policy_fixture();
+    assert_eq!(
+        observe(&mut p, "primary", (false, true), 0),
+        FailoverDecision::Keep
+    );
+    assert_eq!(
+        selected(observe(&mut p, "primary", (false, true), 300000)),
+        "backup"
+    );
+    assert_eq!(
+        observe(&mut p, "backup", (true, true), 300001),
+        FailoverDecision::Keep
+    );
+    assert_eq!(
+        observe(&mut p, "backup", (false, true), 359999),
+        FailoverDecision::Keep
+    );
+    assert_eq!(
+        observe(&mut p, "backup", (true, true), 360000),
+        FailoverDecision::Keep
+    );
+    assert_eq!(
+        observe(&mut p, "backup", (true, true), 419999),
+        FailoverDecision::Keep
+    );
+    assert_eq!(
+        selected(observe(&mut p, "backup", (true, true), 420000)),
+        "primary"
+    );
+}
+#[test]
+fn p403_pin_resume_stale_instance_epoch_revision_and_all_failure() {
+    // 人工写优先、恢复自动重新累计、旧实例/版本拒绝；全失败无可用建议。
+    let (mut p, version) = policy_fixture();
+    let old = p.begin_probe();
+    assert_eq!(
+        selected(p.pin("backup", version.clone()).unwrap()),
+        "backup"
+    );
+    assert_eq!(
+        p.observe(&old, Some("backup"), &health(true, true), 999999),
+        FailoverDecision::StaleProbe
+    );
+    assert_eq!(
+        observe(&mut p, "backup", (true, false), 0),
+        FailoverDecision::PinnedUnavailable
+    );
+    p.resume_auto(version);
+    let token = p.begin_probe();
+    for field in [0, 1, 2, 3, 4] {
+        let mut stale = token.clone();
+        match field {
+            0 => stale.instance.0 = "another".into(),
+            1 => stale.group.0 = "another".into(),
+            2 => stale.generation += 1,
+            3 => stale.selection.0.revision += 1,
+            4 => stale.selection.0.epoch = StateEpoch::fresh().unwrap(),
+            _ => unreachable!(),
+        }
+        assert_eq!(
+            p.observe(&stale, Some("primary"), &health(true, true), 600),
+            FailoverDecision::StaleProbe
+        );
+    }
+    assert_eq!(
+        p.observe(&token, Some("primary"), &[], 600),
+        FailoverDecision::IncompleteProbe
+    );
+    assert_eq!(
+        p.observe(&token, Some("primary"), &health(false, true), 600),
+        FailoverDecision::Keep
+    );
+    assert_eq!(
+        p.observe(&token, Some("primary"), &health(false, true), 600),
+        FailoverDecision::StaleProbe
+    );
+    assert_eq!(
+        observe(&mut p, "primary", (false, false), 900),
+        FailoverDecision::AllFailed
+    );
+}
+#[test]
+fn p403_ordered_backup_no_restore_and_replaced_instance_drop_old_health() {
+    // 保护按备用顺序切换、禁止切回，以及实例/成员替换后不继承旧阈值。
+    let s = state();
+    let mut g = failover_group(&s);
+    let mut third = g.lanes[1].clone();
+    third.id = "backup2".into();
+    g.lanes.push(third);
+    g.failover.as_mut().unwrap().restore_primary = false;
+    let make = || {
+        FailoverPolicy::new(
+            crate::application::runtime_snapshot::InstanceId("owned".into()),
+            &g,
+            s.selection_version(),
+            s.config_version(),
+        )
+        .unwrap()
+    };
+    let mut p = make();
+    let results = vec![
+        ("primary".into(), false),
+        ("backup".into(), false),
+        ("backup2".into(), true),
+    ];
+    let token = p.begin_probe();
+    assert_eq!(
+        p.observe(&token, Some("primary"), &results, 0),
+        FailoverDecision::Keep
+    );
+    let token = p.begin_probe();
+    assert_eq!(
+        selected(p.observe(&token, Some("primary"), &results, 300000)),
+        "backup2"
+    );
+    let token = p.begin_probe();
+    let all = vec![
+        ("primary".into(), true),
+        ("backup".into(), true),
+        ("backup2".into(), true),
+    ];
+    assert_eq!(
+        p.observe(&token, Some("backup2"), &all, 999999),
+        FailoverDecision::Keep
+    );
+    let mut replacement = make();
+    let token = replacement.begin_probe();
+    assert_eq!(
+        replacement.observe(&token, Some("primary"), &results, 999999),
+        FailoverDecision::Keep
+    );
+}
+
+#[test]
+fn p403_config_and_instance_replacement_reject_old_member_probe() {
+    // 同一 child、相同 lane ID 更换成员时，旧配置健康结果也不能覆盖新策略。
+    let s = state();
+    let mut g = failover_group(&s);
+    let mut old = FailoverPolicy::new(
+        crate::application::runtime_snapshot::InstanceId("same-child".into()),
+        &g,
+        s.selection_version(),
+        s.config_version(),
+    )
+    .unwrap();
+    let old_token = old.begin_probe();
+    g.lanes[0].members.reverse();
+    let mut config = s.config_version();
+    config.0.revision += 1;
+    let mut changed = FailoverPolicy::new(
+        old_token.instance.clone(),
+        &g,
+        s.selection_version(),
+        config,
+    )
+    .unwrap();
+    changed.begin_probe();
+    assert_eq!(
+        changed.observe(&old_token, Some("primary"), &health(false, true), 100),
+        FailoverDecision::StaleProbe
+    );
+    let mut replacement = FailoverPolicy::new(
+        crate::application::runtime_snapshot::InstanceId("new-child".into()),
+        &g,
+        s.selection_version(),
+        s.config_version(),
+    )
+    .unwrap();
+    replacement.begin_probe();
+    assert_eq!(
+        replacement.observe(&old_token, Some("primary"), &health(false, true), 100),
+        FailoverDecision::StaleProbe
+    );
+}
+
+// 无关组选择推进全局版本时，只废弃旧 probe，连续失败仍可按下一批到阈值。
+#[test]
+fn p403_rebind_selection_preserves_threshold_and_rejects_late_probe() {
+    let (mut policy, mut version) = policy_fixture();
+    let first = policy.begin_probe();
+    assert_eq!(
+        policy.observe(
+            &first,
+            Some("primary"),
+            &[("primary".into(), false), ("backup".into(), true)],
+            0
+        ),
+        FailoverDecision::Keep
+    );
+    let late = policy.begin_probe();
+    version.0.revision += 1;
+    policy.rebind_selection(version.clone());
+    assert_eq!(
+        policy.observe(
+            &late,
+            Some("primary"),
+            &[("primary".into(), true), ("backup".into(), true)],
+            10
+        ),
+        FailoverDecision::StaleProbe
+    );
+    let second = policy.begin_probe();
+    assert!(
+        matches!(policy.observe(&second,Some("primary"),&[("primary".into(),false),("backup".into(),true)],20),FailoverDecision::Select{lane_id,..} if lane_id == "backup")
+    );
 }

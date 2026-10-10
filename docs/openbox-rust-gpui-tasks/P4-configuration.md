@@ -47,12 +47,22 @@
 
 **执行与交付**：将 Failover 的出口与 lanes 纳入统一目录；有序 lanes、失败阈值、恢复保持时间、Auto/ManualPin、线路内 manual；复用唯一选择入口和独立 selection_revision。
 
+**2026-10-09 当前结果：ACCEPTANCE**。Core/Config/GPUI 独立切片和真实保存/重建/失败重试交付，独立源码 Review 无剩余 Finding。纯策略模拟时钟项通过；其余 checkbox 包含正式 Runtime/Native/完整 UI 语义，仍未全部满足，不能用策略测试勾成产品完成。原 P2-06 owner 保留唯一 Runtime 写权，本卡 owner/预约保留。详见 [P4-03 交付记录](P4-03-acceptance.md)。
+
+**2026-10-09 正式 Runtime 增量：仍 ACCEPTANCE**。经原 P2-06 owner 精确协调，真实唯一选择入口/健康编排/Auto与ManualPin/pending完整CAS/读回重建/GPUI实际反馈已完成定向验证；107唯一定向PASS、固定1.14.0 Native 1 PASS、独立Review所查无Finding。旧Tauri Clippy缺libcronet.dll FAIL及完整95%视觉OPEN保留，不提前DONE/commit/merge/释放；[本轮完整收据](P4-03-runtime-acceptance.md)。以下旧checkbox保留历史，当前逐项结果以新收据为准。
+
+**2026-10-09 UI REWORK：仍 ACCEPTANCE**。按用户反馈修正卡片/添加/修改布局并补齐完整 React shell 同数据证据；新增浮层 Native pending/核对/Auto、保存失败/重试实操通过，独立复核零 Finding。完整95%与旧Clippy边界未关闭，不提交合并或释放；[最新收据](P4-03-ui-rework.md)。
+
+**2026-10-09 最终视觉对照：ACCEPTANCE / AWAIT_HUMAN**。仅当前macOS显示设置、浅色、1280×720；54张原图、列表/添加/普通组/主备高级/真实反馈逐态核对，focus/hover/disabled/loading/error修正及天然Tab实操通过。18个唯一定向测试与Desktop Clippy/build/fmt/diff PASS；独立只读Review剩余0 Finding。白色不透明弹窗批准差异、字体边缘/原生标题栏及旧FAIL保留；深色其他缩放本轮不跑。不改Runtime事务/P2-06/P2-05。**人工确认前不DONE、提交、合并、主分支复验或释放owner；不push。** [最终截图交付](P4-03-visual-final.md)。
+
+**2026-10-10 最终验收：DONE**。由 Host 在实际查看54张原图及同数据逐态截图后批准当前macOS显示设置/浅色/1280×720视觉；白色不透明弹窗及字体/标题栏为先前批准差异，不把全产品95%相似度写成测量分数。正式唯一选择写权、健康编排、Auto/ManualPin/pending读回/重启与锁定1.14.0 Native已按正式收据交付；本轮独立UI18PASS/Core和Runtime前轮107PASS、独立Review无剩余Finding。旧Legacy Windows libcronet.dll Clippy基线FAIL保留，其他主题/缩放继续组合验收。本卡owner释放、下游只按显式依赖重算，P2-05 ACCEPTANCE/P2-06 DOING保持。见[最终视觉批复](P4-03-visual-final.md)与[Runtime记录](P4-03-runtime-acceptance.md)。
+
 **验收**：
 
-- [ ] 模拟时钟验证连续失败切备、稳定恢复切主、全失败保留错误；不重写 URLTest。
-- [ ] 手动固定使旧探测失效；恢复自动重新探测；迟到结果不覆盖人工选择。
-- [ ] 成员变化、进程重启、pending 不确定及保存失败都有一致结果；自动切换不增加 profile revision。
-- [ ] 主备编辑、手动固定/恢复自动提示和实际选择经过 界面与最小内核集成验证。
+- [x] 模拟时钟验证连续失败切备、稳定恢复切主、全失败保留错误；不重写 URLTest（纯策略、正式Runtime及Native已通过）。
+- [x] 手动固定使旧探测失效；恢复自动重新探测；迟到结果不覆盖人工选择。
+- [x] 成员变化、进程重启、pending 不确定及保存失败都有一致结果；自动切换不增加 profile revision。
+- [x] 主备编辑、手动固定/恢复自动提示和实际选择经过 界面与最小内核集成验证。
 
 <a id="obg-p4-04"></a>
 ## OBG-P4-04 规则资源导入、分页与刷新

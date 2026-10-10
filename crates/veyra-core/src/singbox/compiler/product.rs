@@ -187,6 +187,26 @@ impl SingBoxCompiler {
             RuntimeProfile::ObservationOnly,
         )?;
         let document = &mut plan.document;
+        // 健康 companion 只投影叶子出口，不参与路由，也不注册为可写 Group。
+        // /group 的 selector 分支复用内核 URLTestOutbounds，避免 URLTest checking 忙碌空批次。
+        for group in state
+            .groups
+            .iter()
+            .filter(|g| g.rule == crate::domain::GroupRule::Failover)
+        {
+            for lane in &group.lanes {
+                let id = lane.pool_id(&group.id);
+                if !intent.groups.iter().any(|g| g.id == id) {
+                    continue;
+                }
+                let members = recovery::health_members(document, &pool_tag(&id.0))?;
+                document.outbounds.push(CoreOutbound::Selector(Selector {
+                    tag: recovery::health_tag(&id),
+                    outbounds: members,
+                    default: None,
+                }));
+            }
+        }
         // 动态地址只从当前 child 的受管 stderr 发现，Platform 丢弃非监听行。
         document.log = LogConfig {
             disabled: false,

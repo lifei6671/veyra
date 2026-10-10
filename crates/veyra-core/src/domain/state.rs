@@ -60,6 +60,8 @@ pub struct AppState {
     pub pools: Vec<NodePool>,
     #[serde(default)]
     pub groups: Vec<super::NodeGroup>,
+    #[serde(default, skip_serializing_if = "std::collections::BTreeMap::is_empty")]
+    pub group_selections: std::collections::BTreeMap<PoolId, super::GroupSelection>,
     pub routes: Vec<RoutePolicy>,
 }
 
@@ -84,6 +86,7 @@ impl AppState {
             nodes: Vec::new(),
             pools: Vec::new(),
             groups: Vec::new(),
+            group_selections: Default::default(),
             routes: Vec::new(),
         })
     }
@@ -156,8 +159,10 @@ impl AppState {
                 })
                 .collect::<std::collections::BTreeMap<_, _>>()
         };
-        let selection_changed = selections(previous) != selections(self);
+        let selection_changed = selections(previous) != selections(self)
+            || previous.group_selections != self.group_selections;
         for state in [&mut config_before, &mut config_after] {
+            state.group_selections.clear();
             for pool in &mut state.pools {
                 if let SelectionPolicy::Manual {
                     selected_node_id,
@@ -1245,6 +1250,7 @@ mod tests {
             }],
             pools: Vec::new(),
             groups: Vec::new(),
+            group_selections: Default::default(),
             routes: Vec::new(),
         }
     }

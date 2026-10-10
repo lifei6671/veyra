@@ -47,6 +47,8 @@ pub struct ArtifactRef {
 pub struct ConfirmedSelection {
     pub version: SelectionVersion,
     pub nodes: BTreeMap<PoolId, NodeId>,
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub groups: BTreeMap<PoolId, crate::domain::OutboundId>,
 }
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(deny_unknown_fields)]
@@ -522,6 +524,7 @@ mod tests {
             confirmed_selection: ConfirmedSelection {
                 version: state.selection_version(),
                 nodes: BTreeMap::new(),
+                groups: BTreeMap::new(),
             },
             kernel_version: KERNEL_VERSION.into(),
             kernel_digest: KERNEL_DIGEST.into(),

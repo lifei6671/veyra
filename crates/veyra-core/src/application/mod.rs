@@ -28,3 +28,6 @@ pub mod helper_transfer;
 
 pub mod shared_inbounds;
 pub mod shares;
+
+/// 主备策略只产出建议，实际选择写权继续归唯一 Runtime owner。
+pub mod failover;

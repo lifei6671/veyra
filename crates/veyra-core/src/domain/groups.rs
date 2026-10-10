@@ -8,6 +8,7 @@ use std::collections::HashSet;
 pub enum GroupRule {
     Selector,
     UrlTest,
+    Failover,
     Direct,
     Block,
 }
@@ -33,6 +34,11 @@ pub struct NodeGroup {
     pub tolerance_ms: u32,
     /// 空值继承 Profile.test_url，绝不读取 UI 测速偏好。
     pub test_url: String,
+    /// 旧普通组没有线路字段；反序列化保持原有语义。
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub lanes: Vec<FailoverLane>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub failover: Option<FailoverSettings>,
 }
 impl NodeGroup {
     pub fn fresh() -> Result<Self, AppError> {
@@ -58,6 +64,8 @@ impl NodeGroup {
             interval_secs: 300,
             tolerance_ms: 100,
             test_url: String::new(),
+            lanes: vec![],
+            failover: None,
         }
     }
     pub fn builtin(&self) -> bool {
@@ -68,6 +76,75 @@ impl NodeGroup {
             GroupRule::Direct => OutboundId::Direct,
             GroupRule::Block => OutboundId::Block,
             _ => OutboundId::Pool(self.id.clone()),
+        }
+    }
+}
+/// 已确认模式与 pending 意图区分；未知 Controller 响应不能提前改变 mode。
+#[derive(Clone, Copy, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
+#[serde(rename_all = "snake_case")]
+pub enum GroupSelectionMode {
+    #[default]
+    Auto,
+    ManualPin,
+}
+#[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct GroupSelectionIntent {
+    pub member: OutboundId,
+    pub mode: GroupSelectionMode,
+}
+#[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
+#[serde(deny_unknown_fields)]
+pub struct GroupSelection {
+    pub selected: Option<OutboundId>,
+    pub mode: GroupSelectionMode,
+    pub pending: Option<GroupSelectionIntent>,
+}
+
+/// 主用与有序备用共用同一数据结构；首条是主用，稳定 ID 不随排序/改名变化。
+#[derive(Clone, Debug, Deserialize, Serialize, Eq, PartialEq)]
+#[serde(deny_unknown_fields)]
+pub struct FailoverLane {
+    pub id: String,
+    #[serde(default)]
+    pub name: String,
+    #[serde(default)]
+    pub icon: String,
+    pub members: Vec<OutboundId>,
+    #[serde(default)]
+    pub manual: bool,
+}
+impl FailoverLane {
+    pub fn fresh() -> Result<Self, AppError> {
+        Ok(Self {
+            id: NodeGroup::fresh()?.id.0,
+            name: String::new(),
+            icon: String::new(),
+            members: vec![],
+            manual: false,
+        })
+    }
+    /// 编码两个身份，避免分隔符碰撞；运行期子组只派生，不写回第二份目录。
+    pub fn pool_id(&self, group: &PoolId) -> PoolId {
+        let hex = |s: &str| s.bytes().map(|b| format!("{b:02x}")).collect::<String>();
+        PoolId(format!("failover-lane-{}-{}", hex(&group.0), hex(&self.id)))
+    }
+}
+#[derive(Clone, Debug, Deserialize, Serialize, Eq, PartialEq)]
+#[serde(deny_unknown_fields)]
+pub struct FailoverSettings {
+    pub timeout_ms: u64,
+    pub failure_threshold: u32,
+    pub restore_primary: bool,
+    pub recovery_hold_ms: u64,
+}
+impl Default for FailoverSettings {
+    fn default() -> Self {
+        Self {
+            timeout_ms: 5000,
+            failure_threshold: 2,
+            restore_primary: true,
+            recovery_hold_ms: 60000,
         }
     }
 }
@@ -86,6 +163,7 @@ pub enum GroupIssue {
     InvalidSettings(PoolId),
     DuplicateMember(PoolId),
     EmptyStatic(PoolId),
+    InvalidLane { group: PoolId, lane: String },
     BlockMember(PoolId),
     Graph(OutboundGraphError<OutboundId>),
     Unavailable { group: PoolId, member: OutboundId },
@@ -191,6 +269,13 @@ impl AppState {
         if group.builtin() {
             return vec![];
         }
+        if group.rule == GroupRule::Failover {
+            return group
+                .lanes
+                .iter()
+                .map(|lane| OutboundId::Pool(lane.pool_id(&group.id)))
+                .collect();
+        }
         match group.mode {
             GroupMode::Static => group.members.clone(),
             GroupMode::Dynamic => self
@@ -212,6 +297,20 @@ impl AppState {
             .iter()
             .map(|p| p.id.clone())
             .collect::<HashSet<_>>();
+        // 子组身份也参与同一命名空间；与用户组或旧池冲突时明确拒绝。
+        for group in &self.groups {
+            ids.insert(group.id.clone());
+        }
+        let mut lane_ids = HashSet::new();
+        for group in self.groups.iter().filter(|g| g.rule == GroupRule::Failover) {
+            for lane in &group.lanes {
+                let id = lane.pool_id(&group.id);
+                if ids.contains(&id) || !lane_ids.insert(id.clone()) {
+                    return Err(GroupIssue::DuplicateId(id));
+                }
+            }
+        }
+        ids = self.pools.iter().map(|p| p.id.clone()).collect();
         let mut names = HashSet::new();
         let mut terminals = HashSet::new();
         for group in &self.groups {
@@ -228,14 +327,54 @@ impl AppState {
                 return Err(GroupIssue::DuplicateId(group.id.clone()));
             }
             if !group.builtin()
-                && group.rule == GroupRule::UrlTest
+                && matches!(group.rule, GroupRule::UrlTest | GroupRule::Failover)
                 && (!(5..=86400).contains(&group.interval_secs)
                     || (!group.test_url.is_empty()
                         && GroupHealthUrl::optional(group.test_url.clone()).is_err()))
             {
                 return Err(GroupIssue::InvalidSettings(group.id.clone()));
             }
-            if !group.builtin() && group.mode == GroupMode::Static && group.members.is_empty() {
+            if group.rule == GroupRule::Failover {
+                let settings = group
+                    .failover
+                    .as_ref()
+                    .ok_or_else(|| GroupIssue::InvalidSettings(group.id.clone()))?;
+                if group.mode != GroupMode::Static
+                    || !group.members.is_empty()
+                    || !group.keywords.is_empty()
+                    || !(1..=3).contains(&group.lanes.len())
+                    || !(1000..=60000).contains(&settings.timeout_ms)
+                    || settings.failure_threshold == 0
+                    || settings.recovery_hold_ms > 86400000
+                {
+                    return Err(GroupIssue::InvalidSettings(group.id.clone()));
+                }
+                let mut lane_ids = HashSet::new();
+                for lane in &group.lanes {
+                    if lane.id.trim().is_empty()
+                        || !lane_ids.insert(&lane.id)
+                        || lane.members.is_empty()
+                    {
+                        return Err(GroupIssue::InvalidLane {
+                            group: group.id.clone(),
+                            lane: lane.id.clone(),
+                        });
+                    }
+                    if lane.members.iter().collect::<HashSet<_>>().len() != lane.members.len() {
+                        return Err(GroupIssue::DuplicateMember(group.id.clone()));
+                    }
+                    if lane.members.contains(&OutboundId::Block) {
+                        return Err(GroupIssue::BlockMember(group.id.clone()));
+                    }
+                }
+            } else if !group.lanes.is_empty() || group.failover.is_some() {
+                return Err(GroupIssue::InvalidSettings(group.id.clone()));
+            }
+            if !group.builtin()
+                && group.rule != GroupRule::Failover
+                && group.mode == GroupMode::Static
+                && group.members.is_empty()
+            {
                 return Err(GroupIssue::EmptyStatic(group.id.clone()));
             }
             if group.mode == GroupMode::Static
@@ -281,39 +420,79 @@ impl AppState {
                 return Err(GroupIssue::Referenced(OutboundId::Pool(id.clone())));
             }
         }
+        for (id, selection) in &self.group_selections {
+            let selectors = self.runtime_groups();
+            let selector = selectors
+                .iter()
+                .find(|g| g.id == *id && matches!(g.selection, SelectionPolicy::Manual { .. }))
+                .ok_or_else(|| GroupIssue::InvalidSettings(id.clone()))?;
+            if selection.pending.as_ref().is_some_and(|p| {
+                !selector.members.contains(&p.member)
+                    || (p.mode == GroupSelectionMode::ManualPin
+                        && !self
+                            .groups
+                            .iter()
+                            .any(|g| g.id == *id && g.rule == GroupRule::Failover))
+            }) || selection
+                .selected
+                .as_ref()
+                .is_some_and(|m| !selector.members.contains(m))
+                || (selection.mode == GroupSelectionMode::ManualPin
+                    && (!self
+                        .groups
+                        .iter()
+                        .any(|g| g.id == *id && g.rule == GroupRule::Failover)
+                        || selection.selected.is_none()))
+            {
+                return Err(GroupIssue::InvalidSettings(id.clone()));
+            }
+        }
         Ok(())
     }
     pub fn runtime_groups(&self) -> Vec<RuntimeGroup> {
-        self.groups
-            .iter()
-            .filter(|g| g.enabled && !g.builtin())
-            .filter_map(|g| {
-                let members = self.group_members(g);
-                if members.is_empty() {
-                    return None;
+        let mut result = vec![];
+        for group in self.groups.iter().filter(|g| g.enabled && !g.builtin()) {
+            let members = self.group_members(group);
+            if members.is_empty() {
+                continue;
+            }
+            let auto = || SelectionPolicy::UrlTest {
+                probe_url: if group.test_url.is_empty() {
+                    self.profile.test_url.as_str().to_owned()
+                } else {
+                    group.test_url.clone()
+                },
+                interval_secs: group.interval_secs,
+                tolerance_ms: group.tolerance_ms,
+            };
+            let manual = || SelectionPolicy::Manual {
+                selected_node_id: None,
+                pending_node_id: None,
+            };
+            if group.rule == GroupRule::Failover {
+                for lane in &group.lanes {
+                    result.push(RuntimeGroup {
+                        id: lane.pool_id(&group.id),
+                        members: lane.members.clone(),
+                        selection: if lane.manual || lane.members.len() == 1 {
+                            manual()
+                        } else {
+                            auto()
+                        },
+                    });
                 }
-                Some(RuntimeGroup {
-                    id: g.id.clone(),
-                    members,
-                    selection: match g.rule {
-                        GroupRule::Selector => SelectionPolicy::Manual {
-                            selected_node_id: None,
-                            pending_node_id: None,
-                        },
-                        GroupRule::UrlTest => SelectionPolicy::UrlTest {
-                            probe_url: if g.test_url.is_empty() {
-                                self.profile.test_url.as_str().to_owned()
-                            } else {
-                                g.test_url.clone()
-                            },
-                            interval_secs: g.interval_secs,
-                            tolerance_ms: g.tolerance_ms,
-                        },
-                        _ => unreachable!(),
-                    },
-                })
-            })
-            .collect()
+            }
+            result.push(RuntimeGroup {
+                id: group.id.clone(),
+                members,
+                selection: if group.rule == GroupRule::UrlTest {
+                    auto()
+                } else {
+                    manual()
+                },
+            });
+        }
+        result
     }
 }
 

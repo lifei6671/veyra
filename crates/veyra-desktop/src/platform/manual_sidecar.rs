@@ -695,14 +695,14 @@ mod real_tests {
     use veyra_core::storage::{JsonStateStore, StateStore};
 
     #[derive(Clone)]
-    struct RecordingSidecarPort {
-        inner: Arc<Mutex<ManualSidecarPort>>,
+    pub(super) struct RecordingSidecarPort {
+        pub(super) inner: Arc<Mutex<ManualSidecarPort>>,
         events: Arc<Mutex<Vec<Value>>>,
-        rework: Arc<Mutex<NativeReworkFaults>>,
+        pub(super) rework: Arc<Mutex<NativeReworkFaults>>,
         root: PathBuf,
     }
     impl RecordingSidecarPort {
-        fn new(root: &std::path::Path) -> Self {
+        pub(super) fn new(root: &std::path::Path) -> Self {
             let inner = ManualSidecarPort::new(root.to_owned());
             assert!(inner.kernel_available());
             Self {
@@ -715,7 +715,7 @@ mod real_tests {
         fn record(&self, value: Value) {
             self.events.lock().unwrap().push(value);
         }
-        fn events(&self) -> Vec<Value> {
+        pub(super) fn events(&self) -> Vec<Value> {
             self.events.lock().unwrap().clone()
         }
         fn owned_identity(&self) -> ManagedSidecar {
@@ -1803,9 +1803,9 @@ mod real_tests {
 
     // Host P1/P2 只在 test Port 中调度错误/并发窗口，真实 HTTP 始终委托正式 Port。
     #[derive(Default)]
-    struct NativeReworkFaults {
+    pub(super) struct NativeReworkFaults {
         deny_manifest_after_ready: bool,
-        lose_get_result: bool,
+        pub(super) lose_get_result: bool,
         fail_run: bool,
         fail_ready: bool,
         during_get: Option<(SnapshotService, String, bool)>,
@@ -1921,6 +1921,7 @@ mod real_tests {
             port.rework.lock().unwrap().lose_get_result = true;
             assert_eq!(
                 owner.select_manual(ManualSelectionRequest {
+                    config: ready.runtime.applied_version.clone().unwrap(),
                     instance: ready.runtime.instance_id.clone().unwrap(),
                     expected: store.load().unwrap().selection_version(),
                     pool: PoolId("manual".into()),
@@ -2253,6 +2254,7 @@ mod real_tests {
                 port.rework.lock().unwrap().during_put = Some((*snapshots).clone());
                 let version = owner
                     .select_manual(ManualSelectionRequest {
+                        config: before.runtime.applied_version.clone().unwrap(),
                         instance: before.runtime.instance_id.clone().unwrap(),
                         expected: initial.selection_version(),
                         pool: PoolId("manual".into()),
@@ -2336,6 +2338,7 @@ mod real_tests {
         let endpoints = first.endpoints.unwrap();
         let selection = owner
             .select_manual(ManualSelectionRequest {
+                config: first.runtime.applied_version.clone().unwrap(),
                 instance: first.runtime.instance_id.clone().unwrap(),
                 expected: first.confirmed_selection_version.unwrap(),
                 pool: PoolId("manual".into()),
@@ -2577,3 +2580,7 @@ mod kernel_name_tests {
         fs::remove_dir_all(root).unwrap();
     }
 }
+
+#[cfg(test)]
+#[path = "manual_sidecar_p403_tests.rs"]
+mod p403_tests;

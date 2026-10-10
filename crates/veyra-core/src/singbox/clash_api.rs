@@ -362,6 +362,45 @@ impl<'secret> ClashApiClient<'secret> {
             .map_err(|_| ClashApiError::InvalidResponse)
     }
 
+    /// 只调用当前 artifact 的只读健康 selector；批次算法仍由内核 URLTestOutbounds 实现。
+    pub async fn test_group(
+        &self,
+        tag: &str,
+        timeout_ms: u64,
+        test_url: &str,
+    ) -> Result<std::collections::BTreeMap<String, u16>, ClashApiError> {
+        let mut url = reqwest::Url::parse(&self.url("/", false))
+            .map_err(|_| ClashApiError::InvalidResponse)?;
+        url.path_segments_mut()
+            .map_err(|_| ClashApiError::InvalidResponse)?
+            .extend(["group", tag, "delay"]);
+        // 固定 1.14.0 handler 将小写 http:// 查询置空。URL scheme 不区分大小写，
+        // Go 1.25.5 net/url 将它正规化为 http；只改变 API 传输表示，业务/Compiler URL 不变。
+        let transported = test_url
+            .strip_prefix("http://")
+            .map(|rest| format!("HTTP://{rest}"));
+        url.query_pairs_mut()
+            .append_pair("timeout", &timeout_ms.to_string())
+            .append_pair("url", transported.as_deref().unwrap_or(test_url));
+        let response = self
+            .client
+            .get(url)
+            .header(AUTHORIZATION, self.authorization()?)
+            .timeout(Duration::from_millis(timeout_ms + 1000))
+            .send()
+            .await
+            .map_err(|_| ClashApiError::Unavailable)?;
+        if !response.status().is_success() {
+            return Err(ClashApiError::Unavailable);
+        }
+        let delays = response
+            .json::<std::collections::BTreeMap<String, u16>>()
+            .await
+            .map_err(|_| ClashApiError::InvalidResponse)?;
+        // URLTest 只返回成功项；0ms 仍是成功，Runtime 负责关联当前选择。
+        Ok(delays)
+    }
+
     fn authorization(&self) -> Result<HeaderValue, ClashApiError> {
         if self
             .endpoint
