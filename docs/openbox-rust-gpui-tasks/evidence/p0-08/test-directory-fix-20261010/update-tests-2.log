@@ -1,0 +1,15 @@
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.13s
+     Running unittests examples/p0_08_update.rs (target/debug/examples/p0_08_update-08e7fb11d1aeb2cb)
+
+running 8 tests
+test update::tests::stable_version_check_never_downgrades_or_guesses_prerelease ... ok
+test update::tests::release_binding_rejects_wrong_repository_asset_platform_size_and_component ... ok
+test update::tests::cancellation_during_stalled_transfer_removes_only_owned_partial ... ok
+test update::tests::rejects_external_redirect_before_second_request ... ok
+test update::tests::redirects_keep_explicit_proxy_and_stopped_proxy_never_falls_back ... ok
+test update::tests::rejects_bad_hash_short_and_oversized_bytes_and_preserves_existing_files ... ok
+test update::tests::metadata_limit_status_redirect_limit_and_pre_cancel_are_bounded ... ok
+test update::tests::checks_release_notes_and_downloads_binary_larger_than_subscription_limit ... ok
+
+test result: ok. 8 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.32s
+

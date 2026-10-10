@@ -58,3 +58,9 @@ Finder打开ZIP，由系统归档工具解压；解压 `.app` 同样保留上述
 仍需保留quarantine，通过macOS正常单应用授权路径取得同一候选的真实窗口、必要原图和正常托盘退出/清理；远端资产不存在时继续准确标NOT_RUN，不为验收发布。P0-08保留ACCEPTANCE与owner/独立分支，不提前DONE。Commit SHA、Merge SHA均**无（未执行）**；主分支受影响复验**NOT_RUN（未合并）**。
 
 68卡显式依赖重算：DONE28 / ACCEPTANCE2 / DOING1 / READY0 / TODO30 / DEFERRED7，无悬空依赖/环，无新增READY；P2-05 ACCEPTANCE、P2-06 DOING及原owner不变。历史证据不改写，本轮只更新当前P0-08状态及汇总。
+
+## 合并后定向验证发现与最小修复
+
+初次独立提交 `f0fb874805c95b251b1b90465a8336cf302902dd`、初次合并 `4e8f9cb92e93b40bfb3fc272d1382062d74dc6d6` 后，主分支打包正反测试8/8 exit0；更新测试首次7/8 exit101，取消测试创建临时目录时发生同PID/同时间戳碰撞。没有改写失败或串行化掩盖并发，只在cfg(test)目录名增加进程内原子序号；业务源码/断言/候选ZIP/签名不改。独立树默认并发8项连续3轮PASS、Core Clippy/fmt exit0，独立修复Review与原FAIL见[修复证据](evidence/p0-08/test-directory-fix-20261010/README.md)。主分支再次合并后复验另记真实命令与SHA。
+
+原候选120项构建输入与首次提交f0fb874完全一致；当前唯一不同是上述cfg(test) tests.rs。原包仍绑定原输入和原实机结果，不重建/重新签名后冒充已下载候选，见[来源绑定](evidence/p0-08/test-directory-fix-20261010/candidate-source-binding.json)。
