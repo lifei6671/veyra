@@ -1,0 +1,59 @@
+{
+  "result": "PASS_FINAL_MAIN_REVALIDATION",
+  "initial_task_commit": "f0fb874805c95b251b1b90465a8336cf302902dd",
+  "initial_merge": "4e8f9cb92e93b40bfb3fc272d1382062d74dc6d6",
+  "test_fixture_fix_commit": "8e7bfded9650157eed456aa26cb6ad237861adc6",
+  "final_code_merge": "1cd477eeaf0bd4f1371d0504b530f67aae1c6613",
+  "main_branch": "codex/dist-react-restore",
+  "current_code_source_matches_fix_branch": true,
+  "counts": {
+    "DONE": 29,
+    "READY": 1,
+    "ACCEPTANCE": 1,
+    "DOING": 1,
+    "TODO": 29,
+    "DEFERRED": 7
+  },
+  "ready": [
+    "P0-09"
+  ],
+  "main_existing_pycache": "1 file hash unchanged",
+  "protected_P2_contract_diff": "exit0 unchanged",
+  "owned_test_dirs": "none after exact empty fixture cleanup",
+  "main_package_tests": "8/8 exit0 at initial merge; package source unchanged by cfg(test) fix, not needlessly rerun",
+  "legacy_clippy": "prior exit101 Windows sing-box.exe baseline resource missing; preserved",
+  "raw_evidence_whitespace": "original CRLF headers/test-output final blank lines preserved; source/task-doc check scoped separately",
+  "cleanup_commands": [
+    {
+      "argv": [
+        "pgrep",
+        "-alf",
+        "veyra-gpui-prototype|veyra-helper-prototype|veyra-update-prototype|veyra-sing-box"
+      ],
+      "exit_code": 1,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "spctl",
+        "--status"
+      ],
+      "exit_code": 0,
+      "stdout": "assessments enabled\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "csrutil",
+        "status"
+      ],
+      "exit_code": 0,
+      "stdout": "System Integrity Protection status: enabled.\n",
+      "stderr": ""
+    }
+  ],
+  "github_remote_asset_download": "NOT_RUN_NO_RELEASE_ASSETS",
+  "authorization_and_tray": "actual user operated; initial prompt/real GUI and voluntary exit independently recorded; intermediate auth/tray menu screenshots NOT_CAPTURED",
+  "push_release": "NOT_EXECUTED"
+}

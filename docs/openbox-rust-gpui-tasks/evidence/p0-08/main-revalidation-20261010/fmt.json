@@ -1,0 +1,18 @@
+{
+  "command": [
+    "cargo",
+    "+1.99.0",
+    "fmt",
+    "--manifest-path",
+    "src-tauri/Cargo.toml",
+    "--",
+    "--check"
+  ],
+  "cwd": "/Users/lifeilin/wx_lifeilin/github.com/lifei6671/veyra",
+  "head": "1cd477eeaf0bd4f1371d0504b530f67aae1c6613",
+  "environment": {
+    "CARGO_TARGET_DIR": "/Users/lifeilin/wx_lifeilin/github.com/lifei6671/veyra/.worktrees/p0-08-update-distribution/target"
+  },
+  "exit_code": 0,
+  "elapsed_seconds": 0.205
+}

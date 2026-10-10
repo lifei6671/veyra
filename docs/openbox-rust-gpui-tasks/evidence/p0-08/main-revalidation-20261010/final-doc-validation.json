@@ -1,0 +1,41 @@
+{
+  "commands": [
+    {
+      "command": [
+        "git",
+        "diff",
+        "--quiet",
+        "dev/p0-08-update-distribution",
+        "HEAD",
+        "--",
+        "crates",
+        "tools"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "exit_code": 0,
+      "stdout": "",
+      "stderr": ""
+    }
+  ],
+  "scope": "all P0-08 links and new SESSION/phase links exist; unchanged historical links are outside task scope",
+  "prior_broad_reference_probe": {
+    "exit_code": 1,
+    "first_unrelated_existing_missing_reference": "SESSION.md evidence/p3-01/host-001/README.md"
+  },
+  "existing_history_missing_paths": [
+    {
+      "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+      "ref": "evidence/p3-01/host-001/README.md"
+    }
+  ],
+  "no_new_code_after_main_validation": true
+}

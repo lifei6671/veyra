@@ -64,3 +64,7 @@ Finder打开ZIP，由系统归档工具解压；解压 `.app` 同样保留上述
 初次独立提交 `f0fb874805c95b251b1b90465a8336cf302902dd`、初次合并 `4e8f9cb92e93b40bfb3fc272d1382062d74dc6d6` 后，主分支打包正反测试8/8 exit0；更新测试首次7/8 exit101，取消测试创建临时目录时发生同PID/同时间戳碰撞。没有改写失败或串行化掩盖并发，只在cfg(test)目录名增加进程内原子序号；业务源码/断言/候选ZIP/签名不改。独立树默认并发8项连续3轮PASS、Core Clippy/fmt exit0，独立修复Review与原FAIL见[修复证据](evidence/p0-08/test-directory-fix-20261010/README.md)。主分支再次合并后复验另记真实命令与SHA。
 
 原候选120项构建输入与首次提交f0fb874完全一致；当前唯一不同是上述cfg(test) tests.rs。原包仍绑定原输入和原实机结果，不重建/重新签名后冒充已下载候选，见[来源绑定](evidence/p0-08/test-directory-fix-20261010/candidate-source-binding.json)。
+
+## 最终Git与主分支收口
+
+独立任务提交 `f0fb874805c95b251b1b90465a8336cf302902dd`，测试夹具修复提交 `8e7bfded9650157eed456aa26cb6ad237861adc6`；最终代码合并 `1cd477eeaf0bd4f1371d0504b530f67aae1c6613` 到 `codex/dist-react-restore`。合并后的更新测试8/8、构建、Core Clippy、fmt全部exit0；首次合并后的包正反8/8 exit0仍有效，原首次测试FAIL不覆盖。详见[主分支最终复验](evidence/p0-08/main-revalidation-20261010/README.md)、[收口收据](evidence/p0-08/main-revalidation-20261010/closeout.json)。P0-08 DONE，READY仅P0-09；既有main缓存hash保持。无push、Release或正式发布，远端下载NOT_RUN。当前限制仅为已明确的原型/证据边界与P6/P7正式升级范围。

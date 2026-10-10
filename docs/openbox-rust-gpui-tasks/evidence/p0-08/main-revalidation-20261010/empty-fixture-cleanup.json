@@ -1,0 +1,29 @@
+{
+  "note": "Three earlier task-scoped empty P0-08 fixture directories predated this first-open turn. Preserve all failure logs; rmdir only exact empty non-symlink paths after prior PID absence. No user data or app artifact removed.",
+  "directories": [
+    {
+      "path": "/var/folders/sq/9tr34l617h5fp65hjxgvly140000gn/T/veyra-p008-test-97361-18dd070773944db0",
+      "mtime": "2026-10-10T09:32:35.379193+08:00",
+      "empty": true,
+      "fixture_pid": "97361",
+      "process_absent_exit": 1,
+      "removed_empty_directory": true
+    },
+    {
+      "path": "/var/folders/sq/9tr34l617h5fp65hjxgvly140000gn/T/veyra-p008-test-97361-18dd0707692b2c40",
+      "mtime": "2026-10-10T09:32:35.181673+08:00",
+      "empty": true,
+      "fixture_pid": "97361",
+      "process_absent_exit": 1,
+      "removed_empty_directory": true
+    },
+    {
+      "path": "/var/folders/sq/9tr34l617h5fp65hjxgvly140000gn/T/veyra-p008-test-97697-18dd0721e8e2d360",
+      "mtime": "2026-10-10T09:34:28.990115+08:00",
+      "empty": true,
+      "fixture_pid": "97697",
+      "process_absent_exit": 1,
+      "removed_empty_directory": true
+    }
+  ]
+}

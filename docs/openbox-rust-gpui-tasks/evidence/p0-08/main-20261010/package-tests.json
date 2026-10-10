@@ -1,0 +1,21 @@
+{
+  "command": [
+    "python3",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "tools/tests",
+    "-p",
+    "test_p0_08_package.py",
+    "-v"
+  ],
+  "cwd": "/Users/lifeilin/wx_lifeilin/github.com/lifei6671/veyra",
+  "head": "4e8f9cb92e93b40bfb3fc272d1382062d74dc6d6",
+  "environment": {
+    "PYTHONDONTWRITEBYTECODE": "1",
+    "VEYRA_P008_APP": "/Users/lifeilin/wx_lifeilin/github.com/lifei6671/veyra/.worktrees/p0-08-update-distribution/target/p0-08-desktop/VeyraPrototype.app"
+  },
+  "exit_code": 0,
+  "elapsed_seconds": 4.24
+}
