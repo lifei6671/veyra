@@ -1054,8 +1054,23 @@ impl GroupsView {
     }
     fn input(&self, field: Field, cx: &App) -> components::PanelInput {
         components::text_input(&self.inputs[field as usize])
-            .disabled(self.busy)
+            .readonly(self.busy)
             .border_focus()
+            .when(
+                matches!(
+                    field,
+                    Field::Interval | Field::Timeout | Field::Recovery | Field::Failure
+                ),
+                |i| i.numeric(),
+            )
+            // 单位输入与页签名称不命中 .group-field > input:focus。
+            .when(
+                matches!(
+                    field,
+                    Field::Interval | Field::Timeout | Field::Recovery | Field::LaneName
+                ),
+                |i| i.focus_style(gpui::transparent_black(), 0.),
+            )
             .bg(cx.theme().popover)
             .border_color(cx.theme().foreground.opacity(0.2))
             .h(px(t::CONTROL))
@@ -1075,6 +1090,7 @@ impl GroupsView {
                     icon("Minus", t::BODY),
                 )
                 .disabled(self.busy)
+                .retain_disabled_appearance()
                 .h(px(t::CONTROL))
                 .bg(cx.theme().foreground.opacity(0.07))
                 .rounded_none()
@@ -1088,8 +1104,8 @@ impl GroupsView {
                     .ml(px(-1.))
                     .child(
                         components::text_input(&self.inputs[Field::Scale as usize])
-                            .disabled(self.busy)
-                            .border_focus()
+                            .readonly(self.busy)
+                            .focus_style(gpui::transparent_black(), 0.)
                             .px_0()
                             .py_0()
                             .rounded_none()
@@ -1108,6 +1124,7 @@ impl GroupsView {
                 )
                 .ml(px(-1.))
                 .disabled(self.busy)
+                .retain_disabled_appearance()
                 .h(px(t::CONTROL))
                 .bg(cx.theme().foreground.opacity(0.07))
                 .rounded_none()
@@ -1150,7 +1167,9 @@ impl GroupsView {
             "分组规则",
             Select::new(&self.rule, tr(cx, "分组规则"))
                 .compact()
+                .border_focus()
                 .disabled(self.busy)
+                .opacity(1.)
                 .w(px(t::groups::RULE_FIELD)),
             cx,
         ));
@@ -1183,15 +1202,13 @@ impl GroupsView {
                         .child(
                             div().w(px(t::NUMBER_WIDTH)).child(
                                 components::text_input(&self.inputs[Field::Tolerance as usize])
+                                    .numeric()
                                     .disabled(
-                                        self.busy
-                                            || (draft.rule == GroupRule::Failover
-                                                && draft
-                                                    .lanes
-                                                    .iter()
-                                                    .all(|l| l.members.len() <= 1)),
+                                        draft.rule == GroupRule::Failover
+                                            && draft.lanes.iter().all(|l| l.members.len() <= 1),
                                     )
-                                    .border_focus(),
+                                    .readonly(self.busy)
+                                    .focus_style(gpui::transparent_black(), 0.),
                             ),
                         )
                         .child(hint("毫秒", cx)),
@@ -1339,6 +1356,9 @@ impl GroupsView {
                     )
                     .bg(cx.theme().button)
                     .disabled(self.busy || self.checked[side].is_empty())
+                    .when(self.busy && !self.checked[side].is_empty(), |b| {
+                        b.retain_disabled_appearance()
+                    })
                     .on_click(cx.listener(move |this, _, _, cx| {
                         // 筛选只改变显示；批量操作按完整原始顺序覆盖隐藏的勾选项。
                         let ids = checked_members(&this.member_pool(side), &this.checked[side]);
@@ -1406,6 +1426,7 @@ impl GroupsView {
                                 Select::new(&self.lane_mode, tr(cx, "页签模式"))
                                     .compact()
                                     .disabled(self.busy)
+                                    .opacity(1.)
                                     .w(px(t::groups::LANE_MODE_WIDTH))
                                     .h(px(t::groups::LANE_MODE_HEIGHT))
                                     .text_size(px(t::groups::LANE_MODE_TEXT)),
@@ -1435,8 +1456,9 @@ impl GroupsView {
                                 )
                                 .flex_1()
                                 .min_w_0()
-                                .disabled(self.busy)
-                                .border_focus()
+                                .readonly(self.busy)
+                                // .group-member-title input / .group-failover-selected-head input 的 outline: 0。
+                                .focus_style(gpui::transparent_black(), 0.)
                                 .bg(cx.theme().popover)
                                 .px(px(t::groups::SEARCH_PAD))
                                 .h(px(t::groups::FILTER_HEIGHT))
@@ -1498,6 +1520,7 @@ impl GroupsView {
                         Select::new(&self.filters[side], tr(cx, "成员筛选"))
                             .compact()
                             .disabled(self.busy)
+                            .opacity(1.)
                             .w(px((tr(cx, &self.filter_values[side]).chars().count()
                                 as f32
                                 * t::groups::FILTER_TEXT
@@ -1530,6 +1553,9 @@ impl GroupsView {
                         t::groups::FILTER_HEIGHT,
                     )
                     .disabled(self.busy || move_id == OutboundId::Block)
+                    .when(self.busy && move_id != OutboundId::Block, |b| {
+                        b.retain_disabled_appearance()
+                    })
                     .on_click(cx.listener({
                         let move_id = move_id.clone();
                         move |this, _, _, cx| this.transfer(side, vec![move_id.clone()], cx)
@@ -1771,6 +1797,7 @@ impl GroupsView {
                             t::SWITCH_HEIGHT,
                         )
                         .disabled(busy)
+                        .retain_disabled_appearance()
                         .on_click(cx.listener(|this, _, window, cx| this.close(window, cx))),
                     ),
             )
@@ -1814,62 +1841,74 @@ impl GroupsView {
                             .px(px(t::groups::FOOTER_BUTTON_PAD))
                             .font_weight(super::theme::MISANS_SEMIBOLD)
                             .disabled(busy)
+                            .bg(cx.theme().button)
+                            .text_color(cx.theme().foreground)
                             .on_click(cx.listener(|this, _, window, cx| this.close(window, cx))),
                     )
                     .child(
-                        group_button(
-                            "group-save",
-                            if busy {
-                                tr(cx, "保存中").to_owned()
-                            } else if self.auto_open {
-                                tr(cx, "生成 {count} 个分组").replace(
-                                    "{count}",
-                                    &(self.auto_codes.len()
-                                        * self.auto_rules.iter().filter(|v| **v).count())
-                                    .to_string(),
-                                )
-                            } else {
-                                tr(cx, if editing { "保存" } else { "确定" }).to_owned()
-                            },
-                            t::groups::PRIMARY_TEXT,
-                        )
-                        .primary()
-                        .px(px(t::groups::FOOTER_BUTTON_PAD))
-                        .bg(rgb(t::ACCENT_STRONG))
-                        .text_color(rgb(0xffffff))
-                        .when(busy, |b| b.child(components::loading_spinner(t::BODY, cx)))
-                        .font_weight(super::theme::MISANS_SEMIBOLD)
-                        // .primary-button:disabled 的整体透明度；显式背景不能遮蔽禁用态。
-                        .opacity(if cannot_save { 0.5 } else { 1. })
-                        .disabled(cannot_save)
-                        .on_click(cx.listener(|this, _, _, cx| {
-                            if this.draft.is_some() {
-                                this.save_draft(cx);
-                                return;
-                            }
-                            let Some(state) = &this.state else { return };
-                            let groups = if this.auto_open {
-                                let rules = [GroupRule::UrlTest, GroupRule::Selector]
-                                    .into_iter()
-                                    .zip(this.auto_rules)
-                                    .filter(|(_, enabled)| *enabled)
-                                    .map(|(r, _)| r)
-                                    .collect::<Vec<_>>();
-                                auto_groups(&state.groups, &this.auto_codes, &rules)
-                            } else {
-                                match &this.confirmation {
-                                    Some(Confirmation::Restore) => default_groups(),
-                                    Some(Confirmation::Delete(id)) => state
-                                        .groups
-                                        .iter()
-                                        .filter(|g| &g.id != id)
-                                        .cloned()
-                                        .collect(),
-                                    None => return,
+                        components::button("group-save", "")
+                            .accessibility_label(tr(cx, if editing { "保存" } else { "确定" }))
+                            .child(
+                                div()
+                                    .flex()
+                                    .items_center()
+                                    .gap(px(t::groups::FOOTER_CONTENT_GAP))
+                                    .when(busy, |d| {
+                                        d.child(components::loading_spinner(t::BODY, cx))
+                                    })
+                                    .child(div().text_size(px(t::groups::PRIMARY_TEXT)).child(
+                                        if self.auto_open {
+                                            tr(cx, "生成 {count} 个分组").replace(
+                                                "{count}",
+                                                &(self.auto_codes.len()
+                                                    * self
+                                                        .auto_rules
+                                                        .iter()
+                                                        .filter(|v| **v)
+                                                        .count())
+                                                .to_string(),
+                                            )
+                                        } else {
+                                            tr(cx, if editing { "保存" } else { "确定" }).to_owned()
+                                        },
+                                    )),
+                            )
+                            .primary()
+                            .px(px(t::groups::FOOTER_BUTTON_PAD))
+                            .bg(rgb(t::ACCENT_STRONG))
+                            .text_color(rgb(0xffffff))
+                            .font_weight(super::theme::MISANS_SEMIBOLD)
+                            // .primary-button:disabled 的整体透明度；显式背景不能遮蔽禁用态。
+                            .opacity(if cannot_save { 0.5 } else { 1. })
+                            .disabled(cannot_save)
+                            .on_click(cx.listener(|this, _, _, cx| {
+                                if this.draft.is_some() {
+                                    this.save_draft(cx);
+                                    return;
                                 }
-                            };
-                            this.send(Some(groups), cx);
-                        })),
+                                let Some(state) = &this.state else { return };
+                                let groups = if this.auto_open {
+                                    let rules = [GroupRule::UrlTest, GroupRule::Selector]
+                                        .into_iter()
+                                        .zip(this.auto_rules)
+                                        .filter(|(_, enabled)| *enabled)
+                                        .map(|(r, _)| r)
+                                        .collect::<Vec<_>>();
+                                    auto_groups(&state.groups, &this.auto_codes, &rules)
+                                } else {
+                                    match &this.confirmation {
+                                        Some(Confirmation::Restore) => default_groups(),
+                                        Some(Confirmation::Delete(id)) => state
+                                            .groups
+                                            .iter()
+                                            .filter(|g| &g.id != id)
+                                            .cloned()
+                                            .collect(),
+                                        None => return,
+                                    }
+                                };
+                                this.send(Some(groups), cx);
+                            })),
                     ),
             );
         gpui_kit::base::Dialog::new(cx)

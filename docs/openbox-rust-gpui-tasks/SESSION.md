@@ -1,3 +1,7 @@
+**P4-03 FINAL DONE / 视觉人工审批（2026-10-10）**：Host 独立核验54/54原图哈希和React/GPUI同数据浅色1280×720逐态、主备运行反馈，正式审批视觉 PASS；最终UI18唯一定向PASS、Clippy/build/fmt/diff PASS，前轮Runtime107定向PASS及固定1.14.0 Native1PASS原证据保留，独立只读Review0 Finding。已批准不透明白色弹窗/字体栅格化/原生标题栏差异、Legacy Windows libcronet.dll Clippy基线FAIL、深色/其他缩放 NOT_RUN均保留。P4-03 DONE、owner/预约释放、无额外依赖立即解锁；P2-05 ACCEPTANCE、P2-06 DOING/其Runtime owner不变。进入本地commit→合并主开发分支→定向验证；不push。见[视觉审批与54张原图](P4-03-visual-final.md)、[Runtime交付](P4-03-runtime-acceptance.md)。
+
+**P4-03 最终视觉对照（2026-10-09，ACCEPTANCE / AWAIT_HUMAN）**：输入8d3b47a，独立dev/p4-03-runtime仅UI修改。当前macOS设置、浅色、1280×720与真实React源码shell同数据核对列表/添加/普通组/主备高级/真实反馈，54张原图及逐图hash保留；修复focus CSS覆盖、数字spinner、busy颜色与Save loading排列，保留已批准不透明白弹窗。真实Escape/Tab/Shift+Tab、数字草稿步进/取消，以及独立root保存失败重试、受管child pin/busy/pending/核对/Auto/全失败留图；Native资源已清理。18个唯一定向测试、Desktop Clippy/build/fmt/diff PASS，最终独立只读Review剩余0 Finding，Reviewer未亲自执行GUI/Native。错误重复focus方案panic及旧Tauri Clippy FAIL原样保留。等待本轮用户最终人工确认，不DONE/commit/merge/主分支复验/释放owner/push。P2-06 DOING、P2-05 ACCEPTANCE不变。[最终截图与边界](P4-03-visual-final.md)。下方历史保留。
+
 **P4-03 出站 UI REWORK 收据（2026-10-09，仍 ACCEPTANCE）**：列表恢复原版两行/62px卡片，主备真实操作移到名称浮层；卡片75% surface、表单空placeholder/焦点/hover/保存disabled、内置说明逐字对齐，保留P4-02已批准白色不透明弹窗。真实完整React shell与GPUI五组/三节点同数据1280×720逐态截图覆盖列表、添加、普通组/内置组/主用/备用高级修改。21个唯一定向UI测试、Desktop all-targets Clippy/build/fmt/diff PASS。新Native浮层pin→子线路busy/pending→核对→恢复Auto/切主 PASS，config始终1、selection0→8，仅读当前child发现的Controller；保存真实失败保持hash、重试落盘及取消PASS。独立Reviewer修复lane pending摘要遗漏后零Finding。仍不宣称全局95%/完整focus/hover验收，旧Tauri Clippy FAIL保持；不DONE/commit/merge/主树复验/释放，不push。[本轮证据与边界](P4-03-ui-rework.md)。
 
 **P4-03 出站节点视觉 REWORK（用户2026-10-09追加）**：用户指出列表卡片与添加/修改弹窗明显不一致；同dev/p4-03-runtime继续修正。原P2-06 owner确认ui/groups、failover_editor、必要既有共享组件/tokens/i18n无相交预约；本轮仅这些UI与文档/证据，不改Runtime公共契约和现有增量。真实在线OpenBox只读查看/不保存；同数据React源码fixture与自有GPUI root重验，保持当前macOS显示设置与浅色。前轮局部PASS不代表用户接受整体视觉；当前ACCEPTANCE/视觉REWORK，不commit/merge/push/释放。
@@ -195,19 +199,18 @@ P2-06 已阶段提交 `f2457e6a4e2fe0ac3c9186bc7d17323a70c4c0a8`，仍 DOING、�
 | P1 核心库与桌面壳 | 8 / 8 | 壳层/设置/基础组件视觉 PASS_WITH_TECHNICAL_DIFFERENCES；人工三轮、重启恢复、最终 Tray Quit 与清理 PASS；未实现业务页不计完成 | P1-07 DONE，组合 PASS |
 | P2 本机代理闭环 | 5 / 10 | P2-01/P2-02A/P2-02B/P2-03/P2-04 DONE；Host FINAL ACCEPTANCE PASS，Finding CLOSED | P2-09 未开始 |
 | P3 观测与主页面 | 3 / 8 | P3-01/P3-03/P3-04 DONE | P3-08 未开始 |
-| P4 完整配置能力 | 1 / 9 | P4-02 DONE，P4-03 ACCEPTANCE；Chain 在 Routing 前交付 | P4-07 未开始 |
+| P4 完整配置能力 | 2 / 9 | P4-02/P4-03 DONE；Chain 在 Routing 前交付 | P4-07 未开始 |
 | P5 DNS 与共享 | 3 / 7 | P5-04/P5-05/P5-06 DONE；Rules 在 DNS 后最终闭合 | P5-07 未开始 |
 | P6 macOS TUN 与生命周期 | 0 / 5 | 未开始，按各卡依赖推进 | P6-05 未开始 |
 | P7 数据与发布收尾 | 0 / 5 | 未开始，schema/清理按显式依赖等待 | P7-05 未开始 |
 | Windows W0–W3 | 0 / 7 | 后续排期 DEFERRED | W3-02 未开始 |
 
-macOS：**27 / 61 完成**；READY 1、TODO 30、DOING 1、REVIEW 0、ACCEPTANCE 2、BLOCKED 0。Windows 7 项 DEFERRED 单列，共 68 项。数量不等于工期权重或代码完成百分比；P1-04/P2-02/P4-05 父项被后缀子项替代，不重复计数。
+macOS：**28 / 61 完成**；READY 1、TODO 30、DOING 1、REVIEW 0、ACCEPTANCE 1、BLOCKED 0。Windows 7 项 DEFERRED 单列，共 68 项。数量不等于工期权重或代码完成百分比；P1-04/P2-02/P4-05 父项被后缀子项替代，不重复计数。
 
 ## 2 Active Tasks
 
 | Task | owner / 泳道 | 写范围 / 公共契约 | 实际资源 / 下一动作 |
 | --- | --- | --- | --- |
-| P4-03 · ACCEPTANCE | Codex · Core/Config/GPUI | groups 模型/统一目录/策略/保存/GPUI及共享控件必要外观；Runtime 写入口与探测不接管 | 独立 dev/p4-03-failover；切片及真实编辑交付，待原 owner Runtime 接线、Native 与完整视觉；不 commit/merge/释放 |
 | P2-05 · ACCEPTANCE | Codex Desktop · Core 网络客户端 | 独立dev/p2-05-outbound-clients，未合并；不在本卡写入 | 指定节点Native503已关闭，用户选择等待完整网络组合验收 |
 | P2-06 · DOING | Codex · Runtime/Platform | helper production/IPC、Core Runtime DTO、desktop runtime_service/platform、局部 Cargo 接线、任务文档 | 观测接线增量与真实普通用户受管实例验收通过，P3-01已DONE；root安装/降权、GUI、Helper多轮与重启恢复等原缺口继续后续验收，Runtime/DTO owner保留；见[P2-06接线记录](P2-06-observation-integration.md) |
 

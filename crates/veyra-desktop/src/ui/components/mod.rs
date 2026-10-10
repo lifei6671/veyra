@@ -33,6 +33,8 @@ impl PanelInput {
     }
     // 当前图标搜索框有 CSS 局部 focus 颜色/offset，输入语义仍由 Kit 管理。
     pub fn focus_style(mut self, color: Hsla, offset: f32) -> Self {
+        // 显式的 CSS focus 覆盖优先于通用 accent border；透明色可保留 outline: 0。
+        self.border_focus = false;
         self.focus_style = Some((color, offset));
         self
     }
@@ -120,6 +122,7 @@ impl RenderOnce for PanelInput {
                             };
                             gpui_kit::base::Button::new((if increment { "number-up" } else { "number-down" }, state.entity_id()))
                                 .tab_stop(false)
+                                .disabled(self.disabled || self.readonly)
                                 .accessibility_label(tr(cx, if increment { "增加数值" } else { "减少数值" }))
                                 .w(px(t::SPINNER_WIDTH))
                                 .h(px(t::SPINNER_HEIGHT / 2.))
@@ -753,8 +756,14 @@ pub struct IconButton {
     disabled: bool,
     primary: bool,
     reference_ghost: Option<(Hsla, Hsla)>,
+    retain_disabled_appearance: bool,
 }
 impl IconButton {
+    /// 编辑器提交期间仍阻断操作，但保留 React 的正常颜色。
+    pub fn retain_disabled_appearance(mut self) -> Self {
+        self.retain_disabled_appearance = true;
+        self
+    }
     /// 复用 OpenBox btn-primary btn-square；禁用只阻断操作，不另加透明度改变参考颜色。
     pub fn primary(mut self) -> Self {
         self.primary = true;
@@ -860,7 +869,11 @@ impl RenderOnce for IconButton {
         };
         self.button
             .bg(bg)
-            .opacity(if self.disabled { 0.5 } else { 1. })
+            .opacity(if self.disabled && !self.retain_disabled_appearance {
+                0.5
+            } else {
+                1.
+            })
             .text_color(fg)
             .when(self.primary, |b| b.rounded(px(radius)))
             .when(!self.disabled, |b| {
@@ -926,6 +939,7 @@ pub fn icon_button_content(
         disabled: false,
         primary: false,
         reference_ghost: None,
+        retain_disabled_appearance: false,
         button: gpui_kit::base::Button::new(id)
             .accessibility_label(label)
             .size(px(size))

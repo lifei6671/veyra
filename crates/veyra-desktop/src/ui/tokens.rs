@@ -376,6 +376,8 @@ pub mod groups {
     pub const ADVANCED_RECOVERY: f32 = 140.;
     pub const COMPACT_RADIUS: f32 = 7.;
     pub const FOOTER_GAP: f32 = 10.;
+    // OpenBox .compact-button / .primary-button gap。
+    pub const FOOTER_CONTENT_GAP: f32 = 7.;
     pub const PRIMARY_TEXT: f32 = 11.;
     pub const HINT_LINE: f32 = 16.;
     pub const FOOTER_BUTTON_PAD: f32 = 14.;

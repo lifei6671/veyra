@@ -171,6 +171,8 @@ impl Render for IconPicker {
                     .border_1()
                     .border_color(cx.theme().border)
                     .bg(cx.theme().input)
+                    // 分组提交期间禁用点击，文字颜色仍沿用 React 表单。
+                    .when(self.expanded, |b| b.text_color(cx.theme().foreground))
                     .child(
                         div()
                             .flex()

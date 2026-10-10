@@ -203,6 +203,9 @@ impl GroupsView {
                 )
                 .bg(cx.theme().button)
                 .disabled(self.busy || self.checked[side].is_empty())
+                .when(self.busy && !self.checked[side].is_empty(), |b| {
+                    b.retain_disabled_appearance()
+                })
                 .on_click(cx.listener(move |this, _, _, cx| {
                     let ids = checked_members(&this.member_pool(side), &this.checked[side]);
                     this.transfer(side, ids, cx);
@@ -262,6 +265,7 @@ impl GroupsView {
                         .px(px(t::groups::LANE_TAB_PAD))
                         .rounded(px(t::groups::COMPACT_RADIUS))
                         .disabled(self.busy)
+                        .text_color(cx.theme().foreground)
                         .when(index == self.active_lane, |b| {
                             b.primary()
                                 .bg(rgb(t::ACCENT))
@@ -281,6 +285,7 @@ impl GroupsView {
                         t::groups::LANE_TAB_HEIGHT,
                     )
                     .disabled(self.busy)
+                    .retain_disabled_appearance()
                     .on_click(
                         cx.listener(|this, _, window, cx| match FailoverLane::fresh() {
                             Ok(lane) => {
@@ -326,6 +331,9 @@ impl GroupsView {
                     )
                     .h(px(t::groups::LANE_SETTINGS_HEIGHT))
                     .disabled(self.busy || draft.lanes.is_empty())
+                    .when(self.busy && !draft.lanes.is_empty(), |b| {
+                        b.retain_disabled_appearance()
+                    })
                     .on_click(cx.listener(|this, _, window, cx| {
                         if this.draft_members().is_empty() {
                             this.remove_lane(window, cx);

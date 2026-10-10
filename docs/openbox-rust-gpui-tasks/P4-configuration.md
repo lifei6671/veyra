@@ -53,12 +53,16 @@
 
 **2026-10-09 UI REWORK：仍 ACCEPTANCE**。按用户反馈修正卡片/添加/修改布局并补齐完整 React shell 同数据证据；新增浮层 Native pending/核对/Auto、保存失败/重试实操通过，独立复核零 Finding。完整95%与旧Clippy边界未关闭，不提交合并或释放；[最新收据](P4-03-ui-rework.md)。
 
+**2026-10-09 最终视觉对照：ACCEPTANCE / AWAIT_HUMAN**。仅当前macOS显示设置、浅色、1280×720；54张原图、列表/添加/普通组/主备高级/真实反馈逐态核对，focus/hover/disabled/loading/error修正及天然Tab实操通过。18个唯一定向测试与Desktop Clippy/build/fmt/diff PASS；独立只读Review剩余0 Finding。白色不透明弹窗批准差异、字体边缘/原生标题栏及旧FAIL保留；深色其他缩放本轮不跑。不改Runtime事务/P2-06/P2-05。**人工确认前不DONE、提交、合并、主分支复验或释放owner；不push。** [最终截图交付](P4-03-visual-final.md)。
+
+**2026-10-10 最终验收：DONE**。由 Host 在实际查看54张原图及同数据逐态截图后批准当前macOS显示设置/浅色/1280×720视觉；白色不透明弹窗及字体/标题栏为先前批准差异，不把全产品95%相似度写成测量分数。正式唯一选择写权、健康编排、Auto/ManualPin/pending读回/重启与锁定1.14.0 Native已按正式收据交付；本轮独立UI18PASS/Core和Runtime前轮107PASS、独立Review无剩余Finding。旧Legacy Windows libcronet.dll Clippy基线FAIL保留，其他主题/缩放继续组合验收。本卡owner释放、下游只按显式依赖重算，P2-05 ACCEPTANCE/P2-06 DOING保持。见[最终视觉批复](P4-03-visual-final.md)与[Runtime记录](P4-03-runtime-acceptance.md)。
+
 **验收**：
 
-- [x] 模拟时钟验证连续失败切备、稳定恢复切主、全失败保留错误；不重写 URLTest（纯策略通过，运行接线仍未完成）。
-- [ ] 手动固定使旧探测失效；恢复自动重新探测；迟到结果不覆盖人工选择。
-- [ ] 成员变化、进程重启、pending 不确定及保存失败都有一致结果；自动切换不增加 profile revision。
-- [ ] 主备编辑、手动固定/恢复自动提示和实际选择经过 界面与最小内核集成验证。
+- [x] 模拟时钟验证连续失败切备、稳定恢复切主、全失败保留错误；不重写 URLTest（纯策略、正式Runtime及Native已通过）。
+- [x] 手动固定使旧探测失效；恢复自动重新探测；迟到结果不覆盖人工选择。
+- [x] 成员变化、进程重启、pending 不确定及保存失败都有一致结果；自动切换不增加 profile revision。
+- [x] 主备编辑、手动固定/恢复自动提示和实际选择经过 界面与最小内核集成验证。
 
 <a id="obg-p4-04"></a>
 ## OBG-P4-04 规则资源导入、分页与刷新

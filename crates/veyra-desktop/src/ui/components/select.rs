@@ -64,10 +64,12 @@ pub struct SelectState {
     open: bool,
     trigger: FocusHandle,
     popup: FocusHandle,
+    _focus_subscriptions: Vec<Subscription>,
     label: SharedString,
     width: Pixels,
     height: Pixels,
     compact: bool,
+    border_focus: bool,
     trigger_style: StyleRefinement,
     disabled: bool,
     pub translated_options: usize,
@@ -78,18 +80,23 @@ impl SelectState {
     pub fn new(
         options: Vec<impl Into<SharedString>>,
         selected: Option<IndexPath>,
-        _: &mut Window,
+        window: &mut Window,
         cx: &mut Context<Self>,
     ) -> Self {
+        let trigger = cx.focus_handle();
+        let enter = cx.on_focus(&trigger, window, |_, _, cx| cx.notify());
+        let leave = cx.on_blur(&trigger, window, |_, _, cx| cx.notify());
         Self {
             selection: Selection::new(options, selected.map(|i| i.row)),
             open: false,
-            trigger: cx.focus_handle(),
+            trigger,
             popup: cx.focus_handle(),
+            _focus_subscriptions: vec![enter, leave],
             label: "".into(),
             width: px(t::SELECT_WIDTH),
             height: px(t::CONTROL),
             compact: false,
+            border_focus: false,
             trigger_style: StyleRefinement::default(),
             disabled: false,
             translated_options: usize::MAX,
@@ -170,8 +177,15 @@ pub struct Select {
     style: StyleRefinement,
     disabled: bool,
     compact: bool,
+    border_focus: bool,
 }
 impl Select {
+    /// 对应 .group-field > .ob-select-trigger:focus 的局部边框覆盖。
+    pub fn border_focus(mut self) -> Self {
+        self.border_focus = true;
+        self
+    }
+
     /// OpenBox 成员筛选的 24px 紧凑样式；两侧共用，保留普通 Select 外观。
     pub fn compact(mut self) -> Self {
         self.compact = true;
@@ -184,6 +198,7 @@ impl Select {
             style: StyleRefinement::default(),
             disabled: false,
             compact: false,
+            border_focus: false,
         }
     }
 }
@@ -204,6 +219,7 @@ impl RenderOnce for Select {
             s.label = self.label;
             s.disabled = self.disabled;
             s.compact = self.compact;
+            s.border_focus = self.border_focus;
             s.trigger_style = self.style.clone();
             s.height = self
                 .style
@@ -235,7 +251,7 @@ impl RenderOnce for Select {
     }
 }
 impl Render for SelectState {
-    fn render(&mut self, _: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
+    fn render(&mut self, window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
         let entity = cx.entity();
         let popup_entity = entity.clone();
         let open_entity = entity.clone();
@@ -304,6 +320,13 @@ impl Render for SelectState {
                             .cursor_pointer()
                             .focus_visible(|s| s.border_color(rgb(t::ACCENT)))
                             .refine_style(&self.trigger_style)
+                            // 焦点只由 BaseSelect 登记；Escape 回焦后按 React 绘制触发器边框。
+                            .when(
+                                self.border_focus
+                                    && !self.disabled
+                                    && self.trigger.is_focused(window),
+                                |b| b.border_color(rgb(t::ACCENT)),
+                            )
                             .child(selected)
                             .child(
                                 icon(
