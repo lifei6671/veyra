@@ -1,0 +1,3784 @@
+{
+  "scope": "isolated-tree documents and read-only Git; explicitly authorized main-tree historical text/hash only; no OS/network/root/GUI/product commands",
+  "commands": {
+    "initial_identity": "pwd; git status --short; git rev-parse HEAD; git branch --show-current",
+    "main_ref_readonly": "git rev-parse refs/heads/codex/dist-react-restore -> b90f612d828dcb1e957cbd0755f1738f5e43206a",
+    "document_validation": "python3 .p0-09-validate.py -> exit 0; temporary script removed at closeout",
+    "diff_check": "git diff --check -> exit 0",
+    "authorized_historical_evidence": "Python Path.read_bytes/read_text/json + SHA256 only, no main-tree mutation"
+  },
+  "validation_attempt_history": [
+    {
+      "result": "FAIL_VALIDATOR_CARD_BOUNDARY",
+      "reason": "old duplicate P2-02A anchor split before actual definition; corrected parser skips non-card anchors and still requires all 68 definitions, exact deps and no duplicates"
+    },
+    {
+      "result": "FAIL_VALIDATOR_ROW_SELECTION",
+      "reason": "P0 SHA identity rows matched estimate pattern; limited estimates to 52 P1-P7 and 7 W cards"
+    },
+    {
+      "result": "FAIL_DOCUMENT_EVIDENCE_INVENTORY",
+      "reason": "fixtures/p0-01 exists; corrected missing set to 6 evidence dirs, read existing fixtures and added hashes/count/provenance"
+    },
+    {
+      "result": "REVIEW_FINDING_CLOSED",
+      "id": "P0-09-ESTIMATE-LINUX-001",
+      "reason": "three initial summaries 43-86 corrected to category sum 38-76; independent reread closed finding"
+    },
+    {
+      "result": "FAIL_FINAL_SCOPE_ASSERTION_CORRECTED",
+      "reason": "ordinary git status excludes two evidence receipts due to existing .gitignore:44; direct existence and check-ignore verified, host inclusion recorded; no ignore edits"
+    },
+    {
+      "execution": "second",
+      "result": "FAIL_VALIDATOR_SCENARIO_NUMBER_WIDTH_CORRECTED",
+      "reason": "initial two-digit-only parser omitted scene 1-9; corrected to 1-2 digits then requires exactly19 unique original rows; coverage bytes unchanged"
+    },
+    {
+      "execution": "second",
+      "result": "REVIEW_FINDING_CLOSED",
+      "id": "P0-09-DOC-HASH-TABLE-002",
+      "reason": "removed blank line separating original hash table and nine authorized main-file rows; independently reread as contiguous table"
+    },
+    {
+      "execution": "second",
+      "result": "IMPLEMENTER_SELF_CHECK_CLOSED",
+      "reason": "P0-09 table stale effort wording corrected to document remaining0 and route/evidence closed; reviewer independently confirmed"
+    }
+  ],
+  "independent_review": {
+    "reviewer": "/root/p0_09_doc_review",
+    "final_result": "PASS_DOCUMENT_REVIEW_ZERO_REMAINING_FINDINGS",
+    "task_result": "DONE_DOCUMENT_SCOPE_ONLY",
+    "artifact": "docs/openbox-rust-gpui-tasks/evidence/p0-09/REVIEW.md",
+    "skill": ".agents/skills/code-delivery-review/SKILL.md",
+    "scope": "read-only isolated documents/Git/arithmetic; nine explicitly authorized main-tree historical text/hash; no platform/product rerun",
+    "closed_findings": [
+      "P0-09-DOC-HASH-TABLE-002",
+      "P0-09 current table stale acceptance wording (implementer self-check, independently confirmed)"
+    ],
+    "final_handoff_revalidation": "PASS_ZERO_NEW_FINDINGS: reviewer reread current Review/validation receipts,561 references/zero new errors/zero pending receipts/118 historical isolated-tree missing/temp removal/ignored handoff/unchanged HEAD and branch confirmed"
+  },
+  "input_head": "b90f612d828dcb1e957cbd0755f1738f5e43206a",
+  "branch": "dev/p0-09-stage-estimate",
+  "task_count": 68,
+  "macos_cards": 61,
+  "windows_cards": 7,
+  "states": {
+    "DONE": 30,
+    "ACCEPTANCE": 1,
+    "DOING": 1,
+    "TODO": 29,
+    "DEFERRED": 7
+  },
+  "ready": [],
+  "task_card_dependency_match": "PASS_68",
+  "dag": "PASS_NO_CYCLE",
+  "coverage": {
+    "api_unique": 77,
+    "scenarios_unique": 19,
+    "ownership_and_4_stream_6_page_9_category_text": "PASS_UNCHANGED"
+  },
+  "estimates": {
+    "macos_P1_P7": {
+      "P1": {
+        "columns": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ]
+        ],
+        "total": [
+          0.0,
+          0.0
+        ],
+        "point": 0.0
+      },
+      "P2": {
+        "columns": [
+          [
+            6.0,
+            11.0
+          ],
+          [
+            5.0,
+            10.0
+          ],
+          [
+            6.0,
+            12.0
+          ],
+          [
+            2.75,
+            5.5
+          ],
+          [
+            5.0,
+            10.0
+          ]
+        ],
+        "total": [
+          24.75,
+          48.5
+        ],
+        "point": 36.625
+      },
+      "P3": {
+        "columns": [
+          [
+            7.5,
+            15.0
+          ],
+          [
+            4.25,
+            8.5
+          ],
+          [
+            5.25,
+            10.5
+          ],
+          [
+            2.5,
+            5.0
+          ],
+          [
+            5.0,
+            10.0
+          ]
+        ],
+        "total": [
+          24.5,
+          49.0
+        ],
+        "point": 36.75
+      },
+      "P4": {
+        "columns": [
+          [
+            11.5,
+            23.0
+          ],
+          [
+            6.75,
+            13.5
+          ],
+          [
+            7.5,
+            15.0
+          ],
+          [
+            3.5,
+            7.0
+          ],
+          [
+            7.0,
+            14.0
+          ]
+        ],
+        "total": [
+          36.25,
+          72.5
+        ],
+        "point": 54.375
+      },
+      "P5": {
+        "columns": [
+          [
+            5.0,
+            10.0
+          ],
+          [
+            3.75,
+            7.5
+          ],
+          [
+            4.5,
+            9.0
+          ],
+          [
+            2.0,
+            4.0
+          ],
+          [
+            3.75,
+            7.5
+          ]
+        ],
+        "total": [
+          19.0,
+          38.0
+        ],
+        "point": 28.5
+      },
+      "P6": {
+        "columns": [
+          [
+            6.5,
+            13.0
+          ],
+          [
+            5.25,
+            10.5
+          ],
+          [
+            7.25,
+            14.5
+          ],
+          [
+            3.25,
+            6.5
+          ],
+          [
+            7.0,
+            14.5
+          ]
+        ],
+        "total": [
+          29.25,
+          59.0
+        ],
+        "point": 44.125
+      },
+      "P7": {
+        "columns": [
+          [
+            5.5,
+            11.0
+          ],
+          [
+            5.0,
+            10.0
+          ],
+          [
+            7.5,
+            15.0
+          ],
+          [
+            4.25,
+            8.5
+          ],
+          [
+            7.0,
+            14.5
+          ]
+        ],
+        "total": [
+          29.25,
+          59.0
+        ],
+        "point": 44.125
+      },
+      "P1_P7": {
+        "columns": [
+          [
+            42.0,
+            83.0
+          ],
+          [
+            30.0,
+            60.0
+          ],
+          [
+            38.0,
+            76.0
+          ],
+          [
+            18.25,
+            36.5
+          ],
+          [
+            34.75,
+            70.5
+          ]
+        ],
+        "total": [
+          163.0,
+          326.0
+        ],
+        "point": 244.5
+      }
+    },
+    "per_card": {
+      "P1-01": {
+        "columns": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ]
+        ],
+        "total": [
+          0.0,
+          0.0
+        ],
+        "point": 0.0
+      },
+      "P1-02": {
+        "columns": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ]
+        ],
+        "total": [
+          0.0,
+          0.0
+        ],
+        "point": 0.0
+      },
+      "P1-03": {
+        "columns": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ]
+        ],
+        "total": [
+          0.0,
+          0.0
+        ],
+        "point": 0.0
+      },
+      "P1-04A": {
+        "columns": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ]
+        ],
+        "total": [
+          0.0,
+          0.0
+        ],
+        "point": 0.0
+      },
+      "P1-04B": {
+        "columns": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ]
+        ],
+        "total": [
+          0.0,
+          0.0
+        ],
+        "point": 0.0
+      },
+      "P1-05": {
+        "columns": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ]
+        ],
+        "total": [
+          0.0,
+          0.0
+        ],
+        "point": 0.0
+      },
+      "P1-06": {
+        "columns": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ]
+        ],
+        "total": [
+          0.0,
+          0.0
+        ],
+        "point": 0.0
+      },
+      "P1-07": {
+        "columns": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ]
+        ],
+        "total": [
+          0.0,
+          0.0
+        ],
+        "point": 0.0
+      },
+      "P2-01": {
+        "columns": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ]
+        ],
+        "total": [
+          0.0,
+          0.0
+        ],
+        "point": 0.0
+      },
+      "P2-02A": {
+        "columns": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ]
+        ],
+        "total": [
+          0.0,
+          0.0
+        ],
+        "point": 0.0
+      },
+      "P2-02B": {
+        "columns": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ]
+        ],
+        "total": [
+          0.0,
+          0.0
+        ],
+        "point": 0.0
+      },
+      "P2-03": {
+        "columns": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ]
+        ],
+        "total": [
+          0.0,
+          0.0
+        ],
+        "point": 0.0
+      },
+      "P2-04": {
+        "columns": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ]
+        ],
+        "total": [
+          0.0,
+          0.0
+        ],
+        "point": 0.0
+      },
+      "P2-05": {
+        "columns": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.5,
+            1.0
+          ],
+          [
+            1.0,
+            2.0
+          ],
+          [
+            0.5,
+            1.0
+          ],
+          [
+            0.5,
+            1.0
+          ]
+        ],
+        "total": [
+          2.5,
+          5.0
+        ],
+        "point": 3.75
+      },
+      "P2-06": {
+        "columns": [
+          [
+            1.0,
+            2.0
+          ],
+          [
+            2.0,
+            4.0
+          ],
+          [
+            2.0,
+            4.0
+          ],
+          [
+            0.75,
+            1.5
+          ],
+          [
+            1.5,
+            3.0
+          ]
+        ],
+        "total": [
+          7.25,
+          14.5
+        ],
+        "point": 10.875
+      },
+      "P2-07": {
+        "columns": [
+          [
+            2.0,
+            4.0
+          ],
+          [
+            1.0,
+            2.0
+          ],
+          [
+            1.0,
+            2.0
+          ],
+          [
+            0.5,
+            1.0
+          ],
+          [
+            1.0,
+            2.0
+          ]
+        ],
+        "total": [
+          5.5,
+          11.0
+        ],
+        "point": 8.25
+      },
+      "P2-08": {
+        "columns": [
+          [
+            3.0,
+            5.0
+          ],
+          [
+            1.0,
+            2.0
+          ],
+          [
+            1.0,
+            2.0
+          ],
+          [
+            0.5,
+            1.0
+          ],
+          [
+            1.0,
+            2.0
+          ]
+        ],
+        "total": [
+          6.5,
+          12.0
+        ],
+        "point": 9.25
+      },
+      "P2-09": {
+        "columns": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.5,
+            1.0
+          ],
+          [
+            1.0,
+            2.0
+          ],
+          [
+            0.5,
+            1.0
+          ],
+          [
+            1.0,
+            2.0
+          ]
+        ],
+        "total": [
+          3.0,
+          6.0
+        ],
+        "point": 4.5
+      },
+      "P3-01": {
+        "columns": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ]
+        ],
+        "total": [
+          0.0,
+          0.0
+        ],
+        "point": 0.0
+      },
+      "P3-02": {
+        "columns": [
+          [
+            2.0,
+            4.0
+          ],
+          [
+            1.0,
+            2.0
+          ],
+          [
+            1.0,
+            2.0
+          ],
+          [
+            0.5,
+            1.0
+          ],
+          [
+            1.0,
+            2.0
+          ]
+        ],
+        "total": [
+          5.5,
+          11.0
+        ],
+        "point": 8.25
+      },
+      "P3-03": {
+        "columns": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ]
+        ],
+        "total": [
+          0.0,
+          0.0
+        ],
+        "point": 0.0
+      },
+      "P3-04": {
+        "columns": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ]
+        ],
+        "total": [
+          0.0,
+          0.0
+        ],
+        "point": 0.0
+      },
+      "P3-05": {
+        "columns": [
+          [
+            2.0,
+            4.0
+          ],
+          [
+            1.0,
+            2.0
+          ],
+          [
+            1.0,
+            2.0
+          ],
+          [
+            0.5,
+            1.0
+          ],
+          [
+            1.0,
+            2.0
+          ]
+        ],
+        "total": [
+          5.5,
+          11.0
+        ],
+        "point": 8.25
+      },
+      "P3-06": {
+        "columns": [
+          [
+            2.0,
+            4.0
+          ],
+          [
+            1.0,
+            2.0
+          ],
+          [
+            1.0,
+            2.0
+          ],
+          [
+            0.5,
+            1.0
+          ],
+          [
+            1.0,
+            2.0
+          ]
+        ],
+        "total": [
+          5.5,
+          11.0
+        ],
+        "point": 8.25
+      },
+      "P3-07": {
+        "columns": [
+          [
+            1.5,
+            3.0
+          ],
+          [
+            0.75,
+            1.5
+          ],
+          [
+            0.75,
+            1.5
+          ],
+          [
+            0.5,
+            1.0
+          ],
+          [
+            1.0,
+            2.0
+          ]
+        ],
+        "total": [
+          4.5,
+          9.0
+        ],
+        "point": 6.75
+      },
+      "P3-08": {
+        "columns": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.5,
+            1.0
+          ],
+          [
+            1.5,
+            3.0
+          ],
+          [
+            0.5,
+            1.0
+          ],
+          [
+            1.0,
+            2.0
+          ]
+        ],
+        "total": [
+          3.5,
+          7.0
+        ],
+        "point": 5.25
+      },
+      "P4-01": {
+        "columns": [
+          [
+            2.0,
+            4.0
+          ],
+          [
+            1.0,
+            2.0
+          ],
+          [
+            1.0,
+            2.0
+          ],
+          [
+            0.5,
+            1.0
+          ],
+          [
+            1.0,
+            2.0
+          ]
+        ],
+        "total": [
+          5.5,
+          11.0
+        ],
+        "point": 8.25
+      },
+      "P4-02": {
+        "columns": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ]
+        ],
+        "total": [
+          0.0,
+          0.0
+        ],
+        "point": 0.0
+      },
+      "P4-03": {
+        "columns": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ]
+        ],
+        "total": [
+          0.0,
+          0.0
+        ],
+        "point": 0.0
+      },
+      "P4-04": {
+        "columns": [
+          [
+            2.0,
+            4.0
+          ],
+          [
+            1.0,
+            2.0
+          ],
+          [
+            1.0,
+            2.0
+          ],
+          [
+            0.5,
+            1.0
+          ],
+          [
+            1.0,
+            2.0
+          ]
+        ],
+        "total": [
+          5.5,
+          11.0
+        ],
+        "point": 8.25
+      },
+      "P4-06": {
+        "columns": [
+          [
+            2.0,
+            4.0
+          ],
+          [
+            1.0,
+            2.0
+          ],
+          [
+            1.0,
+            2.0
+          ],
+          [
+            0.5,
+            1.0
+          ],
+          [
+            1.0,
+            2.0
+          ]
+        ],
+        "total": [
+          5.5,
+          11.0
+        ],
+        "point": 8.25
+      },
+      "P4-05A": {
+        "columns": [
+          [
+            2.0,
+            4.0
+          ],
+          [
+            1.0,
+            2.0
+          ],
+          [
+            1.0,
+            2.0
+          ],
+          [
+            0.5,
+            1.0
+          ],
+          [
+            1.0,
+            2.0
+          ]
+        ],
+        "total": [
+          5.5,
+          11.0
+        ],
+        "point": 8.25
+      },
+      "P4-05B": {
+        "columns": [
+          [
+            1.5,
+            3.0
+          ],
+          [
+            1.0,
+            2.0
+          ],
+          [
+            1.0,
+            2.0
+          ],
+          [
+            0.5,
+            1.0
+          ],
+          [
+            1.0,
+            2.0
+          ]
+        ],
+        "total": [
+          5.0,
+          10.0
+        ],
+        "point": 7.5
+      },
+      "P4-05C": {
+        "columns": [
+          [
+            2.0,
+            4.0
+          ],
+          [
+            1.0,
+            2.0
+          ],
+          [
+            1.0,
+            2.0
+          ],
+          [
+            0.5,
+            1.0
+          ],
+          [
+            1.0,
+            2.0
+          ]
+        ],
+        "total": [
+          5.5,
+          11.0
+        ],
+        "point": 8.25
+      },
+      "P4-07": {
+        "columns": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.75,
+            1.5
+          ],
+          [
+            1.5,
+            3.0
+          ],
+          [
+            0.5,
+            1.0
+          ],
+          [
+            1.0,
+            2.0
+          ]
+        ],
+        "total": [
+          3.75,
+          7.5
+        ],
+        "point": 5.625
+      },
+      "P5-01": {
+        "columns": [
+          [
+            2.0,
+            4.0
+          ],
+          [
+            1.0,
+            2.0
+          ],
+          [
+            1.0,
+            2.0
+          ],
+          [
+            0.5,
+            1.0
+          ],
+          [
+            1.0,
+            2.0
+          ]
+        ],
+        "total": [
+          5.5,
+          11.0
+        ],
+        "point": 8.25
+      },
+      "P5-02": {
+        "columns": [
+          [
+            2.0,
+            4.0
+          ],
+          [
+            1.0,
+            2.0
+          ],
+          [
+            1.0,
+            2.0
+          ],
+          [
+            0.5,
+            1.0
+          ],
+          [
+            1.0,
+            2.0
+          ]
+        ],
+        "total": [
+          5.5,
+          11.0
+        ],
+        "point": 8.25
+      },
+      "P5-03": {
+        "columns": [
+          [
+            1.0,
+            2.0
+          ],
+          [
+            1.0,
+            2.0
+          ],
+          [
+            1.0,
+            2.0
+          ],
+          [
+            0.5,
+            1.0
+          ],
+          [
+            0.75,
+            1.5
+          ]
+        ],
+        "total": [
+          4.25,
+          8.5
+        ],
+        "point": 6.375
+      },
+      "P5-04": {
+        "columns": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ]
+        ],
+        "total": [
+          0.0,
+          0.0
+        ],
+        "point": 0.0
+      },
+      "P5-05": {
+        "columns": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ]
+        ],
+        "total": [
+          0.0,
+          0.0
+        ],
+        "point": 0.0
+      },
+      "P5-06": {
+        "columns": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ]
+        ],
+        "total": [
+          0.0,
+          0.0
+        ],
+        "point": 0.0
+      },
+      "P5-07": {
+        "columns": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.75,
+            1.5
+          ],
+          [
+            1.5,
+            3.0
+          ],
+          [
+            0.5,
+            1.0
+          ],
+          [
+            1.0,
+            2.0
+          ]
+        ],
+        "total": [
+          3.75,
+          7.5
+        ],
+        "point": 5.625
+      },
+      "P6-01": {
+        "columns": [
+          [
+            2.0,
+            4.0
+          ],
+          [
+            1.5,
+            3.0
+          ],
+          [
+            1.5,
+            3.0
+          ],
+          [
+            0.75,
+            1.5
+          ],
+          [
+            1.5,
+            3.0
+          ]
+        ],
+        "total": [
+          7.25,
+          14.5
+        ],
+        "point": 10.875
+      },
+      "P6-02": {
+        "columns": [
+          [
+            2.0,
+            4.0
+          ],
+          [
+            1.0,
+            2.0
+          ],
+          [
+            1.5,
+            3.0
+          ],
+          [
+            0.75,
+            1.5
+          ],
+          [
+            1.5,
+            3.0
+          ]
+        ],
+        "total": [
+          6.75,
+          13.5
+        ],
+        "point": 10.125
+      },
+      "P6-03": {
+        "columns": [
+          [
+            1.0,
+            2.0
+          ],
+          [
+            0.75,
+            1.5
+          ],
+          [
+            0.75,
+            1.5
+          ],
+          [
+            0.5,
+            1.0
+          ],
+          [
+            1.0,
+            2.0
+          ]
+        ],
+        "total": [
+          4.0,
+          8.0
+        ],
+        "point": 6.0
+      },
+      "P6-04": {
+        "columns": [
+          [
+            1.5,
+            3.0
+          ],
+          [
+            1.0,
+            2.0
+          ],
+          [
+            1.0,
+            2.0
+          ],
+          [
+            0.5,
+            1.0
+          ],
+          [
+            1.0,
+            2.0
+          ]
+        ],
+        "total": [
+          5.0,
+          10.0
+        ],
+        "point": 7.5
+      },
+      "P6-05": {
+        "columns": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            1.0,
+            2.0
+          ],
+          [
+            2.5,
+            5.0
+          ],
+          [
+            0.75,
+            1.5
+          ],
+          [
+            2.0,
+            4.5
+          ]
+        ],
+        "total": [
+          6.25,
+          13.0
+        ],
+        "point": 9.625
+      },
+      "P7-01": {
+        "columns": [
+          [
+            2.0,
+            4.0
+          ],
+          [
+            1.0,
+            2.0
+          ],
+          [
+            1.5,
+            3.0
+          ],
+          [
+            0.75,
+            1.5
+          ],
+          [
+            1.0,
+            2.0
+          ]
+        ],
+        "total": [
+          6.25,
+          12.5
+        ],
+        "point": 9.375
+      },
+      "P7-02": {
+        "columns": [
+          [
+            1.5,
+            3.0
+          ],
+          [
+            1.0,
+            2.0
+          ],
+          [
+            1.0,
+            2.0
+          ],
+          [
+            0.75,
+            1.5
+          ],
+          [
+            1.0,
+            2.0
+          ]
+        ],
+        "total": [
+          5.25,
+          10.5
+        ],
+        "point": 7.875
+      },
+      "P7-03": {
+        "columns": [
+          [
+            2.0,
+            4.0
+          ],
+          [
+            1.5,
+            3.0
+          ],
+          [
+            1.5,
+            3.0
+          ],
+          [
+            1.0,
+            2.0
+          ],
+          [
+            1.0,
+            2.0
+          ]
+        ],
+        "total": [
+          7.0,
+          14.0
+        ],
+        "point": 10.5
+      },
+      "P7-04": {
+        "columns": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            1.0,
+            2.0
+          ],
+          [
+            2.0,
+            4.0
+          ],
+          [
+            1.0,
+            2.0
+          ],
+          [
+            2.0,
+            4.0
+          ]
+        ],
+        "total": [
+          6.0,
+          12.0
+        ],
+        "point": 9.0
+      },
+      "P7-05": {
+        "columns": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.5,
+            1.0
+          ],
+          [
+            1.5,
+            3.0
+          ],
+          [
+            0.75,
+            1.5
+          ],
+          [
+            2.0,
+            4.5
+          ]
+        ],
+        "total": [
+          4.75,
+          10.0
+        ],
+        "point": 7.375
+      },
+      "W0-01": {
+        "columns": [
+          [
+            2.0,
+            4.0
+          ],
+          [
+            1.0,
+            2.0
+          ],
+          [
+            1.0,
+            2.0
+          ],
+          [
+            0.5,
+            1.0
+          ],
+          [
+            1.0,
+            2.0
+          ]
+        ],
+        "total": [
+          5.5,
+          11.0
+        ],
+        "point": 8.25
+      },
+      "W0-02": {
+        "columns": [
+          [
+            2.0,
+            4.0
+          ],
+          [
+            1.0,
+            2.0
+          ],
+          [
+            1.5,
+            3.0
+          ],
+          [
+            0.75,
+            1.5
+          ],
+          [
+            1.0,
+            2.0
+          ]
+        ],
+        "total": [
+          6.25,
+          12.5
+        ],
+        "point": 9.375
+      },
+      "W1-01": {
+        "columns": [
+          [
+            2.0,
+            4.0
+          ],
+          [
+            1.5,
+            3.0
+          ],
+          [
+            1.5,
+            3.0
+          ],
+          [
+            0.75,
+            1.5
+          ],
+          [
+            1.5,
+            3.0
+          ]
+        ],
+        "total": [
+          7.25,
+          14.5
+        ],
+        "point": 10.875
+      },
+      "W2-01": {
+        "columns": [
+          [
+            3.0,
+            5.0
+          ],
+          [
+            1.5,
+            3.0
+          ],
+          [
+            2.0,
+            4.0
+          ],
+          [
+            1.0,
+            2.0
+          ],
+          [
+            1.5,
+            3.0
+          ]
+        ],
+        "total": [
+          9.0,
+          17.0
+        ],
+        "point": 13.0
+      },
+      "W2-02": {
+        "columns": [
+          [
+            2.0,
+            4.0
+          ],
+          [
+            1.5,
+            3.0
+          ],
+          [
+            2.0,
+            4.0
+          ],
+          [
+            0.75,
+            1.5
+          ],
+          [
+            1.5,
+            3.0
+          ]
+        ],
+        "total": [
+          7.75,
+          15.5
+        ],
+        "point": 11.625
+      },
+      "W3-01": {
+        "columns": [
+          [
+            2.0,
+            4.0
+          ],
+          [
+            1.5,
+            3.0
+          ],
+          [
+            1.5,
+            3.0
+          ],
+          [
+            0.75,
+            1.5
+          ],
+          [
+            1.5,
+            3.0
+          ]
+        ],
+        "total": [
+          7.25,
+          14.5
+        ],
+        "point": 10.875
+      },
+      "W3-02": {
+        "columns": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            1.0,
+            2.0
+          ],
+          [
+            2.0,
+            4.0
+          ],
+          [
+            1.0,
+            2.0
+          ],
+          [
+            2.0,
+            4.0
+          ]
+        ],
+        "total": [
+          6.0,
+          12.0
+        ],
+        "point": 9.0
+      }
+    },
+    "windows_total": [
+      49.0,
+      97.0
+    ],
+    "windows_point": 73.0,
+    "linux_categories": 6,
+    "linux_total": [
+      38,
+      76
+    ],
+    "linux_point": 57,
+    "macos_15_included_delta": {
+      "columns": [
+        [
+          1.0,
+          2.0
+        ],
+        [
+          0.5,
+          1.0
+        ],
+        [
+          1.0,
+          2.0
+        ],
+        [
+          0.5,
+          1.0
+        ],
+        [
+          1.0,
+          3.0
+        ]
+      ],
+      "total": [
+        4,
+        9
+      ],
+      "point": 6.5,
+      "included_in_existing_cards": true,
+      "allocations": {
+        "P7-03": [
+          2.5,
+          5
+        ],
+        "P6-05": [
+          1,
+          2.5
+        ],
+        "P7-05": [
+          0.5,
+          1.5
+        ]
+      }
+    },
+    "critical_paths": {
+      "P2-09": [
+        15.75,
+        31.5,
+        23.625
+      ],
+      "P3-08": [
+        18.0,
+        35.0,
+        26.5
+      ],
+      "P4-07": [
+        34.25,
+        67.5,
+        50.875
+      ],
+      "P5-07": [
+        38.5,
+        76.0,
+        57.25
+      ],
+      "P6-05": [
+        38.0,
+        76.5,
+        57.25
+      ],
+      "P7-05": [
+        49.75,
+        100.5,
+        75.125
+      ]
+    },
+    "windows_independent_path": [
+      42.75,
+      84.5,
+      63.625
+    ]
+  },
+  "references": {
+    "checked": 561,
+    "changed_document_references": "PASS_NO_NEW_MISSING_OR_INVALID_ANCHOR",
+    "new_errors": [],
+    "pending_review_receipt": [],
+    "unchanged_historical_missing_references": [
+      {
+        "file": "docs/openbox-rust-gpui-implementation-plan.md",
+        "ref": "openbox-rust-gpui-tasks/evidence/p0-07/dns-capabilities.json",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-implementation-plan.md",
+        "ref": "openbox-rust-gpui-tasks/evidence/p0-07/diagnostic.json",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-implementation-plan.md",
+        "ref": "openbox-rust-gpui-tasks/evidence/p0-07/kernel-source-evidence.json",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-implementation-plan.md",
+        "ref": "openbox-rust-gpui-tasks/evidence/p0-07/traffic-semantics.json",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/IMPLEMENTATION_PHASES.md",
+        "ref": "evidence/p0-05/README.md",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/IMPLEMENTATION_PHASES.md",
+        "ref": "evidence/p0-05/desktop-privileged-20261006-113208/README.md",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/IMPLEMENTATION_PHASES.md",
+        "ref": "evidence/p0-05/desktop-pathfix-20261006-120343/README.md",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/IMPLEMENTATION_PHASES.md",
+        "ref": "evidence/p0-05/desktop-readframe-fix-20261006-132202/README.md",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/IMPLEMENTATION_PHASES.md",
+        "ref": "evidence/p0-05/desktop-readiness-diagnostics-20261006-134101/README.md",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/IMPLEMENTATION_PHASES.md",
+        "ref": "evidence/p0-05/desktop-fd3-pipe-20261006-135940/README.md",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/IMPLEMENTATION_PHASES.md",
+        "ref": "evidence/p0-05/gui-owner-final-20261006-142752/README.md",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/IMPLEMENTATION_PHASES.md",
+        "ref": "evidence/p1-03/README.md",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/IMPLEMENTATION_PHASES.md",
+        "ref": "evidence/p1-04a/README.md",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/IMPLEMENTATION_PHASES.md",
+        "ref": "evidence/p1-04b/README.md",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/IMPLEMENTATION_PHASES.md",
+        "ref": "evidence/p1-05/README.md",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/IMPLEMENTATION_PHASES.md",
+        "ref": "evidence/p1-06/README.md",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/P0-feasibility.md",
+        "ref": "evidence/p0-03/README.md#host-user-manual-acceptance",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/P0-feasibility.md",
+        "ref": "evidence/p0-03/host-manual-acceptance.json",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/P0-feasibility.md",
+        "ref": "evidence/p0-03/README.md",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/P0-feasibility.md",
+        "ref": "evidence/p0-05/gui-owner-final-20261006-142752/README.md",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/P0-feasibility.md",
+        "ref": "evidence/p0-05/desktop-privileged-20261006-113208/README.md",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/P0-feasibility.md",
+        "ref": "evidence/p0-05/desktop-pathfix-20261006-120343/README.md",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/P0-feasibility.md",
+        "ref": "evidence/p0-03/README.md#host-user-manual-acceptance",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/P0-feasibility.md",
+        "ref": "evidence/p0-03/validation.json",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/P0-feasibility.md",
+        "ref": "evidence/p0-04/README.md",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/P0-feasibility.md",
+        "ref": "evidence/p0-04/validation.json",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/P0-feasibility.md",
+        "ref": "evidence/p0-07/README.md",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/P0-feasibility.md",
+        "ref": "evidence/p0-07/validation.json",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/P0-feasibility.md",
+        "ref": "evidence/p0-05/README.md",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/P0-feasibility.md",
+        "ref": "evidence/p0-05/validation.json",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/P0-feasibility.md",
+        "ref": "evidence/p0-05/desktop-recovery-cleanup-20261006-132006/README.md",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/P0-feasibility.md",
+        "ref": "evidence/p0-05/desktop-readframe-fix-20261006-132202/README.md",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/P0-feasibility.md",
+        "ref": "evidence/p0-05/desktop-readiness-diagnostics-20261006-134101/README.md",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/P0-feasibility.md",
+        "ref": "evidence/p0-05/desktop-fd3-pipe-20261006-135940/README.md",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/P0-feasibility.md",
+        "ref": "evidence/p0-05/gui-owner-final-20261006-142752/README.md",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/P0-feasibility.md",
+        "ref": "evidence/p0-06/20261006-144632/README.md",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/P0-feasibility.md",
+        "ref": "evidence/p0-06/20261006-144632/dag.json",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+        "ref": "evidence/p3-01/host-001/README.md",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+        "ref": "evidence/p2-06/round19/README.md",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+        "ref": "evidence/p2-06/round18/README.md",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+        "ref": "evidence/p2-06/round17/README.md",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+        "ref": "evidence/p2-06/round16/README.md",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+        "ref": "evidence/p2-06/round15/README.md",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+        "ref": "evidence/p2-06/round14/README.md",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+        "ref": "evidence/p2-06/round13/README.md",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+        "ref": "evidence/p2-06/round12/README.md",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+        "ref": "evidence/p2-06/round9/README.md",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+        "ref": "evidence/p2-06/round8/README.md",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+        "ref": "evidence/p2-06/round7/README.md",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+        "ref": "evidence/p2-06/round6/README.md",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+        "ref": "evidence/p2-06/round5/README.md",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+        "ref": "evidence/p2-06/round4/README.md",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+        "ref": "evidence/p2-04/git-history-integration-20261008/integration-20261008T100426/REPORT.md",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+        "ref": "evidence/p2-04/final-host-closeout-20261008/README.md",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+        "ref": "evidence/p2-04/host-rework-native-20261008-091526/README.md",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+        "ref": "evidence/p2-04/host-rework-fix-20261008-085206/README.md",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+        "ref": "evidence/p2-04/pending-native-acceptance-20261008-082538/README.md",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+        "ref": "evidence/p2-04/pending-persistence-fix/uncovered-pool-20261008/README.md",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+        "ref": "evidence/p2-04/pending-persistence-fix/README.md",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+        "ref": "evidence/p2-04/README.md",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+        "ref": "evidence/p2-03/final-closeout-20261007-164453/README.md",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+        "ref": "evidence/p2-01/final-closeout-20261007-122027/README.md",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+        "ref": "evidence/p2-01/source-final-20261007-115918/BUILD38-SOURCE-CANDIDATE.md",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+        "ref": "evidence/p2-01/all-ui-20261007-111729/BUILD37-FULL-UI-CANDIDATE.md",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+        "ref": "evidence/p2-01/full-reaudit-20261007-094122/BUILD29-CONTROLS-REWORK.md",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+        "ref": "evidence/p0-06/20261006-144632/README.md",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+        "ref": "evidence/p0-06/20261006-144632/README.md",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+        "ref": "evidence/p2-04/final-host-closeout-20261008/README.md",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+        "ref": "evidence/p1-07/final-20261005/build-identity.json",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+        "ref": "evidence/p0-01/validation.json",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+        "ref": "evidence/p0-03/README.md",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+        "ref": "evidence/p0-03/host-manual-acceptance.json",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+        "ref": "evidence/p0-03/validation.json",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+        "ref": "evidence/p0-04/validation.json",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+        "ref": "evidence/p0-07/validation.json",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+        "ref": "evidence/p0-05/README.md",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+        "ref": "evidence/p0-05/desktop-privileged-20261006-113208/README.md",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+        "ref": "evidence/p0-05/desktop-pathfix-20261006-120343/README.md",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+        "ref": "evidence/p1-04b/README.md",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+        "ref": "evidence/p1-05/README.md",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+        "ref": "evidence/p1-05/README.md#host-review-revision",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+        "ref": "evidence/p1-06/host-manual-acceptance.json",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+        "ref": "evidence/p1-07/final-20261005/host-final-review.json",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+        "ref": "evidence/p1-07/final-20261005/human-host-final-restart-quit.json",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+        "ref": "evidence/p0-05/gui-owner-final-20261006-142752/README.md",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+        "ref": "evidence/p2-01/README.md",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+        "ref": "evidence/p0-05/desktop-pathfix-20261006-120343/README.md",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+        "ref": "evidence/p0-05/desktop-privileged-20261006-113208/README.md",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+        "ref": "evidence/p0-03/validation.json",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+        "ref": "evidence/p0-04/README.md",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+        "ref": "evidence/p0-07/README.md",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+        "ref": "evidence/p0-05/README.md",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+        "ref": "evidence/p1-03/README.md",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+        "ref": "evidence/p1-03/README.md",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+        "ref": "evidence/p1-04a/README.md",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+        "ref": "evidence/p1-04b/README.md",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+        "ref": "evidence/p1-06/README.md",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+        "ref": "evidence/p1-06/host-manual-acceptance.json",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+        "ref": "evidence/p1-07/README.md",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+        "ref": "evidence/p1-07/README.md",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+        "ref": "evidence/p1-07/README.md",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+        "ref": "evidence/p1-07/README.md",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+        "ref": "evidence/p1-07/final-20261005/closeout-validation.json",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+        "ref": "evidence/p0-05/desktop-ownerfix-approved-20261006-123513/README.md",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+        "ref": "evidence/p0-05/desktop-errno22-localized-20261006-125933/README.md",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+        "ref": "evidence/p0-05/desktop-errno22-localized-20261006-125933/RECOVERY.md",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+        "ref": "evidence/p0-05/desktop-readframe-fix-20261006-132202/README.md",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+        "ref": "evidence/p0-05/desktop-readiness-diagnostics-20261006-134101/README.md",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+        "ref": "evidence/p0-05/desktop-fd3-pipe-20261006-135940/README.md",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+        "ref": "evidence/p0-06/20261006-144632/README.md",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+        "ref": "evidence/p2-01/gui-final-20261006-180816/README.md",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+        "ref": "evidence/p2-01/visual-parity-20261006-190927/README.md",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+        "ref": "evidence/p2-01/full-page-20261006-214140/README.md",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+        "ref": "evidence/p2-01/full-page-20261006-214140/DARK-NODE-REWORK-BUILD17.md",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+        "ref": "evidence/p2-01/final-closeout-20261007-122027/README.md",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+        "ref": "evidence/p2-02b/host-closeout-20261007-132657/README.md",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+        "ref": "evidence/p2-03/final-closeout-20261007-164453/README.md",
+        "reason": "missing_file"
+      },
+      {
+        "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+        "ref": "evidence/p2-04/pending-persistence-fix/README.md",
+        "reason": "missing_file"
+      }
+    ],
+    "full_scanned_historical_references": "FAIL_EXISTING_ISOLATED_TREE_MISSING_FILES_118",
+    "main_authorized_absolute_links": "PASS_READ_ONLY_EXISTING_NOT_GIT_ARCHIVE"
+  },
+  "p0_01_08_sections_sha256_unchanged": {
+    "P0-01": "18df9f2f1e21217e6d77ddb3412dbe83d50495ae06a5f84a1ae87ec7794f21ea",
+    "P0-02": "5070a603956f3a2181daa9942d1bcbf5e95ecf38ec39a5f7b2dc88fd002d7d35",
+    "P0-03": "db63ccd93a9d40df4a47da9966504612912a4518d22c50040e69a19bb51f7aa8",
+    "P0-04": "bad90b989c916a4bc42ca1c913a5acda438c3925ffcbd06b0fc7e0f1fc4abef3",
+    "P0-05": "ec8f59870a61457494331257f94ce379718456558c9cc51fa7bed2084cebc16c",
+    "P0-06": "ffe4674a88dc563710fd540c96699975f8e150193bdaba75162e7ca871c8004b",
+    "P0-07": "939cfc3708e87562cf04a457a89e6cfa18109dd52d5600769b75d7192ac3ff61",
+    "P0-08": "cd7c1bc047bfac06ebd1d60db60bc1bfbeb9ab9c40d27ee46a349c34d5274a54"
+  },
+  "p0_01_fixtures": {
+    "json_files": 14,
+    "cases": 77,
+    "static": 22,
+    "observed": 55,
+    "current_http_cases": 14,
+    "current_ws_cases": 4,
+    "source_methods": 77,
+    "historical_source_fingerprints": 69,
+    "source_commit": "7fab0e47d2a28446e131b7cd737ef4a5a43d55fb",
+    "scope": "parse/count/provenance only; historical source hashes not re-certified against migrated current sources"
+  },
+  "production_paths_diff": "PASS_EMPTY",
+  "whitespace_and_git_diff_check": "PASS",
+  "evidence_trace": {
+    "status": "PASS_AUTHORIZED_DIRECT_TEXT_AND_SHA256",
+    "main_original_files_readonly": {
+      "/Users/lifeilin/wx_lifeilin/github.com/lifei6671/veyra/docs/openbox-rust-gpui-tasks/evidence/p0-03/README.md": "a01e39c269b25c048f03a712ed979293fe566a5d3d90135defb2cf6799a87b28",
+      "/Users/lifeilin/wx_lifeilin/github.com/lifei6671/veyra/docs/openbox-rust-gpui-tasks/evidence/p0-04/README.md": "d324a371a09d27774e382be2fe9454392448cacb0362b695af1e3a3b0ae200cb",
+      "/Users/lifeilin/wx_lifeilin/github.com/lifei6671/veyra/docs/openbox-rust-gpui-tasks/evidence/p0-05/gui-owner-final-20261006-142752/README.md": "c738ba4c883b844d109e2cd2124c78f1487ce099f00665232691f6c82c45e21c",
+      "/Users/lifeilin/wx_lifeilin/github.com/lifei6671/veyra/docs/openbox-rust-gpui-tasks/evidence/p0-06/20261006-144632/README.md": "1478cdde951e328337a1e784adaf7f5b14a40517224e18b30357d75d57beb850",
+      "/Users/lifeilin/wx_lifeilin/github.com/lifei6671/veyra/docs/openbox-rust-gpui-tasks/evidence/p0-07/README.md": "0141494b01c83d5a8d647ada775d78757aad1a7039b52eb7d1bc8e8ecaa1e36f",
+      "/Users/lifeilin/wx_lifeilin/github.com/lifei6671/veyra/docs/openbox-rust-gpui-tasks/evidence/p0-01/visual-manifest.json": "06694aefbfddba2feca6e6ea7454505f7d93c21eec3fbb8632058e92b451737f",
+      "/Users/lifeilin/wx_lifeilin/github.com/lifei6671/veyra/docs/openbox-rust-gpui-tasks/evidence/p0-01/request-audit.json": "736ecf67d84a51f1d7e03d7f38779a71896429060d94ed7aadecbe59c332266e",
+      "/Users/lifeilin/wx_lifeilin/github.com/lifei6671/veyra/docs/openbox-rust-gpui-tasks/evidence/p0-01/validation.json": "07aecd30ca54031bd51ec50e6d34611626f6db2bab1502935f9ae1570e766956",
+      "/Users/lifeilin/wx_lifeilin/github.com/lifei6671/veyra/docs/openbox-rust-gpui-tasks/evidence/p0-01/browser-session-confirm.json": "2d511adad4d84c1eaa72e2801d500ddbd3c8592e6c5444bad190e4110978d350"
+    },
+    "host_sha_matches": 5,
+    "not_git_tracked_or_copied": true,
+    "p0_01_manifest": {
+      "shots": 8,
+      "checks_pass": 54,
+      "historical_fail": 1,
+      "image_hashes": "original_manifest_values_not_rehashed_images"
+    }
+  },
+  "task_result": "DONE_DOCUMENT_SCOPE_ONLY",
+  "platform_tests_and_publish": "NOT_RUN_DOCUMENT_ONLY; macOS15 compatibility and real release not yet accepted",
+  "handoff": {
+    "tracked_markdown_edits": 4,
+    "untracked_markdown_additions": 1,
+    "ignored_evidence_additions": [
+      "docs/openbox-rust-gpui-tasks/evidence/p0-09/REVIEW.md",
+      "docs/openbox-rust-gpui-tasks/evidence/p0-09/validation.json"
+    ],
+    "ignore_rule": ".gitignore:44 /docs/openbox-rust-gpui-tasks/evidence/",
+    "host_action": "Host independently review and commit/merge five Markdown plus force-stage exactly two ignored p0-09 receipts; no directory force-stage, no original main evidence copies; Agent did not stage or change ignore rules",
+    "temporary_files": "REMOVED",
+    "head": "UNCHANGED_b90f612d828dcb1e957cbd0755f1738f5e43206a"
+  },
+  "previous_execution": {
+    "scope": "local text and read-only Git; no network/OS/root/GUI/product commands",
+    "commands": {
+      "initial_identity": "pwd; git status --short; git rev-parse HEAD; git branch --show-current",
+      "main_ref_readonly": "git rev-parse refs/heads/codex/dist-react-restore -> b90f612d828dcb1e957cbd0755f1738f5e43206a",
+      "document_validation": "python3 .p0-09-validate.py (temporary, removed after final run)",
+      "diff_check": "git diff --check -> exit 0"
+    },
+    "validation_attempt_history": [
+      {
+        "result": "FAIL_VALIDATOR_CARD_BOUNDARY",
+        "reason": "old duplicate P2-02A anchor split before actual definition; corrected parser skips non-card anchors and still requires all 68 definitions, exact deps and no duplicates"
+      },
+      {
+        "result": "FAIL_VALIDATOR_ROW_SELECTION",
+        "reason": "P0 SHA identity rows matched estimate pattern; limited estimates to 52 P1-P7 and 7 W cards"
+      },
+      {
+        "result": "FAIL_DOCUMENT_EVIDENCE_INVENTORY",
+        "reason": "fixtures/p0-01 exists; corrected missing set to 6 evidence dirs, read existing fixtures and added hashes/count/provenance"
+      },
+      {
+        "result": "REVIEW_FINDING_CLOSED",
+        "id": "P0-09-ESTIMATE-LINUX-001",
+        "reason": "three initial summaries 43-86 corrected to category sum 38-76; independent reread closed finding"
+      },
+      {
+        "result": "FAIL_FINAL_SCOPE_ASSERTION_CORRECTED",
+        "reason": "ordinary git status excludes two evidence receipts due to existing .gitignore:44; direct existence and check-ignore verified, host inclusion recorded; no ignore edits"
+      }
+    ],
+    "independent_review": {
+      "reviewer": "/root/p0_09_doc_review",
+      "final_result": "PASS_DOCUMENT_REVIEW_ZERO_REMAINING_FINDINGS",
+      "task_result": "ACCEPTANCE_REQUIRED",
+      "artifact": "docs/openbox-rust-gpui-tasks/evidence/p0-09/REVIEW.md",
+      "scope": "read-only documents/Git/local arithmetic; no product/platform rerun",
+      "final_handoff_revalidation": "PASS_ZERO_NEW_FINDINGS: saved Review/544 references/zero pending receipts/118 historical missing/ignore handoff/temp cleanup/HEAD verified read-only"
+    },
+    "input_head": "b90f612d828dcb1e957cbd0755f1738f5e43206a",
+    "branch": "dev/p0-09-stage-estimate",
+    "task_count": 68,
+    "macos_cards": 61,
+    "windows_cards": 7,
+    "states": {
+      "DONE": 29,
+      "ACCEPTANCE": 2,
+      "DOING": 1,
+      "TODO": 29,
+      "DEFERRED": 7
+    },
+    "ready": [],
+    "task_card_dependency_match": "PASS_68",
+    "dag": "PASS_NO_CYCLE",
+    "coverage": {
+      "api_unique": 77,
+      "scenarios_unique": 19,
+      "ownership_and_4_stream_6_page_9_category_text": "PASS_UNCHANGED"
+    },
+    "estimates": {
+      "macos_P1_P7": {
+        "P1": {
+          "columns": [
+            [
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0
+            ]
+          ],
+          "total": [
+            0.0,
+            0.0
+          ],
+          "point": 0.0
+        },
+        "P2": {
+          "columns": [
+            [
+              6.0,
+              11.0
+            ],
+            [
+              5.0,
+              10.0
+            ],
+            [
+              6.0,
+              12.0
+            ],
+            [
+              2.75,
+              5.5
+            ],
+            [
+              5.0,
+              10.0
+            ]
+          ],
+          "total": [
+            24.75,
+            48.5
+          ],
+          "point": 36.625
+        },
+        "P3": {
+          "columns": [
+            [
+              7.5,
+              15.0
+            ],
+            [
+              4.25,
+              8.5
+            ],
+            [
+              5.25,
+              10.5
+            ],
+            [
+              2.5,
+              5.0
+            ],
+            [
+              5.0,
+              10.0
+            ]
+          ],
+          "total": [
+            24.5,
+            49.0
+          ],
+          "point": 36.75
+        },
+        "P4": {
+          "columns": [
+            [
+              11.5,
+              23.0
+            ],
+            [
+              6.75,
+              13.5
+            ],
+            [
+              7.5,
+              15.0
+            ],
+            [
+              3.5,
+              7.0
+            ],
+            [
+              7.0,
+              14.0
+            ]
+          ],
+          "total": [
+            36.25,
+            72.5
+          ],
+          "point": 54.375
+        },
+        "P5": {
+          "columns": [
+            [
+              5.0,
+              10.0
+            ],
+            [
+              3.75,
+              7.5
+            ],
+            [
+              4.5,
+              9.0
+            ],
+            [
+              2.0,
+              4.0
+            ],
+            [
+              3.75,
+              7.5
+            ]
+          ],
+          "total": [
+            19.0,
+            38.0
+          ],
+          "point": 28.5
+        },
+        "P6": {
+          "columns": [
+            [
+              6.5,
+              13.0
+            ],
+            [
+              5.25,
+              10.5
+            ],
+            [
+              6.75,
+              13.5
+            ],
+            [
+              3.25,
+              6.5
+            ],
+            [
+              6.5,
+              13.0
+            ]
+          ],
+          "total": [
+            28.25,
+            56.5
+          ],
+          "point": 42.375
+        },
+        "P7": {
+          "columns": [
+            [
+              4.5,
+              9.0
+            ],
+            [
+              4.5,
+              9.0
+            ],
+            [
+              7.0,
+              14.0
+            ],
+            [
+              3.75,
+              7.5
+            ],
+            [
+              6.5,
+              13.0
+            ]
+          ],
+          "total": [
+            26.25,
+            52.5
+          ],
+          "point": 39.375
+        },
+        "P1～P7": {
+          "columns": [
+            [
+              41.0,
+              81.0
+            ],
+            [
+              29.5,
+              59.0
+            ],
+            [
+              37.0,
+              74.0
+            ],
+            [
+              17.75,
+              35.5
+            ],
+            [
+              33.75,
+              67.5
+            ]
+          ],
+          "total": [
+            159.0,
+            317.0
+          ],
+          "point": 238.0
+        }
+      },
+      "windows_total": [
+        49,
+        97
+      ],
+      "windows_point": 73,
+      "linux_categories": 6,
+      "linux_total": [
+        38,
+        76
+      ],
+      "linux_point": 57,
+      "macos_15_conditional_delta": [
+        4,
+        9
+      ],
+      "macos_with_15_delta": [
+        163,
+        326
+      ],
+      "critical_paths": {
+        "P2-09": [
+          15.75,
+          31.5,
+          23.625
+        ],
+        "P3-08": [
+          18.0,
+          35.0,
+          26.5
+        ],
+        "P4-07": [
+          34.25,
+          67.5,
+          50.875
+        ],
+        "P5-07": [
+          38.5,
+          76.0,
+          57.25
+        ],
+        "P6-05": [
+          37.0,
+          74.0,
+          55.5
+        ],
+        "P7-05": [
+          48.75,
+          96.5,
+          72.625
+        ]
+      },
+      "windows_independent_path": [
+        42.75,
+        84.5,
+        63.625
+      ]
+    },
+    "references": {
+      "changed_document_references": "PASS_NO_NEW_MISSING_OR_INVALID_ANCHOR",
+      "full_scanned_historical_references": "FAIL_EXISTING_MISSING_FILES_118",
+      "checked": 544,
+      "new_errors": [],
+      "pending_review_receipt": [],
+      "unchanged_historical_missing_references": [
+        {
+          "file": "docs/openbox-rust-gpui-implementation-plan.md",
+          "ref": "openbox-rust-gpui-tasks/evidence/p0-07/dns-capabilities.json",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-implementation-plan.md",
+          "ref": "openbox-rust-gpui-tasks/evidence/p0-07/diagnostic.json",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-implementation-plan.md",
+          "ref": "openbox-rust-gpui-tasks/evidence/p0-07/kernel-source-evidence.json",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-implementation-plan.md",
+          "ref": "openbox-rust-gpui-tasks/evidence/p0-07/traffic-semantics.json",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/P0-feasibility.md",
+          "ref": "evidence/p0-03/README.md#host-user-manual-acceptance",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/P0-feasibility.md",
+          "ref": "evidence/p0-03/host-manual-acceptance.json",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/P0-feasibility.md",
+          "ref": "evidence/p0-03/README.md",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/P0-feasibility.md",
+          "ref": "evidence/p0-05/gui-owner-final-20261006-142752/README.md",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/P0-feasibility.md",
+          "ref": "evidence/p0-05/desktop-privileged-20261006-113208/README.md",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/P0-feasibility.md",
+          "ref": "evidence/p0-05/desktop-pathfix-20261006-120343/README.md",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/P0-feasibility.md",
+          "ref": "evidence/p0-03/README.md#host-user-manual-acceptance",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/P0-feasibility.md",
+          "ref": "evidence/p0-03/validation.json",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/P0-feasibility.md",
+          "ref": "evidence/p0-04/README.md",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/P0-feasibility.md",
+          "ref": "evidence/p0-04/validation.json",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/P0-feasibility.md",
+          "ref": "evidence/p0-07/README.md",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/P0-feasibility.md",
+          "ref": "evidence/p0-07/validation.json",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/P0-feasibility.md",
+          "ref": "evidence/p0-05/README.md",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/P0-feasibility.md",
+          "ref": "evidence/p0-05/validation.json",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/P0-feasibility.md",
+          "ref": "evidence/p0-05/desktop-recovery-cleanup-20261006-132006/README.md",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/P0-feasibility.md",
+          "ref": "evidence/p0-05/desktop-readframe-fix-20261006-132202/README.md",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/P0-feasibility.md",
+          "ref": "evidence/p0-05/desktop-readiness-diagnostics-20261006-134101/README.md",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/P0-feasibility.md",
+          "ref": "evidence/p0-05/desktop-fd3-pipe-20261006-135940/README.md",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/P0-feasibility.md",
+          "ref": "evidence/p0-05/gui-owner-final-20261006-142752/README.md",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/P0-feasibility.md",
+          "ref": "evidence/p0-06/20261006-144632/README.md",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/P0-feasibility.md",
+          "ref": "evidence/p0-06/20261006-144632/dag.json",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/IMPLEMENTATION_PHASES.md",
+          "ref": "evidence/p0-05/README.md",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/IMPLEMENTATION_PHASES.md",
+          "ref": "evidence/p0-05/desktop-privileged-20261006-113208/README.md",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/IMPLEMENTATION_PHASES.md",
+          "ref": "evidence/p0-05/desktop-pathfix-20261006-120343/README.md",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/IMPLEMENTATION_PHASES.md",
+          "ref": "evidence/p0-05/desktop-readframe-fix-20261006-132202/README.md",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/IMPLEMENTATION_PHASES.md",
+          "ref": "evidence/p0-05/desktop-readiness-diagnostics-20261006-134101/README.md",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/IMPLEMENTATION_PHASES.md",
+          "ref": "evidence/p0-05/desktop-fd3-pipe-20261006-135940/README.md",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/IMPLEMENTATION_PHASES.md",
+          "ref": "evidence/p0-05/gui-owner-final-20261006-142752/README.md",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/IMPLEMENTATION_PHASES.md",
+          "ref": "evidence/p1-03/README.md",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/IMPLEMENTATION_PHASES.md",
+          "ref": "evidence/p1-04a/README.md",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/IMPLEMENTATION_PHASES.md",
+          "ref": "evidence/p1-04b/README.md",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/IMPLEMENTATION_PHASES.md",
+          "ref": "evidence/p1-05/README.md",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/IMPLEMENTATION_PHASES.md",
+          "ref": "evidence/p1-06/README.md",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+          "ref": "evidence/p3-01/host-001/README.md",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+          "ref": "evidence/p2-06/round19/README.md",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+          "ref": "evidence/p2-06/round18/README.md",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+          "ref": "evidence/p2-06/round17/README.md",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+          "ref": "evidence/p2-06/round16/README.md",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+          "ref": "evidence/p2-06/round15/README.md",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+          "ref": "evidence/p2-06/round14/README.md",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+          "ref": "evidence/p2-06/round13/README.md",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+          "ref": "evidence/p2-06/round12/README.md",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+          "ref": "evidence/p2-06/round9/README.md",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+          "ref": "evidence/p2-06/round8/README.md",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+          "ref": "evidence/p2-06/round7/README.md",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+          "ref": "evidence/p2-06/round6/README.md",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+          "ref": "evidence/p2-06/round5/README.md",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+          "ref": "evidence/p2-06/round4/README.md",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+          "ref": "evidence/p2-04/git-history-integration-20261008/integration-20261008T100426/REPORT.md",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+          "ref": "evidence/p2-04/final-host-closeout-20261008/README.md",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+          "ref": "evidence/p2-04/host-rework-native-20261008-091526/README.md",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+          "ref": "evidence/p2-04/host-rework-fix-20261008-085206/README.md",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+          "ref": "evidence/p2-04/pending-native-acceptance-20261008-082538/README.md",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+          "ref": "evidence/p2-04/pending-persistence-fix/uncovered-pool-20261008/README.md",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+          "ref": "evidence/p2-04/pending-persistence-fix/README.md",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+          "ref": "evidence/p2-04/README.md",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+          "ref": "evidence/p2-03/final-closeout-20261007-164453/README.md",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+          "ref": "evidence/p2-01/final-closeout-20261007-122027/README.md",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+          "ref": "evidence/p2-01/source-final-20261007-115918/BUILD38-SOURCE-CANDIDATE.md",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+          "ref": "evidence/p2-01/all-ui-20261007-111729/BUILD37-FULL-UI-CANDIDATE.md",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+          "ref": "evidence/p2-01/full-reaudit-20261007-094122/BUILD29-CONTROLS-REWORK.md",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+          "ref": "evidence/p0-06/20261006-144632/README.md",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+          "ref": "evidence/p0-06/20261006-144632/README.md",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+          "ref": "evidence/p2-04/final-host-closeout-20261008/README.md",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+          "ref": "evidence/p1-07/final-20261005/build-identity.json",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+          "ref": "evidence/p0-01/validation.json",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+          "ref": "evidence/p0-03/README.md",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+          "ref": "evidence/p0-03/host-manual-acceptance.json",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+          "ref": "evidence/p0-03/validation.json",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+          "ref": "evidence/p0-04/validation.json",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+          "ref": "evidence/p0-07/validation.json",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+          "ref": "evidence/p0-05/README.md",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+          "ref": "evidence/p0-05/desktop-privileged-20261006-113208/README.md",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+          "ref": "evidence/p0-05/desktop-pathfix-20261006-120343/README.md",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+          "ref": "evidence/p1-04b/README.md",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+          "ref": "evidence/p1-05/README.md",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+          "ref": "evidence/p1-05/README.md#host-review-revision",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+          "ref": "evidence/p1-06/host-manual-acceptance.json",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+          "ref": "evidence/p1-07/final-20261005/host-final-review.json",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+          "ref": "evidence/p1-07/final-20261005/human-host-final-restart-quit.json",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+          "ref": "evidence/p0-05/gui-owner-final-20261006-142752/README.md",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+          "ref": "evidence/p2-01/README.md",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+          "ref": "evidence/p0-05/desktop-pathfix-20261006-120343/README.md",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+          "ref": "evidence/p0-05/desktop-privileged-20261006-113208/README.md",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+          "ref": "evidence/p0-03/validation.json",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+          "ref": "evidence/p0-04/README.md",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+          "ref": "evidence/p0-07/README.md",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+          "ref": "evidence/p0-05/README.md",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+          "ref": "evidence/p1-03/README.md",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+          "ref": "evidence/p1-03/README.md",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+          "ref": "evidence/p1-04a/README.md",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+          "ref": "evidence/p1-04b/README.md",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+          "ref": "evidence/p1-06/README.md",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+          "ref": "evidence/p1-06/host-manual-acceptance.json",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+          "ref": "evidence/p1-07/README.md",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+          "ref": "evidence/p1-07/README.md",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+          "ref": "evidence/p1-07/README.md",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+          "ref": "evidence/p1-07/README.md",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+          "ref": "evidence/p1-07/final-20261005/closeout-validation.json",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+          "ref": "evidence/p0-05/desktop-ownerfix-approved-20261006-123513/README.md",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+          "ref": "evidence/p0-05/desktop-errno22-localized-20261006-125933/README.md",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+          "ref": "evidence/p0-05/desktop-errno22-localized-20261006-125933/RECOVERY.md",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+          "ref": "evidence/p0-05/desktop-readframe-fix-20261006-132202/README.md",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+          "ref": "evidence/p0-05/desktop-readiness-diagnostics-20261006-134101/README.md",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+          "ref": "evidence/p0-05/desktop-fd3-pipe-20261006-135940/README.md",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+          "ref": "evidence/p0-06/20261006-144632/README.md",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+          "ref": "evidence/p2-01/gui-final-20261006-180816/README.md",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+          "ref": "evidence/p2-01/visual-parity-20261006-190927/README.md",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+          "ref": "evidence/p2-01/full-page-20261006-214140/README.md",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+          "ref": "evidence/p2-01/full-page-20261006-214140/DARK-NODE-REWORK-BUILD17.md",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+          "ref": "evidence/p2-01/final-closeout-20261007-122027/README.md",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+          "ref": "evidence/p2-02b/host-closeout-20261007-132657/README.md",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+          "ref": "evidence/p2-03/final-closeout-20261007-164453/README.md",
+          "reason": "missing_file"
+        },
+        {
+          "file": "docs/openbox-rust-gpui-tasks/SESSION.md",
+          "ref": "evidence/p2-04/pending-persistence-fix/README.md",
+          "reason": "missing_file"
+        }
+      ]
+    },
+    "p0_01_08_sections_sha256_unchanged": {
+      "P0-01": "18df9f2f1e21217e6d77ddb3412dbe83d50495ae06a5f84a1ae87ec7794f21ea",
+      "P0-02": "5070a603956f3a2181daa9942d1bcbf5e95ecf38ec39a5f7b2dc88fd002d7d35",
+      "P0-03": "db63ccd93a9d40df4a47da9966504612912a4518d22c50040e69a19bb51f7aa8",
+      "P0-04": "bad90b989c916a4bc42ca1c913a5acda438c3925ffcbd06b0fc7e0f1fc4abef3",
+      "P0-05": "ec8f59870a61457494331257f94ce379718456558c9cc51fa7bed2084cebc16c",
+      "P0-06": "ffe4674a88dc563710fd540c96699975f8e150193bdaba75162e7ca871c8004b",
+      "P0-07": "939cfc3708e87562cf04a457a89e6cfa18109dd52d5600769b75d7192ac3ff61",
+      "P0-08": "cd7c1bc047bfac06ebd1d60db60bc1bfbeb9ab9c40d27ee46a349c34d5274a54"
+    },
+    "p0_01_fixtures": {
+      "json_files": 14,
+      "cases": 77,
+      "static": 22,
+      "observed": 55,
+      "current_http_cases": 14,
+      "current_ws_cases": 4,
+      "source_methods": 77,
+      "historical_source_fingerprints": 69,
+      "source_commit": "7fab0e47d2a28446e131b7cd737ef4a5a43d55fb",
+      "scope": "parse/count/provenance only; historical source hashes not re-certified against migrated current sources"
+    },
+    "production_paths_diff": "PASS_EMPTY",
+    "whitespace_and_git_diff_check": "PASS",
+    "evidence_trace": {
+      "status": "FAIL_EXISTING_MISSING_EVIDENCE",
+      "missing_directories": [
+        "docs/openbox-rust-gpui-tasks/evidence/p0-01",
+        "docs/openbox-rust-gpui-tasks/evidence/p0-03",
+        "docs/openbox-rust-gpui-tasks/evidence/p0-04",
+        "docs/openbox-rust-gpui-tasks/evidence/p0-05",
+        "docs/openbox-rust-gpui-tasks/evidence/p0-06",
+        "docs/openbox-rust-gpui-tasks/evidence/p0-07"
+      ],
+      "historical_DONE_unchanged": true
+    },
+    "task_result": "ACCEPTANCE_REQUIRED",
+    "platform_tests_and_publish": "NOT_RUN_NOT_IN_DOCUMENT_SCOPE",
+    "handoff": {
+      "tracked_markdown_edits": 4,
+      "untracked_markdown_additions": 1,
+      "ignored_evidence_additions": [
+        "docs/openbox-rust-gpui-tasks/evidence/p0-09/REVIEW.md",
+        "docs/openbox-rust-gpui-tasks/evidence/p0-09/validation.json"
+      ],
+      "ignore_rule": ".gitignore:44 /docs/openbox-rust-gpui-tasks/evidence/",
+      "host_action": "explicitly include exactly two evidence receipts when authorized to commit; Agent did not stage or change ignore rules",
+      "temporary_files": "PENDING_REMOVAL_AFTER_REVIEW",
+      "head": "UNCHANGED_b90f612d828dcb1e957cbd0755f1738f5e43206a"
+    }
+  }
+}
