@@ -1,0 +1,16 @@
+{
+  "command": [
+    "cargo",
+    "+1.99.0",
+    "test",
+    "--offline",
+    "--locked",
+    "-p",
+    "veyra-core",
+    "--features",
+    "p0-06-prototype",
+    "--example",
+    "p0_08_update"
+  ],
+  "exit_code": 0
+}

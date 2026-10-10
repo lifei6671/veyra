@@ -1,0 +1,13 @@
+{
+  "argv": [
+    "/usr/bin/log",
+    "show",
+    "--start",
+    "2026-10-10 09:59:00",
+    "--style",
+    "compact",
+    "--predicate",
+    "eventMessage CONTAINS \"VeyraPrototype\" OR eventMessage CONTAINS \"me.veyra.gpui-prototype\" OR process == \"veyra-gpui-prototype\""
+  ],
+  "exit": 0
+}

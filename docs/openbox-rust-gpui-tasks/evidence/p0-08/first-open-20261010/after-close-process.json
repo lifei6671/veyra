@@ -1,0 +1,14 @@
+{
+  "time": "2026-10-10T10:03:24.849132+08:00",
+  "action": "CUA clicked real close button; GPUI handler hides app; window-scoped screenshot can capture hidden NSWindow and does not prove screen visibility",
+  "argv": [
+    "ps",
+    "-p",
+    "16877",
+    "-o",
+    "pid,ppid,uid,etime,comm"
+  ],
+  "exit": 0,
+  "stdout": "  PID  PPID   UID ELAPSED COMM\n16877     1   501   01:32 /private/var/folders/sq/9tr34l617h5fp65hjxgvly140000gn/T/AppTranslocation/5538C23D-4491-4E2A-87CD-5DC718F14407/d/VeyraPrototype.app/Contents/MacOS/veyra-gpui-prototype\n",
+  "stderr": ""
+}

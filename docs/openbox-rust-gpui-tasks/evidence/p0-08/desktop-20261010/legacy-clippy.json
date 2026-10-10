@@ -1,0 +1,16 @@
+{
+  "command": [
+    "cargo",
+    "+1.99.0",
+    "clippy",
+    "--offline",
+    "--locked",
+    "--manifest-path",
+    "src-tauri/Cargo.toml",
+    "--lib",
+    "--",
+    "-D",
+    "warnings"
+  ],
+  "exit_code": 101
+}

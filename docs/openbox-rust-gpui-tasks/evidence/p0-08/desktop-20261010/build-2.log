@@ -1,0 +1,10 @@
+   Compiling ring v0.17.14
+   Compiling libsqlite3-sys v0.38.2
+   Compiling rustls v0.23.43
+   Compiling rustls-webpki v0.103.15
+   Compiling rusqlite v0.40.2
+   Compiling tokio-rustls v0.26.4
+   Compiling hyper-rustls v0.27.9
+   Compiling reqwest v0.12.28
+   Compiling veyra-core v0.1.0 (/Users/lifeilin/wx_lifeilin/github.com/lifei6671/veyra/.worktrees/p0-08-update-distribution/crates/veyra-core)
+    Finished `dev` profile [unoptimized + debuginfo] target(s) in 4.54s

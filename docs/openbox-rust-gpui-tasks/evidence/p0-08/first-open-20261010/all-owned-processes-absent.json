@@ -1,0 +1,12 @@
+{
+  "argv": [
+    "ps",
+    "-p",
+    "16877,16892,16893",
+    "-o",
+    "pid,ppid,uid,comm"
+  ],
+  "exit": 1,
+  "stdout": "  PID  PPID   UID COMM\n",
+  "stderr": ""
+}

@@ -1,0 +1,30 @@
+{
+  "commands": [
+    {
+      "argv": [
+        "git",
+        "diff",
+        "--cached",
+        "--check"
+      ],
+      "exit": 2,
+      "stdout": "docs/openbox-rust-gpui-tasks/evidence/p0-08/desktop-20261010/github-headers.txt:1: trailing whitespace.\n+HTTP/2 404 \ndocs/openbox-rust-gpui-tasks/evidence/p0-08/desktop-20261010/github-headers.txt:2: trailing whitespace.\n+date: Sat, 10 Oct 2026 01:43:55 GMT\ndocs/openbox-rust-gpui-tasks/evidence/p0-08/desktop-20261010/github-headers.txt:3: trailing whitespace.\n+content-type: application/json; charset=utf-8\ndocs/openbox-rust-gpui-tasks/evidence/p0-08/desktop-20261010/github-headers.txt:4: trailing whitespace.\n+x-github-media-type: github.v3; format=json\ndocs/openbox-rust-gpui-tasks/evidence/p0-08/desktop-20261010/github-headers.txt:5: trailing whitespace.\n+x-github-api-version-selected: 2022-11-28\ndocs/openbox-rust-gpui-tasks/evidence/p0-08/desktop-20261010/github-headers.txt:6: trailing whitespace.\n+access-control-expose-headers: ETag, Link, Location, Retry-After, X-GitHub-OTP, X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Used, X-RateLimit-Resource, X-RateLimit-Reset, X-OAuth-Scopes, X-Accepted-OAuth-Scopes, X-Poll-Interval, X-GitHub-Media-Type, X-GitHub-SSO, X-GitHub-Request-Id, Deprecation, Sunset, Warning\ndocs/openbox-rust-gpui-tasks/evidence/p0-08/desktop-20261010/github-headers.txt:7: trailing whitespace.\n+access-control-allow-origin: *\ndocs/openbox-rust-gpui-tasks/evidence/p0-08/desktop-20261010/github-headers.txt:8: trailing whitespace.\n+strict-transport-security: max-age=31536000; includeSubdomains; preload\ndocs/openbox-rust-gpui-tasks/evidence/p0-08/desktop-20261010/github-headers.txt:9: trailing whitespace.\n+x-frame-options: deny\ndocs/openbox-rust-gpui-tasks/evidence/p0-08/desktop-20261010/github-headers.txt:10: trailing whitespace.\n+x-content-type-options: nosniff\ndocs/openbox-rust-gpui-tasks/evidence/p0-08/desktop-20261010/github-headers.txt:11: trailing whitespace.\n+x-xss-protection: 0\ndocs/openbox-rust-gpui-tasks/evidence/p0-08/desktop-20261010/github-headers.txt:12: trailing whitespace.\n+referrer-policy: origin-when-cross-origin, strict-origin-when-cross-origin\ndocs/openbox-rust-gpui-tasks/evidence/p0-08/desktop-20261010/github-headers.txt:13: trailing whitespace.\n+content-security-policy: default-src 'none'\ndocs/openbox-rust-gpui-tasks/evidence/p0-08/desktop-20261010/github-headers.txt:14: trailing whitespace.\n+vary: Accept-Encoding, Accept, X-Requested-With\ndocs/openbox-rust-gpui-tasks/evidence/p0-08/desktop-20261010/github-headers.txt:15: trailing whitespace.\n+server: github.com\ndocs/openbox-rust-gpui-tasks/evidence/p0-08/desktop-20261010/github-headers.txt:16: trailing whitespace.\n+x-ratelimit-limit: 60\ndocs/openbox-rust-gpui-tasks/evidence/p0-08/desktop-20261010/github-headers.txt:17: trailing whitespace.\n+x-ratelimit-remaining: 54\ndocs/openbox-rust-gpui-tasks/evidence/p0-08/desktop-20261010/github-headers.txt:18: trailing whitespace.\n+x-ratelimit-used: 6\ndocs/openbox-rust-gpui-tasks/evidence/p0-08/desktop-20261010/github-headers.txt:19: trailing whitespace.\n+x-ratelimit-resource: core\ndocs/openbox-rust-gpui-tasks/evidence/p0-08/desktop-20261010/github-headers.txt:20: trailing whitespace.\n+x-ratelimit-reset: 1791597622\ndocs/openbox-rust-gpui-tasks/evidence/p0-08/desktop-20261010/github-headers.txt:21: trailing whitespace.\n+content-length: 144\ndocs/openbox-rust-gpui-tasks/evidence/p0-08/desktop-20261010/github-headers.txt:22: trailing whitespace.\n+x-github-request-id: 6B02:23DAF7:8AAEF7:9DB694:6AC9985B\ndocs/openbox-rust-gpui-tasks/evidence/p0-08/desktop-20261010/github-headers.txt:23: trailing whitespace.\n+x-github-edge-region: westus3\ndocs/openbox-rust-gpui-tasks/evidence/p0-08/desktop-20261010/github-headers.txt:24: trailing whitespace.\n+\ndocs/openbox-rust-gpui-tasks/evidence/p0-08/desktop-20261010/github-headers.txt:24: new blank line at EOF.\ndocs/openbox-rust-gpui-tasks/evidence/p0-08/desktop-20261010/update-tests.log:24: new blank line at EOF.\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "diff",
+        "--cached",
+        "--check",
+        "--",
+        ".",
+        ":!docs/openbox-rust-gpui-tasks/evidence"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": ""
+    }
+  ],
+  "note": "Raw HTTP CRLF response headers and original test log trailing blank lines are retained byte-for-byte as evidence. Source and task documentation formatting check passes; no evidence rewritten to silence formatting."
+}

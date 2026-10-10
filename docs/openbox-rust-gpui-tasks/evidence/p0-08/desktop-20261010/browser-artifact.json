@@ -1,0 +1,55 @@
+{
+  "time": "2026-10-10T01:46:40.102061+00:00",
+  "path": "/Users/lifeilin/wx_lifeilin/github.com/lifei6671/veyra/.worktrees/p0-08-update-distribution/target/p0-08-browser-download/VeyraPrototype-0.1.0-macos-arm64.zip",
+  "size": 54830834,
+  "sha256": "fdb7472d4792bf4f7f88568f3c1f288746da5efcf55cdf0bded7b28262221a26",
+  "source_kind": "REAL_EDGE_DOWNLOAD_LOOPBACK_NOT_GITHUB",
+  "xattr_initial_read": "xattr -l contains binary metadata; UTF8 decoding failed, rerun with -lx",
+  "xattr": {
+    "command": [
+      "xattr",
+      "-lx",
+      "/Users/lifeilin/wx_lifeilin/github.com/lifei6671/veyra/.worktrees/p0-08-update-distribution/target/p0-08-browser-download/VeyraPrototype-0.1.0-macos-arm64.zip"
+    ],
+    "exit_code": 0,
+    "stdout": "com.apple.macl:\n00000000  00 C1 00 66 ED 07 63 7D 48 F2 BF 0C 2C 5C AE 13  |...f..c}H...,\\..|\n00000010  28 88 00 00 00 00 00 00 00 00 00 00 00 00 00 00  |(...............|\n00000020  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  |................|\n00000030  00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  |................|\n00000040  00 00 00 00 00 00 00 00                          |........|\n00000048\ncom.apple.metadata:kMDItemWhereFroms:\n00000000  62 70 6C 69 73 74 30 30 A2 01 02 5F 10 3B 68 74  |bplist00..._.;ht|\n00000010  74 70 3A 2F 2F 31 32 37 2E 30 2E 30 2E 31 3A 36  |tp://127.0.0.1:6|\n00000020  33 36 39 34 2F 56 65 79 72 61 50 72 6F 74 6F 74  |3694/VeyraProtot|\n00000030  79 70 65 2D 30 2E 31 2E 30 2D 6D 61 63 6F 73 2D  |ype-0.1.0-macos-|\n00000040  61 72 6D 36 34 2E 7A 69 70 5F 10 17 68 74 74 70  |arm64.zip_..http|\n00000050  3A 2F 2F 31 32 37 2E 30 2E 30 2E 31 3A 36 33 36  |://127.0.0.1:636|\n00000060  39 34 2F 08 0B 49 00 00 00 00 00 00 01 01 00 00  |94/..I..........|\n00000070  00 00 00 00 00 03 00 00 00 00 00 00 00 00 00 00  |................|\n00000080  00 00 00 00 00 63                                |.....c|\n00000086\ncom.apple.provenance:\n00000000  01 02 00 C5 9C C6 BE 52 D1 46 F8                 |.......R.F.|\n0000000B\ncom.apple.quarantine:\n00000000  30 30 38 31 3B 36 61 63 39 39 38 65 64 3B 45 64  |0081;6ac998ed;Ed|\n00000010  67 65 3B 42 44 34 34 37 39 41 39 2D 45 39 45 38  |ge;BD4479A9-E9E8|\n00000020  2D 34 42 45 43 2D 41 38 46 35 2D 34 31 45 34 42  |-4BEC-A8F5-41E4B|\n00000030  36 35 45 39 46 44 31                             |65E9FD1|\n00000037\n",
+    "stderr": ""
+  },
+  "quarantine": {
+    "command": [
+      "xattr",
+      "-p",
+      "com.apple.quarantine",
+      "/Users/lifeilin/wx_lifeilin/github.com/lifei6671/veyra/.worktrees/p0-08-update-distribution/target/p0-08-browser-download/VeyraPrototype-0.1.0-macos-arm64.zip"
+    ],
+    "exit_code": 0,
+    "stdout": "0081;6ac998ed;Edge;BD4479A9-E9E8-4BEC-A8F5-41E4B65E9FD1\n",
+    "stderr": ""
+  },
+  "gatekeeper": {
+    "command": [
+      "spctl",
+      "--status"
+    ],
+    "exit_code": 0,
+    "stdout": "assessments enabled\n",
+    "stderr": ""
+  },
+  "sip": {
+    "command": [
+      "csrutil",
+      "status"
+    ],
+    "exit_code": 0,
+    "stdout": "System Integrity Protection status: enabled.\n",
+    "stderr": ""
+  },
+  "os": {
+    "command": [
+      "sw_vers"
+    ],
+    "exit_code": 0,
+    "stdout": "ProductName:\t\tmacOS\nProductVersion:\t\t27.0.1\nBuildVersion:\t\t26A434\n",
+    "stderr": ""
+  }
+}

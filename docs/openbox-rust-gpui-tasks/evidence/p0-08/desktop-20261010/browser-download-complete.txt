@@ -1,0 +1,2 @@
+There has been no change in the accessibility tree for Window: "P0-08 本地验收候选".
+The focused UI element is 281 link 下载原型 ZIP, Value: 127.0.0.1:63694/VeyraPrototype-0.1.0-macos-arm64.zip

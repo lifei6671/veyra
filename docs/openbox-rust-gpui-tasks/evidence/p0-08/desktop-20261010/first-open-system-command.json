@@ -1,0 +1,13 @@
+{
+  "command": [
+    "/usr/bin/log",
+    "show",
+    "--last",
+    "5m",
+    "--style",
+    "compact",
+    "--predicate",
+    "eventMessage CONTAINS \"VeyraPrototype\" OR eventMessage CONTAINS \"me.veyra.gpui-prototype\""
+  ],
+  "exit_code": 0
+}

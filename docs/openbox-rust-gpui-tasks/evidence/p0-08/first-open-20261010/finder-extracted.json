@@ -1,0 +1,64 @@
+{
+  "time": "2026-10-10T09:59:26.917390+08:00",
+  "app": "/Users/lifeilin/Downloads/Veyra-P0-08-first-open-20261010/VeyraPrototype.app",
+  "info": {
+    "CFBundleExecutable": "veyra-gpui-prototype",
+    "CFBundleIconFile": "icon.icns",
+    "CFBundleIdentifier": "me.veyra.gpui-prototype",
+    "CFBundleName": "VeyraPrototype",
+    "CFBundlePackageType": "APPL",
+    "CFBundleShortVersionString": "0.1.0",
+    "CFBundleVersion": "0.1.0",
+    "LSMinimumSystemVersion": "26.0",
+    "NSHighResolutionCapable": true
+  },
+  "commands": [
+    {
+      "argv": [
+        "xattr",
+        "-p",
+        "com.apple.quarantine",
+        "/Users/lifeilin/Downloads/Veyra-P0-08-first-open-20261010/VeyraPrototype.app"
+      ],
+      "exit": 0,
+      "stdout": "0081;6ac998ed;Edge;BD4479A9-E9E8-4BEC-A8F5-41E4B65E9FD1\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "codesign",
+        "--verify",
+        "--deep",
+        "--strict",
+        "--verbose=4",
+        "/Users/lifeilin/Downloads/Veyra-P0-08-first-open-20261010/VeyraPrototype.app"
+      ],
+      "exit": 0,
+      "stdout": "",
+      "stderr": "/Users/lifeilin/Downloads/Veyra-P0-08-first-open-20261010/VeyraPrototype.app: valid on disk\n/Users/lifeilin/Downloads/Veyra-P0-08-first-open-20261010/VeyraPrototype.app: satisfies its Designated Requirement\n"
+    },
+    {
+      "argv": [
+        "pgrep",
+        "-alf",
+        "VeyraPrototype|p0_05_helper|veyra-helper"
+      ],
+      "exit": 1,
+      "stdout": "",
+      "stderr": ""
+    }
+  ],
+  "files": {
+    "Contents/Info.plist": "aa9f11eca3bbb5a92413b1bc5761605e8c384c3d216afcaafe0208ab6db9f8f0",
+    "Contents/_CodeSignature/CodeResources": "bbc4265e1cfdee5d8a027ea5082962b18082aaa717f968776b01aea83bf89fc7",
+    "Contents/MacOS/veyra-gpui-prototype": "367e25f453abc580b779ee7508f3f050b71074ae9f57c7e11188f54b3d640954",
+    "Contents/Resources/package-manifest.json": "c5dae3af0e40f036181a42ace37cf08175ad93b480feca6dbc6cd0ca8838f872",
+    "Contents/Resources/sing-box-LICENSE": "650d5e3b99a446fb38e820fa87a49562e0c79eab868fff58618ac487a58e554c",
+    "Contents/Resources/icon.icns": "af28963110b1043e3d25cca68ab5ef01f3779205427b89770abe1600202aa0fd",
+    "Contents/Resources/Veyra-LICENSE": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
+    "Contents/Resources/INSTALLATION.md": "68ec02d8e7a2a4d33d625ef6b9b3272a553be393a4f2d4881ffbc157beddee7b",
+    "Contents/Resources/bin/veyra-update-prototype": "f0286b61e661b2a8bc8f38c6e2a0736cfc00c1a7f864c5b008434b2dffd98af6",
+    "Contents/Resources/helper/veyra-sing-box": "973388c3f720e918fc64dff7fd75dde14b31cc1aa6fc15855e2f00c5291dd4f4",
+    "Contents/Resources/helper/veyra-helper-prototype": "98cf1e89d8e5acc7c8943da0af9bbe80fab1672e1676572e8dccd5676946c6c4"
+  }
+}

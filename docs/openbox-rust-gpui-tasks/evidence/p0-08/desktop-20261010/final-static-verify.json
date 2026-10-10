@@ -1,0 +1,9 @@
+{
+  "command": [
+    "python3",
+    "tools/p0-08-package.py",
+    "verify",
+    "/Users/lifeilin/wx_lifeilin/github.com/lifei6671/veyra/.worktrees/p0-08-update-distribution/target/p0-08-desktop/VeyraPrototype.app"
+  ],
+  "exit_code": 0
+}

@@ -130,10 +130,14 @@
 
 **验收**：
 
-- [ ] GitHub 下载与手动安装路径明确；不引入 Sparkle、开发者账户或公证流程。
-- [ ] 明确应用/helper/内核/资源的版本绑定及更新时退出顺序。
-- [ ] 下载复用显式出站客户端；浏览器下载后的 quarantine 与首次打开步骤有真实记录，未要求关闭系统保护。
-- [ ] Apple Silicon 产物保留可运行的最低 ad-hoc 签名并验证内嵌二进制；明确不提供发布者身份或公证，校验和不冒充签名。
+- [x] GitHub 下载与手动安装路径明确；不引入 Sparkle、开发者账户或公证流程。
+- [x] 明确应用/helper/内核/资源的版本绑定及更新时退出顺序。
+- [x] 下载复用显式出站客户端；浏览器下载后的 quarantine 与首次打开步骤有真实记录，未要求关闭系统保护。
+- [x] Apple Silicon 产物保留可运行的最低 ad-hoc 签名并验证内嵌二进制；明确不提供发布者身份或公证，校验和不冒充签名。
+
+**2026-10-10 Desktop：ACCEPTANCE。** 工程、真实签名/摘要、Edge loopback下载与ZIP/解压app quarantine已记录；Finder首开仍未取得实际窗口，系统日志有Gatekeeper denial与amfid -423，正常单应用授权/托盘退出未完成。第四项静态ad-hoc检查PASS，但“可运行”尚未验收，复选框不提前勾选；第三项首开要求同样未闭合。GitHub无对应Release/资产，远端下载NOT_RUN，不自行发布。P2-05/P2-06代码与公共契约未改；无commit/merge/push。见[本轮验收](P0-08-acceptance.md)、[安装说明](P0-08-installation.md)。
+
+**2026-10-10 最终 macOS：DONE。** 同一原浏览器 ZIP 在独立 Downloads 目录由 Finder 解压，保留 quarantine，经实际用户正常单应用系统授权后显示真实 GPUI 窗口；输入/主题、关闭、用户托盘恢复/退出及系统 voluntary exit0、全部自有进程清理有实际证据。未重签名、终端启动、关闭保护或安装管理员helper。独立Review无剩余代码Finding，本卡owner/预约释放；GitHub无资产远端下载仍NOT_RUN，不push/发布。上段为首轮历史结论，原失败不改写。见[最终证据](evidence/p0-08/first-open-20261010/README.md)、[Review](evidence/p0-08/first-open-20261010/REVIEW.md)。
 
 <a id="obg-p0-09"></a>
 ## OBG-P0-09 P0 出口与重新估算

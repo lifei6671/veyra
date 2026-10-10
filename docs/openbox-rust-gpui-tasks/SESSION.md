@@ -1,3 +1,9 @@
+**P0-08 最终 macOS DONE（2026-10-10，当前）**：原浏览器候选ZIP一致，Finder独立Downloads解压保留quarantine；实际用户正常单应用授权，真实GPUI窗口/交互、关闭→用户托盘恢复/退出及系统voluntary exit0/全部PID清理通过；独立Review无剩余代码Finding。本卡owner/预约释放，原FAIL和未截图的授权中间页/托盘菜单边界保留，GitHub远端资产下载仍NOT_RUN，无push/发布。P2-05 ACCEPTANCE、P2-06 DOING及原owner不变。68卡显式依赖重算：DONE29 / ACCEPTANCE1 / DOING1 / READY1 / TODO29 / DEFERRED7，无环；READY仅P0-09，未领取/启动。macOS29/61、P0为8/9。见[最终验收](P0-08-acceptance.md)。本地提交/合并后定向复验另记收口收据。下方旧日期计数保留历史，以本段和任务行为准。
+
+**P0-08 Desktop 接管 / ACCEPTANCE（2026-10-10，首轮历史）**：固定来源/版本检查、二进制下载/取消/大小/SHA256、手动交接与真实 Apple Silicon 原型包工程复核完成；修复 Python 优化模式跳过校验，Rust8/Python8及构建/Core Clippy/fmt/四二进制与外壳签名验证通过。真实 Edge loopback ZIP 下载与 quarantine PASS；GitHub 尚无 Release，远端下载 NOT_RUN。Finder 首开日志出现 Gatekeeper denial/amfid -423、无已确认 GUI，正常单应用授权/托盘退出仍 NOT_RUN；不能将静态签名通过当作可运行。P0-08 保持独立分支、ACCEPTANCE/owner；P2-05 ACCEPTANCE、P2-06 DOING 不变，不提交/合并/push/发布。68卡重新计算：DONE28 / ACCEPTANCE2 / DOING1 / READY0 / TODO30 / DEFERRED7，无环，无新增 READY。[验收记录](P0-08-acceptance.md)。下方带日期及旧计数保留历史，以本段和任务行为准。
+
+**P0-08 领取（2026-10-10）**：Host CommandRun `command-23397-1791595691859722-207` 已建立 `.worktrees/p0-08-update-distribution` / `dev/p0-08-update-distribution`，基线 `733b6ea3d20b23ba90bb933971a08b076bc0caa3`；普通源文件写入已验证。owner=Codex · P0分发原型；预约独立 Core example、P0打包脚本/定向测试/说明、本卡与SESSION/总表/证据。仅消费P0-06公开HTTP builder，不改公共DTO、Cargo workspace/lock、Runtime/Platform/Helper/IPC，不复制P2-05独立树；P2-05 ACCEPTANCE/P2-06 DOING及原owner保留。P0-08 READY→DOING；P0-09 TODO、不解锁下游，不commit/merge/push。浏览器quarantine/首次打开留Host交Codex Desktop。原计数段保留历史，以本轮任务行及本轮状态为准。
+
 **P4-03 FINAL DONE / 视觉人工审批（2026-10-10）**：Host 独立核验54/54原图哈希和React/GPUI同数据浅色1280×720逐态、主备运行反馈，正式审批视觉 PASS；最终UI18唯一定向PASS、Clippy/build/fmt/diff PASS，前轮Runtime107定向PASS及固定1.14.0 Native1PASS原证据保留，独立只读Review0 Finding。已批准不透明白色弹窗/字体栅格化/原生标题栏差异、Legacy Windows libcronet.dll Clippy基线FAIL、深色/其他缩放 NOT_RUN均保留。P4-03 DONE、owner/预约释放、无额外依赖立即解锁；P2-05 ACCEPTANCE、P2-06 DOING/其Runtime owner不变。进入本地commit→合并主开发分支→定向验证；不push。见[视觉审批与54张原图](P4-03-visual-final.md)、[Runtime交付](P4-03-runtime-acceptance.md)。
 
 **P4-03 最终视觉对照（2026-10-09，ACCEPTANCE / AWAIT_HUMAN）**：输入8d3b47a，独立dev/p4-03-runtime仅UI修改。当前macOS设置、浅色、1280×720与真实React源码shell同数据核对列表/添加/普通组/主备高级/真实反馈，54张原图及逐图hash保留；修复focus CSS覆盖、数字spinner、busy颜色与Save loading排列，保留已批准不透明白弹窗。真实Escape/Tab/Shift+Tab、数字草稿步进/取消，以及独立root保存失败重试、受管child pin/busy/pending/核对/Auto/全失败留图；Native资源已清理。18个唯一定向测试、Desktop Clippy/build/fmt/diff PASS，最终独立只读Review剩余0 Finding，Reviewer未亲自执行GUI/Native。错误重复focus方案panic及旧Tauri Clippy FAIL原样保留。等待本轮用户最终人工确认，不DONE/commit/merge/主分支复验/释放owner/push。P2-06 DOING、P2-05 ACCEPTANCE不变。[最终截图与边界](P4-03-visual-final.md)。下方历史保留。
@@ -195,7 +201,7 @@ P2-06 已阶段提交 `f2457e6a4e2fe0ac3c9186bc7d17323a70c4c0a8`，仍 DOING、�
 
 | 里程碑 | DONE / 任务数 | 当前结果 | 组合验收 |
 | --- | --- | --- | --- |
-| P0 基线与可行性 | 7 / 9 | P0-01/03/04/05/06/07完成；P0-06保留未证明组合的明确范围决定，历史限制保留 | P0-09 未开始 |
+| P0 基线与可行性 | 8 / 9 | P0-01/03/04/05/06/07完成；P0-06保留未证明组合的明确范围决定，历史限制保留 | P0-09 未开始 |
 | P1 核心库与桌面壳 | 8 / 8 | 壳层/设置/基础组件视觉 PASS_WITH_TECHNICAL_DIFFERENCES；人工三轮、重启恢复、最终 Tray Quit 与清理 PASS；未实现业务页不计完成 | P1-07 DONE，组合 PASS |
 | P2 本机代理闭环 | 5 / 10 | P2-01/P2-02A/P2-02B/P2-03/P2-04 DONE；Host FINAL ACCEPTANCE PASS，Finding CLOSED | P2-09 未开始 |
 | P3 观测与主页面 | 3 / 8 | P3-01/P3-03/P3-04 DONE | P3-08 未开始 |
@@ -205,7 +211,7 @@ P2-06 已阶段提交 `f2457e6a4e2fe0ac3c9186bc7d17323a70c4c0a8`，仍 DOING、�
 | P7 数据与发布收尾 | 0 / 5 | 未开始，schema/清理按显式依赖等待 | P7-05 未开始 |
 | Windows W0–W3 | 0 / 7 | 后续排期 DEFERRED | W3-02 未开始 |
 
-macOS：**28 / 61 完成**；READY 1、TODO 30、DOING 1、REVIEW 0、ACCEPTANCE 1、BLOCKED 0。Windows 7 项 DEFERRED 单列，共 68 项。数量不等于工期权重或代码完成百分比；P1-04/P2-02/P4-05 父项被后缀子项替代，不重复计数。
+macOS：**29 / 61 完成**；READY 1、TODO 29、DOING 1、REVIEW 0、ACCEPTANCE 1、BLOCKED 0。Windows 7 项 DEFERRED 单列，共 68 项。数量不等于工期权重或代码完成百分比；P1-04/P2-02/P4-05 父项被后缀子项替代，不重复计数。
 
 ## 2 Active Tasks
 
@@ -213,6 +219,8 @@ macOS：**28 / 61 完成**；READY 1、TODO 30、DOING 1、REVIEW 0、ACCEPTANCE
 | --- | --- | --- | --- |
 | P2-05 · ACCEPTANCE | Codex Desktop · Core 网络客户端 | 独立dev/p2-05-outbound-clients，未合并；不在本卡写入 | 指定节点Native503已关闭，用户选择等待完整网络组合验收 |
 | P2-06 · DOING | Codex · Runtime/Platform | helper production/IPC、Core Runtime DTO、desktop runtime_service/platform、局部 Cargo 接线、任务文档 | 观测接线增量与真实普通用户受管实例验收通过，P3-01已DONE；root安装/降权、GUI、Helper多轮与重启恢复等原缺口继续后续验收，Runtime/DTO owner保留；见[P2-06接线记录](P2-06-observation-integration.md) |
+
+P0-08 owner/预约已释放；原ZIP与Downloads App/evidence保留，本次GUI及系统XPC均退出，没有管理员helper或网络变更。
 
 P5-05 owner/预约已释放，自有GUI已停止、临时请求拦截/视口已清理，原图/bundle/隔离测试数据保留；详见[P5-05验收](P5-05-acceptance.md)。
 
@@ -232,10 +240,10 @@ P3-03 owner/预约已释放，真实日志页、最终 GUI 与独立 Review 通�
 
 | Task | 依赖满足依据 | owner / 下一动作 |
 | --- | --- | --- |
-| P0-08 · READY | P0-03、P0-05均DONE；后续下载消费P0-06显式client与范围限制 | 未领取；不启动 |
+| P0-09 | P0-01～P0-08全部DONE | 未领取；汇总原型身份/限制并重新估算，不启动正式发布 |
 
 
-当前68卡：DONE27 / ACCEPTANCE2 / DOING1 / REVIEW0 / READY1 / TODO30 / BLOCKED0 / DEFERRED7；READY仅P0-08，未领取/未启动；P4-03 ACCEPTANCE，独立切片未合并；P2-04 DONE、Finding CLOSED保持。P2-06 DOING、Runtime/Platform及Runtime公共契约owner=Codex；P2-07/P6依赖未满足，不转READY。其它状态/显式依赖不变。
+历史统计（P0-08领取前、P4-03旧ACCEPTANCE）：DONE27 / ACCEPTANCE2 / DOING1 / REVIEW0 / READY1 / TODO30 / BLOCKED0 / DEFERRED7；当时READY仅P0-08，未领取/未启动；P4-03当时ACCEPTANCE，独立切片未合并；P2-04 DONE、Finding CLOSED保持。P2-06 DOING、Runtime/Platform及Runtime公共契约owner=Codex；P2-07/P6依赖未满足，不转READY。其它状态/显式依赖不变。
 
 **P2-03当前契约**：正式运行配置必须调用P2-02B `compile_product(ProductCompileRequest { state, runtime_intent, default_outbound, resources })`，显式消费 `project_selected_runtime()` 的 `runtime_intent` / `projected_default_target`（转换为 `OutboundId`）；不得继续使用 `application/runtime.rs` 现有ObservationOnly `compile(...)`作为正式运行配置。参见[P2-03任务卡](P2-local-proxy.md#obg-p2-03)。已实现并由Host最终确认功能与视觉“符合”；本轮仅文档收口，不启动下游。
 

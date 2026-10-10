@@ -1,0 +1,18 @@
+{
+  "time": "2026-10-10T01:48:47.457527+00:00",
+  "first_open": "FAIL_ACCEPTANCE_NOT_COMPLETED",
+  "cause_evidence": "Gatekeeper denial breadcrumb (open); amfid Code=-423 adhoc/unknown chain; launchd signal9; original prompt text/screenshot NOT_CAPTURED",
+  "manual_single_app_open_authorization": "NOT_RUN",
+  "gui_window": "NOT_RUN_NO_CONFIRMED_WINDOW",
+  "tray_quit": "NOT_RUN_NO_CONFIRMED_WINDOW",
+  "original_extracted_app_in_place": false,
+  "original_app_disappearance_reason": "UNPROVEN; no action to move/delete app was sent by this agent",
+  "owned_processes_remaining": [],
+  "fixture_server_stop_requested": 10217,
+  "removed_owned_cache": [
+    "/Users/lifeilin/wx_lifeilin/github.com/lifei6671/veyra/.worktrees/p0-08-update-distribution/tools/__pycache__",
+    "/Users/lifeilin/wx_lifeilin/github.com/lifei6671/veyra/.worktrees/p0-08-update-distribution/tools/tests/__pycache__"
+  ],
+  "main_status": "?? tools/tests/__pycache__/\n",
+  "main_head": "733b6ea3d20b23ba90bb933971a08b076bc0caa3"
+}

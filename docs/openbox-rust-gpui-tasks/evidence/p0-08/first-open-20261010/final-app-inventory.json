@@ -1,0 +1,164 @@
+[
+  {
+    "displayName": "访达",
+    "id": "com.apple.finder",
+    "isRunning": true
+  },
+  {
+    "displayName": "ChatGPT",
+    "id": "com.openai.codex",
+    "isRunning": true,
+    "lastUsedDate": 813283200,
+    "useCount": 764
+  },
+  {
+    "displayName": "RustRover",
+    "id": "com.jetbrains.rustrover",
+    "isRunning": true,
+    "lastUsedDate": 813196800,
+    "useCount": 61
+  },
+  {
+    "displayName": "iTerm2",
+    "id": "com.googlecode.iterm2",
+    "isRunning": true,
+    "lastUsedDate": 813196800,
+    "useCount": 40
+  },
+  {
+    "displayName": "Karing",
+    "id": "com.nebula.karing",
+    "isRunning": true,
+    "lastUsedDate": 813196800,
+    "useCount": 20
+  },
+  {
+    "displayName": "Code",
+    "id": "com.microsoft.VSCode",
+    "isRunning": true,
+    "lastUsedDate": 813196800,
+    "useCount": 9
+  },
+  {
+    "displayName": "预览",
+    "id": "com.apple.Preview",
+    "isRunning": true,
+    "lastUsedDate": 813196800,
+    "useCount": 2
+  },
+  {
+    "displayName": "Microsoft Edge",
+    "id": "com.microsoft.edgemac",
+    "isRunning": true,
+    "lastUsedDate": 813110400,
+    "useCount": 2655
+  },
+  {
+    "displayName": "Serena Desktop",
+    "id": "io.github.lifei6671.serena-desktop",
+    "isRunning": true,
+    "lastUsedDate": 813110400,
+    "useCount": 137
+  },
+  {
+    "displayName": "活动监视器",
+    "id": "com.apple.ActivityMonitor",
+    "isRunning": true
+  },
+  {
+    "displayName": "DockX",
+    "id": "com.6x.DockX",
+    "isRunning": true
+  },
+  {
+    "displayName": "系统设置",
+    "id": "com.apple.systempreferences",
+    "isRunning": false,
+    "lastUsedDate": 813283200,
+    "useCount": 9
+  },
+  {
+    "displayName": "SystemUIServer",
+    "id": "com.apple.systemuiserver",
+    "isRunning": false,
+    "lastUsedDate": 813283200,
+    "useCount": 4
+  },
+  {
+    "displayName": "归档实用工具",
+    "id": "com.apple.archiveutility",
+    "isRunning": false,
+    "lastUsedDate": 813283200,
+    "useCount": 2
+  },
+  {
+    "displayName": "VeyraPrototype",
+    "id": "me.veyra.gpui-prototype",
+    "isRunning": false,
+    "lastUsedDate": 813283200,
+    "useCount": 2
+  },
+  {
+    "displayName": "GoLand",
+    "id": "com.jetbrains.goland",
+    "isRunning": false,
+    "lastUsedDate": 813110400,
+    "useCount": 283
+  },
+  {
+    "displayName": "图书",
+    "id": "com.apple.iBooksX",
+    "isRunning": false,
+    "lastUsedDate": 813110400,
+    "useCount": 9
+  },
+  {
+    "displayName": "电话",
+    "id": "com.apple.mobilephone",
+    "isRunning": false,
+    "lastUsedDate": 813110400,
+    "useCount": 1
+  },
+  {
+    "displayName": "MEGAsync",
+    "id": "mega.mac",
+    "isRunning": false,
+    "lastUsedDate": 813024000,
+    "useCount": 73
+  },
+  {
+    "displayName": "微信",
+    "id": "com.tencent.xinWeChat",
+    "isRunning": false,
+    "lastUsedDate": 812937600,
+    "useCount": 460
+  },
+  {
+    "displayName": "Gateway",
+    "id": "com.jetbrains.gateway",
+    "isRunning": false,
+    "lastUsedDate": 812937600,
+    "useCount": 4
+  },
+  {
+    "displayName": "Microsoft Outlook",
+    "id": "com.microsoft.Outlook",
+    "isRunning": false,
+    "lastUsedDate": 812764800,
+    "useCount": 60
+  },
+  {
+    "displayName": "WorkBuddy AI",
+    "id": "com.workbuddy.workbuddy-ai",
+    "isRunning": false,
+    "lastUsedDate": 812678400,
+    "useCount": 14
+  },
+  {
+    "displayName": "FluxDown",
+    "id": "com.fluxdown.app",
+    "isRunning": false,
+    "lastUsedDate": 812505600,
+    "useCount": 9
+  }
+]

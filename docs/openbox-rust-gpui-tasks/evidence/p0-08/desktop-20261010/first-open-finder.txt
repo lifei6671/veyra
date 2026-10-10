@@ -1,0 +1,2 @@
+There has been no change in the accessibility tree for Window: "p0-08-browser-download".
+The focused UI element is 126 集合 Description: 图标视图, ID: IconView

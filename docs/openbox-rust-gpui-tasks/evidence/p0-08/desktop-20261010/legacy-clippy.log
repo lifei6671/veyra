@@ -1,0 +1,33 @@
+    Checking tokio-rustls v0.26.4
+    Checking rusqlite v0.40.2
+   Compiling veyra v0.1.0 (/Users/lifeilin/wx_lifeilin/github.com/lifei6671/veyra/.worktrees/p0-08-update-distribution/src-tauri)
+    Checking hyper-rustls v0.27.9
+    Checking reqwest v0.12.28
+    Checking veyra-core v0.1.0 (/Users/lifeilin/wx_lifeilin/github.com/lifei6671/veyra/.worktrees/p0-08-update-distribution/crates/veyra-core)
+error: failed to run custom build command for `veyra v0.1.0 (/Users/lifeilin/wx_lifeilin/github.com/lifei6671/veyra/.worktrees/p0-08-update-distribution/src-tauri)`
+
+Caused by:
+  process didn't exit successfully: `/Users/lifeilin/wx_lifeilin/github.com/lifei6671/veyra/.worktrees/p0-08-update-distribution/target/debug/build/veyra-91d76e5a364e9a83/build-script-build` (exit status: 101)
+  --- stdout
+  cargo:rerun-if-env-changed=TAURI_CONFIG
+  cargo:rustc-check-cfg=cfg(desktop)
+  cargo:rustc-cfg=desktop
+  cargo:rustc-check-cfg=cfg(mobile)
+  cargo:rerun-if-changed=/Users/lifeilin/wx_lifeilin/github.com/lifei6671/veyra/.worktrees/p0-08-update-distribution/src-tauri/tauri.conf.json
+  cargo:rustc-env=TAURI_ANDROID_PACKAGE_NAME_APP_NAME=veyra
+  cargo:rustc-env=TAURI_ANDROID_PACKAGE_NAME_PREFIX=me_disign
+  cargo:rustc-check-cfg=cfg(dev)
+  cargo:rustc-cfg=dev
+  cargo:PERMISSION_FILES_PATH=/Users/lifeilin/wx_lifeilin/github.com/lifei6671/veyra/.worktrees/p0-08-update-distribution/target/debug/build/veyra-1a4f41c7e18e6bc2/out/app-manifest/__app__-permission-files
+  cargo:rerun-if-changed=permissions
+  cargo:PERMISSION_FILES_PATH=/Users/lifeilin/wx_lifeilin/github.com/lifei6671/veyra/.worktrees/p0-08-update-distribution/target/debug/build/veyra-1a4f41c7e18e6bc2/out/app-manifest/__app__-permission-files
+  cargo:rerun-if-changed=capabilities
+  cargo:rerun-if-env-changed=REMOVE_UNUSED_COMMANDS
+  cargo:rustc-env=TAURI_ENV_TARGET_TRIPLE=aarch64-apple-darwin
+
+  --- stderr
+
+  thread 'main' (6589513) panicked at src-tauri/build.rs:25:6:
+  failed to build the Tauri application manifest: resource path `binaries/sing-box-1.14.0-windows-amd64/sing-box.exe` doesn't exist
+  note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+warning: build failed, waiting for other jobs to finish...

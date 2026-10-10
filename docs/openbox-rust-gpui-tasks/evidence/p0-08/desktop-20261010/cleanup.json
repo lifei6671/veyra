@@ -1,0 +1,12 @@
+{
+  "fixture_process_exit_code": 143,
+  "fixture_exit_reason": "owned server intentionally terminated with SIGTERM",
+  "fixture_listener_absent": true,
+  "fixture_directory_removed": true,
+  "temporary_browser_tabs_closed": true,
+  "test_finder_window_closed": true,
+  "owned_python_caches_removed": true,
+  "main_user_cache_preserved": true,
+  "browser_download_zip_preserved": true,
+  "new_and_old_builds_preserved": true
+}
