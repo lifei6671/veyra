@@ -1,0 +1,19 @@
+{
+  "command": [
+    "cargo",
+    "+1.99.0",
+    "clippy",
+    "--offline",
+    "--locked",
+    "-p",
+    "veyra-core",
+    "--features",
+    "p0-06-prototype",
+    "--all-targets",
+    "--",
+    "-D",
+    "warnings"
+  ],
+  "cwd": "/Users/lifeilin/wx_lifeilin/github.com/lifei6671/veyra/.worktrees/p0-08-update-distribution",
+  "exit_code": 0
+}

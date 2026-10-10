@@ -4,6 +4,7 @@ use super::*;
 use std::{
     io::{Read, Write},
     net::{TcpListener, TcpStream},
+    sync::atomic::{AtomicUsize, Ordering},
     thread,
 };
 use veyra_core::subscription::outbound::{BootstrapResolver, RunningProxy};
@@ -114,13 +115,16 @@ fn ok(body: &[u8]) -> Vec<u8> {
     reply
 }
 fn directory() -> std::path::PathBuf {
+    // macOS 并发测试可能读到同一时钟值；进程内序号避免自有目录互相碰撞。
+    static NEXT_DIRECTORY: AtomicUsize = AtomicUsize::new(0);
     let path = std::env::temp_dir().join(format!(
-        "veyra-p008-test-{}-{:x}",
+        "veyra-p008-test-{}-{:x}-{}",
         std::process::id(),
         std::time::SystemTime::now()
             .duration_since(std::time::UNIX_EPOCH)
             .unwrap()
-            .as_nanos()
+            .as_nanos(),
+        NEXT_DIRECTORY.fetch_add(1, Ordering::Relaxed)
     ));
     std::fs::create_dir(&path).unwrap();
     path

@@ -1,0 +1,9 @@
+{
+  "original_candidate_source_commit": "f0fb874805c95b251b1b90465a8336cf302902dd",
+  "original_candidate_input_hashes_verified": 120,
+  "post_acceptance_input_changes": [
+    "crates/veyra-core/examples/p0_08/tests.rs"
+  ],
+  "scope": "cfg(test) temporary directory naming only; no production source/signature/bundle/ZIP replacement",
+  "zip_sha256": "fdb7472d4792bf4f7f88568f3c1f288746da5efcf55cdf0bded7b28262221a26"
+}
