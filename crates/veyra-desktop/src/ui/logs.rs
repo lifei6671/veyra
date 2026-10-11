@@ -285,14 +285,7 @@ impl Render for LogsView {
             .when(self.buffer.invalid_regex, |d| {
                 d.border_1().border_color(rgb(lt::ERROR))
             });
-        let toolbar = div()
-            .flex()
-            .h(px(lt::TOOLBAR))
-            .flex_shrink_0()
-            .p(px(t::GAP))
-            .gap(px(t::GAP))
-            .items_center()
-            .bg(rgb(palette.surface).opacity(lt::SURFACE_ALPHA))
+        let toolbar = super::components::page_shell::toolbar(cx)
             .child(select(&self.level, tr(cx, "级别")).w(px(lt::LEVEL_WIDTH)))
             .child(select(&self.category, tr(cx, "类型")).w(px(lt::FILTER_WIDTH)))
             .child(search)
@@ -409,7 +402,7 @@ impl Render for LogsView {
                                         .w(px(lt::TIME_WIDTH))
                                         .flex_shrink_0()
                                         .text_size(px(lt::TAG_FONT))
-                                        .font_weight(super::theme::MISANS_MEDIUM)
+                                        .font_weight(crate::ui::tokens::FONT_MEDIUM)
                                         .whitespace_nowrap()
                                         .font_features(FontFeatures(Arc::new(vec![(
                                             "tnum".into(),
@@ -431,7 +424,7 @@ impl Render for LogsView {
                                         .py(px(lt::BADGE_Y))
                                         .rounded(px(lt::BADGE_RADIUS))
                                         .text_size(px(lt::TAG_FONT))
-                                        .font_weight(super::theme::MISANS_MEDIUM)
+                                        .font_weight(crate::ui::tokens::FONT_MEDIUM)
                                         .text_color(rgb(color))
                                         .bg(rgba(bg))
                                         .child(r.level.label()),
@@ -460,11 +453,7 @@ impl Render for LogsView {
                 .collect::<Vec<_>>()
         })
         .size_full();
-        div()
-            .flex()
-            .flex_col()
-            .size_full()
-            .min_h_0()
+        super::components::page_shell::viewport()
             .child(toolbar)
             .when(self.message().is_some(), |d| {
                 d.child(div().px(px(t::GAP)).child(tr(cx, self.message().unwrap())))

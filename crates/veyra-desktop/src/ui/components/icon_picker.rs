@@ -161,8 +161,14 @@ impl Render for IconPicker {
                 Button::new("icon-trigger")
                     .ghost()
                     .disabled(self.disabled)
-                    .accessibility_label(tr(cx, if self.expanded { "分组图标" } else { "选择测试站点图标" }))
-                    .font_weight(super::super::theme::MISANS_REGULAR)
+                    .accessibility_label(tr(cx, if self.expanded { "选择分组图标" } else { "选择测试站点图标" }))
+                    .map(|mut button| {
+                        let expanded = self.expanded;
+                        // Kit 的同名方法使用默认 Tooltip；直接在原按钮挂共享内容，保持 Popover trigger 几何。
+                        button.interactivity().tooltip(move |_, cx| cx.new(|cx| super::tooltip::TooltipContent(tr(cx, if expanded { "选择分组图标" } else { "选择测试站点图标" }).into())).into());
+                        button
+                    })
+                    .font_weight(crate::ui::tokens::FONT_REGULAR)
                     .text_size(px(t::BODY))
                     .w(px(if self.expanded { self.expanded_width } else { t::SITE_ICON_WIDTH }))
                     .h(px(t::CONTROL))
@@ -382,6 +388,28 @@ pub fn group_icon(code: &str, size: f32, cx: &App) -> Div {
             .text_color(cx.theme().muted_foreground)
             .child(if code.is_empty() { "—" } else { "◎" })
     }
+}
+
+/// 原版 ProxyIcon 的固定载体与内部缩放：所有尺寸复用同一比例，溢出裁切。
+/// LAN 的 IK=46 / $R=(max(groupIconSize,46)+scale)/max(groupIconSize,46)。
+/// 当前没有更大的全局 groupIconSize 偏好，使用原版 46px 基数，不能把 scale 加到占位。
+pub fn scaled_group_icon(code: &str, size: f32, scale: i32, cx: &App) -> Div {
+    let extent = size * (1. + scale as f32 / t::proxies::ICON_SCALE_BASE);
+    div()
+        .size(px(size))
+        .flex_shrink_0()
+        .relative()
+        .overflow_hidden()
+        .on_children_prepainted(|bounds, _, _| {
+            #[cfg(debug_assertions)]
+            super::log_layout("proxy-scaled-icon-inner", &bounds);
+        })
+        .child(
+            group_icon(code, extent, cx)
+                .absolute()
+                .left(px((size - extent) / 2.))
+                .top(px((size - extent) / 2.)),
+        )
 }
 
 /// 自动国家分组沿用原版矩形国旗，区别于节点组列表的方形图标。

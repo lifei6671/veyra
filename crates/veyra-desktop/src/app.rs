@@ -24,10 +24,15 @@ pub struct AppView {
     pub subscriptions: Entity<crate::ui::subscriptions::SubscriptionsView>,
     pub shared_network: Entity<crate::ui::shared_network::SharedNetworkView>,
     _shared_network_subscription: Subscription,
+    pub routing: Entity<crate::ui::routing::RoutingView>,
+    _routing_subscription: Subscription,
     pub groups: Entity<crate::ui::groups::GroupsView>,
     _groups_subscription: [Subscription; 2],
     _subscriptions: Subscription,
+    _subscription_editor: Subscription,
     _shares_updates: Subscription,
+    pub proxies: Entity<crate::ui::proxies::ProxiesView>,
+    _proxies_subscription: Subscription,
     pub logs: Entity<crate::ui::logs::LogsView>,
     pub backend: Entity<crate::ui::backend::BackendView>,
     _runtime_subscription: Subscription,
@@ -40,11 +45,10 @@ pub struct AppView {
     pub visual: crate::preferences::SaveCoordinator,
     // 仅呈现状态；最终折叠偏好仍由原有 visual/CAS 保存路径负责。
     pub sidebar_transition: Option<crate::ui::shell::SidebarTransition>,
+    pub sidebar_observation: Option<veyra_core::application::observability::controller::Snapshot>,
+    _sidebar_observation: Option<Task<()>>,
     pub panel: Entity<crate::ui::panel::PanelView>,
-    pub page_scroll: ScrollHandle,
     pub notice_center: Entity<crate::ui::components::notice::NoticeCenter>,
-    pub default_background: crate::ui::background::DefaultBackground,
-    _bounds: Subscription,
     pub background_preview: Option<std::path::PathBuf>,
     preview_key: Option<(veyra_core::domain::VisualAssetId, u8)>,
     preview_generation: u64,
@@ -70,6 +74,52 @@ impl AppView {
         pages
             .get(Route::Logs)
             .update(cx, |page, _| page.logs = Some(logs.clone()));
+        let proxies = cx.new(|cx| crate::ui::proxies::ProxiesView::new(&services, window, cx));
+        pages
+            .get(Route::Proxies)
+            .update(cx, |page, _| page.proxies = Some(proxies.clone()));
+        let proxies_subscription = cx.subscribe_in(
+            &proxies,
+            window,
+            |view, _, event: &crate::ui::proxies::OpenPreferences, window, cx| {
+                use crate::ui::proxies::OpenPreferences;
+                match event {
+                    OpenPreferences::EditSubscription(id) => {
+                        // 当前页打开同一个订阅编辑器，不切换路由、Tab 或滚动位置。
+                        view.subscriptions.update(cx, |editor, cx| {
+                            editor.open_editor(Some(id.clone()), window, cx);
+                        });
+                        cx.notify();
+                    }
+                    OpenPreferences::Updated(state) => {
+                        if let Some(request) = view.bridge.accept_page_snapshot(state.clone()) {
+                            view.services.manual_runtime.submit(
+                                request,
+                                veyra_core::application::manual_runtime::RuntimeCommand::Refresh,
+                            );
+                        }
+                        if let Some(state) = &view.bridge.snapshot {
+                            view.behavior.rebase(state);
+                        }
+                        view.project_runtime(cx);
+                    }
+                }
+            },
+        );
+        let routing = cx.new(|cx| crate::ui::routing::RoutingView::new(&services, window, cx));
+        pages
+            .get(Route::Settings)
+            .update(cx, |page, _| page.routing = Some(routing.clone()));
+        let routing_subscription = cx.subscribe(&routing, |view, _, state, cx| {
+            // 保存仅改变正式配置；沿用 composition root 的原有刷新，不触发隐式应用。
+            if let Some(request) = view.bridge.accept_page_snapshot(state.clone()) {
+                view.services.manual_runtime.submit(
+                    request,
+                    veyra_core::application::manual_runtime::RuntimeCommand::Refresh,
+                );
+            }
+            view.project_runtime(cx);
+        });
         let backend = cx.new(|cx| crate::ui::backend::BackendView::new(window, cx));
         pages
             .get(Route::Settings)
@@ -92,6 +142,8 @@ impl AppView {
         pages.get(Route::Settings).update(cx, |page, _| {
             page.subscriptions = Some(subscriptions.clone())
         });
+        // 弹窗在 Shell 的固定视口层共享；输入和保存完成仍由原 Entity 通知绘制。
+        let subscription_editor = cx.observe(&subscriptions, |_, _, cx| cx.notify());
         let subscriptions_listener = cx.subscribe(
             &subscriptions,
             |this, _, event: &crate::ui::subscriptions::SubscriptionsEvent, _| {
@@ -246,9 +298,6 @@ impl AppView {
                 }
             }
         });
-        let bounds = cx.observe_window_bounds(window, |this, window, _| {
-            this.request_default_background(window);
-        });
         let appearance = cx.observe_window_appearance(window, |this, window, cx| {
             this.apply_theme(window, cx);
             cx.notify();
@@ -277,9 +326,18 @@ impl AppView {
         .detach();
         let tray_quit = cx.on_app_quit(|view, cx| {
             view.tray.prepare_quit();
+            view.proxies.update(cx, |view, _| view.cancel_tests());
             view.services.request_closing();
             let done = view.services.manual_runtime.shutdown();
+            #[cfg(target_os = "macos")]
+            let draft_done = view.services.draft_quit_cleanup();
             cx.background_executor().spawn(async move {
+                #[cfg(target_os = "macos")]
+                if let Some(done) = draft_done
+                    && !matches!(done.recv(), Ok(true))
+                {
+                    eprintln!("draft quit cleanup unresolved; owned resources retained");
+                }
                 // 退出等待有界Runtime清理；失败是Unknown，不能记录成已停止。
                 if !matches!(done.recv(), Ok(Ok(()))) {
                     eprintln!("runtime quit cleanup unresolved; recovery records retained");
@@ -292,6 +350,10 @@ impl AppView {
         );
         let mut view = Self {
             backend,
+            proxies,
+            _proxies_subscription: proxies_subscription,
+            routing,
+            _routing_subscription: routing_subscription,
             logs,
             _runtime_subscription: runtime_subscription,
             _profile_subscription: profile_subscription,
@@ -303,6 +365,7 @@ impl AppView {
             pages,
             subscriptions,
             _subscriptions: subscriptions_listener,
+            _subscription_editor: subscription_editor,
             _shares_updates: shares_updates,
             groups,
             _groups_subscription: [groups_subscription, groups_runtime_subscription],
@@ -315,11 +378,10 @@ impl AppView {
             _behavior_subscription: behavior_subscription,
             visual: Default::default(),
             sidebar_transition: None,
+            sidebar_observation: None,
+            _sidebar_observation: None,
             panel,
-            page_scroll: ScrollHandle::new(),
             notice_center,
-            default_background: Default::default(),
-            _bounds: bounds,
             background_preview: None,
             preview_key: None,
             preview_generation: 0,
@@ -426,24 +488,6 @@ impl AppView {
             );
         }
     }
-    fn request_default_background(&mut self, window: &Window) {
-        // 等 Core 的真实偏好完成加载；受管背景仍由既有 preview 服务负责。
-        if self.bridge.snapshot.is_none()
-            || !matches!(
-                self.visual.draft.background,
-                veyra_core::domain::DesktopBackground::None
-            )
-        {
-            return;
-        }
-        let key = crate::ui::background::Key::new(
-            window.viewport_size(),
-            self.visual.draft.background_blur,
-        );
-        if let Some(request) = self.default_background.request(key) {
-            self.services.default_background(request);
-        }
-    }
     pub fn edit_visual(
         &mut self,
         value: veyra_core::domain::DesktopVisualPreferences,
@@ -458,7 +502,8 @@ impl AppView {
         self.panel
             .update(cx, |p, cx| p.project(&self.visual.draft, window, cx));
         self.apply_theme(window, cx);
-        self.request_default_background(window);
+        // 新图/模糊草稿立即切换预览代次，不能等保存防抖期间继续绘制旧图。
+        self.request_preview();
         self.save_timer = Some(cx.spawn_in(window, async move |view, cx| {
             cx.background_executor()
                 .timer(std::time::Duration::from_millis(
@@ -673,14 +718,6 @@ impl AppView {
                     self.project_behavior(window, cx);
                 }
             }
-            AppEvent::DefaultBackground { request, bytes } => {
-                let accepted = self.default_background.complete(request, bytes);
-                eprintln!(
-                    "default background generation={} accepted={accepted}",
-                    request.generation
-                );
-                self.request_default_background(window);
-            }
             AppEvent::PlatformSaved { result } => {
                 eprintln!("platform export complete result={result:?}");
                 self.platform_notice(result, "Platform evidence file saved", window, cx);
@@ -846,13 +883,13 @@ impl AppView {
                 }
                 self.apply_theme(window, cx);
                 self.request_preview();
-                self.request_default_background(window);
             }
         }
         if let Some(state) = &self.bridge.snapshot {
             self.shared_network
                 .update(cx, |view, cx| view.project(state, cx));
             self.groups.update(cx, |view, cx| view.project(state, cx));
+            self.routing.update(cx, |view, cx| view.project(state, cx));
             self.subscriptions
                 .update(cx, |view, cx| view.project(state, cx));
         }
@@ -864,6 +901,40 @@ impl AppView {
         self.tray.project(self.bridge.snapshot.as_deref(), None);
     }
     fn project_runtime(&mut self, cx: &mut Context<Self>) {
+        if let Some(state) = &self.bridge.snapshot {
+            self.routing.update(cx, |view, cx| view.project(state, cx));
+        }
+        if self._sidebar_observation.is_none()
+            && let Some(reader) = self.services.manual_runtime.observation_reader()
+            && let Some(mut subscription) = reader.subscribe()
+        {
+            // 先订阅再读取，消费原 owner 同一事实，不新建 Controller/WS 连接。
+            self.sidebar_observation = reader.snapshot();
+            self._sidebar_observation = Some(cx.spawn(async move |view, cx| {
+                use veyra_core::application::observability::controller::Delivery;
+                loop {
+                    let closed = matches!(subscription.recv().await, Delivery::Closed);
+                    // Event/Gap 都重新投影当前 snapshot，不能重放旧实例的统计。
+                    let next = if closed { None } else { reader.snapshot() };
+                    if view
+                        .update(cx, |view, cx| {
+                            view.sidebar_observation = next;
+                            cx.notify();
+                        })
+                        .is_err()
+                        || closed
+                    {
+                        break;
+                    }
+                }
+            }));
+        }
+        self.proxies.update(cx, |view, cx| {
+            if let Some(state) = &self.bridge.snapshot {
+                view.project_state(state, cx);
+            }
+            view.project_runtime(self.bridge.runtime.clone(), cx)
+        });
         self.groups.update(cx, |view, cx| {
             view.project_runtime(self.bridge.runtime.clone(), cx)
         });
@@ -907,6 +978,8 @@ impl AppView {
         }
         self.logs
             .update(cx, |view, cx| view.set_visible(route == Route::Logs, cx));
+        self.proxies
+            .update(cx, |view, cx| view.set_visible(route == Route::Proxies, cx));
         self.bridge.leave_page();
         let visible = route == Route::Settings
             && self.pages.get(Route::Settings).read(cx).category
@@ -924,9 +997,7 @@ impl AppView {
         self.groups
             .update(cx, |view, cx| view.set_visible(groups_visible, cx));
         self.route = route;
-        // The shell viewport is shared; a long Settings page must not leave
-        // the next page's heading above the viewport.
-        self.page_scroll.set_offset(point(px(0.), px(0.)));
+        // 每页只滚动自己的内容，导航不会把别页的滚动偏移带到固定顶部。
         eprintln!(
             "navigate {} entity={:?}",
             route.id(),
@@ -979,11 +1050,6 @@ impl AppView {
     #[cfg(debug_assertions)]
     pub fn evidence_retention(&mut self, window: &mut Window, cx: &mut Context<Self>) {
         use crate::navigation::Category;
-        eprintln!(
-            "shell scroll evidence max={:?} bounds={:?}",
-            self.page_scroll.max_offset(),
-            self.page_scroll.bounds()
-        );
         let route = self.route;
         let identities = Route::ALL.map(|r| self.pages.get(r).entity_id());
         let proxies = self.pages.get(Route::Proxies);

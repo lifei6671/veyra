@@ -92,7 +92,7 @@ pub struct UiLatencyPreferences {
 impl Default for UiLatencyPreferences {
     fn default() -> Self {
         Self {
-            test_url: UiLatencyUrl("http://www.gstatic.com/generate_204".into()),
+            test_url: UiLatencyUrl("https://www.gstatic.com/generate_204".into()),
             timeout_ms: 5000,
             low_ms: 400,
             medium_ms: 800,
@@ -106,7 +106,7 @@ pub struct ProxyViewPreferences {
     pub hide_unavailable: bool,
     pub node_sort: NodeSort,
     pub group_by_provider: bool,
-    pub node_card_min_width: u16,
+    pub node_card_min_width: u32,
     /// Display IDs only; never Group membership or domain ordering.
     pub strategy_order: Vec<String>,
 }
@@ -203,7 +203,8 @@ impl DesktopBehaviorPreferences {
         if !(1..=3).contains(&self.proxy_view.group_columns) {
             return Err(AppError::validation(FieldPath::ProxyColumns));
         }
-        if !(100..=320).contains(&self.proxy_view.node_card_min_width) {
+        // 宽度是用户偏好，不再沿用旧参考的100–320区间；只拒绝无尺寸的0。
+        if self.proxy_view.node_card_min_width == 0 {
             return Err(AppError::validation(FieldPath::ProxyNodeWidth));
         }
         if self.proxy_view.strategy_order.len() > 128
@@ -261,7 +262,7 @@ pub struct DesktopBehaviorPreferencesPatch {
     pub hide_unavailable: Option<bool>,
     pub node_sort: Option<NodeSort>,
     pub group_by_provider: Option<bool>,
-    pub node_card_min_width: Option<u16>,
+    pub node_card_min_width: Option<u32>,
     pub strategy_order: Option<Vec<String>>,
     pub ipv6_test: Option<bool>,
     pub ip_info: Option<IpInfoProvider>,
@@ -380,7 +381,7 @@ mod tests {
             (p.latency.low_ms, p.latency.medium_ms, p.latency.timeout_ms),
             (400, 800, 5000)
         );
-        assert_eq!(p.latency.test_url.0, "http://www.gstatic.com/generate_204");
+        assert_eq!(p.latency.test_url.0, "https://www.gstatic.com/generate_204");
         assert_eq!(
             p.proxy_view,
             ProxyViewPreferences {
@@ -455,14 +456,7 @@ mod tests {
             ),
             (
                 DesktopBehaviorPreferencesPatch {
-                    node_card_min_width: Some(99),
-                    ..Default::default()
-                },
-                FieldPath::ProxyNodeWidth,
-            ),
-            (
-                DesktopBehaviorPreferencesPatch {
-                    node_card_min_width: Some(321),
+                    node_card_min_width: Some(0),
                     ..Default::default()
                 },
                 FieldPath::ProxyNodeWidth,
@@ -556,6 +550,26 @@ mod tests {
     }
     #[test]
     fn ui_runtime_and_group_url_roles_are_separate() {
+        // 用户批准只改变 UI 默认；Runtime 原 HTTP 与组继承/显式 URL 语义保持。
+        let profile = crate::domain::Profile::default();
+        assert_eq!(
+            profile.test_url.as_str(),
+            "http://www.gstatic.com/generate_204"
+        );
+        assert_eq!(
+            profile.direct_test_url.as_str(),
+            "http://connectivitycheck.platform.hicloud.com/generate_204"
+        );
+        assert_eq!(
+            resolve_group_health_url(None, &profile.test_url),
+            "http://www.gstatic.com/generate_204"
+        );
+        let explicit =
+            GroupHealthUrl::optional("http://group.example.invalid/health".into()).unwrap();
+        assert_eq!(
+            resolve_group_health_url(explicit.as_ref(), &profile.test_url),
+            "http://group.example.invalid/health"
+        );
         let ui = UiLatencyUrl("https://ui.example.invalid".into());
         let runtime = RuntimeHealthUrl::new("https://runtime.example.invalid".into()).unwrap();
         let group = GroupHealthUrl::optional("https://group.example.invalid".into()).unwrap();

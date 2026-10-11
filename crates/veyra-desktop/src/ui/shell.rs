@@ -7,7 +7,7 @@ use super::{
 use crate::ui::i18n::tr;
 use crate::{app::AppView, navigation::Route, preferences::SaveStatus, state_bridge::LoadState};
 use gpui_kit::{
-    component::{Disableable, Sizable, button::*, scroll::ScrollableElement},
+    component::{Disableable, Sizable, button::*},
     prelude::*,
     *,
 };
@@ -52,6 +52,82 @@ impl SidebarTransition {
     }
 }
 
+// AppShell formatDuration：不足分钟显示秒，其余省略秒；全局语言仍由 i18n 决定。
+fn sidebar_uptime(seconds: u64, lang: DesktopLanguage) -> String {
+    use super::i18n::translate;
+    if seconds < 60 {
+        return format!("{seconds}{}", translate(lang, "秒"));
+    }
+    let hours = seconds / 3600;
+    let minutes = seconds / 60 % 60;
+    if hours == 0 {
+        return format!("{minutes}{}", translate(lang, "分钟"));
+    }
+    let mut value = format!("{hours}{}", translate(lang, "小时"));
+    if minutes != 0 {
+        value.push_str(&format!("{minutes}{}", translate(lang, "分钟")));
+    }
+    value
+}
+
+// AppShell 使用十进制流量单位、二进制内存单位；未知保持未知，不能伪造 0。
+fn sidebar_bytes(value: u64, decimals: usize) -> String {
+    let units = ["B", "kB", "MB", "GB", "TB"];
+    let mut amount = value as f64;
+    let mut index = 0;
+    while amount >= 1000. && index < units.len() - 1 {
+        amount /= 1000.;
+        index += 1;
+    }
+    let amount = format!("{:.*}", if index == 0 { 0 } else { decimals }, amount);
+    let amount = amount.strip_suffix(".0").unwrap_or(&amount);
+    format!("{amount} {}", units[index])
+}
+fn sidebar_stats(
+    observation: Option<&veyra_core::application::observability::controller::Snapshot>,
+    instance: Option<&veyra_core::application::runtime_snapshot::InstanceId>,
+) -> [String; 6] {
+    let snapshot = observation.filter(|s| {
+        s.identity
+            .as_ref()
+            .is_some_and(|identity| instance == Some(&identity.instance_id))
+    });
+    let unknown = || "—".to_owned();
+    let count = snapshot
+        .filter(|s| s.available[2])
+        .and_then(|s| s.connection_count)
+        .map(|n| n.to_string())
+        .unwrap_or_else(unknown);
+    let memory = snapshot
+        .filter(|s| s.available[1])
+        .and_then(|s| s.memory_bytes)
+        .map(|n| {
+            if n == 0 {
+                return "0 B".to_owned();
+            }
+            let value = format!("{:.1}", n as f64 / 1024. / 1024.);
+            format!("{} MiB", value.strip_suffix(".0").unwrap_or(&value))
+        })
+        .unwrap_or_else(unknown);
+    // 正式 Observation 区分本次累计与区间速率；不使用 legacy hook 的帧差推测。
+    let traffic = snapshot.and_then(|s| s.traffic.as_ref());
+    let rate = traffic.filter(|t| t.interval_ms > 0 && snapshot.is_some_and(|s| s.available[0]));
+    [
+        count,
+        memory,
+        traffic
+            .map(|t| sidebar_bytes(t.session_download_bytes, 2))
+            .unwrap_or_else(unknown),
+        rate.map(|t| format!("{}/s", sidebar_bytes(t.download_bytes_per_second, 1)))
+            .unwrap_or_else(unknown),
+        traffic
+            .map(|t| sidebar_bytes(t.session_upload_bytes, 2))
+            .unwrap_or_else(unknown),
+        rate.map(|t| format!("{}/s", sidebar_bytes(t.upload_bytes_per_second, 1)))
+            .unwrap_or_else(unknown),
+    ]
+}
+
 fn route_label(route: Route, lang: DesktopLanguage) -> &'static str {
     match lang {
         DesktopLanguage::English => [
@@ -90,22 +166,26 @@ impl Render for AppView {
         let prefs = &self.visual.draft;
         let collapsed = prefs.sidebar_collapsed;
         let lang = prefs.language;
-        let radius = prefs.global_radius as f32;
-        let p = Palette::new(self.dark, self.route == Route::Settings);
-        // 本机OpenBox无自定义背景时：base100 + base200/50，而非内置图片。
-        // Settings共用此背景，订阅页不能拥有另一套浅深色。
-        let panel_plain = self.route == Route::Settings
-            && matches!(
-                prefs.background,
-                veyra_core::domain::DesktopBackground::None
-            );
+        let p = Palette::new(self.dark, true);
+        // 背景事实只来自面板视觉偏好；切换主导航不再改变背景或透明度。
+        let panel_plain = matches!(
+            prefs.background,
+            veyra_core::domain::DesktopBackground::None
+        );
         let surface_alpha = if panel_plain {
             0xff
-        } else if self.dark && self.route != Route::Settings {
+        } else if self.dark {
             0xf0
         } else {
             0xbf
         };
+        let stats = sidebar_stats(
+            self.sidebar_observation.as_ref(),
+            self.bridge
+                .runtime
+                .as_ref()
+                .and_then(|r| r.runtime.instance_id.as_ref()),
+        );
         let mut root = div()
             .id("app-shell")
             // 仅 debug 的证据快捷键，正式布局不增加控件，也不代替 Tray 验收。
@@ -143,13 +223,13 @@ impl Render for AppView {
             .relative()
             .flex()
             .size_full()
-            .font_family("MiSans")
-            .font_weight(super::theme::MISANS_REGULAR)
+            .font(t::openbox_font())
+            .font_weight(crate::ui::tokens::FONT_REGULAR)
             .text_size(px(t::BODY))
             .line_height(px(t::BODY_LINE))
             .text_color(rgb(p.text))
             .bg(rgb(p.window));
-        // React 默认背景是随包资源；无用户背景时仍显示相同来源，避免纯白替代。
+        // None 与设置页一致：base100 + base200/50；不会偷偷显示另一张默认图片。
         if panel_plain {
             root = root.child(
                 div()
@@ -157,30 +237,6 @@ impl Render for AppView {
                     .size_full()
                     .bg(rgb(p.sidebar).opacity(t::PANEL_BACKGROUND_TINT)),
             );
-        }
-        if !panel_plain
-            && matches!(
-                prefs.background,
-                veyra_core::domain::DesktopBackground::None
-            )
-        {
-            let size = window.viewport_size();
-            if let Some(image) = self.default_background.ready() {
-                root = root.child(
-                    img(image)
-                        .absolute()
-                        .left(px(-10.))
-                        .top(px(-10.))
-                        .w(size.width + px(20.))
-                        .h(size.height + px(20.))
-                        .object_fit(ObjectFit::Cover)
-                        .opacity(if self.route == Route::Settings {
-                            1.
-                        } else {
-                            prefs.background_opacity as f32 / 100.
-                        }),
-                );
-            }
         }
         if let veyra_core::domain::DesktopBackground::ManagedAsset(id) = &prefs.background {
             root = root.child(
@@ -191,17 +247,15 @@ impl Render for AppView {
                 .absolute()
                 .size_full()
                 .object_fit(ObjectFit::Cover)
-                .opacity(if self.route == Route::Settings {
-                    1.
-                } else {
-                    prefs.background_opacity as f32 / 100.
-                }),
+                .opacity(prefs.background_opacity as f32 / 100.),
             );
         }
-        if self.dark && self.route == Route::Settings && !panel_plain {
+        if self.dark && !panel_plain {
             root = root.child(div().absolute().size_full().bg(rgba(0x000000a6)));
         }
         let sidebar = div()
+            .font(t::openbox_font())
+            .font_weight(t::proxies::FONT_REGULAR)
             .relative()
             .flex()
             .flex_col()
@@ -227,8 +281,8 @@ impl Render for AppView {
                                 .w(px(t::BRAND_WIDTH))
                                 .h(px(24.))
                                 .text_size(px(18.))
-                                .font_weight(super::theme::MISANS_SEMIBOLD)
-                                .text_color(rgb(if self.dark && self.route == Route::Settings {
+                                .font_weight(t::proxies::FONT_SEMIBOLD)
+                                .text_color(rgb(if self.dark {
                                     t::BRAND_PANEL_DARK_INK
                                 } else {
                                     t::BRAND_INK
@@ -250,7 +304,7 @@ impl Render for AppView {
                                 rgb(t::COLLAPSE_INK).into()
                             }))
                             .h(px(t::NAV_HEIGHT))
-                            .accessibility_label(tr(cx, "折叠/展开侧栏 · Collapse/Expand sidebar"))
+                            .accessibility_label(tr(cx, if self.visual.draft.sidebar_collapsed { "展开侧边栏" } else { "收起侧边栏" }))
                             .w(px(t::NAV_HEIGHT))
                             .on_click(cx.listener(|this, _, window, cx| {
                                 let mut draft = this.visual.draft.clone();
@@ -326,12 +380,12 @@ impl Render for AppView {
                                 .bg(rgba((p.surface << 8) | if panel_plain {0xbf} else {surface_alpha}))
                                 .children(
                                     [
-                                        [tr(cx, "连接数"), tr(cx, "内存使用")],
-                                        [tr(cx, "进站流量"), tr(cx, "进站速率")],
-                                        [tr(cx, "出站流量"), tr(cx, "出站速率")],
+                                        [(tr(cx, "连接数"), stats[0].clone()), (tr(cx, "内存使用"), stats[1].clone())],
+                                        [(tr(cx, "进站流量"), stats[2].clone()), (tr(cx, "进站速率"), stats[3].clone())],
+                                        [(tr(cx, "出站流量"), stats[4].clone()), (tr(cx, "出站速率"), stats[5].clone())],
                                     ]
                                     .map(|labels| {
-                                        div().flex().gap(px(t::GAP)).children(labels.map(|label| {
+                                        div().flex().gap(px(t::SIDEBAR_STAT_COLUMN_GAP)).children(labels.map(|(label, value)| {
                                             div()
                                                 .flex_1()
                                                 .flex()
@@ -346,8 +400,10 @@ impl Render for AppView {
                                                 .child(
                                                     div()
                                                         .text_size(px(14.))
-                                                        .line_height(px(20.))
-                                                        .child("—"),
+                                                        .line_height(px(t::SIDEBAR_STAT_VALUE_LINE))
+                                                        .mt(px(t::SIDEBAR_STAT_VALUE_TOP))
+                                                        .font_weight(t::proxies::FONT_SEMIBOLD)
+                                                        .child(value),
                                                 )
                                         }))
                                     }),
@@ -366,18 +422,19 @@ impl Render for AppView {
                                         .flex_1()
                                         .flex()
                                         .flex_col()
+                                        .gap(px(t::SIDEBAR_UPTIME_GAP))
                                         .child(
                                             div()
                                                 .text_size(px(12.))
-                                                .line_height(px(16.))
+                                                .line_height(px(t::SIDEBAR_UPTIME_LABEL_LINE))
                                                 .text_color(rgba(p.muted))
                                                 .child(tr(cx, "运行时长")),
                                         )
                                         .child(
                                             div()
                                                 .line_height(px(t::BODY_LINE))
-                                                .text_size(px(14.)).font_weight(super::theme::MISANS_MEDIUM)
-                                                .child(self.bridge.runtime.as_ref().and_then(|s| s.uptime_seconds).map(|seconds| format!("{:02}:{:02}:{:02}", seconds/3600, seconds/60%60, seconds%60)).unwrap_or_else(|| tr(cx, super::backend::status(self.bridge.runtime.as_ref())).to_owned())),
+                                                .text_size(px(14.)).font_weight(t::SIDEBAR_UPTIME_WEIGHT)
+                                                .child(self.bridge.runtime.as_ref().and_then(|s| s.uptime_seconds).map(|seconds| sidebar_uptime(seconds,lang)).unwrap_or_else(|| tr(cx, super::backend::status(self.bridge.runtime.as_ref())).to_owned())),
                                         ),
                                 )
                             })
@@ -404,6 +461,10 @@ impl Render for AppView {
                                                     .disabled(self.bridge.runtime_operation.is_some() || self.bridge.runtime.is_none() || (id == "start" && self.bridge.runtime.as_ref().is_some_and(|s| s.runtime.status == veyra_core::application::runtime_snapshot::RuntimeStatus::Ready)) || (id == "stop" && self.bridge.runtime.as_ref().is_some_and(|s| s.runtime.status == veyra_core::application::runtime_snapshot::RuntimeStatus::Stopped)))
                                                     .on_click(cx.listener(move |this, _, _, cx| { this.runtime_command(command, cx); }))
                                                     .accessibility_label(label)
+                                                    .map(|mut button| {
+                                                        button.interactivity().tooltip(move |_, cx| cx.new(|_| super::components::tooltip::TooltipContent(label.into())).into());
+                                                        button
+                                                    })
                                                     .size(px(t::NAV_HEIGHT))
                                                     .rounded(px(t::NAV_RADIUS))
                                                     .bg(rgba((p.surface << 8) | if panel_plain {0xbf} else {surface_alpha}))
@@ -483,7 +544,14 @@ impl Render for AppView {
                         .on_click(cx.listener(|this, _, _, cx| this.evidence_instances(cx))),
                 );
         }
+        // 设置页和代理页挂载同一个订阅弹窗；当前页面的路由和滚动容器不动。
+        let subscription_modal = self.subscriptions.update(cx, |view, cx| {
+            view.model
+                .editor_open
+                .then(|| view.render_modal(window, cx))
+        });
         root.child(sidebar)
+            .children(subscription_modal)
             .child(
                 div()
                     .relative()
@@ -507,7 +575,7 @@ impl Render for AppView {
                                 .child(
                                     div()
                                         .text_lg()
-                                        .font_weight(super::theme::MISANS_SEMIBOLD)
+                                        .font_weight(t::proxies::FONT_SEMIBOLD)
                                         .child(route_label(self.route, lang)),
                                 )
                                 .child(
@@ -579,18 +647,6 @@ impl Render for AppView {
                             .flex_col()
                             .flex_1()
                             .min_h_0()
-                            .when(
-                                self.route != Route::Settings && self.route != Route::Logs,
-                                |d| d.p(px(t::GAP)).rounded(px(radius)),
-                            )
-                            .when(
-                                self.route != Route::Settings && self.route != Route::Logs,
-                                |d| {
-                                    d.overflow_y_scroll()
-                                        .track_scroll(&self.page_scroll)
-                                        .vertical_scrollbar(&self.page_scroll)
-                                },
-                            )
                             // 页面已拥有固定视口：复用 GPUI 缓存边界，避免动画每帧
                             // 在父布局测量时展开整棵控件树；尺寸/实体变化仍会重绘。
                             .child(if window.is_a11y_active() {
@@ -629,7 +685,7 @@ impl Render for AppView {
                                         .child(
                                             div()
                                                 .text_color(rgb(p.text))
-                                                .font_weight(super::theme::MISANS_SEMIBOLD)
+                                                .font_weight(t::proxies::FONT_SEMIBOLD)
                                                 .child("本地视觉偏好"),
                                         )
                                         .child("GPUI preview · 平台目录 / 单实例"),
@@ -657,6 +713,30 @@ impl Render for AppView {
 mod sidebar_transition_tests {
     use super::{SidebarTransition, t};
     use std::time::{Duration, Instant};
+
+    // 保护用户看到的时长边界及切换语言，不回归为另一套 HH:MM:SS 格式。
+    #[test]
+    fn sidebar_uptime_matches_reference_units_and_language() {
+        use veyra_core::domain::DesktopLanguage as L;
+        for (seconds, expected) in [
+            (0, "0秒"),
+            (59, "59秒"),
+            (60, "1分钟"),
+            (3599, "59分钟"),
+            (3600, "1小时"),
+            (3660, "1小时1分钟"),
+        ] {
+            assert_eq!(
+                super::sidebar_uptime(seconds, L::SimplifiedChinese),
+                expected
+            );
+        }
+        assert_eq!(
+            super::sidebar_uptime(3660, L::TraditionalChinese),
+            "1小時1分鐘"
+        );
+        assert_eq!(super::sidebar_uptime(3660, L::English), "1h1m");
+    }
 
     #[test]
     fn sidebar_moves_between_exact_endpoints_and_finishes() {
@@ -719,5 +799,52 @@ mod runtime_action_tests {
                 .into_iter()
                 .all(|c| !super::super::backend::action_is_busy(None, c))
         );
+    }
+}
+
+#[cfg(test)]
+mod sidebar_stats_tests {
+    use super::sidebar_stats;
+    use veyra_core::application::{
+        observability::controller::{Identity, ObservationService, Traffic},
+        runtime_snapshot::InstanceId,
+    };
+    // 保护侧栏六项映射、未知不能假冒零、旧实例清除以及断流不能继续显示旧速率。
+    #[test]
+    fn stats_use_owned_snapshot_and_hide_unknown_or_old_instance() {
+        let id = InstanceId("owned-sidebar".into());
+        let mut snapshot = ObservationService::new().snapshot();
+        assert_eq!(sidebar_stats(Some(&snapshot), Some(&id)), ["—"; 6]);
+        snapshot.identity = Some(Identity {
+            instance_id: id.clone(),
+            generation: 1,
+        });
+        snapshot.available = [true; 4];
+        snapshot.memory_bytes = Some(16 * 1024 * 1024);
+        snapshot.connection_count = Some(3);
+        snapshot.traffic = Some(Traffic {
+            interval_ms: 1000,
+            upload_bytes_per_second: 1200,
+            download_bytes_per_second: 0,
+            session_upload_bytes: 123456,
+            session_download_bytes: 0,
+        });
+        assert_eq!(
+            sidebar_stats(Some(&snapshot), Some(&id)),
+            ["3", "16 MiB", "0 B", "0 B/s", "123.46 kB", "1.2 kB/s"]
+        );
+        assert_eq!(
+            sidebar_stats(Some(&snapshot), Some(&InstanceId("replaced".into()))),
+            ["—"; 6]
+        );
+        snapshot.available[0] = false;
+        let values = sidebar_stats(Some(&snapshot), Some(&id));
+        assert_eq!(values[3], "—");
+        assert_eq!(values[5], "—");
+        assert_eq!(values[4], "123.46 kB");
+        snapshot.available[0] = true;
+        snapshot.traffic.as_mut().unwrap().interval_ms = 0;
+        assert_eq!(sidebar_stats(Some(&snapshot), Some(&id))[3], "—");
+        assert_eq!(sidebar_stats(Some(&snapshot), None), ["—"; 6]);
     }
 }

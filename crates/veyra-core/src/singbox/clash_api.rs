@@ -336,7 +336,8 @@ impl<'secret> ClashApiClient<'secret> {
         let value: Delay =
             serde_json::from_slice(&bytes).map_err(|_| ClashApiError::InvalidResponse)?;
         self.authorization()?; // 迟到响应不能授权已撤销的 controller。
-        Ok((value.delay > 0).then_some(value.delay))
+        // P2-08 必须区分返回零值与从未测试；零值仍不能当作成功。
+        Ok(Some(value.delay))
     }
 
     /// 只读取累计流量和连接数量；每个连接对象在解析时被 `IgnoredAny` 丢弃。
@@ -411,6 +412,21 @@ impl<'secret> ClashApiClient<'secret> {
             .await
             .map(|response| response.now)
             .map_err(|_| ClashApiError::InvalidResponse)
+    }
+
+    /// owner 只读元数据：仅 GET /proxies/{已应用 tag}，不开放任意 URL 或响应对象。
+    /// Option<bool> 保留缺失字段；非布尔响应由现有 JSON 边界拒绝，不默认 UDP 能力。
+    pub(crate) async fn read_proxy_udp(
+        &self,
+        outbound_tag: &str,
+    ) -> Result<Option<bool>, ClashApiError> {
+        #[derive(Deserialize)]
+        struct ProxyMetadata {
+            udp: Option<bool>,
+        }
+        let url = selector_url_at(&self.url("/", false), outbound_tag)?;
+        let response: ProxyMetadata = self.get_json(url.as_str()).await?;
+        Ok(response.udp)
     }
 
     /// 只调用当前 artifact 的只读健康 selector；批次算法仍由内核 URLTestOutbounds 实现。

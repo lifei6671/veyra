@@ -24,6 +24,7 @@ pub struct RunningProxy {
     address: SocketAddr,
     valid: Arc<tokio::sync::watch::Sender<bool>>,
     pub(crate) controller: Option<Arc<crate::singbox::clash_api::ManagedControllerEndpoint>>,
+    pub(crate) applied_index: Option<Arc<crate::singbox::AppliedArtifactIndex>>,
     pub(crate) nodes: std::collections::BTreeMap<crate::domain::NodeId, String>,
 }
 impl std::fmt::Debug for RunningProxy {
@@ -65,6 +66,7 @@ impl RunningProxy {
             valid: Arc::new(valid),
             controller: None,
             nodes: Default::default(),
+            applied_index: None,
         })
     }
     // 历史 P0 harness 和本地 fixture 专用；正式调用方只能消费 owner 的能力。

@@ -161,6 +161,8 @@ pub(crate) enum SelectionDto {
 pub(crate) enum MatcherDto {
     Domain(Vec<String>),
     DomainSuffix(Vec<String>),
+    DomainKeyword(Vec<String>),
+    RuleSet(Vec<String>),
     Application(Vec<String>),
     IpCidr(Vec<String>),
     Port(Vec<u16>),
@@ -1274,6 +1276,8 @@ fn validate_matcher(v: &MatcherDto) -> Result<(), MutationError> {
     match v {
         MatcherDto::Domain(x)
         | MatcherDto::DomainSuffix(x)
+        | MatcherDto::DomainKeyword(x)
+        | MatcherDto::RuleSet(x)
         | MatcherDto::Application(x)
         | MatcherDto::IpCidr(x) => {
             if x.is_empty() || x.len() > MAX_MATCHER_VALUES {
@@ -1742,6 +1746,8 @@ impl From<&TrafficMatcher> for MatcherDto {
         match v {
             TrafficMatcher::Domain(x) => Self::Domain(x.clone()),
             TrafficMatcher::DomainSuffix(x) => Self::DomainSuffix(x.clone()),
+            TrafficMatcher::DomainKeyword(x) => Self::DomainKeyword(x.clone()),
+            TrafficMatcher::RuleSet(x) => Self::RuleSet(x.clone()),
             TrafficMatcher::Application(x) => Self::Application(x.clone()),
             TrafficMatcher::IpCidr(x) => Self::IpCidr(x.clone()),
             TrafficMatcher::Port(x) => Self::Port(x.clone()),
@@ -1761,6 +1767,8 @@ impl From<MatcherDto> for TrafficMatcher {
         match v {
             MatcherDto::Domain(x) => Self::Domain(trim_values(x)),
             MatcherDto::DomainSuffix(x) => Self::DomainSuffix(trim_values(x)),
+            MatcherDto::DomainKeyword(x) => Self::DomainKeyword(trim_values(x)),
+            MatcherDto::RuleSet(x) => Self::RuleSet(trim_values(x)),
             MatcherDto::Application(x) => Self::Application(trim_values(x)),
             MatcherDto::IpCidr(x) => Self::IpCidr(trim_values(x)),
             MatcherDto::Port(x) => Self::Port(x),

@@ -86,7 +86,8 @@ mod tests {
                 .as_object()
                 .unwrap()
                 .len(),
-            14
+            // 当前 P4 已加入 groups；查询 seam 本身仍不新增任何持久字段。
+            15
         );
         state.default_target = RouteTarget::Block;
         let saved = store.commit(&state).unwrap();

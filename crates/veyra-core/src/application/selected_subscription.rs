@@ -77,6 +77,9 @@ pub fn project_selected_runtime(
     {
         return Err(SelectionProjectionError::SelectionConflict);
     }
+    if state.profile.routing.selector(&implicit_pool_id).is_some() {
+        return Err(SelectionProjectionError::SelectionConflict);
+    }
     let mut pools = vec![RuntimePool {
         id: implicit_pool_id.clone(),
         members: sorted_node_ids(&selected_node_ids),
@@ -156,9 +159,13 @@ pub fn project_selected_runtime(
         }
     }
     // 选定订阅的明确默认策略是既有 projection 行为；目录自身永不猜默认值。
-    let projected_default_target = match &state.default_target {
-        RouteTarget::Unconfigured => RouteTarget::Pool(implicit_pool_id),
-        target => target.clone(),
+    let projected_default_target = if let Some(fallback) = &state.profile.routing.fallback {
+        RouteTarget::Pool(fallback.id.clone())
+    } else {
+        match &state.default_target {
+            RouteTarget::Unconfigured => RouteTarget::Pool(implicit_pool_id),
+            target => target.clone(),
+        }
     };
     catalog
         .resolve(&projected_default_target)

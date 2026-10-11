@@ -221,6 +221,7 @@ impl AppState {
                 .iter()
                 .map(|p| &p.id)
                 .chain(self.groups.iter().filter(|g| !g.builtin()).map(|g| &g.id))
+                .chain(self.profile.routing.selectors().map(|p| &p.id))
                 .collect();
             for rule in &custom.rules {
                 rule.target.validate(&pool_ids)?;
@@ -233,8 +234,10 @@ impl AppState {
             self.pools
                 .iter()
                 .map(|value| &value.id)
-                .chain(self.groups.iter().filter(|g| !g.builtin()).map(|g| &g.id)),
+                .chain(self.groups.iter().filter(|g| !g.builtin()).map(|g| &g.id))
+                .chain(self.profile.routing.selectors().map(|p| &p.id)),
         )?;
+        self.validate_target_routing()?;
         self.validate_groups()
             .map_err(|_| StateValidationError::InvalidFilter)?;
         unique_ids(self.routes.iter().map(|value| &value.id))?;
@@ -1035,6 +1038,9 @@ pub struct RoutePolicy {
 pub enum TrafficMatcher {
     Domain(Vec<String>),
     DomainSuffix(Vec<String>),
+    DomainKeyword(Vec<String>),
+    /// 随包规则集的稳定标签；内容随应用发布，不依赖在线下载。
+    RuleSet(Vec<String>),
     Application(Vec<String>),
     IpCidr(Vec<String>),
     Port(Vec<u16>),
@@ -1042,16 +1048,23 @@ pub enum TrafficMatcher {
 }
 
 impl TrafficMatcher {
-    fn is_valid(&self) -> bool {
+    pub(crate) fn is_valid(&self) -> bool {
         match self {
             Self::Domain(values)
             | Self::DomainSuffix(values)
+            | Self::DomainKeyword(values)
             | Self::Application(values)
             | Self::IpCidr(values) => {
                 values.iter().all(|value| !value.trim().is_empty()) && !values.is_empty()
             }
             Self::Port(values) => values.iter().all(|value| *value > 0) && !values.is_empty(),
             Self::Protocol(values) => !values.is_empty(),
+            Self::RuleSet(values) => {
+                !values.is_empty()
+                    && values
+                        .iter()
+                        .all(|tag| super::builtin_defaults::rule_set(tag).is_some())
+            }
         }
     }
 }

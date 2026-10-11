@@ -33,3 +33,9 @@ pub mod shares;
 pub mod failover;
 
 pub mod network;
+
+pub mod proxies;
+
+pub mod draft_latency;
+
+pub mod applied_proxy_facts;

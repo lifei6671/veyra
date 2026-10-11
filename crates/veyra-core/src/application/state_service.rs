@@ -45,15 +45,21 @@ impl SnapshotService {
         Self { store, gate }
     }
     fn lock(&self) -> Result<std::sync::MutexGuard<'_, ()>, AppError> {
-        self.gate
-            .try_lock()
-            .map_err(|_| AppError::new(AppErrorCode::StorageFailed).with_detail(ErrorDetail::Busy))
+        self.gate.try_lock().map_err(|_error| {
+            // 仅诊断原失败：区分争用 Busy 与锁失效 Unavailable，不改既有错误映射或重读。
+            #[cfg(debug_assertions)]
+            eprintln!(
+                "state-access-lock error={_error:?} thread={:?}",
+                std::thread::current().id()
+            );
+            AppError::new(AppErrorCode::StorageFailed).with_detail(ErrorDetail::Busy)
+        })
     }
     fn load_or_initialize(&self) -> Result<AppState, AppError> {
         if self.store.has_snapshot_or_backup()? {
             return self.store.load().map_err(Into::into);
         }
-        let state = AppState::try_empty()?;
+        let state = crate::domain::builtin_defaults::new_builtin_state()?;
         self.store.save(&state)?;
         Ok(state)
     }
@@ -210,6 +216,94 @@ impl SnapshotService {
         Ok(GroupSaveOutcome {
             version: saved.version(),
             dropped: saved.dropped_groups(),
+            value: saved,
+            effect: ApplyEffect::SavedOnly,
+        })
+    }
+    /// 目标分流 CRUD/命中排序保存同一 ProfileRouting 数组；只反馈 Saved，不驱动 Runtime。
+    pub fn save_routing(
+        &self,
+        expected: ConfigVersion,
+        routing: crate::domain::ProfileRouting,
+    ) -> Result<SaveOutcome<AppState, ConfigVersion>, AppError> {
+        self.save_routing_with_order(expected, routing, None)
+    }
+    /// 只恢复目标分流及其显示顺序；保留订阅、出站、其它Profile和偏好。
+    pub fn restore_target_routing(
+        &self,
+        expected: ConfigVersion,
+    ) -> Result<SaveOutcome<AppState, ConfigVersion>, AppError> {
+        self.save_routing_with_order(
+            expected,
+            crate::domain::builtin_defaults::default_target_routing(),
+            Some(crate::domain::builtin_defaults::default_strategy_order()),
+        )
+    }
+    fn save_routing_with_order(
+        &self,
+        expected: ConfigVersion,
+        routing: crate::domain::ProfileRouting,
+        restored_order: Option<Vec<String>>,
+    ) -> Result<SaveOutcome<AppState, ConfigVersion>, AppError> {
+        let _guard = self.lock()?;
+        let mut next = self.load_or_initialize()?;
+        next.config_version().0.require(&expected.0)?;
+        let old_selectors = next.runtime_groups();
+        let old_policy_ids = next
+            .profile
+            .routing
+            .selectors()
+            .map(|p| p.id.clone())
+            .collect::<std::collections::HashSet<_>>();
+        next.profile.routing = routing;
+        let selectors = next.runtime_groups();
+        for (id, selection) in &next.group_selections {
+            if selection.pending.is_some()
+                && !selectors
+                    .iter()
+                    .any(|g| &g.id == id && old_selectors.iter().any(|old| old == g))
+            {
+                return Err(AppError::validation(FieldPath::Routing));
+            }
+        }
+        if let Some(order) = restored_order {
+            let reset_ids = next
+                .profile
+                .routing
+                .selectors()
+                .map(|p| p.id.clone())
+                .collect::<std::collections::HashSet<_>>();
+            // 即使重复恢复同一份配置，也不能清掉尚未确认的 Controller 选择。
+            if next.group_selections.iter().any(|(id, selection)| {
+                selection.pending.is_some()
+                    && (old_policy_ids.contains(id) || reset_ids.contains(id))
+            }) {
+                return Err(AppError::validation(FieldPath::Routing));
+            }
+            next.group_selections
+                .retain(|id, _| !old_policy_ids.contains(id) && !reset_ids.contains(id));
+            next.app_config.behavior.proxy_view.strategy_order = order;
+        }
+        next.group_selections.retain(|id, selection| {
+            let Some(selector) = selectors.iter().find(|g| &g.id == id) else {
+                return false;
+            };
+            if selection
+                .selected
+                .as_ref()
+                .is_some_and(|m| !selector.members.contains(m))
+            {
+                selection.selected = None;
+                selection.mode = crate::domain::GroupSelectionMode::Auto;
+            }
+            true
+        });
+        next.validate()
+            .map_err(|_| AppError::validation(FieldPath::Routing))?;
+        let saved = self.store.commit(&next)?;
+        Ok(SaveOutcome {
+            version: saved.config_version(),
+            // 同一 gate 返回已提交权威快照；UI 不再二次读取并把 Busy 冒充保存失败。
             value: saved,
             effect: ApplyEffect::SavedOnly,
         })
@@ -666,6 +760,136 @@ mod behavior_tests {
         let prefs = DesktopPreferencesService::new(snapshots.clone());
         (root, snapshots, prefs)
     }
+    // 新安装与新 AppState 的 UI 默认 HTTPS 实际落盘/重开；Runtime/group health 不随之改变。
+    #[test]
+    fn new_ui_latency_https_default_survives_real_store_reopen() {
+        let fresh = AppState::try_empty().unwrap();
+        assert_eq!(
+            fresh.app_config.behavior.latency.test_url.0,
+            "https://www.gstatic.com/generate_204"
+        );
+        let (root, snapshots, preferences) = services();
+        let initial = snapshots.snapshot().unwrap(); // 首次生产初始化真实写入 state.json。
+        assert_eq!(
+            initial.app_config.behavior.latency,
+            fresh.app_config.behavior.latency
+        );
+        assert_eq!(initial.app_config.behavior.latency.timeout_ms, 5000);
+        assert_eq!(
+            initial.profile.test_url.as_str(),
+            "http://www.gstatic.com/generate_204"
+        );
+        assert_eq!(initial.groups, fresh.groups);
+        assert!(initial.groups.is_empty());
+        let path = root.join("state.json");
+        let bytes = std::fs::read(&path).unwrap();
+        let modified = std::fs::metadata(&path).unwrap().modified().unwrap();
+        drop(preferences);
+        drop(snapshots);
+        let store = JsonStateStore::new(path.clone()).unwrap();
+        assert_eq!(store.load().unwrap(), initial);
+        let reopened = SnapshotService::new(store, StateAccessGate::default());
+        assert_eq!(reopened.snapshot().unwrap(), initial);
+        assert_eq!(std::fs::read(&path).unwrap(), bytes);
+        assert_eq!(
+            std::fs::metadata(&path).unwrap().modified().unwrap(),
+            modified
+        );
+        drop(reopened);
+        std::fs::remove_dir_all(root).unwrap();
+    }
+
+    // 已真正保存的 HTTP 不迁移；读、无关行为 patch 和语言保存后重建服务仍保原值。
+    #[test]
+    fn saved_http_latency_survives_reopen_unrelated_patch_and_language_save() {
+        let (root, snapshots, preferences) = services();
+        let path = root.join("state.json");
+        let mut old = AppState::try_empty().unwrap();
+        old.app_config.behavior.latency.test_url =
+            UiLatencyUrl("http://www.gstatic.com/generate_204?user=saved".into());
+        old.groups = default_groups();
+        old.groups
+            .iter_mut()
+            .find(|g| g.id == PoolId("all-auto".into()))
+            .unwrap()
+            .test_url = "http://group.example.invalid/health".into();
+        JsonStateStore::new(path.clone())
+            .unwrap()
+            .save(&old)
+            .unwrap();
+        drop(preferences);
+        drop(snapshots);
+        let bytes = std::fs::read(&path).unwrap();
+        let modified = std::fs::metadata(&path).unwrap().modified().unwrap();
+        let store = JsonStateStore::new(path.clone()).unwrap();
+        assert_eq!(store.load().unwrap(), old);
+        let reopened = SnapshotService::new(store, StateAccessGate::default());
+        assert_eq!(reopened.snapshot().unwrap(), old);
+        let preferences = DesktopPreferencesService::new(reopened.clone());
+        assert_eq!(
+            preferences
+                .behavior_snapshot()
+                .unwrap()
+                .value
+                .latency
+                .test_url,
+            old.app_config.behavior.latency.test_url
+        );
+        assert_eq!(std::fs::read(&path).unwrap(), bytes);
+        assert_eq!(
+            std::fs::metadata(&path).unwrap().modified().unwrap(),
+            modified
+        );
+        let patched = preferences
+            .patch_behavior(
+                old.config_version(),
+                DesktopBehaviorPreferencesPatch {
+                    hide_unavailable: Some(true),
+                    ..Default::default()
+                },
+            )
+            .unwrap();
+        assert_eq!(patched.effect, ApplyEffect::SavedOnly);
+        let mut expected = old.clone();
+        expected.app_config.behavior.proxy_view.hide_unavailable = true;
+        expected.config_revision += 1;
+        assert_eq!(patched.value, expected);
+        for language in [
+            DesktopLanguage::English,
+            DesktopLanguage::TraditionalChinese,
+        ] {
+            let mut visual = expected.app_config.visual.clone();
+            visual.language = language;
+            let saved = preferences
+                .save(expected.config_version(), visual.clone())
+                .unwrap();
+            expected.app_config.visual = visual;
+            expected.config_revision += 1;
+            assert_eq!(saved.value, expected);
+        }
+        drop(preferences);
+        drop(reopened);
+        let bytes = std::fs::read(&path).unwrap();
+        let modified = std::fs::metadata(&path).unwrap().modified().unwrap();
+        let store = JsonStateStore::new(path.clone()).unwrap();
+        assert_eq!(store.load().unwrap(), expected);
+        let reopened = SnapshotService::new(store, StateAccessGate::default());
+        let restored = reopened.snapshot().unwrap();
+        assert_eq!(restored, expected);
+        assert_eq!(
+            restored.app_config.behavior.latency,
+            old.app_config.behavior.latency
+        );
+        assert_eq!(restored.profile, old.profile);
+        assert_eq!(restored.groups, old.groups);
+        assert_eq!(std::fs::read(&path).unwrap(), bytes);
+        assert_eq!(
+            std::fs::metadata(&path).unwrap().modified().unwrap(),
+            modified
+        );
+        drop(reopened);
+        std::fs::remove_dir_all(root).unwrap();
+    }
     #[test]
     fn save_reload_versions_noop_and_stale_cas() {
         let (root, s, p) = services();
@@ -789,6 +1013,46 @@ mod behavior_tests {
         let c = s.snapshot().unwrap();
         assert!(c.profile.ipv6);
         assert!(c.app_config.behavior.diagnostics.ipv6_test);
+        std::fs::remove_dir_all(root).unwrap();
+    }
+    // 保护手输宽度：真实偏好提交/事件/磁盘重建都保留3030等值，且不修改其它配置或选择。
+    #[test]
+    fn policy85_typed_width_persists_without_legacy_bounds() {
+        let (root, snapshots, preferences) = services();
+        let mut state = snapshots.snapshot().unwrap();
+        let mut events = preferences.subscribe_behavior();
+        for width in [1, 99, 321, 3030, 30300, 303030, u32::MAX] {
+            let saved = preferences
+                .patch_behavior(
+                    state.config_version(),
+                    DesktopBehaviorPreferencesPatch {
+                        node_card_min_width: Some(width),
+                        ..Default::default()
+                    },
+                )
+                .unwrap();
+            state.app_config.behavior.proxy_view.node_card_min_width = width;
+            state.config_revision += 1;
+            assert_eq!(saved.value, state);
+            let event = events.try_recv().unwrap();
+            assert_eq!(event.fields, [BehaviorField::NodeWidth]);
+            assert_eq!(event.value.proxy_view.node_card_min_width, width);
+            let reopened = JsonStateStore::new(root.join("state.json")).unwrap();
+            assert_eq!(reopened.load().unwrap(), state);
+        }
+        let bytes = std::fs::read(root.join("state.json")).unwrap();
+        assert!(
+            preferences
+                .patch_behavior(
+                    state.config_version(),
+                    DesktopBehaviorPreferencesPatch {
+                        node_card_min_width: Some(0),
+                        ..Default::default()
+                    }
+                )
+                .is_err()
+        );
+        assert_eq!(std::fs::read(root.join("state.json")).unwrap(), bytes);
         std::fs::remove_dir_all(root).unwrap();
     }
     #[test]

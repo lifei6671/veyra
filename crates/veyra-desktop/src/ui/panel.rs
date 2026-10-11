@@ -294,7 +294,7 @@ impl PanelView {
             .child(
                 div()
                     .text_size(px(16.))
-                    .font_weight(FontWeight::SEMIBOLD)
+                    .font_weight(crate::ui::tokens::FONT_SEMIBOLD)
                     .child(l("通用", "General", "通用")),
             )
             .child(row(
@@ -362,17 +362,24 @@ impl PanelView {
                     .items_center()
                     .gap_3()
                     .child(
-                        button("radius-down", "−").on_click(cx.listener(|this, _, _, cx| {
-                            this.draft.global_radius = this.draft.global_radius.saturating_sub(1);
-                            this.changed(cx);
-                        })),
+                        button("radius-down", "−")
+                            .accessibility_label(tr(cx, "缩小 1px"))
+                            .tooltip(tr(cx, "缩小 1px"))
+                            .on_click(cx.listener(|this, _, _, cx| {
+                                this.draft.global_radius =
+                                    this.draft.global_radius.saturating_sub(1);
+                                this.changed(cx);
+                            })),
                     )
                     .child(format!("{} px", self.draft.global_radius))
                     .child(
-                        button("radius-up", "+").on_click(cx.listener(|this, _, _, cx| {
-                            this.draft.global_radius = (this.draft.global_radius + 1).min(24);
-                            this.changed(cx);
-                        })),
+                        button("radius-up", "+")
+                            .accessibility_label(tr(cx, "加大 1px"))
+                            .tooltip(tr(cx, "加大 1px"))
+                            .on_click(cx.listener(|this, _, _, cx| {
+                                this.draft.global_radius = (this.draft.global_radius + 1).min(24);
+                                this.changed(cx);
+                            })),
                     ),
             ))
             .child(row(
@@ -558,6 +565,7 @@ impl Render for PanelView {
                             .rounded_l_none()
                             .child(icon("ArrowUpTray", t::ICON_SMALL))
                             .accessibility_label(tr(cx, "上传面板背景"))
+                            .tooltip(tr(cx, "上传面板背景"))
                             .on_click(cx.listener(|_, _, _, cx| cx.emit(PanelEvent::ChooseImage))),
                     ),
             )
@@ -586,6 +594,8 @@ impl Render for PanelView {
             .h(px(t::CONTROL))
             .child(
                 button("radius-down", "-")
+                    .accessibility_label(tr(cx, "缩小 1px"))
+                    .tooltip(tr(cx, "缩小 1px"))
                     .rounded_r(px(0.))
                     .w(px(crate::ui::tokens::COLUMN_GAP))
                     .disabled(self.draft.global_radius == 0)
@@ -610,6 +620,8 @@ impl Render for PanelView {
             )
             .child(
                 button("radius-up", "+")
+                    .accessibility_label(tr(cx, "加大 1px"))
+                    .tooltip(tr(cx, "加大 1px"))
                     .rounded_l(px(0.))
                     .ml(px(-1.))
                     .w(px(crate::ui::tokens::COLUMN_GAP))

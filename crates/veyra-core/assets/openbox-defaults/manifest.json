@@ -1,0 +1,280 @@
+[
+  {
+    "tag": "geosite-youtube",
+    "entries": 178,
+    "types": {
+      "domain": 1,
+      "domain_suffix": 177
+    },
+    "sha256": "200149e2b50c14f61909fa1a47c4abef647180edd99e4e9443adf1324e204e8b",
+    "bytes": 2803,
+    "source": "/api/openbox/rulesets/entries?tag=geosite-youtube",
+    "all_pages_verified": true
+  },
+  {
+    "tag": "geosite-category-ai-!cn",
+    "entries": 188,
+    "types": {
+      "domain": 30,
+      "domain_suffix": 157,
+      "domain_regex": 1
+    },
+    "sha256": "fc5706c97befb933a24f3803e8d0090ebf165ea745fc49632052b47f6527188f",
+    "bytes": 3806,
+    "source": "/api/openbox/rulesets/entries?tag=geosite-category-ai-!cn",
+    "all_pages_verified": true
+  },
+  {
+    "tag": "geosite-tiktok",
+    "entries": 37,
+    "types": {
+      "domain": 6,
+      "domain_suffix": 31
+    },
+    "sha256": "713d1d066301aba9c1e7351590003abb671ca976bfce1f5640f2690752c475c4",
+    "bytes": 843,
+    "source": "/api/openbox/rulesets/entries?tag=geosite-tiktok",
+    "all_pages_verified": true
+  },
+  {
+    "tag": "geosite-tiktok@!cn",
+    "entries": 36,
+    "types": {
+      "domain": 6,
+      "domain_suffix": 30
+    },
+    "sha256": "afff47b9022b79bb6b67d4141f50a5f86f9af957d52b602e26de9dafc2027802",
+    "bytes": 820,
+    "source": "/api/openbox/rulesets/entries?tag=geosite-tiktok@!cn",
+    "all_pages_verified": true
+  },
+  {
+    "tag": "geosite-netflix",
+    "entries": 28,
+    "types": {
+      "domain": 1,
+      "domain_suffix": 23,
+      "domain_regex": 4
+    },
+    "sha256": "65e38d0d55460f52ec9d41eb8e149597522d0d68982cb2d3ade806fbe82b5dc6",
+    "bytes": 751,
+    "source": "/api/openbox/rulesets/entries?tag=geosite-netflix",
+    "all_pages_verified": true
+  },
+  {
+    "tag": "geoip-netflix",
+    "entries": 120,
+    "types": {
+      "ip_cidr": 120
+    },
+    "sha256": "3ca78a2ce6e503c5f508d3423f8155c9db6a74964cc1553fc7a5c8c91e0be81c",
+    "bytes": 2497,
+    "source": "/api/openbox/rulesets/entries?tag=geoip-netflix",
+    "all_pages_verified": true
+  },
+  {
+    "tag": "geosite-github",
+    "entries": 64,
+    "types": {
+      "domain": 32,
+      "domain_suffix": 32
+    },
+    "sha256": "69d8eef8a7daeb1de2f99f93b9d57f081290eaeb971a1353d507542a10458940",
+    "bytes": 2046,
+    "source": "/api/openbox/rulesets/entries?tag=geosite-github",
+    "all_pages_verified": true
+  },
+  {
+    "tag": "geosite-google",
+    "entries": 1051,
+    "types": {
+      "domain": 210,
+      "domain_suffix": 839,
+      "domain_regex": 2
+    },
+    "sha256": "536b1dab7550730769819cbc1675afc0cc66a7145af17f2abe5215effcf8d360",
+    "bytes": 18451,
+    "source": "/api/openbox/rulesets/entries?tag=geosite-google",
+    "all_pages_verified": true
+  },
+  {
+    "tag": "geosite-microsoft",
+    "entries": 749,
+    "types": {
+      "domain": 113,
+      "domain_suffix": 633,
+      "domain_keyword": 3
+    },
+    "sha256": "556be61d22abe04454b90be044a97f73ab7dffc449d32727f08a0a0e2829b7a3",
+    "bytes": 15775,
+    "source": "/api/openbox/rulesets/entries?tag=geosite-microsoft",
+    "all_pages_verified": true
+  },
+  {
+    "tag": "geosite-apple",
+    "entries": 1789,
+    "types": {
+      "domain": 248,
+      "domain_suffix": 1541
+    },
+    "sha256": "b3dd4fb0119920fab81a8cae7bd5f8a3faed0cec82691291ca1924d2bec46dfa",
+    "bytes": 37334,
+    "source": "/api/openbox/rulesets/entries?tag=geosite-apple",
+    "all_pages_verified": true
+  },
+  {
+    "tag": "geosite-steam",
+    "entries": 60,
+    "types": {
+      "domain": 19,
+      "domain_suffix": 41
+    },
+    "sha256": "6ddf99d17658c7ff3bd395f74def752b5895fd239a4e4ddc9c248956f25c6951",
+    "bytes": 1466,
+    "source": "/api/openbox/rulesets/entries?tag=geosite-steam",
+    "all_pages_verified": true
+  },
+  {
+    "tag": "geosite-sony",
+    "entries": 115,
+    "types": {
+      "domain_suffix": 115
+    },
+    "sha256": "9d6903ccf4bc847a4600d2646435c5f1484076fe835c0b8668983d1f872822ea",
+    "bytes": 1731,
+    "source": "/api/openbox/rulesets/entries?tag=geosite-sony",
+    "all_pages_verified": true
+  },
+  {
+    "tag": "geosite-gfw",
+    "entries": 4370,
+    "types": {
+      "domain_suffix": 4370
+    },
+    "sha256": "5e8729abd75db8e6361dcd1f4c20ebc61ab27949dc568f0b91a5f737ce926964",
+    "bytes": 67323,
+    "source": "/api/openbox/rulesets/entries?tag=geosite-gfw",
+    "all_pages_verified": true
+  },
+  {
+    "tag": "geoip-cloudflare",
+    "entries": 706,
+    "types": {
+      "ip_cidr": 706
+    },
+    "sha256": "71ea36df6a1bc33a74ef52fece164437e133af836ff9c97a5424a1cdef730b95",
+    "bytes": 12590,
+    "source": "/api/openbox/rulesets/entries?tag=geoip-cloudflare",
+    "all_pages_verified": true
+  },
+  {
+    "tag": "geoip-facebook",
+    "entries": 120,
+    "types": {
+      "ip_cidr": 120
+    },
+    "sha256": "8196a57c1733cfe1be114d6ba5c57216e51b2d0ebe0c10facda320b222a86efa",
+    "bytes": 2356,
+    "source": "/api/openbox/rulesets/entries?tag=geoip-facebook",
+    "all_pages_verified": true
+  },
+  {
+    "tag": "geoip-cloudfront",
+    "entries": 211,
+    "types": {
+      "ip_cidr": 211
+    },
+    "sha256": "fc151c4594d5a6f75dc6951c1539ad0dc5da5314c45a43d8be223847e2bf0213",
+    "bytes": 3903,
+    "source": "/api/openbox/rulesets/entries?tag=geoip-cloudfront",
+    "all_pages_verified": true
+  },
+  {
+    "tag": "geoip-fastly",
+    "entries": 90,
+    "types": {
+      "ip_cidr": 90
+    },
+    "sha256": "c30791ded24ce4189a86ef6652aab1d37de2eff2cff71ff171c1d1343acceadb",
+    "bytes": 1753,
+    "source": "/api/openbox/rulesets/entries?tag=geoip-fastly",
+    "all_pages_verified": true
+  },
+  {
+    "tag": "geoip-google",
+    "entries": 8403,
+    "types": {
+      "ip_cidr": 8403
+    },
+    "sha256": "9d3a92c7f1095a91b772af27e36cca6a15711f6d5bcd39e494eedc803e0c1b0a",
+    "bytes": 194633,
+    "source": "/api/openbox/rulesets/entries?tag=geoip-google",
+    "all_pages_verified": true
+  },
+  {
+    "tag": "geoip-telegram",
+    "entries": 12,
+    "types": {
+      "ip_cidr": 12
+    },
+    "sha256": "b6ad0957794eb101b2ca3ff7124261aae7408799bb0d8f5c98bb319983a1a690",
+    "bytes": 255,
+    "source": "/api/openbox/rulesets/entries?tag=geoip-telegram",
+    "all_pages_verified": true
+  },
+  {
+    "tag": "geoip-tor",
+    "entries": 786,
+    "types": {
+      "ip_cidr": 786
+    },
+    "sha256": "bdd7e6fcb610173bb0ac11cbeaf36906880c1577adeb2f98c463323a1ffa5714",
+    "bytes": 15092,
+    "source": "/api/openbox/rulesets/entries?tag=geoip-tor",
+    "all_pages_verified": true
+  },
+  {
+    "tag": "geoip-twitter",
+    "entries": 19,
+    "types": {
+      "ip_cidr": 19
+    },
+    "sha256": "cd292b23273b78334afb4acfaa839b9fe4b2a8704d30c19499c824cdefeef287",
+    "bytes": 383,
+    "source": "/api/openbox/rulesets/entries?tag=geoip-twitter",
+    "all_pages_verified": true
+  },
+  {
+    "tag": "geosite-cn",
+    "entries": 111224,
+    "types": {
+      "domain_suffix": 111224
+    },
+    "sha256": "c11e9d2b45006cc35fe065b459bf85683887442aa8d492120852d026aa953a7b",
+    "bytes": 1630655,
+    "source": "/api/openbox/rulesets/entries?tag=geosite-cn",
+    "all_pages_verified": true
+  },
+  {
+    "tag": "geoip-cn",
+    "entries": 9612,
+    "types": {
+      "ip_cidr": 9612
+    },
+    "sha256": "b3048e2b68efc6789587d0523a62184ad7b3db7fbb19c6bab58f5c9cbbe9568d",
+    "bytes": 172347,
+    "source": "/api/openbox/rulesets/entries?tag=geoip-cn",
+    "all_pages_verified": true
+  },
+  {
+    "tag": "geoip-private",
+    "entries": 18,
+    "types": {
+      "ip_cidr": 18
+    },
+    "sha256": "2f40a6edb38430148c3060a87caca386858528a4f43ff85a5e7c7ec345d9dcae",
+    "bytes": 298,
+    "source": "/api/openbox/rulesets/entries?tag=geoip-private",
+    "all_pages_verified": true
+  }
+]

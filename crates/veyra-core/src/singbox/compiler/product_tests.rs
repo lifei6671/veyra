@@ -636,6 +636,8 @@ fn p202b_subscription_ip_bootstrap_and_custom_profile_routes_are_mapped() {
         assert!(!serde_json::to_string(&d).unwrap().contains("private"));
     }
     s.profile.routing.custom = Some(CustomRouting {
+        icon: String::new(),
+        icon_scale: 0,
         name: None,
         enabled: true,
         rules: vec![CustomRoutingRule {
@@ -795,6 +797,8 @@ fn p202b_projection_cross_subscription_pool_adds_only_matching_nodes_and_provide
         enabled: true,
     });
     s.profile.routing.custom = Some(CustomRouting {
+        icon: String::new(),
+        icon_scale: 0,
         name: None,
         enabled: true,
         rules: vec![CustomRoutingRule {
@@ -940,6 +944,8 @@ fn p202b_projection_rejects_missing_default_unavailable_members_and_unconfigured
 fn p202b_projection_profile_custom_rule_outside_runtime_closure_is_rejected() {
     let mut s = selected_state();
     s.profile.routing.custom = Some(CustomRouting {
+        icon: String::new(),
+        icon_scale: 0,
         name: None,
         enabled: true,
         rules: vec![CustomRoutingRule {
@@ -1025,4 +1031,272 @@ fn p403_health_projection_flattens_nested_urltest_without_selection_contract() {
     // auto 选路仍是原生 URLTest；完整恢复 artifact 保持封闭校验。
     assert!(compiled.document.outbounds.iter().any(|o|matches!(o,CoreOutbound::Urltest(v) if v.tag==pool_tag(&group.lanes[1].pool_id(&group.id).0))));
     assert!(SingBoxPlan::recover(&compiled.recovery_bytes().unwrap(), &resources()).is_ok());
+}
+
+// 保护策略真实Selector/统一目录/规则顺序与兜底，既有前置在策略之前，停用不编译。
+#[test]
+fn policy33_routing_catalog_compiler_order_fallback_and_old_default() {
+    let mut s = state();
+    s.active_subscription_id = Some(s.subscriptions[0].id.clone());
+    let old = crate::application::selected_subscription::project_selected_runtime(&s).unwrap();
+    let mut a = TargetRoutingPolicy::new(PoolId("routing-a".into()));
+    a.name = "规则甲".into();
+    a.icon = "globe:earth-asia".into();
+    a.icon_scale = -2;
+    a.matchers = vec![
+        TrafficMatcher::DomainSuffix(vec!["alpha.invalid".into()]),
+        TrafficMatcher::Protocol(vec![NetworkProtocol::Tcp]),
+    ];
+    let mut b = a.clone();
+    b.id = PoolId("routing-b".into());
+    b.name = "规则乙".into();
+    b.matchers = vec![TrafficMatcher::Port(vec![443])];
+    let mut disabled = a.clone();
+    disabled.id = PoolId("routing-disabled".into());
+    disabled.name = "停用".into();
+    disabled.enabled = false;
+    let mut fallback = TargetRoutingPolicy::new(PoolId("routing-fallback".into()));
+    fallback.name = "未匹配".into();
+    s.profile.routing.policies = vec![b.clone(), a.clone(), disabled.clone()];
+    s.profile.routing.fallback = Some(fallback.clone());
+    s.profile.routing.custom = Some(CustomRouting {
+        name: Some("前置".into()),
+        icon: "misc:pin".into(),
+        icon_scale: 1,
+        enabled: true,
+        rules: vec![CustomRoutingRule {
+            matcher: DomainMatcher::Domain,
+            value: "before.invalid".into(),
+            target: RouteTarget::Direct,
+        }],
+    });
+    let expected_members = s.target_routing_members();
+    let catalog = OutboundCatalog::from_state(&s);
+    assert_eq!(
+        catalog
+            .get(&OutboundId::Pool(a.id.clone()))
+            .unwrap()
+            .display_name
+            .as_deref(),
+        Some("规则甲")
+    );
+    assert_eq!(
+        catalog
+            .get(&OutboundId::Pool(a.id.clone()))
+            .unwrap()
+            .references,
+        expected_members
+    );
+    assert!(
+        catalog
+            .require_available(&OutboundId::Pool(disabled.id.clone()))
+            .is_err()
+    );
+    let projection =
+        crate::application::selected_subscription::project_selected_runtime(&s).unwrap();
+    assert_eq!(
+        projection.projected_default_target,
+        RouteTarget::Pool(fallback.id.clone())
+    );
+    let target = OutboundId::from_route_target(&projection.projected_default_target).unwrap();
+    let p = projected_plan(&s, &projection.runtime_intent, &target).unwrap();
+    // 恢复产物继续携带 Block 的真实有序成员，重启不能丢掉策略选择身份。
+    let recovered = SingBoxPlan::recover(&p.recovery_bytes().unwrap(), &resources()).unwrap();
+    assert_eq!(recovered.artifact_index(), p.artifact_index());
+    assert_eq!(p.artifact_index().unwrap().groups[&a.id], expected_members);
+    assert_eq!(
+        p.artifact_index()
+            .unwrap()
+            .applied_members
+            .as_ref()
+            .unwrap()[&fallback.id],
+        expected_members
+    );
+    assert!(
+        !p.artifact_index()
+            .unwrap()
+            .applied_members
+            .as_ref()
+            .unwrap()
+            .contains_key(&disabled.id)
+    );
+    let expected_tags = expected_members
+        .iter()
+        .map(|m| {
+            p.artifact_index()
+                .unwrap()
+                .group_member_tag(&a.id, m)
+                .unwrap()
+        })
+        .collect::<Vec<_>>();
+    let d = plan_document(p);
+    let outbounds = d["outbounds"].as_array().unwrap();
+    assert!(outbounds.iter().any(|o| o["type"] == "selector"
+        && o["tag"] == "pool-routing-a"
+        && o["outbounds"] == json!(expected_tags)));
+    assert!(
+        outbounds
+            .iter()
+            .any(|o| o["type"] == "block" && o["tag"] == "block")
+    );
+    assert_eq!(
+        projected_plan(&s, &projection.runtime_intent, &target)
+            .unwrap()
+            .artifact_index()
+            .unwrap()
+            .group_member_tag(&a.id, &OutboundId::Block)
+            .as_deref(),
+        Some("block")
+    );
+    assert_eq!(d["route"]["final"], "pool-routing-fallback");
+    let rules = d["route"]["rules"].as_array().unwrap();
+    let positions = ["before.invalid", "pool-routing-b", "pool-routing-a"].map(|needle| {
+        rules
+            .iter()
+            .position(|r| r.to_string().contains(needle))
+            .unwrap()
+    });
+    assert!(positions[0] < positions[1] && positions[1] < positions[2]);
+    assert!(!d.to_string().contains("pool-routing-disabled"));
+    s.profile.routing.fallback = None;
+    assert_eq!(
+        crate::application::selected_subscription::project_selected_runtime(&s)
+            .unwrap()
+            .projected_default_target,
+        old.projected_default_target
+    );
+}
+
+// 保护新增故障转移后策略 Selector 与 Compiler 同态成员，穿透只通过实际组→lane→节点。
+#[test]
+fn policy72_routing_failover_members_match_catalog_and_compiler() {
+    let mut s = state();
+    let mut policy = TargetRoutingPolicy::new(PoolId("routing-follow".into()));
+    policy.name = "目标策略".into();
+    policy.matchers = vec![TrafficMatcher::Domain(vec!["follow.invalid".into()])];
+    s.profile.routing.policies.push(policy.clone());
+    let mut group = NodeGroup::new(PoolId("new-failover".into()));
+    group.name = "新增故障转移".into();
+    group.rule = GroupRule::Failover;
+    group.failover = Some(FailoverSettings::default());
+    group.lanes = ["primary", "backup"]
+        .into_iter()
+        .enumerate()
+        .map(|(i, id)| FailoverLane {
+            id: id.into(),
+            name: id.into(),
+            icon: String::new(),
+            manual: false,
+            members: vec![OutboundId::Node(s.nodes[i].id.clone())],
+        })
+        .collect();
+    s.groups.push(group.clone());
+    let catalog = OutboundCatalog::from_state(&s);
+    let expected = vec![OutboundId::Direct, group.outbound_id(), OutboundId::Block];
+    assert_eq!(
+        catalog
+            .get(&OutboundId::Pool(policy.id.clone()))
+            .unwrap()
+            .references,
+        expected
+    );
+    let p = plan(&s, &target(), &resources()).unwrap();
+    assert_eq!(p.artifact_index().unwrap().groups[&policy.id], expected);
+    assert_eq!(
+        p.artifact_index().unwrap().groups[&group.id],
+        s.group_members(&group)
+    );
+    for lane in &group.lanes {
+        assert_eq!(
+            p.artifact_index().unwrap().groups[&lane.pool_id(&group.id)],
+            lane.members
+        );
+    }
+    let d = plan_document(p);
+    assert!(
+        d["outbounds"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .any(|o| o["tag"] == "pool-routing-follow"
+                && o["outbounds"] == json!(["direct", "pool-new-failover", "block"]))
+    );
+    s.groups[0].enabled = false;
+    let p = plan(&s, &target(), &resources()).unwrap();
+    assert_eq!(
+        p.artifact_index().unwrap().groups[&policy.id],
+        vec![OutboundId::Direct, OutboundId::Block]
+    );
+    assert!(!p.artifact_index().unwrap().groups.contains_key(&group.id));
+}
+
+// 保护13策略的真实OR规则、24完整内联规则集、首成员默认意图和封闭恢复字节。
+#[test]
+fn policy87_bundled_routes_compile_and_recover_offline() {
+    let mut s = state();
+    s.active_subscription_id = Some(s.subscriptions[0].id.clone());
+    s.groups = builtin_defaults::default_groups_for(&s);
+    s.profile.routing = builtin_defaults::default_target_routing();
+    s.app_config.behavior.proxy_view.strategy_order = builtin_defaults::default_strategy_order();
+    s.validate().unwrap();
+    let projection =
+        crate::application::selected_subscription::project_selected_runtime(&s).unwrap();
+    let plan = SingBoxCompiler
+        .compile_product(ProductCompileRequest {
+            state: &s,
+            runtime_intent: &projection.runtime_intent,
+            default_outbound: &OutboundId::from_route_target(&projection.projected_default_target)
+                .unwrap(),
+            resources: &resources(),
+        })
+        .unwrap();
+    assert_eq!(plan.document.route.rule_set.len(), 24);
+    assert_eq!(
+        plan.document
+            .route
+            .rule_set
+            .iter()
+            .find(|r| r.tag == "geosite-cn")
+            .unwrap()
+            .rules,
+        *builtin_defaults::rule_set("geosite-cn").unwrap()
+    );
+    let youtube = s
+        .profile
+        .routing
+        .policies
+        .iter()
+        .find(|p| p.name == "Youtube")
+        .unwrap();
+    let selector = plan
+        .document
+        .outbounds
+        .iter()
+        .find_map(|o| match o {
+            CoreOutbound::Selector(g) if g.tag == pool_tag(&youtube.id.0) => Some(g),
+            _ => None,
+        })
+        .unwrap();
+    assert_eq!(selector.outbounds[0], pool_tag("builtin-failover"));
+    assert!(
+        plan.document
+            .route
+            .rules
+            .iter()
+            .any(|r| r.rule_set.as_deref() == Some(&["geosite-youtube".into()]))
+    );
+    assert!(SingBoxPlan::recover(&plan.recovery_bytes().unwrap(), &resources()).is_ok());
+    let mut corrupted = plan.document.clone();
+    corrupted.route.rule_set[0].rules.clear();
+    assert!(corrupted.validate(false).is_err());
+    let bytes = plan
+        .finalize(&crate::singbox::secret::test_api_secret())
+        .unwrap()
+        .as_bytes()
+        .to_vec();
+    let serialized: serde_json::Value = serde_json::from_slice(&bytes).unwrap();
+    assert_eq!(
+        serialized["route"]["rule_set"].as_array().unwrap().len(),
+        24
+    );
 }

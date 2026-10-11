@@ -106,9 +106,9 @@ impl SharedNetworkView {
         div()
             .id(("server-card", index))
             // 浮层独立绘制，显式继承 shell 的字体和前景色，避免退回系统黑色字体。
-            .font_family(cx.theme().font_family.clone())
+            .font(t::openbox_font())
             .text_color(cx.theme().foreground)
-            .font_weight(super::theme::MISANS_REGULAR)
+            .font_weight(crate::ui::tokens::FONT_REGULAR)
             .text_size(px(t::BODY))
             .flex()
             .items_center()
@@ -569,7 +569,7 @@ impl SharedNetworkView {
                 div()
                     .text_size(px(st::LABEL))
                     .line_height(px(st::LABEL_LINE))
-                    .font_weight(super::theme::MISANS_MEDIUM)
+                    .font_weight(crate::ui::tokens::FONT_MEDIUM)
                     .child(tr(cx, label)),
             )
             .child(input)
@@ -592,7 +592,7 @@ impl SharedNetworkView {
                 div()
                     .text_size(px(st::LABEL))
                     .line_height(px(st::LABEL_LINE))
-                    .font_weight(super::theme::MISANS_MEDIUM)
+                    .font_weight(crate::ui::tokens::FONT_MEDIUM)
                     .child(tr(cx, label)),
             )
             .child(
@@ -945,7 +945,7 @@ impl SharedNetworkView {
                     .child(
                         div()
                             .text_size(px(t::SECTION_TITLE))
-                            .font_weight(FontWeight::BOLD)
+                            .font_weight(crate::ui::tokens::FONT_BOLD)
                             .child(if title == "扫码连接" {
                                 format!(
                                     "{}「{}」",
@@ -1002,7 +1002,7 @@ impl Render for SharedNetworkView {
             .flex()
             .flex_col()
             .gap(px(t::GAP))
-            .font_weight(super::theme::MISANS_REGULAR)
+            .font_weight(crate::ui::tokens::FONT_REGULAR)
             .text_size(px(t::BODY))
             .when(self.error.is_some(), |d| d.child(self.error_view(cx)));
         if self.busy && self.pending_reorder.is_none() || self.state.is_none() {

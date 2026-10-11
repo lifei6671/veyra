@@ -137,6 +137,8 @@ pub struct ManualRuntimeSnapshot {
 struct ActivePlan {
     plan: SingBoxPlan,
     selection: ConfirmedSelection,
+    /// 仅正式编译并成功应用时持有的配置证明；不持久化、不从 Restore 的最新 Saved 猜测。
+    configuration_baseline: Option<AppState>,
 }
 pub struct ManualRuntime<P> {
     sidecar: SidecarRuntime<P>,
@@ -633,7 +635,15 @@ impl<P: SidecarPort> ManualRuntime<P> {
             Some(CandidateFailure::RunOrReady)
         } else {
             match self.reconcile(&plan, &selection, &state, restore_cache_trusted) {
-                Ok(()) => None,
+                Ok(()) => {
+                    if !restore {
+                        self.active
+                            .as_mut()
+                            .expect("reconciled plan")
+                            .configuration_baseline = Some(state.clone());
+                    }
+                    None
+                }
                 // 不能借 rollback 的另一个 cache 实例猜测/消除尚未解释的请求。
                 Err(RuntimeError::SelectionPending) => {
                     self.sidecar.stop().map_err(|_| RuntimeError::StopFailed)?;
@@ -879,8 +889,13 @@ impl<P: SidecarPort> ManualRuntime<P> {
             .snapshots
             .snapshot()
             .map_err(|_| SelectionError::StateUnavailable)?;
-        if state.config_version() != expected.config
-            || snapshot.runtime.applied_version.as_ref() != Some(&expected.config)
+        if snapshot
+            .runtime
+            .applied_version
+            .as_ref()
+            .is_none_or(|applied| {
+                !self.selection_configuration_matches(&state, &expected.config, applied)
+            })
         {
             return Err(SelectionError::ConfigChanged);
         }
@@ -1050,9 +1065,16 @@ impl<P: SidecarPort> ManualRuntime<P> {
             return Err(RuntimeError::SelectionReconcileFailed);
         }
         self.fallbacks = fallbacks;
+        // 当前实例的重新核对保留原应用基线；历史恢复/rollback 不能把当前 Saved 绑定给旧计划。
+        let configuration_baseline = self.active.as_ref().and_then(|active| {
+            (active.plan.artifact_index().expect("product index").config == index.config)
+                .then(|| active.configuration_baseline.clone())
+                .flatten()
+        });
         self.active = Some(ActivePlan {
             plan: plan.clone(),
             selection,
+            configuration_baseline,
         });
         Ok(())
     }
@@ -1083,6 +1105,9 @@ impl<P: SidecarPort> ManualRuntime<P> {
         {
             proxy.controller = endpoint.clone();
             proxy.nodes = plan.artifact_index().expect("product index").nodes.clone();
+            proxy.applied_index = Some(Arc::new(
+                plan.artifact_index().expect("product index").clone(),
+            ));
             self.outbound_proxy.publish(proxy);
         }
         if let Some(endpoint) = endpoint {
@@ -1199,7 +1224,7 @@ impl<P: SidecarPort> ManualRuntime<P> {
         {
             return Err(SelectionError::StaleVersion);
         }
-        if state.config_version() != request.config || request.config != applied_version {
+        if !self.selection_configuration_matches(&state, &request.config, &applied_version) {
             return Err(SelectionError::ConfigChanged);
         }
         let node = match request.node.into() {
@@ -1306,6 +1331,52 @@ impl<P: SidecarPort> ManualRuntime<P> {
         active.selection.version = saved.version.clone();
         self.commit_confirmed_selection()?;
         Ok(saved.version)
+    }
+    /// Saved CAS 与实际 Applied 身份保持独立；仅允许本实例已证明的 proxy_view 差异。
+    fn selection_configuration_matches(
+        &self,
+        state: &AppState,
+        requested: &ConfigVersion,
+        applied: &ConfigVersion,
+    ) -> bool {
+        if state.config_version() != *requested {
+            return false;
+        }
+        if requested == applied {
+            return true;
+        }
+        let Some(active) = &self.active else {
+            return false;
+        };
+        let Some(baseline) = &active.configuration_baseline else {
+            return false;
+        };
+        if state.state_epoch != applied.0.epoch
+            || baseline.config_version() != *applied
+            || active.plan.artifact_index().expect("product index").config != *applied
+        {
+            return false;
+        }
+        // 只规范化只读比较副本，绝不改请求/Store/Applied 版本。选择事实已有独立 CAS。
+        let mut before = baseline.clone();
+        let mut after = state.clone();
+        after.config_revision = before.config_revision;
+        after.selection_revision = before.selection_revision;
+        after.app_config.behavior.proxy_view = before.app_config.behavior.proxy_view.clone();
+        for compared in [&mut before, &mut after] {
+            compared.group_selections.clear();
+            for pool in &mut compared.pools {
+                if let SelectionPolicy::Manual {
+                    selected_node_id,
+                    pending_node_id,
+                } = &mut pool.selection
+                {
+                    *selected_node_id = None;
+                    *pending_node_id = None;
+                }
+            }
+        }
+        before == after
     }
     /// 仅轻量更新确认 section，配置 artifact/version 不变。
     fn commit_confirmed_selection(&mut self) -> Result<(), SelectionError> {

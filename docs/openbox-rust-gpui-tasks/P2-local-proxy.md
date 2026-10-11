@@ -240,6 +240,8 @@ cleanup NOT_RUN：沙箱拒绝`ps`进程身份查询（Operation not permitted�
 
 **目录消费约束（P2-02A Host收口）**：正式 ProxyService 与最小 Proxy UI 必须消费 `OutboundQueryService`/`OutboundQuerySnapshot` 这一唯一查询 seam（底层 Catalog/共享解析契约），禁止建立平行出口列表或以显示名重建身份。此处的真实业务、操作与视觉集成由本卡验收；P2-02A 的接口交付不代表本卡已实现或 UI 已测试。见[P2-02A分层验收解释](#p2-02a-closeout)。
 
+**2026-10-10 Core/服务端阶段1 / DOING**：仅本卡READY→DOING；独立 `dev/p2-08-proxy-latency`，输入HEAD `6857b2e39633ca0564cac66b40ee0f9129cf275a`。正式ProxyService、唯一查询/选择Request adaptor、正式NetworkService节点/已确认组测、SQLite历史真实reopen、隔离草稿服务与生产Port factory已交付；Core49 + Desktop1 唯一定向PASS/exit0，check/Clippy/fmt PASS；旧Tauri缺Windows LICENSE Clippy FAIL101保留。自动组已应用图需原P2-06 owner只读事实、默认HTTP URL支持及中文locale排序OPEN；本轮GPUI/视觉/真实内核/Native全部NOT_RUN，Host交Codex Desktop。五项完整验收不勾选，不DONE、不提交/合并/push。见[源码/验证/失败/精确接口需求与Desktop接续](P2-08-backend-checkpoint.md)。
+
 **验收**：
 
 - [ ] 选择成功的新连接使用所选出口；失败不伪装成功，保存失败与实际选择分开显示。
@@ -249,6 +251,12 @@ cleanup NOT_RUN：沙箱拒绝`ps`进程身份查询（Operation not permitted�
 - [ ] 卡片选择与测速按钮互不误触，最小界面经过实际交互和浅深色验收。
 
 <a id="obg-p2-09"></a>
+**2026-10-10 Desktop 接续 / DOING**：55唯一定向PASS、固定1.14.0 Native1 PASS；真实GPUI目录/选择/保存失败保旧/测速不选择/部分失败/历史重启/草稿成功与关闭取消已有局部证据。自动组只读应用事实尚缺owner输出，默认HTTP支持仍待Host；最新源码候选GUI、逐态视觉、在途Quit及最终清理未完成，五项checkbox保持，不提交或合并。见[本轮检查点](P2-08-desktop-acceptance.md)，原Core阶段NOT_RUN保留为历史。
+
+**本轮最终清理追加**：next测试应用/main/draft与fixture已正常退出，自有端口重绑/root删除/8条历史归档、系统网络前后一致。在途GUIQuit实际先超时，继续NOT_RUN；核心owner事实和逐态视觉尚缺，P2-08仍DOING、原五项不勾，无提交/合并/push。
+
+**2026-10-10 最终GUI追加 / DOING**：正常1280×720滚动保存可达，无遗留Settings布局改动；真实自动组typed只读观测已消费，Unknown清旧/实例版本代次隔离，无新选择writer。最终App d8e0d506...正式694ms/草稿796ms与同PID TrayShow通过，自有资源全部清理、用户网络一致。最终受影响28项PASS，check/Clippy/build/fmt/diff PASS；早期43唯一跨构建覆盖与Legacy FAIL分别记录。733/734ms历史丢失Finding OPEN、真实Zero与在途TrayQuit取消NOT_RUN、完整浅色逐态视觉未通过，五项不勾选，仍DOING不交DONE；[证据及独立Review](evidence/p2-08/final-gui-20261010/README.md)。测速地址缺陷继续CLOSED，P2-06原owner不变，无提交合并push发布。
+
 ## OBG-P2-09 首个可用 macOS 版本验收
 
 **类型**：里程碑；**依赖**：OBG-P1-07、OBG-P2-01、OBG-P2-02A、OBG-P2-02B、OBG-P2-03、OBG-P2-04、OBG-P2-05、OBG-P2-06、OBG-P2-07、OBG-P2-08。

@@ -142,13 +142,26 @@ impl NetworkService {
         target: &str,
         timeout: Duration,
     ) -> Result<Latency, NetworkError> {
+        self.node_latency_for(self.source.current(), node, target, timeout)
+            .await
+    }
+    /// P2-08 批次固定已经捕获的实例能力；不得在排队后改测新的共享 source。
+    pub(crate) async fn node_latency_for(
+        &self,
+        proxy: Option<RunningProxy>,
+        node: &NodeId,
+        target: &str,
+        timeout: Duration,
+    ) -> Result<Latency, NetworkError> {
         validate_test(target, timeout)?;
         // 固定 1.14.0 controller 会丢弃 http URL 并改测默认站点；
         // 明确拒绝，不能把另一目标的结果归给用户指定目标。
         if !target.starts_with("https://") {
             return Err(NetworkError::UnsupportedNodeTestUrl);
         }
-        let proxy = self.proxy()?;
+        let proxy = proxy
+            .filter(|p| p.is_valid())
+            .ok_or(NetworkError::ProxyUnavailable)?;
         let tag = proxy.nodes.get(node).ok_or(NetworkError::NodeNotApplied)?;
         let endpoint = proxy
             .controller
@@ -232,7 +245,6 @@ fn options(timeout: Duration) -> FetchClientOptions {
 }
 fn validate_test(url: &str, timeout: Duration) -> Result<(), NetworkError> {
     if timeout.is_zero()
-        || timeout > Duration::from_secs(30)
         || reqwest::Url::parse(url).ok().is_none_or(|url| {
             crate::subscription::fetch::validate_resource_url(&url, None).is_err()
         })

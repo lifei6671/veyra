@@ -48,26 +48,33 @@ impl<P: SidecarPort> ManualRuntime<P> {
             .snapshots
             .snapshot()
             .map_err(|_| SelectionError::StateUnavailable)?;
-        let group = state
-            .groups
-            .iter()
-            .find(|g| g.id == choice.group)
-            .ok_or(SelectionError::InvalidMember)?;
-        if choice.mode == GroupSelectionMode::ManualPin
-            && group.rule != crate::domain::GroupRule::Failover
-        {
-            return Err(SelectionError::InvalidMember);
-        }
-        if selector != group.id
-            && !group
-                .lanes
+        // 策略 Selector 只复用此 owner 的既有事务，不创建另一写入口或节点组副本。
+        if let Some(policy) = state.profile.routing.selector(&choice.group) {
+            if !policy.enabled || selector != policy.id || choice.mode != GroupSelectionMode::Auto {
+                return Err(SelectionError::InvalidMember);
+            }
+        } else {
+            let group = state
+                .groups
                 .iter()
-                .any(|l| l.pool_id(&group.id) == selector && (l.manual || l.members.len() == 1))
-        {
-            return Err(SelectionError::InvalidMember);
-        }
-        if selector != group.id && choice.mode != GroupSelectionMode::Auto {
-            return Err(SelectionError::InvalidMember);
+                .find(|g| g.id == choice.group)
+                .ok_or(SelectionError::InvalidMember)?;
+            if choice.mode == GroupSelectionMode::ManualPin
+                && group.rule != crate::domain::GroupRule::Failover
+            {
+                return Err(SelectionError::InvalidMember);
+            }
+            if selector != group.id
+                && !group
+                    .lanes
+                    .iter()
+                    .any(|l| l.pool_id(&group.id) == selector && (l.manual || l.members.len() == 1))
+            {
+                return Err(SelectionError::InvalidMember);
+            }
+            if selector != group.id && choice.mode != GroupSelectionMode::Auto {
+                return Err(SelectionError::InvalidMember);
+            }
         }
         let active = self.active.as_ref().expect("ready plan");
         let index = active.plan.artifact_index().expect("index");

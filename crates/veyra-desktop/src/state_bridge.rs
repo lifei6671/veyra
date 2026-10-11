@@ -48,10 +48,6 @@ pub enum AppEvent {
             veyra_core::application::subscription_management::SubscriptionOperationError,
         >,
     },
-    DefaultBackground {
-        request: crate::ui::background::Request,
-        bytes: Vec<u8>,
-    },
     PlatformSaved {
         result: Result<(), crate::platform::PlatformError>,
     },
@@ -223,8 +219,7 @@ impl StateBridge {
             | AppEvent::ExternalPreferenceWrite { .. }
             | AppEvent::VisualSaved { .. }
             | AppEvent::AssetPrepared { .. }
-            | AppEvent::BackgroundPreview { .. }
-            | AppEvent::DefaultBackground { .. } => {
+            | AppEvent::BackgroundPreview { .. } => {
                 unreachable!("composition root owns preference results")
             }
             AppEvent::Snapshot { request, result } => {

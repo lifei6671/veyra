@@ -1,3 +1,54 @@
+**2026-10-11 policy76 最新：P2-08 DOING / REWORK**。最小宽度恢复输入+重置统一外框；仅纯proxy_view保存保留代理快照，selection交错guard已修。实际300→200→reset145→300，cfg32→35，selection76→Direct78→nested80恢复，Runtime33297与77条历史保持。8定向Desktop测试/build/Clippy/fmt通过；四组同态原件/叠差图、source/App SHA见resumed-native/VISUAL_AUDIT及policy76-delivery-receipt。控件x+1px与LAN131/Legacy134冲突、旧History001/Busy等OPEN，连续动画NOT_CAPTURED；App留供用户Review，无提交发布。以下历史保留。
+
+**2026-10-11 policy75 最新检查点：P2-08 DOING / REWORK**。用户新增Toast-only错误、单点测速闪动与多层真实策略穿透已返工；Core owner完成已有批准目标分流切片的当前成员投影，Catalog/Compiler同源。真实Settings新增故障转移后Controller选择及两层递归展开、单节点c loading/Timeout已留同态证据；正常生产Review配置恢复31/76/74条。75 build/Desktop与Core Clippy/fmt/diff、Core13与Desktop1定向契约测试通过，654源码身份核验；生产/隔离签名SHA不同并逐20个Mach-O section核验更正。原Busy/History001 OPEN、LAN源冲突与连续动画/长链边界不升级。应用75与自有Runtime/fixture按用户要求留运行供Review；其余候选与Runtime正常退出，自己的参照Tab/Vite关闭。独立Review #46已完成，限定正常布局/递归两层/目标loading局部PASS，整页仍REWORK；无Commit/Merge/Push/Release。[本轮审计与收据](evidence/p2-08/visual-rework-20261010/resumed-native/VISUAL_AUDIT.md)。下方历史逐字保留。
+
+**2026-10-11 policy38 最新检查点：P2-08 DOING / REWORK**。正式目标分流最小切片与真实偏好弹窗已接，LAN32/24/32控件、24px+scale图标/6gap及固定共享Shell对照；四组1280×720/DPR2同Store策略/折叠/节点/弹窗原件及共同sRGB叠差图留存。policy37偏好保存后Direct52/Block54同自有PID、Applied27/Saved28真实写回；policy36中间加载失败仍未确认，不关闭旧History001。policy38弹窗485/y117.5已修，参考Select局部基线错误已保留并纠正，Native箭头/边框待续。Mac再次锁屏，本轮订阅/hover/滚动补证NOT_RUN；build/Clippy通过，独立Review进行中，资源尚保留待正常退出清理。无commit/merge/push/release。[最新审计](evidence/p2-08/visual-rework-20261010/resumed-native/VISUAL_AUDIT.md)。下方保留历史。
+
+**2026-10-11 最新 icon32：P2-08 DOING / REWORK**。用户指出策略图标过大后，实际LAN原版13标题及穿透标题均测得24×24，而旧本地React/GPUI为46，确认旧现场FAIL/漏审。仅组标题Token改24；五组同态原件/ICC→sRGB叠图、收起/嵌套及真实B40→auto42→B44恢复已留证，历史66/config15/背景偏好不变。build/Clippy/fmt通过，Review #28限定图标尺寸切片；LAN载体6px间距与本地14px等基线冲突仍OPEN，不能宣称运行原版整页一致。自有资源清理完成，无commit/merge/push/release；History001/B错误OPEN、Zero NOT_RUN、动画NOT_CAPTURED保持。 [最新审计](evidence/p2-08/visual-rework-20261010/resumed-native/VISUAL_AUDIT.md)。下方保持历史。
+
+**2026-10-11 最新 shell31：P2-08 DOING / REWORK**。用户追加的所有主导航共用固定48px/75%背景顶部已实施；代理三Tab与Settings正文独立滚动，整页背景仅取设置正式偏好。三Tab1280×720/DPR2同Store/Controller/空搜索同focus共同sRGB原件与叠图、实际滚动及共享主路由回归已留证，独立Review #27仅判本切片；旧历史写回001/B加载错误OPEN、Zero NOT_RUN、连续动画NOT_CAPTURED保持。构建/Clippy/fmt通过，UI47/bridge11，资产4/保存服务2按实际日志通过。候选正常退出/自有Runtime与测试资源清理完成，当前用户84%背景/blur10/radius12与SQL66rows保留；没有commit/merge/push/release。 [审计与证据](evidence/p2-08/visual-rework-20261010/resumed-native/VISUAL_AUDIT.md)。下方保留历史检查点。
+
+**2026-10-11 noto15 实际Native检查点：P2-08 DOING / REWORK**。High正式App已真实启动，13组浅色1280×720/DPR2同Store/Controller原件及共同sRGB叠图已留存；A26→B28选择真实回读，SQL163 Timeout/164 Failed/165 Success842。首A gen3无新历史原因未确认，旧History001/B加载错误仍OPEN；noto16 B/C/B未复现不算修复。noto17真实窗口GPU/OS/原React有限8区字体已审查，保留边缘与混排advance残差；五页共享Shell及订阅管理已实导航，不称占位页完整验收。连续动画NOT_CAPTURED/RealZero NOT_RUN，独立Review与清理继续；无提交/合并/push/发布。[本轮收据](evidence/p2-08/visual-rework-20261010/resumed-native/noto15-native-delivery-receipt.json)。下方原检查点保留历史。
+
+**noto15 最新检查点：P2-08 DOING / REWORK**。原 Noto owner最小High补丁已完成；10字体合同及实际构建/Clippy/fmt通过，正式候选App SHA `bc567154ce7d6243930322f2b2d775bfb48deebe1415215e3af0d8c75e48376a`、source SHA `c979e8bdc0707c926e82b7ef008ef10dc3e3b782dc53421575ce4469bde3f9c2`。新版原生尚未运行，Mac锁屏；Review #23纠正旧字体布局/ICC/JPEG条件，C新seq159 Timeout与选择24有实证，B重复加载错误仍FAIL待最小Desktop诊断。历史写回OPEN、Zero NOT_RUN、动画NOT_CAPTURED不变；自有旧App与资源待正常退出核验，无提交/合并/push/发布。[完整收据](evidence/p2-08/visual-rework-20261010/resumed-native/noto15-checkpoint.json)。以下均保留历史。
+
+**noto11 最新实际检查点：P2-08 DOING / REWORK**。原 Noto owner/消费接线已实施，10项字体合同、50项UI定向测试及构建/Clippy通过；真实窗口出字/14px单双色旗advance一致，但约1physical纵向及边缘差异仍返工。9组本轮页面pair与A22/B24正式选择读回、5页共享Native回归保留；无整体视觉PASS，History写回OPEN/Zero NOT_RUN/连续动画NOT_CAPTURED。精确身份与原件见 [审计最新追加](evidence/p2-08/visual-rework-20261010/resumed-native/VISUAL_AUDIT.md)，旧失败不改写。
+
+**原 Noto 最小 owner 接线已批准，开始实施（P2-08 DOING / REWORK）**。同一font_owner持有原GSUB/CBLC/CBDT/macOS FontId与必要Cargo接线，Root仅消费及真实视觉验证；原字体bytes不改、只复用锁定库、不升级/系统安装。不构成视觉豁免，旧History写回OPEN与Zero NOT_RUN保持。[批准范围](evidence/p2-08/visual-rework-20261010/resumed-native/NOTO-FONT-OWNER-APPROVED.md)。此前待批准记录保留为历史。
+
+**Noto 追加检查点（原件可行，接线待 owner 范围确认）**：原GSUB ccmp与CBLC/CBDT解码已有真实实验，原strike指标与14px React字宽数值匹配，不能据CoreText两路径FAIL声称原件不可能绘制。只读字体诊断不代表真实代理国家元数据/产品GUI通过；MacTextSystem接线尚未实施。此前批准限定CJK，已将最小原Noto owner扩展提案交Host确认。[方案与实际实验](evidence/p2-08/visual-rework-20261010/resumed-native/NOTO-FONT-OWNER-REQUEST.md)。clean10源码/App保持不变，DOING / REWORK及旧历史写回OPEN不变。
+
+**最新 clean10 审查候选：P2-08 DOING / REWORK（2026-10-10）**。三Tab、组/节点布局、原96字体及共享Sidebar只读统计已实施；7组静态对照、A18/B20真实选择读回、50项UI测试与构建/Clippy通过，临时测量源码已清理。三项文案/杂分号/取消入口差异已获用户批准，单列不冒充视觉一致。Noto原件加载FAIL、连续动画同相位NOT_CAPTURED、旧历史写回OPEN、真实Zero NOT_RUN。自有App/Runtime/fixture/Vite/bridge和浏览器资源已退出，源码与历史证据保留；没有commit/merge/push/release。
+
+[当前候选、对照图、独立Review与清理收据](evidence/p2-08/visual-rework-20261010/resumed-native/REVIEW_HANDOFF.md)。以下记录保留为历史。
+
+---
+
+**最新接续：P2-08 VISUAL REWORK / DOING（2026-10-10）**。Mac 已解锁，原生结构/三 Tab/节点/搜索/真实历史与 Sidebar 服务接线已实施；此前锁屏及未修改源码段落保留为历史，已不代表当前状态。用户已批准第三 Tab 最小前移、P2-06 UDP只读、P3-01 Sidebar只读与单一 Cargo/字体 owner 协作。字体 owner 的原94/95 glyph/度量/raster合同5PASS，Root公开接口原生Probe确认六字真实原94；96原件接入与新候选视觉正在验证，不能宣称整页通过。历史写回Finding OPEN、Zero NOT_RUN；旧FAIL不改写，无commit/merge/push/release。
+
+[最新审计与独立Review](evidence/p2-08/visual-rework-20261010/resumed-native/VISUAL_AUDIT.md)。本轮写范围：Root Desktop/UI及任务证据；font_owner仅根Cargo/Lock与受控gpui-pre-macos vendor，现已稳定；udp_owner只读契约已完成；visual_reviewer只读及追加Review。P2-06 Runtime/Helper/IPC owner不变。
+
+---
+
+**P2-08 VISUAL REWORK 审计检查点（2026-10-10，DOING）**：React1280×720/DPR1候选PNG、最终CSS/几何及独立源码审计已保存；三Tab/组分类、节点标题预留、圆点间距及历史时间线差异明确。Mac锁定且用户不在电脑旁，本轮GPUI基线/bounds/同态叠图/功能回归NOT_RUN，未越过基线条件修改产品源码或宣称视觉PASS。三Tab最小P3-07片段前移提案待Host确认；HISTORY-WRITE-001仍OPEN、所有旧失败/未提交源码保留，无stage/commit/merge/push/release。[审计、独立复核与清理](evidence/p2-08/visual-rework-20261010/README.md)。
+
+**P2-08 最终GUI本轮检查点（2026-10-10，DOING）**：typed自动组生产GUI已接，实际applied成员/current保Node/Pool/Direct，版本变化Unknown清旧；1280×720正常滚动保存可达，Settings源码未改。最终App d8e0d506...正式694ms/草稿796ms、同PID45385 Hide→真实TrayShow/window_count4通过；最终Core18/Desktop7/i18n3=28唯一PASS，check/Clippy/build/fmt/diff PASS。733/734ms历史丢失FAIL继续OPEN，错误分类最小修不证明消除竞争；固定内核真实Zero/唯一未命中在途TrayQuit取消及完整浅色逐态视觉未通过。全部自有进程/端口/socket/root/浏览器资源清理、用户网络一致；原URLFinding保持CLOSED、P2-08 DOING/P2-06原owner/READY/checkbox不变，不交Host DONE，无stage/commit/merge/push/发布。[精确证据与独立Review](evidence/p2-08/final-gui-20261010/README.md)。
+
+**P2-08 测速地址 UI Finding 收口（2026-10-10，DOING）**：唯一 `.worktrees/p2-08-proxy-latency` / `dev/p2-08-proxy-latency`，HEAD `6857b2e39633ca0564cac66b40ee0f9129cf275a`。正常面板延迟Grid复用已有URL输入/draft/CAS；真实HTTP保留、手动UI保存HTTPS、失败保稿/焦点/三语、正式768ms/草稿791ms成功及同最终App重启HTTPS全部留证，独立Review后 **P2-08-UI-LATENCY-URL-001 CLOSED**。Core25/Desktop12共37唯一定向PASS，Core/Desktop check/Clippy/build/fmt/diff PASS；首轮fmt FAIL已修，Legacy Windows sing-box.exe缺失Clippy FAIL101保留。全部自有App/child/fixture已清理、隔离root归档后删除，用户proxy/DNS/IPv4/6默认路由一致。新增项是本轮批准局部功能差异，完整页面95%视觉不宣称；自动组GUI、Zero/Unknown、完整视觉与在途Quit仍单独收口，P2-08/owner/READY不变。未stage/commit/merge/push/发布。[验收](P2-08-desktop-acceptance.md)、[本轮证据及独立Review](evidence/p2-08/latency-url-fix-20261010/README.md)。
+
+**P2-08 默认HTTPS专项GUI（2026-10-10，DOING）**：最新源码重新构建/签名exit0，无本轮产品改动；空目录HTTPS默认、旧HTTP三语言与真实重启保留、节点/草稿三语言准确拒绝及无目标请求、自有实例正常Quit/端口与root清理/用户网络保持通过。第4项手动改HTTPS成功BLOCKED/NOT_RUN：正常UI无latency.test_url编辑入口，Finding P2-08-UI-LATENCY-URL-001 OPEN，不用后台改文件冒充手动。此前owner Core事实缺口和默认HTTP待决已有后续owner集成/用户批准覆盖，仅作为下方历史；typed观测GUI、完整视觉/Zero-Unknown/同PID托盘恢复/真实在途Quit等余项保留。状态/owner/READY不变，无提交合并push。见[专项证据](evidence/p2-08/default-https-gui-20261010/README.md)及[追加记录](P2-08-desktop-acceptance.md)。
+
+
+
+
+**P2-08 本轮退出/清理已完成（2026-10-10，DOING）**：next87937/main88065/draft89403正常托盘Quit后gone、端口重绑；fixture87918正常退出/线程joined，测试root删除，8条历史与自有状态归档。系统代理/DNS/IPv4/6默认路由与前值一致。55唯一PASS；在途GUIQuit因先超时仍NOT_RUN，auto owner/defaultHTTP/完整视觉未收口，五项不勾/owner不释放/READY不变；未commit/merge/push。[记录](P2-08-desktop-acceptance.md)。
+
+**P2-08 最新候选实测追加（DOING）**：旧83390/83493正常Quit及端口清理已PASS；next SHA9b0a811实际PID87937/main88065一次Start Ready，历史/繁体重启、协议筛选、取消反馈与704ms HTTPS、浅暗色显示已补。整体视觉/auto owner/defaultHTTP仍OPEN；新实例87937/88065与fixture87918保留待退出。55唯一PASS，状态/计数/READY不变，不提交合并；[记录](P2-08-desktop-acceptance.md)。
+
+**P2-08 Desktop/Native 接续（2026-10-10，当前 DOING）**：最小代理页、独立草稿 worker/退出取消及真实 SQLite 历史接线完成；55个唯一定向PASS，当前 Core/Desktop Clippy/build/fmt exit0，Legacy Windows LICENSE FAIL101保留。真实选择/保存失败保旧、组测部分失败、历史重启、717ms草稿、弹窗关闭取消已留证；自动组应用事实仍缺 Runtime owner 输出，默认HTTP取舍待Host，最新视觉/GUI/在途Quit未闭合。PID83390/自有83493等待用户正常托盘退出，新候选SHA9b0a811另存且GUI NOT_RUN，不将旧截图重绑新包。状态/owner/READY均不释放，不提交、合并或push；[本轮检查点](P2-08-desktop-acceptance.md)。
+
+**P2-08 Core/服务端阶段1检查点（2026-10-10，DOING）**：WorkRun `work-23397-1791604235718790-269`；Host已建独立树 `.worktrees/p2-08-proxy-latency` / `dev/p2-08-proxy-latency`，输入HEAD `6857b2e39633ca0564cac66b40ee0f9129cf275a`，开始干净。仅Core ProxyService/测速/SQLite历史及必要typed adapter、定向自动化与本卡文档；P2-06唯一Runtime/Platform/Helper/IPC/公共Runtime DTO owner保持，owner文件只读，不改Cargo.lock。GPUI/视觉/电脑操作交Host给Codex Desktop；本轮无GUI/系统网络/权限/真内核。68卡 **DONE31 / READY4 / DOING2 / TODO24 / DEFERRED7**；另外四项READY未领取，下游保持TODO，不commit/merge/push。Core49 + Desktop1 唯一定向PASS/exit0，Core/Desktop all-targets check/Clippy及fmt PASS；Legacy Clippy缺Windows LICENSE FAIL101保留。已实现正式服务、真实SQLite回读和loopback；自动组已应用图/默认HTTP支持/中文名称排序仍OPEN，UI/Native NOT_RUN。见[阶段检查点](P2-08-backend-checkpoint.md)。
+
 **P2-05 最新 Host 最终收口（2026-10-10，DONE）**：同一 WorkRun `work-23397-1791600619806627-237`，Host受用户委托，按2026-10-08分期规则正式作 `SCOPED_ACCEPTANCE_WITH_EXPLICIT_DEFERRED_PLATFORM_VERIFICATION` 决定。正式客户端与局部功能/Native/GPUI通过；Host核18/18源码SHA一致，指定Native1 PASS/exit0、独立Review0可信源码Finding、清理/用户网络保护收据通过；另独立CommandRun `command-23397-1791602919967485-251` Core network4 + clash_api16 PASS/exit0，diff检查PASS。P2-05 ACCEPTANCE→DONE、本卡owner释放/剩余0；P2-06 DOING及单一Runtime/DTO owner保留。68卡 **DONE31 / ACCEPTANCE0 / DOING1 / READY5 / TODO24 / DEFERRED7**，macOS31/61、P2 6/10；READY恰P2-08/P3-05/P4-01/P4-04/P5-01，未领取/未启动，P2-07仍缺P2-06保持TODO。物理Direct UNVERIFIED、SystemProxy ON NOT_RUN、正式受管TUN/完整组合由P2-07/P2-09/P6-01/P6-05承接，原第2项保持未勾选；macOS15仍归P7，不宣称150%档位。原用户等待组合与本轮ACCEPTANCE交接均保留历史，本次由Host明确审定收口。见[完整决定/源码与收据SHA/验证边界](P2-05-host-closeout.md)。本次仅必要文档，未commit/merge/push；待Host再次独立Review后受管Git收口。
 
 **以下带日期的旧“当前/本轮”、ACCEPTANCE及计数均为当时快照，保留原文；现态以本段、唯一任务行及当前Active Tasks/Ready Queue为准。**
@@ -225,12 +276,13 @@ P2-06 已阶段提交 `f2457e6a4e2fe0ac3c9186bc7d17323a70c4c0a8`，仍 DOING、�
 | P7 数据与发布收尾 | 0 / 5 | 未开始，schema/清理按显式依赖等待 | P7-05 未开始 |
 | Windows W0–W3 | 0 / 7 | 后续排期 DEFERRED | W3-02 未开始 |
 
-macOS：**31 / 61 完成**；READY 5、TODO 24、DOING 1、REVIEW 0、ACCEPTANCE 0、BLOCKED 0。Windows 7 项 DEFERRED 单列，共 68 项。数量不等于工期权重或代码完成百分比；P1-04/P2-02/P4-05 父项被后缀子项替代，不重复计数。
+macOS：**31 / 61 完成**；READY 4、TODO 24、DOING 2、REVIEW 0、ACCEPTANCE 0、BLOCKED 0。Windows 7 项 DEFERRED 单列，共 68 项。数量不等于工期权重或代码完成百分比；P1-04/P2-02/P4-05 父项被后缀子项替代，不重复计数。
 
 ## 2 Active Tasks
 
 | Task | owner / 泳道 | 写范围 / 公共契约 | 实际资源 / 下一动作 |
 | --- | --- | --- | --- |
+| P2-08 · DOING | Codex · Core/Desktop 接续 | 本卡代理/草稿/历史、GPUI/Tokens/i18n；P2-06 owner与Cargo.lock保持 | 最终受影响28唯一PASS；真实自动组/Unknown/保存可达/694ms正式/796ms草稿/同PIDTrayShow及清理有证；历史写回FAIL、Zero/在途Quit取消/完整逐态视觉仍未通过；[记录](P2-08-desktop-acceptance.md) |
 | P2-06 · DOING | Codex · Runtime/Platform | helper production/IPC、Core Runtime DTO、desktop runtime_service/platform、局部 Cargo 接线、任务文档 | 观测接线增量与真实普通用户受管实例验收通过，P3-01已DONE；root安装/降权、GUI、Helper多轮与重启恢复等原缺口继续后续验收，Runtime/DTO owner保留；见[P2-06接线记录](P2-06-observation-integration.md) |
 
 P2-05 已经 Host 限定范围验收 DONE 并移出当前 Active Tasks，本卡 owner 释放；此前 ACCEPTANCE/等待完整网络组合的活动记录属于上方历史交接。完整系统出口延期项及本轮明确决定见[Host收口](P2-05-host-closeout.md)。本次仅文档，没有新进程/网络/GUI资源操作；未commit/merge/push。
@@ -255,7 +307,6 @@ P3-03 owner/预约已释放，真实日志页、最终 GUI 与独立 Review 通�
 
 | Task | 依赖满足依据 | owner / 下一动作 |
 | --- | --- | --- |
-| P2-08 | P2-02A、P2-04、P2-05、P1-04B 全部DONE；P2-05由本轮Host收口满足 | 未领取/未启动；领取前协调P2-06 Runtime/DTO owner |
 | P3-05 | P3-01、P3-04、P1-04B、P2-05 全部DONE；P2-05由本轮Host收口满足 | 未领取/未启动；按原写范围接正式概览/站点测速 |
 | P4-01 | P2-01、P2-05 全部DONE；P2-05由本轮Host收口满足 | 未领取/未启动；按原订阅高级项范围领取 |
 | P4-04 | P2-02B、P2-04、P2-05、P1-04A 全部DONE；P2-05由本轮Host收口满足 | 未领取/未启动；按原规则资源范围领取 |
@@ -442,3 +493,191 @@ DAG计数说明：按P5-06原卡与总表既有显式依赖，P2-01完成后P5-0
 2026-10-07 P2-04 P1 Finding修复：原DONE撤销；业务Manual SelectionPolicy原子保存pending，begin→controller/read-back→confirm两阶段CAS，selection revision +2、config/applied不变；不确定/确认保存失败保留pending，重建owner/Stopped仍可见。ApplySaved/RestoreLastSuccessful先GET actual，等于pending确认、等于old/default清除，其余不PUT/不Ready；解决后的版本同步active/manifest confirmed。Core361/Desktop85及指定检查PASS，3 Native ignored、真实中断/重启 NOT_RUN；新initial FAIL/最终PASS分开保留，旧evidence未写入。P2-04 ACCEPTANCE、P2-04-PENDING-PERSISTENCE-001 FIXED_PENDING_HOST_REVIEW、Runtime/Platform owner保留，DAG DONE19/ACCEPTANCE1/READY6/TODO35/DEFERRED7；P2-06 TODO，无下游启动。见[修复契约](P2-local-proxy.md#p2-04-pending-persistence-fix)与[fix evidence](evidence/p2-04/pending-persistence-fix/README.md)。
 
 2026-10-08 P2-04同一P1 Finding第二边界：旧plan没有当前pending pool时，candidate静态检查先于prepare/旧writer停止，显式ReconcileSelection同样拒绝；循环期间剩余pending由最新业务快照最终gate阻止Ready。新增5自动测试保护v11/v12 manifest失败可达场景、已有child不动、多个pending部分覆盖不CAS、完整ApplySaved确认、Restart裁剪pool、prepare/read期间变化与已有CAS保留。Core366/Desktop85、check/clippy/fmt/diff PASS；初始2失败及版本断言365 PASS/1 FAIL日志保留。状态/owner/依赖不变，Native/桌面NOT_RUN。
+
+
+2026-10-11 P2-08 VISUAL REWORK续审policy39–41：同一worktree/HEAD6857b2e，正式策略/图标固定carrier、LAN排序双箭头、订阅dots及自然滚动正文修正；真实230策略两行同落点56px、48px顶部固定。共享Modal close top8修复0.5px，目标分流编辑实际打开Cancel及设置/日志等Shell回归原件保留。policy41 App35bbe997ce5542a20b56c709386d479922a1322ee21d4a1ca492aed65995530c；480源码manifest4f7708ce8492980466e09bf1cb776781759cffebfbc385738940b9e026a1c4f5，build/Clippy/fmt通过；独立Review31限定切片/32继续核新10对。正式偏好145→230→145保存28→29→30、selection54/SQL66不变，未自动Apply/Restart。39错误carrier、40错滚动方向/无overflow当overflow、HMR错误原件保留并纠正；Zero NOT_RUN、动画NOT_CAPTURED、HISTORY-WRITE-001和旧加载错误OPEN。P2-08仍DOING/REWORK，未提交/合并/push/发布。见resumed-native VISUAL_AUDIT / VISUAL_REVIEW / BEFORE_AFTER与policy41 receipts，最终Host/用户验收未进行。
+
+
+2026-10-11 P2-08 VISUAL REWORK policy42–45续审：按原auto网格修复历史轨道/时间盒，Review33限定两个真实浮层几何切片；43同态新静态/搜索矩阵Review34局部PASS，但busy卡片.55 FAIL；44修卡片、45修非活动组头.5，Review35继续。42过时AX误点All的四条真实Failed/替换封顶旧记录已按全Counter明示，不能用66同数称未变；43/45真实C Timeout、44cancel零新增分别留存，HISTORY-WRITE-001和加载错误保持OPEN。45 App15a1380a874d8c47e47e9dfbbfe9ab624c014d0e43676452c7c21e39fd7823d6 / manifestdadc06bcbccf2b326bb30f6a6506fe2280668c5d1bdcd9c821c136b1f07994c0，build-clean/Clippy/fmt2024 PASS；误传fmt2021 FAIL保留。42–45自有App/Runtime退出PS确认。All节点动画原组件分支缺漏正在46最小UI复验；45group不匹配pair INVALID保留，旧group-spin推断撤回。不做整体PASS、P2-08 DOING/REWORK、无Commit/Merge/Push/Release。详见resumed-native VISUAL_AUDIT / VISUAL_REVIEW / BEFORE_AFTER及逐轮receipts。
+
+
+### P2-08 2026-10-11 policy46–50视觉增量
+
+仍DOING/REWORK，唯一p2-08 worktree/HEAD6857b2e，无Commit/Merge/Push/Release。All分支及provider-specific Subscription分支按原组件修正；49 Core owner一次Snapshot目录派生，22定向回归通过但首Busy/CAS不放宽。50真实订阅有4条typed终态写回，旧HISTORY-WRITE-001仍OPEN。Review36新增选中胶囊合成背景P1 FAIL，继续隔离实验/修复；GPU诊断不替代默认候选OS或连续动画验收。46 OS pending两pair与47订阅失败pending pair INVALID原件保留，46/47/50自有App/Runtime正常退出，fixture/Vite尚活动。详细身份与同态证据见resumed-native VISUAL_AUDIT.md 46–50及VISUAL_REVIEW.md #36。
+
+### P2-08 合成 owner 扩展批准（2026-10-11）
+
+用户批准最小 opt-in 子树合成接线；font_owner 独占 Cargo 与锁定 GPUI vendor，Root 此期间不构建或修改上述资源。仅代理节点 disabled 整卡消费，不扩展其它页面默认 renderer/Core/Runtime。policy51 纯绘制实验和 Review37确认偏色机制，FAIL 尚未关闭。P2-08 DOING/REWORK；HISTORY-WRITE-001 与 policy36/47 GUI 失败仍 OPEN。
+
+
+### P2-08 policy51–62续审与代理浮层消费批准（2026-10-11）
+
+唯一worktree/branch/HEAD6857b2e不变，保护所有dirty/历史。合成owner已完成锁定renderer并释放Cargo/vendor；51FAIL与53纯绘制、56GPU、57默认OS订阅、59真实resize各按边界保存；58实际Selection≠Test及真实历史终态Review43局部通过，额外12记录来源拆分不虚报。用户最新批准仅代理ToolTooltip/History淡入消费扩展，Root两处实现；61补原React160ms历史淡出，62无Runtime固定.5对照新body/arrow/dot差0/1/2，临时Shell已逐字恢复。
+
+60/61 build、Desktop Clippy、60 Tooltip2 tests、最终fmt通过；Legacy src-tauri fmt通过，Legacy Clippy分别资源缺失与19旧接口编译错误FAIL保留。61实测App05670aa8366f28ac8ef26787acbe9119fab5c315bcdf49b293cfb08bf540a185及source1eec0b1ff409b95cbc924326825fa76d385f6c51694e22e85cb28d29fe6f4fbc；打包后仅history rustfmt另存准确receipt。60/61真实历史hover Counter0new/0removed；59订阅终态4new/4封顶替换。60–62自有App/Runtime正常退出确认，fixture/Vite保留；Root唯一Desktop writer，Reviewer #44只读+追加review，owner均释放。
+
+HISTORY-WRITE-001及36/47/56加载FAIL OPEN，Zero NOT_RUN、连续同phase动画NOT_CAPTURED，整页验收未通过；DOING/REWORK，不Commit/Merge/Push/Release。详细源码/原件/DOM/comparison/清理见resumed-native VISUAL_AUDIT 60–62、BEFORE_AFTER、VISUAL_REVIEW #44（待完成），批准不能代替完成。
+
+Review #44已完成（前1609行保留/现1655行，SHA eef72412742854eb3be9515c920be97d118ecd9923ebb1d5943396cc8c0c767c）：本次60–62消费及证据局部PASS；连续动画NOT_CAPTURED、快速hover中断NOT_RUN，旧历史和load/begin失败OPEN，P2-08 DOING/REWORK未收口。Reviewer只读工作结束，无源码并写。
+
+
+### P2-08 policy63–68 用户出口行/底部空白反馈（2026-10-11）
+
+Root唯一Desktop writer，既有owner均释放；当前出口真实组名→同源ArrowRightCircle16→节点，14/20/gap4/完整976宽；open自然高度取代205固定min，节点单排195/底部16、折叠116、嵌套穿透独立结构。LAN最终测量与Legacy源码差异明示，独立harness修正65错误46图/20行，保留INVALID/FAIL。67宽922 FAIL→68恢复976，四同态原件/实际bounds/最终CSS/无mask ICC叠图齐备。65真实深链Controller选择/恢复selection68→70→72，70typed history逐条0新增/0删除；68config31/selection72不变。
+
+68 App f70b3c13d2454cff84648783a772eea1ac07701b5e8ad0685a44c22466bd75fd / manifest b990142467a007dbf9fd01ea499e89c9ce48a4f501bcada65e5935de99b57feb / HEAD6857b2e；63→68只4项Desktop UI+箭头资源，无Core/Runtime/Cargo/Shell改动。build/Clippy/fmt/diff-check PASS，Legacy既有FAIL未虚报；正常退出PS[]、fixture/Vite任务资源保留。独立Review #45进行中。标题LAN400 vs Legacy/Native500未等价、深链完整视觉NOT_RUN、动画NOT_CAPTURED、Zero NOT_RUN、HISTORY-WRITE-001和36/47/56错误OPEN；整体DOING/REWORK，未Commit/Merge/Push/Release。详resumed-native VISUAL_AUDIT 63–68、BEFORE_AFTER、policy63-68-delivery-receipt。
+
+
+policy68折叠复拍补充：原68单侧focus Tooltip及reference-only neutral尝试保留INVALID_FOCUS，最终同一68SHA重开后两端空搜索框focused的collapsed-blurred对有效；repeat2正常stop/quit PS[]，31/72/70typed历史完全保持。Native/LAN摘要容器976宽与harness内容P154.03125不同，明确区分，不声称React内容盒全等；长链截断NOT_RUN。debug测量钩子保留用于仍DOING的同态bounds，不虚报移除仪器。详VISUAL_AUDIT勘误及repeat2 receipts。
+
+
+独立Review #45已完成：1694行，SHA 5b139564da38eaf5c15660a558aa4213059d67a76554da8ca4ca079d08f2150e；旧1655行prefix eef72412742854eb3be9515c920be97d118ecd9923ebb1d5943396cc8c0c767c 逐字保留。68短出口链/自然高度/节点/穿透/最终blurred折叠局部PASS，无该切片新明显blocker；67宽FAIL与无效focus对保留，LAN字重冲突OPEN、深链/长链截断/动画NOT_RUN及原历史/加载错误不关闭。整体DOING/REWORK。
+
+
+2026-10-11 P2-08 checkpoint policy79：用户纠正徽章白底/类型计数字体层级/出站与穿透节点过浅。LAN最终computed与级联只读；Root唯一writer，76→79仅Desktop proxies/tokens。gray badge#e8e8e8/.9、metadata12/400/16+gap4、ordinarygray/selected#66cc8a/.9和outer hover修复。78计数ceil收缩双影FAIL→79按advance独立固定div；实测gap4、x residual0.234375/width0.1484375与背景RGB max5 OPEN。79六同态pair、三Tab/hover/bounds、正式35/80/history77整数组保持、build/clippy/fmt/diff PASS。签名App cd229175164fec2c0319a545c1ebe2437e694cc19b81fcd5ea55bab69bd3c4e4 / source654 ada8f3a18ea21b1f4743c262d11c3a81f961b1c33663bf844caba8f909fd7109 / HEAD6857b2e。自建浏览器/Vite清理，仅Review App40985/Runtime41043/fixture12713保留，B穿透打开供Review。Review48独立审查进行中；dark NOT_RUN、旧LAN/Legacy冲突与History001、Zero/动画未关闭。总体DOING/REWORK，无Commit/Merge/Push/Release。
+
+独立Review48完成：VISUAL_REVIEW1791–1832/SHA946e8fbbb8bbfd54b20618f7d514c0d8f4c68ca18259c38b722b40aa847efde3；旧1790行prefix逐字节保持。六pair独立复算、654source、签名App、32median样本和正式整数组历史保持核对。仅本轮颜色消费及78计数重叠修复局部PASS；advance/5RGB残差OPEN，节点Tab图标区域FAIL，其它旧OPEN/NOT_RUN和锁屏foreground未降低。整体DOING/REWORK。见policy79-review48-receipt。
+
+
+### P2-08 policy80（2026-10-11，显示排序拖动反馈）
+
+完整行跟随鼠标抓取点，临时槽位吸附与180ms相邻项让位；仅松手正式保存。Native上下排序cfg37→38→39、列表外取消/同槽不写、选择80/history77不变并恢复用户Other-A-B。Desktop build/1 test/clippy/fmt/diff PASS；同态neutral DPR2 overlay/diff和真实动画bounds已保留，按住连续视觉NOT_CAPTURED，Review49进行中。App80保持运行供用户Review；P2-08仍DOING/REWORK、History001 OPEN、没有提交/合并/推送/发布。细节见resumed-native/VISUAL_AUDIT.md第80轮。
+
+
+### P2-08 policy82（2026-10-11，独立Review拖动风险返工）
+
+81固定每次反向180ms和真实list起点；82纯偏好Saved保留下一drag预览。App82 PID51547/Runtime51599保持运行且弹窗打开；39→40→41恢复Other-A-B、取消不写，sel80/全77history不变，32帧bounds与同态DPR2对照保留。build/clippy/2 tests/fmt/diff PASS；持续按住视觉/跨Saved快速操作NOT_CAPTURED/NOT_RUN，旧视觉OPEN保留、Review49追加中，整体DOING/REWORK/History001 OPEN。cleanup见resumed-native/policy82-cleanup.json，无提交/推送/发布。
+
+policy82独立Review49已完成（VISUAL_REVIEW.md:1833–1869），限定PASS/NOT_CAPTURED/NOT_RUN/OPEN分别保留；delivery-receipt落盘，整体DOING/REWORK。
+
+
+### P2-08 policy83（2026-10-11，用户指定四向箭头）
+
+Root唯一writer，排序行/浮层macOS Move cursor，最小公开AppKit接线；3源文件增量，不改排序/保存。build/clippy/fmt/diff PASS，1227vendor警告保留；Native良性悬停无崩溃，cfg42/sel80/history77完整保持用户A→Other→B。App55455/Runtime55507/fixture12713保留，弹窗已打开供体验，旧82正常退出。工具只捕获generic cursor overlay，真实光标/持有drag像素NOT_CAPTURED；Review50独立核查中。P2-08 DOING/REWORK及History001 OPEN保留，无提交/推送/发布，详resumed-native/VISUAL_AUDIT第83轮。
+
+独立Review50完成：VISUAL_REVIEW.md:1870–1892，SHA84b9d99433dbbe631c1ec26183a04b7b13dbd58c998b0d9ae98d080bbfc86754；前1869行11e215…精确保留。有界接线/生命周期/数据保持PASS，实际系统cursor像素NOT_CAPTURED及旧REWORK保持。见policy83-delivery-receipt.json。
+
+
+### P2-08 policy84–86（2026-10-11，手输节点宽度）
+
+用户纠正当前原版无100–320范围：84clamp方案ABANDONED并保留；只读LAN input30300/minmax空与Legacy旧限制冲突记录。Root唯一Core/Config+UI writer，86删除旧范围并既有width/Patch同型u32，4源文件增量，无Cargo/Runtime变更。85Native手输3030/步进/弹窗重开PASS；86逐键303030自动保存cfg75、单列适配、弹窗重开保留，恢复用户312cfg77。sel80/完整77history与其它State保持；Native大宽全App重启/本轮React同态叠图NOT_RUN。build/Core1/domain1/Desktop1/clippy/fmt/diff PASS，1227vendor警告保留；App62349/Runtime62757/fixture12713留体验，旧83/85退出、只读临时tab关闭。独立Review51追加中；整体DOING/REWORK/History001 OPEN保持，详resumed-native/VISUAL_AUDIT第84–86轮，无提交/推送/发布。
+
+独立Review51完成：VISUAL_REVIEW.md:1893–1924，SHA 44a373599dcfbb38c34c2b0e1796b96919a86aae24a85f7b7f5339daf408b6bd；前1892行84b9d994…完整保留。有界手输/自动保存/弹窗回显/单列功能PASS，Native大宽整App重启、React同态叠图NOT_RUN；不扩推逐帧无闪动或整页视觉通过。精确收据policy86-delivery-receipt.json，整体DOING/REWORK、History001/Busy OPEN不变。
+
+
+### P2-08 policy87（2026-10-11，用户指定当前 OpenBox 内置默认）
+
+用户确认故障转移仅结构/现有订阅来源；Root单一Core/Config、Compiler、UI writer。当前原版同源GET只读取得5结构/13策略/24完整规则集，1414页139986条且二次完整提取精确等包；default意图与真实Current分离，显示/命中排序分开。两处右上恢复走正式Store/gate/CAS，只有fresh无snapshot时初始化，已有快照不自动覆盖、保存待应用。新Matcher keyword/ruleset与Compilerinline闭合集合；最小LegacyDTO消费者配套，不扩Legacy功能。
+
+最终隔离Native两Restore77/80→79/82、冷重开保持；生产State原SHA不变，三个SQLite全77历史seq/epoch/scope/time/record相同，Cancel/早期实际失败重试/最终Core失败原子性记录齐备。12定向Core测试、Core/Desktop check/clippy/build、fmt/diff与sing-boxcheck PASS；Legacyfmt PASS，LegacylibClippy missing WindowsLICENSE build资源FAIL尚未到consumer，NOT_VERIFIED。同态13卡真实1008×232/pitch240、第一策略overlay，Tab宽.3125px残差、NativeJPEG/侧栏非同态/逐节点bounds及运行默认选择NOT_RUN明确。
+
+最终684sourceSHA231fd6482aec337d743571904c60bc88d637114b0f62304ba438359347ba0792/HEAD6857b2e不变；verifyAppSHAc62d4b17…与用户ReviewAppSHA29e4906d…独立记录。App73843已打开设置→目标分流，生产77/80旧用户配置保留供review，无自动Restore/Apply/Runtime；旧自有Runtime62757正式Stop及旧App均退出，fixture12713保留，参考Vite/tabs/cookie临时文件清理。独立Review52追加中，P2-08 DOING/REWORK、History001/Busy OPEN不变，无Commit/Merge/Push/Release；详resumed-native/policy87-delivery-receipt.json、VISUAL_AUDIT第87轮。
+
+独立Review52已完成：VISUAL_REVIEW.md:1925–1970，full SHA c1b9b1804b9fc08ca957f05cd10893c5c7757965da8902abe9a7b3828c910024，前1924行44a373599d…精确保留。有界默认数据/正式恢复/离线Compiler/冷重开PASS；Legacy命令FAIL与consumer NOT_VERIFIED、Native严格pixel/逐节点bounds/全域同态/实际Apply NOT_RUN，旧视觉及History001/Busy OPEN、整页DOING/REWORK保持。见policy87-review52-receipt及delivery-receipt。
+
+
+### P2-08 policy89（2026-10-11，出站按钮/跟手排序）
+
+Root仅Desktop六文件：前两按钮补在线#e8e8e8/radius9.3；完整原card预览/抓点跟随、冻结实际height中点吸附、共享180ms邻卡动画，drop一次正式save。9项定向测试/build/clippy/fmt/diff PASS；隔离Native上下drop79→81/sel82、同槽/取消不写、最终cold读81；误点隔离开关并还原至83已单列，最终State仅cfg变化、77历史与production保持。App89final83107在出站页供review；App88用户draft保留。LAN/Legacy CSS漂移及68vs62卡高明确OPEN；连续轨迹/异高Native/Native失败/dark-hover NOT_RUN，独立Review53待追加；全页DOING/REWORK/History001/Busy OPEN，不提交/推送/发布。详resumed-native/VISUAL_AUDIT第89轮。
+
+第89轮签名身份更正：最终实际启动AppSHA 3cce1a4e8ca4f152f8c92433aafd5d167493bc2d930bfe9727d1188648674951，pack后二次codesign改变签名字节，旧收据保留、更正详policy89-signature-correction.json；源码/截图/数据结论不变。
+
+独立Review53已完成：VISUAL_REVIEW.md:1971–2012，fullSHA 85a405a7ac6aacd7f95a3035e53bdd046f66a5eba8d7e9105d4846bb63e52202；前1970行c1b9b180…保持。签后身份重新独立核实；header灰色局部及保存/取消/冷读有界PASS，9测试PASS。连续轨迹/异高/原生写失败/dark-hover/系统cursor像素、旧整页REWORK保留；详policy89-independent-review-receipt.json。前一次root最终SHA断言恰逢Reviewer追加回归补充而失败，最终按完成消息再次核验成功，不改历史内容。
+
+
+### P2-08 policy91（2026-10-11，局部滚动与图标说明）
+
+Root仅Desktop十文件+AGENTS规则，动态组编辑固定表单/页脚、命中List独立scroll，静态/Failover路径保持；所有共享IconButton默认说明，并补Kit/数值/Picker/Toast/Runtime等旁路。Native确认列表65px位移及空/静态、主要说明；Reviewer发现侧栏重复说明后去重，Panel上传悬浮失败后修正真实Kit命中。8定向tests/Desktop build/clippy/fmt PASS；Legacy fmt PASS/Clippy缺libcronet.dll FAIL101保留。隔离误点开关还原cfg83→85仅revision变，sel82/全77history/production保持；用户App88草稿保留。精确SHA与收据见policy91ready，独立Review54待追加；参考LAN与Legacy/用户滚动要求差异、滚动条overlay形态和全页面全状态Native NOT_RUN，整体DOING/REWORK、History001/Busy OPEN，无提交推送发布。
+
+独立Review54完成：VISUAL_REVIEW.md:2013–2049，fullSHA7ec19318b71bfe7b099746c9dc8e0c463b9046ca7b11b2517ecfe8b0a927cc5e，前2012行85a405…精确保留；最终source685/App/AGENTS重算0 mismatch。局部滚动与已捕获Tooltip PASS；overlay形态/逐按钮/暗色及其它语言/历史测速回归NOT_RUN和整体DOING/REWORK/History001/Busy OPEN保持。详policy91-delivery-receipt.json与independent-review-receipt。
+
+
+### P2-08 policy92（2026-10-11，出站编辑动态/静态 Tab 组）
+
+Root仅Desktop groups/tokens：统一白色圆角模式组，intrinsic宽/4px padding/9px外框，旧opaque浅色编辑底校准用户参考#f5f4f4，数值wrapper补9px圆角；不冒称等价blur。最终Native动态/静态切换、局部list滚动、取消再开PASS；cfg85/sel82完整state字节与77history/production保持。最终App1615留动态编辑供review，签后AppSHA370d234b969f63f51a93173af545a9a51af19fa29c471a2432ea522e1eb639e6/685sourceSHA bff0a87cc52c0ffecd2c307d1967c4e363054d1d086dc53be12b07b9f0b7bafe，HEAD6857b2e不变。build/clippy/fmt/diff PASS，Legacy fmt PASS、Clippy缺Windows sing-box.exe FAIL保留。React freshcomputed/同态全图、暗色/其它语言Native NOT_RUN；独立Review55待追加。整页DOING/REWORK、HISTORY-WRITE-001/Busy OPEN，无提交推送发布。详resumed-native/VISUAL_AUDIT第92轮、policy92-scoped/identity/preservation与原件差图。
+
+
+第92轮独立Review55勘误：policy92final-handoff.jpg 实际仍在命中列表末端（首行订阅c、末行刷新验收c）。取消后重新开保留offset，不能称重开恢复顶部，旧描述错误。最后通过实际List向顶部滚动另存 policy92final-handoff-top.jpg，实际首行订阅a/末可见刷新验收a，Tab/表单/footer不动；最终留动态模式顶部供review。旧末端原件不覆盖。
+
+
+独立Review55完成：VISUAL_REVIEW.md:2050–2081，前2049行7ec19318…精确保留、全文47785b29b1ed275ceea5edcc1e578bd8ff3c4b989700e1c979ef978df6987aba。App/685source独立复算0mismatch；统一Tab组/切换/局部滚动有界PASS。灰底截图采样而非computed/blur等价、126×40推导、不同态11vs7、其它语言/暗色/freshReact NOT_RUN明确；handoff原末端与额外滚动恢复顶部分开记，不声称重开reset PASS。全页DOING/REWORK、History001/Busy OPEN保持。详policy92-independent-review-receipt及delivery-receipt。
+
+
+### P2-08 第93轮局部返工（2026-10-11）
+
+用户覆盖动态/静态模式Tab hover：仅文字轻微变淡，不增背景。3文件小改，verified签后App21e3a5df… / 685源清单89565414…；真实MouseMove四态背景ROI逐像素不变、文字改变，Tab切换/Cancel/reopen有界PASS；旧App92 Static草稿保留，新隔离10635打开供review。Desktop build/Clippy/fmt PASS，Legacy clippy缺Windows libcronet.dll FAIL保留，Legacy fmt PASS。cfg85/sel82、77历史与production未变，无Apply/测速/网络操作。审计/原件/差图/保护收据位于resumed-native policy93verified-*；Review56待追加。P2-08仍DOING/REWORK，HISTORY-WRITE-001/Busy OPEN，无Commit/Merge/Push/Release。
+
+
+第93轮独立Review56完成（VISUAL_REVIEW.md:2082–2109）。前2081行47785b29…精确保留；App/685源清单0mismatch、三文件增量核对、4份真MouseMove背景8组ROI严格相同及目标文字变化独立复算有界PASS。非目标文字未变；其它语言/暗色/busy/focus与整页视觉不外推PASS，History001/Busy OPEN及DOING/REWORK保持。最终窗口10635保留，旧1615未保存Static草稿保持；详policy93-independent-review-receipt.json。
+
+
+### P2-08 第94轮故障转移编辑头部（2026-10-11）
+
+用户图二/只读LAN最终computed确认共用两行header padding6/8/gap4、buttons11px/600、全部64×24；两文件返工已Native验证7节点移入/反选/清空/搜索/移出及static共享回归。App1240ccce… / 685source0dcff9a2…；Desktop build/Clippy/fmt PASS，Legacy clippy缺Windows LICENSE FAIL、fmt PASS保留。新隔离18235留review，1615/10635旧草稿不动，cfg85/sel82及77历史和production不变。baseline整体12vs7/DPR1vs2不同无整页像素PASS，regional header布局证据、上方11px/字体advance/radius差异单列；Review57待追加。P2-08 DOING/REWORK，History001/Busy OPEN，无提交发布。
+
+
+P2-08 第94轮 Review57 纠错（2026-10-11）：旧final审计误称搜索wrapper rounded，实际未落源码，失败原件保留。实际补齐且fmt后重建policy94verifiedformat（App79d81e79399c071a7f6dd1ba918bdd583a013e0d3dd9b2083c144639910646cf/source b3b0d6b1ca88d8f247184e3fd9f7fdc509b1a175ba967a7e0e5b1bedbc5b7061），Native圆角和搜索输入复验，最终PID20219留故障转移0空搜索。build/Clippy/fmt通过，Legacy缺LICENSE FAIL；独立Review57待核。两文件增量，4root State/77历史未变，用户旧草稿保持，无保存/Apply/网络操作。整页DOING/REWORK、History001/Busy OPEN及数据/DPR/上方11px/字体残差继续保持；无Commit/Merge/Push/Release。
+
+
+第94轮独立Review57完成（VISUAL_REVIEW.md:2110–2136）：前2109行b61ca70…精确保留；最终App/source685项0mismatch。共享两行头部/留白/加粗及实际wrapper修角有界PASS，旧94final错误审计与方角FAIL保留。上方11px、按钮advance1px、字体weight/radius及整页DPR/数据不一致等继续OPEN；最终right0仅输入不算过滤PASS，Static最终修角本轮NOT_RUN。P2-08 DOING/REWORK，History001/Busy OPEN。详policy94-independent-review-receipt.json，新最终20219窗口保持。
+
+
+### P2-08 第95轮：修改分组高级设置（2026-10-11）
+
+当前用户原图覆盖Legacy四项，LAN最终computed三项68高/r16/borderless、80×32输入、33×20 switch。Root仅Desktop四文件，恢复等待off隐藏不清值；文字及本体点击、6/75隐藏与fold/reopen保留已Native复验。原版12节点/DPR1 vsNative7/DPR2，局部Y+4/advance1–2px/输入surface残差OPEN，不判全页PASS。最终PID29376留高级展开；AppSHAcf7828a114d644f315efd5cd4392709731b7fe9a6b7ef9b918ca503378658564/685sourceSHA71af69f6065d0763edf9ba645b0bf798a00832a7f0a749d9b048f61b56a61d25。build/Clippy/fmt PASS，既有语言测试2条PASS、Legacy fmt PASS、缺Windows LICENSE Clippy FAIL保留；root89/93/94/95/production State及77历史保持、旧用户草稿不动。审计/同态区域原件叠差图/身份保护收据在resumed-native policy95verified；Review58待追加。DOING/REWORK、HISTORY-WRITE-001/Busy OPEN，无Commit/Merge/Push/Release。
+
+第95轮独立Review58完成：VISUAL_REVIEW.md:2137–2174，前2136行06482053…精确保留，全文9a879165e2c13ced44a7fffb4f8452b811f8416049ce11f1c137df1121d07241。签后App/685source0mismatch；三项结构、文字/本体受控点击、隐藏/fold数值保留有界PASS，区域像素等价OPEN。Y+4、advance1–2、radius9vs9.3、底色RGB1/inputRGB2及其它Native状态NOT_RUN不豁免。原版off完整PNG真实存在，NOT_CAPTURED仅缺失Recovery locator局部截图；勘误追加不覆盖原件。交付receipt已附独立Review；DOING/REWORK、History001/Busy OPEN及无提交发布保持。
+
+
+### P2-08 第96轮：修改分组内容整体滚动（2026-10-11）
+
+Root三Desktop文件修复Failover form278漏计后代→690自然高度，两层grid max-content；body896×558/content722/max164，标题/底栏固定，双栏自然322保留；仅非Dynamic加body-bound Scrollbar，重开offset0，短builtin max0不出bar。真实负滚轮到底、正滚轮回顶、thumb拖至中间、Cancel/reopen、Dynamic固定表单、Static十一候选独立内滚已截图。LAN body558/content715/max157、双栏y453/h323，Native extent+7/双栏y+8/h-1仍OPEN；LAN十二节点/DPR1 vsNative七节点/DPR2，未算整页像素相似度，Failover/Dynamic独立overflow Native本轮NOT_RUN。
+
+签后App8eb57f3b18d3504e74026be6afe4e71c53726a351c3c664164875c85987727a5/source393245eb1abc6e21ad63f299fc3e0289bea13adcac7629e6d0f2309a33e6f750，HEAD6857b2e…；Desktop build/Clippy/fmt及Legacy fmt PASS，Legacy缺Windows LICENSE Clippy FAIL保留。新root96窗口保持故障转移高级5/60/on、滚至底部，旧PID1615/10635/20219/29376未动；六root State/77历史不变，无Save/Apply/网络操作。原版取消自己的草稿/reset viewport/关闭自有tab。Mac工具方向标签反向由实际delta定位并正确复验baseline，未改系统；诊断wheel移除。Review59待追加，前2174行历史9a879…保持；P2-08 DOING/REWORK、History001/Busy OPEN，无Commit/Merge/Push/Release。
+
+
+第96轮最终进程复核勘误：前文“旧四窗口保留/仍在”的断言过宽。最终ps -ax仅观察旧PID29376仍运行；1615/10635/20219为NOT_RUNNING，退出原因UNKNOWN，本轮没有取消/关闭/停止这些旧进程，也没有重开或重建其草稿。准确保护范围是未操作旧窗口、旧源码/历史证据及六root磁盘State/77历史哈希不变，不能由持久数据推断未保存草稿仍在内存。最终delivery PID39303、App8eb57f…实际运行。详情policy96-delivery-receipt.json；原先错误表述和本勘误保留，不伪报四进程存活。
+
+
+第96轮独立Review59完成（VISUAL_REVIEW.md:2175–2201）：前2174行9a879…精确保留；App8eb57f…/685source393245…独立复算0mismatch、增量三文件。本次整体滚动/固定标题保存栏/自然双栏高度、thumb与回顶、短内容/reopen及Static11内部滚动有界PASS，无新blocker；extent+7、双栏y+8/h-1、字体/颜色与本轮未实测状态继续OPEN/NOT_RUN。状态样式继承误判已撤回；旧三PID NOT_RUNNING原因UNKNOWN如实单列。最终39303留供review，完整收据policy96-delivery-receipt/independent-review-receipt。P2-08 DOING/REWORK、History001/Busy OPEN，无提交发布。
+
+
+### P2-08 第98轮：代理订阅编辑在当前页共用弹窗（2026-10-11）
+
+四Desktop文件增量：稳定ID事件→原subscriptions Entity.open_editor，Shell固定视口挂载同render_modal；不navigate设置、不复制Model或保存路径。只读LAN当前页dialog已观察，Legacy旧跳转按用户最新要求覆盖。Native正确第二ID、取消/Escape、正式改名保存列表更新、非法URL保留草稿、设置入口与分享打开关闭有界PASS。两入口同ID截图bbox逻辑672×370/x304/y175一致；raster测量非GPUIbounds，LAN数据不同不做整页像素PASS。build/Clippy/fmt及4订阅model测试PASS；LegacyfmtPASS/缺Windows LICENSE clippyFAIL保留。
+
+测试root98订阅名已恢复但既有Core联动Pool名差异保留，不能称全恢复；最终fresh root98-verified cfg85/sel82、State/77历史精确匹配root96，App433cf9d…/source346df5…/PID53976留代理订阅弹窗供review。旧95cfg86/PID退出与旧96重启原因UNKNOWN，本轮未操作95或改production。审计/增量diff/原件/叠差图/身份/保护收据在resumed-native policy98-*；独立Review60待追加。DOING/REWORK、History001/Busy OPEN，无Commit/Merge/Push/Release。
+
+第98轮独立Review60完成（VISUAL_REVIEW.md:2202–2229）：原页共享编辑/稳定ID/取消错误草稿保留/原服务保存与同模态有界PASS；App433cf9…、685source346df5…独立0mismatch，前2201行973ac67c…保留。final root State/历史精确一致，测试rootPool名副作用与旧95变化Unknown明示；其它语言/暗色/inflight/磁盘写失败/全React视觉NOT_RUN，不外推整页通过。PID53976最终留代理订阅编辑弹窗。receipt及最终交付见policy98-independent-review-receipt / delivery-receipt；整体DOING/REWORK，History001/Busy OPEN。
+
+
+### P2-08 第99轮：修改订阅共享弹窗字体层级（2026-10-11）
+
+仅 subscriptions.rs/theme.rs：普通Tab与输入Regular330、标签Medium380、footer Semibold520、标题Bold630（原版700语义，标题raster零差）、规则/节点表内/DNS局部消费映射；分享和页面node_grid未改，未改Model/Input/保存事件。LANcomputed/CDP实读与同态Native前后原件/无mask叠差图保留；数据/不同DOM版本不做React全图95%宣称。Source/Rules/Nodes/DNS与两入口Cancel/Escape原生检查，build/Desktop Clippy/fmt PASS；Legacy缺Windows LICENSE既有FAIL保留。误点Sidebar规则失败证据单列，不计正证。font2 App4372120…/685source d9eb1a…/PID59266/root99-font2留代理共享弹窗供review；旧53976草稿未動，三个自有root和生产/用户root State及77历史保持，收据policy99-preservation-cleanup。独立Review61另追加；整页DOING/REWORK、History001/Busy OPEN，无Commit/Merge/Push/Release。
+
+
+第99轮命令补充（实际重跑）：policy99-legacy-fmt PASS；policy99-legacy-clippy FAIL101，当前资源错误是 binaries/sing-box-1.14.0-windows-amd64/libcronet.dll 缺失。第98轮 LICENSE 的旧失败记录保留，但不拿它替代本轮DLL错误；未修改其它平台资源。最终685源码manifest复算0mismatch、AppSHA一致，git diff --check PASS。
+
+
+第99轮独立Review61完成（VISUAL_REVIEW.md:2230–2258），前2229行87df342…原字节保留。App437212…/685source d9eb1…0mismatch、仅两Desktop文件，无本轮源码功能blocker；普通局部字重映射/Tab与输入改善有界PASS，标题ROI零差及其它字体/布局/颜色残差OPEN。准确记录本轮Legacy缺libcronet.dll FAIL，未替换98旧失败。最终PID59266留共享弹窗供review；整页DOING/REWORK、History001/Busy OPEN，收据policy99-independent-review-receipt。
+
+
+### P2-08 第100轮：共享订阅失败 Toast（2026-10-11）
+
+正式订阅download/parse/save接线已证实；用户URL真实失败Network(DirectPathUnverified)，只读bootstrap1.1.1.1路由utun4，尚未下载成功。不改用户网络或生产下载策略。普通editor红卡移除、typed三语Toast、当前request校验保留；额外复现Toast close导致backdrop丢草稿的两次FAIL保留，最终Toast本体occlude后正文/close/auto4s保留草稿、Esc/外围背景仍正常Cancel，双入口原生验证。六Desktop增量（services仅旧测试前提与精确Busy重开等待），最终build/clippy/fmt及3条1-testPASS；Legacy Clippy缺libcronet.dll FAIL保留，部分成功/暗色/其它语言/inflight Native NOT_RUN。Appcaf295…/685source08584…/PID66498/root100留共享modal；5root State/77历史不变，用户53976/59266保持。所有证据policy100-*；独立Review62另追加，P2-08DOING/REWORK、History001/Busy OPEN，无Commit/Merge/Push/Release。
+
+第100轮独立Review62完成（VISUAL_REVIEW.md:2259–2282），前2258行原字节完整保留。六Desktop增量、685源0mismatch、Appcaf295签后SHA、5root State/77历史复算一致。错误Toast/通知自身命中与草稿保留有界PASS，旧dismiss两FAIL保留；真实链接导入、React同失败等仍NOT_RUN，History001/Busy OPEN及P2-08DOING/REWORK不变。独立收据policy100-independent-review-receipt.json。
+
+
+### P2-08 第101轮：全局字体一致性（2026-10-11）
+
+用户明确要求AGENTS全局规则（:51）及全部字体覆盖清理。Theme/Shell/共享Input/Button/Select/Tooltip/Toast同源原4.003 MiSans/Noto，静态4.009内部330/380/520/630消费者迁移集中CSS400/500/600/700，Toast650原语义保留；19文件纯字体改动，无Vendor/Cargo/font字节/业务事件变更。查明两处无依据Menlo（分享列表URL/host）最终6移除，其它React明确等宽例外保留。LANcomputed与Native旧/新原件/叠差图、24状态final4回归及final6分享/editor复验按App身份分开；临时shape测量代码移除，实际face/全栅格等价OPEN，不宣称全页95%或验收完成。
+
+final6 App675f858…/686source e532e470…/PID78455/root101留代理shared-editor；build/all-target Clippy/fmt PASS，Legacy缺Windows LICENSE101及本轮早期build/Clippy/fmt失败保留。root101仅正式UI语言/主题恢复操作cfg85→92，其它State与基线同/sel82、77history相同；既有rootState/77history保持。99/100保留运行和100草稿未碰；98PID不在ps原因UNKNOWN、本轮未操作。自有baseline退出/LAN只读tab关闭。证据policy101-*，独立Review63另追加；P2-08 DOING/REWORK，History001/Busy OPEN，无Commit/Merge/Push/Release。
+
+第101轮独立Review63完成（VISUAL_REVIEW.md:2283–2305）：686源/19delta/final6 App身份0mismatch、7root State与7DB各77历史一致；同源Font/集中CSS字重与共享控件接线有界PASS，未见新行为blocker。final4/probe/final6证据分开，字体每run/等宽face/全页像素未外推通过，populated分享列表/readonly密码modal NOT_RUN；98PID退出UNKNOWN、Legacy本轮缺LICENSE FAIL和其它旧失败保留。前2282行原字节保持，receipt为policy101-independent-review-receipt.json；P2-08仍DOING/REWORK，History001/Busy OPEN。
+
+
+### P2-08 本地 Git 整合授权（2026-10-11）
+
+用户明确要求将代码提交并合并回 `codex/dist-react-restore`，覆盖此前不 Commit/Merge 的限制；不包含 Push/Release 或整体视觉验收。源树 `dev/p2-08-proxy-latency` 与目标树共同基线 `6857b2e39633ca0564cac66b40ee0f9129cf275a`；本次整合累积代理页、正式服务与已批准 owner 协作、目标分流/内置默认及共享编辑和字体修复。policy101 final6 的 686 项源码哈希已逐项核验一致，Desktop build/all-target Clippy/fmt 原收据通过、Review63 有界结论保留。主树无关 Python 缓存保持，历史失败、截图和本地证据继续保留于被 Git 忽略的 evidence 目录；Git 恢复快照与结果见 `evidence/p2-08/visual-rework-20261010/resumed-native/git-integration-20261011/`。P2-08 仍 DOING/REWORK，HISTORY-WRITE-001、Busy、真实链接导入及未完成视觉项不因合并关闭，不解锁下游。

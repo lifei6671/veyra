@@ -1,0 +1,331 @@
+{
+  "custom": null,
+  "policies": [
+    {
+      "id": "builtin-policy-speed",
+      "name": "Speed",
+      "icon": "misc:stopwatch",
+      "icon_scale": 0,
+      "enabled": true,
+      "matchers": [
+        {
+          "kind": "domain",
+          "values": [
+            "speed.cloudflare.com",
+            "challenges.cloudflare.com"
+          ]
+        },
+        {
+          "kind": "domain_suffix",
+          "values": [
+            "yalala.com",
+            "whois.pconline.com.cn",
+            "ipip.net",
+            "b0.upaiyun.com",
+            "asn247.net",
+            "astrill.org",
+            "ipinfo.io",
+            "vultr.com",
+            "test-ipv6.com",
+            "ipw.cn",
+            "ipcheck.im",
+            "fast.com",
+            "speedcheck.org",
+            "speedtest.net",
+            "speedtest.cn",
+            "ustc.edu.cn",
+            "dnscheck.tools",
+            "whoer.net",
+            "browserleaks.com",
+            "browserleaks.org",
+            "browserleaks.net",
+            "dnsleaktest.org",
+            "1-b.net",
+            "workers.dev",
+            "jsonp-ip.com",
+            "sspanel.net",
+            "dnsleaktest.com",
+            "browserscan.net",
+            "surfshark.com",
+            "surfsharkdns.com",
+            "ip-api.com",
+            "ipleak.net",
+            "ip-score.com",
+            "888005.xyz",
+            "incolumitas.com",
+            "null-addr.com",
+            "null-addr.net",
+            "null-addr.org",
+            "null-addr.biz",
+            "null-addr.info",
+            "addr.tools",
+            "ifconfig.me",
+            "ip125.com",
+            "skk.moe",
+            "ip111.cn",
+            "ping0.cc",
+            "ip.sb",
+            "ipify.org",
+            "whoer.com",
+            "whatismyip.com.tw",
+            "whatismyip.com",
+            "whoisip.me",
+            "ipaddress.me",
+            "ip2proxy.com",
+            "vpnapi.io",
+            "l.google.com"
+          ]
+        },
+        {
+          "kind": "ip_cidr",
+          "values": [
+            "142.251.215.0/24",
+            "74.125.250.129/24"
+          ]
+        }
+      ],
+      "default_outbound": {
+        "kind": "pool",
+        "id": "all-manual"
+      }
+    },
+    {
+      "id": "builtin-policy-youtube",
+      "name": "Youtube",
+      "icon": "brand:youtube",
+      "icon_scale": 0,
+      "enabled": true,
+      "matchers": [
+        {
+          "kind": "rule_set",
+          "values": [
+            "geosite-youtube"
+          ]
+        }
+      ],
+      "default_outbound": {
+        "kind": "pool",
+        "id": "builtin-failover"
+      }
+    },
+    {
+      "id": "builtin-policy-ai",
+      "name": "AI",
+      "icon": "brand:openai-light",
+      "icon_scale": 0,
+      "enabled": true,
+      "matchers": [
+        {
+          "kind": "rule_set",
+          "values": [
+            "geosite-category-ai-!cn"
+          ]
+        }
+      ],
+      "default_outbound": {
+        "kind": "pool",
+        "id": "all-auto"
+      }
+    },
+    {
+      "id": "builtin-policy-tiktok",
+      "name": "TikTok",
+      "icon": "brand:tiktok",
+      "icon_scale": 0,
+      "enabled": true,
+      "matchers": [
+        {
+          "kind": "rule_set",
+          "values": [
+            "geosite-tiktok",
+            "geosite-tiktok@!cn"
+          ]
+        }
+      ],
+      "default_outbound": {
+        "kind": "pool",
+        "id": "all-auto"
+      }
+    },
+    {
+      "id": "builtin-policy-netflix",
+      "name": "Netflix",
+      "icon": "brand:netflix-mono",
+      "icon_scale": 0,
+      "enabled": true,
+      "matchers": [
+        {
+          "kind": "rule_set",
+          "values": [
+            "geosite-netflix",
+            "geoip-netflix"
+          ]
+        }
+      ],
+      "default_outbound": {
+        "kind": "pool",
+        "id": "all-auto"
+      }
+    },
+    {
+      "id": "builtin-policy-github",
+      "name": "Github",
+      "icon": "brand:github-mono",
+      "icon_scale": 0,
+      "enabled": true,
+      "matchers": [
+        {
+          "kind": "rule_set",
+          "values": [
+            "geosite-github"
+          ]
+        }
+      ],
+      "default_outbound": {
+        "kind": "pool",
+        "id": "all-auto"
+      }
+    },
+    {
+      "id": "builtin-policy-google",
+      "name": "Google",
+      "icon": "brand:google",
+      "icon_scale": 0,
+      "enabled": true,
+      "matchers": [
+        {
+          "kind": "rule_set",
+          "values": [
+            "geosite-google"
+          ]
+        }
+      ],
+      "default_outbound": {
+        "kind": "pool",
+        "id": "all-auto"
+      }
+    },
+    {
+      "id": "builtin-policy-microsoft",
+      "name": "Microsoft",
+      "icon": "brand:microsoft",
+      "icon_scale": 0,
+      "enabled": true,
+      "matchers": [
+        {
+          "kind": "rule_set",
+          "values": [
+            "geosite-microsoft"
+          ]
+        }
+      ],
+      "default_outbound": {
+        "kind": "pool",
+        "id": "all-auto"
+      }
+    },
+    {
+      "id": "builtin-policy-apple",
+      "name": "Apple",
+      "icon": "brand:apple-light",
+      "icon_scale": 0,
+      "enabled": true,
+      "matchers": [
+        {
+          "kind": "rule_set",
+          "values": [
+            "geosite-apple"
+          ]
+        }
+      ],
+      "default_outbound": {
+        "kind": "direct"
+      }
+    },
+    {
+      "id": "builtin-policy-games",
+      "name": "Games",
+      "icon": "misc:game-soft",
+      "icon_scale": 0,
+      "enabled": true,
+      "matchers": [
+        {
+          "kind": "rule_set",
+          "values": [
+            "geosite-steam",
+            "geosite-sony"
+          ]
+        }
+      ],
+      "default_outbound": {
+        "kind": "pool",
+        "id": "all-auto"
+      }
+    },
+    {
+      "id": "builtin-policy-国外",
+      "name": "国外",
+      "icon": "globe:earth-americas",
+      "icon_scale": 0,
+      "enabled": true,
+      "matchers": [
+        {
+          "kind": "rule_set",
+          "values": [
+            "geosite-gfw",
+            "geoip-cloudflare",
+            "geoip-facebook",
+            "geoip-cloudfront",
+            "geoip-fastly",
+            "geoip-google",
+            "geoip-netflix",
+            "geoip-telegram",
+            "geoip-tor",
+            "geoip-twitter"
+          ]
+        }
+      ],
+      "default_outbound": {
+        "kind": "pool",
+        "id": "all-auto"
+      }
+    },
+    {
+      "id": "builtin-policy-国内",
+      "name": "国内",
+      "icon": "misc:shield",
+      "icon_scale": 0,
+      "enabled": true,
+      "matchers": [
+        {
+          "kind": "domain",
+          "values": [
+            "api.cloudflare.com"
+          ]
+        },
+        {
+          "kind": "rule_set",
+          "values": [
+            "geosite-cn",
+            "geoip-cn",
+            "geoip-private"
+          ]
+        }
+      ],
+      "default_outbound": {
+        "kind": "direct"
+      }
+    }
+  ],
+  "fallback": {
+    "id": "builtin-policy-other",
+    "name": "其他",
+    "icon": "globe:generic",
+    "icon_scale": 0,
+    "enabled": true,
+    "matchers": [],
+    "default_outbound": {
+      "kind": "direct"
+    }
+  }
+}

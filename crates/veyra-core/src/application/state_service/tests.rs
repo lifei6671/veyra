@@ -109,6 +109,8 @@ fn representative() -> Profile {
         port: 53,
     }];
     p.routing.custom = Some(CustomRouting {
+        icon: String::new(),
+        icon_scale: 0,
         name: Some("User rules".into()),
         enabled: true,
         rules: vec![CustomRoutingRule {
@@ -1083,4 +1085,446 @@ fn pending_clear_validation_epoch_and_atomic_failure() {
 fn non_manual_policy_rejects_pending_input() {
     let value = serde_json::json!({"kind":"url_test", "probe_url":"https://example.invalid", "interval_secs":120, "tolerance_ms":80, "pending_node_id":"n"});
     assert!(serde_json::from_value::<SelectionPolicy>(value).is_err());
+}
+
+// 保护目标策略真实磁盘 CRUD/命中排序、旧schema恢复及失败保旧，不启动内核。
+#[test]
+fn policy33_routing_disk_roundtrip_order_validation_and_failed_write_keep_truth() {
+    let fixture = Fixture::new();
+    let initial = fixture.seed_pool();
+    let mut a = TargetRoutingPolicy::new(PoolId("routing-a".into()));
+    a.name = "策略甲".into();
+    a.icon = "misc:pin".into();
+    a.icon_scale = 2;
+    a.matchers = vec![TrafficMatcher::DomainSuffix(vec!["example.invalid".into()])];
+    let mut b = a.clone();
+    b.id = PoolId("routing-b".into());
+    b.name = "策略乙".into();
+    b.matchers = vec![TrafficMatcher::Port(vec![443])];
+    let mut fallback = TargetRoutingPolicy::new(PoolId("routing-fallback".into()));
+    fallback.name = "未匹配".into();
+    fallback.icon = "misc:dart".into();
+    let mut routing = initial.profile.routing.clone();
+    routing.policies = vec![a.clone(), b.clone()];
+    routing.fallback = Some(fallback);
+    let saved = fixture
+        .snapshots
+        .save_routing(initial.config_version(), routing.clone())
+        .unwrap();
+    assert_eq!(saved.effect, ApplyEffect::SavedOnly);
+    assert_eq!(saved.version.0.revision, initial.config_revision + 1);
+    // UI 必须直接收到同一事务提交的快照/版本，不能依赖保存之后的第二次 gate。
+    assert_eq!(saved.value.profile.routing, routing);
+    assert_eq!(saved.value.config_version(), saved.version);
+    assert_eq!(saved.value, fixture.state());
+    let busy = fixture.snapshots.gate.try_lock().unwrap();
+    assert!(fixture.snapshots.snapshot().is_err());
+    assert_eq!(saved.value.profile.routing, routing);
+    assert_eq!(saved.value.config_version(), saved.version);
+    drop(busy);
+    assert_eq!(
+        fixture.state().selection_version(),
+        initial.selection_version()
+    );
+    let reopened = SnapshotService::new(
+        JsonStateStore::new(fixture.root.join("state.json")).unwrap(),
+        StateAccessGate::default(),
+    );
+    assert_eq!(reopened.snapshot().unwrap().profile.routing, routing);
+    // 策略身份、名称、匹配条件与兜底约束在提交前失败；真实出口图由组配置继续校验。
+    let before = fixture.bytes();
+    for case in 0..5 {
+        let mut invalid = routing.clone();
+        match case {
+            0 => invalid.policies[0].name.clear(),
+            1 => invalid.policies[0].matchers.clear(),
+            2 => invalid.policies[1].name = invalid.policies[0].name.clone(),
+            3 => invalid.policies[1].id = a.id.clone(),
+            _ => invalid.fallback.as_mut().unwrap().enabled = false,
+        }
+        assert!(
+            fixture
+                .snapshots
+                .save_routing(saved.version.clone(), invalid)
+                .is_err()
+        );
+        assert_eq!(fixture.bytes(), before);
+    }
+    routing.policies.reverse();
+    routing.policies[0].name = "策略乙更新".into();
+    routing.policies[0].enabled = false;
+    let updated = fixture
+        .snapshots
+        .save_routing(saved.version.clone(), routing.clone())
+        .unwrap();
+    assert_eq!(reopened.snapshot().unwrap().profile.routing, routing);
+    assert!(
+        fixture
+            .snapshots
+            .save_routing(saved.version, routing.clone())
+            .is_err()
+    );
+    routing.policies.pop();
+    let deleted = fixture
+        .snapshots
+        .save_routing(updated.version, routing.clone())
+        .unwrap();
+    assert_eq!(
+        reopened.snapshot().unwrap().profile.routing.policies.len(),
+        1
+    );
+    let before = fixture.bytes();
+    fixture.fail_writes();
+    routing.policies.clear();
+    assert!(
+        fixture
+            .snapshots
+            .save_routing(deleted.version, routing)
+            .is_err()
+    );
+    assert_eq!(fixture.bytes(), before);
+    // 真旧字段缺失读取默认空/None，不生成假策略，也不改变旧默认路由。
+    let mut old = serde_json::to_value(&initial).unwrap();
+    old["profile"]["routing"]
+        .as_object_mut()
+        .unwrap()
+        .remove("policies");
+    old["profile"]["routing"]
+        .as_object_mut()
+        .unwrap()
+        .remove("fallback");
+    let restored: AppState = serde_json::from_value(old).unwrap();
+    assert!(restored.profile.routing.policies.is_empty());
+    assert!(restored.profile.routing.fallback.is_none());
+    assert_eq!(restored.default_target, initial.default_target);
+}
+// 保护真实未决选择：改名保留 pending，停用策略不能清理或隐藏未决出口。
+#[test]
+fn policy33_routing_edit_preserves_pending_or_rejects_disabled_selector() {
+    let fixture = Fixture::new();
+    let initial = fixture.seed_pool();
+    let mut policy = TargetRoutingPolicy::new(PoolId("routing-pending".into()));
+    policy.name = "待确认策略".into();
+    policy.matchers = vec![TrafficMatcher::Domain(vec!["test.invalid".into()])];
+    let mut routing = initial.profile.routing.clone();
+    routing.policies.push(policy.clone());
+    let saved = fixture
+        .snapshots
+        .save_routing(initial.config_version(), routing.clone())
+        .unwrap();
+    fixture
+        .selection()
+        .stage_group(
+            saved.version.clone(),
+            fixture.state().selection_version(),
+            policy.id.clone(),
+            GroupSelectionIntent {
+                member: OutboundId::Direct,
+                mode: GroupSelectionMode::Auto,
+            },
+            None,
+        )
+        .unwrap();
+    let before = fixture.bytes();
+    let policy_index = routing
+        .policies
+        .iter()
+        .position(|p| p.id == policy.id)
+        .unwrap();
+    routing.policies[policy_index].enabled = false;
+    assert!(
+        fixture
+            .snapshots
+            .save_routing(saved.version.clone(), routing.clone())
+            .is_err()
+    );
+    assert_eq!(fixture.bytes(), before);
+    routing.policies[policy_index].enabled = true;
+    routing.policies[policy_index].name = "改名但保持未决".into();
+    fixture
+        .snapshots
+        .save_routing(saved.version, routing)
+        .unwrap();
+    assert_eq!(
+        fixture.state().group_selections[&policy.id]
+            .pending
+            .as_ref()
+            .unwrap()
+            .member,
+        OutboundId::Direct
+    );
+}
+
+// 保护已存在策略在正式新增/停用/删除出站后更新同一目录与 RuntimeIntent，磁盘无第二份成员真相。
+#[test]
+fn policy72_routing_members_follow_group_save_and_disk_reopen() {
+    let fixture = Fixture::new();
+    let initial = fixture.seed_pool();
+    let mut policy = TargetRoutingPolicy::new(PoolId("routing-live".into()));
+    policy.name = "实时出站策略".into();
+    policy.matchers = vec![TrafficMatcher::Domain(vec!["live.invalid".into()])];
+    let mut routing = initial.profile.routing.clone();
+    routing.policies.push(policy.clone());
+    let saved = fixture
+        .snapshots
+        .save_routing(initial.config_version(), routing)
+        .unwrap()
+        .value;
+    let mut group = NodeGroup::new(PoolId("new-outbound".into()));
+    group.name = "新增出站".into();
+    group.rule = GroupRule::Selector;
+    group.members = vec![OutboundId::Node(NodeId("n".into()))];
+    let added = fixture
+        .snapshots
+        .save_groups(saved.config_version(), vec![group.clone()])
+        .unwrap();
+    assert_eq!(added.effect, ApplyEffect::SavedOnly);
+    let reopen = || {
+        SnapshotService::new(
+            JsonStateStore::new(fixture.root.join("state.json")).unwrap(),
+            StateAccessGate::default(),
+        )
+        .snapshot()
+        .unwrap()
+    };
+    let added = reopen();
+    let derived = added.target_routing_members();
+    assert!(derived.contains(&group.outbound_id()));
+    assert_eq!(
+        OutboundCatalog::from_state(&added)
+            .get(&OutboundId::Pool(policy.id.clone()))
+            .unwrap()
+            .references,
+        derived
+    );
+    assert_eq!(
+        RuntimeIntent::from_state(&added)
+            .unwrap()
+            .groups
+            .iter()
+            .find(|g| g.id == policy.id)
+            .unwrap()
+            .members,
+        derived
+    );
+    assert!(
+        !serde_json::to_value(&added.profile.routing.policies[0])
+            .unwrap()
+            .as_object()
+            .unwrap()
+            .contains_key("members")
+    );
+    // 兼容早期冻结名单，丢弃旧缓存但不接受其它未知字段。
+    let mut old = serde_json::to_value(&added).unwrap();
+    old["profile"]["routing"]["policies"][0]["members"] =
+        serde_json::json!([{"pool":"missing-old-cache"}]);
+    let restored: AppState = serde_json::from_value(old.clone()).unwrap();
+    restored.validate().unwrap();
+    assert_eq!(restored.target_routing_members(), derived);
+    old["profile"]["routing"]["policies"][0]["unknown"] = true.into();
+    assert!(serde_json::from_value::<AppState>(old).is_err());
+    // pending 时禁止改变派生成员；不是静默移除 pending 或自动 Apply。
+    fixture
+        .selection()
+        .stage_group(
+            added.config_version(),
+            added.selection_version(),
+            policy.id.clone(),
+            GroupSelectionIntent {
+                member: group.outbound_id(),
+                mode: GroupSelectionMode::Auto,
+            },
+            None,
+        )
+        .unwrap();
+    let before = fixture.bytes();
+    group.enabled = false;
+    assert!(
+        fixture
+            .snapshots
+            .save_groups(added.config_version(), vec![group.clone()])
+            .is_err()
+    );
+    assert_eq!(fixture.bytes(), before);
+    let pending = fixture.state();
+    fixture
+        .selection()
+        .stage_group(
+            pending.config_version(),
+            pending.selection_version(),
+            policy.id.clone(),
+            GroupSelectionIntent {
+                member: group.outbound_id(),
+                mode: GroupSelectionMode::Auto,
+            },
+            Some(true),
+        )
+        .unwrap();
+    let disabled = fixture
+        .snapshots
+        .save_groups(added.config_version(), vec![group.clone()])
+        .unwrap()
+        .value;
+    assert!(
+        !disabled
+            .target_routing_members()
+            .contains(&group.outbound_id())
+    );
+    assert!(disabled.group_selections[&policy.id].selected.is_none());
+    assert_eq!(
+        disabled.group_selections[&policy.id].mode,
+        GroupSelectionMode::Auto
+    );
+    assert_eq!(reopen(), disabled);
+    let deleted = fixture
+        .snapshots
+        .save_groups(disabled.config_version(), vec![])
+        .unwrap()
+        .value;
+    assert!(
+        !deleted
+            .target_routing_members()
+            .contains(&group.outbound_id())
+    );
+    assert_eq!(reopen(), deleted);
+    // 仍拒绝真实组配置的悬空/self/cycle，不把失效引用解释为Direct。
+    group.enabled = true;
+    group.members = vec![OutboundId::Pool(policy.id.clone())];
+    let before = fixture.bytes();
+    assert!(
+        fixture
+            .snapshots
+            .save_groups(deleted.config_version(), vec![group.clone()])
+            .is_err()
+    );
+    assert_eq!(fixture.bytes(), before);
+    group.members = vec![OutboundId::Pool(PoolId("missing-real-outbound".into()))];
+    assert!(
+        fixture
+            .snapshots
+            .save_groups(deleted.config_version(), vec![group])
+            .is_err()
+    );
+    assert_eq!(fixture.bytes(), before);
+}
+
+// 保护新安装使用同一份内置数据，已有快照不自动迁移；两类恢复各自只改所负责事实。
+#[test]
+fn policy87_builtin_initialization_restore_isolation_and_disk_reopen() {
+    let f = Fixture::new();
+    let initial = f.state();
+    assert_eq!(initial.groups, builtin_defaults::default_outbound_groups());
+    assert_eq!(
+        initial.profile.routing,
+        builtin_defaults::default_target_routing()
+    );
+    assert_eq!(
+        initial.app_config.behavior.proxy_view.strategy_order,
+        builtin_defaults::default_strategy_order()
+    );
+    initial.validate().unwrap();
+    let mut old = f.seed_pool();
+    old.profile.routing = ProfileRouting::default();
+    old.app_config.behavior.proxy_view.node_card_min_width = 3030;
+    let mut custom = NodeGroup::new(PoolId("user-group".into()));
+    custom.name = "用户组".into();
+    custom.mode = GroupMode::Dynamic;
+    old.groups.push(custom);
+    let old = f.store.commit(&old).unwrap();
+    assert_eq!(f.state(), old); // 已有空routing不被初始化静默替换。
+    let saved = f
+        .snapshots
+        .save_groups(
+            old.config_version(),
+            builtin_defaults::default_groups_for(&old),
+        )
+        .unwrap()
+        .value;
+    assert_eq!(saved.profile, old.profile);
+    assert_eq!(saved.nodes, old.nodes);
+    assert_eq!(saved.subscriptions, old.subscriptions);
+    assert_eq!(saved.app_config, old.app_config);
+    assert!(
+        saved
+            .groups
+            .iter()
+            .find(|g| g.rule == GroupRule::Failover)
+            .unwrap()
+            .enabled
+    );
+    let restored = f
+        .snapshots
+        .restore_target_routing(saved.config_version())
+        .unwrap()
+        .value;
+    assert_eq!(restored.groups, saved.groups);
+    assert_eq!(restored.subscriptions, saved.subscriptions);
+    assert_eq!(restored.nodes, saved.nodes);
+    assert_eq!(
+        restored.profile.routing,
+        builtin_defaults::default_target_routing()
+    );
+    assert_eq!(
+        restored.app_config.behavior.proxy_view.node_card_min_width,
+        3030
+    );
+    let reopened = JsonStateStore::new(f.root.join("state.json"))
+        .unwrap()
+        .load()
+        .unwrap();
+    assert_eq!(restored, reopened);
+    let bytes = f.bytes();
+    assert!(
+        f.snapshots
+            .restore_target_routing(saved.config_version())
+            .is_err()
+    );
+    assert_eq!(f.bytes(), bytes);
+    let mut changed = restored.profile.routing.clone();
+    changed.policies[0].name = "恢复前修改".into();
+    let changed = f
+        .snapshots
+        .save_routing(restored.config_version(), changed)
+        .unwrap()
+        .value;
+    let bytes = f.bytes();
+    f.fail_writes();
+    assert!(
+        f.snapshots
+            .restore_target_routing(changed.config_version())
+            .is_err()
+    );
+    assert_eq!(f.bytes(), bytes);
+}
+
+// 重复恢复默认也必须保留未决选择，不能把尚未确认的真实结果当作已撤销。
+#[test]
+fn policy87_repeated_restore_rejects_pending_without_changing_disk() {
+    let f = Fixture::new();
+    let state = f.seed_pool();
+    let policy = state.profile.routing.policies[0].id.clone();
+    f.selection()
+        .stage_group(
+            state.config_version(),
+            state.selection_version(),
+            policy.clone(),
+            GroupSelectionIntent {
+                member: OutboundId::Direct,
+                mode: GroupSelectionMode::Auto,
+            },
+            None,
+        )
+        .unwrap();
+    let before = f.state();
+    let bytes = f.bytes();
+    assert!(
+        f.snapshots
+            .restore_target_routing(before.config_version())
+            .is_err()
+    );
+    assert_eq!(f.bytes(), bytes);
+    assert_eq!(
+        f.state().group_selections[&policy],
+        before.group_selections[&policy]
+    );
 }

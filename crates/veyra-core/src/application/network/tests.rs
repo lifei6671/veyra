@@ -92,7 +92,7 @@ fn explicit_paths_unavailable_shutdown_and_geo_queries() {
     }
 }
 
-// 实际 loopback controller 保护 GET 编码、认证、未知节点、零值未知、畸形/redirect。
+// 实际 loopback controller 保护 GET 编码、认证、未知节点、零值保留、畸形/redirect。
 #[test]
 fn node_delay_fixed_controller_encoding_unknown_and_response_boundaries() {
     use crate::singbox::{GeneratedConfig, clash_api::ManagedControllerEndpoint};
@@ -102,7 +102,7 @@ fn node_delay_fixed_controller_encoding_unknown_and_response_boundaries() {
     };
     for (reply, expected) in [
         ("HTTP/1.1 200 OK\r\n", Ok(Some(17))),
-        ("HTTP/1.1 200 OK\r\n", Ok(None)),
+        ("HTTP/1.1 200 OK\r\n", Ok(Some(0))),
         (
             "HTTP/1.1 200 OK\r\n",
             Err(NetworkError::Controller(ClashApiError::InvalidResponse)),
@@ -115,8 +115,8 @@ fn node_delay_fixed_controller_encoding_unknown_and_response_boundaries() {
         ),
     ] {
         let body = match &expected {
+            Ok(Some(0)) => r#"{"delay":0}"#,
             Ok(Some(_)) => r#"{"delay":17}"#,
-            Ok(None) => r#"{"delay":0}"#,
             _ => r#"{"delay":"invalid"}"#,
         };
         let listener = TcpListener::bind("127.0.0.1:0").unwrap();

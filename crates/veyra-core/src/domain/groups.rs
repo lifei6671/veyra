@@ -171,31 +171,7 @@ pub enum GroupIssue {
 }
 
 pub fn default_groups() -> Vec<NodeGroup> {
-    [
-        ("builtin-direct", "直连", GroupRule::Direct, "misc:dart"),
-        (
-            "all-auto",
-            "所有-自动",
-            GroupRule::UrlTest,
-            "globe:earth-asia",
-        ),
-        (
-            "all-manual",
-            "所有-手动",
-            GroupRule::Selector,
-            "globe:earth-meridians",
-        ),
-        ("builtin-block", "拒绝", GroupRule::Block, "misc:cross"),
-    ]
-    .into_iter()
-    .map(|(id, name, rule, icon)| NodeGroup {
-        name: name.into(),
-        rule,
-        icon: icon.into(),
-        mode: GroupMode::Dynamic,
-        ..NodeGroup::new(PoolId(id.into()))
-    })
-    .collect()
+    super::builtin_defaults::default_outbound_groups()
 }
 
 /// 对应 OpenBox normalizeNodeName：旗帜转换为独立国家码，避免 US 匹配 Russia。
@@ -492,6 +468,14 @@ impl AppState {
                 },
             });
         }
+        // 正式目标策略派生 Selector，选择仍使用唯一 group_selections/pending 事实。
+        result.extend(
+            self.profile
+                .routing
+                .selectors()
+                .filter(|p| p.enabled)
+                .map(|p| p.runtime_selector(self)),
+        );
         result
     }
 }

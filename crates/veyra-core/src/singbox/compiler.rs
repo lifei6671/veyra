@@ -421,7 +421,7 @@ impl ConfigCompiler for SingBoxCompiler {
         for route in routes {
             rules.push(route_rule(route, &catalog)?);
         }
-        let document = Document {
+        let mut document = Document {
             log: LogConfig {
                 disabled: true,
                 level: None,
@@ -448,6 +448,7 @@ impl ConfigCompiler for SingBoxCompiler {
             endpoints,
             route: RouteConfig {
                 rules,
+                rule_set: Vec::new(),
                 final_outbound,
                 default_domain_resolver: DNS_TAG.to_owned(),
             },
@@ -459,6 +460,7 @@ impl ConfigCompiler for SingBoxCompiler {
                 },
             },
         };
+        document.install_builtin_rule_sets()?;
         document.validate(false)?;
         Ok(SingBoxPlan {
             document,
@@ -535,9 +537,20 @@ struct DnsServer {
 #[serde(deny_unknown_fields)]
 struct RouteConfig {
     rules: Vec<CoreRule>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    rule_set: Vec<InlineRuleSet>,
     #[serde(rename = "final")]
     final_outbound: String,
     default_domain_resolver: String,
+}
+
+#[derive(Clone, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+struct InlineRuleSet {
+    #[serde(rename = "type")]
+    kind: String,
+    tag: String,
+    rules: Vec<crate::domain::builtin_defaults::BuiltinHeadlessRule>,
 }
 
 #[derive(Clone, Serialize, Deserialize)]
@@ -747,6 +760,10 @@ struct CoreRule {
     #[serde(skip_serializing_if = "Option::is_none")]
     domain_suffix: Option<Vec<String>>,
     #[serde(skip_serializing_if = "Option::is_none")]
+    domain_keyword: Option<Vec<String>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    rule_set: Option<Vec<String>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     process_name: Option<Vec<String>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     ip_cidr: Option<Vec<String>>,
@@ -769,6 +786,8 @@ impl CoreRule {
             self.ip_version.is_some(),
             self.domain.is_some(),
             self.domain_suffix.is_some(),
+            self.domain_keyword.is_some(),
+            self.rule_set.is_some(),
             self.process_name.is_some(),
             self.ip_cidr.is_some(),
             self.port.is_some(),
@@ -1053,6 +1072,8 @@ fn route_rule(
     match &route.matcher {
         TrafficMatcher::Domain(values) => rule.domain = Some(values.clone()),
         TrafficMatcher::DomainSuffix(values) => rule.domain_suffix = Some(values.clone()),
+        TrafficMatcher::DomainKeyword(values) => rule.domain_keyword = Some(values.clone()),
+        TrafficMatcher::RuleSet(values) => rule.rule_set = Some(values.clone()),
         TrafficMatcher::Application(values) => rule.process_name = Some(values.clone()),
         TrafficMatcher::IpCidr(values) => rule.ip_cidr = Some(values.clone()),
         TrafficMatcher::Port(values) => rule.port = Some(values.clone()),
@@ -1300,7 +1321,56 @@ impl CoreOutbound {
 }
 
 impl Document {
+    /// 从当前被引用的随包标签生成内联数据；不产生下载任务或本机路径依赖。
+    fn install_builtin_rule_sets(&mut self) -> Result<(), CompileError> {
+        let tags = self
+            .route
+            .rules
+            .iter()
+            .filter_map(|r| r.rule_set.as_ref())
+            .flatten()
+            .cloned()
+            .collect::<BTreeSet<_>>();
+        self.route.rule_set = tags
+            .into_iter()
+            .map(|tag| {
+                let rules = crate::domain::builtin_defaults::rule_set(&tag)
+                    .ok_or(CompileError::InvalidFinalConfiguration)?
+                    .clone();
+                Ok(InlineRuleSet {
+                    kind: "inline".into(),
+                    tag,
+                    rules,
+                })
+            })
+            .collect::<Result<_, CompileError>>()?;
+        Ok(())
+    }
+    fn validate_builtin_rule_sets(&self) -> Result<(), CompileError> {
+        let mut tags = BTreeSet::new();
+        for source in &self.route.rule_set {
+            if source.kind != "inline"
+                || !tags.insert(source.tag.as_str())
+                || crate::domain::builtin_defaults::rule_set(&source.tag) != Some(&source.rules)
+            {
+                return Err(CompileError::InvalidFinalConfiguration);
+            }
+        }
+        for refs in self
+            .route
+            .rules
+            .iter()
+            .chain(&self.dns.rules)
+            .filter_map(|rule| rule.rule_set.as_ref())
+        {
+            if refs.is_empty() || refs.iter().any(|tag| !tags.contains(tag.as_str())) {
+                return Err(CompileError::InvalidFinalConfiguration);
+            }
+        }
+        Ok(())
+    }
     fn validate(&self, bound: bool) -> Result<(), CompileError> {
+        self.validate_builtin_rule_sets()?;
         if self.experimental.cache_file.is_some() {
             return self.validate_product(bound);
         }
@@ -1429,6 +1499,8 @@ impl Document {
         let mut member_tags = node_tags.clone();
         member_tags.extend(pool_tags.iter().cloned());
         member_tags.insert("direct".into());
+        // 正式目标策略允许选择拒绝出口；唯一 Block 已在上方与 Direct 一同校验。
+        member_tags.insert("block".into());
         crate::domain::validate_outbound_graph(
             self.outbounds
                 .iter()
@@ -1500,9 +1572,14 @@ impl Document {
             {
                 return Err(CompileError::InvalidRouteTarget);
             }
-            for values in [&rule.domain, &rule.domain_suffix, &rule.process_name]
-                .into_iter()
-                .flatten()
+            for values in [
+                &rule.domain,
+                &rule.domain_suffix,
+                &rule.domain_keyword,
+                &rule.process_name,
+            ]
+            .into_iter()
+            .flatten()
             {
                 if values.is_empty() || values.iter().any(|value| !present(value)) {
                     return Err(rejected);
