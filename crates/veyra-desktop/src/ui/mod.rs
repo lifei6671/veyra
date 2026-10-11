@@ -9,8 +9,6 @@ pub mod behavior_panel;
 pub mod icons;
 pub mod tokens;
 
-pub mod background;
-
 pub mod i18n;
 
 pub mod subscriptions;
@@ -22,3 +20,6 @@ pub mod groups;
 pub mod shared_network;
 
 pub mod logs;
+
+pub mod proxies;
+pub mod routing;

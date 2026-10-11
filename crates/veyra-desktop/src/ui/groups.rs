@@ -3,6 +3,7 @@ use super::{
     components::{
         self,
         icon_picker::{IconPicked, IconPicker, group_icon},
+        order_motion::OrderMotion,
         select::{Select, SelectEvent, SelectState},
     },
     i18n::tr,
@@ -10,16 +11,22 @@ use super::{
     tokens as t,
 };
 use gpui_kit::{
+    base::{Scrollbar, ScrollbarMode},
     component::{
         ActiveTheme, Disableable, IndexPath,
-        button::ButtonVariants,
+        button::{ButtonCustomVariant, ButtonVariants},
         input::{InputEvent, InputState},
         popover::Popover,
     },
     prelude::*,
     *,
 };
-use std::collections::HashSet;
+use std::{
+    cell::RefCell,
+    collections::{HashMap, HashSet},
+    rc::Rc,
+    time::Duration,
+};
 use veyra_core::{application::state_service::GroupSaveError, domain::*};
 
 #[derive(Clone)]
@@ -64,17 +71,58 @@ struct Member {
 #[derive(Clone)]
 struct GroupDrag {
     index: usize,
-    name: String,
+    group: NodeGroup,
+    view: Entity<GroupsView>,
+    version: ConfigVersion,
+    size: Size<Pixels>,
+    offset: Point<Pixels>,
 }
 impl Render for GroupDrag {
     fn render(&mut self, _: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
-        div()
-            .px(px(t::PAD))
-            .py(px(t::GAP))
-            .rounded(px(t::RADIUS))
-            .bg(cx.theme().popover)
-            .child(self.name.clone())
+        self.view.clone().update(cx, |view, cx| {
+            let state = view.state.as_ref().expect("拖动卡片持有正式快照").clone();
+            // 与静止卡片共用完整内容；只偏移内部卡片，保留实际按下抓取点。
+            div().w(self.size.width).h(self.size.height).child(
+                view.group_card(&state, self.index, &self.group, cx)
+                    .w(self.size.width)
+                    .h(self.size.height)
+                    .absolute()
+                    .left(self.offset.x)
+                    .top(self.offset.y)
+                    .cursor(group_cursor(true)),
+            )
+        })
     }
+}
+fn group_cursor(dragging: bool) -> CursorStyle {
+    #[cfg(target_os = "macos")]
+    {
+        let _ = dragging;
+        CursorStyle::Move
+    }
+    #[cfg(not(target_os = "macos"))]
+    {
+        if dragging {
+            CursorStyle::ClosedHand
+        } else {
+            CursorStyle::OpenHand
+        }
+    }
+}
+// 使用稳定内容槽位吸附，不能按正在动画的卡片反复命中抖动。
+fn group_slot(top: f32, heights: &[f32]) -> usize {
+    let mut y = 0.;
+    let mut best = 0;
+    let mut distance = f32::INFINITY;
+    for (index, height) in heights.iter().enumerate() {
+        let next = (top - y).abs();
+        if next < distance {
+            best = index;
+            distance = next;
+        }
+        y += height + t::GAP;
+    }
+    best
 }
 #[derive(Clone)]
 struct MemberDrag {
@@ -148,6 +196,16 @@ pub struct GroupsView {
     focus: FocusHandle,
     trigger: Option<FocusHandle>,
     scroll: ScrollHandle,
+    dynamic_scroll: ScrollHandle,
+    editor_scroll: ScrollHandle,
+    dragging: Option<PoolId>,
+    drag_order: Option<Vec<PoolId>>,
+    pending_order: Option<Vec<PoolId>>,
+    drag_grab: Point<Pixels>,
+    drag_heights: Vec<f32>,
+    card_bounds: Rc<RefCell<HashMap<PoolId, Bounds<Pixels>>>>,
+    list_bounds: Rc<RefCell<Bounds<Pixels>>>,
+    order_motion: HashMap<PoolId, OrderMotion>,
 }
 impl EventEmitter<GroupsEvent> for GroupsView {}
 impl EventEmitter<GroupsRuntimeEvent> for GroupsView {}
@@ -607,7 +665,297 @@ impl GroupsView {
             focus: cx.focus_handle(),
             trigger: None,
             scroll: ScrollHandle::new(),
+            dynamic_scroll: ScrollHandle::new(),
+            editor_scroll: ScrollHandle::new(),
+            dragging: None,
+            drag_order: None,
+            pending_order: None,
+            drag_grab: Point::default(),
+            drag_heights: vec![],
+            card_bounds: Rc::default(),
+            list_bounds: Rc::default(),
+            order_motion: HashMap::new(),
         }
+    }
+
+    fn group_card(
+        &self,
+        state: &AppState,
+        index: usize,
+        group: &NodeGroup,
+        cx: &mut Context<Self>,
+    ) -> Stateful<Div> {
+        let radius = state.app_config.visual.global_radius as f32;
+        let edit = group.clone();
+        let enabled = group.enabled;
+        let id = group.id.clone();
+        let delete = id.clone();
+        let count = state.group_members(group).len();
+        let description = if !group.builtin() && group.mode == GroupMode::Dynamic && count == 0 {
+            tr(cx, "空动态组不参与编译").to_owned()
+        } else if group.rule == GroupRule::Direct {
+            tr(
+                cx,
+                "流量不经代理,直接从路由器出去。内核离不开它,停用只是站点集里选不到。",
+            )
+            .to_owned()
+        } else if group.rule == GroupRule::Block {
+            tr(cx, "命中的流量直接丢弃。").to_owned()
+        } else if group.rule == GroupRule::Failover {
+            tr(cx, "故障转移 · {lanes} 个页签 · {count} 个节点")
+                .replace("{lanes}", &group.lanes.len().to_string())
+                .replace(
+                    "{count}",
+                    &group
+                        .lanes
+                        .iter()
+                        .flat_map(|l| &l.members)
+                        .collect::<HashSet<_>>()
+                        .len()
+                        .to_string(),
+                )
+        } else {
+            format!(
+                "{} · {}",
+                tr(
+                    cx,
+                    if group.mode == GroupMode::Static {
+                        "静态组"
+                    } else {
+                        "动态组"
+                    }
+                ),
+                tr(cx, "当前 {count} 个节点").replace("{count}", &count.to_string())
+            )
+        };
+        let description = if group.rule == GroupRule::UrlTest {
+            format!(
+                "{description} · {} {}s · {} {}ms",
+                tr(cx, "检测间隔"),
+                group.interval_secs,
+                tr(cx, "容差"),
+                group.tolerance_ms
+            )
+        } else {
+            description
+        };
+        // 主备异常仍直接可见；使用原版摘要行，正常列表不被操作面板撑高。
+        let runtime_caption = if group.rule == GroupRule::Failover {
+            use veyra_core::application::manual_runtime::FailoverStatus;
+            if self.runtime_busy && self.runtime_group.as_ref() == Some(&group.id) {
+                Some("切换中")
+            } else if self.runtime.as_ref().is_some_and(|r| {
+                std::iter::once(group.id.clone())
+                    .chain(group.lanes.iter().map(|lane| lane.pool_id(&group.id)))
+                    .any(|id| {
+                        r.group_selections
+                            .get(&id)
+                            .is_some_and(|s| s.pending.is_some())
+                    })
+            }) {
+                Some("选择待确认，请核对")
+            } else if let Some(error) = self
+                .runtime_error
+                .filter(|_| self.runtime_group.as_ref() == Some(&group.id))
+            {
+                Some(selection_error_text(error))
+            } else {
+                match self
+                    .runtime
+                    .as_ref()
+                    .and_then(|r| r.failover_status.get(&group.id))
+                {
+                    Some(FailoverStatus::Pending) => Some("选择待确认，请核对"),
+                    Some(FailoverStatus::AllFailed) => Some("全部线路不可用"),
+                    Some(FailoverStatus::PinnedUnavailable) => Some("固定线路不可用"),
+                    Some(FailoverStatus::ProbeFailed) => Some("线路检测失败"),
+                    Some(FailoverStatus::SelectionFailed(error)) => {
+                        Some(selection_error_text(*error))
+                    }
+                    _ => None,
+                }
+            }
+        } else {
+            None
+        };
+        let description = runtime_caption
+            .map(|key| tr(cx, key).to_owned())
+            .unwrap_or(description);
+        div()
+            .id(SharedString::from(format!("group-card-{}", group.id.0)))
+            .relative()
+            .font(t::openbox_font())
+            .font_weight(crate::ui::tokens::FONT_REGULAR)
+            .text_color(cx.theme().foreground)
+            .flex()
+            .items_center()
+            .gap(px(t::GAP))
+            .min_h(px(t::groups::CARD_HEIGHT))
+            .flex_shrink_0()
+            .hover(|d| d.border_color(cx.theme().foreground.opacity(0.17)))
+            .px(px(t::PAD))
+            .py(px(t::groups::CARD_PAD_Y))
+            .border_1()
+            .border_color(cx.theme().foreground.opacity(0.1))
+            .rounded(px(radius))
+            .bg(cx.theme().popover.opacity(if cx.theme().is_dark() {
+                1.
+            } else {
+                t::groups::CARD_ALPHA
+            }))
+            .opacity(if enabled { 1. } else { 0.52 })
+            .child(
+                icon("Bars3", t::groups::DRAG_ICON)
+                    .cursor(group_cursor(false))
+                    .text_color(cx.theme().muted_foreground),
+            )
+            .child(group_icon(
+                &group.icon,
+                (t::groups::CARD_ICON + group.icon_scale as f32).max(12.),
+                cx,
+            ))
+            .child(
+                div()
+                    .flex_1()
+                    .min_w_0()
+                    .child(
+                        div()
+                            .flex()
+                            .items_center()
+                            .gap(px(t::GAP))
+                            .child(
+                                div()
+                                    .min_w_0()
+                                    .overflow_hidden()
+                                    .text_ellipsis()
+                                    .text_size(px(t::BODY))
+                                    .line_height(px(t::groups::TITLE_LINE))
+                                    .font_weight(crate::ui::tokens::FONT_MEDIUM)
+                                    .child(if group.rule == GroupRule::Failover {
+                                        let entity = cx.entity();
+                                        let group = group.clone();
+                                        Popover::new(("group-selection", index))
+                                            .appearance(false)
+                                            .anchor(Anchor::TopLeft)
+                                            .trigger(
+                                                gpui_kit::base::Button::new((
+                                                    "group-selection-trigger",
+                                                    index,
+                                                ))
+                                                .accessibility_label(format!(
+                                                    "{} · {}",
+                                                    tr(cx, "选择线路"),
+                                                    group.name
+                                                ))
+                                                .p_0()
+                                                .h(px(t::groups::TITLE_LINE))
+                                                .text_size(px(t::BODY))
+                                                .font_weight(crate::ui::tokens::FONT_MEDIUM)
+                                                .bg(gpui::transparent_black())
+                                                .text_color(cx.theme().foreground)
+                                                .child(group.name.clone()),
+                                            )
+                                            .content(move |_, _, cx| {
+                                                entity.update(cx, |this, cx| {
+                                                    div()
+                                                        .w(px(t::groups::RUNTIME_WIDTH))
+                                                        .p(px(t::PAD))
+                                                        .bg(cx.theme().popover)
+                                                        .rounded(px(t::POPOVER_RADIUS))
+                                                        .border_1()
+                                                        .border_color(cx.theme().border)
+                                                        .child(this.runtime_controls(&group, cx))
+                                                })
+                                            })
+                                            .into_any_element()
+                                    } else {
+                                        div().child(group.name.clone()).into_any_element()
+                                    }),
+                            )
+                            .child(
+                                div()
+                                    .px(px(t::groups::BADGE_PAD_X))
+                                    .py(px(t::groups::BADGE_PAD_Y))
+                                    .line_height(px(t::groups::BADGE_LINE))
+                                    .text_color(cx.theme().muted_foreground)
+                                    .rounded(px(t::groups::BADGE_RADIUS))
+                                    .bg(cx.theme().foreground.opacity(0.05))
+                                    .text_size(px(10.))
+                                    .child(tr(
+                                        cx,
+                                        match group.rule {
+                                            GroupRule::Direct | GroupRule::Block => "内置",
+                                            GroupRule::Selector => "手动选择（select）",
+                                            GroupRule::UrlTest => "自动择优（url-test）",
+                                            GroupRule::Failover => "故障转移（failover）",
+                                        },
+                                    )),
+                            ),
+                    )
+                    .child(
+                        div()
+                            .mt(px(t::groups::DESCRIPTION_TOP))
+                            .text_size(px(11.))
+                            .line_height(px(16.))
+                            .overflow_hidden()
+                            .text_ellipsis()
+                            .text_color(cx.theme().muted_foreground)
+                            .child(description),
+                    ),
+            )
+            .child(
+                div()
+                    .flex()
+                    .gap(px(t::ROW_GAP))
+                    .child(
+                        components::icon_button(
+                            ("toggle-group", index),
+                            tr(cx, if enabled { "停用" } else { "启用" }),
+                            "Power",
+                            t::groups::CARD_ACTION,
+                        )
+                        .disabled(self.busy)
+                        .when(enabled, |b| b.text_color(rgb(t::ACCENT_STRONG)))
+                        .on_click(cx.listener(move |this, _, _, cx| {
+                            if let Some(state) = &this.state {
+                                let mut groups = state.groups.clone();
+                                if let Some(g) = groups.iter_mut().find(|g| g.id == id) {
+                                    g.enabled = !g.enabled;
+                                }
+                                this.send(Some(groups), cx);
+                            }
+                        })),
+                    )
+                    .child(
+                        components::icon_button(
+                            ("edit-group", index),
+                            tr(cx, "修改分组"),
+                            "PencilSquare",
+                            t::groups::CARD_ACTION,
+                        )
+                        .disabled(self.busy)
+                        .on_click(cx.listener(
+                            move |this, _, window, cx| this.edit(edit.clone(), window, cx),
+                        )),
+                    )
+                    .child(
+                        components::icon_button(
+                            ("delete-group", index),
+                            tr(cx, "删除"),
+                            "Trash",
+                            t::groups::CARD_ACTION,
+                        )
+                        .disabled(self.busy || group.builtin())
+                        .on_click(cx.listener(
+                            move |this, _, window, cx| {
+                                this.trigger = window.focused(cx);
+                                this.confirmation = Some(Confirmation::Delete(delete.clone()));
+                                this.focus.focus(window, cx);
+                                cx.notify();
+                            },
+                        )),
+                    ),
+            )
     }
     pub fn set_visible(&mut self, visible: bool, cx: &mut Context<Self>) {
         if self.visible != visible {
@@ -624,6 +972,14 @@ impl GroupsView {
                 s.state_epoch != state.state_epoch || s.config_revision <= state.config_revision
             })
         {
+            if self
+                .state
+                .as_ref()
+                .is_some_and(|old| old.config_version() != state.config_version())
+            {
+                self.dragging = None;
+                self.drag_order = None;
+            }
             self.state = Some(Box::new(state.clone()));
             cx.notify();
         }
@@ -664,6 +1020,9 @@ impl GroupsView {
         }
         self.busy = false;
         self.loading = false;
+        self.dragging = None;
+        self.drag_order = None;
+        self.pending_order = None;
         match result {
             Ok(state) => {
                 self.state = Some(state.clone());
@@ -751,6 +1110,7 @@ impl GroupsView {
         self.error = None;
         self.active_lane = 0;
         self.advanced = false;
+        self.editor_scroll.set_offset(Point::default());
         self.deleting_lane = false;
         self.discard_confirm = false;
         self.discard_accepted = false;
@@ -1072,6 +1432,7 @@ impl GroupsView {
                 |i| i.focus_style(gpui::transparent_black(), 0.),
             )
             .bg(cx.theme().popover)
+            .rounded(px(t::RADIUS))
             .border_color(cx.theme().foreground.opacity(0.2))
             .h(px(t::CONTROL))
             .text_size(px(t::BODY))
@@ -1146,6 +1507,7 @@ impl GroupsView {
             );
         let primary = div()
             .flex()
+            .flex_shrink_0()
             .items_end()
             .gap(px(t::GAP))
             .child(field("图标", self.picker.clone(), cx).w(px(t::groups::ICON_FIELD)))
@@ -1158,21 +1520,39 @@ impl GroupsView {
         let mut form = div()
             .flex()
             .flex_col()
+            // 故障转移保留自然高度；由外层内容区滚动，不能将底部选择区压入保存栏。
+            .when(draft.rule == GroupRule::Failover, |d| {
+                d.grid()
+                    .grid_cols(1)
+                    .grid_rows_max_content(4)
+                    .flex_shrink_0()
+            })
+            .when(
+                !draft.builtin()
+                    && draft.rule != GroupRule::Failover
+                    && draft.mode == GroupMode::Dynamic,
+                |d| d.flex_1().min_h_0(),
+            )
             .gap(px(t::SECTION_PADDING))
             .child(primary);
         if draft.builtin() {
             return form.child(hint("内置出站只能改名字和图标。", cx));
         }
-        let mut rules = div().flex().items_end().gap(px(t::PAD)).child(field(
-            "分组规则",
-            Select::new(&self.rule, tr(cx, "分组规则"))
-                .compact()
-                .border_focus()
-                .disabled(self.busy)
-                .opacity(1.)
-                .w(px(t::groups::RULE_FIELD)),
-            cx,
-        ));
+        let mut rules = div()
+            .flex()
+            .flex_shrink_0()
+            .items_end()
+            .gap(px(t::PAD))
+            .child(field(
+                "分组规则",
+                Select::new(&self.rule, tr(cx, "分组规则"))
+                    .compact()
+                    .border_focus()
+                    .disabled(self.busy)
+                    .opacity(1.)
+                    .w(px(t::groups::RULE_FIELD)),
+                cx,
+            ));
         if matches!(draft.rule, GroupRule::UrlTest | GroupRule::Failover) {
             rules = rules
                 .child(field(
@@ -1225,6 +1605,7 @@ impl GroupsView {
                         .text_size(px(t::SMALL)),
                     cx,
                 )
+                .flex_shrink_0()
                 .mt(-px(t::ROW_GAP)),
             );
         }
@@ -1232,10 +1613,17 @@ impl GroupsView {
             return form.child(self.failover_editor(cx));
         }
         let tabs = div()
+            .on_children_prepainted(|bounds, _, _| {
+                #[cfg(debug_assertions)]
+                components::log_layout("group-mode-tab-items", &bounds);
+            })
+            .id("group-mode-tabs")
             .flex()
-            .w(px(t::groups::TABS_WIDTH))
-            .p(px(t::ROW_GAP))
-            .rounded(px(t::RADIUS))
+            .flex_shrink_0()
+            .self_start()
+            .items_center()
+            .p(px(t::groups::MODE_TABS_PADDING))
+            .rounded(px(t::groups::MODE_TABS_RADIUS))
             .bg(cx.theme().popover)
             .children(
                 [
@@ -1243,15 +1631,46 @@ impl GroupsView {
                     (GroupMode::Static, "静态组"),
                 ]
                 .map(|(mode, label)| {
-                    group_button(label, tr(cx, label), t::BODY)
-                        .ghost()
+                    let selected = mode == draft.mode;
+                    let text = if selected {
+                        rgb(t::groups::CHECK_COLOR).into()
+                    } else {
+                        cx.theme().muted_foreground
+                    };
+                    let background = if selected {
+                        cx.theme().button_primary
+                    } else {
+                        gpui::transparent_black()
+                    };
+                    // 用户指定：悬浮只让文字稍淡，整块点击区域和选中底色保持不变。
+                    components::button(label, "")
+                        .group(label)
+                        .accessibility_label(tr(cx, label))
+                        .font_weight(crate::ui::tokens::FONT_REGULAR)
+                        .custom(
+                            ButtonCustomVariant::new(cx)
+                                .color(background)
+                                .foreground(text)
+                                .hover(background)
+                                .active(background),
+                        )
+                        .bg(background)
                         .rounded(px(t::groups::COMPACT_RADIUS))
-                        .text_color(cx.theme().muted_foreground)
                         .px(px(t::GAP))
                         .disabled(self.busy)
-                        .when(mode == draft.mode, |b| {
-                            b.primary().text_color(rgb(t::groups::CHECK_COLOR))
-                        })
+                        .child(
+                            div()
+                                .id(SharedString::from(format!("{label}-text")))
+                                .text_size(px(t::BODY))
+                                .when(!self.busy, |d| {
+                                    d.group_hover(label, |d| {
+                                        d.text_color(
+                                            text.opacity(t::groups::MODE_TAB_HOVER_OPACITY),
+                                        )
+                                    })
+                                })
+                                .child(tr(cx, label)),
+                        )
                         .on_click(cx.listener(move |this, _, _, cx| {
                             if let Some(d) = &mut this.draft {
                                 d.mode = mode;
@@ -1280,19 +1699,29 @@ impl GroupsView {
                 })
                 .unwrap_or_default();
             let results = div()
+                .max_h(px(t::groups::DYNAMIC_RESULTS_HEIGHT))
+                .on_children_prepainted(|bounds, _, _| {
+                    #[cfg(debug_assertions)]
+                    components::log_layout("group-dynamic-results", &bounds);
+                })
+                .flex()
+                .flex_col()
+                .flex_1()
+                .min_h_0()
                 .border_1()
                 .border_color(cx.theme().foreground.opacity(0.1))
                 .rounded(px(t::POPOVER_RADIUS))
                 .overflow_hidden()
                 .child(
                     div()
+                        .flex_shrink_0()
                         .px(px(t::PAD))
-                        .py(px(6.))
+                        .py(px(t::groups::DYNAMIC_HEADER_PAD_Y))
                         .border_b_1()
                         .border_color(cx.theme().foreground.opacity(0.1))
                         .text_size(px(t::SMALL))
                         .line_height(px(t::groups::HINT_LINE))
-                        .font_weight(super::theme::MISANS_MEDIUM)
+                        .font_weight(crate::ui::tokens::FONT_MEDIUM)
                         .child(
                             tr(cx, "当前命中 {count} 个节点")
                                 .replace("{count}", &names.len().to_string()),
@@ -1300,16 +1729,40 @@ impl GroupsView {
                 )
                 .child(
                     div()
+                        .flex()
+                        .flex_col()
+                        .on_children_prepainted({
+                            let scroll = self.dynamic_scroll.clone();
+                            let count = names.len();
+                            move |_, _, _| {
+                                #[cfg(debug_assertions)]
+                                if std::env::var_os("VEYRA_DESKTOP_EVIDENCE_LOG").is_some() {
+                                    let bounds = (0..count)
+                                        .filter_map(|i| scroll.bounds_for_item(i))
+                                        .collect::<Vec<_>>();
+                                    components::log_layout("group-dynamic-rows", &bounds);
+                                }
+                            }
+                        })
                         .id("dynamic-members")
+                        .role(Role::List)
+                        .aria_label(
+                            tr(cx, "当前命中 {count} 个节点")
+                                .replace("{count}", &names.len().to_string()),
+                        )
+                        .track_scroll(&self.dynamic_scroll)
+                        .flex_1()
+                        .min_h_0()
                         .max_h(px(t::groups::DYNAMIC_HEIGHT))
                         .overflow_y_scroll()
                         .children(names.iter().map(|name| {
                             div()
+                                .flex_shrink_0()
                                 .px(px(t::PAD))
                                 .py(px(6.))
                                 .text_size(px(t::BODY))
                                 .line_height(px(t::groups::MEMBER_LINE))
-                                .font_weight(super::theme::MISANS_REGULAR)
+                                .font_weight(crate::ui::tokens::FONT_REGULAR)
                                 .child(name.clone())
                         }))
                         .when(names.is_empty(), |d| {
@@ -1320,12 +1773,17 @@ impl GroupsView {
                 div()
                     .flex()
                     .flex_col()
+                    .flex_1()
+                    .min_h_0()
                     .gap(px(t::ROW_GAP))
-                    .child(field("关键词", self.input(Field::Keywords, cx), cx))
-                    .child(hint(
-                        "节点名命中任一关键词就进组,留空 = 所有节点;新订阅也按此自动加入。",
-                        cx,
-                    ))
+                    .child(field("关键词", self.input(Field::Keywords, cx), cx).flex_shrink_0())
+                    .child(
+                        hint(
+                            "节点名命中任一关键词就进组,留空 = 所有节点;新订阅也按此自动加入。",
+                            cx,
+                        )
+                        .flex_shrink_0(),
+                    )
                     .child(results.mt(px(t::ROW_GAP))),
             )
         } else {
@@ -1386,33 +1844,61 @@ impl GroupsView {
             tr(cx, if side == 0 { "可选" } else { "已选" }),
             self.member_pool(side).len()
         );
-        let failover_selected = failover && side == 1;
+        let filter_label = tr(cx, &self.filter_values[side]);
+        let filter_width = if failover {
+            // 复用真实字体 advance；筛选文字变化时保留原版 intrinsic/max128 布局。
+            f32::from(
+                WindowTextSystem::new(cx.text_system().clone())
+                    .shape_line(
+                        filter_label.to_owned().into(),
+                        px(t::groups::MEMBER_TOOL_TEXT),
+                        &[TextRun {
+                            len: filter_label.len(),
+                            font: Font {
+                                weight: crate::ui::tokens::FONT_REGULAR,
+                                ..t::openbox_font()
+                            },
+                            color: cx.theme().foreground,
+                            background_color: None,
+                            underline: None,
+                            strikethrough: None,
+                        }],
+                        None,
+                    )
+                    .width,
+            ) + t::groups::FAILOVER_SELECT_CHROME
+        } else {
+            filter_label.chars().count() as f32 * t::groups::FILTER_TEXT + t::groups::FILTER_EXTRA
+        }
+        .min(t::groups::FILTER_WIDTH);
         let head = div()
             .flex()
             .flex_col()
             .gap(px(t::ROW_GAP))
             .px(px(t::GAP))
-            .py(px(6.))
+            // 在线原版故障转移已选区与通用成员区共用两行 header：6px/8px、gap4。
+            .py(px(t::groups::MEMBER_HEAD_PAD_Y))
             .border_b_1()
             .border_color(cx.theme().foreground.opacity(0.1))
-            .when(failover_selected, |d| d.p_0().gap_0().border_b_0())
+            .on_children_prepainted(|bounds, _, _| {
+                #[cfg(debug_assertions)]
+                components::log_layout("group-member-head-rows", &bounds);
+            })
             .child(
                 div()
                     .flex()
                     .gap(px(t::GAP))
                     .items_center()
-                    .when(failover_selected, |d| {
-                        d.min_h(px(t::groups::LANE_HEAD_HEIGHT))
-                            .px(px(t::groups::LANE_SETTINGS_PAD))
-                            .py(px(t::ROW_GAP))
-                            .border_b_1()
-                            .border_color(cx.theme().border)
+                    .on_children_prepainted(|bounds, _, _| {
+                        #[cfg(debug_assertions)]
+                        components::log_layout("group-member-title-controls", &bounds);
                     })
                     .child(
                         div()
                             .flex_shrink_0()
                             .text_size(px(t::groups::FILTER_TEXT))
-                            .font_weight(super::theme::MISANS_MEDIUM)
+                            .line_height(px(t::groups::MEMBER_TITLE_LINE))
+                            .font_weight(crate::ui::tokens::FONT_MEDIUM)
                             .child(title),
                     )
                     .when(
@@ -1434,42 +1920,30 @@ impl GroupsView {
                         },
                     )
                     .child(
-                        div()
+                        div().flex_1().min_w_0().flex().items_center().child(
+                            components::text_input(
+                                &self.inputs[if side == 0 {
+                                    Field::Available
+                                } else {
+                                    Field::Selected
+                                } as usize],
+                            )
                             .flex_1()
                             .min_w_0()
-                            .flex()
-                            .items_center()
-                            .gap(px(t::groups::LANE_SEARCH_GAP))
-                            .when(failover && side == 1, |d| {
-                                d.child(
-                                    icon("MagnifyingGlass", t::groups::LANE_SEARCH_ICON)
-                                        .text_color(cx.theme().muted_foreground),
-                                )
-                            })
-                            .child(
-                                components::text_input(
-                                    &self.inputs[if side == 0 {
-                                        Field::Available
-                                    } else {
-                                        Field::Selected
-                                    } as usize],
-                                )
-                                .flex_1()
-                                .min_w_0()
-                                .readonly(self.busy)
-                                // .group-member-title input / .group-failover-selected-head input 的 outline: 0。
-                                .focus_style(gpui::transparent_black(), 0.)
-                                .bg(cx.theme().popover)
-                                .px(px(t::groups::SEARCH_PAD))
-                                .h(px(t::groups::FILTER_HEIGHT))
-                                .text_size(px(t::groups::FILTER_TEXT))
-                                .when(failover && side == 1, |i| {
-                                    i.border_0()
-                                        .bg(gpui::transparent_black())
-                                        .px(px(0.))
-                                        .text_size(px(t::groups::FAILOVER_HINT_TEXT))
-                                }),
-                            ),
+                            .readonly(self.busy)
+                            // .group-member-title input / .group-failover-selected-head input 的 outline: 0。
+                            .focus_style(gpui::transparent_black(), 0.)
+                            .bg(cx.theme().popover)
+                            // 背景也会绘制在 PanelInput 外层；父子使用同一圆角。
+                            .rounded(px(t::RADIUS))
+                            .px(px(t::groups::SEARCH_PAD))
+                            .h(px(t::groups::FILTER_HEIGHT))
+                            .text_size(px(t::groups::FILTER_TEXT))
+                            .when(failover, |i| {
+                                i.px(px(t::groups::FAILOVER_SEARCH_PAD))
+                                    .text_size(px(t::groups::MEMBER_TOOL_TEXT))
+                            }),
+                        ),
                     ),
             )
             .child(
@@ -1480,7 +1954,7 @@ impl GroupsView {
                     .children(["全选", "反选", "清空选择"].into_iter().enumerate().map(
                         |(action, label)| {
                             div().flex_shrink_0().child(
-                                group_button(label, tr(cx, label), t::SMALL)
+                                group_button(label, tr(cx, label), t::groups::MEMBER_TOOL_TEXT)
                                     .ghost()
                                     .reference_hover(
                                         gpui::transparent_black(),
@@ -1490,7 +1964,8 @@ impl GroupsView {
                                     .disabled(self.busy)
                                     .h(px(t::groups::FILTER_HEIGHT))
                                     .px(px(t::GAP))
-                                    .text_size(px(12.))
+                                    .font_weight(crate::ui::tokens::FONT_SEMIBOLD)
+                                    .line_height(px(t::groups::MEMBER_TOOL_LINE))
                                     .on_click(cx.listener(move |this, _, _, cx| {
                                         let members = this.pane_members(side, cx);
                                         for m in
@@ -1521,13 +1996,14 @@ impl GroupsView {
                             .compact()
                             .disabled(self.busy)
                             .opacity(1.)
-                            .w(px((tr(cx, &self.filter_values[side]).chars().count()
-                                as f32
-                                * t::groups::FILTER_TEXT
-                                + t::groups::FILTER_EXTRA)
-                                .min(t::groups::FILTER_WIDTH)))
-                            .h(px(t::groups::FILTER_HEIGHT)),
-                    ),
+                            .w(px(filter_width))
+                            .h(px(t::groups::FILTER_HEIGHT))
+                            .when(failover, |s| s.text_size(px(t::groups::MEMBER_TOOL_TEXT))),
+                    )
+                    .on_children_prepainted(|bounds, _, _| {
+                        #[cfg(debug_assertions)]
+                        components::log_layout("group-member-tool-controls", &bounds);
+                    }),
             );
         let rows = div()
             .id(("members", side))
@@ -1576,7 +2052,7 @@ impl GroupsView {
                     .min_h(px(t::groups::MEMBER_ROW))
                     .text_size(px(t::BODY))
                     .line_height(px(t::groups::MEMBER_LINE))
-                    .font_weight(super::theme::MISANS_REGULAR)
+                    .font_weight(crate::ui::tokens::FONT_REGULAR)
                     .items_center()
                     .gap(px(t::GAP))
                     .px(px(t::PAD))
@@ -1705,6 +2181,11 @@ impl GroupsView {
     fn modal(&mut self, window: &mut Window, cx: &mut Context<Self>) -> AnyElement {
         let builtin = self.draft.as_ref().is_some_and(NodeGroup::builtin);
         let editing = self.draft.is_some();
+        let dynamic = self.draft.as_ref().is_some_and(|draft| {
+            !draft.builtin()
+                && draft.rule != GroupRule::Failover
+                && draft.mode == GroupMode::Dynamic
+        });
         let busy = self.busy;
         let cannot_save =
             busy || self.draft.as_ref().is_some_and(|d| {
@@ -1750,7 +2231,8 @@ impl GroupsView {
             )
         };
         let mut surface = div()
-            .font_weight(super::theme::MISANS_REGULAR)
+            .relative()
+            .font_weight(crate::ui::tokens::FONT_REGULAR)
             .flex()
             .flex_col()
             .w(px(if editing {
@@ -1768,6 +2250,9 @@ impl GroupsView {
             } else {
                 1.
             }))
+            .when(editing && !cx.theme().is_dark(), |d| {
+                d.bg(rgb(t::groups::EDIT_SURFACE_LIGHT))
+            })
             .overflow_hidden();
         if editing && !builtin {
             surface = surface.h(window.viewport_size().height * 0.9);
@@ -1786,7 +2271,7 @@ impl GroupsView {
                     .child(
                         div()
                             .text_size(px(t::SECTION_TITLE))
-                            .font_weight(FontWeight(700.))
+                            .font_weight(crate::ui::tokens::FONT_BOLD)
                             .child(tr(cx, title)),
                     )
                     .child(
@@ -1803,10 +2288,37 @@ impl GroupsView {
             )
             .child(
                 div()
+                    .on_children_prepainted({
+                        let scroll = self.editor_scroll.clone();
+                        move |bounds, _, _| {
+                            #[cfg(debug_assertions)]
+                            if std::env::var_os("VEYRA_DESKTOP_EVIDENCE_LOG").is_some() {
+                                if dynamic {
+                                    components::log_layout("group-editor-form", &bounds);
+                                    return;
+                                }
+                                let bounds = (0..bounds.len().max(1))
+                                    .filter_map(|i| scroll.bounds_for_item(i))
+                                    .collect::<Vec<_>>();
+                                components::log_layout("group-editor-form", &bounds);
+                                eprintln!(
+                                    "visual-scroll group-editor-body {:?} {:?} {:?}",
+                                    scroll.bounds(),
+                                    scroll.offset(),
+                                    scroll.max_offset()
+                                );
+                            }
+                        }
+                    })
                     .id("group-editor-body")
+                    .when(dynamic, |d| d.flex().flex_col())
                     .min_h_0()
                     .when(editing && !builtin, |d| d.flex_1())
-                    .overflow_y_scroll()
+                    // 动态组表单保持固定，余下高度交给命中节点列表独立滚动。
+                    .when(dynamic, |d| d.overflow_hidden())
+                    .when(!dynamic, |d| {
+                        d.track_scroll(&self.editor_scroll).overflow_y_scroll()
+                    })
                     .p(px(t::SECTION_PADDING))
                     .child(body),
             )
@@ -1839,7 +2351,7 @@ impl GroupsView {
                     .child(
                         group_button("group-cancel", tr(cx, "取消"), t::BODY)
                             .px(px(t::groups::FOOTER_BUTTON_PAD))
-                            .font_weight(super::theme::MISANS_SEMIBOLD)
+                            .font_weight(crate::ui::tokens::FONT_SEMIBOLD)
                             .disabled(busy)
                             .bg(cx.theme().button)
                             .text_color(cx.theme().foreground)
@@ -1877,7 +2389,7 @@ impl GroupsView {
                             .px(px(t::groups::FOOTER_BUTTON_PAD))
                             .bg(rgb(t::ACCENT_STRONG))
                             .text_color(rgb(0xffffff))
-                            .font_weight(super::theme::MISANS_SEMIBOLD)
+                            .font_weight(crate::ui::tokens::FONT_SEMIBOLD)
                             // .primary-button:disabled 的整体透明度；显式背景不能遮蔽禁用态。
                             .opacity(if cannot_save { 0.5 } else { 1. })
                             .disabled(cannot_save)
@@ -1897,7 +2409,9 @@ impl GroupsView {
                                     auto_groups(&state.groups, &this.auto_codes, &rules)
                                 } else {
                                     match &this.confirmation {
-                                        Some(Confirmation::Restore) => default_groups(),
+                                        Some(Confirmation::Restore) => {
+                                            builtin_defaults::default_groups_for(state)
+                                        }
                                         Some(Confirmation::Delete(id)) => state
                                             .groups
                                             .iter()
@@ -1911,6 +2425,29 @@ impl GroupsView {
                             })),
                     ),
             );
+        if editing && !dynamic {
+            // 滚动条覆盖内容区 bounds，不占布局，也不随内容滚进标题或保存栏。
+            let thumb = cx
+                .theme()
+                .foreground
+                .opacity(t::groups::EDITOR_SCROLL_ALPHA);
+            surface = surface.child(
+                Scrollbar::vertical(&self.editor_scroll)
+                    .id("group-editor-scrollbar")
+                    .mode(ScrollbarMode::Always)
+                    .styles(|s| {
+                        s.track(|v| v.width(px(t::groups::EDITOR_SCROLL_TRACK)))
+                            .thumb(|v| {
+                                v.bg(thumb)
+                                    .width(px(t::groups::EDITOR_SCROLL_THUMB))
+                                    .inset(px(t::groups::EDITOR_SCROLL_INSET))
+                                    .radius(px(t::groups::EDITOR_SCROLL_RADIUS))
+                            })
+                            .thumb_hover(|v| v.bg(thumb))
+                            .thumb_active(|v| v.bg(thumb))
+                    }),
+            );
+        }
         gpui_kit::base::Dialog::new(cx)
             .focus_handle(self.focus.clone())
             .close_on_escape(!busy)
@@ -2149,7 +2686,7 @@ impl GroupsView {
                                         .items_center()
                                         .gap(px(t::GAP))
                                         .text_size(px(t::BODY))
-                                        .font_weight(super::theme::MISANS_REGULAR)
+                                        .font_weight(crate::ui::tokens::FONT_REGULAR)
                                         .child(super::components::icon_picker::country_icon(
                                             &country.code,
                                             cx,
@@ -2192,7 +2729,7 @@ impl Render for GroupsView {
             .flex_col()
             // React ErrorState 自带 12px 下边距，页面块流不再叠加 flex gap。
             .gap(px(if self.load_error { 0. } else { t::GAP }))
-            .font_weight(super::theme::MISANS_REGULAR);
+            .font_weight(crate::ui::tokens::FONT_REGULAR);
         if let Some(error) = &self.error
             && !self.load_error
             && self.draft.is_none()
@@ -2246,7 +2783,201 @@ impl Render for GroupsView {
             && !self.loading
         {
             let state = state.clone();
-            let radius = state.app_config.visual.global_radius as f32;
+            if self.dragging.is_some() && !cx.has_active_drag() {
+                self.dragging = None;
+                self.drag_order = None;
+            }
+            let formal_order: Vec<_> = state.groups.iter().map(|group| group.id.clone()).collect();
+            let order = self
+                .drag_order
+                .clone()
+                .or_else(|| self.pending_order.clone())
+                .unwrap_or(formal_order);
+            let bounds = self.card_bounds.clone();
+            let list_bounds = self.list_bounds.clone();
+            let measured_order = order.clone();
+            let can_drag = !self.busy
+                && self.draft.is_none()
+                && self.confirmation.is_none()
+                && !self.auto_open;
+            let mut list = div()
+                .w_full()
+                .relative()
+                .flex()
+                .flex_col()
+                .gap(px(t::GAP))
+                .on_children_prepainted(move |values, _, _| {
+                    let mut bounds = bounds.borrow_mut();
+                    for (id, rect) in measured_order.iter().zip(values.iter()) {
+                        bounds.insert(id.clone(), *rect);
+                    }
+                    #[cfg(debug_assertions)]
+                    components::log_layout(
+                        "outbound-order-cards",
+                        &values[..measured_order.len().min(values.len())],
+                    );
+                })
+                .on_drag_move(
+                    cx.listener(|this, event: &DragMoveEvent<GroupDrag>, _, cx| {
+                        let drag = event.drag(cx);
+                        if this.dragging.as_ref() != Some(&drag.group.id) {
+                            return;
+                        }
+                        if this
+                            .state
+                            .as_ref()
+                            .is_none_or(|state| state.config_version() != drag.version)
+                        {
+                            this.dragging = None;
+                            this.drag_order = None;
+                            cx.notify();
+                            return;
+                        }
+                        let mut order = this.drag_order.clone().expect("拖动时已有临时顺序");
+                        // 本次手势的槽位基准固定；不同高度换位也不能反向抖动。
+                        let top = f32::from(
+                            event.event.position.y - event.bounds.origin.y - this.drag_grab.y,
+                        );
+                        let slot = group_slot(top, &this.drag_heights);
+                        let from = order
+                            .iter()
+                            .position(|id| *id == drag.group.id)
+                            .expect("有效拖动成员");
+                        if from != slot {
+                            let item = order.remove(from);
+                            order.insert(slot, item);
+                            #[cfg(debug_assertions)]
+                            eprintln!("outbound-order snap id={} slot={slot}", drag.group.id.0);
+                            this.drag_order = Some(order);
+                            cx.notify();
+                        }
+                    }),
+                )
+                .on_drop(cx.listener(|this, drag: &GroupDrag, _, cx| {
+                    if this.dragging.take().as_ref() == Some(&drag.group.id)
+                        && let Some(order) = this.drag_order.take()
+                        && let Some(state) = &this.state
+                        && state.config_version() == drag.version
+                        && !this.busy
+                        && order
+                            != state
+                                .groups
+                                .iter()
+                                .map(|group| group.id.clone())
+                                .collect::<Vec<_>>()
+                    {
+                        let groups = order
+                            .iter()
+                            .map(|id| {
+                                state
+                                    .groups
+                                    .iter()
+                                    .find(|group| group.id == *id)
+                                    .expect("同版本正式成员")
+                                    .clone()
+                            })
+                            .collect();
+                        // drop只提交一次正式组排序，保存完成前保持目标视觉位置。
+                        this.pending_order = Some(order);
+                        this.send(Some(groups), cx);
+                    }
+                    cx.notify();
+                }));
+            if order.is_empty() {
+                list = list.child(components::empty_state(
+                    "◇",
+                    "没有出站分组",
+                    "点击右上角添加分组。",
+                    cx,
+                ));
+            }
+            let mut slot_y = 0.;
+            for id in &order {
+                let index = state
+                    .groups
+                    .iter()
+                    .position(|group| group.id == *id)
+                    .expect("正式显示成员");
+                let group = &state.groups[index];
+                let size = self.card_bounds.borrow().get(id).map(|bounds| bounds.size);
+                let height = size.map_or(t::groups::CARD_HEIGHT, |size| f32::from(size.height));
+                let now = cx.background_executor().now();
+                let motion = self.order_motion.entry(id.clone()).or_insert(OrderMotion {
+                    from: slot_y,
+                    target: slot_y,
+                    started_at: now,
+                });
+                motion.retarget(slot_y, now);
+                let position = if cx.reduce_motion() {
+                    motion.from = slot_y;
+                    slot_y
+                } else {
+                    if now.saturating_duration_since(motion.started_at)
+                        < Duration::from_millis(t::REORDER_MOVE_MS)
+                        && motion.from != motion.target
+                    {
+                        window.request_animation_frame();
+                    }
+                    motion.sample(now)
+                };
+                let placeholder = self.dragging.as_ref() == Some(id);
+                let view = cx.entity().downgrade();
+                let grab_id = id.clone();
+                let mut card = self
+                    .group_card(&state, index, group, cx)
+                    .top(px(position - slot_y))
+                    .when(placeholder, |card| {
+                        card.opacity(t::groups::DRAG_PLACEHOLDER_ALPHA)
+                            .border_color(rgb(t::ACCENT).opacity(t::groups::DRAG_BORDER_ALPHA))
+                            .child(
+                                div()
+                                    .absolute()
+                                    .inset_0()
+                                    .rounded(px(state.app_config.visual.global_radius as f32))
+                                    .border_1()
+                                    .border_color(
+                                        rgb(t::ACCENT).opacity(t::groups::DRAG_INSET_ALPHA),
+                                    ),
+                            )
+                    });
+                if can_drag {
+                    card = card.on_mouse_down(MouseButton::Left, cx.listener(move |this, event: &MouseDownEvent, _, _| {
+                        this.drag_grab = event.position - this.card_bounds.borrow()[&grab_id].origin;
+                    })).on_drag(GroupDrag { index, group: group.clone(), view: cx.entity(), version: state.config_version(), size: Size::default(), offset: Point::default() },
+                        move |drag, cursor_offset, window, cx| {
+                            let mut preview = drag.clone();
+                            let _ = view.update(cx, |this, cx| {
+                                let bounds = this.card_bounds.borrow()[&drag.group.id];
+                                preview.size = bounds.size; preview.offset = cursor_offset - this.drag_grab;
+                                let mut order: Vec<_> = this.state.as_ref().expect("正式快照").groups.iter().map(|group| group.id.clone()).collect();
+                                let heights: Vec<_> = order.iter().map(|id| f32::from(this.card_bounds.borrow()[id].size.height)).collect();
+                                let from = order.iter().position(|id| *id == drag.group.id).expect("正式拖动成员");
+                                let top = f32::from(window.mouse_position().y - this.list_bounds.borrow().origin.y - this.drag_grab.y);
+                                let slot = group_slot(top, &heights); let id = order.remove(from); order.insert(slot, id);
+                                this.drag_heights = heights;
+                                this.dragging = Some(drag.group.id.clone()); this.drag_order = Some(order);
+                                #[cfg(debug_assertions)]
+                                eprintln!("outbound-order begin id={} slot={slot} size={:?} grab={:?} offset={:?}", drag.group.id.0, preview.size, this.drag_grab, preview.offset);
+                                cx.notify();
+                            });
+                            cx.new(|_| preview)
+                        });
+                }
+                list = list.child(card);
+                slot_y += height + t::GAP;
+            }
+            list = list.child(
+                canvas(
+                    move |bounds, _, _| {
+                        *list_bounds.borrow_mut() = bounds;
+                        #[cfg(debug_assertions)]
+                        components::log_layout("outbound-order-list", &[bounds]);
+                    },
+                    |_, _, _, _| {},
+                )
+                .absolute()
+                .inset_0(),
+            );
             root = root.child(
                 div()
                     .id("group-list")
@@ -2254,263 +2985,10 @@ impl Render for GroupsView {
                     .flex_1()
                     .min_h_0()
                     .overflow_y_scroll()
-                    .flex()
-                    .flex_col()
-                    .gap(px(t::GAP))
-                    .when(state.groups.is_empty(), |d| {
-                        d.child(components::empty_state("◇", "没有出站分组", "点击右上角添加分组。", cx))
-                    })
-                    .children(state.groups.iter().enumerate().map(|(index, group)| {
-                        let edit = group.clone();
-                        let enabled = group.enabled;
-                        let id = group.id.clone();
-                        let delete = id.clone();
-                        let count = state.group_members(group).len();
-                        let description =
-                            if !group.builtin() && group.mode == GroupMode::Dynamic && count == 0 {
-                                tr(cx, "空动态组不参与编译").to_owned()
-                            } else if group.rule == GroupRule::Direct {
-                                tr(cx, "流量不经代理,直接从路由器出去。内核离不开它,停用只是站点集里选不到。").to_owned()
-                            } else if group.rule == GroupRule::Block {
-                                tr(cx, "命中的流量直接丢弃。").to_owned()
-                            } else if group.rule == GroupRule::Failover {
-                                tr(cx,"故障转移 · {lanes} 个页签 · {count} 个节点")
-                                    .replace("{lanes}",&group.lanes.len().to_string())
-                                    .replace("{count}",&group.lanes.iter().flat_map(|l| &l.members).collect::<HashSet<_>>().len().to_string())
-                            } else {
-                                format!(
-                                    "{} · {}",
-                                    tr(
-                                        cx,
-                                        if group.mode == GroupMode::Static {
-                                            "静态组"
-                                        } else {
-                                            "动态组"
-                                        }
-                                    ),
-                                    tr(cx, "当前 {count} 个节点").replace("{count}", &count.to_string())
-                                )
-                            };
-                        let description = if group.rule == GroupRule::UrlTest {
-                            format!("{description} · {} {}s · {} {}ms", tr(cx, "检测间隔"), group.interval_secs, tr(cx, "容差"), group.tolerance_ms)
-                        } else { description };
-                        // 主备异常仍直接可见；使用原版摘要行，正常列表不被操作面板撑高。
-                        let runtime_caption = if group.rule == GroupRule::Failover {
-                            use veyra_core::application::manual_runtime::FailoverStatus;
-                            if self.runtime_busy && self.runtime_group.as_ref() == Some(&group.id) {
-                                Some("切换中")
-                            } else if self.runtime.as_ref().is_some_and(|r| std::iter::once(group.id.clone()).chain(group.lanes.iter().map(|lane| lane.pool_id(&group.id))).any(|id| r.group_selections.get(&id).is_some_and(|s| s.pending.is_some()))) {
-                                Some("选择待确认，请核对")
-                            } else if let Some(error) = self.runtime_error.filter(|_| self.runtime_group.as_ref() == Some(&group.id)) {
-                                Some(selection_error_text(error))
-                            } else {
-                                match self.runtime.as_ref().and_then(|r| r.failover_status.get(&group.id)) {
-                                    Some(FailoverStatus::Pending) => Some("选择待确认，请核对"),
-                                    Some(FailoverStatus::AllFailed) => Some("全部线路不可用"),
-                                    Some(FailoverStatus::PinnedUnavailable) => Some("固定线路不可用"),
-                                    Some(FailoverStatus::ProbeFailed) => Some("线路检测失败"),
-                                    Some(FailoverStatus::SelectionFailed(error)) => Some(selection_error_text(*error)),
-                                    _ => None,
-                                }
-                            }
-                        } else { None };
-                        let description = runtime_caption.map(|key| tr(cx, key).to_owned()).unwrap_or(description);
-                        div()
-                            .id(("group-card", index))
-                            .flex()
-                            .items_center()
-                            .gap(px(t::GAP))
-                            .min_h(px(t::groups::CARD_HEIGHT))
-                            .flex_shrink_0()
-                            .hover(|d| d.border_color(cx.theme().foreground.opacity(0.17)))
-                            .px(px(t::PAD))
-                            .py(px(t::groups::CARD_PAD_Y))
-                            .border_1()
-                            .border_color(cx.theme().foreground.opacity(0.1))
-                            .rounded(px(radius))
-                            .bg(cx.theme().popover.opacity(if cx.theme().is_dark() {
-                                1.
-                            } else {
-                                t::groups::CARD_ALPHA
-                            }))
-                            .opacity(if enabled { 1. } else { 0.52 })
-                            .on_drag(
-                                GroupDrag {
-                                    index,
-                                    name: group.name.clone(),
-                                },
-                                |g, _, _, cx| cx.new(|_| g.clone()),
-                            )
-                            .on_drop(cx.listener(move |this, drag: &GroupDrag, _, cx| {
-                                if !this.busy
-                                    && let Some(state) = &this.state
-                                {
-                                    let mut groups = state.groups.clone();
-                                    let item = groups.remove(drag.index);
-                                    groups.insert(index, item);
-                                    this.send(Some(groups), cx);
-                                }
-                            }))
-                            .child(
-                                icon("Bars3", t::groups::DRAG_ICON)
-                                    .text_color(cx.theme().muted_foreground),
-                            )
-                            .child(group_icon(
-                                &group.icon,
-                                (t::groups::CARD_ICON + group.icon_scale as f32).max(12.),
-                                cx,
-                            ))
-                            .child(
-                                div()
-                                    .flex_1()
-                                    .min_w_0()
-                                    .child(
-                                        div()
-                                            .flex()
-                                            .items_center()
-                                            .gap(px(t::GAP))
-                                            .child(
-                                                div()
-                                                    .min_w_0()
-                                                    .overflow_hidden()
-                                                    .text_ellipsis()
-                                                    .text_size(px(t::BODY))
-                                                    .line_height(px(t::groups::TITLE_LINE))
-                                                    .font_weight(super::theme::MISANS_MEDIUM)
-                                                    .child(if group.rule == GroupRule::Failover {
-                                                        let entity = cx.entity();
-                                                        let group = group.clone();
-                                                        Popover::new(("group-selection", index))
-                                                            .appearance(false)
-                                                            .anchor(Anchor::TopLeft)
-                                                            .trigger(
-                                                                gpui_kit::base::Button::new(("group-selection-trigger", index))
-                                                                    .accessibility_label(format!("{} · {}", tr(cx, "选择线路"), group.name))
-                                                                    .p_0()
-                                                                    .h(px(t::groups::TITLE_LINE))
-                                                                    .text_size(px(t::BODY))
-                                                                    .font_weight(super::theme::MISANS_MEDIUM)
-                                                                    .bg(gpui::transparent_black())
-                                                                    .text_color(cx.theme().foreground)
-                                                                    .child(group.name.clone()),
-                                                            )
-                                                            .content(move |_, _, cx| {
-                                                                entity.update(cx, |this, cx| {
-                                                                    div()
-                                                                        .w(px(t::groups::RUNTIME_WIDTH))
-                                                                        .p(px(t::PAD))
-                                                                        .bg(cx.theme().popover)
-                                                                        .rounded(px(t::POPOVER_RADIUS))
-                                                                        .border_1()
-                                                                        .border_color(cx.theme().border)
-                                                                        .child(this.runtime_controls(&group, cx))
-                                                                })
-                                                            })
-                                                            .into_any_element()
-                                                    } else {
-                                                        div().child(group.name.clone()).into_any_element()
-                                                    }),
-                                            )
-                                            .child(
-                                                div()
-                                                    .px(px(t::groups::BADGE_PAD_X))
-                                                    .py(px(t::groups::BADGE_PAD_Y))
-                                                    .line_height(px(t::groups::BADGE_LINE))
-                                                    .text_color(cx.theme().muted_foreground)
-                                                    .rounded(px(t::groups::BADGE_RADIUS))
-                                                    .bg(cx.theme().foreground.opacity(0.05))
-                                                    .text_size(px(10.))
-                                                    .child(tr(
-                                                        cx,
-                                                        match group.rule {
-                                                            GroupRule::Direct
-                                                            | GroupRule::Block => "内置",
-                                                            GroupRule::Selector => {
-                                                                "手动选择（select）"
-                                                            }
-                                                            GroupRule::UrlTest => {
-                                                                "自动择优（url-test）"
-                                                            }
-                                                            GroupRule::Failover => "故障转移（failover）",
-                                                        },
-                                                    )),
-                                            ),
-                                    )
-                                    .child(
-                                        div()
-                                            .mt(px(t::groups::DESCRIPTION_TOP))
-                                            .text_size(px(11.))
-                                            .line_height(px(16.))
-                                            .overflow_hidden()
-                                            .text_ellipsis()
-                                            .text_color(cx.theme().muted_foreground)
-                                            .child(description),
-                                    )
-                                    ,
-                            )
-                            .child(
-                                div()
-                                    .flex()
-                                    .gap(px(t::ROW_GAP))
-                                    .child(
-                                        components::icon_button(
-                                            ("toggle-group", index),
-                                            tr(cx, if enabled { "停用" } else { "启用" }),
-                                            "Power",
-                                            t::groups::CARD_ACTION,
-                                        )
-                                        .disabled(self.busy)
-                                        .when(enabled, |b| b.text_color(rgb(t::ACCENT_STRONG)))
-                                        .on_click(
-                                            cx.listener(move |this, _, _, cx| {
-                                                if let Some(state) = &this.state {
-                                                    let mut groups = state.groups.clone();
-                                                    if let Some(g) =
-                                                        groups.iter_mut().find(|g| g.id == id)
-                                                    {
-                                                        g.enabled = !g.enabled;
-                                                    }
-                                                    this.send(Some(groups), cx);
-                                                }
-                                            }),
-                                        ),
-                                    )
-                                    .child(
-                                        components::icon_button(
-                                            ("edit-group", index),
-                                            tr(cx, "修改分组"),
-                                            "PencilSquare",
-                                            t::groups::CARD_ACTION,
-                                        )
-                                        .disabled(self.busy)
-                                        .on_click(
-                                            cx.listener(move |this, _, window, cx| {
-                                                this.edit(edit.clone(), window, cx)
-                                            }),
-                                        ),
-                                    )
-                                    .child(
-                                        components::icon_button(
-                                            ("delete-group", index),
-                                            tr(cx, "删除"),
-                                            "Trash",
-                                            t::groups::CARD_ACTION,
-                                        )
-                                        .disabled(self.busy || group.builtin())
-                                        .on_click(
-                                            cx.listener(move |this, _, window, cx| {
-                                                this.trigger = window.focused(cx);
-                                                this.confirmation =
-                                                    Some(Confirmation::Delete(delete.clone()));
-                                                this.focus.focus(window, cx);
-                                                cx.notify();
-                                            }),
-                                        ),
-                                    ),
-                            )
-                    })),
+                    .child(list),
             );
         }
+
         if self.draft.is_some() || self.confirmation.is_some() || self.auto_open {
             root = root.child(self.modal(window, cx));
         }
@@ -2530,7 +3008,7 @@ fn field(label: &str, control: impl IntoElement, cx: &App) -> Div {
             div()
                 .text_size(px(12.))
                 .line_height(px(16.))
-                .font_weight(super::theme::MISANS_MEDIUM)
+                .font_weight(crate::ui::tokens::FONT_MEDIUM)
                 .child(tr(cx, label).to_owned()),
         )
         .child(control)
@@ -2712,12 +3190,30 @@ fn group_button(
     let label = label.into();
     components::button(id, "")
         .accessibility_label(label.clone())
-        .font_weight(super::theme::MISANS_REGULAR)
+        .font_weight(crate::ui::tokens::FONT_REGULAR)
         .child(div().text_size(px(size)).child(label))
 }
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[::core::prelude::v1::test]
+    fn policy89_group_snap_uses_actual_heights_and_stable_midpoints() {
+        // 保护不同图标缩放/卡高：最近槽位取实际高度，边界吸附且固定手势基准。
+        let heights = [62., 98., 62.];
+        assert_eq!(group_slot(-100., &heights), 0);
+        assert_eq!(group_slot(34.9, &heights), 0);
+        assert_eq!(group_slot(35.1, &heights), 1);
+        assert_eq!(group_slot(122.9, &heights), 1);
+        assert_eq!(group_slot(123.1, &heights), 2);
+        assert_eq!(group_slot(10000., &heights), 2);
+        // 持续反向跨中点时只改变视觉槽，不改冻结高度或正式节点成员。
+        assert_eq!(
+            [35.1, 34.9, 35.1].map(|y| group_slot(y, &heights)),
+            [1, 0, 1]
+        );
+        assert_eq!(heights, [62., 98., 62.]);
+    }
+
     #[::core::prelude::v1::test]
     fn p402_bulk_transfer_keeps_hidden_checks_and_source_order() {
         // 勾选顺序/搜索都不能改变批量范围；加入和移出后仅清理已处理勾选。
@@ -2836,7 +3332,7 @@ mod tests {
 
 mod failover_editor;
 
-fn selection_error_text(
+pub(super) fn selection_error_text(
     error: veyra_core::application::manual_runtime::SelectionError,
 ) -> &'static str {
     use veyra_core::application::manual_runtime::SelectionError::*;

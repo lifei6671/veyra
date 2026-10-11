@@ -5,7 +5,7 @@ use super::{
     i18n::tr,
     tokens as t,
 };
-use crate::subscriptions::{Command, Completion, Model, Request, Status, error_key};
+use crate::subscriptions::{Command, Completion, Model, Request, Status, error_key, error_message};
 use gpui_kit::{
     component::{
         ActiveTheme, Disableable, Sizable,
@@ -37,6 +37,11 @@ pub struct SubscriptionsEvent {
 }
 pub struct SubscriptionsView {
     pub model: Model,
+    draft_cancel: Option<veyra_core::application::proxies::TestCancellation>,
+    draft_message: Option<(&'static str, String)>,
+    draft_running: bool,
+    draft_generation: u64,
+
     name: Entity<InputState>,
     description: Entity<InputState>,
     source: Entity<TextareaState>,
@@ -120,6 +125,7 @@ impl SubscriptionsView {
         inputs.push(cx.subscribe(&source, |this, _, event: &InputEvent, cx| {
             if matches!(event, InputEvent::Change) {
                 this.model.invalidate();
+                this.invalidate_draft_test();
                 cx.notify();
             }
         }));
@@ -135,6 +141,11 @@ impl SubscriptionsView {
         }
         Self {
             model: Model::default(),
+            draft_cancel: None,
+            draft_message: None,
+            draft_running: false,
+            draft_generation: 0,
+
             name,
             description,
             source,
@@ -176,6 +187,14 @@ impl SubscriptionsView {
         }
     }
     pub fn set_visible(&mut self, visible: bool, cx: &mut Context<Self>) {
+        if !visible {
+            self.invalidate_draft_test();
+            // 代理页共用弹窗时 visible 仍为 false；离开当前主页面也撤销编辑请求。
+            if self.model.editor_open {
+                self.model.editor_open = false;
+                self.model.invalidate();
+            }
+        }
         if self.visible != visible {
             self.visible = visible;
             if !visible {
@@ -215,14 +234,22 @@ impl SubscriptionsView {
         if accepted {
             self.loading = false;
             self.refreshing = None;
-            // React refresh/delete 失败走全局 toast，不另加页面级主操作/信息卡。
-            if !self.model.editor_open
-                && !self.model.list.is_empty()
-                && let Status::Error(error) = self.model.status
+            // 保存与刷新共用全局 Toast；失败不撑高弹窗，也不清空输入或撤销错误事实。
+            // 首次空页面读取失败仍由已有重试视图承接，操作失败始终通知。
+            let error = if let Status::Error(error) = self.model.status {
+                Some(error)
+            } else {
+                self.model
+                    .saved
+                    .as_ref()
+                    .and_then(|saved| saved.sources.iter().find_map(|source| source.error))
+            };
+            if (!loading || !self.model.list.is_empty())
+                && let Some(error) = error
             {
                 super::components::notify(
                     super::components::Notice::Error,
-                    error_key(error),
+                    error_message(error),
                     window,
                     cx,
                 );
@@ -286,14 +313,23 @@ impl SubscriptionsView {
             },
         }
     }
+    fn invalidate_draft_test(&mut self) {
+        self.draft_generation += 1;
+        self.draft_message = None;
+        if let Some(cancel) = &self.draft_cancel {
+            cancel.cancel();
+        }
+    }
     pub fn open_add(&mut self, window: &mut Window, cx: &mut Context<Self>) {
         self.open_editor(None, window, cx);
     }
-    fn open_editor(&mut self, id: Option<String>, window: &mut Window, cx: &mut Context<Self>) {
+    pub fn open_editor(&mut self, id: Option<String>, window: &mut Window, cx: &mut Context<Self>) {
+        self.invalidate_draft_test();
         self.model.invalidate();
         self.model.editing = id.clone();
         self.dns_expanded = false;
         self.editor_page = EditorPage::Source;
+        self.editor_scroll.set_offset(point(px(0.), px(0.)));
         self.model.editor_open = true;
         let item = id
             .as_ref()
@@ -313,7 +349,7 @@ impl SubscriptionsView {
         self.name.read(cx).focus_handle(cx).focus(window, cx);
         cx.notify();
     }
-    fn render_modal(&mut self, window: &mut Window, cx: &mut Context<Self>) -> AnyElement {
+    pub fn render_modal(&mut self, window: &mut Window, cx: &mut Context<Self>) -> AnyElement {
         let share = self.share_editor_open;
         let palette = if share {
             SettingsColors::sharing(cx)
@@ -369,7 +405,7 @@ impl SubscriptionsView {
                 div()
                     .text_size(px(t::SECTION_TITLE))
                     .line_height(px(t::SECTION_LINE))
-                    .font_weight(FontWeight::BOLD)
+                    .font_weight(crate::ui::tokens::FONT_BOLD)
                     .text_color(palette.text)
                     .child(title),
             )
@@ -439,6 +475,8 @@ impl SubscriptionsView {
             }))
             .bg(palette.solid)
             .text_color(palette.text)
+            // 普通订阅弹窗的 CSS 默认为400；明确请求官方 Regular，避免继承按钮字重。
+            .when(!share, |d| d.font_weight(crate::ui::tokens::FONT_REGULAR))
             .overflow_hidden()
             .child(header)
             .child(
@@ -468,6 +506,7 @@ impl SubscriptionsView {
                     this.share_editor_open = false;
                 } else {
                     this.model.editor_open = false;
+                    this.invalidate_draft_test();
                     this.model.invalidate();
                     this.refreshing = None;
                 }
@@ -485,7 +524,7 @@ impl SubscriptionsView {
             .bg(p.solid)
             .border_color(p.line)
             .text_color(p.text)
-            .font_weight(FontWeight::NORMAL)
+            .font_weight(crate::ui::tokens::FONT_REGULAR)
     }
     fn dns_toggle(
         &self,
@@ -522,7 +561,7 @@ impl SubscriptionsView {
                     .items_center()
                     .gap(px(t::ROW_GAP))
                     .text_size(px(t::SUBSCRIPTION_TEXT_BUTTON))
-                    .font_weight(FontWeight::NORMAL)
+                    .font_weight(crate::ui::tokens::FONT_REGULAR)
                     .child(tr(cx, "订阅 DNS 解析"))
                     .child(super::icons::icon("ChevronDown", t::BODY).rotate(Radians(angle))),
             )
@@ -818,14 +857,14 @@ impl SubscriptionsView {
                                         .h(px(t::SWITCH_HEIGHT))
                                         .px(px(t::GAP))
                                         .text_size(px(t::SUBSCRIPTION_TEXT_BUTTON))
-                                        .font_weight(FontWeight::SEMIBOLD)
+                                        .font_weight(crate::ui::tokens::FONT_SEMIBOLD)
                                         .disabled(busy || self.urls.len() >= 32)
                                         .child(
                                             div()
                                                 .flex()
                                                 .items_center()
                                                 .text_size(px(t::SUBSCRIPTION_TEXT_BUTTON))
-                                                .font_weight(FontWeight::SEMIBOLD)
+                                                .font_weight(crate::ui::tokens::FONT_SEMIBOLD)
                                                 .gap(px(t::SUBSCRIPTION_RULE_ROW_GAP))
                                                 .child(super::icons::icon("Plus", t::BODY))
                                                 .child(tr(cx, "添加订阅")),
@@ -903,6 +942,7 @@ impl SubscriptionsView {
                     .bg(p.solid)
                     .border_color(p.line)
                     .text_color(p.text)
+                    .font_weight(crate::ui::tokens::FONT_REGULAR)
             };
             form = form.child(div().id("subscription-dns-disabled").flex().flex_col().gap(px(t::GAP))
                 .child(label(tr(cx, "节点域名解析（可选）")))
@@ -928,8 +968,8 @@ impl SubscriptionsView {
                     .child(tabs),
             )
             .child(form);
-        if let Status::Error(error) = self.model.status {
-            body = body.child(notice(error_key(error), t::SUBSCRIPTION_ERROR, cx));
+        if let Some((message, extra)) = &self.draft_message {
+            body = body.child(hint(format!("{} · {extra}", tr(cx, message)), p));
         }
         if self.model.status == Status::Saved {
             body = body.child(hint(tr(cx, "已保存，尚未应用"), p));
@@ -953,9 +993,6 @@ impl SubscriptionsView {
                         ),
                         p,
                     ));
-                    if let Some(error) = source.error {
-                        body = body.child(notice(error_key(error), t::SUBSCRIPTION_ERROR, cx));
-                    }
                 }
                 if saved.subscriptions.len() > 1 {
                     body = body.child(hint(
@@ -1020,7 +1057,7 @@ impl SubscriptionsView {
                                         div()
                                             .text_size(px(t::SECTION_TITLE))
                                             .line_height(px(t::SECTION_LINE))
-                                            .font_weight(super::theme::MISANS_SEMIBOLD)
+                                            .font_weight(crate::ui::tokens::FONT_SEMIBOLD)
                                             .child(tr(cx, "订阅分享")),
                                     )
                                     .child(
@@ -1090,6 +1127,7 @@ impl SubscriptionsView {
                 .bg(p.solid)
                 .border_color(p.line)
                 .text_color(p.text)
+                .font_weight(crate::ui::tokens::FONT_REGULAR)
         };
         let mut regions = div()
             .flex()
@@ -1214,7 +1252,7 @@ impl SubscriptionsView {
                             .child(
                                 div()
                                     .text_size(px(t::BODY))
-                                    .font_weight(FontWeight::BOLD)
+                                    .font_weight(crate::ui::tokens::FONT_BOLD)
                                     .child(tr(cx, "重命名规则")),
                             )
                             .child(disabled_rule_switch(
@@ -1238,7 +1276,7 @@ impl SubscriptionsView {
                                     .flex()
                                     .items_center()
                                     .text_size(px(t::SUBSCRIPTION_TEXT_BUTTON))
-                                    .font_weight(FontWeight::SEMIBOLD)
+                                    .font_weight(crate::ui::tokens::FONT_SEMIBOLD)
                                     .gap(px(t::SUBSCRIPTION_RULE_ROW_GAP))
                                     .child(super::icons::icon("ArrowPath", t::BODY))
                                     .child(tr(cx, "重置")),
@@ -1284,7 +1322,7 @@ impl SubscriptionsView {
                                             .flex()
                                             .items_center()
                                             .text_size(px(t::SUBSCRIPTION_TEXT_BUTTON))
-                                            .font_weight(FontWeight::SEMIBOLD)
+                                            .font_weight(crate::ui::tokens::FONT_SEMIBOLD)
                                             .gap(px(t::SUBSCRIPTION_RULE_ROW_GAP))
                                             .child(super::icons::icon("Plus", t::BODY))
                                             .child(tr(cx, "新增")),
@@ -1373,7 +1411,7 @@ impl SubscriptionsView {
                         .items_center()
                         .gap(px(t::SUBSCRIPTION_RULE_ROW_GAP))
                         .text_size(px(t::BODY))
-                        .font_weight(FontWeight::SEMIBOLD)
+                        .font_weight(crate::ui::tokens::FONT_SEMIBOLD)
                         .child(super::icons::icon(icon, t::ICON_SMALL))
                         .child(tr(cx, key)),
                 )
@@ -1489,7 +1527,7 @@ impl SubscriptionsView {
             .child(
                 div()
                     .text_size(px(t::BODY))
-                    .font_weight(FontWeight::SEMIBOLD)
+                    .font_weight(crate::ui::tokens::FONT_SEMIBOLD)
                     .child(format!(
                         "{} {} {}",
                         tr(cx, "已保存"),
@@ -1513,6 +1551,108 @@ impl SubscriptionsView {
             )
             .child(table)
     }
+    /// 只测试用户当前粘贴的一条草稿；多节点不暗选第一条，测试不执行保存。
+    #[cfg(target_os = "macos")]
+    fn test_draft(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+        if self.draft_running {
+            if let Some(cancel) = &self.draft_cancel {
+                cancel.cancel();
+            }
+            return;
+        }
+        let Some(services) = self.share_services.clone() else {
+            return;
+        };
+        let parsed =
+            veyra_core::subscription::parse_subscription(self.source.read(cx).value().as_ref());
+        let mut nodes = match parsed {
+            Ok(parsed) if parsed.nodes.len() == 1 && parsed.skipped.is_empty() => parsed.nodes,
+            _ => {
+                self.draft_message = Some(("请粘贴一条可识别的节点草稿", String::new()));
+                cx.notify();
+                return;
+            }
+        };
+        let draft = nodes.pop().expect("single draft");
+        let name = draft.name.clone();
+        let preferences = match services.snapshots.snapshot() {
+            Ok(state) => state.app_config.behavior.latency,
+            Err(_) => {
+                self.draft_message = Some(("代理数据加载失败", name));
+                cx.notify();
+                return;
+            }
+        };
+        if !preferences.test_url.0.starts_with("https://") {
+            self.draft_message =
+                Some(("节点测速仅支持 HTTPS，请到设置中修改网址；原设置未改", name));
+            cx.notify();
+            return;
+        }
+        let (cancel, receiver) = match services.test_draft(draft, preferences) {
+            Ok(request) => request,
+            Err(_) => {
+                self.draft_message = Some(("草稿测试无法开始；请核对资源清理", name));
+                cx.notify();
+                return;
+            }
+        };
+        self.draft_generation += 1;
+        let generation = self.draft_generation;
+        self.draft_cancel = Some(cancel);
+        self.draft_running = true;
+        self.draft_message = Some(("草稿测速中", name.clone()));
+        cx.spawn_in(window, async move |view, cx| {
+            let outcome = receiver.await;
+            let _ = view.update_in(cx, |view, window, cx| {
+                use veyra_core::application::draft_latency::DraftLatencyError;
+                view.draft_running = false;
+                view.draft_cancel = None;
+                // 旧测速结果可以丢弃，资源清理失败必须在关闭/离页后仍明确报告。
+                if outcome
+                    .as_ref()
+                    .is_ok_and(|outcome| outcome.cleanup.is_err())
+                {
+                    super::components::notify(
+                        super::components::Notice::Error,
+                        "草稿清理失败，自有资源已保留",
+                        window,
+                        cx,
+                    );
+                }
+                if view.draft_generation != generation {
+                    cx.notify();
+                    return;
+                }
+                let (message, extra) = match outcome {
+                    Ok(outcome) if outcome.cleanup.is_err() => {
+                        ("草稿清理失败，自有资源已保留", name.clone())
+                    }
+                    Ok(outcome) => match outcome.result {
+                        Ok(latency) if latency.milliseconds.is_some_and(|ms| ms > 0) => (
+                            "草稿测速完成，已清理",
+                            format!("{name} · {} ms", latency.milliseconds.unwrap()),
+                        ),
+                        Ok(latency) if latency.milliseconds == Some(0) => {
+                            ("零值，未确认成功", name.clone())
+                        }
+                        Ok(_) => ("未知", name.clone()),
+                        Err(DraftLatencyError::Cancelled) => ("测速已取消", name.clone()),
+                        Err(DraftLatencyError::Network(error)) => {
+                            (super::proxies::network_error(&error), name.clone())
+                        }
+                        Err(_) => ("草稿测速失败，已清理", name.clone()),
+                    },
+                    Err(_) => ("草稿测试无法开始；请核对资源清理", name.clone()),
+                };
+                view.draft_message = Some((message, extra));
+                cx.notify();
+            });
+        })
+        .detach();
+        cx.notify();
+    }
+
     fn footer(&mut self, cx: &mut Context<Self>) -> Div {
         let p = if self.share_editor_open {
             SettingsColors::sharing(cx)
@@ -1554,11 +1694,7 @@ impl SubscriptionsView {
             .flex()
             .items_center()
             .text_size(px(t::SUBSCRIPTION_TEXT_BUTTON))
-            .font_weight(if share {
-                super::theme::MISANS_SEMIBOLD
-            } else {
-                FontWeight::SEMIBOLD
-            })
+            .font_weight(crate::ui::tokens::FONT_SEMIBOLD)
             .justify_end()
             .gap(px(t::GAP))
             .px(px(t::SECTION_PADDING))
@@ -1566,6 +1702,32 @@ impl SubscriptionsView {
             .when(share, |d| d.gap(px(t::SUBSCRIPTION_SHARE_FOOTER_GAP)))
             .border_t_1()
             .border_color(p.text.opacity(0.1))
+            .when(
+                !share && self.model.manual && self.model.editing.is_none(),
+                |d| {
+                    d.child(
+                        button(
+                            "subscription-draft-test",
+                            tr(
+                                cx,
+                                if self.draft_running {
+                                    "取消草稿测速"
+                                } else {
+                                    "测试草稿节点"
+                                },
+                            ),
+                        )
+                        .bg(p.base200())
+                        .text_color(p.text)
+                        .rounded(px(t::SUBSCRIPTION_CONTROL_RADIUS))
+                        .disabled(self.model.busy())
+                        .on_click(cx.listener(|view, _, window, cx| {
+                            #[cfg(target_os = "macos")]
+                            view.test_draft(window, cx);
+                        })),
+                    )
+                },
+            )
             .child(
                 button("subscription-cancel", tr(cx, "取消"))
                     .reference_hover(
@@ -1584,13 +1746,9 @@ impl SubscriptionsView {
                     .bg(p.base200())
                     .rounded(px(t::SUBSCRIPTION_CONTROL_RADIUS))
                     .text_color(p.text)
-                    .font_weight(if share {
-                        super::theme::MISANS_SEMIBOLD
-                    } else {
-                        FontWeight::SEMIBOLD
-                    })
+                    .font_weight(crate::ui::tokens::FONT_SEMIBOLD)
                     .when(share, |b| {
-                        b.font_weight(super::theme::MISANS_SEMIBOLD)
+                        b.font_weight(crate::ui::tokens::FONT_SEMIBOLD)
                             .text_size(px(t::BODY))
                             .mt(px(t::ROW_GAP))
                             .rounded(px(t::SUBSCRIPTION_SHARE_CANCEL_RADIUS))
@@ -1638,11 +1796,7 @@ impl SubscriptionsView {
                         )
                     })
                     .reference_focus(rgb(t::PRIMARY_BUTTON_BG).into())
-                    .font_weight(if share {
-                        super::theme::MISANS_SEMIBOLD
-                    } else {
-                        FontWeight::SEMIBOLD
-                    })
+                    .font_weight(crate::ui::tokens::FONT_SEMIBOLD)
                     .disabled(disabled)
                     .when(busy && !share, |b| {
                         b.child(Spinner::new().with_size(px(t::BODY)))
@@ -1656,7 +1810,7 @@ impl SubscriptionsView {
                             .rounded(px(t::SUBSCRIPTION_SHARE_SAVE_RADIUS))
                             .text_size(px(t::BODY))
                             .mt(px(t::ROW_GAP))
-                            .font_weight(FontWeight(t::SUBSCRIPTION_SHARE_SAVE_WEIGHT))
+                            .font_weight(t::SUBSCRIPTION_SHARE_SAVE_WEIGHT)
                             .when(!disabled, |b| {
                                 b.reference_hover(
                                     rgb(t::PRIMARY_BUTTON_BG).into(),
@@ -1820,7 +1974,7 @@ fn unavailable_select(
                 .flex()
                 .items_center()
                 .text_size(px(t::BODY))
-                .font_weight(FontWeight::NORMAL)
+                .font_weight(crate::ui::tokens::FONT_REGULAR)
                 .justify_between()
                 .text_size(px(t::BODY))
                 .child(
@@ -1830,7 +1984,7 @@ fn unavailable_select(
                         .flex()
                         .items_center()
                         .text_size(px(t::BODY))
-                        .font_weight(FontWeight::NORMAL)
+                        .font_weight(crate::ui::tokens::FONT_REGULAR)
                         .gap(px(t::SUBSCRIPTION_RULE_ROW_GAP))
                         .when_some(flag, |d, f| {
                             d.child(
@@ -1879,7 +2033,7 @@ fn node_grid(
             .flex()
             .items_center()
             .text_size(px(t::SUBSCRIPTION_TEXT_BUTTON))
-            .font_weight(FontWeight::SEMIBOLD)
+            .font_weight(crate::ui::tokens::FONT_SEMIBOLD)
             .justify_center()
             .text_size(px(t::SUBSCRIPTION_LOADING_FONT))
             .text_color(p.muted)
@@ -1933,10 +2087,10 @@ fn node_grid(
                             .flex()
                             .items_center()
                             .text_size(px(t::SUBSCRIPTION_TEXT_BUTTON))
-                            .font_weight(FontWeight::SEMIBOLD)
+                            .font_weight(crate::ui::tokens::FONT_SEMIBOLD)
                             .min_w_0()
                             .text_size(px(t::BODY))
-                            .font_weight(FontWeight::SEMIBOLD)
+                            .font_weight(crate::ui::tokens::FONT_SEMIBOLD)
                             .text_color(p.text)
                             .truncate()
                             .child(node.name.clone()),
@@ -2065,14 +2219,15 @@ fn editor_tab(
         .h(px(t::CONTROL))
         .px(px(t::GAP))
         .rounded(px(t::SUBSCRIPTION_TAB_RADIUS))
-        .font_weight(FontWeight::SEMIBOLD)
+        // 原版 .tabs-sm 的 Tab 是400，并非 Kit Button 默认的600。
+        .font_weight(crate::ui::tokens::FONT_REGULAR)
         .disabled(disabled)
 }
 fn label(text: impl Into<SharedString>) -> Div {
     div()
         .text_size(px(t::SUBSCRIPTION_LABEL_FONT))
         .line_height(px(t::SUBSCRIPTION_LABEL_LINE))
-        .font_weight(FontWeight::MEDIUM)
+        .font_weight(crate::ui::tokens::FONT_MEDIUM)
         .child(text.into())
 }
 fn field(text: impl Into<SharedString>, input: impl IntoElement) -> Div {
@@ -2089,24 +2244,6 @@ fn hint(text: impl Into<SharedString>, p: SettingsColors) -> Div {
         .line_height(px(t::SUBSCRIPTION_LABEL_LINE))
         .text_color(p.muted)
         .child(text.into())
-}
-fn notice_box(color: u32) -> Div {
-    div()
-        .px(px(t::SUBSCRIPTION_NOTICE_PX))
-        .py(px(t::SUBSCRIPTION_NOTICE_PY))
-        .rounded(px(t::RADIUS))
-        .border_1()
-        .border_color(rgb(color).opacity(0.35))
-        .bg(rgb(color).opacity(0.08))
-        .text_color(rgb(color))
-        .text_size(px(t::SUBSCRIPTION_LABEL_FONT))
-        .line_height(px(t::BODY_LINE))
-        .flex()
-        .flex_col()
-        .gap(px(t::SUBSCRIPTION_SKIPPED_GAP))
-}
-fn notice(key: &'static str, color: u32, cx: &App) -> Div {
-    notice_box(color).child(tr(cx, key))
 }
 fn icon_action(
     id: impl Into<ElementId>,
@@ -2223,7 +2360,7 @@ impl Render for SubscriptionsView {
                             .child(
                                 div()
                                     .text_size(px(t::BODY))
-                                    .font_weight(FontWeight::BOLD)
+                                    .font_weight(crate::ui::tokens::FONT_BOLD)
                                     .child(tr(cx, "订阅数据加载失败")),
                             )
                             .child(
@@ -2261,7 +2398,7 @@ impl Render for SubscriptionsView {
                     .child(
                         div()
                             .text_size(px(t::BODY))
-                            .font_weight(FontWeight::BOLD)
+                            .font_weight(crate::ui::tokens::FONT_BOLD)
                             .child(tr(cx, "暂无订阅")),
                     )
                     .child(hint(tr(cx, "点右上角「添加」创建"), p)),
@@ -2351,7 +2488,7 @@ impl Render for SubscriptionsView {
                             .min_w_0()
                             .truncate()
                             .text_size(px(t::SECTION_TITLE))
-                            .font_weight(FontWeight::MEDIUM)
+                            .font_weight(crate::ui::tokens::FONT_MEDIUM)
                             .child(item.name),
                     )
                     .child(
@@ -2509,7 +2646,7 @@ impl Render for SubscriptionsView {
         if self.share_confirm.is_some() {
             root = root.child(self.share_confirmation(cx));
         }
-        if self.model.editor_open || self.share_editor_open {
+        if self.share_editor_open {
             root = root.child(self.render_modal(window, cx));
         }
         root

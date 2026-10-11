@@ -17,20 +17,55 @@ thread_local! {
     pub(crate) static WRITERS_CREATED: std::cell::Cell<usize> = const { std::cell::Cell::new(0) };
 }
 
+/// 同一页面观测任务投递 owner 的两类只读事实，接收器撤销统一取消。
+pub enum ProxyObservation {
+    Pool(
+        veyra_core::domain::PoolId,
+        Result<
+            Option<veyra_core::application::applied_proxy_facts::AppliedPoolObservation>,
+            veyra_core::application::proxies::ProxyError,
+        >,
+    ),
+    Metadata(
+        veyra_core::domain::OutboundId,
+        Result<
+            Option<veyra_core::application::applied_proxy_facts::AppliedProxyMetadata>,
+            veyra_core::application::proxies::ProxyError,
+        >,
+    ),
+}
 pub struct AppServices {
     pub manual_runtime: crate::runtime_service::RuntimeService,
     pub snapshots: Arc<SnapshotService>,
     pub shares: Arc<veyra_core::application::shares::ShareService>,
     pub network: Arc<veyra_core::application::network::NetworkService>,
+    pub proxies: Arc<veyra_core::application::proxies::ProxyService>,
     pub subscriptions: Arc<veyra_core::application::subscription_management::SubscriptionManager>,
     // Profile 保存复用 Core CAS writer；选择服务继续由各功能按契约接入。
     pub profiles: Arc<ProfileService>,
     pub preferences: Arc<DesktopPreferencesService>,
     pub assets: Arc<crate::visual_assets::VisualAssetStore>,
+    #[cfg(target_os = "macos")]
+    draft_worker: std::sync::Mutex<Option<DraftWorker>>,
+    #[cfg(target_os = "macos")]
+    draft_resources: Arc<
+        std::sync::Mutex<
+            Option<
+                veyra_core::application::draft_latency::DraftLatencySession<
+                    crate::platform::manual_sidecar::ManualSidecarPort,
+                >,
+            >,
+        >,
+    >,
     root: PathBuf,
     gate: StateAccessGate,
     runtime: Runtime,
     sender: UnboundedSender<AppEvent>,
+}
+#[cfg(target_os = "macos")]
+struct DraftWorker {
+    cancel: veyra_core::application::proxies::TestCancellation,
+    cleanup: std::sync::mpsc::Receiver<bool>,
 }
 impl Drop for AppServices {
     fn drop(&mut self) {
@@ -42,9 +77,205 @@ impl Drop for AppServices {
 impl AppServices {
     /// 真正 Quit 与服务释放共用；隐藏窗口不关闭网络 Service。
     pub fn request_closing(&self) {
+        #[cfg(target_os = "macos")]
+        if let Some(worker) = self.draft_worker.lock().expect("draft worker").as_ref() {
+            worker.cancel.cancel();
+        }
         self.subscriptions.request_closing();
         self.network.shutdown();
+        self.proxies.shutdown();
         self.shares.shutdown();
+    }
+
+    /// P2-08后台草稿操作的正式平台绑定：每次分配独立root与Port，不接触主Runtime。
+    /// UI应在blocking任务中持有session和取消句柄，并消费test的cleanup结果。
+    #[cfg(target_os = "macos")]
+    pub fn draft_latency_session(
+        &self,
+    ) -> Result<
+        veyra_core::application::draft_latency::DraftLatencySession<
+            crate::platform::manual_sidecar::ManualSidecarPort,
+        >,
+        veyra_core::application::draft_latency::DraftLatencyError,
+    > {
+        let parent = self.root.join("draft-latency");
+        let mut directory = std::fs::DirBuilder::new();
+        directory.recursive(true);
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::DirBuilderExt;
+            directory.mode(0o700);
+        }
+        directory
+            .create(&parent)
+            .map_err(veyra_core::application::draft_latency::DraftLatencyError::Resources)?;
+        veyra_core::application::draft_latency::DraftLatencySession::new(&parent, |root| {
+            crate::platform::manual_sidecar::ManualSidecarPort::new(root.to_path_buf())
+        })
+    }
+
+    /// 单草稿 worker 保留到清理回执；失败 session 留在 services，不伪报已释放。
+    #[cfg(target_os = "macos")]
+    pub fn test_draft(
+        &self,
+        draft: veyra_core::subscription::ProxyNodeDraft,
+        preferences: veyra_core::domain::UiLatencyPreferences,
+    ) -> Result<
+        (
+            veyra_core::application::proxies::TestCancellation,
+            tokio::sync::oneshot::Receiver<
+                veyra_core::application::draft_latency::DraftLatencyOutcome,
+            >,
+        ),
+        veyra_core::application::draft_latency::DraftLatencyError,
+    > {
+        use veyra_core::application::{
+            draft_latency::DraftLatencyError, proxies::TestCancellation,
+        };
+        let mut worker = self.draft_worker.lock().expect("draft worker");
+        if let Some(active) = worker.as_ref() {
+            match active.cleanup.try_recv() {
+                Ok(true) => *worker = None,
+                Ok(false)
+                | Err(
+                    std::sync::mpsc::TryRecvError::Empty
+                    | std::sync::mpsc::TryRecvError::Disconnected,
+                ) => {
+                    return Err(DraftLatencyError::Resources(std::io::Error::new(
+                        std::io::ErrorKind::WouldBlock,
+                        "draft cleanup pending",
+                    )));
+                }
+            }
+        }
+        if self
+            .draft_resources
+            .lock()
+            .expect("draft resources")
+            .is_some()
+        {
+            return Err(DraftLatencyError::Resources(std::io::Error::new(
+                std::io::ErrorKind::WouldBlock,
+                "draft cleanup unresolved",
+            )));
+        }
+        let mut session = self.draft_latency_session()?;
+        let root = session.root().to_path_buf();
+        let cancel = TestCancellation::new();
+        let child_cancel = cancel.clone();
+        let (sender, receiver) = tokio::sync::oneshot::channel();
+        let (cleaned, cleanup) = std::sync::mpsc::channel();
+        let retained = self.draft_resources.clone();
+        self.runtime.spawn_blocking(move || {
+            let outcome = session.test(draft, &preferences, &child_cancel);
+            let ok = outcome.cleanup.is_ok();
+            eprintln!(
+                "draft latency complete root={} cleanup={ok} cancelled={}",
+                root.display(),
+                matches!(outcome.result, Err(DraftLatencyError::Cancelled))
+            );
+            if !ok {
+                *retained.lock().expect("draft resources") = Some(session);
+            }
+            let _ = cleaned.send(ok);
+            let _ = sender.send(outcome);
+        });
+        *worker = Some(DraftWorker {
+            cancel: cancel.clone(),
+            cleanup,
+        });
+        Ok((cancel, receiver))
+    }
+    /// Quit 取走唯一清理回执并等待，隐藏窗口不取走或取消。
+    #[cfg(target_os = "macos")]
+    pub fn draft_quit_cleanup(&self) -> Option<std::sync::mpsc::Receiver<bool>> {
+        self.draft_worker
+            .lock()
+            .expect("draft worker")
+            .take()
+            .map(|w| {
+                w.cancel.cancel();
+                w.cleanup
+            })
+    }
+
+    /// 页面只读投影和测速沿用应用已有执行器；不新增 Runtime writer。
+    pub fn proxy_snapshot(
+        &self,
+        runtime: veyra_core::application::manual_runtime::ManualRuntimeSnapshot,
+    ) -> tokio::sync::oneshot::Receiver<
+        Result<
+            veyra_core::application::proxies::ProxySnapshot,
+            veyra_core::application::proxies::ProxyError,
+        >,
+    > {
+        let service = self.proxies.clone();
+        let (send, receive) = tokio::sync::oneshot::channel();
+        self.runtime.spawn_blocking(move || {
+            let _ = send.send(service.snapshot(&runtime));
+        });
+        receive
+    }
+    pub fn proxy_tests(
+        &self,
+        requests: Vec<veyra_core::application::proxies::ProxyTestRequest>,
+    ) -> tokio::sync::mpsc::UnboundedReceiver<veyra_core::application::proxies::NodeTestResult>
+    {
+        let (send, receive) = tokio::sync::mpsc::unbounded_channel();
+        // 所有批次仍使用 ProxyService 的同一并发上限和 generation 检查。
+        for request in requests {
+            let service = self.proxies.clone();
+            let send = send.clone();
+            self.runtime.spawn(async move {
+                service
+                    .run_test_with_progress(request, |result| {
+                        let _ = send.send(result);
+                    })
+                    .await;
+            });
+        }
+        receive
+    }
+
+    /// 在既有执行器读取受管 Controller；只投递 typed 观测，不新增选择 writer。
+    pub fn proxy_pool_observations(
+        &self,
+        runtime: veyra_core::application::manual_runtime::ManualRuntimeSnapshot,
+        pools: Vec<veyra_core::domain::PoolId>,
+        outbounds: Vec<veyra_core::domain::OutboundId>,
+    ) -> tokio::sync::mpsc::UnboundedReceiver<ProxyObservation> {
+        let (send, receive) = tokio::sync::mpsc::unbounded_channel();
+        let service = self.proxies.clone();
+        self.runtime.spawn(async move {
+            for pool in pools {
+                // 页面、实例或测速切换撤掉 receiver 时，连同在途只读请求一起取消。
+                let observation = tokio::select! {
+                    biased;
+                    _ = send.closed() => break,
+                    result = service.observe_applied_pool(&runtime, &pool) => result,
+                };
+                if send
+                    .send(ProxyObservation::Pool(pool, observation))
+                    .is_err()
+                {
+                    break;
+                }
+            }
+            for outbound in outbounds {
+                let observation = tokio::select! {
+                    biased;
+                    _ = send.closed() => break,
+                    result = service.observe_applied_proxy_metadata(&runtime, &outbound) => result,
+                };
+                if send
+                    .send(ProxyObservation::Metadata(outbound, observation))
+                    .is_err()
+                {
+                    break;
+                }
+            }
+        });
+        receive
     }
 
     /// 已由NSSavePanel确认的脱敏页面快照，在既有有界blocking worker写文件。
@@ -80,6 +311,8 @@ impl AppServices {
             )?,
             gate.clone(),
         );
+        // 正式初始化只在没有快照/备份时写随包默认；已有用户配置始终原样读取。
+        snapshots.snapshot()?;
         #[cfg(test)]
         WRITERS_CREATED.set(WRITERS_CREATED.get() + 1);
         let (sender, receiver) = unbounded_channel();
@@ -99,6 +332,11 @@ impl AppServices {
         let network = Arc::new(veyra_core::application::network::NetworkService::new(
             manual_runtime.outbound_proxy_source(),
         ));
+        let proxies = Arc::new(veyra_core::application::proxies::ProxyService::open(
+            (*snapshots).clone(),
+            manual_runtime.outbound_proxy_source(),
+            &root.join("latency.sqlite3"),
+        )?);
         let runtime = Builder::new_multi_thread()
             .worker_threads(2)
             .max_blocking_threads(1)
@@ -120,12 +358,17 @@ impl AppServices {
 
             manual_runtime,
             network,
+            proxies,
             subscriptions,
             profiles: Arc::new(ProfileService::new((*snapshots).clone())),
             preferences: Arc::new(DesktopPreferencesService::new((*snapshots).clone())),
             assets: Arc::new(crate::visual_assets::VisualAssetStore::new(
                 root.join("assets"),
             )),
+            #[cfg(target_os = "macos")]
+            draft_worker: std::sync::Mutex::new(None),
+            #[cfg(target_os = "macos")]
+            draft_resources: Arc::new(std::sync::Mutex::new(None)),
             root,
             gate,
             snapshots,
@@ -316,6 +559,52 @@ impl AppServices {
         });
     }
 
+    /// 代理页刷新复用正式 manager；逐项失败保留该项内容，同时投影其它项已保存的状态。
+    pub fn proxy_refresh_subscriptions(
+        &self,
+        expected: Option<veyra_core::domain::ConfigVersion>,
+        ids: Vec<String>,
+    ) -> tokio::sync::oneshot::Receiver<
+        Result<
+            (
+                crate::subscriptions::Completion,
+                Vec<veyra_core::application::subscription_management::SubscriptionOperationError>,
+            ),
+            veyra_core::application::subscription_management::SubscriptionOperationError,
+        >,
+    > {
+        use veyra_core::application::subscription_management::SubscriptionOperationError as Error;
+        let (sender, receiver) = tokio::sync::oneshot::channel();
+        let manager = self.subscriptions.clone();
+        let snapshots = self.snapshots.clone();
+        let handle = self.runtime.handle().clone();
+        self.runtime.spawn_blocking(move || {
+            let result = handle.block_on(async {
+                let mut expected = expected.ok_or(Error::StateUnavailable)?;
+                let mut failures = Vec::new();
+                for id in ids {
+                    if let Err(error) = manager.refresh_direct(id, None, expected).await {
+                        failures.push(error);
+                    }
+                    expected = snapshots
+                        .snapshot()
+                        .map_err(|_| Error::StateUnavailable)?
+                        .config_version();
+                }
+                let state = snapshots.snapshot().map_err(|_| Error::StateUnavailable)?;
+                Ok((
+                    crate::subscriptions::Completion::Mutation {
+                        state: Box::new(state),
+                        saved: None,
+                    },
+                    failures,
+                ))
+            });
+            let _ = sender.send(result);
+        });
+        receiver
+    }
+
     pub fn save_behavior(&self, request: crate::behavior_preferences::BehaviorSave) {
         let preferences = self.preferences.clone();
         let sender = self.sender.clone();
@@ -328,6 +617,58 @@ impl AppServices {
                 result,
             });
         });
+    }
+    /// 代理弹窗复用正式偏好CAS；独立响应不与设置表单的草稿generation混用。
+    pub fn proxy_save_preferences(
+        &self,
+        request: crate::behavior_preferences::BehaviorSave,
+    ) -> tokio::sync::oneshot::Receiver<
+        Result<Box<veyra_core::domain::AppState>, veyra_core::domain::AppError>,
+    > {
+        let preferences = self.preferences.clone();
+        let (sender, receiver) = tokio::sync::oneshot::channel();
+        self.runtime.spawn_blocking(move || {
+            let result = preferences
+                .patch_behavior(request.expected, request.patch)
+                .map(|outcome| Box::new(outcome.value));
+            let _ = sender.send(result);
+        });
+        receiver
+    }
+    /// 目标分流整份候选交正式SnapshotService验证和CAS，不维护第二份配置。
+    pub fn save_target_routing(
+        &self,
+        expected: veyra_core::domain::ConfigVersion,
+        routing: veyra_core::domain::ProfileRouting,
+    ) -> tokio::sync::oneshot::Receiver<
+        Result<Box<veyra_core::domain::AppState>, veyra_core::domain::AppError>,
+    > {
+        let snapshots = self.snapshots.clone();
+        let (sender, receiver) = tokio::sync::oneshot::channel();
+        self.runtime.spawn_blocking(move || {
+            let result = snapshots
+                .save_routing(expected, routing)
+                .map(|outcome| Box::new(outcome.value));
+            let _ = sender.send(result);
+        });
+        receiver
+    }
+    /// 同一快照事务恢复随包目标分流及显示排序，不触发应用或重启。
+    pub fn restore_target_routing(
+        &self,
+        expected: veyra_core::domain::ConfigVersion,
+    ) -> tokio::sync::oneshot::Receiver<
+        Result<Box<veyra_core::domain::AppState>, veyra_core::domain::AppError>,
+    > {
+        let snapshots = self.snapshots.clone();
+        let (sender, receiver) = tokio::sync::oneshot::channel();
+        self.runtime.spawn_blocking(move || {
+            let result = snapshots
+                .restore_target_routing(expected)
+                .map(|outcome| Box::new(outcome.value));
+            let _ = sender.send(result);
+        });
+        receiver
     }
     #[cfg(debug_assertions)]
     pub fn evidence_external_preferences(&self) {
@@ -381,20 +722,6 @@ impl AppServices {
         self.runtime.spawn_blocking(move || {
             let result = assets.import(&path);
             let _ = sender.send(AppEvent::AssetPrepared { generation, result });
-        });
-    }
-    pub fn default_background(&self, request: crate::ui::background::Request) {
-        let sender = self.sender.clone();
-        self.runtime.spawn_blocking(move || {
-            let started = std::time::Instant::now();
-            let bytes = crate::ui::background::derive(request);
-            eprintln!(
-                "default background CPU job generation={} thread={:?} duration_ms={}",
-                request.generation,
-                std::thread::current().id(),
-                started.elapsed().as_millis()
-            );
-            let _ = sender.send(AppEvent::DefaultBackground { request, bytes });
         });
     }
     pub fn background_preview(
@@ -1038,6 +1365,124 @@ mod behavior_integration_tests {
         drop(services);
         std::fs::remove_dir_all(root).unwrap();
     }
+    // 保护代理页“全部刷新”：中间失败不能隐藏已保存内容或跳过后面的订阅。
+    #[test]
+    fn proxy_batch_refresh_projects_successes_and_keeps_failed_subscription() {
+        use crate::subscriptions::{Model, Status};
+        use std::{
+            io::{Read, Write},
+            net::TcpListener,
+        };
+        use veyra_core::application::subscription_management::{
+            ImportRequestSource, RemoteImportOptions, SubscriptionImport,
+            SubscriptionOperationError,
+        };
+        let root = std::env::temp_dir().join(format!(
+            "veyra-p208-refresh-{:?}",
+            veyra_core::domain::StateEpoch::fresh().unwrap()
+        ));
+        std::fs::create_dir_all(&root).unwrap();
+        let (services, _events) = AppServices::new(root.clone()).unwrap();
+        let listener = TcpListener::bind("127.0.0.1:0").unwrap();
+        let address = listener.local_addr().unwrap();
+        let server = std::thread::spawn(move || {
+            for body in [
+                "socks5://127.0.0.1:1080#old",
+                "socks5://127.0.0.1:1080#old",
+                "socks5://127.0.0.1:1080#old",
+                "socks5://127.0.0.1:1080#first-updated",
+                "invalid",
+                "socks5://127.0.0.1:1080#third-updated",
+            ] {
+                let (mut stream, _) = listener.accept().unwrap();
+                stream
+                    .set_read_timeout(Some(std::time::Duration::from_secs(5)))
+                    .unwrap();
+                let mut request = [0; 8192];
+                assert!(stream.read(&mut request).unwrap() > 0);
+                write!(
+                    stream,
+                    "HTTP/1.1 200 OK\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{body}",
+                    body.len()
+                )
+                .unwrap();
+            }
+        });
+        let mut ids = Vec::new();
+        for index in 0..3 {
+            let summary = services
+                .runtime
+                .block_on(
+                    services
+                        .subscriptions
+                        .import_with_options(SubscriptionImport {
+                            name: format!("subscription-{index}"),
+                            description: String::new(),
+                            source: ImportRequestSource::Remote {
+                                url: format!("http://{address}/{index}"),
+                                options: RemoteImportOptions::default(),
+                            },
+                        }),
+                )
+                .unwrap();
+            ids.push(summary.id);
+        }
+        let before = services.snapshots.snapshot().unwrap();
+        let failed_before = before
+            .subscriptions
+            .iter()
+            .find(|s| s.id.0 == ids[1])
+            .unwrap()
+            .clone();
+        let failed_nodes = before
+            .nodes
+            .iter()
+            .filter(|n| {
+                before
+                    .providers
+                    .iter()
+                    .any(|p| p.id == n.provider_id && p.subscription_id.0 == ids[1])
+            })
+            .cloned()
+            .collect::<Vec<_>>();
+        let mut model = Model::default();
+        model.project(&before);
+        let request = model.begin();
+        let receiver = services.proxy_refresh_subscriptions(request.expected.clone(), ids.clone());
+        let (completion, failures) = services.runtime.block_on(async {
+            tokio::time::timeout(std::time::Duration::from_secs(10), receiver)
+                .await
+                .unwrap()
+                .unwrap()
+                .unwrap()
+        });
+        assert_eq!(failures, vec![SubscriptionOperationError::ParseFailed]);
+        let state = model.complete(&request, Ok(completion)).unwrap();
+        assert_eq!(model.status, Status::Saved);
+        assert_eq!(*state, services.snapshots.snapshot().unwrap());
+        assert_eq!(
+            state.subscriptions.iter().find(|s| s.id.0 == ids[1]),
+            Some(&failed_before)
+        );
+        assert_eq!(
+            state
+                .nodes
+                .iter()
+                .filter(|n| state
+                    .providers
+                    .iter()
+                    .any(|p| p.id == n.provider_id && p.subscription_id.0 == ids[1]))
+                .cloned()
+                .collect::<Vec<_>>(),
+            failed_nodes
+        );
+        assert!(state.nodes.iter().any(|n| n.name == "first-updated"));
+        assert!(state.nodes.iter().any(|n| n.name == "third-updated"));
+        assert!(state.config_revision > before.config_revision);
+        server.join().unwrap();
+        drop(services);
+        std::fs::remove_dir_all(root).unwrap();
+    }
     // Host删除GUI预览区后，保护一次Save完成校验/原子保存及旧版本拒绝，不假保存失败来源。
     #[test]
     fn subscription_save_draft_is_one_operation_and_preserves_version_gate() {
@@ -1066,13 +1511,20 @@ mod behavior_integration_tests {
             sources: vec![PreviewSource::Pasted(content.into())],
         };
         let mut model = Model::default();
+        // AppServices 正式启动已落盘内置配置；UI先投影此版本再保存，不能仍以None提交。
+        let initial = services.snapshots.snapshot().unwrap();
+        model.project(&initial);
+        let initial_bytes = std::fs::read(root.join("state.json")).unwrap();
         services.subscription_command(model.begin(), Command::SaveDraft(input("invalid")));
         let AppEvent::Subscriptions { request, result } = receive(&mut rx) else {
             panic!("subscription event")
         };
         assert!(matches!(&result, Ok(Completion::SaveRejected(_))));
         model.complete(&request, result);
-        assert!(!root.join("state.json").exists());
+        assert_eq!(
+            std::fs::read(root.join("state.json")).unwrap(),
+            initial_bytes
+        );
         let stale = model.begin();
         let current = model.begin();
         services.subscription_command(
@@ -1085,7 +1537,7 @@ mod behavior_integration_tests {
         let state = model.complete(&request, result).unwrap();
         assert_eq!(model.status, Status::Saved);
         assert_eq!(model.list.len(), 1);
-        assert_eq!(state.config_revision, 1);
+        assert_eq!(state.config_revision, initial.config_revision + 1);
         let bytes = std::fs::read(root.join("state.json")).unwrap();
         services.subscription_command(
             stale,
@@ -1098,7 +1550,20 @@ mod behavior_integration_tests {
         assert_eq!(std::fs::read(root.join("state.json")).unwrap(), bytes);
         drop(services);
         let (restarted, _) = AppServices::new(root.clone()).unwrap();
-        assert_eq!(restarted.snapshots.snapshot().unwrap(), *state);
+        // 重建后的调度器可能短暂持有只读gate；只等待精确Busy，其它失败立即失败。
+        let deadline = std::time::Instant::now() + std::time::Duration::from_secs(5);
+        let expected_busy =
+            veyra_core::domain::AppError::new(veyra_core::domain::AppErrorCode::StorageFailed)
+                .with_detail(veyra_core::domain::ErrorDetail::Busy);
+        let reopened = loop {
+            match restarted.snapshots.snapshot() {
+                Err(error) if error == expected_busy && std::time::Instant::now() < deadline => {
+                    std::thread::yield_now()
+                }
+                result => break result.unwrap(),
+            }
+        };
+        assert_eq!(reopened, *state);
         drop(restarted);
         std::fs::remove_dir_all(root).unwrap();
     }
@@ -1220,6 +1685,31 @@ mod log_export_tests {
         );
         assert_eq!(std::fs::read(target).unwrap(), safe);
         drop(services);
+        std::fs::remove_dir_all(root).unwrap();
+    }
+}
+
+#[cfg(all(test, target_os = "macos"))]
+mod p208_tests {
+    use super::*;
+    // 保护正式composition root装配ProxyService/真实SQLite与独立Port；不启动内核或GUI。
+    #[test]
+    fn proxy_and_draft_services_use_owned_storage_without_runtime_start() {
+        let root = std::env::temp_dir().join(format!(
+            "veyra-p208-desktop-{:?}",
+            veyra_core::domain::StateEpoch::fresh().unwrap()
+        ));
+        let (services, _) = AppServices::new(root.clone()).unwrap();
+        assert!(root.join("latency.sqlite3").exists());
+        let mut draft = services.draft_latency_session().unwrap();
+        let draft_root = draft.root().to_owned();
+        assert!(draft_root.starts_with(root.join("draft-latency")));
+        assert_ne!(draft_root, root);
+        draft.cleanup().unwrap();
+        drop(draft);
+        services.request_closing();
+        drop(services);
+        assert!(!draft_root.exists());
         std::fs::remove_dir_all(root).unwrap();
     }
 }

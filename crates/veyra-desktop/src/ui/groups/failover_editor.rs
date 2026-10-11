@@ -127,59 +127,79 @@ impl GroupsView {
             .is_some_and(|s| s.restore_primary);
         let advanced = div()
             .flex()
+            .flex_wrap()
             .items_end()
             .gap(px(t::PAD))
-            .p(px(t::PAD))
-            .border_1()
-            .border_color(cx.theme().border)
-            .rounded(px(t::POPOVER_RADIUS))
-            .bg(cx.theme().button.opacity(0.5))
+            .px(px(t::PAD))
+            .py(px(t::GAP))
+            .rounded(px(t::groups::ADVANCED_RADIUS))
+            .bg(rgb(if cx.theme().mode.is_dark() {
+                super::super::theme::Palette::new(true, true).sidebar
+            } else {
+                t::PANEL_BASE200_LIGHT
+            })
+            .opacity(t::groups::ADVANCED_SURFACE_ALPHA))
+            .on_children_prepainted(|bounds, _, _| {
+                #[cfg(debug_assertions)]
+                components::log_layout("group-failover-advanced-controls", &bounds);
+            })
             .child(
-                field("测速超时", self.unit_input(Field::Timeout, "秒", cx), cx)
-                    .w(px(t::groups::ADVANCED_TIMEOUT)),
-            )
-            .child(
-                field("连续失败次数", self.input(Field::Failure, cx), cx)
-                    .w(px(t::groups::ADVANCED_FAILURE)),
+                field(
+                    "单次检测超时",
+                    self.unit_input(Field::Timeout, "秒", cx),
+                    cx,
+                )
+                .flex_shrink_0(),
             )
             .child(
                 div()
-                    .flex_1()
+                    .id("failover-restore-row")
                     .flex()
+                    .flex_shrink_0()
                     .items_center()
-                    .justify_between()
-                    .h(px(t::CONTROL))
+                    .pb(px(t::groups::ADVANCED_SWITCH_BOTTOM))
                     .gap(px(t::GAP))
                     .text_size(px(t::SMALL))
-                    .child(tr(cx, "主用恢复后自动切回"))
+                    .line_height(px(t::groups::MEMBER_TITLE_LINE))
+                    .cursor_pointer()
+                    // 与原版 label 一致，文字和间隙也可切换；使用当前渲染值避免子控件冒泡双切。
+                    .on_click(cx.listener(move |this, _, _, cx| {
+                        if this.busy {
+                            return;
+                        }
+                        if let Some(settings) =
+                            this.draft.as_mut().and_then(|d| d.failover.as_mut())
+                        {
+                            settings.restore_primary = !restore;
+                        }
+                        cx.notify();
+                    }))
                     .child(
-                        components::toggle(
-                            "failover-restore",
-                            restore,
-                            tr(cx, "主用恢复后自动切回"),
-                        )
-                        .compact()
-                        .disabled(self.busy)
-                        .on_change(cx.listener(
-                            |this, value: &bool, _, cx| {
+                        components::toggle("failover-restore", restore, tr(cx, "主用恢复后切回"))
+                            .small()
+                            .disabled(self.busy)
+                            .on_change(cx.listener(|this, value: &bool, _, cx| {
                                 if let Some(settings) =
                                     this.draft.as_mut().and_then(|d| d.failover.as_mut())
                                 {
                                     settings.restore_primary = *value;
                                 }
                                 cx.notify();
-                            },
-                        )),
+                            })),
+                    )
+                    .child(
+                        div()
+                            .font_weight(crate::ui::tokens::FONT_MEDIUM)
+                            .child(tr(cx, "主用恢复后切回")),
                     ),
             )
-            .child(
-                field(
-                    "恢复主用等待",
-                    self.unit_input(Field::Recovery, "秒", cx),
-                    cx,
+            // 原版只在切回开启时显示等待输入；隐藏不清空原来的恢复等待值。
+            .when(restore, |d| {
+                d.child(
+                    field("恢复等待", self.unit_input(Field::Recovery, "秒", cx), cx)
+                        .flex_shrink_0(),
                 )
-                .w(px(t::groups::ADVANCED_RECOVERY)),
-            );
+            });
         let transfer = div()
             .w(px(t::CONTROL))
             .flex_shrink_0()
@@ -211,9 +231,17 @@ impl GroupsView {
                     this.transfer(side, ids, cx);
                 }))
             }));
-        div().flex().flex_col().gap(px(t::PAD))
-            .child(div().flex().child(group_button("failover-advanced",tr(cx,"高级设置"),t::SMALL).ghost().reference_hover(gpui::transparent_black(), cx.theme().input, cx.theme().foreground).h(px(t::groups::CARD_ACTION))
-                .disabled(self.busy).child(icon(if self.advanced { "ChevronUp" } else { "ChevronDown" },t::groups::LANE_SEARCH_ICON))
+        // 整个主备区不参与外层压缩；其自然高度包含高级项、说明和最小双栏高度。
+        div().grid().grid_cols(1).grid_rows_max_content(if self.advanced { 4 } else { 3 }).gap(px(t::SECTION_PADDING))
+            .on_children_prepainted(|bounds, _, _| {
+                #[cfg(debug_assertions)]
+                components::log_layout("group-failover-editor-sections", &bounds);
+            })
+            .child(div().flex().child(group_button("failover-advanced",tr(cx,"高级设置"),t::BODY).ghost()
+                .reference_hover(gpui::transparent_black(), rgb(if cx.theme().mode.is_dark() { t::groups::HEADER_HOVER_DARK } else { t::groups::HEADER_HOVER_LIGHT }).into(), cx.theme().foreground)
+                .h(px(t::CONTROL)).px(px(t::PAD)).rounded(px(t::groups::ADVANCED_TOGGLE_RADIUS))
+                .font_weight(crate::ui::tokens::FONT_SEMIBOLD).line_height(px(t::BODY_LINE))
+                .disabled(self.busy).child(icon(if self.advanced { "ChevronUp" } else { "ChevronDown" },t::groups::ADVANCED_TOGGLE_ICON))
                 .on_click(cx.listener(|this,_,_,cx| { this.advanced = !this.advanced; cx.notify(); }))))
             .when(self.advanced,|d| d.child(advanced))
             .child(hint("从左侧选节点加入当前页签；最前面的页签是主用，后面依次备用。单节点页签直接使用，多节点页签可选自动优选或手动选择。",cx).text_size(px(t::groups::FAILOVER_HINT_TEXT)).line_height(px(t::groups::FAILOVER_HINT_LINE)))
@@ -225,11 +253,15 @@ impl GroupsView {
             .flex()
             .items_center()
             .gap(px(t::ROW_GAP))
+            .on_children_prepainted(|bounds, _, _| {
+                #[cfg(debug_assertions)]
+                components::log_layout("group-failover-unit-controls", &bounds);
+            })
             .child(
                 div()
                     .w(px(t::NUMBER_WIDTH))
                     .flex_shrink_0()
-                    .child(self.input(field, cx)),
+                    .child(self.input(field, cx).px(px(t::PAD))),
             )
             .child(hint(unit, cx))
     }

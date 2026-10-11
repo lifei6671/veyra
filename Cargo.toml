@@ -13,3 +13,10 @@ opt-level = 1
 
 [profile.dev.package.taffy]
 opt-level = 1
+
+# P2-08: 原始同名 Unicode 字体子集的 macOS 加载修复，版本保持 0.3.7。
+[patch.crates-io]
+gpui-pre-macos = { path = "vendor/gpui-pre-macos" }
+# P2-08: opt-in macOS Metal subtree compositing; locked original version retained.
+gpui-pre = { path = "vendor/gpui-pre" }
+gpui-pre-apple = { path = "vendor/gpui-pre-apple" }

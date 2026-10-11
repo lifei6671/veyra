@@ -70,6 +70,7 @@ pub struct SelectState {
     height: Pixels,
     compact: bool,
     border_focus: bool,
+    indicator: Option<(&'static [u8], f32, f32, f32)>,
     trigger_style: StyleRefinement,
     disabled: bool,
     pub translated_options: usize,
@@ -77,6 +78,10 @@ pub struct SelectState {
 impl EventEmitter<SelectEvent> for SelectState {}
 impl EventEmitter<DismissEvent> for SelectState {}
 impl SelectState {
+    /// 消费已确认的稳定选项值；展示翻译不改变配置语义。
+    pub fn selected_value(&self) -> &str {
+        self.selection.selected_value()
+    }
     pub fn new(
         options: Vec<impl Into<SharedString>>,
         selected: Option<IndexPath>,
@@ -97,6 +102,7 @@ impl SelectState {
             height: px(t::CONTROL),
             compact: false,
             border_focus: false,
+            indicator: None,
             trigger_style: StyleRefinement::default(),
             disabled: false,
             translated_options: usize::MAX,
@@ -178,11 +184,18 @@ pub struct Select {
     disabled: bool,
     compact: bool,
     border_focus: bool,
+    indicator: Option<(&'static [u8], f32, f32, f32)>,
 }
 impl Select {
     /// 对应 .group-field > .ob-select-trigger:focus 的局部边框覆盖。
     pub fn border_focus(mut self) -> Self {
         self.border_focus = true;
+        self
+    }
+
+    /// 页面可提供原源 SVG 指示器；复用同一个 Select 的焦点、键盘与选择状态。
+    pub fn indicator(mut self, data: &'static [u8], width: f32, height: f32, right: f32) -> Self {
+        self.indicator = Some((data, width, height, right));
         self
     }
 
@@ -199,6 +212,7 @@ impl Select {
             disabled: false,
             compact: false,
             border_focus: false,
+            indicator: None,
         }
     }
 }
@@ -220,6 +234,7 @@ impl RenderOnce for Select {
             s.disabled = self.disabled;
             s.compact = self.compact;
             s.border_focus = self.border_focus;
+            s.indicator = self.indicator;
             s.trigger_style = self.style.clone();
             s.height = self
                 .style
@@ -291,7 +306,8 @@ impl Render for SelectState {
                             .disabled(self.disabled || self.selection.options.is_empty())
                             .tab_stop(false)
                             .opacity(if self.disabled { 0.5 } else { 1. })
-                            .font_weight(crate::ui::theme::MISANS_REGULAR)
+                            .font_weight(crate::ui::tokens::FONT_REGULAR)
+                            .relative()
                             .flex()
                             .w(self.width)
                             .h(self.height)
@@ -328,17 +344,32 @@ impl Render for SelectState {
                                 |b| b.border_color(rgb(t::ACCENT)),
                             )
                             .child(selected)
-                            .child(
-                                icon(
-                                    "ChevronDown",
-                                    if self.compact {
-                                        t::groups::MEMBER_BADGE_TEXT
-                                    } else {
-                                        t::BODY
-                                    },
+                            .when_some(self.indicator, |button, (data, width, height, right)| {
+                                button.child(
+                                    gpui_kit::component::Icon::default()
+                                        .data(data)
+                                        .w(px(width))
+                                        .h(px(height))
+                                        .absolute()
+                                        .right(px(right))
+                                        .top(relative(0.5))
+                                        .mt(px(1. - height / 2.))
+                                        .text_color(cx.theme().foreground),
                                 )
-                                .text_color(cx.theme().muted_foreground),
-                            ),
+                            })
+                            .when(self.indicator.is_none(), |button| {
+                                button.child(
+                                    icon(
+                                        "ChevronDown",
+                                        if self.compact {
+                                            t::groups::MEMBER_BADGE_TEXT
+                                        } else {
+                                            t::BODY
+                                        },
+                                    )
+                                    .text_color(cx.theme().muted_foreground),
+                                )
+                            }),
                     )
                     .content(move |_, _, cx| {
                         let dark = cx.theme().mode.is_dark();
@@ -358,6 +389,9 @@ impl Render for SelectState {
                         let keyboard = popup_entity.clone();
                         div()
                             .id("select-options")
+                            // 下拉内容独立使用原版普通字重，不能继承标题或选中按钮的粗体。
+                            .font(crate::ui::tokens::openbox_font())
+                            .font_weight(crate::ui::tokens::FONT_REGULAR)
                             .role(Role::ListBox)
                             .track_focus(&focus)
                             .w(width)
@@ -440,7 +474,7 @@ impl Render for SelectState {
                                             .text_color(rgb(highlight_text))
                                     })
                                     .when(selected == Some(i), |d| {
-                                        d.font_weight(FontWeight::SEMIBOLD)
+                                        d.font_weight(crate::ui::tokens::FONT_SEMIBOLD)
                                             .text_color(rgb(highlight_text))
                                     })
                                     // hover 与键盘共用 cursor，不另画第二个 active 背景。

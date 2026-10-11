@@ -680,6 +680,16 @@ impl Render for BehaviorPanel {
             .child(
                 layout
                     .grid()
+                    // 本次批准的最小功能差异：复用稳定的 URL 输入实体及既有草稿/CAS 保存链路。
+                    .child(compact_setting(
+                        help_label(
+                            tr(cx, "测速地址"),
+                            "latency-url-help",
+                            tr(cx, "用于节点测速"),
+                            cx,
+                        ),
+                        text_input(&self.input(InputKey::Url)).w(px(t::SELECT_WIDTH)),
+                    ))
                     .child(self.number_setting(tr(cx, "测速超时"), InputKey::Timeout))
                     .child(self.number_setting(tr(cx, "黄色的阈值"), InputKey::Low))
                     .child(self.number_setting(tr(cx, "红色的阈值"), InputKey::Medium))

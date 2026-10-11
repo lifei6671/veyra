@@ -427,17 +427,18 @@ fn p402_old_v8_and_v9_disk_snapshots_accept_groups_without_losing_facts() {
 fn p402_default_and_auto_groups_preserve_user_groups_and_country_order() {
     // 保护恢复默认与国家生成；同名跳过、组顺序稳定、手工组不删除。
     let defaults = default_groups();
-    assert_eq!(defaults.len(), 4);
+    assert_eq!(defaults.len(), 5);
     assert_eq!(defaults[0].rule, GroupRule::Direct);
-    assert_eq!(defaults[3].rule, GroupRule::Block);
+    assert_eq!(defaults[3].rule, GroupRule::Failover);
+    assert_eq!(defaults[4].rule, GroupRule::Block);
     let groups = auto_groups(
         &defaults,
         &["US".into(), "HK".into()],
         &[GroupRule::UrlTest, GroupRule::Selector],
     );
-    assert_eq!(groups.len(), 8);
-    assert_eq!(groups[4].name, "美国-自动");
-    assert_eq!(groups[5].name, "美国-手动");
+    assert_eq!(groups.len(), 9);
+    assert_eq!(groups[5].name, "美国-自动");
+    assert_eq!(groups[6].name, "美国-手动");
     assert_eq!(
         auto_groups(
             &groups,

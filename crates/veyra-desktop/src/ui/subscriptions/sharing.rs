@@ -120,7 +120,7 @@ impl SubscriptionsView {
     }
     pub(super) fn share_rows(&self, p: SettingsColors, cx: &mut Context<Self>) -> Div {
         let mut body = div()
-            .font_weight(super::super::theme::MISANS_REGULAR)
+            .font_weight(crate::ui::tokens::FONT_REGULAR)
             .flex()
             .flex_col()
             .px(px(t::SECTION_PADDING))
@@ -263,7 +263,7 @@ impl SubscriptionsView {
                                     .text_size(px(t::BODY))
                                     .child(
                                         div()
-                                            .font_weight(super::super::theme::MISANS_MEDIUM)
+                                            .font_weight(crate::ui::tokens::FONT_MEDIUM)
                                             .child(share.name.clone()),
                                     )
                                     .child(
@@ -272,9 +272,7 @@ impl SubscriptionsView {
                                     ),
                             )
                             .child(
-                                hint(share.url(), p)
-                                    .font_family("Menlo")
-                                    .text_size(px(t::SUBSCRIPTION_SHARE_META_FONT)),
+                                hint(share.url(), p).text_size(px(t::SUBSCRIPTION_SHARE_META_FONT)),
                             ),
                     )
                     .child(actions),
@@ -311,7 +309,7 @@ impl SubscriptionsView {
                 .px(px(t::PAD))
                 .text_size(px(t::BODY))
                 .line_height(px(t::BODY_LINE))
-                .font_weight(super::super::theme::MISANS_SEMIBOLD)
+                .font_weight(crate::ui::tokens::FONT_SEMIBOLD)
                 .rounded(px(t::SUBSCRIPTION_SHARE_CONFIRM_BUTTON_RADIUS))
                 .bg(if danger {
                     rgb(t::SUBSCRIPTION_SHARE_CONFIRM_ERROR)
@@ -326,7 +324,7 @@ impl SubscriptionsView {
             .overflow_hidden()
             .bg(p.solid)
             .text_color(text)
-            .font_weight(super::super::theme::MISANS_REGULAR)
+            .font_weight(crate::ui::tokens::FONT_REGULAR)
             .flex()
             .flex_col()
             .child(
@@ -342,7 +340,7 @@ impl SubscriptionsView {
                         div()
                             .text_size(px(t::SECTION_TITLE))
                             .line_height(px(t::SECTION_LINE))
-                            .font_weight(FontWeight::BOLD)
+                            .font_weight(crate::ui::tokens::FONT_BOLD)
                             .child(tr(cx, "确定")),
                     )
                     .child(
@@ -423,7 +421,7 @@ impl SubscriptionsView {
             text_input(&self.share_inputs[ix])
                 .border_focus()
                 .text_size(px(t::BODY))
-                .font_weight(super::super::theme::MISANS_REGULAR)
+                .font_weight(crate::ui::tokens::FONT_REGULAR)
                 .bg(p.solid)
                 .border_color(p.line)
                 .rounded(px(t::SUBSCRIPTION_SHARE_CANCEL_RADIUS))
@@ -528,7 +526,7 @@ impl SubscriptionsView {
             .rounded(px(t::SUBSCRIPTION_SHARE_QR_RADIUS))
             .child(qr_code(&url));
         div()
-            .font_weight(super::super::theme::MISANS_REGULAR)
+            .font_weight(crate::ui::tokens::FONT_REGULAR)
             .text_size(px(t::SUBSCRIPTION_SHARE_BODY_FONT))
             .flex()
             .gap(px(t::SUBSCRIPTION_SHARE_COLUMNS_GAP))
@@ -547,7 +545,7 @@ impl SubscriptionsView {
                             .border_color(p.text.opacity(0.1))
                             .text_size(px(t::SUBSCRIPTION_SHARE_FIELD_FONT))
                             .line_height(px(t::SECTION_PADDING))
-                            .font_weight(super::super::theme::MISANS_MEDIUM)
+                            .font_weight(crate::ui::tokens::FONT_MEDIUM)
                             .child(tr(cx, "选择要分享的订阅")),
                     )
                     .child(choices)
@@ -595,7 +593,7 @@ impl SubscriptionsView {
                                 div()
                                     .flex_1()
                                     .ml(-px(1.))
-                                    .child(input(1).font_family("Menlo").rounded_l(px(0.))),
+                                    .child(input(1).rounded_l(px(0.))),
                             ),
                     ))
                     .child(share_field(tr(cx, "分享链接"), link))
@@ -631,7 +629,7 @@ fn share_field(text: &str, input: impl IntoElement) -> Div {
         .flex_col()
         .text_size(px(t::SUBSCRIPTION_SHARE_FIELD_FONT))
         .line_height(px(t::SECTION_PADDING))
-        .font_weight(super::super::theme::MISANS_MEDIUM)
+        .font_weight(crate::ui::tokens::FONT_MEDIUM)
         .gap(px(t::ROW_GAP))
         .child(text.to_owned())
         .child(input)

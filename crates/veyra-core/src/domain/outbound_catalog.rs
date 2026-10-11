@@ -162,6 +162,19 @@ impl OutboundCatalog {
                 }
             }
         }
+        for policy in state.profile.routing.selectors() {
+            let mut entry = group_entry(
+                &policy.id,
+                state.target_routing_members(),
+                Some(policy.runtime_selector(state).selection),
+            );
+            entry.display_name = Some(policy.name.clone());
+            if !policy.enabled {
+                entry.availability =
+                    OutboundAvailability::Unavailable(OutboundUnavailableReason::Disabled);
+            }
+            entries.push(entry);
+        }
         let mut catalog = Self::with_terminals(entries);
         for group in state.groups.iter().filter(|g| g.builtin()) {
             let entry = catalog

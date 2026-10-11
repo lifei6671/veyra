@@ -771,3 +771,104 @@ fn late_log_identity_is_rejected_and_summary_stays_allowlisted() {
         matches!(sub.try_recv(),Some(LogDelivery::Record(r)) if r.identity==current && r.body().contains("safe detail"))
     );
 }
+
+// 保护 Sidebar 只读消费同一 typed State，未知不伪零、Gap 后可重取最新快照；
+// 使用生产 apply/notify，不开启 WS 或 child，不冒充原生六项统计验证。
+#[tokio::test]
+async fn weak_reader_snapshot_event_gap_stop_and_owner_drop() {
+    let mut service = ObservationService::new();
+    let reader = service.reader();
+    let clone = reader.clone();
+    assert_eq!(Arc::strong_count(&service.state), 1);
+    let empty = reader.snapshot().unwrap();
+    assert!(empty.identity.is_none());
+    assert!(empty.traffic.is_none());
+    assert!(empty.lifetime_totals.is_none());
+    assert!(empty.memory_bytes.is_none());
+    assert!(empty.connection_count.is_none());
+    let id = Identity {
+        instance_id: InstanceId("sidebar-owned".into()),
+        generation: 1,
+    };
+    *service.state.lock().unwrap() = state(id.clone());
+    let mut subscription = reader.subscribe().unwrap();
+    assert_eq!(Arc::strong_count(&service.state), 1);
+    for (stream, frame) in [
+        (Stream::Traffic, r#"{"up":17,"down":23}"#),
+        (Stream::Memory, r#"{"inuse":123}"#),
+        (
+            Stream::Connections,
+            r#"{"uploadTotal":31,"downloadTotal":47,"connections":[{"metadata":{}},{"metadata":{}}]}"#,
+        ),
+    ] {
+        apply(
+            &mut service.state.lock().unwrap(),
+            id.clone(),
+            stream,
+            1,
+            1,
+            frame,
+            1000,
+        )
+        .unwrap();
+        match subscription.recv().await {
+            Delivery::Event(event) => {
+                assert_eq!(event.identity, Some(id.clone()));
+                assert_eq!(event.stream, Some(stream));
+                assert_eq!(event.revision, reader.snapshot().unwrap().revision);
+            }
+            other => panic!("expected owner event, got {other:?}"),
+        }
+    }
+    let actual = reader.snapshot().unwrap();
+    let authoritative = service.snapshot();
+    assert_eq!(actual.identity, Some(id.clone()));
+    assert_eq!(actual.revision, authoritative.revision);
+    assert_eq!(actual.available, authoritative.available);
+    assert_eq!(actual.stream_generation, authoritative.stream_generation);
+    assert_eq!(actual.sequence, authoritative.sequence);
+    assert_eq!(actual.traffic, authoritative.traffic);
+    let traffic = actual.traffic.unwrap();
+    assert_eq!(traffic.upload_bytes_per_second, 17);
+    assert_eq!(traffic.download_bytes_per_second, 23);
+    assert_eq!(traffic.session_upload_bytes, 17);
+    assert_eq!(traffic.session_download_bytes, 23);
+    assert_eq!(actual.lifetime_totals, Some((31, 47)));
+    assert_eq!(actual.memory_bytes, Some(123));
+    assert_eq!(actual.connection_count, Some(2));
+    // 同一 owner 广播的慢消费者依旧收到 Gap；不另建队列或保留旧快照。
+    for _ in 0..EVENT_CAPACITY + 3 {
+        service.state.lock().unwrap().notify(Some(Stream::Memory));
+    }
+    assert!(matches!(
+        subscription.recv().await,
+        Delivery::Gap { dropped: 3 }
+    ));
+    assert_eq!(
+        reader.snapshot().unwrap().revision,
+        service.snapshot().revision
+    );
+    assert_eq!(clone.snapshot().unwrap().identity, Some(id));
+    service.stop();
+    let stopped = reader.snapshot().unwrap();
+    assert!(stopped.identity.is_none());
+    assert_eq!(stopped.available, [false; 4]);
+    assert!(stopped.traffic.is_none());
+    assert!(stopped.lifetime_totals.is_none());
+    assert!(stopped.memory_bytes.is_none());
+    assert!(stopped.connection_count.is_none());
+    drop(service);
+    assert!(reader.snapshot().is_none());
+    assert!(clone.snapshot().is_none());
+    assert!(reader.subscribe().is_none());
+    assert!(clone.subscribe().is_none());
+    timeout(Duration::from_secs(1), async {
+        loop {
+            if matches!(subscription.recv().await, Delivery::Closed) {
+                break;
+            }
+        }
+    })
+    .await
+    .unwrap();
+}

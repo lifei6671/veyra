@@ -64,6 +64,8 @@ impl Render for NoticeCenter {
         };
         let text = if dark { 0xedf2f0 } else { 0x4b5263 };
         Toast::new("app-notice")
+            // 通知只遮挡自身范围的鼠标事件，避免弹窗 backdrop 先收到按下事件而丢失草稿。
+            .occlude()
             .absolute()
             .top(px(24.))
             .left((window.viewport_size().width - px(380.)) / 2.)
@@ -96,12 +98,20 @@ impl Render for NoticeCenter {
             .pr(px(42.))
             .text_size(px(14.))
             .line_height(px(20.))
-            .font_weight(FontWeight(650.))
+            .font_weight(crate::ui::tokens::FONT_TOAST)
             .text_color(rgb(text))
             .child(crate::ui::i18n::message(cx, &item.message))
             .child(
                 gpui_kit::base::Button::new("dismiss-notice")
                     .accessibility_label(crate::ui::i18n::tr(cx, "关闭通知"))
+                    .tooltip(|_, cx| {
+                        cx.new(|cx| {
+                            super::tooltip::TooltipContent(
+                                crate::ui::i18n::tr(cx, "关闭通知").into(),
+                            )
+                        })
+                        .into()
+                    })
                     .absolute()
                     .top(px(9.))
                     .right(px(9.))

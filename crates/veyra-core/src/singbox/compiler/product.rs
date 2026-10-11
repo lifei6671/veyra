@@ -227,10 +227,17 @@ impl SingBoxCompiler {
             listen: resources.mixed.0.ip(),
             listen_port: resources.mixed.0.port(),
         })];
-        // v1.14 已移除 Block outbound；domain Block 仅在适配边界转换为 reject action。
-        document
-            .outbounds
-            .retain(|o| !matches!(o, CoreOutbound::Block(_)));
+        // 固定 1.14 内核 check 已验证 Block 可作为策略 Selector 的真实成员。
+        // 没有 Selector 引用时保持旧产品配置不生成 Block；路由拒绝仍使用 reject action。
+        let selector_uses_block = intent
+            .groups
+            .iter()
+            .any(|g| g.members.contains(&OutboundId::Block));
+        if !selector_uses_block {
+            document
+                .outbounds
+                .retain(|o| !matches!(o, CoreOutbound::Block(_)));
+        }
         let default_tag = outbound_tag(request.default_outbound);
         document.route.final_outbound = if *request.default_outbound == OutboundId::Block {
             "direct".into()
@@ -321,6 +328,22 @@ impl SingBoxCompiler {
                     }
                 }
                 sites.push(compiled);
+            }
+        }
+        // 目标策略顺序来自正式 Profile；前置规则在前，每策略多个匹配条件按 OR 展开。
+        for policy in profile.routing.policies.iter().filter(|p| p.enabled) {
+            for matcher in &policy.matchers {
+                sites.push(route_rule(
+                    &crate::domain::RoutePolicy {
+                        id: crate::domain::RoutePolicyId(policy.id.0.clone()),
+                        name: policy.name.clone(),
+                        enabled: true,
+                        priority: 0,
+                        matcher: matcher.clone(),
+                        target: RouteTarget::Pool(policy.id.clone()),
+                    },
+                    &catalog,
+                )?);
             }
         }
         sites.extend(
@@ -435,6 +458,7 @@ impl SingBoxCompiler {
             rules: dns_rules,
         };
         document.route.rules = rules;
+        document.install_builtin_rule_sets()?;
         plan.health = Some(RuntimeHealthPlan {
             proxy_url: profile.test_url.clone(),
             direct_url: profile.direct_test_url.clone(),
@@ -538,10 +562,15 @@ impl Document {
             .map(|o| o.tag().to_owned())
             .chain(self.endpoints.iter().map(|e| e.tag.clone()))
             .collect::<BTreeSet<_>>();
-        if self
+        // Block 仅为实际 Selector 成员存在；继续拒绝无引用的额外出口。
+        let selector_uses_block = self.outbounds.iter().any(|o| {
+            matches!(o, CoreOutbound::Selector(s) if s.outbounds.iter().any(|tag| tag == "block"))
+        });
+        if (self
             .outbounds
             .iter()
             .any(|o| matches!(o, CoreOutbound::Block(_)))
+            && !selector_uses_block)
             || !tags.contains(&self.route.final_outbound)
             || self.route.default_domain_resolver != "dns-direct"
             || !matches!(
@@ -656,9 +685,15 @@ impl Document {
         ordinary.inbounds.clear();
         ordinary.experimental.cache_file = None;
         ordinary.experimental.clash_api.external_controller = API_ADDRESS.into();
-        ordinary.outbounds.push(CoreOutbound::Block(Terminal {
-            tag: "block".into(),
-        }));
+        if !ordinary
+            .outbounds
+            .iter()
+            .any(|o| matches!(o, CoreOutbound::Block(_)))
+        {
+            ordinary.outbounds.push(CoreOutbound::Block(Terminal {
+                tag: "block".into(),
+            }));
+        }
         ordinary.route.final_outbound = "direct".into();
         ordinary.route.default_domain_resolver = DNS_TAG.into();
         ordinary.route.rules = if ingress.is_empty() {
@@ -700,9 +735,14 @@ fn validate_rule_values(rule: &CoreRule) -> Result<(), CompileError> {
     {
         return Err(bad);
     }
-    for list in [&rule.domain, &rule.domain_suffix, &rule.process_name]
-        .into_iter()
-        .flatten()
+    for list in [
+        &rule.domain,
+        &rule.domain_suffix,
+        &rule.domain_keyword,
+        &rule.process_name,
+    ]
+    .into_iter()
+    .flatten()
     {
         if list.is_empty() || list.iter().any(|s| !present(s)) {
             return Err(bad);

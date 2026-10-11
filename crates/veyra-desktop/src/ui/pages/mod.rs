@@ -15,10 +15,12 @@ pub struct PageView {
     pub behavior: Option<Entity<super::behavior_panel::BehaviorPanel>>,
     pub subscriptions: Option<Entity<super::subscriptions::SubscriptionsView>>,
     pub shared_network: Option<Entity<super::shared_network::SharedNetworkView>>,
+    pub routing: Option<Entity<super::routing::RoutingView>>,
     pub groups: Option<Entity<super::groups::GroupsView>>,
+    pub proxies: Option<Entity<super::proxies::ProxiesView>>,
     pub logs: Option<Entity<super::logs::LogsView>>,
     pub backend: Option<Entity<super::backend::BackendView>>,
-    behavior_open: bool,
+    pub(crate) behavior_open: bool,
     settings_scroll: ScrollHandle,
     category_scroll: ScrollHandle,
     backend_scroll: ScrollHandle,
@@ -33,9 +35,11 @@ impl PageView {
             behavior: None,
             subscriptions: None,
             groups: None,
+            routing: None,
             shared_network: None,
             backend: None,
             logs: None,
+            proxies: None,
             behavior_open: false,
             settings_scroll: ScrollHandle::new(),
             category_scroll: ScrollHandle::new(),
@@ -57,31 +61,21 @@ impl Render for PageView {
         {
             return div().size_full().child(logs.clone());
         }
-        if self.route != Route::Settings && !super::components::evidence_visible() {
-            return super::components::unavailable(self.route.task(), cx);
+        if self.route == Route::Proxies
+            && let Some(proxies) = &self.proxies
+        {
+            return div().size_full().child(proxies.clone());
         }
-        let mut content = div()
-            .flex()
-            .flex_col()
-            .gap_0()
-            .w_full()
-            .min_w_0()
-            .overflow_hidden()
-            .when(self.route == Route::Settings, |d| {
-                // cached Entity 已由 page-content 分配确定 bounds；错误横条会缩小父高度。
-                d.size_full().min_h_0()
-            });
+        if self.route != Route::Settings && !super::components::evidence_visible() {
+            return super::components::page_shell::viewport()
+                .child(super::components::page_shell::toolbar(cx))
+                .child(super::components::unavailable(self.route.task(), cx));
+        }
+        let mut content = super::components::page_shell::viewport();
         if self.route == Route::Settings {
-            let dark = matches!(cx.theme().mode, gpui_kit::component::ThemeMode::Dark);
+            let dark = cx.theme().mode.is_dark();
             content = content.child(
-                div()
-                    .flex()
-                    .h(px(crate::ui::tokens::SETTINGS_NAV_HEIGHT))
-                    .bg(rgb(super::theme::Palette::new(dark, true).surface)
-                        .opacity(crate::ui::tokens::PANEL_TOOLBAR_ALPHA))
-                    .flex_shrink_0()
-                    .p(px(super::tokens::GAP))
-                    .gap(px(super::tokens::GAP))
+                super::components::page_shell::toolbar(cx)
                     .child(
                         div()
                             .flex_1()
@@ -170,6 +164,56 @@ impl Render for PageView {
                             )),
                         )
                     })
+                    .when(self.category == Category::Routing, |d| {
+                        d.child(
+                            super::components::icon_button(
+                                "routing-header-restore",
+                                crate::ui::i18n::tr(cx, "恢复默认分流"),
+                                "ArrowUturnLeft",
+                                super::tokens::CONTROL,
+                            )
+                            .with_tooltip(crate::ui::i18n::tr(cx, "恢复默认"))
+                            .disabled(self.routing.as_ref().is_some_and(|view| view.read(cx).busy))
+                            .on_click(cx.listener(
+                                |page, _, window, cx| {
+                                    if let Some(view) = &page.routing {
+                                        view.update(cx, |view, cx| view.restore(window, cx));
+                                    }
+                                },
+                            )),
+                        )
+                        .child(
+                            super::components::icon_button(
+                                "routing-header-add",
+                                crate::ui::i18n::tr(cx, "添加站点集"),
+                                "Plus",
+                                super::tokens::CONTROL,
+                            )
+                            .primary()
+                            .on_click(cx.listener(
+                                |page, _, window, cx| {
+                                    if let Some(view) = &page.routing {
+                                        view.update(cx, |view, cx| view.open_add(window, cx));
+                                    }
+                                },
+                            )),
+                        )
+                        .child(
+                            super::components::icon_button(
+                                "routing-header-fallback",
+                                crate::ui::i18n::tr(cx, "配置兜底站点集"),
+                                "GlobeAlt",
+                                super::tokens::CONTROL,
+                            )
+                            .on_click(cx.listener(
+                                |page, _, window, cx| {
+                                    if let Some(view) = &page.routing {
+                                        view.update(cx, |view, cx| view.open_fallback(window, cx));
+                                    }
+                                },
+                            )),
+                        )
+                    })
                     .when(self.category == Category::Groups, |d| {
                         d.children(
                             [
@@ -187,6 +231,23 @@ impl Render for PageView {
                                     super::tokens::CONTROL,
                                 )
                                 .with_tooltip(crate::ui::i18n::tr(cx, label))
+                                .when(i < 2, |b| {
+                                    b.rounded(px(super::tokens::groups::HEADER_RADIUS))
+                                        .bg(gpui::rgb(if cx.theme().is_dark() {
+                                            super::tokens::groups::HEADER_BG_DARK
+                                        } else {
+                                            super::tokens::PANEL_BASE200_LIGHT
+                                        }))
+                                        .openbox_ghost(
+                                            gpui::rgb(if cx.theme().is_dark() {
+                                                super::tokens::groups::HEADER_HOVER_DARK
+                                            } else {
+                                                super::tokens::groups::HEADER_HOVER_LIGHT
+                                            })
+                                            .into(),
+                                            cx.theme().foreground,
+                                        )
+                                })
                                 .when(i == 2, |b| b.primary())
                                 .disabled(self.groups.as_ref().is_some_and(|g| g.read(cx).busy))
                                 .on_click(cx.listener(
@@ -297,6 +358,16 @@ impl Render for PageView {
                             .min_h_0()
                             .p(px(super::tokens::GAP))
                             .child(view.clone()),
+                    );
+                }
+            } else if self.category == Category::Routing {
+                if let Some(routing) = &self.routing {
+                    content = content.child(
+                        div()
+                            .flex_1()
+                            .min_h_0()
+                            .p(px(super::tokens::GAP))
+                            .child(routing.clone()),
                     );
                 }
             } else if self.category == Category::Groups {

@@ -46,8 +46,9 @@ impl VisualAssetStore {
         }
         let mut reader = ImageReader::with_format(Cursor::new(&bytes), format);
         let mut limits = image::Limits::default();
-        limits.max_image_width = Some(4096);
-        limits.max_image_height = Some(4096);
+        // 原版 panel-background.jpg 为 3000×5333；保留文件/64 MiB 内存边界，允许原资源尺寸。
+        limits.max_image_width = Some(8192);
+        limits.max_image_height = Some(8192);
         limits.max_alloc = Some(64 * 1024 * 1024);
         reader.limits(limits);
         let image = reader
@@ -216,6 +217,20 @@ mod tests {
         assert_eq!(fs::metadata(&preview).unwrap().ino(), inode);
         assert_eq!(fs::read(&preview).unwrap(), bytes);
         assert_eq!(fs::metadata(&assets.root).unwrap().mode() & 0o777, 0o700);
+        fs::remove_dir_all(root).unwrap();
+    }
+    // 保护设置中导入原版背景的用户路径；不修改参考图，也不放宽解码内存边界。
+    #[test]
+    fn original_openbox_background_can_be_imported() {
+        let root = root();
+        let assets = VisualAssetStore::new(root.join("assets"));
+        let source = Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../../src/openbox/assets/panel-background.jpg");
+        let id = assets.import(&source).unwrap();
+        assert_eq!(
+            image::image_dimensions(assets.path(&id)).unwrap(),
+            (3000, 5333)
+        );
         fs::remove_dir_all(root).unwrap();
     }
     #[test]

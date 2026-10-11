@@ -214,6 +214,26 @@ pub fn error_key(error: Error) -> &'static str {
         Error::Busy => "输入或保存版本已改变，请重新打开订阅并重试",
         Error::InvalidInput | Error::InvalidOptions => "订阅输入无效，请检查名称、来源和 URL",
         Error::FetchFailed => "Direct 下载失败，旧内容已保留，请检查网络后重试",
+        Error::Network(error) => {
+            use veyra_core::subscription::FetchError as Fetch;
+            match error {
+                Fetch::DirectPathUnverified | Fetch::FakeIpAddress => {
+                    "无法确认 Direct 下载路径，旧内容已保留"
+                }
+                Fetch::Timeout => "订阅下载超时，旧内容已保留，请重试",
+                Fetch::DnsFailed
+                | Fetch::DnsStatus(_)
+                | Fetch::NoDnsAddress
+                | Fetch::InvalidDnsResponse => "订阅域名解析失败，旧内容已保留",
+                Fetch::CertificateInvalid | Fetch::TlsFailed | Fetch::InvalidTlsPolicy => {
+                    "订阅 TLS 校验失败，旧内容已保留"
+                }
+                Fetch::HttpStatus(_) => "订阅服务器返回 HTTP 错误，旧内容已保留",
+                Fetch::BodyTooLarge | Fetch::InvalidBody => "订阅响应内容无效或过大，旧内容已保留",
+                Fetch::InvalidUrl => "订阅输入无效，请检查名称、来源和 URL",
+                _ => "Direct 下载失败，旧内容已保留，请检查网络后重试",
+            }
+        }
         Error::ParseFailed | Error::UnsupportedClashProviders | Error::NormalizationFailed => {
             "内容无法解析为支持的节点，旧内容已保留"
         }
@@ -225,9 +245,33 @@ pub fn error_key(error: Error) -> &'static str {
         _ => "订阅操作失败，请重新加载后重试",
     }
 }
+/// 只附加类型化数字，不泄露可能含Token的URL或底层HTTP错误文本。
+pub fn error_message(error: Error) -> String {
+    use veyra_core::subscription::FetchError as Fetch;
+    match error {
+        Error::Network(Fetch::HttpStatus(status)) => {
+            format!("{} · HTTP {status}", error_key(error))
+        }
+        Error::Network(Fetch::DnsStatus(status)) => format!("{} · DNS {status}", error_key(error)),
+        _ => error_key(error).to_owned(),
+    }
+}
 #[cfg(test)]
 mod tests {
     use super::*;
+    // 保护真实网络失败不被误报为未接入/普通保存失败；只展示类别与状态码。
+    #[test]
+    fn subscription_network_error_feedback_preserves_typed_reason() {
+        use veyra_core::subscription::FetchError as Fetch;
+        assert!(
+            error_message(Error::Network(Fetch::DirectPathUnverified)).contains("Direct 下载路径")
+        );
+        assert!(error_message(Error::Network(Fetch::Timeout)).contains("超时"));
+        assert!(error_message(Error::Network(Fetch::DnsFailed)).contains("域名解析失败"));
+        assert!(error_message(Error::Network(Fetch::CertificateInvalid)).contains("TLS"));
+        assert!(error_message(Error::Network(Fetch::HttpStatus(403))).ends_with("HTTP 403"));
+        assert!(error_message(Error::Network(Fetch::DnsStatus(3))).ends_with("DNS 3"));
+    }
     // 保护只读节点按真实provider归属展示；同名不同endpoint不能在presentation合并，展示不改磁盘。
     #[test]
     fn readonly_nodes_preserve_identity_ownership_and_saved_bytes() {

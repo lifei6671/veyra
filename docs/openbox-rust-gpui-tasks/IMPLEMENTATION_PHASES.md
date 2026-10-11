@@ -1,3 +1,11 @@
+**P2-08 本轮退出/清理已完成（2026-10-10，DOING）**：next87937/main88065/draft89403正常托盘Quit后gone、端口重绑；fixture87918正常退出/线程joined，测试root删除，8条历史与自有状态归档。系统代理/DNS/IPv4/6默认路由与前值一致。55唯一PASS；在途GUIQuit因先超时仍NOT_RUN，auto owner/defaultHTTP/完整视觉未收口，五项不勾/owner不释放/READY不变；未commit/merge/push。[记录](P2-08-desktop-acceptance.md)。
+
+**P2-08 最新候选实测追加（DOING）**：旧83390/83493正常Quit及端口清理已PASS；next SHA9b0a811实际PID87937/main88065一次Start Ready，历史/繁体重启、协议筛选、取消反馈与704ms HTTPS、浅暗色显示已补。整体视觉/auto owner/defaultHTTP仍OPEN；新实例87937/88065与fixture87918保留待退出。55唯一PASS，状态/计数/READY不变，不提交合并；[记录](P2-08-desktop-acceptance.md)。
+
+**P2-08 Desktop/Native 接续（2026-10-10，当前 DOING）**：最小代理页、独立草稿 worker/退出取消及真实 SQLite 历史接线完成；55个唯一定向PASS，当前 Core/Desktop Clippy/build/fmt exit0，Legacy Windows LICENSE FAIL101保留。真实选择/保存失败保旧、组测部分失败、历史重启、717ms草稿、弹窗关闭取消已留证；自动组应用事实仍缺 Runtime owner 输出，默认HTTP取舍待Host，最新视觉/GUI/在途Quit未闭合。PID83390/自有83493等待用户正常托盘退出，新候选SHA9b0a811另存且GUI NOT_RUN，不将旧截图重绑新包。状态/owner/READY均不释放，不提交、合并或push；[本轮检查点](P2-08-desktop-acceptance.md)。
+
+**P2-08 Core/服务端阶段1（2026-10-10，当前DOING）**：仅领取P2-08，输入`6857b2e39633ca0564cac66b40ee0f9129cf275a`，独立`dev/p2-08-proxy-latency`；68卡 **DONE31 / READY4 / DOING2 / TODO24 / DEFERRED7**。P2-06及唯一Runtime owner保持，P3-05/P4-01/P4-04/P5-01未领取，下游继续TODO；GPUI/Native由Host交Desktop。[检查点](P2-08-backend-checkpoint.md)。
+
 **P2-05 最新 Host 最终收口（2026-10-10，DONE）**：同一 WorkRun `work-23397-1791600619806627-237`，Host受用户委托，按2026-10-08分期规则正式作 `SCOPED_ACCEPTANCE_WITH_EXPLICIT_DEFERRED_PLATFORM_VERIFICATION` 决定。正式客户端与局部功能/Native/GPUI通过；Host核18/18源码SHA一致，指定Native1 PASS/exit0、独立Review0可信源码Finding、清理/用户网络保护收据通过；另独立CommandRun `command-23397-1791602919967485-251` Core network4 + clash_api16 PASS/exit0，diff检查PASS。P2-05 ACCEPTANCE→DONE、本卡owner释放/剩余0；P2-06 DOING及单一Runtime/DTO owner保留。68卡 **DONE31 / ACCEPTANCE0 / DOING1 / READY5 / TODO24 / DEFERRED7**，macOS31/61、P2 6/10；READY恰P2-08/P3-05/P4-01/P4-04/P5-01，未领取/未启动，P2-07仍缺P2-06保持TODO。物理Direct UNVERIFIED、SystemProxy ON NOT_RUN、正式受管TUN/完整组合由P2-07/P2-09/P6-01/P6-05承接，原第2项保持未勾选；macOS15仍归P7，不宣称150%档位。原用户等待组合与本轮ACCEPTANCE交接均保留历史，本次由Host明确审定收口。见[完整决定/源码与收据SHA/验证边界](P2-05-host-closeout.md)。本次仅必要文档，未commit/merge/push；待Host再次独立Review后受管Git收口。
 
 **以下带日期的旧“当前/本轮”、ACCEPTANCE及计数均为当时快照，保留原文；现态以本段、唯一任务行及当前Active Tasks/Ready Queue为准。**
@@ -179,7 +187,7 @@ Task：OBG-Px-xx
 | [OBG-P2-05 自身出站客户端](P2-local-proxy.md#obg-p2-05) | P2-03、P0-06 | DONE | —（本卡owner已释放；P2-06 Runtime/DTO owner保留） | [本卡剩余0](P2-05-host-closeout.md) | [Host限定范围DONE；225唯一定向/Native1/局部GPUI/独立Review，系统延期项保留](P2-05-host-closeout.md) |
 | [OBG-P2-06 helper/IPC](P2-local-proxy.md#obg-p2-06) | P2-03、P2-04、P0-05 | DOING | Codex · Runtime/Platform | [7.25–14.5；中点10.875](P0-09-stage-review.md#estimate) | [第十八轮工程](P2-local-proxy.md#p2-06-round19) |
 | [OBG-P2-07 系统代理与恢复](P2-local-proxy.md#obg-p2-07) | P2-06、P2-05 | TODO | — | [5.5–11；中点8.25](P0-09-stage-review.md#estimate) | — |
-| [OBG-P2-08 选择与节点测速](P2-local-proxy.md#obg-p2-08) | P2-02A、P2-04、P2-05、P1-04B | READY | — | [6.5–12；中点9.25](P0-09-stage-review.md#estimate) | — |
+| [OBG-P2-08 选择与节点测速](P2-local-proxy.md#obg-p2-08) | P2-02A、P2-04、P2-05、P1-04B | DOING | Codex · Core/Desktop 接续 | [6.5–12；中点9.25](P0-09-stage-review.md#estimate) | [Desktop/Native记录](P2-08-desktop-acceptance.md)、[Core历史](P2-08-backend-checkpoint.md) |
 | [OBG-P2-09 首个可用版本验收](P2-local-proxy.md#obg-p2-09) | P1-07、P2-01、P2-02A、P2-02B、P2-03、P2-04、P2-05、P2-06、P2-07、P2-08 | TODO | — | [3–6；中点4.5](P0-09-stage-review.md#estimate) | — |
 
 ### P3 观测与主页面（8 项）

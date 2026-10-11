@@ -4,6 +4,7 @@ mod backend_profile;
 mod behavior_preferences;
 mod desktop_lifecycle;
 mod navigation;
+mod openbox_fonts;
 mod platform;
 mod preferences;
 mod runtime_service;
@@ -57,6 +58,41 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let quit_owner = ownership.clone();
     gpui_kit::application().with_assets(Assets).run(move |cx| {
         gpui_kit::init(cx);
+        for (name, bytes) in [
+            (
+                "Regular",
+                include_bytes!("../assets/fonts/MiSans-Regular.ttf").as_slice(),
+            ),
+            (
+                "Medium",
+                include_bytes!("../assets/fonts/MiSans-Medium.ttf").as_slice(),
+            ),
+            (
+                "Semibold",
+                include_bytes!("../assets/fonts/MiSans-Semibold.ttf").as_slice(),
+            ),
+            (
+                "Bold",
+                include_bytes!("../assets/fonts/MiSans-Bold.ttf").as_slice(),
+            ),
+        ] {
+            let registered = platform::macos::register_embedded_font(bytes);
+            // 已注册的同 PostScript 字体也会返回 false，不能声称成功或伪造结果。
+            eprintln!("MiSans CoreText process registration face={name} registered={registered}");
+        }
+        // 原版 96 个未改子集使用受控 macOS backend 的同族 descriptor cascade。
+        cx.text_system()
+            .add_fonts(openbox_fonts::fonts())
+            .expect("load original OpenBox MiSans subsets");
+        // 原 Noto Flags 位图/GSUB 字体由授权的 macOS 字体 owner 加载；原字节不改写。
+        cx.text_system()
+            .add_fonts(vec![std::borrow::Cow::Borrowed(
+                include_bytes!(
+                    "../../../src/openbox/assets/fonts/NotoColorEmoji-flagsonly-CWWDk9km.ttf"
+                )
+                .as_slice(),
+            )])
+            .expect("load original OpenBox Noto Flags");
         // 官方4.009静态字重与VF同源；GPUI当前只匹配face，不展开VF的wght轴。
         cx.text_system()
             .add_fonts(vec![

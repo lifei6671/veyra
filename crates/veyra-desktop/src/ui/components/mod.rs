@@ -10,6 +10,62 @@ use gpui_kit::{
     },
     *,
 };
+pub mod page_shell;
+pub mod search_input;
+/// 视觉审计只在现有 debug evidence 会话记录真实 prepaint 子元素bounds，不改变绘制。
+#[cfg(debug_assertions)]
+pub fn log_layout(scope: &str, bounds: &[Bounds<Pixels>]) {
+    if std::env::var_os("VEYRA_DESKTOP_EVIDENCE_LOG").is_some() {
+        let rects = bounds
+            .iter()
+            .map(|b| {
+                serde_json::json!({
+                    "x":f32::from(b.origin.x), "y":f32::from(b.origin.y),
+                    "width":f32::from(b.size.width), "height":f32::from(b.size.height),
+                })
+            })
+            .collect::<Vec<_>>();
+        eprintln!(
+            "visual-layout {scope} {}",
+            serde_json::to_string(&rects).unwrap()
+        );
+    }
+}
+
+/// 同源 Modal 标题：代理偏好与目标分流编辑都使用 LAN 实测41px标题栏。
+pub fn modal_header(title: impl Into<SharedString>, close: impl IntoElement, cx: &App) -> Div {
+    div()
+        .relative()
+        .w_full()
+        .h(px(crate::ui::tokens::modal::HEADER_HEIGHT))
+        .flex_shrink_0()
+        .on_children_prepainted(|bounds, _, _| {
+            #[cfg(debug_assertions)]
+            log_layout("modal-header", &bounds);
+        })
+        .flex()
+        .items_center()
+        .justify_between()
+        .px(px(crate::ui::tokens::SECTION_PADDING))
+        .border_b_1()
+        .border_color(cx.theme().border)
+        .child(
+            div()
+                .text_size(px(crate::ui::tokens::ICON_SMALL))
+                .line_height(px(crate::ui::tokens::modal::TITLE_LINE))
+                .font_weight(crate::ui::tokens::FONT_BOLD)
+                .child(title.into()),
+        )
+        .child(
+            div()
+                .absolute()
+                .right(px(crate::ui::tokens::GAP))
+                // 原版关闭按钮 top:8px；41px 标题栏不能按24px图标居中推算为8.5px。
+                .top(px(crate::ui::tokens::GAP))
+                .child(close),
+        )
+}
+
 #[derive(IntoElement)]
 pub struct PanelInput {
     state: Entity<InputState>,
@@ -78,6 +134,8 @@ impl RenderOnce for PanelInput {
             .when(self.border_focus, |d| d.rounded(px(t::RADIUS)))
             .child(Styled::h(
                 Input::new(&self.state)
+                    .font(super::tokens::openbox_font())
+                    .font_weight(super::tokens::FONT_REGULAR)
                     .readonly(self.readonly)
                     .disabled(self.disabled)
                     .focus_bordered(false)
@@ -124,6 +182,7 @@ impl RenderOnce for PanelInput {
                                 .tab_stop(false)
                                 .disabled(self.disabled || self.readonly)
                                 .accessibility_label(tr(cx, if increment { "增加数值" } else { "减少数值" }))
+                                .tooltip(move |_, cx| cx.new(|cx| tooltip::TooltipContent(tr(cx, if increment { "增加数值" } else { "减少数值" }).into())).into())
                                 .w(px(t::SPINNER_WIDTH))
                                 .h(px(t::SPINNER_HEIGHT / 2.))
                                 .flex()
@@ -202,7 +261,7 @@ pub fn select(
 pub struct PanelSwitch {
     control: gpui_kit::base::Switch,
     checked: bool,
-    compact: bool,
+    small: bool,
     id: ElementId,
 }
 impl Disableable for PanelSwitch {
@@ -212,9 +271,9 @@ impl Disableable for PanelSwitch {
     }
 }
 impl PanelSwitch {
-    /// OpenBox 默认 .ob-switch；面板设置仍保留其局部 40×24 覆盖。
-    pub fn compact(mut self) -> Self {
-        self.compact = true;
+    /// 当前 OpenBox toggle-sm；只在明确使用的小尺寸轨道上启用。
+    pub fn small(mut self) -> Self {
+        self.small = true;
         self
     }
     pub fn on_change(mut self, handler: impl Fn(&bool, &mut Window, &mut App) + 'static) -> Self {
@@ -235,6 +294,11 @@ impl RenderOnce for PanelSwitch {
         let focused = focus.is_focused(window) && window.last_input_was_keyboard();
         let dark = cx.theme().mode.is_dark();
         let p = super::theme::Palette::new(dark, true);
+        let small_ink = rgb(p.text).opacity(if self.checked {
+            1.
+        } else {
+            super::tokens::SMALL_SWITCH_OFF_ALPHA
+        });
         let thumb = if self.checked {
             rgb(p.text)
         } else if dark {
@@ -263,33 +327,39 @@ impl RenderOnce for PanelSwitch {
             .when(focused, |s| {
                 s.child(focus_outline(
                     super::tokens::SWITCH_FOCUS,
-                    super::tokens::SWITCH_RADIUS,
+                    if self.small {
+                        super::tokens::SMALL_SWITCH_RADIUS
+                    } else {
+                        super::tokens::SWITCH_RADIUS
+                    },
                     2.,
                 ))
             })
-            .when(self.compact, |s| {
-                s.w(px(super::tokens::OB_SWITCH_WIDTH))
-                    .h(px(super::tokens::OB_SWITCH_HEIGHT))
-                    .p(px(super::tokens::OB_SWITCH_PADDING))
-                    .border_0()
-                    .rounded_full()
-                    .bg(rgb(if self.checked {
-                        super::tokens::ACCENT
+            .when(self.small, |s| {
+                s.w(px(super::tokens::SMALL_SWITCH_WIDTH))
+                    .h(px(super::tokens::SMALL_SWITCH_HEIGHT))
+                    .p(px(super::tokens::SMALL_SWITCH_PADDING))
+                    .rounded(px(super::tokens::SMALL_SWITCH_RADIUS))
+                    .border_color(small_ink)
+                    .bg(if dark {
+                        cx.theme().input
                     } else {
-                        super::tokens::OB_SWITCH_OFF
-                    }))
+                        rgb(0xffffff)
+                            .opacity(super::tokens::SMALL_SWITCH_BACKGROUND_ALPHA)
+                            .into()
+                    })
             })
             .child(
                 div()
-                    .size(px(if self.compact {
-                        super::tokens::OB_SWITCH_THUMB
+                    .size(px(if self.small {
+                        super::tokens::SMALL_SWITCH_THUMB
                     } else {
                         super::tokens::SWITCH_THUMB
                     }))
                     .rounded_full()
-                    .bg(if self.compact { rgb(0xffffff) } else { thumb })
-                    .ml(px(if self.checked && self.compact {
-                        super::tokens::OB_SWITCH_TRAVEL
+                    .bg(if self.small { small_ink } else { thumb })
+                    .ml(px(if self.checked && self.small {
+                        super::tokens::SMALL_SWITCH_TRAVEL
                     } else if self.checked {
                         super::tokens::SWITCH_TRAVEL
                     } else {
@@ -305,7 +375,7 @@ pub fn toggle(id: &'static str, checked: bool, label: impl Into<SharedString>) -
             .checked(checked)
             .accessibility_label(label),
         checked,
-        compact: false,
+        small: false,
     }
 }
 /// Kit 保留点击与键盘行为；焦点装饰在内容裁切层外绘制。
@@ -322,6 +392,12 @@ pub struct PanelButton {
 impl Styled for PanelButton {
     fn style(&mut self) -> &mut StyleRefinement {
         self.button.style()
+    }
+}
+// 交互样式绑定真实 Kit Button 命中区，避免外层 wrapper 被子按钮遮挡。
+impl InteractiveElement for PanelButton {
+    fn interactivity(&mut self) -> &mut Interactivity {
+        self.button.interactivity()
     }
 }
 impl ParentElement for PanelButton {
@@ -410,7 +486,12 @@ impl RenderOnce for PanelButton {
                     })
                 });
         }
-        let tooltip = self.tooltip;
+        // Tooltip 挂在真实 Kit Button 上，避免子按钮的命中区域遮住外层 Div 的悬浮。
+        if let Some(text) = self.tooltip {
+            self.button
+                .interactivity()
+                .tooltip(move |_, cx| cx.new(|_| tooltip::TooltipContent(text.clone())).into());
+        }
         let button = RenderOnce::render(self.button, window, cx).into_any_element();
         let focus = window
             .use_keyed_state(self.id.clone(), cx, |_, cx| cx.focus_handle())
@@ -420,9 +501,6 @@ impl RenderOnce for PanelButton {
             !self.disabled && focus.is_focused(window) && window.last_input_was_keyboard();
         div()
             .id(self.id)
-            .when_some(tooltip, |d, text| {
-                d.tooltip(move |_, cx| cx.new(|_| tooltip::TooltipContent(text.clone())).into())
-            })
             .relative()
             .flex_shrink_0()
             // Kit 主动抑制 mouse focus；React 按钮点击会让旧 Input blur。
@@ -462,6 +540,9 @@ pub fn button(id: impl Into<ElementId>, label: impl Into<SharedString>) -> Panel
         reference_hover: None,
         reference_focus: None,
         button: Button::new(id)
+            // 原版.btn默认600；Tab/导航等font-normal覆盖仍由实际CSS消费方明确设置。
+            .font(super::tokens::openbox_font())
+            .font_weight(super::tokens::FONT_SEMIBOLD)
             .focus_ring(false)
             // 空 label 不应成为 flex child；否则文字/图标内容会多出 Kit 的 gap。
             .when(!label.is_empty(), |b| b.label(label))
@@ -565,7 +646,11 @@ pub fn navigation_item(
         .rounded(px(if category { t::RADIUS } else { t::NAV_RADIUS }))
         .text_size(px(t::BODY))
         .text_color(rgb(p.text))
-        .font_weight(super::theme::MISANS_REGULAR)
+        .font_weight(if category {
+            crate::ui::tokens::FONT_REGULAR
+        } else {
+            t::proxies::FONT_REGULAR
+        })
         .child(
             div()
                 .flex()
@@ -628,7 +713,7 @@ pub fn section_heading(title: impl IntoElement) -> Div {
         .pb(px(t::GAP))
         .text_size(px(t::SECTION_TITLE))
         .line_height(px(t::SECTION_LINE))
-        .font_weight(super::theme::MISANS_SEMIBOLD)
+        .font_weight(crate::ui::tokens::FONT_SEMIBOLD)
         .child(title)
 }
 #[derive(IntoElement)]
@@ -658,7 +743,7 @@ impl RenderOnce for CompactSetting {
                 div()
                     .flex_1()
                     .min_w_0()
-                    .font_weight(super::theme::MISANS_MEDIUM)
+                    .font_weight(crate::ui::tokens::FONT_MEDIUM)
                     .child(self.label),
             )
             .child(div().min_w_0().flex_shrink_0().child(self.control))
@@ -753,6 +838,7 @@ pub struct IconButton {
     button: gpui_kit::base::Button,
     id: ElementId,
     tooltip_text: Option<SharedString>,
+    tooltip_anchor: Option<(bool, f32)>,
     disabled: bool,
     primary: bool,
     reference_ghost: Option<(Hsla, Hsla)>,
@@ -776,6 +862,17 @@ impl IconButton {
     }
     pub fn with_tooltip(mut self, text: impl Into<SharedString>) -> Self {
         self.tooltip_text = Some(text.into());
+        self
+    }
+    /// 原 ProxyTool 中心/最后一项靠右定位；header span 的级联 margin 由调用处传入。
+    pub fn anchored_tooltip(
+        mut self,
+        text: impl Into<SharedString>,
+        right: bool,
+        x_offset: f32,
+    ) -> Self {
+        self.tooltip_text = Some(text.into());
+        self.tooltip_anchor = Some((right, x_offset));
         self
     }
     pub fn tooltip(self, id: &'static str, text: &'static str) -> tooltip::TooltipButton {
@@ -856,7 +953,7 @@ impl RenderOnce for IconButton {
             cx,
         );
         let focus = window
-            .use_keyed_state((self.id, "icon-focus"), cx, ControlFocus::new)
+            .use_keyed_state((self.id.clone(), "icon-focus"), cx, ControlFocus::new)
             .read(cx)
             .handle
             .clone();
@@ -867,7 +964,9 @@ impl RenderOnce for IconButton {
         } else {
             super::tokens::RADIUS
         };
-        self.button
+        let tooltip_focus = focus.clone();
+        let button = self
+            .button
             .bg(bg)
             .opacity(if self.disabled && !self.retain_disabled_appearance {
                 0.5
@@ -884,9 +983,14 @@ impl RenderOnce for IconButton {
                     })
                 })
             })
-            .when_some(self.tooltip_text, |b, text| {
-                b.tooltip(move |_, cx| cx.new(|_| tooltip::TooltipContent(text.clone())).into())
-            })
+            .when_some(
+                self.tooltip_text
+                    .clone()
+                    .filter(|_| self.tooltip_anchor.is_none()),
+                |b, text| {
+                    b.tooltip(move |_, cx| cx.new(|_| tooltip::TooltipContent(text.clone())).into())
+                },
+            )
             .track_focus(&focus)
             .when(!self.disabled, |b| {
                 b.on_mouse_down(MouseButton::Left, move |_, w, cx| focus.focus(w, cx))
@@ -910,6 +1014,20 @@ impl RenderOnce for IconButton {
                     }),
                 )
             })
+            .into_any_element();
+        if let Some((right, x_offset)) = self.tooltip_anchor {
+            tooltip::ToolTooltip {
+                id: self.id,
+                trigger: button,
+                text: self.tooltip_text.expect("anchored tooltip text"),
+                right,
+                x_offset,
+                focus: tooltip_focus,
+            }
+            .into_any_element()
+        } else {
+            button
+        }
     }
 }
 pub fn icon_button(
@@ -933,9 +1051,13 @@ pub fn icon_button_content(
     content: impl IntoElement,
 ) -> IconButton {
     let id = id.into();
+    let label = label.into();
+    // 图标按钮必须有操作说明；共享入口默认复用已经本地化的辅助功能文案。
+    assert!(!label.trim().is_empty(), "图标按钮说明不能为空");
     IconButton {
         id: id.clone(),
-        tooltip_text: None,
+        tooltip_text: Some(label.clone()),
+        tooltip_anchor: None,
         disabled: false,
         primary: false,
         reference_ghost: None,
@@ -946,6 +1068,25 @@ pub fn icon_button_content(
             .p_0()
             .rounded(px(super::tokens::RADIUS))
             .child(content),
+    }
+}
+
+// 保护用户的全局说明约定：新图标按钮默认有 Tooltip，显式的上下文说明仍可覆盖。
+#[cfg(test)]
+mod icon_button_tooltip_tests {
+    use super::{icon_button, icon_button_content};
+    use gpui_kit::{component::Disableable, div};
+    #[test]
+    fn every_icon_button_defaults_to_its_action_label() {
+        let b = icon_button("edit", "编辑节点", "PencilSquare", 32.).disabled(true);
+        assert_eq!(b.tooltip_text.as_deref(), Some("编辑节点"));
+        let b = icon_button_content("close", "关闭", 24., div()).with_tooltip("关闭编辑器");
+        assert_eq!(b.tooltip_text.as_deref(), Some("关闭编辑器"));
+    }
+    #[test]
+    #[should_panic(expected = "图标按钮说明不能为空")]
+    fn unlabeled_icon_button_is_rejected() {
+        let _ = icon_button("unlabeled", " ", "XMark", 24.);
     }
 }
 
@@ -1231,7 +1372,7 @@ pub fn empty_state(icon: &'static str, title: &str, text: &str, cx: &App) -> Div
                 .mt(px(s::EMPTY_TITLE_MARGIN))
                 .mb(px(s::EMPTY_TEXT_MARGIN))
                 .text_size(px(t::BODY))
-                .font_weight(FontWeight::BOLD)
+                .font_weight(crate::ui::tokens::FONT_BOLD)
                 .child(tr(cx, title).to_owned()),
         )
         .child(
@@ -1268,7 +1409,7 @@ pub fn error_state(title: &str, message: &str, action: impl IntoElement, cx: &Ap
                 .child(
                     div()
                         .text_size(px(t::BODY))
-                        .font_weight(FontWeight::BOLD)
+                        .font_weight(crate::ui::tokens::FONT_BOLD)
                         .child(tr(cx, title).to_owned()),
                 )
                 .child(
@@ -1281,3 +1422,5 @@ pub fn error_state(title: &str, message: &str, action: impl IntoElement, cx: &Ap
         )
         .child(action)
 }
+
+pub(crate) mod order_motion;

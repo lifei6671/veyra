@@ -287,7 +287,7 @@ fn heading(text: impl Into<SharedString>) -> Div {
     div()
         .text_size(px(t::TITLE))
         .line_height(px(t::TITLE_LINE))
-        .font_weight(super::theme::MISANS_SEMIBOLD)
+        .font_weight(crate::ui::tokens::FONT_SEMIBOLD)
         .child(text.into())
 }
 fn section(id: &'static str) -> Stateful<Div> {
@@ -325,7 +325,7 @@ fn shell_button(
         .gap(px(t::BUTTON_GAP))
         .text_size(px(t::BODY))
         .line_height(px(t::LINE))
-        .font_weight(super::theme::MISANS_SEMIBOLD)
+        .font_weight(crate::ui::tokens::FONT_SEMIBOLD)
         .text_color(rgb(p.text))
         .bg(rgb(if cx.theme().mode.is_dark() {
             t::BUTTON_DARK
@@ -348,7 +348,7 @@ fn readonly_field(
         .aria_label(text.clone())
         .aria_description(tr(cx, "只读，未接入编辑"))
         .w(px(width))
-        .font_weight(super::theme::MISANS_REGULAR)
+        .font_weight(crate::ui::tokens::FONT_REGULAR)
         .border_1()
         .border_color(rgba((p.text << 8) | t::FIELD_LINE_ALPHA))
         .bg(rgba((p.surface << 8) | t::FIELD_ALPHA))
@@ -504,7 +504,7 @@ impl Render for BackendView {
                             .child(img(brand).size(px(t::TITLE_LINE)))
                             .child(
                                 div()
-                                    .font_weight(super::theme::MISANS_SEMIBOLD)
+                                    .font_weight(crate::ui::tokens::FONT_SEMIBOLD)
                                     .child("VEYRA"),
                             )
                             .child(format!("v{}", env!("CARGO_PKG_VERSION")))
@@ -516,6 +516,14 @@ impl Render for BackendView {
                             .p_0()
                             .bg(rgb(p.surface))
                             .aria_label(tr(cx, "恢复出厂设置：未接入"))
+                            .tooltip(|_, cx| {
+                                cx.new(|cx| {
+                                    super::components::tooltip::TooltipContent(
+                                        tr(cx, "恢复出厂设置：未接入").into(),
+                                    )
+                                })
+                                .into()
+                            })
                             .child(icon("ExclamationTriangle", t::ICON)),
                     ),
             )
@@ -528,7 +536,7 @@ impl Render for BackendView {
                     .child(format!("{}：", tr(cx, "内核版本")))
                     .child(
                         div()
-                            .font_weight(super::theme::MISANS_MEDIUM)
+                            .font_weight(crate::ui::tokens::FONT_MEDIUM)
                             .text_color(rgb(p.text))
                             .child(kernel),
                     )
@@ -622,7 +630,7 @@ impl Render for BackendView {
                                 .gap(px(t::BUTTON_GAP))
                                 .text_size(px(t::BODY))
                                 .line_height(px(t::LINE))
-                                .font_weight(super::theme::MISANS_SEMIBOLD)
+                                .font_weight(crate::ui::tokens::FONT_SEMIBOLD)
                                 .bg(rgb(if dark {
                                     t::BUTTON_DARK
                                 } else {
@@ -720,7 +728,7 @@ impl Render for BackendView {
             .child(divider(line).mx(px(t::PADDING)))
             .child(section("backend-bypass-ports")
                 .child(div().child(heading(tr(cx,"进内核前放行的端口"))).child(hint(tr(cx,"自建服务(RustDesk、端口映射出去的 NAS 服务等)用到的端口:目标端口或来源端口是这些的 TCP / UDP 流量在进内核之前就放行,和没装 Open-Box 一样,端口映射和打洞不受影响。和「前置自定义分流」里的「端口 → 直连」不同:那种已经进了内核,由内核替它重新连接,NAT 会被打乱。黑名单、白名单各存一份,只有选中的那份生效。"),p)))
-                .child(row().mt(px(-t::FIELD_GAP)).child(row().gap_0().p(px(t::FIELD_GAP)).rounded(px(t::BUTTON_RADIUS)).bg(rgb(p.field)).child(shell_button("backend-ports-blacklist",tr(cx,"黑名单"),p, cx).px(px(t::ACTION_GAP)).font_weight(super::theme::MISANS_REGULAR).rounded(px(t::SEGMENT_RADIUS)).bg(rgba(0))).child(shell_button("backend-ports-whitelist",tr(cx,"白名单"),p, cx).px(px(t::ACTION_GAP)).font_weight(super::theme::MISANS_REGULAR).rounded(px(t::SEGMENT_RADIUS)).bg(rgba(0)))).child(hint(tr(cx,"未接入"),p)))
+                .child(row().mt(px(-t::FIELD_GAP)).child(row().gap_0().p(px(t::FIELD_GAP)).rounded(px(t::BUTTON_RADIUS)).bg(rgb(p.field)).child(shell_button("backend-ports-blacklist",tr(cx,"黑名单"),p, cx).px(px(t::ACTION_GAP)).font_weight(crate::ui::tokens::FONT_REGULAR).rounded(px(t::SEGMENT_RADIUS)).bg(rgba(0))).child(shell_button("backend-ports-whitelist",tr(cx,"白名单"),p, cx).px(px(t::ACTION_GAP)).font_weight(crate::ui::tokens::FONT_REGULAR).rounded(px(t::SEGMENT_RADIUS)).bg(rgba(0)))).child(hint(tr(cx,"未接入"),p)))
                 .child(readonly_field("backend-ports-value",tr(cx,"例如 21114-21119, 2233"),t::FIELD_WIDTH,false,p, cx).w_full().font_family("Menlo").text_color(rgba((p.text << 8) | 0x80)))
                 .child(hint(tr(cx,"黑名单:列出的端口不进内核,在进内核前就放行(和没装 Open-Box 一样);其余所有流量照常进内核。单个端口、范围(用 -)都行,多个用逗号隔开;留空就是全部进内核。多 WAN(mwan3)时,这些端口的连接一律走主路由表。"),p).mt(px(-t::ACTION_GAP))))
             .child(divider(line).mx(px(t::PADDING)))
@@ -766,7 +774,7 @@ impl Render for BackendView {
                                     .flex()
                                     .flex_col()
                                     .gap(px(t::FIELD_GAP))
-                                    .child(hint(tr(cx, label), p).font_weight(super::theme::MISANS_MEDIUM))
+                                    .child(hint(tr(cx, label), p).font_weight(crate::ui::tokens::FONT_MEDIUM))
                                     .child(
                                         text_input(&self.urls[index])
                                         .disabled(self.saves.busy(if index==0 {Field::TestUrl}else{Field::DirectTestUrl}))

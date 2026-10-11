@@ -24,6 +24,43 @@ pub fn set_application_icon() {
     // 有效的随包 NSImage，主线程同步设置；NSApplication 保留该对象。
     unsafe { app.setApplicationIconImage(Some(&image)) };
 }
+// GPUI 的内存 FontId 不会把嵌入字体加入 CoreText family matching。
+// 原版 Latin 子集缺少中文和 |；进程内注册完整 MiSans 才能使 cascade 使用同源字形。
+// 只注册随包原件，不写用户字体目录、不安装系统字体；进程退出时注册随之释放。
+#[link(name = "CoreGraphics", kind = "framework")]
+unsafe extern "C" {
+    fn CGDataProviderCreateWithCFData(data: *const std::ffi::c_void) -> *mut std::ffi::c_void;
+    fn CGFontCreateWithDataProvider(provider: *const std::ffi::c_void) -> *mut std::ffi::c_void;
+    fn CGDataProviderRelease(provider: *const std::ffi::c_void);
+    fn CGFontRelease(font: *const std::ffi::c_void);
+}
+#[link(name = "CoreText", kind = "framework")]
+unsafe extern "C" {
+    fn CTFontManagerRegisterGraphicsFont(
+        font: *const std::ffi::c_void,
+        error: *mut *mut std::ffi::c_void,
+    ) -> bool;
+}
+pub fn register_embedded_font(bytes: &[u8]) -> bool {
+    let data = NSData::with_bytes(bytes);
+    // NSData/CFData toll-free bridge，data 在全部同步调用完成前保持存活。
+    unsafe {
+        let provider = CGDataProviderCreateWithCFData((&*data as *const NSData).cast());
+        if provider.is_null() {
+            return false;
+        }
+        let font = CGFontCreateWithDataProvider(provider);
+        if font.is_null() {
+            CGDataProviderRelease(provider);
+            return false;
+        }
+        // 嵌入数据使用同步 GraphicsFont API；不使用文件注册或持久 scope。
+        let result = CTFontManagerRegisterGraphicsFont(font, std::ptr::null_mut());
+        CGFontRelease(font);
+        CGDataProviderRelease(provider);
+        result
+    }
+}
 #[derive(Clone, Copy, Debug)]
 pub enum DialogKind {
     Image,

@@ -3095,3 +3095,878 @@ fn outbound_source_tracks_ready_replace_stop_and_crash() {
     drop(owner);
     std::fs::remove_dir_all(root).unwrap();
 }
+
+// 保护消费者只能取得实际 Ready 计划；真实 loopback GET 验证鉴权和 now，进程端为 Mock。
+// Saved 编辑不改已应用成员；退出、替换及未知响应不能制造 auto 组当前出口。
+#[test]
+fn applied_proxy_facts_authenticated_auto_manual_unknown_and_lifecycle() {
+    use crate::domain::{GroupRule, NodeGroup};
+    use std::io::{Read, Write};
+    use std::sync::atomic::{AtomicBool, Ordering};
+    use std::time::Duration;
+    let (mut owner, trace, store, root) = manual_fixture();
+    let mut state = store.load().unwrap();
+    let auto = PoolId("facts-auto".into());
+    let group = PoolId("facts-selector".into());
+    let mut a = NodeGroup::new(auto.clone());
+    a.name = "auto".into();
+    a.members = vec![
+        OutboundId::Node(NodeId("b".into())),
+        OutboundId::Node(NodeId("a".into())),
+    ];
+    let mut g = NodeGroup::new(group.clone());
+    g.name = "selector".into();
+    g.rule = GroupRule::Selector;
+    g.members = vec![OutboundId::Pool(auto.clone()), OutboundId::Direct];
+    state.groups = vec![a.clone(), g.clone()];
+    state.routes.clear();
+    store.save(&state).unwrap();
+    let source = owner.outbound_proxy_source();
+    assert!(source.current().is_none());
+    let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
+    listener.set_nonblocking(true).unwrap();
+    trace.lock().unwrap().observation_address = Some(listener.local_addr().unwrap());
+    let reply = Arc::new(Mutex::new("node-a".to_owned()));
+    let quit = Arc::new(AtomicBool::new(false));
+    let delay = Arc::new(AtomicBool::new(false));
+    let received = Arc::new(tokio::sync::Notify::new());
+    let server = {
+        let reply = reply.clone();
+        let quit = quit.clone();
+        let trace = trace.clone();
+        let delay = delay.clone();
+        let received = received.clone();
+        std::thread::spawn(move || {
+            let mut connections = Vec::new();
+            let deadline = Instant::now() + Duration::from_secs(20);
+            while !quit.load(Ordering::Acquire) && Instant::now() < deadline {
+                let (mut stream, _) = match listener.accept() {
+                    Ok(v) => v,
+                    Err(e) if e.kind() == std::io::ErrorKind::WouldBlock => {
+                        std::thread::sleep(Duration::from_millis(2));
+                        continue;
+                    }
+                    Err(e) => panic!("{e}"),
+                };
+                let trace = trace.clone();
+                let reply = reply.clone();
+                let delay = delay.clone();
+                let received = received.clone();
+                connections.push(std::thread::spawn(move || {
+                stream
+                    .set_read_timeout(Some(Duration::from_secs(1)))
+                    .unwrap();
+                let mut request = Vec::new();
+                let mut buf = [0u8; 2048];
+                while !request.ends_with(b"\r\n\r\n") && request.len() < 8192 {
+                    let Ok(n) = stream.read(&mut buf) else {
+                        break;
+                    };
+                    if n == 0 {
+                        break;
+                    }
+                    request.extend_from_slice(&buf[..n]);
+                }
+                let request = String::from_utf8_lossy(&request);
+                let body = if request.starts_with("GET /proxies/") {
+                    let t = trace.lock().unwrap();
+                    let secret = t.config.as_ref().unwrap()["experimental"]["clash_api"]["secret"]
+                        .as_str()
+                        .unwrap();
+                    assert!(request.to_ascii_lowercase().contains(&format!(
+                        "authorization: bearer {}",
+                        secret.to_ascii_lowercase()
+                    )));
+                    drop(t);
+                    if delay.load(Ordering::Acquire) {
+                        received.notify_one();
+                        let end = Instant::now() + Duration::from_secs(3);
+                        while delay.load(Ordering::Acquire) && Instant::now() < end {
+                            std::thread::sleep(Duration::from_millis(2));
+                        }
+                    }
+                    serde_json::json!({"now": reply.lock().unwrap().clone()}).to_string()
+                } else {
+                    "{}".into()
+                };
+                let _ = write!(
+                    stream,
+                    "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{}",
+                    body.len(),
+                    body
+                );
+                }));
+            }
+            for connection in connections {
+                connection.join().unwrap();
+            }
+        })
+    };
+    owner.execute(RuntimeCommand::Start, |_| {}).unwrap();
+    let proxy = source.current().unwrap();
+    let snap = owner.snapshot().unwrap();
+    let instance = snap.runtime.instance_id.unwrap();
+    let config = snap.runtime.applied_version.unwrap();
+    let facts = proxy.applied_proxy_facts(&instance, &config).unwrap();
+    assert_eq!(facts.pools[&auto], a.members);
+    assert_eq!(facts.pools[&group], g.members);
+    assert!(facts.pools.contains_key(&PoolId("manual".into())));
+    let index = owner
+        .active
+        .as_ref()
+        .unwrap()
+        .plan
+        .artifact_index()
+        .unwrap()
+        .clone();
+    // 序列化恢复也必须保留完整 auto 索引，而不扩展可写 manual groups。
+    let restored = SingBoxPlan::recover(
+        &owner
+            .active
+            .as_ref()
+            .unwrap()
+            .plan
+            .recovery_bytes()
+            .unwrap(),
+        &owner.resources(&state.state_epoch).unwrap(),
+    )
+    .unwrap();
+    assert_eq!(restored.artifact_index(), Some(&index));
+    assert!(!index.groups.contains_key(&auto));
+    assert!(index.applied_members.as_ref().unwrap().contains_key(&auto));
+    let rt = tokio::runtime::Builder::new_current_thread()
+        .enable_all()
+        .build()
+        .unwrap();
+    for (pool, now, expected) in [
+        (
+            auto.clone(),
+            index.nodes[&NodeId("a".into())].clone(),
+            Some(OutboundId::Node(NodeId("a".into()))),
+        ),
+        (
+            PoolId("manual".into()),
+            index.nodes[&NodeId("b".into())].clone(),
+            Some(OutboundId::Node(NodeId("b".into()))),
+        ),
+        (
+            group.clone(),
+            index.applied_pool_tag(&auto).unwrap(),
+            Some(OutboundId::Pool(auto.clone())),
+        ),
+        (group.clone(), "direct".into(), Some(OutboundId::Direct)),
+        (auto.clone(), "block".into(), None),
+        (auto.clone(), "foreign-tag".into(), None),
+    ] {
+        *reply.lock().unwrap() = now;
+        let actual = rt
+            .block_on(proxy.observe_applied_pool(&instance, &config, &pool))
+            .unwrap();
+        assert_eq!(actual.current, expected);
+        assert_eq!(actual.instance_id, instance);
+        assert_eq!(actual.config, config);
+    }
+    let mut changed = store.load().unwrap();
+    changed.groups[0].members.reverse();
+    changed.config_revision += 1;
+    store.save(&changed).unwrap();
+    assert!(
+        proxy
+            .applied_proxy_facts(&instance, &changed.config_version())
+            .is_none()
+    );
+    assert_eq!(
+        proxy.applied_proxy_facts(&instance, &config).unwrap(),
+        facts
+    );
+    assert!(
+        proxy
+            .applied_proxy_facts(&InstanceId("other-instance".into()), &config)
+            .is_none()
+    );
+    assert!(
+        rt.block_on(proxy.observe_applied_pool(&instance, &config, &PoolId("missing".into())))
+            .is_none()
+    );
+    // 在途 GET 已到 fixture，再替换实例；旧响应绝不能进入新实例 UI。
+    delay.store(true, Ordering::Release);
+    let pending = {
+        let proxy = proxy.clone();
+        let instance = instance.clone();
+        let config = config.clone();
+        let auto = auto.clone();
+        rt.spawn(async move { proxy.observe_applied_pool(&instance, &config, &auto).await })
+    };
+    rt.block_on(async {
+        tokio::time::timeout(Duration::from_secs(3), received.notified())
+            .await
+            .unwrap();
+    });
+    owner.execute(RuntimeCommand::Restart, |_| {}).unwrap();
+    assert!(rt.block_on(pending).unwrap().is_none());
+    delay.store(false, Ordering::Release);
+    let next = source.current().unwrap();
+    let next_snap = owner.snapshot().unwrap();
+    quit.store(true, Ordering::Release);
+    server.join().unwrap();
+    assert_eq!(
+        rt.block_on(next.observe_applied_pool(
+            next_snap.runtime.instance_id.as_ref().unwrap(),
+            next_snap.runtime.applied_version.as_ref().unwrap(),
+            &auto
+        ))
+        .unwrap()
+        .current,
+        None
+    );
+    assert!(proxy.applied_proxy_facts(&instance, &config).is_none());
+    assert_ne!(next.instance_id(), proxy.instance_id());
+    owner.execute(RuntimeCommand::Stop, |_| {}).unwrap();
+    assert!(!next.is_valid());
+    drop(owner);
+    std::fs::remove_dir_all(root).unwrap();
+}
+
+// 保护代理页 UDP 说明来自同实例已应用 Controller，而非 Saved 协议推断；
+// Mock owner 不启动真实 child，仅使用自有动态 loopback 验证鉴权、未知值与 Stop 取消。
+#[test]
+fn applied_proxy_metadata_udp_identity_unknown_and_stop_cancel() {
+    use std::io::{Read, Write};
+    use std::sync::atomic::{AtomicBool, Ordering};
+    use std::time::Duration;
+    let (mut owner, trace, store, root) = manual_fixture();
+    let mut state = store.load().unwrap();
+    let auto = PoolId("udp-auto".into());
+    let mut group = crate::domain::NodeGroup::new(auto.clone());
+    group.name = "UDP metadata test".into();
+    group.members = vec![OutboundId::Node(NodeId("a".into())), OutboundId::Direct];
+    state.groups.push(group);
+    store.save(&state).unwrap();
+    let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
+    listener.set_nonblocking(true).unwrap();
+    trace.lock().unwrap().observation_address = Some(listener.local_addr().unwrap());
+    let response = Arc::new(Mutex::new(serde_json::json!({"udp": true})));
+    let requests = Arc::new(Mutex::new(Vec::new()));
+    let delayed = Arc::new(AtomicBool::new(false));
+    let quit = Arc::new(AtomicBool::new(false));
+    let received = Arc::new(tokio::sync::Notify::new());
+    let server = {
+        let trace = trace.clone();
+        let response = response.clone();
+        let requests = requests.clone();
+        let delayed = delayed.clone();
+        let quit = quit.clone();
+        let received = received.clone();
+        std::thread::spawn(move || {
+            let mut connections = Vec::new();
+            let deadline = Instant::now() + Duration::from_secs(20);
+            while !quit.load(Ordering::Acquire) && Instant::now() < deadline {
+                let (mut stream, _) = match listener.accept() {
+                    Ok(value) => value,
+                    Err(error) if error.kind() == std::io::ErrorKind::WouldBlock => {
+                        std::thread::sleep(Duration::from_millis(2));
+                        continue;
+                    }
+                    Err(error) => panic!("{error}"),
+                };
+                let trace = trace.clone();
+                let response = response.clone();
+                let requests = requests.clone();
+                let delayed = delayed.clone();
+                let quit = quit.clone();
+                let received = received.clone();
+                connections.push(std::thread::spawn(move || {
+                    stream.set_read_timeout(Some(Duration::from_secs(1))).unwrap();
+                    let mut request = Vec::new();
+                    let mut buffer = [0u8; 2048];
+                    while !request.ends_with(b"\r\n\r\n") && request.len() < 8192 {
+                        let Ok(n) = stream.read(&mut buffer) else { break; };
+                        if n == 0 { break; }
+                        request.extend_from_slice(&buffer[..n]);
+                    }
+                    let request = String::from_utf8_lossy(&request);
+                    let body = if request.starts_with("GET /proxies/") {
+                        let t = trace.lock().unwrap();
+                        let secret = t.config.as_ref().unwrap()["experimental"]["clash_api"]["secret"].as_str().unwrap();
+                        assert!(request.to_ascii_lowercase().contains(&format!("authorization: bearer {}", secret.to_ascii_lowercase())));
+                        drop(t);
+                        requests.lock().unwrap().push(request.lines().next().unwrap().to_owned());
+                        if delayed.load(Ordering::Acquire) {
+                            received.notify_one();
+                            while delayed.load(Ordering::Acquire) && !quit.load(Ordering::Acquire) {
+                                std::thread::sleep(Duration::from_millis(2));
+                            }
+                        }
+                        response.lock().unwrap().to_string()
+                    } else { "{}".into() };
+                    let _ = write!(stream, "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{}", body.len(), body);
+                }));
+            }
+            for connection in connections {
+                connection.join().unwrap();
+            }
+        })
+    };
+    let source = owner.outbound_proxy_source();
+    owner.execute(RuntimeCommand::Start, |_| {}).unwrap();
+    let proxy = source.current().unwrap();
+    let snapshot = owner.snapshot().unwrap();
+    let instance = snapshot.runtime.instance_id.unwrap();
+    let config = snapshot.runtime.applied_version.unwrap();
+    let rt = tokio::runtime::Builder::new_current_thread()
+        .enable_all()
+        .build()
+        .unwrap();
+    let before = store.load().unwrap();
+    for (outbound, body, expected) in [
+        (
+            OutboundId::Node(NodeId("a".into())),
+            serde_json::json!({"udp": false}),
+            Some(false),
+        ),
+        (
+            OutboundId::Direct,
+            serde_json::json!({"udp": true}),
+            Some(true),
+        ),
+        (
+            OutboundId::Pool(auto.clone()),
+            serde_json::json!({"udp": true}),
+            Some(true),
+        ),
+        (
+            OutboundId::Pool(PoolId("manual".into())),
+            serde_json::json!({"udp": false}),
+            Some(false),
+        ),
+        (OutboundId::Direct, serde_json::json!({}), None),
+        (OutboundId::Direct, serde_json::json!({"udp": null}), None),
+        (OutboundId::Direct, serde_json::json!({"udp": "true"}), None),
+    ] {
+        *response.lock().unwrap() = body;
+        let actual = rt
+            .block_on(proxy.observe_applied_proxy_metadata(&instance, &config, &outbound))
+            .unwrap();
+        assert_eq!(actual.instance_id, instance);
+        assert_eq!(actual.config, config);
+        assert_eq!(actual.outbound_id, outbound);
+        assert_eq!(actual.udp, expected);
+    }
+    assert_eq!(requests.lock().unwrap().len(), 7);
+    assert_eq!(requests.lock().unwrap()[0], "GET /proxies/node-a HTTP/1.1");
+    assert_eq!(requests.lock().unwrap()[1], "GET /proxies/direct HTTP/1.1");
+    assert_eq!(
+        requests.lock().unwrap()[2],
+        "GET /proxies/pool-udp-auto HTTP/1.1"
+    );
+    for outbound in [
+        OutboundId::Node(NodeId("saved-only".into())),
+        OutboundId::Pool(PoolId("saved-only".into())),
+        OutboundId::Block,
+    ] {
+        assert!(
+            rt.block_on(proxy.observe_applied_proxy_metadata(&instance, &config, &outbound))
+                .is_none()
+        );
+    }
+    assert!(
+        rt.block_on(proxy.observe_applied_proxy_metadata(
+            &InstanceId("old-instance".into()),
+            &config,
+            &OutboundId::Direct
+        ))
+        .is_none()
+    );
+    let mut wrong_config = config.clone();
+    wrong_config.0.revision += 1;
+    assert!(
+        rt.block_on(proxy.observe_applied_proxy_metadata(
+            &instance,
+            &wrong_config,
+            &OutboundId::Direct
+        ))
+        .is_none()
+    );
+    // 身份及不存在的出口必须在 I/O 前拒绝，不发送 Saved 或任意 tag 请求。
+    assert_eq!(requests.lock().unwrap().len(), 7);
+    assert_eq!(store.load().unwrap(), before);
+    // 即使 Saved 策略包含 Block，旧已应用实例仍必须无 I/O 返回 None。
+    policy35_add_strategy(&store);
+    assert!(
+        rt.block_on(proxy.observe_applied_proxy_metadata(&instance, &config, &OutboundId::Block))
+            .is_none()
+    );
+    assert_eq!(requests.lock().unwrap().len(), 7);
+    owner.execute(RuntimeCommand::ApplySaved, |_| {}).unwrap();
+    assert!(
+        rt.block_on(proxy.observe_applied_proxy_metadata(&instance, &config, &OutboundId::Block))
+            .is_none()
+    );
+    let proxy = source.current().unwrap();
+    let snapshot = owner.snapshot().unwrap();
+    let instance = snapshot.runtime.instance_id.unwrap();
+    let config = snapshot.runtime.applied_version.unwrap();
+    let before = store.load().unwrap();
+    for (body, expected) in [
+        (serde_json::json!({"udp": true}), Some(true)),
+        (serde_json::json!({"udp": false}), Some(false)),
+        (serde_json::json!({}), None),
+    ] {
+        *response.lock().unwrap() = body;
+        let actual = rt
+            .block_on(proxy.observe_applied_proxy_metadata(&instance, &config, &OutboundId::Block))
+            .unwrap();
+        assert_eq!(actual.udp, expected);
+        assert_eq!(actual.instance_id, instance);
+        assert_eq!(actual.config, config);
+        assert_eq!(actual.outbound_id, OutboundId::Block);
+    }
+    assert_eq!(requests.lock().unwrap().len(), 10);
+    assert!(
+        requests.lock().unwrap()[7..]
+            .iter()
+            .all(|request| request == "GET /proxies/block HTTP/1.1")
+    );
+    assert_eq!(store.load().unwrap(), before);
+    delayed.store(true, Ordering::Release);
+    let pending = {
+        let proxy = proxy.clone();
+        let instance = instance.clone();
+        let config = config.clone();
+        rt.spawn(async move {
+            proxy
+                .observe_applied_proxy_metadata(&instance, &config, &OutboundId::Direct)
+                .await
+        })
+    };
+    rt.block_on(async {
+        tokio::time::timeout(Duration::from_secs(3), received.notified())
+            .await
+            .unwrap();
+    });
+    owner.execute(RuntimeCommand::Stop, |_| {}).unwrap();
+    assert!(
+        rt.block_on(async {
+            tokio::time::timeout(Duration::from_secs(1), pending)
+                .await
+                .unwrap()
+                .unwrap()
+        })
+        .is_none()
+    );
+    assert!(
+        rt.block_on(proxy.observe_applied_proxy_metadata(&instance, &config, &OutboundId::Direct))
+            .is_none()
+    );
+    assert!(source.current().is_none());
+    delayed.store(false, Ordering::Release);
+    quit.store(true, Ordering::Release);
+    server.join().unwrap();
+    drop(owner);
+    std::fs::remove_dir_all(root).unwrap();
+}
+
+// 保护策略 Selector 经过既有唯一 owner PUT/readback/pending/CAS，非静态选择或额外writer。
+#[test]
+fn policy33_routing_selector_uses_existing_owner_selection_transaction() {
+    let (mut owner, trace, store, root) = manual_fixture();
+    let mut state = store.load().unwrap();
+    let mut policy = crate::domain::TargetRoutingPolicy::new(PoolId("routing-real".into()));
+    policy.name = "正式策略".into();
+    policy.matchers = vec![crate::domain::TrafficMatcher::DomainSuffix(vec![
+        "policy.invalid".into(),
+    ])];
+    state.profile.routing.policies.push(policy.clone());
+    store.save(&state).unwrap();
+    owner.execute(RuntimeCommand::Start, |_| {}).unwrap();
+    let before = owner.snapshot().unwrap();
+    let choice = || ManualSelectionRequest {
+        instance: before.runtime.instance_id.clone().unwrap(),
+        config: before.runtime.applied_version.clone().unwrap(),
+        expected: before.confirmed_selection_version.clone().unwrap(),
+        pool: policy.id.clone(),
+        node: GroupChoice {
+            group: policy.id.clone(),
+            member: OutboundId::Direct,
+            mode: crate::domain::GroupSelectionMode::Auto,
+        },
+    };
+    let mut invalid = choice();
+    invalid.node.mode = crate::domain::GroupSelectionMode::ManualPin;
+    assert_eq!(
+        owner.select_manual(invalid).unwrap_err(),
+        SelectionError::InvalidMember
+    );
+    let selected = owner.select_manual(choice()).unwrap();
+    assert_eq!(
+        selected.0.revision,
+        before.confirmed_selection_version.unwrap().0.revision + 2
+    );
+    let disk = store.load().unwrap();
+    assert_eq!(disk.config_version(), state.config_version());
+    assert_eq!(
+        disk.group_selections[&policy.id].selected,
+        Some(OutboundId::Direct)
+    );
+    assert!(disk.group_selections[&policy.id].pending.is_none());
+    assert_eq!(
+        trace.lock().unwrap().selectors["pool-routing-real"],
+        "direct"
+    );
+    assert_eq!(
+        owner.snapshot().unwrap().confirmed_group_selections[&policy.id],
+        OutboundId::Direct
+    );
+    // 同一正式事务选择拒绝出口；不能用 Direct 或配置保存值冒充 Controller readback。
+    let current = owner.snapshot().unwrap();
+    let blocked = owner
+        .select_manual(ManualSelectionRequest {
+            instance: current.runtime.instance_id.unwrap(),
+            config: current.runtime.applied_version.unwrap(),
+            expected: current.confirmed_selection_version.unwrap(),
+            pool: policy.id.clone(),
+            node: GroupChoice {
+                group: policy.id.clone(),
+                member: OutboundId::Block,
+                mode: crate::domain::GroupSelectionMode::Auto,
+            },
+        })
+        .unwrap();
+    assert_eq!(blocked.0.revision, selected.0.revision + 2);
+    let disk = store.load().unwrap();
+    assert_eq!(disk.config_version(), state.config_version());
+    assert_eq!(
+        disk.group_selections[&policy.id].selected,
+        Some(OutboundId::Block)
+    );
+    assert!(disk.group_selections[&policy.id].pending.is_none());
+    assert_eq!(
+        trace.lock().unwrap().selectors["pool-routing-real"],
+        "block"
+    );
+    owner.execute(RuntimeCommand::Stop, |_| {}).unwrap();
+    drop(owner);
+    std::fs::remove_dir_all(root).unwrap();
+}
+
+// 请求始终绑定当前 Saved CAS；不把 Applied 版本伪装成当前配置。
+fn policy35_saved_node_request(owner: &ManualRuntime<Mock>, node: &str) -> ManualSelectionRequest {
+    let s = owner.snapshot().unwrap();
+    ManualSelectionRequest {
+        config: s.runtime.saved_version,
+        instance: s.runtime.instance_id.unwrap(),
+        expected: s.confirmed_selection_version.unwrap(),
+        pool: PoolId("manual".into()),
+        node: NodeId(node.into()),
+    }
+}
+fn policy35_saved_group_request(
+    owner: &ManualRuntime<Mock>,
+    member: OutboundId,
+) -> ManualSelectionRequest<GroupChoice> {
+    let s = owner.snapshot().unwrap();
+    let id = PoolId("policy35".into());
+    ManualSelectionRequest {
+        config: s.runtime.saved_version,
+        instance: s.runtime.instance_id.unwrap(),
+        expected: s.confirmed_selection_version.unwrap(),
+        pool: id.clone(),
+        node: GroupChoice {
+            group: id,
+            member,
+            mode: crate::domain::GroupSelectionMode::Auto,
+        },
+    }
+}
+fn policy35_add_strategy(store: &JsonStateStore) {
+    use crate::domain::*;
+    let mut state = store.load().unwrap();
+    let mut p = TargetRoutingPolicy::new(PoolId("policy35".into()));
+    p.name = "显示偏好回归策略".into();
+    p.matchers = vec![TrafficMatcher::DomainSuffix(vec![
+        "policy35.invalid".into(),
+    ])];
+    state.profile.routing.policies.push(p);
+    store.commit(&state).unwrap();
+}
+
+// 保护真实用户操作：只保存排序/列宽等显示偏好后，同实例普通节点与 Direct/Block 仍能确认选择。
+#[test]
+fn policy35_proxy_view_save_keeps_node_and_strategy_controller_transaction() {
+    use crate::application::state_service::{ApplyEffect, DesktopPreferencesService};
+    use crate::domain::{DesktopBehaviorPreferencesPatch, NodeSort};
+    let (mut owner, trace, store, root) = manual_fixture();
+    policy35_add_strategy(&store);
+    trace.lock().unwrap().business_file = Some(root.join("state.json"));
+    owner.execute(RuntimeCommand::Start, |_| {}).unwrap();
+    let started = owner.snapshot().unwrap();
+    // 应用后已有独立选择变化；它不能令后续显示偏好等价证明误判。
+    owner
+        .select_manual(policy35_saved_node_request(&owner, "b"))
+        .unwrap();
+    owner
+        .select_manual(policy35_saved_group_request(&owner, OutboundId::Block))
+        .unwrap();
+    let before = owner.snapshot().unwrap();
+    let prefs = DesktopPreferencesService::new(owner.snapshots.as_ref().clone());
+    let saved = prefs
+        .patch_behavior(
+            before.runtime.saved_version,
+            DesktopBehaviorPreferencesPatch {
+                group_columns: Some(2),
+                hide_unavailable: Some(true),
+                node_sort: Some(NodeSort::NameDesc),
+                group_by_provider: Some(false),
+                node_card_min_width: Some(230),
+                strategy_order: Some(vec!["policy35".into()]),
+                ..Default::default()
+            },
+        )
+        .unwrap();
+    assert_eq!(saved.effect, ApplyEffect::SavedOnly);
+    assert_eq!(
+        saved.value.selection_version(),
+        before.saved_selection_version
+    );
+    assert_eq!(
+        saved.version.0.revision,
+        started.runtime.saved_version.0.revision + 1
+    );
+    let (checks, runs, stops) = {
+        let t = trace.lock().unwrap();
+        (t.checks, t.next, t.stops)
+    };
+    let req = policy35_saved_node_request(&owner, "c");
+    assert_eq!(req.config, saved.version);
+    let node_version = owner.select_manual(req).unwrap();
+    assert_eq!(
+        node_version.0.revision,
+        before.saved_selection_version.0.revision + 2
+    );
+    owner
+        .select_manual(policy35_saved_group_request(&owner, OutboundId::Direct))
+        .unwrap();
+    owner
+        .select_manual(policy35_saved_group_request(&owner, OutboundId::Block))
+        .unwrap();
+    let after = owner.snapshot().unwrap();
+    let disk = store.load().unwrap();
+    assert_eq!(disk.config_version(), saved.version);
+    assert_eq!(
+        after.runtime.applied_version,
+        started.runtime.applied_version
+    );
+    assert_eq!(after.runtime.instance_id, started.runtime.instance_id);
+    assert_eq!(
+        after.confirmed_manual_selections[&PoolId("manual".into())],
+        NodeId("c".into())
+    );
+    assert_eq!(
+        after.confirmed_group_selections[&PoolId("policy35".into())],
+        OutboundId::Block
+    );
+    assert!(after.pending_selections.is_empty());
+    assert!(
+        disk.group_selections[&PoolId("policy35".into())]
+            .pending
+            .is_none()
+    );
+    let t = trace.lock().unwrap();
+    assert_eq!(
+        (t.checks, t.next, t.stops),
+        (checks, runs, stops),
+        "显示偏好不得隐式 check/Apply/重启"
+    );
+    assert_eq!(t.selectors["pool-policy35"], "block");
+    assert!(
+        t.business_at_write
+            .iter()
+            .rev()
+            .take(3)
+            .all(|s| s.config_version() == saved.version)
+    );
+    drop(t);
+    assert_eq!(
+        owner.store().unwrap().read_manifest().unwrap().config,
+        started.runtime.applied_version.unwrap()
+    );
+    owner.execute(RuntimeCommand::Stop, |_| {}).unwrap();
+    drop(owner);
+    std::fs::remove_dir_all(root).unwrap();
+}
+
+// 保护严格边界：纯显示例外不能放行 DNS/路由/凭据/成员/阈值，旧 Saved/selection/instance 仍拒绝。
+#[test]
+fn policy35_other_configuration_and_stale_requests_do_not_write_controller() {
+    use crate::application::state_service::DesktopPreferencesService;
+    use crate::domain::*;
+    let (mut owner, trace, store, root) = p403_fixture();
+    policy35_add_strategy(&store);
+    owner.execute(RuntimeCommand::Start, |_| {}).unwrap();
+    let started = owner.snapshot().unwrap();
+    let old_request = policy35_saved_node_request(&owner, "b");
+    let saved = DesktopPreferencesService::new(owner.snapshots.as_ref().clone())
+        .patch_behavior(
+            started.runtime.saved_version.clone(),
+            DesktopBehaviorPreferencesPatch {
+                node_card_min_width: Some(230),
+                ..Default::default()
+            },
+        )
+        .unwrap();
+    let writes = trace.lock().unwrap().writes;
+    assert_eq!(
+        owner.select_manual(old_request),
+        Err(SelectionError::ConfigChanged)
+    );
+    let current = policy35_saved_node_request(&owner, "b");
+    let mut old = current.clone();
+    old.instance = InstanceId("old-instance".into());
+    assert_eq!(owner.select_manual(old), Err(SelectionError::StaleInstance));
+    let mut old = current;
+    old.expected.0.revision += 1;
+    assert_eq!(owner.select_manual(old), Err(SelectionError::StaleVersion));
+    for case in 0..9 {
+        let latest = store.load().unwrap();
+        let mut changed = saved.value.clone();
+        changed.config_revision = latest.config_revision;
+        changed.selection_revision = latest.selection_revision;
+        match case {
+            0 => changed.profile.reject_quic = !changed.profile.reject_quic,
+            1 => changed.profile.dns.direct = "8.8.8.8".into(),
+            2 => changed.nodes[0].port += 1,
+            3 => {
+                let ProtocolOptions::Socks {
+                    username, password, ..
+                } = &mut changed.nodes[0].options
+                else {
+                    panic!("正式 fixture 是 Socks");
+                };
+                *username = Some("fixture".into());
+                *password = Some("changed-fixture".into());
+            }
+            4 => changed.groups[0].name.push_str(" changed"),
+            5 => {
+                changed.profile.routing.policies[0].matchers = vec![TrafficMatcher::Port(vec![443])]
+            }
+            6 => {
+                changed.groups[0]
+                    .failover
+                    .as_mut()
+                    .unwrap()
+                    .failure_threshold += 1
+            }
+            7 => {
+                changed.profile.test_url =
+                    RuntimeHealthUrl::new("https://example.invalid/health".into()).unwrap()
+            }
+            _ => changed.app_config.behavior.latency.timeout_ms += 1,
+        }
+        let persisted = store.commit(&changed).unwrap();
+        assert_eq!(
+            owner.select_manual(policy35_saved_node_request(&owner, "b")),
+            Err(SelectionError::ConfigChanged),
+            "case {case}"
+        );
+        assert_eq!(store.load().unwrap(), persisted);
+        assert_eq!(trace.lock().unwrap().writes, writes);
+    }
+    // 新 epoch 即便配置看似相同，也不能继承原实例的基线证明。
+    let latest = store.load().unwrap();
+    owner
+        .snapshots
+        .replace(latest.version(), saved.value)
+        .unwrap();
+    assert!(
+        owner
+            .select_manual(policy35_saved_node_request(&owner, "b"))
+            .is_err()
+    );
+    assert_eq!(trace.lock().unwrap().writes, writes);
+    owner.execute(RuntimeCommand::Stop, |_| {}).unwrap();
+    drop(owner);
+    std::fs::remove_dir_all(root).unwrap();
+}
+
+// 保护未知回读的 pending 核对、同计划基线保留，以及历史 Restore 缺基线时不猜 Saved。
+#[test]
+fn policy35_pending_readback_preserves_baseline_and_restore_has_no_exception() {
+    use crate::application::state_service::DesktopPreferencesService;
+    use crate::domain::DesktopBehaviorPreferencesPatch;
+    let (mut owner, trace, store, root) = manual_fixture();
+    policy35_add_strategy(&store);
+    owner.execute(RuntimeCommand::Start, |_| {}).unwrap();
+    let started = owner.snapshot().unwrap();
+    let prefs = DesktopPreferencesService::new(owner.snapshots.as_ref().clone());
+    prefs
+        .patch_behavior(
+            started.runtime.saved_version,
+            DesktopBehaviorPreferencesPatch {
+                node_card_min_width: Some(230),
+                ..Default::default()
+            },
+        )
+        .unwrap();
+    trace.lock().unwrap().read_failures.push_back(true);
+    assert_eq!(
+        owner.select_manual(policy35_saved_group_request(&owner, OutboundId::Block)),
+        Err(SelectionError::ControllerReadBack)
+    );
+    let pending = store.load().unwrap();
+    assert!(
+        pending.group_selections[&PoolId("policy35".into())]
+            .pending
+            .is_some()
+    );
+    let writes = trace.lock().unwrap().writes;
+    owner
+        .reconcile_selection(
+            started.runtime.instance_id.unwrap(),
+            pending.version(),
+            PoolId("policy35".into()),
+        )
+        .unwrap();
+    assert_eq!(
+        trace.lock().unwrap().writes,
+        writes,
+        "核对未知结果不重发 PUT"
+    );
+    assert_eq!(
+        store.load().unwrap().group_selections[&PoolId("policy35".into())].selected,
+        Some(OutboundId::Block)
+    );
+    prefs
+        .patch_behavior(
+            owner.snapshot().unwrap().runtime.saved_version,
+            DesktopBehaviorPreferencesPatch {
+                node_card_min_width: Some(145),
+                ..Default::default()
+            },
+        )
+        .unwrap();
+    owner
+        .select_manual(policy35_saved_group_request(&owner, OutboundId::Direct))
+        .unwrap();
+    let applied = owner.snapshot().unwrap().runtime.applied_version;
+    owner
+        .execute(RuntimeCommand::RestoreLastSuccessful, |_| {})
+        .unwrap();
+    assert_eq!(owner.snapshot().unwrap().runtime.applied_version, applied);
+    assert!(
+        owner
+            .active
+            .as_ref()
+            .unwrap()
+            .configuration_baseline
+            .is_none()
+    );
+    let writes = trace.lock().unwrap().writes;
+    assert_eq!(
+        owner.select_manual(policy35_saved_node_request(&owner, "b")),
+        Err(SelectionError::ConfigChanged)
+    );
+    assert_eq!(trace.lock().unwrap().writes, writes);
+    owner.execute(RuntimeCommand::Stop, |_| {}).unwrap();
+    drop(owner);
+    std::fs::remove_dir_all(root).unwrap();
+}

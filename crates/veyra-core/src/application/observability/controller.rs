@@ -197,6 +197,17 @@ pub struct ObservationReader {
     state: Weak<Mutex<State>>,
 }
 impl ObservationReader {
+    /// 页面直接读取 owner 的同一快照；Weak 失效返回 None，未知值不伪造为零。
+    pub fn snapshot(&self) -> Option<Snapshot> {
+        let state = self.state.upgrade()?;
+        Some(state.lock().expect("observation state").snapshot.clone())
+    }
+    /// 复用同一有界身份/版本事件；Gap 后重取快照，句柄不延长采集 owner 生命周期。
+    pub fn subscribe(&self) -> Option<Subscription> {
+        let state = self.state.upgrade()?;
+        let receiver = state.lock().expect("observation state").events.subscribe();
+        Some(Subscription { receiver })
+    }
     pub fn log_status(&self) -> Option<LogStatus> {
         let state = self.state.upgrade()?;
         Some(state.lock().expect("observation state").log_status())

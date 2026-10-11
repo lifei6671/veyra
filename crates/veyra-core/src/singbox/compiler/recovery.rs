@@ -64,8 +64,27 @@ pub struct AppliedArtifactIndex {
     pub groups: BTreeMap<PoolId, Vec<OutboundId>>,
     #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
     pub group_health: BTreeMap<PoolId, String>,
+    /// 已编译 selector/URLTest 的有序直接成员；不参与手动选择或默认值推断。
+    /// 旧恢复文件缺少此字段时，只读消费者明确不可用。
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub applied_members: Option<BTreeMap<PoolId, Vec<OutboundId>>>,
 }
 impl AppliedArtifactIndex {
+    pub(crate) fn applied_pool_tag(&self, id: &PoolId) -> Option<String> {
+        self.applied_members
+            .as_ref()?
+            .contains_key(id)
+            .then(|| pool_tag(&id.0))
+    }
+    pub(crate) fn applied_member(&self, pool: &PoolId, tag: &str) -> Option<OutboundId> {
+        self.applied_members
+            .as_ref()?
+            .get(pool)?
+            .iter()
+            .find(|id| outbound_tag(id) == tag)
+            .cloned()
+    }
+
     /// Group 使用 OutboundId；禁止将 group/lane tag 伪装为 NodeId。
     pub fn group_member_tag(&self, selector: &PoolId, member: &OutboundId) -> Option<String> {
         self.groups
@@ -114,6 +133,26 @@ impl AppliedArtifactIndex {
             })
             .collect();
         Self {
+            applied_members: Some(
+                intent
+                    .pools
+                    .iter()
+                    .map(|p| {
+                        let mut members: Vec<_> =
+                            p.members.iter().cloned().map(OutboundId::Node).collect();
+                        // 与 Compiler 节点池的实际输出次序一致，而非显示名称排序。
+                        members.sort_by_key(outbound_tag);
+                        members.dedup();
+                        (p.id.clone(), members)
+                    })
+                    .chain(
+                        intent
+                            .groups
+                            .iter()
+                            .map(|g| (g.id.clone(), g.members.clone())),
+                    )
+                    .collect(),
+            ),
             config: state.config_version(),
             selection: state.selection_version(),
             pools,
@@ -170,6 +209,32 @@ impl AppliedArtifactIndex {
             .collect();
         if selectors.len() != self.pools.len() + self.groups.len() + self.group_health.len() {
             return Err(invalid);
+        }
+        // 可选新索引必须完整对应实际文档；不接受额外成员或变更顺序。
+        if let Some(applied_members) = &self.applied_members {
+            let actual: BTreeMap<_, _> = document
+                .outbounds
+                .iter()
+                .filter_map(|o| match o {
+                    CoreOutbound::Selector(s)
+                        if !self.group_health.values().any(|t| t == &s.tag) =>
+                    {
+                        Some((&s.tag, &s.outbounds))
+                    }
+                    CoreOutbound::Urltest(s) => Some((&s.tag, &s.outbounds)),
+                    _ => None,
+                })
+                .collect();
+            if actual.len() != applied_members.len() {
+                return Err(invalid);
+            }
+            for (id, members) in applied_members {
+                if actual.get(&pool_tag(&id.0))
+                    != Some(&&members.iter().map(outbound_tag).collect::<Vec<_>>())
+                {
+                    return Err(invalid);
+                }
+            }
         }
         for (id, tag) in &self.group_health {
             let probe = selectors.iter().find(|s| s.tag == *tag).ok_or(invalid)?;
@@ -375,6 +440,14 @@ mod tests {
             .unwrap();
         assert_ne!(first.as_bytes(), next.as_bytes());
         assert_eq!(restored.runtime_health(), plan.runtime_health());
+        // 旧格式可恢复，但没有完整只读索引，不从 Saved state 补造 auto 事实。
+        let mut legacy = v;
+        legacy["index"]
+            .as_object_mut()
+            .unwrap()
+            .remove("applied_members");
+        let old = SingBoxPlan::recover(&serde_json::to_vec(&legacy).unwrap(), &resources).unwrap();
+        assert!(old.artifact_index().unwrap().applied_members.is_none());
     }
     // 保护磁盘schema/closed model/index校验，不能通过合法JSON注入任意配置或runtime tag。
     #[test]
@@ -383,10 +456,27 @@ mod tests {
         let bytes = plan.recovery_bytes().unwrap();
         let base: serde_json::Value = serde_json::from_slice(&bytes).unwrap();
         for kind in [
-            "root", "nested", "version", "tag", "member", "format", "port", "secret",
+            "root",
+            "nested",
+            "version",
+            "tag",
+            "member",
+            "format",
+            "port",
+            "secret",
+            "applied_members",
         ] {
             let mut v = base.clone();
             match kind {
+                "applied_members" => {
+                    let members = v["index"]["applied_members"]
+                        .as_object_mut()
+                        .unwrap()
+                        .values_mut()
+                        .next()
+                        .unwrap();
+                    members.as_array_mut().unwrap().reverse();
+                }
                 "root" => v["extra"] = true.into(),
                 "nested" => v["document"]["experimental"]["cache_file"]["extra"] = true.into(),
                 "version" => v["index"]["config"]["extra"] = true.into(),

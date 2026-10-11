@@ -100,11 +100,20 @@ pub enum DnsTransport {
 #[serde(deny_unknown_fields)]
 pub struct ProfileRouting {
     pub custom: Option<CustomRouting>,
+    /// 缺失字段保持旧 schema 的无策略语义，不创建静态默认卡片。
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub policies: Vec<super::TargetRoutingPolicy>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub fallback: Option<super::TargetRoutingPolicy>,
 }
 #[derive(Clone, Debug, Default, Deserialize, Eq, PartialEq, Serialize)]
 #[serde(deny_unknown_fields)]
 pub struct CustomRouting {
     pub name: Option<String>,
+    #[serde(default)]
+    pub icon: String,
+    #[serde(default)]
+    pub icon_scale: i32,
     pub enabled: bool,
     pub rules: Vec<CustomRoutingRule>,
 }
