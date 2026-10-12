@@ -305,6 +305,10 @@ pub struct Style {
     /// This is independent of the existing per-primitive `opacity` behavior.
     pub group_opacity: Option<f32>,
 
+    /// macOS Metal opt-in Gaussian blur of already painted content behind this surface.
+    /// Standard deviation is specified in logical pixels, independent of subtree opacity.
+    pub backdrop_blur: Option<Pixels>,
+
     /// The grid columns of this element
     /// Roughly equivalent to the Tailwind `grid-cols-<number>`
     pub grid_cols: Option<GridTemplate>,
@@ -712,6 +716,9 @@ impl Style {
             .to_pixels(rem_size)
             .clamp_radii_for_quad_size(bounds.size);
 
+        if let Some(sigma) = self.backdrop_blur {
+            window.paint_backdrop_blur(bounds, corner_radii, sigma);
+        }
         window.paint_drop_shadows(bounds, corner_radii, &self.box_shadow);
 
         let background_color = self.background.as_ref().and_then(Fill::color);
@@ -814,6 +821,7 @@ impl Default for Style {
             mouse_cursor: None,
             opacity: None,
             group_opacity: None,
+            backdrop_blur: None,
             grid_rows: None,
             grid_cols: None,
             grid_location: None,

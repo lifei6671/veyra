@@ -1,7 +1,7 @@
 //! 目标分流策略的唯一持久事实；Selector 是此策略的派生出口，不是节点组副本。
 use super::*;
 use serde::{Deserialize, Serialize};
-use std::collections::HashSet;
+use std::collections::{BTreeMap, HashSet};
 
 #[derive(Clone, Debug, Deserialize, Eq, PartialEq, Serialize)]
 #[serde(from = "TargetRoutingPolicyInput")]
@@ -13,6 +13,11 @@ pub struct TargetRoutingPolicy {
     pub enabled: bool,
     /// 同一策略的匹配条件按 OR 分别编译；策略数组顺序才是命中优先级。
     pub matchers: Vec<TrafficMatcher>,
+    /// 规则行备注仅供编辑器保存/恢复，不改变 Matcher、出口或 Compiler。
+    /// 键沿用 React：ruleset:geosite-*/geoip-*、ruleUrl:URL、
+    /// domainSuffix/domain/domainKeyword/ipCidr:value；既有类型使用 application/port/protocol:value。
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub notes: BTreeMap<String, String>,
     /// 配置默认意图，不冒充 Controller 当前选择；用户正式选择仍优先。
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub default_outbound: Option<OutboundId>,
@@ -29,6 +34,8 @@ struct TargetRoutingPolicyInput {
     enabled: bool,
     matchers: Vec<TrafficMatcher>,
     #[serde(default)]
+    notes: BTreeMap<String, String>,
+    #[serde(default)]
     default_outbound: Option<OutboundId>,
     #[serde(default, rename = "members")]
     _members: serde::de::IgnoredAny,
@@ -42,6 +49,7 @@ impl From<TargetRoutingPolicyInput> for TargetRoutingPolicy {
             icon_scale: input.icon_scale,
             enabled: input.enabled,
             matchers: input.matchers,
+            notes: input.notes,
             default_outbound: input.default_outbound,
         }
     }
@@ -63,6 +71,7 @@ impl TargetRoutingPolicy {
             icon_scale: 0,
             enabled: true,
             matchers: vec![],
+            notes: BTreeMap::new(),
             default_outbound: None,
         }
     }

@@ -757,6 +757,18 @@ pub trait Styled: Sized {
         self
     }
 
+    /// macOS Metal: blur the previously painted backdrop before this surface and its children.
+    /// Uses Gaussian standard deviation in logical pixels; does not change layout or hitboxes.
+    #[cfg(target_os = "macos")]
+    fn backdrop_blur(mut self, sigma: crate::Pixels) -> Self {
+        assert!(
+            sigma.0.is_finite() && sigma.0 >= 0.,
+            "invalid backdrop blur sigma"
+        );
+        self.style().backdrop_blur = (sigma.0 > 0.).then_some(sigma);
+        self
+    }
+
     /// Sets the grid columns of this element.
     fn grid_cols(mut self, cols: u16) -> Self {
         self.style().grid_cols = Some(GridTemplate {

@@ -39,3 +39,5 @@ pub mod proxies;
 pub mod draft_latency;
 
 pub mod applied_proxy_facts;
+
+pub mod rule_import;

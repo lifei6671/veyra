@@ -136,6 +136,11 @@ pub struct MetalRenderer {
     polychrome_sprites_pipeline_state: OpacityPipelineStates,
     surfaces_pipeline_state: OpacityPipelineStates,
     group_composite_pipeline_state: metal::RenderPipelineState,
+    backdrop_filter_pipeline_state: metal::RenderPipelineState,
+    backdrop_composite_pipeline_state: metal::RenderPipelineState,
+    backdrop_copy_pipeline_state: metal::RenderPipelineState,
+    // 与 opacity scratch 独立，避免嵌套/相邻透明组的纹理别名。
+    backdrop_scratch: RefCell<Vec<metal::Texture>>,
     // 每个嵌套深度一个透明 scratch。队列顺序保证同深度相邻组可重用；
     // 每次使用都 clear，不缓存任何已渲染窗口内容。
     opacity_scratch: RefCell<Vec<metal::Texture>>,
@@ -348,6 +353,12 @@ impl MetalRenderer {
         )
         .isolated;
 
+        let backdrop_filter_pipeline_state =
+            build_backdrop_pipeline_state(&device, &library, "backdrop_filter_fragment");
+        let backdrop_composite_pipeline_state =
+            build_backdrop_pipeline_state(&device, &library, "backdrop_composite_fragment");
+        let backdrop_copy_pipeline_state =
+            build_backdrop_pipeline_state(&device, &library, "backdrop_copy_fragment");
         let command_queue = device.new_command_queue();
         let sprite_atlas = Arc::new(MetalAtlas::new(device.clone(), is_apple_gpu));
         let core_video_texture_cache =
@@ -370,6 +381,10 @@ impl MetalRenderer {
             polychrome_sprites_pipeline_state,
             surfaces_pipeline_state,
             group_composite_pipeline_state,
+            backdrop_filter_pipeline_state,
+            backdrop_composite_pipeline_state,
+            backdrop_copy_pipeline_state,
+            backdrop_scratch: RefCell::new(Vec::new()),
             opacity_scratch: RefCell::new(Vec::new()),
             drawing_isolated: false,
             unit_vertices,
@@ -414,6 +429,13 @@ impl MetalRenderer {
             scratch.clear();
         }
         drop(scratch);
+        let mut backdrop = self.backdrop_scratch.borrow_mut();
+        if backdrop.first().is_some_and(|texture| {
+            texture.width() != size.width.0 as u64 || texture.height() != size.height.0 as u64
+        }) {
+            backdrop.clear();
+        }
+        drop(backdrop);
         if let Some(layer) = &self.layer {
             let ns_size = NSSize {
                 width: size.width.0 as f64,
@@ -476,6 +498,7 @@ impl MetalRenderer {
 
     pub fn destroy(&self) {
         self.opacity_scratch.borrow_mut().clear();
+        self.backdrop_scratch.borrow_mut().clear();
     }
 
     pub fn draw(&mut self, scene: &Scene) {
@@ -534,14 +557,38 @@ impl MetalRenderer {
         );
         let command_queue = self.command_queue.clone();
         let command_buffer = command_queue.new_command_buffer();
-        self.draw_scene_to_texture(
-            scene,
-            &mut writer,
-            texture,
-            viewport_size,
-            command_buffer,
-            0,
-        )?;
+        if scene.has_backdrop_blur() {
+            // 正式 CAMetalLayer 保持 framebufferOnly。只在实际 blur 帧通过可读工作面，
+            // 最后用 render-pass 写回 drawable；从不采样/读回 drawable。
+            let working = self.backdrop_texture(0, viewport_size);
+            self.draw_scene_to_texture(
+                scene,
+                &mut writer,
+                &working,
+                viewport_size,
+                command_buffer,
+                0,
+            )?;
+            self.draw_backdrop_pass(
+                command_buffer,
+                texture,
+                &working,
+                None,
+                viewport_size,
+                &self.backdrop_copy_pipeline_state,
+                &[0.; 16],
+            );
+        } else {
+            self.backdrop_scratch.borrow_mut().clear();
+            self.draw_scene_to_texture(
+                scene,
+                &mut writer,
+                texture,
+                viewport_size,
+                command_buffer,
+                0,
+            )?;
+        }
 
         let instance_buffer_pool = self.instance_buffer_pool.clone();
         let instance_buffer = Cell::new(Some(writer.finish()));
@@ -704,6 +751,54 @@ impl MetalRenderer {
         scratch[depth].clone()
     }
 
+    fn backdrop_texture(&self, slot: usize, viewport_size: Size<DevicePixels>) -> metal::Texture {
+        let mut scratch = self.backdrop_scratch.borrow_mut();
+        if scratch.first().is_some_and(|texture| {
+            texture.width() != viewport_size.width.0 as u64
+                || texture.height() != viewport_size.height.0 as u64
+        }) {
+            scratch.clear();
+        }
+        while scratch.len() <= slot {
+            let descriptor = metal::TextureDescriptor::new();
+            descriptor.set_width(viewport_size.width.0 as u64);
+            descriptor.set_height(viewport_size.height.0 as u64);
+            descriptor.set_pixel_format(MTLPixelFormat::BGRA8Unorm);
+            descriptor.set_usage(
+                metal::MTLTextureUsage::RenderTarget | metal::MTLTextureUsage::ShaderRead,
+            );
+            descriptor.set_storage_mode(metal::MTLStorageMode::Private);
+            scratch.push(self.device.new_texture(&descriptor));
+        }
+        scratch[slot].clone()
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    fn draw_backdrop_pass(
+        &self,
+        command_buffer: &metal::CommandBufferRef,
+        target: &metal::TextureRef,
+        source: &metal::TextureRef,
+        original: Option<&metal::TextureRef>,
+        viewport_size: Size<DevicePixels>,
+        pipeline: &metal::RenderPipelineStateRef,
+        parameters: &[f32; 16],
+    ) {
+        let encoder = new_command_encoder_for_texture(command_buffer, target, viewport_size, None);
+        encoder.set_render_pipeline_state(pipeline);
+        encoder.set_vertex_buffer(0, Some(&self.unit_vertices), 0);
+        encoder.set_fragment_texture(0, Some(source));
+        encoder.set_fragment_texture(1, original);
+        // Metal 直接读 float[16]，没有新增 C header struct/填充 ABI。
+        encoder.set_fragment_bytes(
+            0,
+            mem::size_of_val(parameters) as u64,
+            parameters.as_ptr().cast(),
+        );
+        encoder.draw_primitives(metal::MTLPrimitiveType::Triangle, 0, 6);
+        encoder.end_encoding();
+    }
+
     fn draw_scene_to_texture(
         &mut self,
         scene: &Scene,
@@ -745,6 +840,66 @@ impl MetalRenderer {
                         command_buffer,
                         None,
                     )?;
+                }
+                OpacitySegment::Backdrop(blur) => {
+                    let horizontal = self.backdrop_texture(1, viewport_size);
+                    let vertical = self.backdrop_texture(2, viewport_size);
+                    let mut parameters = [
+                        blur.bounds.origin.x.0,
+                        blur.bounds.origin.y.0,
+                        blur.bounds.size.width.0,
+                        blur.bounds.size.height.0,
+                        blur.corner_radii.top_left.0,
+                        blur.corner_radii.top_right.0,
+                        blur.corner_radii.bottom_right.0,
+                        blur.corner_radii.bottom_left.0,
+                        blur.content_mask.bounds.origin.x.0,
+                        blur.content_mask.bounds.origin.y.0,
+                        blur.content_mask.bounds.size.width.0,
+                        blur.content_mask.bounds.size.height.0,
+                        blur.sigma.0,
+                        0.,
+                        0.,
+                        0.,
+                    ];
+                    self.draw_backdrop_pass(
+                        command_buffer,
+                        &horizontal,
+                        texture,
+                        None,
+                        viewport_size,
+                        &self.backdrop_filter_pipeline_state,
+                        &parameters,
+                    );
+                    parameters[13] = 1.;
+                    self.draw_backdrop_pass(
+                        command_buffer,
+                        &vertical,
+                        &horizontal,
+                        None,
+                        viewport_size,
+                        &self.backdrop_filter_pipeline_state,
+                        &parameters,
+                    );
+                    // 合成到已完成采样的 horizontal，再整面拷回，禁止在一个 pass 同读写 texture。
+                    self.draw_backdrop_pass(
+                        command_buffer,
+                        &horizontal,
+                        &vertical,
+                        Some(texture),
+                        viewport_size,
+                        &self.backdrop_composite_pipeline_state,
+                        &parameters,
+                    );
+                    self.draw_backdrop_pass(
+                        command_buffer,
+                        texture,
+                        &horizontal,
+                        None,
+                        viewport_size,
+                        &self.backdrop_copy_pipeline_state,
+                        &parameters,
+                    );
                 }
                 OpacitySegment::Group { scene, opacity } => {
                     let scratch = self.opacity_texture(depth, viewport_size);
@@ -1510,6 +1665,29 @@ fn build_path_sprite_pipeline_state(
     OpacityPipelineStates { direct, isolated }
 }
 
+fn build_backdrop_pipeline_state(
+    device: &metal::DeviceRef,
+    library: &metal::LibraryRef,
+    fragment: &str,
+) -> metal::RenderPipelineState {
+    let vertex_fn = library
+        .get_function("group_opacity_vertex", None)
+        .expect("backdrop vertex");
+    let fragment_fn = library
+        .get_function(fragment, None)
+        .expect("backdrop fragment");
+    let descriptor = metal::RenderPipelineDescriptor::new();
+    descriptor.set_label(fragment);
+    descriptor.set_vertex_function(Some(&vertex_fn));
+    descriptor.set_fragment_function(Some(&fragment_fn));
+    let attachment = descriptor.color_attachments().object_at(0).unwrap();
+    attachment.set_pixel_format(MTLPixelFormat::BGRA8Unorm);
+    attachment.set_blending_enabled(false);
+    device
+        .new_render_pipeline_state(&descriptor)
+        .expect("backdrop pipeline")
+}
+
 fn build_path_rasterization_pipeline_state(
     device: &metal::DeviceRef,
     library: &metal::LibraryRef,
@@ -1937,5 +2115,278 @@ mod opacity_contract_tests {
         close(image.get_pixel(8, 8).0, [128, 64, 191, 255]);
         close(image.get_pixel(1, 1).0, [0, 255, 0, 255]);
         assert_eq!(renderer.opacity_scratch.borrow().len(), 1);
+    }
+}
+
+#[cfg(test)]
+mod backdrop_contract_tests {
+    use super::*;
+    use gpui::{BackdropBlur, Corners, Quad, rgba};
+
+    fn quad_at(x: f32, y: f32, width: f32, height: f32, color: u32) -> Quad {
+        let bounds = Bounds::new(point(x.into(), y.into()), size(width.into(), height.into()));
+        Quad {
+            bounds,
+            content_mask: ContentMask { bounds },
+            background: rgba(color).into(),
+            ..Quad::default()
+        }
+    }
+
+    fn patterned_scene(scale: f32, filtered: bool, marker: bool) -> Scene {
+        let mut scene = Scene::default();
+        scene.insert_primitive(quad_at(0., 0., 128. * scale, 128. * scale, 0xffffffff));
+        // 高频、透明父层和后画前景都使用真实 primitive，完全不依赖字体/动画。
+        scene.begin_opacity_group(0.8);
+        for x in (0..128).step_by(4) {
+            scene.insert_primitive(quad_at(
+                x as f32 * scale,
+                0.,
+                2. * scale,
+                128. * scale,
+                0x000000ff,
+            ));
+        }
+        if marker {
+            scene.insert_primitive(quad_at(
+                32. * scale,
+                32. * scale,
+                8. * scale,
+                8. * scale,
+                0xff0000ff,
+            ));
+        }
+        scene.end_opacity_group();
+        if filtered {
+            let bounds = Bounds::new(
+                point((16. * scale).into(), (16. * scale).into()),
+                size((96. * scale).into(), (96. * scale).into()),
+            );
+            scene.insert_backdrop_blur(BackdropBlur {
+                bounds,
+                corner_radii: Corners::all((12. * scale).into()),
+                content_mask: ContentMask {
+                    bounds: Bounds::new(
+                        point(0.0.into(), 0.0.into()),
+                        size((80. * scale).into(), (128. * scale).into()),
+                    ),
+                },
+                sigma: (10. * scale).into(),
+            });
+        }
+        scene.begin_opacity_group(1.0);
+        scene.insert_primitive(quad_at(
+            60. * scale,
+            60. * scale,
+            2. * scale,
+            2. * scale,
+            0x00ff00ff,
+        ));
+        scene.end_opacity_group();
+        scene.finish();
+        scene
+    }
+
+    // 保护 modal 前背景真正模糊、mask/圆角外不改像素、modal 后控件保持清晰。
+    #[test]
+    fn backdrop_filters_only_prior_content_and_survives_replay_resize() {
+        let mut renderer =
+            MetalRenderer::new_headless(Arc::new(Mutex::new(InstanceBufferPool::default())));
+        for scale in [1., 2.] {
+            let dimensions =
+                size((128. * scale as f32) as i32, (128. * scale as f32) as i32).map(DevicePixels);
+            let direct = patterned_scene(scale, false, false);
+            let baseline = renderer.render_scene_to_image(&direct, dimensions).unwrap();
+            let scene = patterned_scene(scale, true, false);
+            let blurred = renderer.render_scene_to_image(&scene, dimensions).unwrap();
+            if let Some(evidence) = std::env::var_os("VEYRA_BACKDROP_OWNER_EVIDENCE") {
+                let evidence = std::path::PathBuf::from(evidence);
+                baseline
+                    .save(evidence.join(format!("backdrop-owner-fixture-dpr{scale}-baseline.png")))
+                    .unwrap();
+                blurred
+                    .save(evidence.join(format!("backdrop-owner-fixture-dpr{scale}-blurred.png")))
+                    .unwrap();
+            }
+            for y in 0..blurred.height() {
+                for x in 0..blurred.width() {
+                    if x < (16. * scale) as u32
+                        || x >= (80. * scale) as u32
+                        || y < (16. * scale) as u32
+                        || y >= (112. * scale) as u32
+                    {
+                        assert_eq!(
+                            blurred.get_pixel(x, y),
+                            baseline.get_pixel(x, y),
+                            "mask exterior {x},{y}"
+                        );
+                    }
+                }
+            }
+            for x in 45..55 {
+                let channel = blurred
+                    .get_pixel((x as f32 * scale) as u32, (48. * scale) as u32)
+                    .0[0];
+                assert!(
+                    (channel as i16 - 153).abs() <= 2,
+                    "high frequency was not attenuated: {channel}"
+                );
+            }
+            assert_eq!(
+                blurred
+                    .get_pixel((60. * scale) as u32, (60. * scale) as u32)
+                    .0,
+                [0, 255, 0, 255]
+            );
+            assert_eq!(
+                blurred.get_pixel((16. * scale) as u32, (16. * scale) as u32),
+                baseline.get_pixel((16. * scale) as u32, (16. * scale) as u32)
+            );
+            let mut replay = Scene::default();
+            replay.replay(0..scene.len(), &scene);
+            replay.finish();
+            assert_eq!(
+                renderer.render_scene_to_image(&replay, dimensions).unwrap(),
+                blurred
+            );
+            let changed = patterned_scene(scale, true, true);
+            let current = renderer
+                .render_scene_to_image(&changed, dimensions)
+                .unwrap();
+            assert_ne!(
+                current.get_pixel((36. * scale) as u32, (36. * scale) as u32),
+                blurred.get_pixel((36. * scale) as u32, (36. * scale) as u32)
+            );
+            assert_eq!(renderer.backdrop_scratch.borrow().len(), 3);
+            renderer.update_drawable_size(size(16.into(), 16.into()));
+            assert!(renderer.backdrop_scratch.borrow().is_empty());
+            renderer.render_scene_to_image(&direct, dimensions).unwrap();
+            assert!(renderer.backdrop_scratch.borrow().is_empty());
+        }
+        renderer.destroy();
+        assert!(renderer.backdrop_scratch.borrow().is_empty());
+        assert!(renderer.opacity_scratch.borrow().is_empty());
+    }
+
+    // 保护真实卷积数值与预乘 RGBA，不用一块不透明白色 surface 隐藏错误。
+    #[test]
+    fn backdrop_matches_gaussian_cpu_reference_and_premultiplied_alpha() {
+        let mut renderer =
+            MetalRenderer::new_headless(Arc::new(Mutex::new(InstanceBufferPool::default())));
+        renderer.opaque = false;
+        for scale in [1., 2.] {
+            let dimension = (128. * scale) as i32;
+            let mut scene = Scene::default();
+            scene.insert_primitive(quad_at(0., 0., 128. * scale, 128. * scale, 0x0000ff80));
+            scene.insert_primitive(quad_at(
+                64. * scale,
+                0.,
+                64. * scale,
+                128. * scale,
+                0xff000080,
+            ));
+            let bounds = Bounds::new(
+                point(0.0.into(), 0.0.into()),
+                size((128. * scale).into(), (128. * scale).into()),
+            );
+            scene.finish();
+            let baseline = renderer
+                .render_scene_to_image(&scene, size(dimension.into(), dimension.into()))
+                .unwrap();
+            let sigma = 10. * scale;
+            scene.insert_backdrop_blur(BackdropBlur {
+                bounds,
+                corner_radii: Default::default(),
+                content_mask: ContentMask { bounds },
+                sigma: sigma.into(),
+            });
+            scene.finish();
+            let image = renderer
+                .render_scene_to_image(&scene, size(dimension.into(), dimension.into()))
+                .unwrap();
+            let radius = (3. * sigma).ceil() as i32;
+            for x in [54., 64., 74.] {
+                let x = (x * scale) as i32;
+                let mut sums = [0.; 4];
+                let mut total = 0.;
+                for offset in -radius..=radius {
+                    let weight = (-0.5 * (offset * offset) as f32 / (sigma * sigma)).exp();
+                    let sample = baseline
+                        .get_pixel((x + offset) as u32, (64. * scale) as u32)
+                        .0;
+                    for i in 0..4 {
+                        sums[i] += sample[i] as f32 * weight;
+                    }
+                    total += weight;
+                }
+                let actual = image.get_pixel(x as u32, (64. * scale) as u32).0;
+                for i in 0..4 {
+                    assert!(
+                        (actual[i] as f32 - sums[i] / total).abs() <= 2.,
+                        "DPR{scale} x{x}: {actual:?} expected {sums:?}/{total}"
+                    );
+                }
+            }
+        }
+    }
+    // 固定1280×720/DPR2预算，报告实际提交/完成和Metal纹理分配；不冒称Native帧率。
+    #[test]
+    fn backdrop_full_viewport_reports_real_cost_and_allocations() {
+        objc2::rc::autoreleasepool(|_| {
+            let mut renderer =
+                MetalRenderer::new_headless(Arc::new(Mutex::new(InstanceBufferPool::default())));
+            let dimensions = size(2560.into(), 1440.into());
+            let descriptor = metal::TextureDescriptor::new();
+            descriptor.set_width(2560);
+            descriptor.set_height(1440);
+            descriptor.set_pixel_format(MTLPixelFormat::BGRA8Unorm);
+            descriptor.set_usage(metal::MTLTextureUsage::RenderTarget);
+            descriptor.set_storage_mode(metal::MTLStorageMode::Private);
+            let target = renderer.device.new_texture(&descriptor);
+            let mut scene = Scene::default();
+            scene.insert_primitive(quad_at(0., 0., 2560., 1440., 0xffffffff));
+            for x in (0..2560).step_by(8) {
+                scene.insert_primitive(quad_at(x as f32, 0., 4., 1440., 0x000000ff));
+            }
+            let bounds = Bounds::new(
+                point(384.0.into(), 72.0.into()),
+                size(1792.0.into(), 1296.0.into()),
+            );
+            scene.insert_backdrop_blur(BackdropBlur {
+                bounds,
+                corner_radii: Corners::all(27.2.into()),
+                content_mask: ContentMask { bounds },
+                sigma: 20.0.into(),
+            });
+            scene.insert_primitive(quad_at(384., 72., 1792., 1296., 0xffffffe6));
+            scene.finish();
+            let mut timings = Vec::new();
+            let mut gpu_timings = Vec::new();
+            for index in 0..8 {
+                let started = std::time::Instant::now();
+                let buffer = renderer.render_frame(&scene, &target, dimensions).unwrap();
+                buffer.commit();
+                buffer.wait_until_completed();
+                assert_eq!(buffer.status(), metal::MTLCommandBufferStatus::Completed);
+                let elapsed = started.elapsed().as_secs_f64() * 1000.;
+                let start: f64 = unsafe { msg_send![buffer.as_ptr(), GPUStartTime] };
+                let end: f64 = unsafe { msg_send![buffer.as_ptr(), GPUEndTime] };
+                if index > 0 {
+                    timings.push(elapsed);
+                    gpu_timings.push((end - start) * 1000.);
+                }
+            }
+            let allocations: Vec<_> = renderer
+                .backdrop_scratch
+                .borrow()
+                .iter()
+                .map(|texture| texture.allocated_size())
+                .collect();
+            println!(
+                "backdrop measured wall_ms={timings:?} gpu_ms={gpu_timings:?} scratch_allocated_bytes={allocations:?}"
+            );
+            renderer.destroy();
+            assert!(renderer.backdrop_scratch.borrow().is_empty());
+        });
     }
 }

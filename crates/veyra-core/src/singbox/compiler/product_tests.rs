@@ -1300,3 +1300,37 @@ fn policy87_bundled_routes_compile_and_recover_offline() {
         24
     );
 }
+
+// 保护备注纯 UI 元数据契约：增加说明不改变目录、RuntimeIntent 或最终 sing-box 配置。
+#[test]
+fn policy104_routing_notes_do_not_change_catalog_intent_or_compiler() {
+    let mut s = state();
+    let mut policy = TargetRoutingPolicy::new(PoolId("routing-notes-static".into()));
+    policy.name = "备注静态验证".into();
+    policy.matchers = vec![TrafficMatcher::Domain(vec!["notes.invalid".into()])];
+    s.profile.routing.policies.push(policy.clone());
+    let before_catalog = OutboundCatalog::from_state(&s);
+    let before_intent = RuntimeIntent::from_state(&s).unwrap();
+    let before_document = document(&s);
+    s.profile
+        .routing
+        .policies
+        .iter_mut()
+        .find(|p| p.id == policy.id)
+        .unwrap()
+        .notes
+        .insert("domain:notes.invalid".into(), "不进入内核的备注".into());
+    s.profile
+        .routing
+        .policies
+        .iter_mut()
+        .find(|p| p.id == policy.id)
+        .unwrap()
+        .notes
+        .insert("ruleset:geosite-youtube".into(), "仅元数据".into());
+    assert_eq!(OutboundCatalog::from_state(&s), before_catalog);
+    assert_eq!(RuntimeIntent::from_state(&s).unwrap(), before_intent);
+    let after_document = document(&s);
+    assert_eq!(after_document, before_document);
+    assert!(!after_document.to_string().contains("不进入内核的备注"));
+}

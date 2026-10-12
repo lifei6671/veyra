@@ -44,9 +44,9 @@ pub struct ConditionalHeaders {
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
-pub enum FetchResult {
+pub enum FetchResult<Body = String> {
     Modified {
-        body: String,
+        body: Body,
         metadata: SubscriptionHttpMetadata,
         profile_update_interval_minutes: Option<u32>,
         validators_match_source: bool,
@@ -187,6 +187,7 @@ pub(crate) async fn fetch_subscription_on_client(
     )
     .await
     .map_err(|_| FetchError::Timeout)?
+    .and_then(text_result)
 }
 
 async fn fetch_with_redirects(
@@ -196,7 +197,7 @@ async fn fetch_with_redirects(
     source_credentials: HeaderMap,
     mut observe: impl FnMut(&Url, Option<SocketAddr>),
     (accept_success, direct): (bool, bool),
-) -> Result<FetchResult, FetchError> {
+) -> Result<FetchResult<Vec<u8>>, FetchError> {
     let initial_origin = origin(&initial);
     let initial_scheme = initial.scheme().to_owned();
     let mut current = initial;
@@ -277,9 +278,8 @@ async fn fetch_with_redirects(
             }
             bytes.extend_from_slice(&chunk);
         }
-        let body = String::from_utf8(bytes).map_err(|_| FetchError::InvalidBody)?;
         return Ok(FetchResult::Modified {
-            body,
+            body: bytes,
             metadata,
             profile_update_interval_minutes,
             validators_match_source,
@@ -316,6 +316,59 @@ pub(crate) async fn fetch_routed_on_client(
     )
     .await
     .map_err(|_| FetchError::Timeout)?
+    .and_then(text_result)
+}
+
+// 二进制规则集复用同一 redirect、TLS、Direct 检查与有界 body 引擎，不把 binary 当 UTF-8。
+pub(crate) async fn fetch_resource_bytes_on_client(
+    client: &Client,
+    source: &str,
+    timeout: Duration,
+    direct: bool,
+) -> Result<Vec<u8>, FetchError> {
+    let initial = Url::parse(source).map_err(|_| FetchError::InvalidUrl)?;
+    validate_resource_url(&initial, None)?;
+    let result = tokio::time::timeout(
+        timeout,
+        fetch_with_redirects(
+            client,
+            initial,
+            ConditionalHeaders::default(),
+            HeaderMap::new(),
+            |_, _| {},
+            (true, direct),
+        ),
+    )
+    .await
+    .map_err(|_| FetchError::Timeout)??;
+    match result {
+        FetchResult::Modified { body, .. } => Ok(body),
+        FetchResult::NotModified { .. } => Err(FetchError::HttpStatus(304)),
+    }
+}
+fn text_result(result: FetchResult<Vec<u8>>) -> Result<FetchResult, FetchError> {
+    Ok(match result {
+        FetchResult::Modified {
+            body,
+            metadata,
+            profile_update_interval_minutes,
+            validators_match_source,
+        } => FetchResult::Modified {
+            body: String::from_utf8(body).map_err(|_| FetchError::InvalidBody)?,
+            metadata,
+            profile_update_interval_minutes,
+            validators_match_source,
+        },
+        FetchResult::NotModified {
+            metadata,
+            profile_update_interval_minutes,
+            validators_match_source,
+        } => FetchResult::NotModified {
+            metadata,
+            profile_update_interval_minutes,
+            validators_match_source,
+        },
+    })
 }
 
 /// 只记录类型化真实失败原因。reqwest 错误的 Display 可含秘密 URL，禁止转发。

@@ -172,11 +172,11 @@ impl Render for IconPicker {
                     .text_size(px(t::BODY))
                     .w(px(if self.expanded { self.expanded_width } else { t::SITE_ICON_WIDTH }))
                     .h(px(t::CONTROL))
-                    .px(px(t::GAP))
-                    .rounded(px(t::RADIUS))
+                    .px(px(if self.expanded { t::PAD } else { t::GAP }))
+                    .rounded(px(if self.expanded {t::ICON_PICKER_RADIUS}else{t::RADIUS}))
                     .border_1()
-                    .border_color(cx.theme().border)
-                    .bg(cx.theme().input)
+                    .border_color(if self.expanded { cx.theme().foreground.opacity(0.2) } else { cx.theme().border })
+                    .bg(if self.expanded { cx.theme().popover.opacity(t::ICON_PICKER_FIELD_OPACITY) } else { cx.theme().input })
                     // 分组提交期间禁用点击，文字颜色仍沿用 React 表单。
                     .when(self.expanded, |b| b.text_color(cx.theme().foreground))
                     .child(
@@ -184,12 +184,12 @@ impl Render for IconPicker {
                             .flex()
                             .w_full()
                             .items_center()
-                            .gap(px(t::GAP))
+                            .gap(px(if self.expanded { t::ICON_PICKER_CONTENT_GAP } else { t::GAP }))
                             .when(!self.expanded,|d|d.justify_around())
                             .children(current.map(|e| img(e.image.clone()).size(px(if self.expanded {t::ICON_SMALL}else{20.}))))
                             .when(self.expanded&&current.is_none(),|d|d.child(div().w(px(t::ICON)).text_color(cx.theme().muted_foreground).child("—")))
                             .when(self.expanded, |d| d.child(div().flex_1().min_w_0().overflow_hidden().text_ellipsis().child(current.map_or_else(||tr(cx,self.empty_label).to_owned(), |e|e.labels[match language {veyra_core::domain::DesktopLanguage::SimplifiedChinese=>0,veyra_core::domain::DesktopLanguage::English=>1,veyra_core::domain::DesktopLanguage::TraditionalChinese=>2}].clone()))))
-                            .child(icon("ChevronDown", 12.).text_color(cx.theme().foreground)),
+                            .child(icon("ChevronDown", if self.expanded {t::ICON_PICKER_CARET}else{12.}).text_color(if self.expanded {cx.theme().foreground.opacity(0.4)} else {cx.theme().foreground})),
                     ),
             )
             .content(move |_, _, cx| {

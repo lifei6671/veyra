@@ -123,6 +123,26 @@ impl Scene {
         }
     }
 
+    // 背景采样必须是排序屏障；同时记录到根 history，缓存重放也采样新帧背景。
+    pub fn insert_backdrop_blur(&mut self, blur: BackdropBlur) {
+        if let Some((scene, _)) = self.opacity_stack.last_mut() {
+            scene.insert_backdrop_blur(blur);
+        } else {
+            self.flush_opacity_segment();
+            self.opacity_segments.push(OpacitySegment::Backdrop(blur));
+        }
+        self.paint_operations.push(PaintOperation::Backdrop(blur));
+    }
+
+    pub fn has_backdrop_blur(&self) -> bool {
+        self.opacity_segments.iter().any(|segment| match segment {
+            OpacitySegment::Backdrop(_) => true,
+            OpacitySegment::Direct(scene) | OpacitySegment::Group { scene, .. } => {
+                scene.has_backdrop_blur()
+            }
+        })
+    }
+
     pub fn push_layer(&mut self, bounds: Bounds<ScaledPixels>) {
         if let Some((scene, _)) = self.opacity_stack.last_mut() {
             scene.push_layer(bounds);
@@ -217,6 +237,7 @@ impl Scene {
                 PaintOperation::EndLayer => self.pop_layer(),
                 PaintOperation::StartOpacityGroup(opacity) => self.begin_opacity_group(*opacity),
                 PaintOperation::EndOpacityGroup => self.end_opacity_group(),
+                PaintOperation::Backdrop(blur) => self.insert_backdrop_blur(*blur),
             }
         }
     }
@@ -291,6 +312,18 @@ pub(crate) enum PrimitiveKind {
 pub enum OpacitySegment {
     Direct(Scene),
     Group { scene: Scene, opacity: f32 },
+    Backdrop(BackdropBlur),
+}
+
+/// macOS Metal Gaussian backdrop: physical bounds, clipping and standard deviation.
+/// No layout or input semantics are added by this paint-only barrier.
+#[derive(Clone, Copy, Debug)]
+#[expect(missing_docs)]
+pub struct BackdropBlur {
+    pub bounds: Bounds<ScaledPixels>,
+    pub corner_radii: Corners<ScaledPixels>,
+    pub content_mask: ContentMask<ScaledPixels>,
+    pub sigma: ScaledPixels,
 }
 
 #[derive(Clone)]
@@ -300,6 +333,7 @@ pub(crate) enum PaintOperation {
     EndLayer,
     StartOpacityGroup(f32),
     EndOpacityGroup,
+    Backdrop(BackdropBlur),
 }
 
 #[derive(Clone)]

@@ -636,6 +636,50 @@ impl AppServices {
         receiver
     }
     /// 目标分流整份候选交正式SnapshotService验证和CAS，不维护第二份配置。
+    pub fn preview_routing_rules(
+        &self,
+        url: String,
+        cancel: tokio::sync::watch::Receiver<bool>,
+    ) -> tokio::sync::oneshot::Receiver<
+        Result<
+            veyra_core::application::rule_import::RuleImportPreview,
+            veyra_core::application::rule_import::RuleImportError,
+        >,
+    > {
+        use veyra_core::application::{
+            network::RequestedPath,
+            rule_import::{RuleImportRequest, RuleImportService},
+        };
+        // 发起时固定正式能力；失效只返回错误，不偷偷切换Direct或系统代理。
+        let source = self.manual_runtime.outbound_proxy_source();
+        let path = if source.current().is_some() {
+            RequestedPath::ViaRunningProxy
+        } else {
+            RequestedPath::Direct
+        };
+        #[cfg(target_os = "macos")]
+        let kernel = crate::platform::manual_sidecar::VerifiedKernel::development()
+            .map(|kernel| kernel.path().to_owned());
+        #[cfg(not(target_os = "macos"))]
+        let kernel = None;
+        let service = RuleImportService::new(source, kernel);
+        let (sender, receiver) = tokio::sync::oneshot::channel();
+        self.runtime.spawn(async move {
+            let result = service
+                .preview(
+                    RuleImportRequest {
+                        url,
+                        path,
+                        timeout: std::time::Duration::from_secs(30),
+                    },
+                    cancel,
+                )
+                .await;
+            let _ = sender.send(result);
+        });
+        receiver
+    }
+    /// 目标分流整份候选交正式SnapshotService验证和CAS，不维护第二份配置。
     pub fn save_target_routing(
         &self,
         expected: veyra_core::domain::ConfigVersion,

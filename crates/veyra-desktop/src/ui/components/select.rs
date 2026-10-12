@@ -70,6 +70,7 @@ pub struct SelectState {
     height: Pixels,
     compact: bool,
     border_focus: bool,
+    outlined_focus: bool,
     indicator: Option<(&'static [u8], f32, f32, f32)>,
     trigger_style: StyleRefinement,
     disabled: bool,
@@ -102,6 +103,7 @@ impl SelectState {
             height: px(t::CONTROL),
             compact: false,
             border_focus: false,
+            outlined_focus: false,
             indicator: None,
             trigger_style: StyleRefinement::default(),
             disabled: false,
@@ -184,9 +186,15 @@ pub struct Select {
     disabled: bool,
     compact: bool,
     border_focus: bool,
+    outlined_focus: bool,
     indicator: Option<(&'static [u8], f32, f32, f32)>,
 }
 impl Select {
+    /// 目标分流的原生 select 最终 CSS 使用正文色边框与 2px/2px outline。
+    pub fn outlined_focus(mut self) -> Self {
+        self.outlined_focus = true;
+        self
+    }
     /// 对应 .group-field > .ob-select-trigger:focus 的局部边框覆盖。
     pub fn border_focus(mut self) -> Self {
         self.border_focus = true;
@@ -212,6 +220,7 @@ impl Select {
             disabled: false,
             compact: false,
             border_focus: false,
+            outlined_focus: false,
             indicator: None,
         }
     }
@@ -234,6 +243,7 @@ impl RenderOnce for Select {
             s.disabled = self.disabled;
             s.compact = self.compact;
             s.border_focus = self.border_focus;
+            s.outlined_focus = self.outlined_focus;
             s.indicator = self.indicator;
             s.trigger_style = self.style.clone();
             s.height = self
@@ -342,6 +352,29 @@ impl Render for SelectState {
                                     && !self.disabled
                                     && self.trigger.is_focused(window),
                                 |b| b.border_color(rgb(t::ACCENT)),
+                            )
+                            .when(
+                                self.outlined_focus
+                                    && !self.disabled
+                                    && self.trigger.is_focused(window),
+                                |b| {
+                                    let radius = self
+                                        .trigger_style
+                                        .corner_radii
+                                        .top_left
+                                        .map_or(t::RADIUS, |r| {
+                                            f32::from(r.to_pixels(window.rem_size()))
+                                        });
+                                    b.border_color(cx.theme().foreground).child(
+                                        super::focus_outline(
+                                            0,
+                                            // Base Button 的绝对定位原点位于1px边框内侧；补偿该边框。
+                                            radius - 1.,
+                                            t::REFERENCE_BUTTON_FOCUS_OFFSET + 1.,
+                                        )
+                                        .border_color(cx.theme().foreground),
+                                    )
+                                },
                             )
                             .child(selected)
                             .when_some(self.indicator, |button, (data, width, height, right)| {

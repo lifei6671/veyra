@@ -465,6 +465,16 @@ impl OutboundClient {
         ))
         .await
     }
+    /// 只读二进制资源入口；与文本资源共用固定路径、redirect 和实例撤销取消。
+    pub async fn resource_bytes(&self, url: &str) -> Result<Vec<u8>, OutboundError> {
+        self.run(super::fetch::fetch_resource_bytes_on_client(
+            &self.client,
+            url,
+            self.timeout,
+            matches!(self.policy, RoutePolicy::Direct),
+        ))
+        .await
+    }
     async fn run<T>(
         &self,
         request: impl std::future::Future<Output = Result<T, FetchError>>,

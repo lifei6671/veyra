@@ -4059,6 +4059,32 @@ impl Window {
         result
     }
 
+    pub(crate) fn paint_backdrop_blur(
+        &mut self,
+        bounds: Bounds<Pixels>,
+        corner_radii: Corners<Pixels>,
+        sigma: Pixels,
+    ) {
+        assert!(
+            cfg!(target_os = "macos"),
+            "backdrop_blur requires the macOS Metal renderer"
+        );
+        self.invalidator.debug_assert_paint();
+        let scale = self.scale_factor();
+        let bounds = bounds.scale(scale);
+        let content_mask = self.content_mask().scale(scale);
+        if sigma.0 > 0. && !bounds.intersect(&content_mask.bounds).is_empty() {
+            self.next_frame
+                .scene
+                .insert_backdrop_blur(crate::BackdropBlur {
+                    bounds,
+                    corner_radii: corner_radii.scale(scale),
+                    content_mask,
+                    sigma: sigma.scale(scale),
+                });
+        }
+    }
+
     // 仅绘制隔离；layout/prepaint/AX/hitbox 继续由原元素执行。
     pub(crate) fn with_group_opacity<R>(
         &mut self,
