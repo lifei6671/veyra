@@ -1293,3 +1293,50 @@ fragment float4 group_opacity_fragment(
     texture2d<float> subtree [[texture(0)]], constant float &opacity [[buffer(0)]]) {
   return subtree.read(uint2(input.position.xy)) * opacity;
 }
+
+// policy104: 从当前帧工作面采样，逻辑 sigma 已由 Window 按 DPR 转为物理像素。
+// 用可分离、3 sigma 截断且归一化的 Gaussian；所有通道保持预乘 RGBA/sRGB。
+float backdrop_mirror(float coordinate, float minimum, float length) {
+  float q = fmod(coordinate - minimum, 2.0 * length);
+  if (q < 0.0) q += 2.0 * length;
+  return minimum + (q < length ? q : 2.0 * length - q);
+}
+fragment float4 backdrop_filter_fragment(
+    GroupOpacityVertexOutput input [[stage_in]], texture2d<float> source [[texture(0)]],
+    constant float *p [[buffer(0)]]) {
+  float2 position = input.position.xy;
+  float2 origin = float2(p[0], p[1]), extent = float2(p[2], p[3]);
+  if (any(position < origin) || any(position >= origin + extent))
+    return source.read(uint2(position));
+  constexpr sampler sampling(coord::pixel, address::clamp_to_edge, filter::linear);
+  float sigma = p[12];
+  int radius = int(ceil(3.0 * sigma));
+  float4 sum = 0.0;
+  float normalization = 0.0;
+  for (int offset = -radius; offset <= radius; offset++) {
+    float weight = exp(-0.5 * float(offset * offset) / (sigma * sigma));
+    float2 sample_position = position + (p[13] == 0.0 ? float2(offset, 0.0) : float2(0.0, offset));
+    sample_position.x = backdrop_mirror(sample_position.x, origin.x, extent.x);
+    sample_position.y = backdrop_mirror(sample_position.y, origin.y, extent.y);
+    sum += source.sample(sampling, sample_position) * weight;
+    normalization += weight;
+  }
+  return sum / normalization;
+}
+fragment float4 backdrop_composite_fragment(
+    GroupOpacityVertexOutput input [[stage_in]], texture2d<float> filtered [[texture(0)]],
+    texture2d<float> original [[texture(1)]], constant float *p [[buffer(0)]]) {
+  float2 position = input.position.xy;
+  Bounds_ScaledPixels bounds = {{p[0], p[1]}, {p[2], p[3]}};
+  Corners_ScaledPixels corners = {p[4], p[5], p[6], p[7]};
+  float2 mask_origin = float2(p[8], p[9]);
+  float2 mask_end = mask_origin + float2(p[10], p[11]);
+  float coverage = (any(position < mask_origin) || any(position >= mask_end)) ? 0.0
+    : saturate(0.5 - quad_sdf(position, bounds, corners));
+  uint2 pixel = uint2(position);
+  return mix(original.read(pixel), filtered.read(pixel), coverage);
+}
+fragment float4 backdrop_copy_fragment(
+    GroupOpacityVertexOutput input [[stage_in]], texture2d<float> source [[texture(0)]]) {
+  return source.read(uint2(input.position.xy));
+}

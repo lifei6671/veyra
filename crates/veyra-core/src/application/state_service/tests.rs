@@ -1528,3 +1528,69 @@ fn policy87_repeated_restore_rejects_pending_without_changing_disk() {
         before.group_selections[&policy]
     );
 }
+
+// 保护站点集备注真实保存/重启恢复、旧快照默认空与失败保旧；不启停内核或改变选择。
+#[test]
+fn policy104_routing_notes_disk_reopen_old_state_and_failed_write_keep_truth() {
+    let fixture = Fixture::new();
+    let initial = fixture.seed_pool();
+    let mut policy = TargetRoutingPolicy::new(PoolId("routing-notes".into()));
+    policy.name = "带备注站点集".into();
+    policy.matchers = vec![TrafficMatcher::DomainSuffix(vec!["example.invalid".into()])];
+    assert!(policy.notes.is_empty());
+    let mut old = serde_json::to_value(&policy).unwrap();
+    assert!(!old.as_object().unwrap().contains_key("notes"));
+    // 真旧成员缓存的读取兼容也不能因新增 notes 字段失效。
+    old["members"] = serde_json::json!(["direct"]);
+    let restored: TargetRoutingPolicy = serde_json::from_value(old).unwrap();
+    assert_eq!(restored, policy);
+    policy.notes.insert(
+        "domainSuffix:example.invalid".into(),
+        "保留这条域名后缀的说明".into(),
+    );
+    policy.notes.insert(
+        "ruleset:geosite-youtube".into(),
+        "域名集备注元数据，不自动添加匹配能力".into(),
+    );
+    let mut routing = initial.profile.routing.clone();
+    routing.policies.push(policy.clone());
+    let saved = fixture
+        .snapshots
+        .save_routing(initial.config_version(), routing.clone())
+        .unwrap();
+    assert_eq!(saved.effect, ApplyEffect::SavedOnly);
+    assert_eq!(saved.value.selection_version(), initial.selection_version());
+    assert_eq!(saved.version.0.revision, initial.config_revision + 1);
+    let reopen = || {
+        SnapshotService::new(
+            JsonStateStore::new(fixture.root.join("state.json")).unwrap(),
+            StateAccessGate::default(),
+        )
+        .snapshot()
+        .unwrap()
+    };
+    assert_eq!(
+        reopen().profile.routing.selector(&policy.id).unwrap().notes,
+        policy.notes
+    );
+    let bytes = fixture.bytes();
+    fixture.fail_writes();
+    routing
+        .policies
+        .iter_mut()
+        .find(|p| p.id == policy.id)
+        .unwrap()
+        .notes
+        .clear();
+    assert!(
+        fixture
+            .snapshots
+            .save_routing(saved.version, routing)
+            .is_err()
+    );
+    assert_eq!(fixture.bytes(), bytes);
+    assert_eq!(
+        reopen().profile.routing.selector(&policy.id).unwrap().notes,
+        policy.notes
+    );
+}

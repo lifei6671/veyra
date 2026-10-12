@@ -1,4 +1,6 @@
-use gpui::{Bounds, ContentMask, OpacitySegment, PrimitiveBatch, Quad, Scene, point, size};
+use gpui::{
+    BackdropBlur, Bounds, ContentMask, OpacitySegment, PrimitiveBatch, Quad, Scene, point, size,
+};
 
 fn quad(marker: f32) -> Quad {
     let bounds = Bounds::new(
@@ -16,6 +18,7 @@ fn signature(scene: &Scene) -> String {
     let mut result = String::new();
     for segment in &scene.opacity_segments {
         match segment {
+            OpacitySegment::Backdrop(blur) => result.push_str(&format!("B{};", blur.sigma.0)),
             OpacitySegment::Direct(direct) => result.push_str(&signature(direct)),
             OpacitySegment::Group { scene, opacity } => {
                 result.push_str(&format!("G{opacity}[{}]", signature(scene)));
@@ -86,4 +89,32 @@ fn default_scene_batching_unchanged() {
     let batches: Vec<_> = scene.batches().collect();
     assert_eq!(batches.len(), 1);
     assert!(matches!(&batches[0], PrimitiveBatch::Quads(range) if range == &(0..2)));
+}
+
+// 背景过滤必须保留在缓存重放顺序中，不能被图元类型 batch 重排/吞掉。
+#[test]
+fn backdrop_barrier_replays_between_groups_and_foreground() {
+    let mut scene = Scene::default();
+    scene.insert_primitive(quad(1.));
+    scene.begin_opacity_group(0.5);
+    scene.insert_primitive(quad(2.));
+    scene.end_opacity_group();
+    let bounds = quad(0.).bounds;
+    scene.insert_backdrop_blur(BackdropBlur {
+        bounds,
+        corner_radii: Default::default(),
+        content_mask: ContentMask { bounds },
+        sigma: 10.0.into(),
+    });
+    scene.insert_primitive(quad(3.));
+    scene.finish();
+    assert_eq!(signature(&scene), "Q1;G0.5[Q2;]B10;Q3;");
+    assert!(scene.has_backdrop_blur());
+    let mut replay = Scene::default();
+    replay.replay(0..scene.len(), &scene);
+    replay.finish();
+    assert_eq!(signature(&replay), signature(&scene));
+    assert_eq!(replay.len(), scene.len());
+    replay.clear();
+    assert!(!replay.has_backdrop_blur());
 }

@@ -26,6 +26,10 @@ const BUDGET: Duration = Duration::from_secs(10);
 /// 路径只由 composition root 的开发入口提供；每次执行前重新验证固定 binary。
 pub struct VerifiedKernel(PathBuf);
 impl VerifiedKernel {
+    /// 规则集只读decompile复用同一已验证资源；不开放Runtime命令或生命周期写入口。
+    pub(crate) fn path(&self) -> &std::path::Path {
+        &self.0
+    }
     pub fn development() -> Option<Self> {
         #[cfg(debug_assertions)]
         if let Some(path) = std::env::var_os("VEYRA_SING_BOX_PATH") {

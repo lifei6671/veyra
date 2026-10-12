@@ -48,7 +48,7 @@ pub fn modal_header(title: impl Into<SharedString>, close: impl IntoElement, cx:
         .justify_between()
         .px(px(crate::ui::tokens::SECTION_PADDING))
         .border_b_1()
-        .border_color(cx.theme().border)
+        .border_color(cx.theme().foreground.opacity(0.1))
         .child(
             div()
                 .text_size(px(crate::ui::tokens::ICON_SMALL))
@@ -72,11 +72,19 @@ pub struct PanelInput {
     style: StyleRefinement,
     number: bool,
     focus_style: Option<(Hsla, f32)>,
+    outlined_focus: bool,
     border_focus: bool,
     readonly: bool,
     disabled: bool,
 }
 impl PanelInput {
+    /// 目标分流最终 CSS：focus 时边框与 2px/2px outline 同为正文颜色。
+    pub fn outlined_focus(mut self, color: Hsla) -> Self {
+        self.focus_style = Some((color, super::tokens::REFERENCE_BUTTON_FOCUS_OFFSET));
+        self.border_focus = false;
+        self.outlined_focus = true;
+        self
+    }
     /// 只读分享链接保留选择/复制与正常文字颜色。
     pub fn readonly(mut self, value: bool) -> Self {
         self.readonly = value;
@@ -124,8 +132,21 @@ impl RenderOnce for PanelInput {
         use super::tokens as t;
         use gpui_kit::component::ActiveTheme;
         let focused = self.state.read(cx).focus_handle(cx).is_focused(window);
+        let focus_radius = self
+            .style
+            .corner_radii
+            .top_left
+            .map_or(t::RADIUS, |radius| {
+                f32::from(radius.to_pixels(window.rem_size()))
+            });
         let mut layout = self.style.clone();
         layout.padding = Default::default();
+        // 字段surface/边框只绘制在真正的Input上；外层只承担布局和focus outline。
+        // 否则局部半透明背景会叠画两次，并在圆角外留下矩形底色。
+        layout.background = None;
+        layout.border_widths = Default::default();
+        layout.border_color = None;
+        layout.corner_radii = Default::default();
         // 输入/IME 仍由 Kit 管理；禁用 Kit 的厚 shadow，复用 reference 的细 outline。
         div()
             .relative()
@@ -148,10 +169,11 @@ impl RenderOnce for PanelInput {
                     .line_height(px(t::BODY_LINE)),
                 px(t::CONTROL),
             ).refine_style(&self.style)
-             .when(focused && self.border_focus, |i| i.border_color(rgb(t::ACCENT))))
+             .when(focused && self.border_focus, |i| i.border_color(rgb(t::ACCENT)))
+             .when(focused && self.outlined_focus, |i| i.border_color(self.focus_style.unwrap().0)))
             .when(focused && !self.border_focus, |d| {
                 let (color, offset) = self.focus_style.unwrap_or((rgb(t::browser_focus(cx.theme().mode.is_dark())).into(), t::INPUT_FOCUS_OFFSET));
-                d.child(focus_outline(t::browser_focus(cx.theme().mode.is_dark()), t::RADIUS, offset).border_color(color))
+                d.child(focus_outline(t::browser_focus(cx.theme().mode.is_dark()), focus_radius, offset).border_color(color))
             })
             .when(self.number, |d| {
                 // Chromium number-field 的 UA spinner 仅 hover/focus 可见。
@@ -244,6 +266,7 @@ pub fn text_input(state: &Entity<InputState>) -> PanelInput {
         style: StyleRefinement::default(),
         number: false,
         focus_style: None,
+        outlined_focus: false,
         border_focus: false,
         readonly: false,
         disabled: false,

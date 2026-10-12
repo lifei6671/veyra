@@ -75,6 +75,11 @@ pub const NUMBER_WIDTH: f32 = 80.;
 pub const SLIDER_WIDTH: f32 = 256.;
 // .panel-settings 局部控件与浮层规格。
 pub const ROW_GAP: f32 = 4.;
+// React PanelIconPicker 的展开字段：input-sm / gap-1.5 / h-3.5。
+pub const ICON_PICKER_CONTENT_GAP: f32 = 6.;
+pub const ICON_PICKER_CARET: f32 = 14.;
+pub const ICON_PICKER_FIELD_OPACITY: f32 = 0.9;
+pub const ICON_PICKER_RADIUS: f32 = 9.3;
 pub const SWITCH_WIDTH: f32 = 40.;
 pub const SWITCH_HEIGHT: f32 = 24.;
 pub const SWITCH_THUMB: f32 = 18.;
@@ -805,6 +810,43 @@ pub mod routing {
     pub const SCALE_VALUE_WIDTH: f32 = 48.;
     pub const MATCHER_WIDTH: f32 = 144.;
     pub const CARD_MIN_HEIGHT: f32 = 68.;
-    pub const FOOTER_HEIGHT: f32 = 56.;
+    // React .routing-policy-title / .routing-policy-copy p，在线最终级联一致。
+    pub const CARD_TITLE: f32 = 16.;
+    pub const CARD_TITLE_LINE: f32 = 24.;
+    pub const CARD_SUMMARY_LINE: f32 = 16.;
+    pub const CARD_COPY_GAP: f32 = 2.;
+    // LAN 修改站点集实测：41px header + flex body + 49px footer，固定90dvh。
+    pub const EDITOR_HEIGHT_RATIO: f32 = 0.9;
+    pub const LABEL_LINE: f32 = 16.;
+    pub const RULE_GAP: f32 = 8.;
+    pub const RULE_NOTE_WIDTH: f32 = 112.;
+    pub const EDITOR_RADIUS: f32 = 13.6;
+    pub const FOOTER_BUTTON_WIDTH: f32 = 52.;
+    pub const SCALE_BUTTON_LIGHT: u32 = 0xededed;
+    pub const SCALE_WIDTH: f32 = 158.;
+    pub const FALLBACK_EDITOR_WIDTH: f32 = 672.;
+    pub const IMPORT_LIST_HEIGHT: f32 = 240.;
+    pub const IMPORT_KIND_WIDTH: f32 = 80.;
+    // LAN scrollbar 最终级联 foreground/35，DPR2 实测 thumb 12px、右侧6px。
+    pub const EDITOR_SCROLL_TRACK: f32 = 12.;
+    pub const EDITOR_SCROLL_THUMB: f32 = 6.;
+    pub const EDITOR_SCROLL_INSET: f32 = 3.;
+    pub const EDITOR_SCROLL_RADIUS: f32 = 3.;
+    pub const EDITOR_SCROLL_ALPHA: f32 = 0.35;
+    // 原版select的两个4px线性渐变构成7.9×4的下三角，中心向下1px。
+    pub const RULE_CARET_LIGHT: &[u8] = br##"<svg xmlns="http://www.w3.org/2000/svg" width="8" height="4" viewBox="0 0 8 4"><path fill="#333c4d" d="M0 0h8L4 4z"/></svg>"##;
+    pub const RULE_CARET_DARK: &[u8] = br##"<svg xmlns="http://www.w3.org/2000/svg" width="8" height="4" viewBox="0 0 8 4"><path fill="#cac9c9" d="M0 0h8L4 4z"/></svg>"##;
+
+    pub const SCALE_STEP_WIDTH: f32 = 30.;
+    pub const SCALE_RESET_WIDTH: f32 = 52.;
+    pub const TOOLBAR_HEIGHT: f32 = 24.;
+    pub const TOOLBAR_TEXT: f32 = 11.;
+    pub const TOOLBAR_LINE: f32 = 16.5;
+    // LAN .btn-xs 内部 icon/text gap 的最终computedStyle，非外部按钮间距4px。
+    pub const TOOLBAR_ICON_GAP: f32 = 6.;
+    pub const FIELD_OPACITY: f32 = 0.9;
+    // 原版 font-mono 的实际face经 CSS.getPlatformFontsForNode 核对为Menlo-Regular。
+    pub const RULE_FONT: &str = "Menlo";
+    pub const FOOTER_HEIGHT: f32 = 49.;
     pub const CARD_ICON: f32 = 18.;
 }

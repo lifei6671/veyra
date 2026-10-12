@@ -681,3 +681,43 @@ final6 App675f858…/686source e532e470…/PID78455/root101留代理shared-edito
 ### P2-08 本地 Git 整合授权（2026-10-11）
 
 用户明确要求将代码提交并合并回 `codex/dist-react-restore`，覆盖此前不 Commit/Merge 的限制；不包含 Push/Release 或整体视觉验收。源树 `dev/p2-08-proxy-latency` 与目标树共同基线 `6857b2e39633ca0564cac66b40ee0f9129cf275a`；本次整合累积代理页、正式服务与已批准 owner 协作、目标分流/内置默认及共享编辑和字体修复。policy101 final6 的 686 项源码哈希已逐项核验一致，Desktop build/all-target Clippy/fmt 原收据通过、Review63 有界结论保留。主树无关 Python 缓存保持，历史失败、截图和本地证据继续保留于被 Git 忽略的 evidence 目录；Git 恢复快照与结果见 `evidence/p2-08/visual-rework-20261010/resumed-native/git-integration-20261011/`。P2-08 仍 DOING/REWORK，HISTORY-WRITE-001、Busy、真实链接导入及未完成视觉项不因合并关闭，不解锁下游。
+
+
+### P2-08 第102轮：目标分流单行卡片与逐域名编辑（2026-10-12）
+
+仅routing.rs/对应Tokens：卡片标题摘要nowrap/ellipsis、16/24和12/16/2gap；60正式规则值逐行、粘贴失焦拆分，行操作按Entity定位。3定向纯Desktop测试/build/all-target Clippy/fmt/diff PASS；原E0277首次FAIL保留。Native隔离root保存92→93、reopen、删测试域名94、长名95→还原96、Escape不保存；原规则类型和值顺序/其它State/selection82保持，Matcher聚合3→60单值结构如实单列。原policy101及各77历史未改，无Apply/内核/网络操作。DPR2原始参照与同视口Native、整卡叠差图/前后及身份在resumed-native/policy102；Native baseline原184→68，整页差异仍OPEN。独立Review待追加；DOING/REWORK、History001/Busy OPEN，本轮未Commit/Merge/Push/Release。
+
+第102轮独立Review64完成（VISUAL_REVIEW.md:2306–2329）：686源/App哈希一致，单行ellipsis/逐值编辑/Blur拆分/实体定位/保存回读有界PASS，无新增可信源码blocker；3→60Matcher按同policy OR编译，全部原60值顺序/其它State/selection82和77历史保持。未称字节恢复或Runtime Apply；原computed DPR1/736与最终DPR2 raw图、截图边界与GPUI实际bounds区别如实分列，旧summary/图标/边框/字体残差及本轮未跑状态保留。原2305行87d1cd…完整保持；Review全文3ba6ffcb…/独立receipt fc64f0…；PID89548留目标分流编辑供review，DOING/REWORK、History001/Busy OPEN，无新增Commit/Merge/Push/Release。
+
+
+### P2-08 第103轮：目标分流摘要重复标签回归修复（2026-10-12）
+
+用户指出102保存后重复标签属实；仅routing.rs只读聚合同类值、原版summaryFields次序、两纯测试，无Matcher/保存/Core/Runtime修改；102的Tokens/编辑行脏改保留。LAN实际DOM整字符串对照12策略全部相同（外部crosscheck，非UI精确bounds），原始DPR2图/完整Speed卡无mask叠差图与前后保留。Native隔离root103实际name保存97→恢复98、reopen独立行和controlled自有进程重启后正确；除cfg96→98其余State和60规则顺序不变，旧101/102State及4root各77history完全保持。5Desktop定向测试/build/all-target Clippy/fmtPASS，Legacy独立收据单列。App4c6fc79…/686source325f44…、HEADd4a6e27；baseline精确退出、reference只读tab重置关闭、候选留目标分流卡片。证据resumed-native/policy103，独立Review65待追加。DOING/REWORK、History001/Busy OPEN，本轮未Commit/Merge/Push/Release。
+
+第103轮检查附记：本轮LegacyClippy缺Windows LICENSE退出101、Legacyfmt0，原件policy103/legacy-*.log/json保留；最终PID97682。
+
+第103轮独立Review65完成（VISUAL_REVIEW.md:2330–2350）：一次类型标签/逗号合并/原次序有界PASS；对102仅routing.rs，无新源码blocker。独立686源/App0mismatch、12策略derived全字符串与LAN一致（不是UIbounds）、96→97→98恢复/重启State准确、旧101/102与4DB77history不变。前2329行3ba6ffcb…完整保持；Review全文3504adb2…，receipt7c5eaa08…。未跑暗色/其它语言/NativeQuit/全card像素及旧视觉/History001/Busy继续OPEN。PID97682留目标分流列表；本轮未Commit/Merge/Push/Release，DOING/REWORK不变。
+
+
+### P2-08 第104轮：修改站点集实际原版逐项返工（2026-10-12，进行中）
+
+唯一树/分支/HEAD 已核验；102/103 未提交源码和历史保留。LAN 原版只读 1280×720/DPR2/浅色中文，实际 CSS 级联及 Menlo 平台字体已测量。修复主弹窗/字段/规则逐项备注、缩放组合及导入入口；用户已批准最小规则导入切片与仅目标分流弹窗背景模糊接线。Core/Network owner 管理 notes 和只读 import；Drawing owner 管理 vendored GPUI opt-in blur；Root 仅消费并整合 Cargo，禁止改 Runtime/Helper/IPC 生命周期及系统网络。owner 已冻结生产写入；Native Save/Cancel/导入/共享回归、最终候选 SHA、独立 Review66 待续。P2-08 DOING/REWORK，HISTORY-WRITE-001/Busy OPEN，无本轮 Commit/Merge/Push/Release。证据 policy104。
+
+
+### P2-08 policy104 checkpoint（2026-10-12）
+
+- Root 与单一 Core/绘制 owner 完成已批准的规则明细导入、备注元数据、目标分流弹窗blur消费；其他 owner 无写入冲突。
+- Review3 App SHA `3c0c2864f399ab3175df5d52aee6a7c66f9a704854eec05aebf49bc02b86729e`；696源码manifest `22995198e14161cd009c41ee6ac15fa1eca95d0c19d0a13fb0b5a63cdc96be0f`，0构建期间变化。
+- 实际Native：独立60行、固定标题/页脚、focus、常显scroll/拖回顶部；真实备注Save/清除，最终限长Undo/Redo/光标；LIST/MRS/SRS导入草稿→正式Save→新进程JSON读取、取消和超200禁用/Toast/slow取消。不是同root受控restart。
+- Desktop构建/clippy/fmt/diff通过；Routing6、Core23、绘制10个定向测试通过（精确候选与命令见receipt）。Legacy clippy缺Windows LICENSE仍FAIL。
+- 旧101/102/103 State SHA和77历史行hash不变；Review3 State无写入。自有HTTP server停止，自有Review2取消后SIGTERM，Review3保留供用户审查；无其它应用/系统网络改动。
+- 证据目录 `evidence/p2-08/visual-rework-20261010/resumed-native/policy104/`，本地VISUAL_AUDIT/BEFORE_AFTER/delivery/protection/cleanup与上级Review66。
+- P2-08 DOING / REWORK；GeoCategory/Details/持续RuleURL、规则拖动跟手/吸附和scrollbar圆头细节待对齐；Dark/嵌套BackdropRoot/SRS在途取消NOT_RUN；HISTORY-WRITE-001、Busy保持OPEN。无本轮Commit/Merge/Push/Release。
+
+- policy104 Review4补验：App SHA `5d42545ffef77b3e6def5d904a9f210c84da4884093291f257f5e61c157ab617`、manifest `3dd81ab5b047a3613a2a54b6cd496939e543ce2b65c89c1785a499bf58464d4d`，0mismatch；工具栏gap4→6修复后重新构建/Clippy/fmt/diff及Native截图，文字1–2px与scrollbar圆头残差OPEN，任务仍REWORK；Review3取消后自有PID清理，当前Review4保留供review。
+- policy104独立Review66已append2351–2385，原2350行SHA保持；最终decision BOUNDED_PASS_WITH_OPEN_REWORK，无新增correctness blocker，不关闭可见排版残差或未完成项。
+
+
+### P2-08 本地 Git 整合授权（2026-10-12）
+
+用户明确要求将当前代码合并回 `codex/dist-react-restore`，授权提交第102–104轮现有源码并本地合并，覆盖本轮此前不Commit/Merge限制；不包含Push/Release或视觉任务收口。源HEAD d4a6e27、目标HEAD 6c772bc，目标tracked tree与源基线相同；主树无关Python缓存保留。Review4候选696源码0mismatch、原构建/Clippy/fmt/diff和独立Review66结论核验；精确前置快照、补充验证和Git结果保存在 `evidence/p2-08/visual-rework-20261010/resumed-native/git-integration-20261012/`。P2-08 DOING/REWORK，文字/滚动条残差、Geo/Details/持续RuleURL/规则拖动及未跑状态、HISTORY-WRITE-001/Busy仍OPEN，不因合并关闭。
